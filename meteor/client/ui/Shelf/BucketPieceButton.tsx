@@ -29,14 +29,17 @@ import {
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { BucketId } from '../../../lib/collections/Buckets';
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists';
+import { PieceId } from '../../../lib/collections/Pieces';
 
 type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps & IDashboardButtonTrackedProps
 
 const buttonSource = {
 	beginDrag(props: IDashboardButtonPropsCombined, monitor: DragSourceMonitor, component: any) {
 		return {
-			id: props.item._id,
-			originalIndex: props.findAdLib(props.item._id).index,
+			id: props.adLibListItem._id,
+			originalIndex: props.findAdLib(props.adLibListItem._id).index,
 			bucketId: props.bucketId
 		}
 	},
@@ -67,7 +70,7 @@ const buttonTarget = {
 
 	hover(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor, component: any) {
 		const { id: draggedId } = monitor.getItem()
-		const overId = props.item._id
+		const overId = props.adLibListItem._id
 
 		if (draggedId !== overId) {
 			const { index: overIndex } = props.findAdLib(overId)
@@ -76,7 +79,7 @@ const buttonTarget = {
 	},
 
 	drop(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor) {
-		const { index } = props.findAdLib(props.item._id)
+		const { index } = props.findAdLib(props.adLibListItem._id)
 
 		return {
 			index,
@@ -86,11 +89,22 @@ const buttonTarget = {
 }
 
 export interface BucketPieceButtonBaseProps {
-	moveAdLib: (id: string, atIndex: number) => void
-	findAdLib: (id: string) => { piece: BucketAdLib | undefined, index: number }
-	onAdLibReorder: (draggedId: string, newIndex: number, oldIndex: number) => void
-	onAdLibMove: (id: string, newBucketId: string) => void
-	bucketId: string
+	adLibListItem: BucketAdLib
+	layer: ISourceLayer
+	outputLayer?: IOutputLayer
+	onToggleAdLib: (aSLine: BucketAdLib, queue: boolean, context: any) => void
+	playlist: RundownPlaylist
+	mediaPreviewUrl?: string
+	isOnAir?: boolean
+	widthScale?: number
+	heightScale?: number
+	disabled?: boolean
+
+	moveAdLib: (id: PieceId, atIndex: number) => void
+	findAdLib: (id: PieceId) => { piece: BucketAdLib | undefined, index: number }
+	onAdLibReorder: (draggedId: PieceId, newIndex: number, oldIndex: number) => void
+	onAdLibMove: (id: PieceId, newBucketId: BucketId) => void
+	bucketId: BucketId
 }
 
 interface ButtonSourceCollectedProps {
@@ -120,10 +134,10 @@ export class BucketPieceButtonBase extends DashboardPieceButtonBase<ButtonSource
 	}
 }
 
-export const BucketPieceButton = translateWithTracker<IDashboardButtonProps & BucketPieceButtonBaseProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
-	const piece = props.item as any as AdLibPieceUi
+export const BucketPieceButton = translateWithTracker<BucketPieceButtonBaseProps, {}, IDashboardButtonTrackedProps>((props: BucketPieceButtonBaseProps) => {
+	const piece = props.adLibListItem as any as AdLibPieceUi
 
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
+	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 
 	return {
 		status,

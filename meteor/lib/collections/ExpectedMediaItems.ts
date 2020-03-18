@@ -1,10 +1,18 @@
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time } from '../lib'
+import { registerCollection, Time, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
+import { RundownId } from './Rundowns'
+import { PartId } from './Parts'
+import { StudioId } from './Studios'
+import { BucketId } from './Buckets'
+import { PieceId } from './Pieces'
+
+/** A string, identifying a ExpectedMediaItem */
+export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
 
 export interface ExpectedMediaItemBase {
-	_id: string
+	_id: ExpectedMediaItemId
 
 	/** Source label that can be used to identify the EMI */
 	label?: string
@@ -16,7 +24,7 @@ export interface ExpectedMediaItemBase {
 	url: string
 
 	/** The studio installation this ExpectedMediaItem was generated in */
-	studioId: string
+	studioId: StudioId
 
 	/** True if the media item has been marked as possibly unavailable */
 	disabled: boolean
@@ -33,19 +41,18 @@ export interface ExpectedMediaItemBase {
 
 export interface ExpectedMediaItemRundown extends ExpectedMediaItemBase {
 	/** The rundown id that is the source of this MediaItem */
-	rundownId: string
+	rundownId: RundownId
 
 	/** The part id that is the source of this Media Item */
-	partId: string
-
+	partId: PartId
 }
 
 export interface ExpectedMediaItemBucket extends ExpectedMediaItemBase {
 	/** The bucket id that is the source of this Media Item */
-	bucketId: string
+	bucketId: BucketId
 
 	/** The bucked adLib piece that is the source of this Media Item */
-	bucketAdLibPieceId: string
+	bucketAdLibPieceId: PieceId
 }
 
 export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucket

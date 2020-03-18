@@ -7,6 +7,7 @@ import { ExternalFramePanel } from './ExternalFramePanel'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { OverflowingContainer } from './OverflowingContainer'
 import * as ClassNames from 'classnames'
 import { ShelfTabs, DEFAULT_TAB as SHELF_DEFAULT_TAB } from './Shelf'
@@ -16,17 +17,19 @@ import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { IBlueprintPieceGeneric, IBlueprintPieceDB, IBlueprintAdLibPieceDB } from 'tv-automation-sofie-blueprints-integration'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
-	rundown: Rundown
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	selectedTab: string | undefined
-	selectedPiece: IBlueprintPieceDB | IBlueprintAdLibPieceDB | undefined
+	selectedPiece: PieceGeneric | undefined
 
 	onSwitchTab: (tab: string) => void
-	onSelectPiece: (piece: IBlueprintPieceGeneric) => void
+	onSelectPiece: (piece: PieceGeneric) => void
 
 	hotkeys: Array<{
 		key: string
@@ -65,7 +68,7 @@ export const ShelfRundownLayout = translate()(function ShelfRundownLayout (props
 					registerHotkeys={true}
 					selectedPiece={props.selectedPiece}
 					onSelectPiece={props.onSelectPiece}
-					rundown={props.rundown}
+					playlist={props.playlist}
 					showStyleBase={props.showStyleBase}
 					studioMode={props.studioMode}
 					></AdLibPanel>
@@ -78,7 +81,7 @@ export const ShelfRundownLayout = translate()(function ShelfRundownLayout (props
 							filter={panel}
 							selectedPiece={props.selectedPiece}
 							onSelectPiece={props.onSelectPiece}
-							rundown={props.rundown}
+							playlist={props.playlist}
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							/> :
@@ -88,7 +91,7 @@ export const ShelfRundownLayout = translate()(function ShelfRundownLayout (props
 							panel={panel}
 							layout={rundownLayout}
 							visible={(props.selectedTab || SHELF_DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
-							rundown={props.rundown}
+							playlist={props.playlist}
 							/> :
 						undefined
 				)}
@@ -96,7 +99,7 @@ export const ShelfRundownLayout = translate()(function ShelfRundownLayout (props
 					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
 					selectedPiece={props.selectedPiece}
 					onSelectPiece={props.onSelectPiece}
-					rundown={props.rundown}
+					playlist={props.playlist}
 					showStyleBase={props.showStyleBase}
 					studioMode={props.studioMode}
 					></GlobalAdLibPanel>

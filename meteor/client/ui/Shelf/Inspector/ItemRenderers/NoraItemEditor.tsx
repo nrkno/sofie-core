@@ -1,5 +1,6 @@
 import * as React from "react"
-import { NoraPayload, IBlueprintPieceGeneric } from "tv-automation-sofie-blueprints-integration"
+import { PieceGeneric } from "../../../../../lib/collections/Pieces"
+import { NoraPayload } from "tv-automation-sofie-blueprints-integration"
 import { createMosObjectXmlStringNoraBluePrintPiece } from "../../../../lib/data/nora/browser-plugin-data"
 import { parseMosPluginMessageXml, MosPluginMessage } from "../../../../lib/parsers/mos/mosXml2Js"
 import {
@@ -18,7 +19,7 @@ export const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_B
 export { NoraItemEditor }
 
 interface INoraEditorProps {
-	piece: IBlueprintPieceGeneric
+	piece: PieceGeneric
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {

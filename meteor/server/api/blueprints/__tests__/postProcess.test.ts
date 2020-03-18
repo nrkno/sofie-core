@@ -2,10 +2,10 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal } from '../../../../lib/lib'
+import { literal, protectString } from '../../../../lib/lib'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { postProcessStudioBaselineObjects, postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../postProcess'
-import { RundownContext } from '../context'
+import { RundownContext, NotesContext } from '../context'
 import { IBlueprintPiece, IBlueprintAdLibPiece, TimelineObjectCoreExt, IBlueprintPieceDB, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
@@ -30,7 +30,8 @@ describe('Test blueprint post-process', () => {
 			showStyleBaseId: '',
 			showStyleVariantId: ''
 		}
-		return new RundownContext(new Rundown(rundown as any), getStudio())
+		const rundownNotesContext = new NotesContext(rundown.name, `rundownId=${rundown._id}`, true)
+		return new RundownContext(new Rundown(rundown as any), rundownNotesContext, getStudio())
 	}
 
 	function ensureAllKeysDefined<T> (template: T, objects: T[]) {
@@ -249,13 +250,13 @@ describe('Test blueprint post-process', () => {
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<TimelineObjGeneric>({
-				_id: '',
+				_id: protectString(''),
 				id: '',
 				layer: '',
 				enable: {},
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
-				studioId: ''
+				studioId: protectString('')
 			})
 			ensureAllKeysDefined(tmpObj, res)
 		})
@@ -311,14 +312,14 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessAdLibPieces(context, [], 'blueprint9')
+			const res = postProcessAdLibPieces(context, [], protectString('blueprint9'))
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null piece', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessAdLibPieces(context, [null as any], 'blueprint9')
+			const res = postProcessAdLibPieces(context, [null as any], protectString('blueprint9'))
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('various pieces', () => {
@@ -369,20 +370,20 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.clone(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessAdLibPieces(context, pieces, 'blueprint9')
+			const res = postProcessAdLibPieces(context, pieces, protectString('blueprint9'))
 			// expect(res).toHaveLength(3)
 			expect(res).toMatchObject(pieces.map(p => _.omit(p, '_id')))
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<AdLibPiece>({
-				_id: '',
+				_id: protectString(''),
 				_rank: 0,
 				disabled: false,
 				name: '',
 				externalId: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				rundownId: '',
+				rundownId: protectString(''),
 				status: 0
 			})
 			ensureAllKeysDefined(tmpObj, res)
@@ -421,7 +422,7 @@ describe('Test blueprint post-process', () => {
 				}
 			})
 
-			const res = postProcessAdLibPieces(context, [piece], 'blueprint9')
+			const res = postProcessAdLibPieces(context, [piece], protectString('blueprint9'))
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 
@@ -435,14 +436,14 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessPieces(context, [], 'blueprint9', 'part8')
+			const res = postProcessPieces(context, [], protectString('blueprint9'), protectString('part8'))
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null piece', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessPieces(context, [null as any], 'blueprint9', 'part8')
+			const res = postProcessPieces(context, [null as any], protectString('blueprint9'), protectString('part8'))
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('various pieces', () => {
@@ -497,19 +498,19 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.compact(_.map(pieces, obj => obj._id)).concat(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessPieces(context, pieces, 'blueprint9', 'part8')
+			const res = postProcessPieces(context, pieces, protectString('blueprint9'), protectString('part8'))
 			expect(res).toMatchObject(pieces.map(p => _.omit(p, '_id')))
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<Piece>({
-				_id: '',
+				_id: protectString(''),
 				name: '',
 				externalId: '',
-				enable: {},
+				enable: { start: 0 },
 				sourceLayerId: '',
 				outputLayerId: '',
-				partId: '',
-				rundownId: '',
+				partId: protectString(''),
+				rundownId: protectString(''),
 				status: 0
 			})
 			ensureAllKeysDefined(tmpObj, res)
@@ -547,7 +548,7 @@ describe('Test blueprint post-process', () => {
 				}
 			})
 
-			const res = postProcessPieces(context, [piece], 'blueprint9', 'part6')
+			const res = postProcessPieces(context, [piece], protectString('blueprint9'), protectString('part6'))
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([_.omit(piece, '_id')])
 

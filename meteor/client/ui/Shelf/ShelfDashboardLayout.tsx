@@ -9,10 +9,11 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { BucketPanel } from './BucketPanel'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
-	rundown: Rundown
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	shouldQueue: boolean
@@ -33,7 +34,7 @@ export function ShelfDashboardLayout (props: IShelfDashboardLayoutProps) {
 							filter={panel}
 							visible={!(panel as DashboardLayoutFilter).hide}
 							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-							rundown={props.rundown}
+							playlist={props.playlist}
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							shouldQueue={props.shouldQueue}
@@ -45,7 +46,7 @@ export function ShelfDashboardLayout (props: IShelfDashboardLayoutProps) {
 							filter={panel}
 							visible={!(panel as DashboardLayoutFilter).hide}
 							registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-							rundown={props.rundown}
+							playlist={props.playlist}
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							shouldQueue={props.shouldQueue}
@@ -57,13 +58,13 @@ export function ShelfDashboardLayout (props: IShelfDashboardLayoutProps) {
 						panel={panel}
 						layout={rundownLayout}
 						visible={true}
-						rundown={props.rundown}
+						playlist={props.playlist}
 						/> :
 					undefined
 		)}
 		{rundownLayout.actionButtons &&
 			<DashboardActionButtonGroup
-				rundown={props.rundown}
+				playlist={props.playlist}
 				buttons={rundownLayout.actionButtons}
 				onChangeQueueAdLib={props.onChangeQueueAdLib}
 				studioMode={props.studioMode} />}

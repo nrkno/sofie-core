@@ -1,23 +1,26 @@
 import { PieceGeneric } from './Pieces'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { StudioId } from './Studios'
+
+export type BucketId = ProtectedString<"BucketId">
 
 /**
  * A Bucket is an container for AdLib pieces that do not come from a MOS gateway and are
  * free-floating between mutliple rundowns/rundown playlists
  */
 export interface Bucket {
-	_id: string
+	_id: BucketId
 	/** A user-presentable name for a bucket */
 	name: string
 	/** Rank used for sorting buckets */
 	_rank: number
 
 	/** The studio this bucket belongs to, */
-	studioId: string
+	studioId: StudioId
 	/** Only the owner can delete a bucket from the RundownView UI. Anyone who can see the bucket can add and remove stuff from it. */
 	userId: string | null
 

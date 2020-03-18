@@ -2,19 +2,20 @@ import { IngestAdlib } from "tv-automation-sofie-blueprints-integration"
 import { ShowStyleCompound } from "../../../lib/collections/ShowStyleVariants"
 import { Studio } from "../../../lib/collections/Studios"
 import { getBlueprintOfRundown, loadShowStyleBlueprints } from "../blueprints/cache"
-import { ShowStyleContext } from "../blueprints/context"
+import { ShowStyleContext, NotesContext } from "../blueprints/context"
 import { postProcessAdLibPieces, postProcessBucketAdLib } from "../blueprints/postProcess"
 import { RundownImportVersions } from "../../../lib/collections/Rundowns"
 import { PackageInfo } from "../../coreSystem"
 import { BucketAdLibs } from "../../../lib/collections/BucketAdlibs"
 import { ExpectedMediaItem } from "../../../lib/collections/ExpectedMediaItems"
-import { PieceGeneric } from "../../../lib/collections/Pieces"
+import { PieceGeneric, PieceId } from "../../../lib/collections/Pieces"
 import { updateExpectedMediaItemForBucketAdLibPiece, cleanUpExpectedMediaItemForBucketAdLibPiece } from "../expectedMediaItems"
+import { BucketId } from "../../../lib/collections/Buckets"
 
-export function updateBucketAdlibFromIngestData (showStyle: ShowStyleCompound, studio: Studio, bucketId: string, ingestData: IngestAdlib): string | null {
+export function updateBucketAdlibFromIngestData (showStyle: ShowStyleCompound, studio: Studio, bucketId: BucketId, ingestData: IngestAdlib): PieceId | null {
 	const { blueprint, blueprintId } = loadShowStyleBlueprints(showStyle)
 	
-	const context = new ShowStyleContext(studio, showStyle._id, showStyle.showStyleVariantId, 'bucket-adlib')
+	const context = new ShowStyleContext(studio, showStyle._id, showStyle.showStyleVariantId, new NotesContext('bucket-adlib', 'bucket-adlib', false))
 	const rawAdlib = blueprint.getAdlibItem(context, ingestData)
 
 

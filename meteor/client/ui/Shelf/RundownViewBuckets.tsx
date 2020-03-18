@@ -1,13 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import { Bucket } from '../../../lib/collections/Buckets'
+import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
-import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { ClientAPI } from '../../../lib/api/client'
 
 import { translate } from 'react-i18next'
@@ -23,12 +22,14 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { DropTarget } from 'react-dnd'
 import update from 'immutability-helper'
 
-import { partial, literal } from '../../../lib/lib'
+import { partial, literal, unprotectString } from '../../../lib/lib'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { MeteorCall } from '../../../lib/api/methods';
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
-	rundown: Rundown
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
 }
@@ -37,7 +38,7 @@ interface IState {
 	panelWidths: number[]
 	contextBucket: Bucket | undefined
 	contextBucketAdLib: BucketAdLib | undefined
-	editedNameId: string | undefined
+	editedNameId: BucketId | undefined
 	localBuckets: Bucket[]
 }
 
@@ -78,7 +79,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 				props.buckets.map((bucket, index) => 
 					state.panelWidths[index] !== undefined ?
 						state.panelWidths[index] :
-						UIStateStorage.getItemNumber('rundownView.shelf.buckets', bucket._id,
+						UIStateStorage.getItemNumber('rundownView.shelf.buckets', unprotectString(bucket._id),
 							bucket.width !== undefined ? bucket.width : 0.2)
 				) : []
 		}
@@ -89,7 +90,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 			this.setState({
 				localBuckets: ([] as Bucket[]).concat(this.props.buckets || []),
 				panelWidths: (this.props.buckets || []).map((bucket) =>
-					UIStateStorage.getItemNumber('rundownView.shelf.buckets', bucket._id,
+					UIStateStorage.getItemNumber('rundownView.shelf.buckets', unprotectString(bucket._id),
 							bucket.width !== undefined ? bucket.width : 0.2))
 			})
 		}
@@ -128,7 +129,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 		if (this.props.buckets) {
 			this.props.buckets.forEach((bucket, index) => {
 				const width = this.state.panelWidths[index]
-				UIStateStorage.setItem('rundownView.shelf.buckets', bucket._id, width)
+				UIStateStorage.setItem('rundownView.shelf.buckets', unprotectString(bucket._id), width)
 			})
 		}
 
@@ -230,15 +231,44 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 
 		if (e.persist) e.persist()
 
-		doUserAction(t, e, UserActionAPI.methods.createBucket, [ t('New Bucket'), this.props.rundown.studioId ],
-			(err, res: ClientAPI.ClientResponseSuccess) => {
+		// doUserAction(t, e, UserActionAPI.methods.createBucket, [ t('New Bucket'), this.props.rundown.studioId ],
+		// 	(err, res: ClientAPI.ClientResponseSuccess) => {
+		// 		if (ClientAPI.isClientResponseSuccess(res)) {
+		// 			this.setState({
+		// 				editedNameId: (res.result as Bucket)._id
+		// 			})
+		// 		}
+		// 	}
+		// )
+		doUserAction(
+			t,
+			e,
+			UserAction.CREATE_BUCKET,
+			() => MeteorCall.buckets.createNewBucket(
+				t('New Bucket'),
+				this.props.playlist.studioId,
+				null),
+			(err, res) => {
 				if (ClientAPI.isClientResponseSuccess(res)) {
 					this.setState({
 						editedNameId: (res.result as Bucket)._id
 					})
 				}
-			}
-		)
+			})
+		
+		
+		// , (err, res) => {
+		// 	if (ClientAPI.isClientResponseSuccess(res)) {
+		// 		this.setState({
+		// 			editedNameId: (res.result as Bucket)._id
+		// 		})
+		// 	} else if (ClientAPI.isClientResponseError(err)) {
+		// 		if (err.error === 409) {
+		// 			this.handleAnotherPlaylistActive(this.props.playlist._id, true, err, onSuccess)
+		// 			return false
+		// 		}
+		// 	}
+		// })
 	}
 
 	deleteBucketAdLib = (e: any, bucketAdLib: BucketAdLib) => {
@@ -250,7 +280,12 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 			message: t('Are you sure you want to delete this AdLib?'),
 			title: bucketAdLib.name,
 			onAccept: () => {
-				doUserAction(t, e, UserActionAPI.methods.removeBucketAdLib, [ bucketAdLib._id ])
+				doUserAction(
+					t,
+					e,
+					UserAction.REMOVE_BUCKET_ADLIB,
+					() => MeteorCall.buckets.removeBucketAdLib(bucketAdLib._id),
+					)
 			}
 		}))
 	}
@@ -264,7 +299,12 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 			message: t('Are you sure you want to delete this Bucket?'),
 			title: bucket.name,
 			onAccept: () => {
-				doUserAction(t, e, UserActionAPI.methods.removeBucket, [ bucket._id ])
+				doUserAction(
+					t,
+					e,
+					UserAction.REMOVE_BUCKET,
+					() => MeteorCall.buckets.removeBucket(bucket._id),
+					)
 			}
 		}))
 	}
@@ -284,7 +324,12 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 			message: t('Are you sure you want to empty (remove all adlibs inside) this Bucket?'),
 			title: bucket.name,
 			onAccept: () => {
-				doUserAction(t, e, UserActionAPI.methods.emptyBucket, [ bucket._id ])
+				doUserAction(
+					t,
+					e,
+					UserAction.EMPTY_BUCKET,
+					() => MeteorCall.buckets.emptyBucket(bucket._id),
+					)
 			}
 		}))
 	}
@@ -298,12 +343,17 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 
 		if (e.persist) e.persist()
 
-		doUserAction(t, e, UserActionAPI.methods.modifyBucket, [bucket._id, partial<Bucket>({
-			name: newName
-		})])
+		doUserAction(
+			t,
+			e,
+			UserAction.MODIFY_BUCKET,
+			() => MeteorCall.buckets.modifyBucket(bucket._id, partial<Bucket>({
+					name: newName
+				})),
+			)
 	}
 
-	private moveBucket = (id: string, atIndex: number) => {
+	private moveBucket = (id: BucketId, atIndex: number) => {
 		const { bucket, index } = this.findBucket(id)
 		const panelWidth = this.state.panelWidths[index]
 
@@ -321,7 +371,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 		}
 	}
 
-	private findBucket = (id: string) => {
+	private findBucket = (id: BucketId) => {
 		const { localBuckets: buckets } = this.state
 		const bucket = buckets.find(b => b._id === id)
 
@@ -331,7 +381,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 		}
 	}
 
-	private onBucketReorder = (draggedId: string, newIndex: number, oldIndex: number) => {
+	private onBucketReorder = (draggedId: BucketId, newIndex: number, oldIndex: number) => {
 		const { t } = this.props
 		if (this.props.buckets) {
 			const draggedB = this.props.buckets.find(b => b._id === draggedId)
@@ -353,9 +403,14 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 					newRank = (this.props.buckets[newIndex]._rank + this.props.buckets[newIndex + 1]._rank) / 2
 				}
 
-				doUserAction(t, { type: 'drop' }, UserActionAPI.methods.modifyBucket, [draggedB._id, partial<Bucket>({
-					_rank: newRank
-				})])
+				doUserAction(
+					t,
+					{ type: 'drop' },
+					UserAction.MODIFY_BUCKET,
+					() => MeteorCall.buckets.modifyBucket(draggedB._id, partial<Bucket>({
+							_rank: newRank
+						})),
+					)
 			}
 		}
 	}
@@ -368,7 +423,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 	}
 
 	render () {
-		const { rundown, showStyleBase, shouldQueue, t } = this.props
+		const { playlist, showStyleBase, shouldQueue, t } = this.props
 		const { localBuckets: buckets } = this.state
 		return <>
 			<Escape to='document'>
@@ -412,7 +467,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 			</Escape>
 			{ buckets && buckets.map((bucket, index) =>
 				<div className='rundown-view__shelf__contents__pane'
-					key={bucket._id}
+					key={unprotectString(bucket._id)}
 					style={{
 						minWidth: (this.state.panelWidths[index] * 100) + 'vw'
 					}}
@@ -434,7 +489,7 @@ class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, ISta
 						holdToDisplay={contextMenuHoldToDisplayTime()}>
 						{this.state.panelWidths[index] > 0 &&
 							<BucketPanel
-								rundown={rundown}
+								playlist={playlist}
 								showStyleBase={showStyleBase}
 								shouldQueue={shouldQueue}
 								bucket={bucket}

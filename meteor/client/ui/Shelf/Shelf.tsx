@@ -11,8 +11,9 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -34,6 +35,7 @@ import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
 import { ContextMenuTrigger } from 'react-contextmenu'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -43,10 +45,8 @@ export enum ShelfTabs {
 }
 export interface IShelfProps {
 	isExpanded: boolean
-	segments: Array<SegmentUi>
-	liveSegment?: SegmentUi
-	rundown: Rundown
 	buckets?: Array<Bucket>
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
@@ -70,7 +70,7 @@ interface IState {
 	moving: boolean
 	selectedTab: string | undefined
 	shouldQueue: boolean
-	selectedPiece: IBlueprintPieceDB | IBlueprintAdLibPieceDB | undefined
+	selectedPiece: PieceGeneric | undefined
 }
 
 const CLOSE_MARGIN = 45
@@ -108,7 +108,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined),
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.playlist._id}`, 'shelfTab', undefined) as (string | undefined),
 			shouldQueue: false,
 			selectedPiece: undefined
 		}
@@ -365,10 +365,10 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			selectedTab: tab
 		})
 
-		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, 'shelfTab', tab)
+		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
-	selectPiece = (piece: IBlueprintAdLibPieceDB | IBlueprintPieceDB) => {
+	selectPiece = (piece: PieceGeneric) => {
 		this.setState({
 			selectedPiece: piece
 		})
@@ -401,7 +401,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 						{
 							(this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) ?
 								<ShelfRundownLayout
-									rundown={this.props.rundown}
+									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
 									studioMode={this.props.studioMode}
 									hotkeys={this.props.hotkeys}
@@ -413,7 +413,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									/> :
 							(this.props.rundownLayout && RundownLayoutsAPI.isDashboardLayout(this.props.rundownLayout)) ?
 								<ShelfDashboardLayout
-									rundown={this.props.rundown}
+									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
 									studioMode={this.props.studioMode}
 									rundownLayout={this.props.rundownLayout}
@@ -422,7 +422,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 									/> :
 								// ultimate fallback if not found
 								<ShelfRundownLayout
-									rundown={this.props.rundown}
+									playlist={this.props.playlist}
 									showStyleBase={this.props.showStyleBase}
 									studioMode={this.props.studioMode}
 									hotkeys={this.props.hotkeys}
@@ -438,7 +438,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					<ErrorBoundary>
 						<RundownViewBuckets
 							buckets={this.props.buckets}
-							rundown={this.props.rundown}
+							playlist={this.props.playlist}
 							shouldQueue={this.state.shouldQueue}
 							showStyleBase={this.props.showStyleBase}
 							/>

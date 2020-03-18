@@ -2,8 +2,9 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment } from '../../../lib/collections/Segments'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -19,26 +20,29 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { RundownViewKbdShortcuts } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer, IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { ShelfInspector } from './Inspector/ShelfInspector'
+import { PartInstances } from '../../../lib/collections/PartInstances'
+import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
 	onToggleSticky: (item: IAdLibListItem, e: any) => void
 	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: any) => void
-	selectedPiece: IBlueprintPieceDB | IBlueprintAdLibPieceDB | undefined
+	selectedPiece: PieceGeneric | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 interface IListViewStateHeader {
@@ -71,11 +75,11 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 		} = {}
 
 		if (props.showStyleBase && props.showStyleBase.outputLayers && props.showStyleBase.sourceLayers) {
-			props.showStyleBase.outputLayers.forEach((item) => {
-				tOLayers[item._id] = item
+			props.showStyleBase.outputLayers.forEach((outputLayer) => {
+				tOLayers[outputLayer._id] = outputLayer
 			})
-			props.showStyleBase.sourceLayers.forEach((item) => {
-				tSLayers[item._id] = item
+			props.showStyleBase.sourceLayers.forEach((sourceLayer) => {
+				tSLayers[sourceLayer._id] = sourceLayer
 			})
 
 			return _.extend(state, {
@@ -100,7 +104,10 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 			{
 				itemList.concat(this.props.rundownAdLibs).concat(this.props.showStyleBase.sourceLayers.filter(i => i.isSticky)
 					.map(layer => literal<IAdLibListItem & { layer: ISourceLayer, isSticky: boolean }>({
-						_id: layer._id,
+						_id: protectString(layer._id),
+						externalId: '', // not used for anything
+						sourceLayerId: layer._id, // not used for anything
+						outputLayerId: '', // not used for anything
 						hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 						name: t('Last {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
 						status: RundownAPI.PieceStatusCode.UNKNOWN,
@@ -114,13 +121,13 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 							) {
 								return (
 									<AdLibListItem
-										key={item._id}
-										item={item}
+										key={unprotectString(item._id)}
+										adLibListItem={item}
 										selected={this.props.selectedPiece && this.props.selectedPiece._id === item._id || false}
 										layer={item.layer}
 										onToggleAdLib={this.props.onToggleSticky}
 										onSelectAdLib={this.props.onSelectAdLib}
-										rundown={this.props.rundown}
+										playlist={this.props.playlist}
 									/>
 								)
 							} else if (item.sourceLayerId && item.outputLayerId &&
@@ -128,14 +135,14 @@ const AdLibListView = translate()(class extends React.Component<Translated<IList
 							) {
 								return (
 									<AdLibListItem
-										key={item._id}
-										item={item}
+										key={unprotectString(item._id)}
+										adLibListItem={item}
 										selected={this.props.selectedPiece && this.props.selectedPiece._id === item._id || false}
 										layer={this.state.sourceLayers[item.sourceLayerId]}
 										outputLayer={this.state.outputLayers[item.outputLayerId]}
 										onToggleAdLib={this.props.onToggleAdLib}
 										onSelectAdLib={this.props.onSelectAdLib}
-										rundown={this.props.rundown}
+										playlist={this.props.playlist}
 									/>
 								)
 							} else {
@@ -232,68 +239,53 @@ const AdLibPanelToolbar = translate()(class AdLibPanelToolbar extends React.Comp
 	}
 })
 
-export interface AdLibPieceUi extends AdLibPiece {
-	hotkey?: string
-	isGlobal?: boolean
-	isHidden?: boolean
-}
-
-export interface SegmentUi extends Segment {
-	/** Pieces belonging to this part */
-	parts: Array<Part>
-	items?: Array<AdLibPieceUi>
-	isLive: boolean
-	isNext: boolean
-}
-
-interface ISourceLayerLookup {
-	[key: string]: ISourceLayer
-}
-
 interface IProps {
-	rundown: Rundown
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	visible: boolean
 	studioMode: boolean
-	selectedPiece: IBlueprintPieceDB | IBlueprintAdLibPieceDB | undefined
+	selectedPiece: PieceGeneric | undefined
 
-	onSelectPiece?: (piece: IBlueprintAdLibPieceDB) => void
+	onSelectPiece?: (piece: PieceGeneric) => void
 }
 
 interface IState {
-	selectedSegment: SegmentUi | undefined
+	selectedSegment: AdlibSegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
 }
 interface ITrackedProps {
-	sourceLayerLookup: ISourceLayerLookup
+	sourceLayerLookup: { [id: string]: ISourceLayer }
 	rundownAdLibs: Array<AdLibPieceUi>
+	currentRundown: Rundown | undefined
 }
 
 const HOTKEY_GROUP = 'GlobalAdLibPanel'
 
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
-	meteorSubscribe(PubSub.rundownBaselineAdLibPieces, {
-		rundownId: props.rundown._id
-	})
-	meteorSubscribe(PubSub.showStyleBases, {
-		_id: props.rundown.showStyleBaseId
-	})
+	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
-	const sourceLayerLookup: ISourceLayerLookup = (
-		props.showStyleBase && props.showStyleBase.sourceLayers ?
-		_.object(_.map(props.showStyleBase.sourceLayers, (item) => [item._id, item])) :
-		{}
-	)
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse = {}
 
 	let rundownAdLibs: Array<AdLibPieceUi> = []
+	let currentRundown: Rundown | undefined = undefined
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
-	if (props.rundown) {
-		let rundownAdLibItems = RundownBaselineAdLibPieces.find({ rundownId: props.rundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
+	if (props.playlist) {
+		const rundowns = props.playlist.getRundowns()
+		const rMap = normalizeArray(rundowns, '_id')
+		currentRundown = rundowns[0]
+		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+		if (partInstanceId) {
+			const partInstance = PartInstances.findOne(partInstanceId)
+			if (partInstance) {
+				currentRundown = rMap[unprotectString(partInstance.rundownId)]
+			}
+		}
+
+		let rundownAdLibItems = RundownBaselineAdLibPieces.find({ rundownId: currentRundown._id }, { sort: { sourceLayerId: 1, _rank: 1 } }).fetch()
 		rundownAdLibItems.forEach((item) => {
 			// automatically assign hotkeys based on adLibItem index
 			const uiAdLib: AdLibPieceUi = _.clone(item)
@@ -324,7 +316,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	return {
 		sourceLayerLookup,
-		rundownAdLibs
+		rundownAdLibs,
+		currentRundown
 	}
 })(class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
@@ -341,6 +334,17 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 	componentDidMount () {
 		this.refreshKeyboardHotkeys()
+
+		this.autorun(() => {
+			if (this.props.currentRundown) {
+				this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+					rundownId: this.props.currentRundown._id
+				})
+				this.subscribe(PubSub.showStyleBases, {
+					_id: this.props.currentRundown.showStyleBaseId
+				})
+			}
+		})
 	}
 
 	componentDidUpdate (prevProps: IProps & ITrackedProps) {
@@ -425,13 +429,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onToggleStickyItem = (item: IAdLibListItem, e: any) => {
-		this.onToggleSticky(item._id, e)
+		this.onToggleSticky(unprotectString(item._id), e)
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.rundown && this.props.rundown.currentPartId && this.props.rundown.active) {
+		if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.rundown._id, sourceLayerId])
+			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
 		}
 	}
 
@@ -440,35 +444,37 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		this.props.onSelectPiece && this.props.onSelectPiece(piece)
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
-		if (piece.invalid) {
+		if (adlibPiece.invalid) {
 			NotificationCenter.push(new Notification(t('Invalid AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Invalid'), 'toggleAdLib'))
 			return
 		}
-		if (piece.floated) {
+		if (adlibPiece.floated) {
 			NotificationCenter.push(new Notification(t('Floated AdLib'), NoticeLevel.WARNING, t('Cannot play this AdLib becasue it is marked as Floated'), 'toggleAdLib'))
 			return
 		}
-		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId] &&
-			!this.props.sourceLayerLookup[piece.sourceLayerId].isQueueable) {
-			console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
+		if (queue && this.props.sourceLayerLookup && this.props.sourceLayerLookup[adlibPiece.sourceLayerId] &&
+			!this.props.sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable) {
+			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
 		}
 
-		if (this.props.rundown && this.props.rundown.currentPartId && piece.isGlobal) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false])
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) => MeteorCall.userAction.baselineAdLibPieceStart(e, this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false))
 		}
 	}
 
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 
-		if (this.props.rundown && this.props.rundown.currentPartId) {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.sourceLayerOnPartStop, [this.props.rundown._id, this.props.rundown.currentPartId, sourceLayer._id])
+			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) => MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, sourceLayer._id))
 		}
 	}
 
@@ -489,14 +495,14 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					showStyleBase={this.props.showStyleBase}
 					rundownAdLibs={this.props.rundownAdLibs}
 					searchFilter={this.state.filter}
-					rundown={this.props.rundown} />
+					playlist={this.props.playlist} />
 			</React.Fragment>
 		)
 	}
 
 	render () {
 		if (this.props.visible) {
-			if (!this.props.rundown) {
+			if (!this.props.currentRundown) {
 				return <Spinner />
 			} else {
 				return (

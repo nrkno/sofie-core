@@ -2,20 +2,20 @@ import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
-import { setMeteorMethods, Methods } from '../methods'
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
-import { literal, Omit } from '../../lib/lib'
+import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
+import { literal, Omit, protectString } from '../../lib/lib'
 import { ClientAPI } from '../../lib/api/client'
 import { BucketSecurity } from '../security/buckets'
 import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants';
-import { Studios } from '../../lib/collections/Studios';
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Studios, StudioId } from '../../lib/collections/Studios'
+import { PieceId } from '../../lib/collections/Pieces'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 
 export namespace BucketsAPI {
-	export function removeBucketAdLib(id: string) {
+	export function removeBucketAdLib(id: PieceId) {
 		BucketAdLibs.remove({
 			_id: id
 		})
@@ -24,13 +24,13 @@ export namespace BucketsAPI {
 		})
 	}
 	
-	export function modifyBucket(id: string, bucket: Partial<Omit<Bucket, '_id'>>) {
+	export function modifyBucket(id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
 		Buckets.update(id, {
 			$set: _.omit(bucket, [ '_id' ])
 		})
 	}
 	
-	export function emptyBucket(id: string) {
+	export function emptyBucket(id: BucketId) {
 		BucketAdLibs.remove({
 			bucketId: id
 		})
@@ -39,7 +39,7 @@ export namespace BucketsAPI {
 		})
 	}
 	
-	export function createNewBucket(name: string, studioId: string, userId: string | null) {
+	export function createNewBucket(name: string, studioId: StudioId, userId: string | null) {
 		const heaviestBucket = Buckets.find({
 			studioId
 		}, {
@@ -57,7 +57,7 @@ export namespace BucketsAPI {
 		}
 
 		const newBucket = literal<Bucket>({
-			_id: Random.id(),
+			_id: protectString(Random.id()),
 			_rank: rank,
 			name: name,
 			studioId,
@@ -72,7 +72,7 @@ export namespace BucketsAPI {
 		return newBucket
 	}
 
-	export function modifyBucketAdLib(id: string, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
+	export function modifyBucketAdLib(id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
 		if (adlib.bucketId && !Buckets.findOne(adlib.bucketId)) {
 			throw new Meteor.Error(`Could not find bucket: "${adlib.bucketId}"`)
 		}
@@ -90,7 +90,7 @@ export namespace BucketsAPI {
 		})
 	}
 	
-	export function removeBucket(id: string) {
+	export function removeBucket(id: BucketId) {
 		Buckets.remove(id)
 		BucketAdLibs.remove({
 			bucketId: id

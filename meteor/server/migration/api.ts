@@ -1,39 +1,53 @@
 import { check, Match } from 'meteor/check'
-import { setMeteorMethods, Methods } from '../methods'
-import { MigrationMethods, MigrationChunk } from '../../lib/api/migration'
-import { getMigrationStatus, runMigration, forceMigration, resetDatabaseVersions } from './databaseMigration'
+import { registerClassToMeteorMethods } from '../methods'
+import { MigrationChunk, NewMigrationAPI, RunMigrationResult, MigrationAPIMethods } from '../../lib/api/migration'
+import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
+import { makePromise } from '../../lib/lib'
 
-const methods: Methods = {}
-methods[MigrationMethods.getMigrationStatus] = () => {
-	return getMigrationStatus()
+function getMigrationStatus () {
+	return Migrations.getMigrationStatus()
 }
-methods[MigrationMethods.runMigration] = (
+function runMigration (
 	chunks: Array<MigrationChunk>,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>,
 	isFirstOfPartialMigrations?: boolean
-) => {
+): RunMigrationResult {
 
 	check(chunks, Array)
 	check(hash, String)
 	check(inputResults, Array)
 	check(isFirstOfPartialMigrations, Match.Optional(Boolean))
 
-	return runMigration(
+	return Migrations.runMigration(
 		chunks,
 		hash,
 		inputResults,
 		isFirstOfPartialMigrations
 	)
 }
-methods[MigrationMethods.forceMigration] = (chunks: Array<MigrationChunk>) => {
+function forceMigration (chunks: Array<MigrationChunk>) {
 	check(chunks, Array)
-
-	return forceMigration(chunks)
+	return Migrations.forceMigration(chunks)
 }
-methods[MigrationMethods.resetDatabaseVersions] = () => {
-	return resetDatabaseVersions()
+function resetDatabaseVersions () {
+	return Migrations.resetDatabaseVersions()
 }
 
-setMeteorMethods(methods)
+class ServerMigrationAPI implements NewMigrationAPI {
+
+	getMigrationStatus () {
+		return makePromise(() => getMigrationStatus())
+	}
+	runMigration (chunks: Array<MigrationChunk>, hash: string, inputResults: Array<MigrationStepInputResult>, isFirstOfPartialMigrations?: boolean) {
+		return makePromise(() => runMigration(chunks, hash, inputResults, isFirstOfPartialMigrations))
+	}
+	forceMigration (chunks: Array<MigrationChunk>) {
+		return makePromise(() => forceMigration(chunks))
+	}
+	resetDatabaseVersions () {
+		return makePromise(() => resetDatabaseVersions())
+	}
+}
+registerClassToMeteorMethods(MigrationAPIMethods, ServerMigrationAPI, false)

@@ -10,8 +10,8 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
-import { literal } from '../../../lib/lib'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { literal, unprotectString, protectString } from '../../../lib/lib'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
@@ -22,12 +22,15 @@ import {
 } from '../../lib/data/mos/plugin-support'
 import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
 import { IMOSItem } from 'mos-connection'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { UserActionAPI } from '../../../lib/api/userActions'
-import { Buckets } from '../../../lib/collections/Buckets'
+import { Buckets, Bucket } from '../../../lib/collections/Buckets'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { MeteorCall } from '../../../lib/api/methods'
+import { PartInstances } from '../../../lib/collections/PartInstances'
+import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 
 const PackageInfo = require('../../../package.json')
 
@@ -35,7 +38,7 @@ interface IProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutExternalFrame
 	visible: boolean
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 enum SofieExternalMessageType {
@@ -181,26 +184,66 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	}
 
 	receiveMOSItem (e: any, mosItem: IMOSItem) {
-		const { t, rundown } = this.props
+		const { t, playlist } = this.props
 
 		console.log('Object received, passing onto blueprints', mosItem)
+
+		let targetBucket: Bucket | undefined
 
 		const bucketId = this.findBucketId(e.target)
 
 		if (bucketId) {
-			const targetBucket = Buckets.findOne()
-	
-			doUserAction(t, e, UserActionAPI.methods.bucketAdlibImport, [
-				rundown.studioId,
-				rundown.showStyleVariantId,
-				targetBucket ? targetBucket._id : '',
+			// get the bucket this was dropped onto
+			targetBucket = Buckets.findOne(protectString(bucketId))
+		} else {
+			// select the lightest (left-most) bucket
+			targetBucket = Buckets.find({
+				studioId: playlist.studioId
+			}, {
+				sort: {
+					_rank: 1
+				}
+			}).fetch()[0]
+		}
+
+		let selectedShowStyleVariant: ShowStyleVariantId | undefined
+
+		const currentOrNext = playlist.currentPartInstanceId || playlist.nextPartInstanceId
+
+		if (currentOrNext) {
+			const selectedPart = PartInstances.findOne(currentOrNext)
+
+			if (selectedPart) {
+				const selectedRundown = Rundowns.findOne(selectedPart.rundownId)
+
+				if (selectedRundown) {
+					selectedShowStyleVariant = selectedRundown.showStyleVariantId
+				}
+			}
+		} else {
+			const firstRundownId = playlist.getRundownIDs()[0]
+			const firstRundown = Rundowns.findOne(firstRundownId)
+
+			if (firstRundown) {
+				selectedShowStyleVariant = firstRundown.showStyleVariantId
+			}
+		}
+
+		if (selectedShowStyleVariant !== undefined && targetBucket !== undefined) {
+			doUserAction(
+				t,
+				e,
+				UserAction.INGEST_BUCKET_ADLIB,
+				() => MeteorCall.buckets.bucketAdlibImport(playlist.studioId,
+				selectedShowStyleVariant!,
+				targetBucket!._id,
 				literal<IngestAdlib>({
 					externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
 					name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
 					payloadType: 'MOS',
 					payload: fixMosData(mosItem)
-				})
-			])
+				}))
+			)
 		}
 	}
 
@@ -237,7 +280,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 					payload: {
 						host: 'Sofie Automation System',
 						version: PackageInfo.version,
-						rundownId: this.props.rundown._id
+						rundownId: unprotectString(this.props.playlist._id)
 					}
 				}), true).then((e) => {
 					if (e.type === SofieExternalMessageType.ACK) {
@@ -287,14 +330,14 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 			id: Random.id(),
 			type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 			payload: {
-				partId: this.props.rundown.currentPartId
+				partId: unprotectString(this.props.playlist.currentPartInstanceId)
 			}
 		}))
 		this.sendSofieMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 			id: Random.id(),
 			type: SofieExternalMessageType.NEXT_PART_CHANGED,
 			payload: {
-				partId: this.props.rundown.nextPartId
+				partId: unprotectString(this.props.playlist.nextPartInstanceId)
 			}
 		}))
 	}
@@ -412,24 +455,24 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 	}
 
 	componentDidUpdate (prevProps: IProps) {
-		if (prevProps.rundown.currentPartId !== this.props.rundown.currentPartId) {
+		if (prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
 			this.sendSofieMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 				id: Random.id(),
 				type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 				payload: {
-					partId: this.props.rundown.currentPartId,
-					prevPartId: prevProps.rundown.currentPartId
+					partId: unprotectString(this.props.playlist.currentPartInstanceId),
+					prevPartId: unprotectString(prevProps.playlist.currentPartInstanceId)
 				}
 			}))
 		}
 
-		if (prevProps.rundown.nextPartId !== this.props.rundown.nextPartId) {
+		if (prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId) {
 			this.sendSofieMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 				id: Random.id(),
 				type: SofieExternalMessageType.NEXT_PART_CHANGED,
 				payload: {
-					partId: this.props.rundown.nextPartId,
-					prevPartId: prevProps.rundown.nextPartId
+					partId: unprotectString(this.props.playlist.nextPartInstanceId),
+					prevPartId: unprotectString(prevProps.playlist.nextPartInstanceId)
 				}
 			}))
 		}

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import Moment from 'react-moment'
-import { Time } from '../../../lib/lib'
+import { Time, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
@@ -12,7 +12,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { translate } from 'react-i18next'
 
 interface IUserActionsListProps {
-	items: UserActionsLogItem[]
+	logItems: UserActionsLogItem[]
 	onItemClick?: (item: UserActionsLogItem) => void
 	renderButtons?: (item: UserActionsLogItem) => React.Component
 }
@@ -60,11 +60,11 @@ export const UserActionsList = translate()(class UserActionsList extends React.C
 			<table className='table user-action-log'>
 				{this.renderMessageHead()}
 				<tbody>
-					{_.map(this.props.items, (msg) => {
+					{_.map(this.props.logItems, (msg) => {
 						return (
-							<tr className={this.props.onItemClick ? 'clickable' : undefined} key={msg._id} onClick={(e) => this.props.onItemClick && this.props.onItemClick(msg)}>
+							<tr className={this.props.onItemClick ? 'clickable' : undefined} key={unprotectString(msg._id)} onClick={(e) => this.props.onItemClick && this.props.onItemClick(msg)}>
 								<td className='user-action-log__timestamp'><Moment format='YYYY/MM/DD HH:mm:ss.SSS'>{msg.timestamp}</Moment></td>
-								<td className='user-action-log__executionTime'>{msg.executionTime ? msg.executionTime + 'ms' : ''}</td>
+								<td className='user-action-log__executionTime'>{msg.executionTime ? msg.executionTime + 'ms' : null}</td>
 								<td className='user-action-log__userId'>{msg.userId}</td>
 								<td className='user-action-log__clientAddress'>{msg.clientAddress}</td>
 								<td className='user-action-log__context'>{msg.context}</td>
@@ -74,11 +74,11 @@ export const UserActionsList = translate()(class UserActionsList extends React.C
 										'Success' :
 									msg.success === false ?
 										'Error: ' + msg.errorMessage :
-									''
+									null
 								}</td>
 								<td className='user-action-log__args'>{msg.args}</td>
 								{
-									this.props.renderButtons ? <td className='user-action-log__buttons'>{this.props.renderButtons(msg)}</td> : ''
+									this.props.renderButtons ? <td className='user-action-log__buttons'>{this.props.renderButtons(msg)}</td> : null
 								}
 							</tr>
 						)
@@ -164,7 +164,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 				<div className='paging'>
 					<DatePickerFromTo from={this.state.dateFrom} to={this.state.dateTo} onChange={this.handleChangeDate} />
 				</div>
-				<UserActionsList items={_.filter(this.props.log, (ua) => {
+				<UserActionsList logItems={_.filter(this.props.log, (ua) => {
 					return (
 						ua.timestamp >= this.state.dateFrom &&
 						ua.timestamp < this.state.dateTo

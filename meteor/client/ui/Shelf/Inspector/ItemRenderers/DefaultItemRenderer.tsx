@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration';
+import { PieceGeneric } from '../../../../../lib/collections/Pieces'
 
-export default function DefaultItemRenderer (props: { piece: IBlueprintPieceGeneric }): JSX.Element {
+export default function DefaultItemRenderer (props: { piece: PieceGeneric }): JSX.Element {
 	const { externalId, name, partId, sourceLayerId, outputLayerId, metaData } = props.piece
 
 	return (

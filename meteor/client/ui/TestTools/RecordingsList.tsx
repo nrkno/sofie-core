@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
@@ -12,15 +12,16 @@ import * as objectPath from 'object-path'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/fontawesome-free-solid'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { StudioSelect } from './StudioSelect'
 import { PubSub } from '../../../lib/api/pubsub'
+import { unprotectString } from '../../../lib/lib'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IRecordingListProps {
 	match?: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }
@@ -77,14 +78,16 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	stopRecording (e) {
 		if (this.props.match && this.props.match.params) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.recordStop, [this.props.match.params.studioId])
+			const studioId = this.props.match.params.studioId
+			doUserAction(t, e, UserAction.STOP_RECORDING, (e) => MeteorCall.userAction.recordStop(e, studioId))
 
 		}
 	}
 	startRecording (e) {
 		if (this.props.match && this.props.match.params) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.recordStart, [this.props.match.params.studioId, this.state.filename], () => {
+			const studioId = this.props.match.params.studioId
+			doUserAction(t, e, UserAction.START_RECORDING, (e) => MeteorCall.userAction.recordStart(e, studioId, this.state.filename), () => {
 				this.setState({
 					filename: ''
 				})
@@ -107,7 +110,8 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	handleConfirmDeleteAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
 			const { t } = this.props
-			doUserAction(t, e, UserActionAPI.methods.recordDelete, [this.state.deleteConfirmItem._id])
+			const recordingId = this.state.deleteConfirmItem._id
+			doUserAction(t, e, UserAction.DELETE_RECORDING, (e) => MeteorCall.userAction.recordDelete(e, recordingId))
 		}
 		this.setState({
 			showDeleteConfirm: false
@@ -156,7 +160,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 	}
 	renderRecordingList () {
 		return this.props.files.map((file) => (
-			<RecordedFilesListItem key={file._id} file={file} onDeleteRecording={i => this.onDelete(i)} />
+			<RecordedFilesListItem key={unprotectString(file._id)} file={file} onDeleteRecording={i => this.onDelete(i)} />
 		))
 	}
 

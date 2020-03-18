@@ -3,7 +3,7 @@ import { Random } from 'meteor/random'
 import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
 
-import { waitForPromise } from '../../lib/lib'
+import { waitForPromise, protectString } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -120,7 +120,7 @@ describe('Basic test of test environment', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 
 		MongoMock.mockSetData<DBStudio>(Studios, [{
-			_id: 'abc',
+			_id: protectString('abc'),
 			name: 'abc',
 			mappings: {},
 			supportedShowStyleBase: [],
@@ -128,7 +128,7 @@ describe('Basic test of test environment', () => {
 			settings: { mediaPreviewsUrl: '',sofieUrl: '' },
 			_rundownVersionHash: 'abc'
 		},{
-			_id: 'def',
+			_id: protectString('def'),
 			name: 'def',
 			mappings: {},
 			supportedShowStyleBase: [],
@@ -140,11 +140,11 @@ describe('Basic test of test environment', () => {
 		expect(Studios.find().fetch()).toHaveLength(2)
 
 		expect(Studios.findOne({
-			_id: 'def'
+			_id: protectString('def')
 		})).toMatchObject({
 			_id: 'def'
 		})
-		Studios.update('abc', {$set: {
+		Studios.update(protectString('abc'), {$set: {
 			_rundownVersionHash: 'myHash'
 		}})
 
@@ -154,15 +154,15 @@ describe('Basic test of test environment', () => {
 			_rundownVersionHash: 'myHash'
 		})
 
-		Studios.remove('def')
+		Studios.remove(protectString('def'))
 		const studios = Studios.find().fetch()
 		expect(studios).toHaveLength(1)
 
-		const observer = Studios.find({ _id: 'abc' }).observeChanges({})
+		const observer = Studios.find({ _id: protectString('abc') }).observeChanges({})
 		expect(observer).toBeTruthy()
 
 		Studios.insert({
-			_id: 'xyz',
+			_id: protectString('xyz'),
 			name: 'xyz',
 			mappings: {},
 			supportedShowStyleBase: [],

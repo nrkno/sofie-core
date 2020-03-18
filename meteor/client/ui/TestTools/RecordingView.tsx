@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RecordedFile, RecordedFiles } from '../../../lib/collections/RecordedFiles'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import * as objectPath from 'object-path'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
@@ -13,7 +13,7 @@ import { UserActionsList } from '../Status/UserActivity'
 interface IRecordingViewProps {
 	match?: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 			recordingId: string
 		}
 	}
@@ -106,7 +106,7 @@ const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewSt
 				}
 			</div>
 			<div className='mod mvl'>
-				<UserActionsList items={this.props.log} onItemClick={(item) => this.seekToTime(item.timestamp - file.startedAt)} />
+				<UserActionsList logItems={this.props.log} onItemClick={(item) => this.seekToTime(item.timestamp - file.startedAt)} />
 			</div>
 		</React.Fragment>
 	}

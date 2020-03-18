@@ -1,12 +1,13 @@
 import * as React from 'react'
-import { IBlueprintPieceGeneric, NoraContent } from 'tv-automation-sofie-blueprints-integration';
-import { IModalAttributes, Modal } from '../../../../lib/ui/containers/modals/Modal';
-import { NoraItemEditor } from './NoraItemEditor';
+import { PieceGeneric } from '../../../../../lib/collections/Pieces'
+import { NoraContent } from 'tv-automation-sofie-blueprints-integration'
+import { IModalAttributes, Modal } from '../../../../lib/ui/containers/modals/Modal'
+import { NoraItemEditor } from './NoraItemEditor'
 
 export { NoraItemRenderer, isNoraItem }
 
 interface INoraSuperRendererProps {
-	piece: IBlueprintPieceGeneric
+	piece: PieceGeneric
 }
 
 interface INoraSuperRendererState {
@@ -49,7 +50,7 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 	}
 }
 
-function isNoraItem (item: IBlueprintPieceGeneric): boolean {
+function isNoraItem (item: PieceGeneric): boolean {
 	const content = item.content as NoraContent
 
 	if (!content || !content.payload || !content.payload.template) {

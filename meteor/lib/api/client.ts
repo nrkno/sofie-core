@@ -1,11 +1,19 @@
 import * as _ from 'underscore'
+import { Time } from '../lib'
+import { PeripheralDeviceId } from '../collections/PeripheralDevices'
+
+
+export interface NewClientAPI {
+	clientErrorReport (timestamp: Time, errorObject: any, location: string): Promise<void>
+	callPeripheralDeviceFunction (context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]): Promise<any>
+}
+
+export enum ClientAPIMethods {
+	'clientErrorReport' = 'client.clientErrorReport',
+	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction'
+}
 
 export namespace ClientAPI {
-	export enum methods {
-		'execMethod' = 'client.execMethod',
-		'clientErrorReport' = 'client.clientErrorReport',
-		'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction'
-	}
 
 	/** Response from a method that's called from the client */
 	export interface ClientResponseError {
@@ -30,13 +38,13 @@ export namespace ClientAPI {
 			details
 		}
 	}
-	export interface ClientResponseSuccess {
+	export interface ClientResponseSuccess<Result> {
 		/** On success, return success code (by default, use 200) */
 		success: 200
 		/** Optionally, provide method result */
-		result?: any
+		result?: Result
 	}
-	export function responseSuccess (result?: any): ClientResponseSuccess {
+	export function responseSuccess<Result> (result: Result): ClientResponseSuccess<Result> {
 		if (isClientResponseSuccess(result)) result = result.result
 		else if (isClientResponseError(result)) throw result.error
 
@@ -45,7 +53,7 @@ export namespace ClientAPI {
 			result
 		}
 	}
-	export type ClientResponse = ClientResponseError | ClientResponseSuccess
+	export type ClientResponse<Result> = ClientResponseError | ClientResponseSuccess<Result>
 	export function isClientResponseError (res: any): res is ClientResponseError {
 		return (
 			_.isObject(res) &&
@@ -53,7 +61,7 @@ export namespace ClientAPI {
 			res.error !== undefined
 		)
 	}
-	export function isClientResponseSuccess (res: any): res is ClientResponseSuccess {
+	export function isClientResponseSuccess (res: any): res is ClientResponseSuccess<any> {
 		return (
 			_.isObject(res) &&
 			!_.isArray(res) &&
