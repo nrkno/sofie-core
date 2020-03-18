@@ -316,7 +316,7 @@ describe('User Actions', () => {
 
 	testInFiber('GUI Status', () => {
 		expect(
-			waitForPromise(MeteorCall.userAction.guiFocused())
+			waitForPromise(MeteorCall.userAction.guiFocused('click'))
 		).toMatchObject({ success: 200 })
 		const logs0 = UserActionsLog.find({
 			method: UserActionAPIMethods.guiFocused,
@@ -327,7 +327,7 @@ describe('User Actions', () => {
 		// 	args: JSON.stringify([ [ 'dummyClientData' ] ])
 		// })
 		expect(
-			waitForPromise(MeteorCall.userAction.guiBlurred())
+			waitForPromise(MeteorCall.userAction.guiBlurred('click'))
 		).toMatchObject({ success: 200 })
 		const logs1 = UserActionsLog.find({
 			method: UserActionAPIMethods.guiBlurred
