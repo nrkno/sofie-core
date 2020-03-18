@@ -100,6 +100,7 @@ interface ITrackedProps {
 	hasAlreadyPlayed: boolean,
 	autoNextPart: boolean
 	followingPart: PartUi | undefined
+	lastValidPartIndex: number | undefined
 }
 export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
@@ -120,7 +121,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			hasGuestItems: false,
 			hasAlreadyPlayed: false,
 			autoNextPart: false,
-			followingPart: undefined
+			followingPart: undefined,
+			lastValidPartIndex: undefined
 		}
 	}
 
@@ -130,6 +132,16 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		notes = notes.concat(part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase), part.instance.part.getInvalidReasonNotes())
 	})
 	notes = notes.concat(segment.notes || [])
+
+	let lastValidPartIndex = o.parts.length - 1
+
+	for (let i = lastValidPartIndex; i > 0; i--) {
+		if (o.parts[i].invalid) {
+			lastValidPartIndex = i - 1
+		} else {
+			break
+		}
+	}
 
 	return {
 		segmentui: o.segmentExtended,
@@ -143,7 +155,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		hasRemoteItems: o.hasRemoteItems,
 		hasGuestItems: o.hasGuestItems,
 		autoNextPart: o.autoNextPart,
-		followingPart: o.followingPart
+		followingPart: o.followingPart,
+		lastValidPartIndex
 	}
 }, (data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
 	// This is a potentailly very dangerous hook into the React component lifecycle. Re-use with caution.
@@ -500,6 +513,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onScroll={this.onScroll}
 				followingPart={this.props.followingPart}
 				isLastSegment={this.props.isLastSegment}
+				lastValidPartIndex={this.props.lastValidPartIndex}
 				onHeaderNoteClick={this.props.onHeaderNoteClick} />
 		) || null
 	}
