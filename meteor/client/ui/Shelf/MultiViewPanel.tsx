@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { RundownLayoutBase, RundownLayoutMultiView, DashboardLayoutMultiView } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayoutMultiView, DashboardLayoutMultiView, RundownLayoutMultiViewRole } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition, getUnfinishedPiecesReactive } from './DashboardPanel'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -13,6 +13,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { TranslationFunction } from 'i18next'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IState {
 }
@@ -70,13 +71,29 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		return false
 	}
 
-	onToggleAdLib (piece: AdLibPieceUi | undefined, e: any) {
+	onToggleSticky = (sourceLayerId: string, e: any) => {
+		if (this.props.rundown && this.props.rundown.currentPartId && this.props.rundown.active) {
+			const { t } = this.props
+			doUserAction(t, e, UserActionAPI.methods.sourceLayerStickyPieceStart, [this.props.rundown._id, sourceLayerId])
+		}
+	}
+
+	toggleAdLib (e: any, piece?: AdLibPieceUi) {
 		const { t } = this.props
 		if (!piece) {
 			return
 		}
+
+		if (piece.invalid) {
+			NotificationCenter.push(new Notification(
+				t('Invalid AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Invalid'),
+				'toggleAdLib'))
+			return
+		}
+
 		if (!this.isAdLibOnAir(piece)) {
-			// TODO: make this work as expected
 			if (!piece.isGlobal) {
 				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
 					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, true
@@ -86,16 +103,38 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, true
 				])
 			} else if (piece.isSticky) {
-				// this.onToggleSticky(piece.sourceLayerId, e)
+				this.onToggleSticky(piece.sourceLayerId, e)
 			}
 		}
 	}
 
+	take = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode) {
+			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+		}
+	}
+
+	onAction = (e: any, piece?: AdLibPieceUi) => {
+		switch (this.props.panel.role) {
+			case RundownLayoutMultiViewRole.QUEUE:
+				this.toggleAdLib(e, piece)
+				break
+			case RundownLayoutMultiViewRole.TAKE:
+				this.take(e)
+				break
+			case RundownLayoutMultiViewRole.PROGRAM:
+				break
+		}
+	}
+
 	render () {
-		const isLarge = RundownLayoutsAPI.isDashboardLayout(this.props.layout) && (this.props.panel as DashboardLayoutMultiView).width > 11
+		const isTake = this.props.panel.role === RundownLayoutMultiViewRole.TAKE
+		const isProgram = this.props.panel.role === RundownLayoutMultiViewRole.PROGRAM
+		const isLarge = isProgram || isTake
 		const piece = this.props.rundownBaselineAdLibs
 		.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
-		.filter((item) => matchTags(item, this.props.panel.tags))[0]
+		.find((item) => matchTags(item, this.props.panel.tags))
 		return <div className='multiview-panel'
 			style={
 				_.extend(
@@ -117,7 +156,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 					<span className={classNames('multiview-panel__label')}>{this.props.panel.name}</span>
 				}
 				<div className='multiview-panel__button'
-					onClick={(e) => this.onToggleAdLib(piece, e)}
+					onClick={(e) => this.onAction(e, piece)}
 				></div>
 			</div>
 			{isLarge &&

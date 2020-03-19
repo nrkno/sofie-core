@@ -47,11 +47,18 @@ export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	url: string
 }
 
+export enum RundownLayoutMultiViewRole {
+	QUEUE = 'queue',
+	TAKE = 'take',
+	PROGRAM = 'program'
+}
+
 export interface RundownLayoutMultiView extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.MULTIVIEW
 	url: string
 	windowNumber: number
 	tags: string[] | undefined
+	role: RundownLayoutMultiViewRole
 }
 
 /**

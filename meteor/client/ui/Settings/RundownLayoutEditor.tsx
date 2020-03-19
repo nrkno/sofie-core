@@ -7,7 +7,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase, RundownLayoutElementType, RundownLayoutElementBase, RundownLayoutExternalFrame, RundownLayoutMultiView } from '../../../lib/collections/RundownLayouts'
+import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase, RundownLayoutElementType, RundownLayoutElementBase, RundownLayoutExternalFrame, RundownLayoutMultiView, RundownLayoutMultiViewRole } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -660,6 +660,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						obj={item}
 						type='text'
 						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Role')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.role`}
+						obj={item}
+						type='dropdown'
+						collection={RundownLayouts}
+						options={RundownLayoutMultiViewRole}
 						className='input text-input input-l' />
 				</label>
 			</div>
