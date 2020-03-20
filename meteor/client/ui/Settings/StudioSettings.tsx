@@ -367,7 +367,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							obj={this.props.studio}
 							type='dropdown'
 							options={TSR.MappingLawoType}
-							optionsAreNumbers={true}
+							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
