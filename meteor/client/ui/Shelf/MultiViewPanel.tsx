@@ -12,7 +12,6 @@ import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { TranslationFunction } from 'i18next'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { getNextPart } from '../../../server/api/playout/lib'
 import { getCurrentTime } from '../../../lib/lib'
@@ -28,7 +27,6 @@ interface IMultiViewPanelProps {
 	visible: boolean
 	rundown: Rundown
 	adlibRank?: number
-	t: TranslationFunction // why this needs to be here?
 }
 
 interface IMultiViewPanelTrackedProps {
@@ -261,7 +259,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 }
 
 
-export const MultiViewPanel = translateWithTracker<IAdLibPanelProps & IMultiViewPanelProps, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+export const MultiViewPanel = translateWithTracker<Translated<IAdLibPanelProps & IMultiViewPanelProps>, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return Object.assign({}, fetchAndFilter({
 		...props,
 		includeGlobalAdLibs: true,
