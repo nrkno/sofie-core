@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-03-04T08:26:08.620Z\n"
-"PO-Revision-Date: 2020-03-04 09:31+0100\n"
+"POT-Creation-Date: 2020-03-23T12:03:30.423Z\n"
+"PO-Revision-Date: 2020-03-23 13:19+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -139,35 +139,40 @@ msgstr "Bytt til {{mode}}"
 msgid "End of script"
 msgstr "Slutt på manus"
 
-msgid "Delete this Item?"
-msgstr "Slett dette elementet?"
+msgid "Delete this RundownPlaylist?"
+msgstr "Slett denne kjøreplanlisten?"
 
 msgid "Delete"
 msgstr "Slett"
 
-msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
-msgstr "Er du sikker på at du vil slette kjøreplanen \"{{name}}\"?"
+msgid "Are you sure you want to delete the \"{{name}}\" RundownPlaylist?"
+msgstr "Er du sikker på at du vil slette kjøreplanlisten \"{{name}}\"?"
 
 msgid "Please note: This action is irreversible!"
 msgstr "Merk: Denne handlingen kan ikke angres!"
 
-msgid "Re-Sync this rundown?"
+#, fuzzy
+#| msgid "Re-Sync this rundown?"
+msgid "Re-Sync this rundownPlaylist?"
 msgstr "Synkroniser kjøreplanen med ENPS på nytt?"
 
 msgid "Re-Sync"
 msgstr "Synkroniser"
 
-msgid ""
-"Are you sure you want to re-sync the \"{{name}}\" rundown with MOS script?"
-msgstr ""
-"Er du sikker på at du vil synkronisere kjøreplanen \"{{rundownSlug}}\" med "
-"MOS?"
+#, fuzzy
+#| msgid "Are you sure you want to delete recording \"{{name}}\"?"
+msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
+msgstr "Er du sikker på at du vil slette opptaket \"{{name}}\"?"
 
 msgid "This rundown is currently active"
 msgstr "Denne kjøreplanen er allerede aktiv"
 
-msgid "Re-sync with MOS"
-msgstr "Synkroniser med MOS"
+#, fuzzy
+msgid "Multiple ({{count}})"
+msgstr "Flere ({{count}})"
+
+msgid "Re-sync all rundowns in playlist"
+msgstr "Synkroniser alle kjøreplanene i listen mot ENPS på nytt"
 
 msgid "Enable configuration mode by adding ?configure=1 to the address bar."
 msgstr ""
@@ -429,12 +434,12 @@ msgstr "Restart Caspar"
 msgid "Do you want to restart CasparCG Server \"{{device}}\"?"
 msgstr "Er du sikker på at du vil restarte CasparCG Server \"{{device}}\"?"
 
+msgid "CasparCG on device \"{{deviceName}}\" restarting..."
+msgstr "CasparCG på \"{{deviceName}}\" starter på nytt..."
+
 msgid ""
 "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr "Omstart av CasparCG på \"{{deviceName}}\" feilet: {{errorMessage}}"
-
-msgid "CasparCG on device \"{{deviceName}}\" restarting..."
-msgstr "CasparCG på \"{{deviceName}}\" starter på nytt..."
 
 msgid "Show Hotkeys"
 msgstr "Vise hurtigtaster"
@@ -460,21 +465,37 @@ msgstr "Feil: Kan ikke finne showstyle for denne kjøreplanen."
 msgid "Unknown error"
 msgstr "Ukjent feil"
 
-msgid "Rundown {{rundownName}} is missing, what do you want to do?"
-msgstr "Kjøreplan {{rundownName}} finnes ikke. Hva vil du gjøre?"
+msgid ""
+"Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do you "
+"want to do?"
+msgstr ""
+"Kjøreplan {{rundownName}} i listen {{playlistName}} finnes ikke. Hva vil du "
+"gjøre?"
 
-msgid "Mark rundown as unsynced"
+#, fuzzy
+#| msgid "Mark rundown as unsynced"
+msgid "Mark the rundown as unsynced"
 msgstr "Marker kjøreplan som usynkronisert"
 
-msgid "Remove rundown"
-msgstr "Fjern kjøreplan"
+msgid "Remove just the rundown"
+msgstr "Fjern bare kjøreplan"
 
 msgid ""
-"Do you really want to remove the rundown \"{{rundownName}}\"? This cannot be "
-"undone!"
+"Do you really want to remove just the rundown \"{{rundownName}}\" in the "
+"playlist {{playlistName}}? This cannot be undone!"
 msgstr ""
-"Er du sikker på at du vil slette kjøreplanen {{rundownName}} fra Sofie? "
-"Dette kan ikke angres!"
+"Er du sikker på at du vil slette kjøreplanen {{rundownName}} i lista "
+"{{playlistName}} fra Sofie? Dette kan ikke angres!"
+
+msgid "Remove rundown playlist"
+msgstr "Fjern kjøreplanliste"
+
+msgid ""
+"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
+"cannot be undone!"
+msgstr ""
+"Er du sikker på at du bare vil slette kjøreplanen {{rundownName}} i listen "
+"{{playlistName}} fra Sofie? Dette kan ikke angres!"
 
 msgid ""
 "The Rundown has been UNSYNCED from ENPS! No data updates will currently come "
@@ -483,7 +504,10 @@ msgstr ""
 "Kjøreplanen er ikke synkronisert med ENPS! Ingen oppdateringer fra ENPS vil "
 "hentes inn."
 
-msgid "Re-Sync Rundown"
+msgid "Re-sync"
+msgstr "Synkroniser med MOS"
+
+msgid "Re-sync Rundown"
 msgstr "Synkroniser kjøreplanen med ENPS på nytt"
 
 msgid ""
@@ -517,15 +541,15 @@ msgstr "Vis problem"
 msgid "External message queue has unsent messages."
 msgstr "Ekstern meldingskø har meldinger som ikke er sendt."
 
-msgid "Unable to check the system configuration for changes"
-msgstr "Kan ikke kontrollere endringer i systemoppsettet"
-
 msgid ""
 "The system configuration has been changed since importing this rundown. It "
 "might not run correctly"
 msgstr ""
 "Systemoppsettet har blitt endret etter at denne kjøreplanen ble importert. "
 "Kjøreplanen kan spilles av med feil"
+
+msgid "Unable to check the system configuration for changes"
+msgstr "Kan ikke kontrollere endringer i systemoppsettet"
 
 msgid "Device {{deviceName}} is disconnected"
 msgstr "{{deviceName}} er koblet fra"
@@ -1004,11 +1028,17 @@ msgstr "Primær id (News Room System MOS ID)"
 msgid "Primary Host (IP or Hostname)"
 msgstr "Primær vert (ip-adresse eller vertsnavn)"
 
+msgid "Primary: dont use MOS query-port"
+msgstr "Primær: Ikke bruk MOS Query-port"
+
 msgid "Secondary ID (Newsroom System MOS ID)"
 msgstr "Sekundær id (News Room System MOS ID)"
 
 msgid "Secondary Host (IP Address or Hostname)"
 msgstr "Sekundær vert (ip-adresse eller vertsnavn)"
+
+msgid "Secondary: dont use MOS query-port"
+msgstr "Sekundær: Ikke bruk MOS Query-port"
 
 msgid "MOS ID of Gateway (Sofie MOS ID)"
 msgstr "MOS-id for gateway (Sofie MOS ID)"
@@ -1190,12 +1220,6 @@ msgstr ""
 "Er du sikker på at du vil nullstille databaseversjonen?\n"
 "Bare gjør dette dersom du har tenkt å kjøre en migrering umiddelbart."
 
-msgid "Set Database Version"
-msgstr "Sett databaseversjon"
-
-msgid "Are you sure you want to set the database version to"
-msgstr "Er du sikker på at du vil sette databaseversjon til"
-
 msgid "Version for {{name}}: From {{fromVersion}} to {{toVersion}}"
 msgstr "Versjon for {{name}}: Fra {{fromVersion}} til {{toVersion}}"
 
@@ -1358,7 +1382,6 @@ msgstr "Filter deaktivert"
 msgid "Label contains"
 msgstr "Etikett inneholder"
 
-#, fuzzy
 msgid "Tags must contain"
 msgstr "Tagger må inneholde"
 
@@ -1992,11 +2015,11 @@ msgstr "Start Quantel Gateway på nytt"
 msgid "Do you want to restart Quantel Gateway?"
 msgstr "Vil du starte Quantel Gateway på nytt?"
 
-msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
-msgstr "Klarte ikke å restarte Quantel Gateway: {{errorMessage}}"
-
 msgid "Quantel Gateway restarting..."
 msgstr "Quantel Gateway starter på nytt..."
+
+msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
+msgstr "Klarte ikke å restarte Quantel Gateway: {{errorMessage}}"
 
 msgid "Format HyperDeck disks"
 msgstr "Formater HyperDeck-disker"
@@ -2007,14 +2030,14 @@ msgid ""
 msgstr ""
 "Er du sikker på at du vil formatere HyperDeck-diskene? Dette kan ikke angres."
 
+msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
+msgstr "Formaterer HyperDeck-disker på \"{{deviceName}}\"..."
+
 msgid ""
 "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 "Formatering av HyperDeck-disker på \"{{deviceName}}\" feilet: "
 "{{errorMessage}}"
-
-msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
-msgstr "Formaterer HyperDeck-disker på \"{{deviceName}}\"..."
 
 msgid "Last seen"
 msgstr "Sist sett"
@@ -2025,20 +2048,6 @@ msgstr "Formater disker"
 msgid "Are you sure you want to delete this device: \"{{deviceId}}\"?"
 msgstr "Er du sikker på at du vil fjerne enheten \"{{deviceId}}\"?"
 
-msgid "Restart this device?"
-msgstr "Start denne enheten på nytt?"
-
-msgid "Could not generate restart token!"
-msgstr ""
-
-msgid "Could not generate restart core: {{err}}"
-msgstr ""
-
-msgid "Sofie Automation Server Core will restart in {{time}}s..."
-msgstr "Sofie Core restartes om {{time}}s..."
-
-#, fuzzy
-#| msgid "Sofie Automation Server:"
 msgid "Sofie Automation Server Core: {{name}}"
 msgstr "Sofie:"
 
@@ -2048,6 +2057,15 @@ msgstr "Starte dette Sofie-systemet på nytt?"
 msgid ""
 "Are you sure you want to restart this Sofie Automation Server Core: {{name}}?"
 msgstr "Er du sikker på at du vil starte Sofie Core: {{name}} på nytt?"
+
+msgid "Could not generate restart token!"
+msgstr ""
+
+msgid "Could not generate restart core: {{err}}"
+msgstr ""
+
+msgid "Sofie Automation Server Core will restart in {{time}}s..."
+msgstr "Sofie Core restartes om {{time}}s..."
 
 msgid "Not Connected"
 msgstr "Ikke tilkoblet"
@@ -2149,6 +2167,10 @@ msgid "{{displayName}}: {{messages}}"
 msgstr "{{displayName}}: {{messages}}"
 
 msgctxt "°°°°°°plural"
+msgid "Multiple ({{count}})°°°°°°"
+msgstr "Flere ({{count}})°°°°°°"
+
+msgctxt "°°°°°°plural"
 msgid "Clip starts with {{frames}} {{type}} frame°°°°°°"
 msgstr "Klippet starter med {{frames}} {{type}} frame°°°°°°"
 
@@ -2159,6 +2181,24 @@ msgstr "Klippet slutter med {{frames}} {{type}} frame°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip.°°°°°°"
 msgstr "{{frames}} {{type}} frames oppdaget i klipp.°°°°°°"
+
+#~ msgid "Delete this Item?"
+#~ msgstr "Slett dette elementet?"
+
+#~ msgid ""
+#~ "Are you sure you want to re-sync the \"{{name}}\" rundown with MOS script?"
+#~ msgstr ""
+#~ "Er du sikker på at du vil synkronisere kjøreplanen \"{{rundownSlug}}\" "
+#~ "med MOS?"
+
+#~ msgid "Set Database Version"
+#~ msgstr "Sett databaseversjon"
+
+#~ msgid "Are you sure you want to set the database version to"
+#~ msgstr "Er du sikker på at du vil sette databaseversjon til"
+
+#~ msgid "Restart this device?"
+#~ msgstr "Start denne enheten på nytt?"
 
 #~ msgid "Is unlimited"
 #~ msgstr "Er ubegrenset"
