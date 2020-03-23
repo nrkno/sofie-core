@@ -678,18 +678,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			</div>
 			<div className='mod mvs mhs'>
 				<label className='field'>
-					{t('URL')}
-					<EditAttribute
-						modifiedClassName='bghl'
-						attribute={`filters.${index}.url`}
-						obj={item}
-						type='text'
-						collection={RundownLayouts}
-						className='input text-input input-l' />
-				</label>
-			</div>
-			<div className='mod mvs mhs'>
-				<label className='field'>
 					{t('Window Number')}
 					<EditAttribute
 						modifiedClassName='bghl'

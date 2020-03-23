@@ -55,7 +55,6 @@ export enum RundownLayoutMultiViewRole {
 
 export interface RundownLayoutMultiView extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.MULTIVIEW
-	url: string
 	windowNumber: number
 	tags: string[] | undefined
 	role: RundownLayoutMultiViewRole
