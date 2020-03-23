@@ -377,7 +377,10 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					<AdLibPanel
 						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
 						registerHotkeys={true}
-						{...this.props}></AdLibPanel>
+						playlist={this.props.playlist}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.props.studioMode}
+						></AdLibPanel>
 				</ErrorBoundary>
 				<ErrorBoundary>
 					{rundownLayout && rundownLayout.filters.map(panel =>
@@ -386,18 +389,32 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
 							includeGlobalAdLibs={true}
 							filter={panel}
-							{...this.props}
+							playlist={this.props.playlist}
+							showStyleBase={this.props.showStyleBase}
+							studioMode={this.props.studioMode}
 							/>
 					)}
 				</ErrorBoundary>
 				<ErrorBoundary>
-					<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
+					<GlobalAdLibPanel
+						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
+						playlist={this.props.playlist}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.props.studioMode}
+						/>
 				</ErrorBoundary>
 				<ErrorBoundary>
-					<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+					<HotkeyHelpPanel
+						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
+						showStyleBase={this.props.showStyleBase}
+						hotkeys={this.props.hotkeys}
+						/>
 				</ErrorBoundary>
 				<ErrorBoundary>
-					<KeyboardPreviewPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD} {...this.props}></KeyboardPreviewPanel>
+					<KeyboardPreviewPanel
+						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD}
+						showStyleBase={this.props.showStyleBase}
+						/>
 				</ErrorBoundary>
 			</div>
 		</React.Fragment>

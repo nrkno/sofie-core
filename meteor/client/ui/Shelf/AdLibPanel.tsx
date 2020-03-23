@@ -731,18 +731,20 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
-		this.usedHotkeys.length = 0
-
-		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
-			this.setState({
-				selectedSegment: this.props.liveSegment
-			})
+	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps, prevState: IState) {
+		if (!_.isEqual(prevProps, this.props) || !_.isEqual(prevState, this.state)) {
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+			this.usedHotkeys.length = 0
+	
+			if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
+				this.setState({
+					selectedSegment: this.props.liveSegment
+				})
+			}
+	
+			this.refreshKeyboardHotkeys()
 		}
-
-		this.refreshKeyboardHotkeys()
 	}
 
 	componentWillUnmount () {
