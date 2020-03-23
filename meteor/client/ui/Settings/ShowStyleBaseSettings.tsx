@@ -1165,6 +1165,9 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 						<td className='settings-studio-custom-config-table__value c3'>
 							{item.label}
 						</td>
+						<td className='settings-studio-custom-config-table__value c2'>
+							{item.platformKey ? mousetrapHelper.shortcutLabel(item.platformKey) : ''}
+						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
@@ -1192,7 +1195,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Value')}
+											{t('Label')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'hotkeyLegend.' + index + '.label'}
@@ -1201,6 +1204,42 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 												collection={ShowStyleBases}
 												className='input text-input input-l'></EditAttribute>
 										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Host key')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'hotkeyLegend.' + index + '.platformKey'}
+												obj={this.props.showStyleBase}
+												type='text'
+												collection={ShowStyleBases}
+												className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Source Layer type')}
+										</label>
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
+											obj={this.props.showStyleBase}
+											type='checkbox'
+											options={SourceLayerType}
+											className='mod mas'
+											mutateDisplayValue={v => v === undefined ? false : true}
+											mutateUpdateValue={v => undefined} />
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
+											obj={this.props.showStyleBase}
+											type='dropdown'
+											options={SourceLayerType}
+											optionsAreNumbers
+											collection={ShowStyleBases}
+											className='input text-input input-l dropdown'
+											></EditAttribute>
 									</div>
 								</div>
 								<div className='mod alright'>

@@ -7,7 +7,8 @@ import {
 	IBlueprintShowStyleBase,
 	IOutputLayer,
 	ISourceLayer,
-	IBlueprintRuntimeArgumentsItem
+	IBlueprintRuntimeArgumentsItem,
+	SourceLayerType
 } from 'tv-automation-sofie-blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 
@@ -15,6 +16,8 @@ export interface HotkeyDefinition {
 	_id: string
 	key: string
 	label: string
+	platformKey?: string
+	sourceLayerType?: SourceLayerType
 }
 
 export interface DBShowStyleBase extends IBlueprintShowStyleBase {

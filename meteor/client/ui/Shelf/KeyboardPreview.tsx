@@ -1,8 +1,8 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as classNames from 'classnames'
-import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { IHotkeyAssignment, RegisteredHotkeys } from '../../lib/hotkeyRegistry'
+import { ISourceLayer, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { IHotkeyAssignment, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
@@ -152,30 +152,47 @@ export namespace KeyboardLayouts {
 	])
 }
 
+const COMBINATOR_RE = /\s*\+\s*/
+
+function normalizeModifier (key: string) {
+	return key === "mod" ?
+		_isMacLike ?
+			"❖" : "ctrl"
+		: key	
+}
+
+function parseHotKey (hotkey: string) {
+	return hotkey.toLowerCase()
+		.split(COMBINATOR_RE)
+		.map(normalizeModifier)
+}
+
+function normalizeHotKey (hotkey: string) {
+	let allKeys = parseHotKey(hotkey)
+
+	const lastKey = allKeys.pop()!
+	allKeys = allKeys.sort()
+	allKeys.push(lastKey)
+	const normalizedCombo = allKeys.join('+')
+
+	return normalizedCombo
+}
+
 export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	const registered = RegisteredHotkeys.find().fetch()
 
 	const parsed: ParsedHotkeyAssignments = {}
 
-	const COMBINATOR_RE = /\s*\+\s*/
-
-	const normalizeModifier = key => key === "mod" ?
-		_isMacLike ?
-			"❖" : "ctrl"
-		: key
-
 	const customLabels: {
 		[key: string]: HotkeyDefinition
 	} = props.showStyleBase && props.showStyleBase.hotkeyLegend ?
 		_.object(props.showStyleBase.hotkeyLegend.map(hotkey => {
-			let allKeys = hotkey.key
-				.toLowerCase()
-				.split(COMBINATOR_RE)
-				.map(normalizeModifier)
+			let allKeys = parseHotKey(hotkey.key)
 			const lastKey = allKeys.pop()!
 			allKeys = allKeys.sort()
 			allKeys.push(lastKey)
 			const normalizedCombo = allKeys.join('+')
+
 			return [ normalizedCombo, hotkey ]
 		})) :
 		{}
@@ -183,10 +200,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 	registered.forEach(hotkey => {
 		const modifiers: string[] = []
 
-		const allKeys = hotkey.combo
-			.toLowerCase()
-			.split(COMBINATOR_RE)
-			.map(normalizeModifier)
+		const allKeys = parseHotKey(hotkey.combo)
 		while (allKeys.length > 1) {
 			let modifier = allKeys.shift()!
 			modifiers.push(modifier)
@@ -195,10 +209,41 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		const finalKey = allKeys.shift()
 
 		if (finalKey) {
+			const normalizedCombo = modifiers.sort().concat(finalKey).join('+')
+
 			const parsedHotkey: IHotkeyAssignmentExtended = Object.assign({}, hotkey, {
 				finalKey,
-				normalizedCombo: modifiers.sort().concat(finalKey).join('+')
+				normalizedCombo
 			})
+
+			if (customLabels[normalizedCombo] !== undefined && customLabels[normalizedCombo].platformKey) {
+				const platformKey = customLabels[normalizedCombo].platformKey!
+				modifiers.length = 0
+				const allKeys = parseHotKey(platformKey)
+				while (allKeys.length > 1) {
+					let modifier = allKeys.shift()!
+					modifiers.push(modifier)
+				}
+
+				const finalKey = allKeys.shift()
+
+				if (finalKey) {
+					const mappedNormalizedCombo = modifiers.sort().concat(finalKey).join('+')
+					customLabels[normalizedCombo].platformKey = mappedNormalizedCombo
+					const sourceLayerType = customLabels[normalizedCombo].sourceLayerType
+	
+					parsedHotkey.sourceLayer = sourceLayerType !== undefined ? {
+						_id: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer._id : '',
+						type: sourceLayerType,
+						_rank: 0,
+						name: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer.name : '',
+					} : parsedHotkey.sourceLayer
+					parsedHotkey.combo = mappedNormalizedCombo
+					parsedHotkey.type = HotkeyAssignmentType.CUSTOM_LABEL
+					parsedHotkey.finalKey = finalKey
+					parsedHotkey.normalizedCombo = mappedNormalizedCombo
+				}
+			}
 	
 			const modifiersKey = modifiers.sort().join(' ')
 	
@@ -212,7 +257,12 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 
 	return {
 		hotkeys: parsed,
-		customLabels
+		customLabels: _.object(
+			_.map(
+				customLabels,
+				(value, key) => [ value.platformKey || value.key, value ]
+			)
+		)
 	}
 })(class KeyboardPreview extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	constructor(props: IProps) {
@@ -324,16 +374,20 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 						modifiers.replace(' ', '+') + '+' + thisKeyLabel :
 						thisKeyLabel).toLowerCase().trim()
 
+					let customLabel: string | undefined = undefined
+					let customSourceLayer: SourceLayerType | undefined = undefined
+
 					if (this.props.customLabels[thisCombo]) {
-						func = Object.assign({}, func, {
-							label: this.props.customLabels[thisCombo].label
-						})
+						customLabel = this.props.customLabels[thisCombo].label
+						customSourceLayer = this.props.customLabels[thisCombo].sourceLayerType
 					}
 
 					return <div
 						key={key.code}
 						className={classNames('keyboard-preview__key',
-							func && func.sourceLayer ? RundownUtils.getSourceLayerClassName(func.sourceLayer.type) : undefined,
+							customSourceLayer !== undefined ?
+								RundownUtils.getSourceLayerClassName(customSourceLayer)
+								: (func && func.sourceLayer) ? RundownUtils.getSourceLayerClassName(func.sourceLayer.type) : undefined,
 							{
 								'keyboard-preview__key--fill': (key.width < 0),
 								'keyboard-preview__key--down': this.state.keyDown[key.code] === true
@@ -346,7 +400,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								{ thisKeyLabel }
 							</div>
 							{func && <div className='keyboard-preview__key__function-label'>
-								{ func.label }
+								{ customLabel || allFuncs.map(func => func.label).join(', ') }
 							</div>}
 						</div>
 				}
