@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { RundownLayoutBase, RundownLayoutMultiView, DashboardLayoutMultiView, RundownLayoutMultiViewRole } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayoutMultiView, DashboardLayoutMultiView, RundownLayoutMultiViewRole, RundownLayoutElementType, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -27,6 +27,7 @@ interface IMultiViewPanelProps {
 	panel: RundownLayoutMultiView
 	visible: boolean
 	rundown: Rundown
+	adlibRank?: number
 	t: TranslationFunction // why this needs to be here?
 }
 
@@ -149,7 +150,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		console.log(this.props.rundownBaselineAdLibs)
 		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs
 		.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
-		.find((item) => matchTags(item, this.props.panel.tags))
+		.filter((item) => matchTags(item, this.props.panel.tags))[this.props.adlibRank ? this.props.adlibRank : 0]
 		return <div className='multiview-panel'
 			style={
 				_.extend(
@@ -290,7 +291,25 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 
 
 export const MultiViewPanel = translateWithTracker<IAdLibPanelProps & IMultiViewPanelProps, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return Object.assign({}, fetchAndFilter({ ...props,includeGlobalAdLibs: true, filter: { ...props.filter, rundownBaseline: true } }), {
+	return Object.assign({}, fetchAndFilter({
+		...props,
+		includeGlobalAdLibs: true,
+		filter: {
+			...props.filter,
+			rundownBaseline: true,
+			type: RundownLayoutElementType.FILTER,
+			sourceLayerIds: [],
+			sourceLayerTypes: [],
+			outputLayerIds: [],
+			label: [],
+			tags: [],
+			displayStyle: PieceDisplayStyle.BUTTONS,
+			_id: '',
+			name: '',
+			rank: 0,
+			currentSegment: false
+		}}
+	), {
 		studio: props.rundown.getStudio(),
 		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId),
 		nextPieces: getNextPiecesReactive(props.rundown._id, props.rundown.nextPartId)

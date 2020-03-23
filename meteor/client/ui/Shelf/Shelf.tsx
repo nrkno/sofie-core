@@ -383,6 +383,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							key={panel._id}
 							panel={panel}
 							layout={rundownLayout}
+							adlibRank={panel.adlibRank}
 							visible={true}
 							{...this.props}
 							/> :

@@ -59,6 +59,7 @@ export interface RundownLayoutMultiView extends RundownLayoutElementBase {
 	windowNumber: number
 	tags: string[] | undefined
 	role: RundownLayoutMultiViewRole
+	adlibRank: number
 }
 
 /**
