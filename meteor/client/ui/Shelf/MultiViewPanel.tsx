@@ -41,30 +41,6 @@ interface IMultiViewPanelTrackedProps {
 	}
 }
 
-function getImagePosition (id: number): React.CSSProperties {
-	let rectangle = [
-		{ x: 0.005, y: 0.0058, width: 0.49, height: 0.487 },
-		{ x: 0.505, y: 0.0058, width: 0.49, height: 0.487 },
-		{ x: 0.005, y: 0.5055, width: 0.24, height: 0.239 },
-		{ x: 0.255, y: 0.5055, width: 0.24, height: 0.239 },
-		{ x: 0.505, y: 0.5055, width: 0.24, height: 0.239 },
-		{ x: 0.755, y: 0.5055, width: 0.24, height: 0.239 },
-		{ x: 0.005, y: 0.7555, width: 0.24, height: 0.239 },
-		{ x: 0.255, y: 0.7555, width: 0.24, height: 0.239 },
-		{ x: 0.505, y: 0.7555, width: 0.24, height: 0.239 },
-		{ x: 0.755, y: 0.7555, width: 0.24, height: 0.239 }
-	][id - 1]
-	if	(!rectangle) {
-		rectangle = { x: 0, y: 0, width: 1, height: 1 }
-	}
-	return {
-		width: (100 / rectangle.width) + '%',
-		height: (100 / rectangle.height) + '%',
-		top: (-100 * rectangle.y / rectangle.height) + '%',
-		left: (-100 * rectangle.x / rectangle.width) + '%'
-	}
-}
-
 export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IMultiViewPanelProps & IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>, IState> {
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
@@ -166,11 +142,6 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 				'next': piece && this.isAdLibNext(piece),
 				'on-air': piece && this.isAdLibOnAir(piece)
 			})} >
-				<img
-				className='multiview-panel__image'
-				src={this.props.panel.url}
-				style={getImagePosition(this.props.panel.windowNumber)}
-				/>
 				{!isLarge &&
 					<span className={classNames('multiview-panel__label')}>{this.props.panel.name}</span>
 				}

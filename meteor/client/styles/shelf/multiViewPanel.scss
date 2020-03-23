@@ -2,6 +2,7 @@
 	position: absolute;
 	text-align: center;
 	user-select: none;
+	margin: 0.625rem;
 
 	.multiview-panel__label {
 		width: 100%;
@@ -20,13 +21,6 @@
 		overflow: hidden;
 		padding-top: 56.25%;
 		border: 3px solid #252627;
-		background: #000;
-
-		.multiview-panel__image {
-			max-height: none;
-			max-width: none;
-			position: absolute;
-		}
 
 		> .multiview-panel__label {
 			position: absolute;
@@ -59,11 +53,5 @@
 		&.on-air {
 			border: 3px solid var(--general-live-color);
 		}
-	}
-}
-
-.dashboard {
-	.multiview-panel {
-    	margin: 0.625rem;
 	}
 }
