@@ -1,4 +1,5 @@
-import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutElementBase, RundownLayoutFilter, RundownLayoutElementType, RundownLayoutFilterBase, RundownLayoutExternalFrame, RundownLayoutMultiView } from '../collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutElementBase, RundownLayoutFilter, RundownLayoutElementType, RundownLayoutFilterBase, RundownLayoutExternalFrame, RundownLayoutMultiView, PieceDisplayStyle } from '../collections/RundownLayouts'
+import * as _ from 'underscore'
 
 export namespace RundownLayoutsAPI {
 	export enum methods {
@@ -24,5 +25,19 @@ export namespace RundownLayoutsAPI {
 
 	export function isMultiView (element: RundownLayoutElementBase): element is RundownLayoutMultiView {
 		return element.type === RundownLayoutElementType.MULTIVIEW
+	}
+
+	export function multiViewToFilter (element: RundownLayoutMultiView): RundownLayoutFilterBase {
+		return {
+			...(_.pick(element, '_id', 'name', 'rank', 'tags')),
+			rundownBaseline: true,
+			type: RundownLayoutElementType.FILTER,
+			sourceLayerIds: [],
+			sourceLayerTypes: [],
+			outputLayerIds: [],
+			label: [],
+			displayStyle: PieceDisplayStyle.BUTTONS,
+			currentSegment: false
+		}
 	}
 }

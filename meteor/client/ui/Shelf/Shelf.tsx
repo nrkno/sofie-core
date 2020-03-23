@@ -392,7 +392,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 					RundownLayoutsAPI.isMultiView(panel) ?
 						<MultiViewPanel
 							key={panel._id}
+							includeGlobalAdLibs={true}
 							panel={panel}
+							filter={RundownLayoutsAPI.multiViewToFilter(panel)}
 							layout={rundownLayout}
 							adlibRank={panel.adlibRank}
 							visible={true}

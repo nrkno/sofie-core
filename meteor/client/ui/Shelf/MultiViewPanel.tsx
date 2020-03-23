@@ -5,7 +5,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import * as classNames from 'classnames'
-import { AdLibPieceUi, matchTags, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter } from './AdLibPanel'
+import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter } from './AdLibPanel'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 import { Studio } from '../../../lib/collections/Studios'
@@ -123,8 +123,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		const isLarge = isProgram || isTake
 		console.log(this.props.rundownBaselineAdLibs)
 		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs
-		.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
-		.filter((item) => matchTags(item, this.props.panel.tags))[this.props.adlibRank ? this.props.adlibRank : 0]
+		.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))[this.props.adlibRank ? this.props.adlibRank : 0]
 		return <div className='multiview-panel'
 			style={
 				_.extend(
@@ -260,25 +259,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 
 
 export const MultiViewPanel = translateWithTracker<Translated<IAdLibPanelProps & IMultiViewPanelProps>, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return Object.assign({}, fetchAndFilter({
-		...props,
-		includeGlobalAdLibs: true,
-		filter: {
-			...props.filter,
-			rundownBaseline: true,
-			type: RundownLayoutElementType.FILTER,
-			sourceLayerIds: [],
-			sourceLayerTypes: [],
-			outputLayerIds: [],
-			label: [],
-			tags: [],
-			displayStyle: PieceDisplayStyle.BUTTONS,
-			_id: '',
-			name: '',
-			rank: 0,
-			currentSegment: false
-		}}
-	), {
+	return Object.assign({}, fetchAndFilter(props), {
 		studio: props.rundown.getStudio(),
 		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId),
 		nextPieces: getNextPiecesReactive(props.rundown._id, props.rundown.nextPartId)
