@@ -146,6 +146,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		const isTake = this.props.panel.role === RundownLayoutMultiViewRole.TAKE
 		const isProgram = this.props.panel.role === RundownLayoutMultiViewRole.PROGRAM
 		const isLarge = isProgram || isTake
+		console.log(this.props.rundownBaselineAdLibs)
 		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs
 		.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))
 		.find((item) => matchTags(item, this.props.panel.tags))
@@ -289,7 +290,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 
 
 export const MultiViewPanel = translateWithTracker<IAdLibPanelProps & IMultiViewPanelProps, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return Object.assign({}, fetchAndFilter(props), {
+	return Object.assign({}, fetchAndFilter({ ...props,includeGlobalAdLibs: true, filter: { ...props.filter, rundownBaseline: true } }), {
 		studio: props.rundown.getStudio(),
 		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId),
 		nextPieces: getNextPiecesReactive(props.rundown._id, props.rundown.nextPartId)
