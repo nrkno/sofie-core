@@ -6,7 +6,9 @@ import { IHotkeyAssignment, RegisteredHotkeys } from '../../lib/hotkeyRegistry'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases';
+import { ShowStyleBase, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
+
+const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
 declare global {
 	type KeyboardLayoutMap = Map<string, string>
@@ -58,12 +60,12 @@ export interface IProps {
 
 interface ITrackedProps {
 	hotkeys: ParsedHotkeyAssignments
+	customLabels: { [key: string]: HotkeyDefinition }
 }
 
 interface IState {
 	layout: KeyboardLayoutMap | undefined
 	keyDown: { [key: string]: boolean }
-	customLabels: { [key: string]: string }
 }
 
 /**
@@ -154,14 +156,37 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 	const registered = RegisteredHotkeys.find().fetch()
 
 	const parsed: ParsedHotkeyAssignments = {}
+
+	const COMBINATOR_RE = /\s*\+\s*/
+
+	const normalizeModifier = key => key === "mod" ?
+		_isMacLike ?
+			"❖" : "ctrl"
+		: key
+
+	const customLabels: {
+		[key: string]: HotkeyDefinition
+	} = props.showStyleBase && props.showStyleBase.hotkeyLegend ?
+		_.object(props.showStyleBase.hotkeyLegend.map(hotkey => {
+			let allKeys = hotkey.key
+				.toLowerCase()
+				.split(COMBINATOR_RE)
+				.map(normalizeModifier)
+			const lastKey = allKeys.pop()!
+			allKeys = allKeys.sort()
+			allKeys.push(lastKey)
+			const normalizedCombo = allKeys.join('+')
+			return [ normalizedCombo, hotkey ]
+		})) :
+		{}
 	
 	registered.forEach(hotkey => {
 		const modifiers: string[] = []
 
 		const allKeys = hotkey.combo
 			.toLowerCase()
-			.split(/\s*\+\s*/)
-			.map(key => key === "mod" || key === "cmd" ? "ctrl" : key)
+			.split(COMBINATOR_RE)
+			.map(normalizeModifier)
 		while (allKeys.length > 1) {
 			let modifier = allKeys.shift()!
 			modifiers.push(modifier)
@@ -186,7 +211,8 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 	})
 
 	return {
-		hotkeys: parsed
+		hotkeys: parsed,
+		customLabels
 	}
 })(class KeyboardPreview extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	constructor(props: IProps) {
@@ -194,8 +220,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 
 		this.state = {
 			layout: undefined,
-			keyDown: {},
-			customLabels: {}
+			keyDown: {}
 		}
 	}
 
@@ -243,15 +268,6 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		})
 	}
 
-	static getDerivedStateFromProps(props: IProps & ITrackedProps): Partial<IState> | null {
-		if (props.showStyleBase && props.showStyleBase.hotkeyLegend) {
-			return {
-				customLabels: _.object(props.showStyleBase.hotkeyLegend.map(hotkey => [ hotkey.key.toLowerCase(), hotkey.label ]))
-			}
-		}
-		return null
-	}
-
 	componentDidMount() {
 		if (navigator.keyboard) {
 			navigator.keyboard.getLayoutMap().then(layout => this.setState({ layout }))
@@ -273,6 +289,13 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		window.removeEventListener('blur', this.onBlur)
 	}
 
+	shouldComponentUpdate(nextProps: IProps & ITrackedProps, nextState: IState) {
+		if (this.state !== nextState || !_.isEqual(nextProps, this.props)) {
+			return true
+		}
+		return false
+	}
+
 	private renderBlock(block: KeyPositon[][], modifiers: string) {
 		return block.map((row, index) => <div className='keyboard-preview__key-row' key={index}>
 			{ row.map((key, index) => {
@@ -289,17 +312,21 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 					)
 					let func: IBaseHotkeyAssignment | undefined = allFuncs && allFuncs[0]
 
-					const thisKeyLabel = this.state.layout ?
+					let thisKeyLabel = this.state.layout ?
 						this.state.layout.get(key.code) || GenericFuncionalKeyLabels[key.code] || key.code :
 						GenericFuncionalKeyLabels[key.code] || key.code
+
+					if (_isMacLike && thisKeyLabel === '❖') {
+						thisKeyLabel = '\u2318'
+					}
 
 					const thisCombo = (modifiers ?
 						modifiers.replace(' ', '+') + '+' + thisKeyLabel :
 						thisKeyLabel).toLowerCase().trim()
 
-					if (this.state.customLabels[thisCombo]) {
+					if (this.props.customLabels[thisCombo]) {
 						func = Object.assign({}, func, {
-							label: this.state.customLabels[thisCombo]
+							label: this.props.customLabels[thisCombo].label
 						})
 					}
 
@@ -316,12 +343,10 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 						onClick={(e) => func && this.onKeyClick(e, allFuncs || [])}
 					>
 							<div className='keyboard-preview__key__label'>
-								{thisKeyLabel}
+								{ thisKeyLabel }
 							</div>
 							{func && <div className='keyboard-preview__key__function-label'>
-								{this.state.customLabels[thisCombo] ? 
-									this.state.customLabels[thisCombo] :
-									func.label}
+								{ func.label }
 							</div>}
 						</div>
 				}
