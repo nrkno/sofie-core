@@ -6,7 +6,8 @@ export enum HotkeyAssignmentType {
 	SYSTEM = 'system',
 	GLOBAL_ADLIB = 'global_adlib',
 	ADLIB = 'adlib',
-	CUSTOM_LABEL = 'custom_label'
+	CUSTOM_LABEL = 'custom_label',
+	RUNTIME_ARGUMENT = 'runtime_argument'
 }
 
 export interface IHotkeyAssignment {
