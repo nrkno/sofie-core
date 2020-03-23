@@ -1371,16 +1371,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			preventDefault(e)
 		}
 
+		const HOTKEY_GROUP = 'RuntimeArguments'
+
 		this.usedArgumentKeys.forEach((k) => {
 			if (k.up) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, HOTKEY_GROUP, 'keyup')
+				mousetrapHelper.unbind(k.key, HOTKEY_GROUP, 'keydown')
 			}
 			if (k.down) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, HOTKEY_GROUP, 'keydown')
 			}
 		})
+
 		this.usedArgumentKeys = []
+
+		RegisteredHotkeys.remove({
+			tag: HOTKEY_GROUP
+		})
 
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
@@ -1393,13 +1400,24 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					}
 				}
 				_.each(combos, (combo: string) => {
-					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, handler, 'keyup', HOTKEY_GROUP)
+					mousetrapHelper.bind(combo, noOp, 'keydown', HOTKEY_GROUP)
 					this.usedArgumentKeys.push({
 						up: handler,
 						key: combo,
 						label: i.label || ''
 					})
+
+					registerHotkey(
+						combo,
+						i.label || '',
+						HotkeyAssignmentType.RUNTIME_ARGUMENT,
+						undefined,
+						false,
+						handler,
+						undefined,
+						HOTKEY_GROUP
+					)
 				})
 			})
 		}

@@ -7,6 +7,7 @@ import { KeyboardPreview, KeyboardLayouts } from './KeyboardPreview'
 
 interface IProps {
 	visible?: boolean
+	showStyleBase: ShowStyleBase
 }
 
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
@@ -22,6 +23,7 @@ export const KeyboardPreviewPanel = translate()(class KeyboardPreviewPanel exten
 				<div className='adlib-panel super-dark adlib-panel--keyboard-preview'>
 					<KeyboardPreview
 						physicalLayout={KeyboardLayouts.STANDARD_102_TKL}
+						showStyleBase={this.props.showStyleBase}
 					/>
 				</div>
 			)
