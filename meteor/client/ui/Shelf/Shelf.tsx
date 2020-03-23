@@ -322,7 +322,10 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				<AdLibPanel
 					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
 					registerHotkeys={true}
-					{...this.props}></AdLibPanel>
+					rundown={this.props.rundown}
+					showStyleBase={this.props.showStyleBase}
+					studioMode={this.props.studioMode}
+					/>
 				{rundownLayout && rundownLayout.filters.map(panel =>
 					RundownLayoutsAPI.isFilter(panel) ?
 						<AdLibPanel
@@ -330,7 +333,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
 							includeGlobalAdLibs={true}
 							filter={panel}
-							{...this.props}
+							rundown={this.props.rundown}
+							showStyleBase={this.props.showStyleBase}
+							studioMode={this.props.studioMode}
 							/> :
 					RundownLayoutsAPI.isExternalFrame(panel) ?
 						<ExternalFramePanel
@@ -338,13 +343,22 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							panel={panel}
 							layout={rundownLayout}
 							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
-							{...this.props}
+							rundown={this.props.rundown}
 							/> :
 						undefined
 				)}
-				<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
-				<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
-				<KeyboardPreviewPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD} {...this.props}></KeyboardPreviewPanel>
+				<GlobalAdLibPanel
+					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB}
+					rundown={this.props.rundown}
+					showStyleBase={this.props.showStyleBase}
+					studioMode={this.props.studioMode}></GlobalAdLibPanel>
+				<HotkeyHelpPanel
+					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
+					hotkeys={this.props.hotkeys}
+					showStyleBase={this.props.showStyleBase}></HotkeyHelpPanel>
+				<KeyboardPreviewPanel
+					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD}
+					showStyleBase={this.props.showStyleBase}></KeyboardPreviewPanel>
 			</div>
 		</React.Fragment>
 	}
@@ -363,7 +377,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								filter={panel}
 								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-								{...this.props}
+								rundown={this.props.rundown}
+								showStyleBase={this.props.showStyleBase}
+								studioMode={this.props.studioMode}
 								/> :
 							<DashboardPanel
 								key={panel._id}
@@ -371,7 +387,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								filter={panel}
 								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-								{...this.props}
+								rundown={this.props.rundown}
+								showStyleBase={this.props.showStyleBase}
+								studioMode={this.props.studioMode}
 								/> :
 					RundownLayoutsAPI.isExternalFrame(panel) ?
 						<ExternalFramePanel
@@ -379,7 +397,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							panel={panel}
 							layout={rundownLayout}
 							visible={true}
-							{...this.props}
+							rundown={this.props.rundown}
 							/> :
 						undefined
 			)}
