@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { KeyboardLayouts } from '../client/ui/Shelf/KeyboardPreview'
+import { KeyboardLayouts } from './keyboardLayout'
 
 export interface ISettings {
 	frameRate: number,

@@ -3,8 +3,9 @@ import { translate } from 'react-i18next'
 import * as React from 'react'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { KeyboardPreview, KeyboardLayouts } from './KeyboardPreview'
-import { Settings } from '../../../lib/Settings';
+import { KeyboardPreview } from './KeyboardPreview'
+import { Settings } from '../../../lib/Settings'
+import { KeyboardLayouts } from '../../../lib/keyboardLayout'
 
 interface IProps {
 	visible?: boolean
