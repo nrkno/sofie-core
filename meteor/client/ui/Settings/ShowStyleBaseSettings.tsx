@@ -13,6 +13,7 @@ import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
 import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
+import * as faDownload from '@fortawesome/fontawesome-free-solid/faDownload'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
 import { literal } from '../../../lib/lib'
@@ -30,6 +31,8 @@ import RundownLayoutEditor from './RundownLayoutEditor'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import { downloadBlob } from '../../lib/downloadBlob'
+import { AHKModifierMap, AHKKeyboardMap, AHKBaseHeader, useAHKComboTemplate } from '../../../lib/tv2/AHKkeyboardMap';
 
 interface IProps {
 	match: {
@@ -1150,6 +1153,37 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 			}
 		})
 	}
+	onDownloadAHKScript = () => {
+		const mappedKeys = this.props.showStyleBase.hotkeyLegend
+		let ahkCommands: string[] = _.clone(AHKBaseHeader)
+
+		function convertComboToAHK(combo: string) {
+			return combo.split(/\s*\+\s*/).map(key => {
+					const lowerCaseKey = key.toLowerCase()
+					if (AHKModifierMap[lowerCaseKey] !== undefined) {
+						return AHKModifierMap[lowerCaseKey]
+					} else if (AHKKeyboardMap[lowerCaseKey] !== undefined) {
+						return AHKKeyboardMap[lowerCaseKey]
+					} else {
+						return lowerCaseKey
+					}
+				}).join('')
+		}
+
+		if (mappedKeys) {
+			ahkCommands = ahkCommands.concat(mappedKeys
+				.filter(key => !!key.platformKey)
+				.map(key => {
+					const platformKeyCombo = convertComboToAHK(key.platformKey!)
+					const browserKeyCombo = convertComboToAHK(key.key)
+
+					return useAHKComboTemplate({ platformKeyCombo, browserKeyCombo })
+				}))
+		}
+
+		const blob = new Blob([ ahkCommands.join('\r\n') ], {type: 'text/plain'})
+		downloadBlob(blob, `${this.props.showStyleBase.name}_${(new Date()).toLocaleDateString()}_${(new Date()).toLocaleTimeString()}.ahk`)
+	}
 
 	renderItems () {
 		const { t } = this.props
@@ -1182,7 +1216,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 					</tr>
 					{this.isItemEdited(item) &&
 						<tr className='expando-details hl'>
-							<td colSpan={4}>
+							<td colSpan={6}>
 								<div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
@@ -1270,8 +1304,11 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 					</tbody>
 				</table>
 				<div className='mod mhs'>
-					<button className='btn btn-primary' onClick={this.onAddHotkeyLegend}>
+					<button className='btn btn-primary mrs' onClick={this.onAddHotkeyLegend}>
 						<FontAwesomeIcon icon={faPlus} />
+					</button>
+					<button className='btn btn-secondary' onClick={this.onDownloadAHKScript}>
+						<FontAwesomeIcon icon={faDownload} />
 					</button>
 				</div>
 			</div>
