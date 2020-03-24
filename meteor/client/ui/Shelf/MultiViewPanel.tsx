@@ -139,16 +139,16 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 				'next': piece && this.isAdLibNext(piece),
 				'on-air': piece && this.isAdLibOnAir(piece)
 			})} >
-				{!isLarge &&
-					<span className={classNames('multiview-panel__label')}>{this.props.panel.name}</span>
-				}
 				<div className='multiview-panel__button'
 					onClick={(e) => this.onAction(e, piece)}
-				></div>
+				>
+					{
+					<span className={classNames('multiview-panel__label',{
+						'multiview-panel__label--large': isLarge
+					})}>{this.props.panel.name}</span>
+					}
+				</div>
 			</div>
-			{isLarge &&
-				<span className={classNames('multiview-panel__label')}>{this.props.panel.name}</span>
-			}
 		</div>
 	}
 }
