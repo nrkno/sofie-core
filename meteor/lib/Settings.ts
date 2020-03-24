@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { KeyboardLayouts } from '../client/ui/Shelf/KeyboardPreview'
+import { KeyboardLayouts } from './keyboardLayout'
 
 /**
  * This is an object specifying installation-wide, User Interface settings.

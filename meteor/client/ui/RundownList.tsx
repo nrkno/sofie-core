@@ -28,7 +28,6 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
-import { KeyboardPreview, KeyboardLayouts } from './Shelf/KeyboardPreview'
 
 const PackageInfo = require('../../package.json')
 
