@@ -1168,6 +1168,9 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 						<td className='settings-studio-custom-config-table__value c2'>
 							{item.platformKey ? mousetrapHelper.shortcutLabel(item.platformKey) : ''}
 						</td>
+						<td className='settings-studio-custom-config-table__value c2'>
+							{item.sourceLayerType !== undefined ? SourceLayerType[item.sourceLayerType] : ''}
+						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
 							<button className='action-btn' onClick={(e) => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
