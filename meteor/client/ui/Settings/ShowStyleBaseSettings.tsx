@@ -1188,6 +1188,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 											type='checkbox'
 											options={SourceLayerType}
 											className='mod mas'
+											collection={ShowStyleBases}
 											mutateDisplayValue={v => v === undefined ? false : true}
 											mutateUpdateValue={v => undefined} />
 										<EditAttribute
@@ -1199,7 +1200,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 											optionsAreNumbers
 											collection={ShowStyleBases}
 											className='input text-input input-l dropdown'
-											></EditAttribute>
+											mutateUpdateValue={v => v ? v : undefined} />
 									</div>
 								</div>
 								<div className='mod alright'>
