@@ -28,6 +28,7 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { DashboardActionButton } from './DashboardActionButton'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
+import { Settings } from '../../../lib/Settings'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -368,9 +369,9 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
 					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS
 				})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
-				<div className={ClassNames('rundown-view__shelf__tabs__tab', {
+				{ Settings.showKeyboardMap ? <div className={ClassNames('rundown-view__shelf__tabs__tab', {
 					'selected': (this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD
-				})} onClick={(e) => this.switchTab(ShelfTabs.KEYBOARD)} tabIndex={0}>{t('Keyboard')}</div>
+				})} onClick={(e) => this.switchTab(ShelfTabs.KEYBOARD)} tabIndex={0}>{t('Keyboard')}</div> : null }
 			</div>
 			<div className='rundown-view__shelf__panel super-dark'>
 				<ErrorBoundary>
@@ -410,12 +411,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						hotkeys={this.props.hotkeys}
 						/>
 				</ErrorBoundary>
-				<ErrorBoundary>
+				{ Settings.showKeyboardMap ? <ErrorBoundary>
 					<KeyboardPreviewPanel
 						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.KEYBOARD}
 						showStyleBase={this.props.showStyleBase}
 						/>
-				</ErrorBoundary>
+				</ErrorBoundary> : null }
 			</div>
 		</React.Fragment>
 	}

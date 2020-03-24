@@ -4,6 +4,7 @@ import * as React from 'react'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { KeyboardPreview, KeyboardLayouts } from './KeyboardPreview'
+import { Settings } from '../../../lib/Settings';
 
 interface IProps {
 	visible?: boolean
@@ -22,7 +23,7 @@ export const KeyboardPreviewPanel = translate()(class KeyboardPreviewPanel exten
 			return (
 				<div className='adlib-panel super-dark adlib-panel--keyboard-preview'>
 					<KeyboardPreview
-						physicalLayout={KeyboardLayouts.STANDARD_102_TKL}
+						physicalLayout={KeyboardLayouts.nameToPhysicalLayout(Settings.keyboardMapLayout)}
 						showStyleBase={this.props.showStyleBase}
 					/>
 				</div>

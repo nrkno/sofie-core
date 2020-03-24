@@ -150,6 +150,18 @@ export namespace KeyboardLayouts {
 		// Arrow Pad A
 		'ArrowLeft,ArrowDown,ArrowRight',
 	])
+
+	export function nameToPhysicalLayout(name: Names) {
+		switch (name) {
+			case Names.STANDARD_102_TKL:
+			default:
+				return STANDARD_102_TKL
+		}
+	}
+
+	export enum Names {
+		STANDARD_102_TKL = 'STANDARD_102_TKL'
+	}
 }
 
 const COMBINATOR_RE = /\s*\+\s*/

@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { KeyboardLayouts } from '../client/ui/Shelf/KeyboardPreview'
 
 /**
  * This is an object specifying installation-wide, User Interface settings.
@@ -25,6 +26,10 @@ export interface ISettings {
 	autoExpandCurrentNextSegment: boolean
 	// Disable blur border in RundownView
 	disableBlurBorder: boolean
+	// Show keyboard map in AdLib Shelf
+	showKeyboardMap: boolean
+	// Keyboard map layout (what physical layout to use for the keyboard)
+	keyboardMapLayout: KeyboardLayouts.Names
 }
 
 export let Settings: ISettings
@@ -37,7 +42,9 @@ const DEFAULT_SETTINGS: ISettings = {
 	'defaultToCollapsedSegments': false,
 	'autoExpandCurrentNextSegment': false,
 	'autoRewindLeavingSegment': false,
-	'disableBlurBorder': false
+	'disableBlurBorder': false,
+	'showKeyboardMap': true,
+	'keyboardMapLayout': KeyboardLayouts.Names.STANDARD_102_TKL
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
