@@ -20,6 +20,7 @@ import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow (rundownId: string, partId: string, pieceId: string) {
@@ -192,6 +193,36 @@ export namespace ServerPlayoutAdLibAPI {
 		Pieces.insert(newPiece)
 
 		if (queue) {
+			// Remove pieces that are in the same exclusivity group / source layer, if parts have been merged
+			if (adLibPiece.canCombineQueue && part.canCombineQueue) {
+				const showStyle = ShowStyleBases.findOne({ _id: rundown.showStyleBaseId })
+				if (!showStyle) throw new Meteor.Error(`Could not find showstyle base with Id "${rundown.showStyleBaseId}"`)
+
+				const adlibPieceSourceLayer = showStyle.sourceLayers.find((layer) => layer._id === adLibPiece.sourceLayerId)
+				if (!adlibPieceSourceLayer) throw new Meteor.Error(`Could not find source layer "${adLibPiece.sourceLayerId}" for piece with Id "${adLibPiece._id}"`)
+
+				const pieces = Pieces.find({
+					_id: { $ne: newPiece._id },
+					partId
+				})
+
+				pieces.forEach(piece => {
+					const sourceLayer = showStyle.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
+					if (!sourceLayer) throw new Meteor.Error(`Could not find source layer "${piece.sourceLayerId}" for piece with Id "${piece._id}"`)
+
+					if (
+						adLibPiece.sourceLayerId === piece.sourceLayerId ||
+						(
+							sourceLayer.exclusiveGroup &&
+							adlibPieceSourceLayer.exclusiveGroup &&
+							sourceLayer.exclusiveGroup === adlibPieceSourceLayer.exclusiveGroup
+						)
+					) {
+						Pieces.remove({ _id: piece._id })
+					}
+				})
+			}
+
 			// keep infinite pieces
 			// TODO - what does this actually do? It looks like a bad attempt to efficiently update infinites, but that it will cause problems
 			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
@@ -268,26 +299,32 @@ export namespace ServerPlayoutAdLibAPI {
 		}, {
 			sort: { _rank: -1, _id: -1 }
 		})
-		if (alreadyQueuedPart) {
+		if (alreadyQueuedPart && (!adLibPiece.canCombineQueue || !alreadyQueuedPart.canCombineQueue)) {
 			if (rundown.currentPartId !== alreadyQueuedPart._id) {
 				Parts.remove(alreadyQueuedPart._id)
 				afterRemoveParts(rundown, [alreadyQueuedPart], true)
 			}
 		}
 
-		const newPartId = Random.id()
-		Parts.insert({
-			_id: newPartId,
-			_rank: 99999, // something high, so it will be placed last
-			externalId: '',
-			segmentId: part.segmentId,
-			rundownId: rundown._id,
-			title: adLibPiece.name,
-			dynamicallyInserted: true,
-			afterPart: afterPartId,
-			typeVariant: 'adlib',
-			expectedDuration: adLibPiece.expectedDuration
-		})
+		let newPartId = Random.id()
+
+		if (alreadyQueuedPart && adLibPiece.canCombineQueue && alreadyQueuedPart.canCombineQueue) {
+			newPartId = alreadyQueuedPart._id
+		} else {
+			Parts.insert({
+				_id: newPartId,
+				_rank: 99999, // something high, so it will be placed last
+				externalId: '',
+				segmentId: part.segmentId,
+				rundownId: rundown._id,
+				title: adLibPiece.name,
+				dynamicallyInserted: true,
+				afterPart: afterPartId,
+				typeVariant: 'adlib',
+				expectedDuration: adLibPiece.expectedDuration,
+				canCombineQueue: adLibPiece.canCombineQueue
+			})
+		}
 
 		updatePartRanks(rundown._id) // place in order
 
