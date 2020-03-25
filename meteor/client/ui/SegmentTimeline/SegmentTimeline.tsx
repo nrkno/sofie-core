@@ -460,7 +460,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						firstPartInSegment={this.props.parts[0]}
 						isLastSegment={this.props.isLastSegment}
 						isLastInSegment={index === (this.props.parts.length - 1)}
-						isAfterLastValidInSegmentAndItsLive={(index === (this.props.lastValidPartIndex || 0) + 1) && previousPartIsLive && !!this.props.rundown.nextPartId}
+						isAfterLastValidInSegmentAndItsLive={(index === (this.props.lastValidPartIndex || 0) + 1) && previousPartIsLive && !!this.props.playlist.nextPartInstanceId}
 						part={part} />
 				)
 			})}
