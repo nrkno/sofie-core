@@ -43,7 +43,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	'autoExpandCurrentNextSegment': false,
 	'autoRewindLeavingSegment': false,
 	'disableBlurBorder': false,
-	'showKeyboardMap': true,
+	'showKeyboardMap': false,
 	'keyboardMapLayout': KeyboardLayouts.Names.STANDARD_102_TKL
 }
 
