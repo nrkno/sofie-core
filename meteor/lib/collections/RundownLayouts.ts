@@ -147,8 +147,9 @@ export enum ActionButtonType {
 	ACTIVATE_REHEARSAL = 'activate_rehearsal',
 	DEACTIVATE = 'deactivate',
 	RESET_RUNDOWN = 'reset_rundown',
-	QUEUE_ADLIB = 'queue_adlib' // The idea for it is that you would be able to press and hold this button
+	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 								// and then click on whatever adlib you would like
+	KLAR_ON_AIR = 'klar_on_air'
 }
 
 export interface DashboardLayoutActionButton {
