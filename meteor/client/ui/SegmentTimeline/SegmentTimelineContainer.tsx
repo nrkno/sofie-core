@@ -136,7 +136,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	let lastValidPartIndex = o.parts.length - 1
 
 	for (let i = lastValidPartIndex; i > 0; i--) {
-		if (o.parts[i].invalid) {
+		if (o.parts[i].instance.part.invalid) {
 			lastValidPartIndex = i - 1
 		} else {
 			break
