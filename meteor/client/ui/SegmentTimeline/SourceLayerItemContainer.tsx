@@ -153,12 +153,9 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 						...(overrides.piece || props.piece),
 						instance: {
 							...origPiece.instance,
-							piece: {
-								...origPiece.instance.piece,
-								status: status,
-								contentMetaData: metadata
-							}
-						}
+						},
+						status: status,
+						contentMetaData: metadata
 					}
 
 					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
