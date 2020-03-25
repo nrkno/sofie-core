@@ -1091,13 +1091,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	let onlyShelf = false
-	if (props.onlyShelf) {
-		onlyShelf = props.onlyShelf
-	} else if (params['onlyShelf']) {
-		onlyShelf = params['onlyShelf'] === 'true'
-	}
-
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
 		rundownId: rundownId,
@@ -1125,8 +1118,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			subType: TSR_DeviceType.CASPARCG
 		}).fetch()) || undefined,
-		rundownLayoutId: String(params['layout']),
-		onlyShelf: onlyShelf
+		rundownLayoutId: String(params['layout'])
 	}
 })(class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private readonly LIVELINE_HISTORY_SIZE = 100
