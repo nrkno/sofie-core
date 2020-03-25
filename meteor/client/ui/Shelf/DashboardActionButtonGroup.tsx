@@ -28,6 +28,17 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 		}
 	}
 
+	klarOnAir = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode) {
+			if (this.props.rundown.active) {
+				doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
+			}
+			doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id])
+			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+		}
+	}
+
 	onButtonDown = (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => {
 		switch (button.type) {
 			case ActionButtonType.QUEUE_ADLIB:
@@ -43,6 +54,9 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 				break
 			case ActionButtonType.QUEUE_ADLIB:
 				this.props.onChangeQueueAdLib && this.props.onChangeQueueAdLib(false, e)
+				break
+			case ActionButtonType.KLAR_ON_AIR:
+				this.klarOnAir(e)
 				break
 		}
 	}
