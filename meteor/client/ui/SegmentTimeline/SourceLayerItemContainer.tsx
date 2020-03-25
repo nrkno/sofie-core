@@ -51,7 +51,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	private mediaObjectSub: Meteor.SubscriptionHandle
 	private statusComp: Tracker.Computation
 	private objId: string
-	private overrides: any
+	private overrides: Partial<IPropsHeader>
 	private destroyed: boolean
 
 	updateMediaObjectSubscription () {
@@ -149,12 +149,15 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 				if (status !== props.piece.instance.piece.status || metadata) {
 					// Deep clone the required bits
 					const origPiece = (overrides.piece || props.piece) as PieceUi
-					const pieceCopy = {
+					const pieceCopy: PieceUi = {
 						...(overrides.piece || props.piece),
 						instance: {
 							...origPiece.instance,
+							piece: {
+								...origPiece.instance.piece,
+								status: status
+							}
 						},
-						status: status,
 						contentMetaData: metadata
 					}
 
