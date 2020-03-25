@@ -126,7 +126,12 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		const vtContent = innerPiece.content as VTContent | undefined
 		const duration = this.props.partDuration
 
-		return (vtContent && vtContent.editable && duration !== vtContent.editable.editorialDuration && vtContent.editable.editorialDuration !== 0) ?
+		return (
+			vtContent &&
+			vtContent.editable &&
+			vtContent.editable.editorialDuration !== undefined &&
+			vtContent.editable.editorialDuration !== vtContent.sourceDuration
+		) ?
 			<div className='segment-timeline__piece__label label-icon'>
 				<FontAwesomeIcon icon={faCut} />
 			</div>
