@@ -72,6 +72,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Filter out items that are not within outputLayerIds filter
 		if (
 			filter.outputLayerIds !== undefined &&
+			filter.outputLayerIds.length &&
 			filter.outputLayerIds.indexOf(item.outputLayerId) < 0
 		) {
 			return false
@@ -79,6 +80,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Source layers
 		if (
 			filter.sourceLayerIds !== undefined &&
+			filter.sourceLayerIds.length &&
 			filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
 		) {
 			return false
@@ -88,6 +90,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		if (
 			sourceLayerType &&
 			filter.sourceLayerTypes !== undefined &&
+			filter.sourceLayerTypes.length &&
 			filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
 		) {
 			return false
@@ -95,6 +98,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Item label needs at least one of the strings in the label array
 		if (
 			filter.label !== undefined &&
+			filter.label.length &&
 			filter.label.reduce((p, v) => {
 				return p || uppercaseLabel.indexOf(v.toUpperCase()) >= 0
 			}, false) === false
@@ -104,6 +108,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Item tags needs to contain all of the strings in the tags array
 		if (
 			filter.tags !== undefined &&
+			filter.tags.length &&
 			filter.tags.reduce((p, v) => {
 				return p && (item.tags !== undefined && item.tags.indexOf(v) >= 0)
 			}, true) === false
@@ -426,12 +431,12 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 
 	// This is a map of partIds mapped onto segments they are part of
 	const uiPartSegmentMap = new Map<string, SegmentUi>()
-	
+
 	props.rundown.getParts({
 		segmentId: {
 			$in: Array.from(uiSegmentMap.keys())
 		}
-	}, ).forEach((part) => {
+	},).forEach((part) => {
 		const segment = uiSegmentMap.get(part.segmentId)
 		if (segment) {
 			segment.parts.push(part)

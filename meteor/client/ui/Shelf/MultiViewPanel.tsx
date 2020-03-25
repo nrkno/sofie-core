@@ -5,7 +5,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import * as classNames from 'classnames'
-import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter } from './AdLibPanel'
+import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 import { Studio } from '../../../lib/collections/Studios'
@@ -121,9 +121,8 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		const isTake = this.props.panel.role === RundownLayoutMultiViewRole.TAKE
 		const isProgram = this.props.panel.role === RundownLayoutMultiViewRole.PROGRAM
 		const isLarge = isProgram || isTake
-		console.log(this.props.rundownBaselineAdLibs)
-		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs
-		.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))[this.props.adlibRank ? this.props.adlibRank : 0]
+		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs ?
+		this.props.rundownBaselineAdLibs.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces))).filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[this.props.adlibRank ? this.props.adlibRank : 0] : undefined
 		return <div className='multiview-panel'
 			style={
 				_.extend(
