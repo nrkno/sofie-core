@@ -4,6 +4,7 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { getRundownId, getPartId, getRundown } from '../lib'
 import { IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { RundownId } from '../../../../lib/collections/Rundowns'
 
 export function getRundownIdFromMosRO (studio: Studio, runningOrderMosId: MOS.MosString128) {
 	if (!runningOrderMosId) throw new Meteor.Error(401, 'parameter runningOrderMosId missing!')
@@ -15,12 +16,12 @@ export function getRundownFromMosRO (studio: Studio, runningOrderMosId: MOS.MosS
 	return getRundown(rundownId, parseMosString(runningOrderMosId))
 }
 
-export function getPartIdFromMosStory (rundownId: string, partMosId: MOS.MosString128) {
+export function getPartIdFromMosStory (rundownId: RundownId, partMosId: MOS.MosString128) {
 	if (!partMosId) throw new Meteor.Error(401, 'parameter partMosId missing!')
 	return getPartId(rundownId, parseMosString(partMosId))
 }
 
-export function getSegmentExternalId (rundownId: string, ingestPart: IngestPart) {
+export function getSegmentExternalId (rundownId: RundownId, ingestPart: IngestPart) {
 	return `${rundownId}_${ingestPart.name.split(';')[0]}_${ingestPart.externalId}`
 }
 

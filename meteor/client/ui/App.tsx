@@ -119,7 +119,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					{/* Header switch - render the usual header for all pages but the rundown view */}
 					<ErrorBoundary>
 						<Switch>
-							<Route path='/rundown/:rundownId' component={NullComponent} />
+							<Route path='/rundown/:playlistId' component={NullComponent} />
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRundown' component={NullComponent} />
@@ -133,7 +133,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							{/* <Route exact path='/' component={Dashboard} /> */}
 							<Route exact path='/' component={RundownList} />
 							<Route path='/rundowns' component={RundownList} />
-							<Route path='/rundown/:rundownId' component={RundownView} />
+							<Route path='/rundown/:playlistId' component={RundownView} />
 							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />

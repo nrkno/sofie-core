@@ -1,8 +1,11 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { RundownId } from './Rundowns'
+import { SegmentId } from './Segments'
+import { PartId } from './Parts'
 
 export enum IngestCacheType {
 	RUNDOWN = 'rundown',
@@ -11,36 +14,39 @@ export enum IngestCacheType {
 }
 export type IngestCacheData = IngestRundown | IngestSegment | IngestPart
 
+/** A string, identifying a IngestDataCacheObj */
+export type IngestDataCacheObjId = ProtectedString<'IngestDataCacheObjId'>
+
 export interface IngestDataCacheObjBase {
-	_id: string
+	_id: IngestDataCacheObjId
 	modified: number
 	type: IngestCacheType
 
 	/** Id of the Rundown */
-	rundownId: string
-	segmentId?: string
-	partId?: string
+	rundownId: RundownId
+	segmentId?: SegmentId
+	partId?: PartId
 
 	data: IngestCacheData
 }
 
 export interface IngestDataCacheObjRundown extends IngestDataCacheObjBase {
 	type: IngestCacheType.RUNDOWN
-	rundownId: string
+	rundownId: RundownId
 	data: IngestRundown
 }
 export interface IngestDataCacheObjSegment extends IngestDataCacheObjBase {
 	type: IngestCacheType.SEGMENT
-	rundownId: string
-	segmentId: string
+	rundownId: RundownId
+	segmentId: SegmentId
 
 	data: IngestSegment
 }
 export interface IngestDataCacheObjPart extends IngestDataCacheObjBase {
 	type: IngestCacheType.PART
-	rundownId: string
-	segmentId: string
-	partId: string
+	rundownId: RundownId
+	segmentId: SegmentId
+	partId: PartId
 	data: IngestPart
 }
 export type IngestDataCacheObj = IngestDataCacheObjRundown | IngestDataCacheObjSegment | IngestDataCacheObjPart

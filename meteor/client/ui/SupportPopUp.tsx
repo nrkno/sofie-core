@@ -5,7 +5,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as faQuestion from '@fortawesome/fontawesome-free-solid/faQuestion'
-import { translate } from 'react-i18next'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 import { getHelpMode } from '../lib/localStorage'
 
 interface IProps {
@@ -78,31 +78,31 @@ export class SupportPopUpToggle extends React.PureComponent<IToggleProps> {
 	}
 }
 
-export const DocumentationLink = translate()(class DocumentationLink extends React.Component {
+export const DocumentationLink = translate()(class DocumentationLink extends React.Component<InjectedTranslateProps> {
 	render () {
+		const { t } = this.props
 		return (
-			<div>
+			<p className='mod mhn mbn'>
 				{
 					getHelpMode() ?
 					<div>
-						Disable hints by adding this to the URL:&nbsp;
+						{t('Disable hints by adding this to the URL:')}&nbsp;
 						<a href='?help=0'>
 							?help=0
 						</a>
 					</div> :
 					<div>
-						Enable hints by adding this to the URL:&nbsp;
+						{t('Enable hints by adding this to the URL:')}&nbsp;
 						<a href='?help=1'>
 							?help=1
 						</a>
 					</div>
 				}
-				More documentation available at:&nbsp;
+				{t('More documentation available at:')}&nbsp;
 				<a href='https://github.com/nrkno/Sofie-TV-automation/'>
 					https://github.com/nrkno/Sofie-TV-automation/
 				</a>
-			</div>
+			</p>
 		)
 	}
 })
-

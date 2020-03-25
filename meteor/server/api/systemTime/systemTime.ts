@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 const ntpClient: NtpClient = require('ntp-client')
 import { NtpClient } from '../../typings/ntp-client'
-import { systemTime } from '../../../lib/lib'
+import { systemTime, getCurrentTime } from '../../../lib/lib'
 import { StatusCode, setSystemStatus } from '../../systemStatus/systemStatus'
 import { logger } from '../../logging'
+import { TimeDiff, DiffTimeResult } from '../../../lib/api/peripheralDevice'
 
 /** How often the system-time should be updated */
 const UPDATE_SYSTEM_TIME_INTERVAL = 3600 * 1000
@@ -14,7 +15,7 @@ const UPDATE_SYSTEM_TIME_INTERVAL = 3600 * 1000
  * https://stackoverflow.com/questions/1228089/how-does-the-network-time-protocol-work
  * @param config config object
  */
-export function determineDiffTime (config: Config): Promise<{mean: number, stdDev: number}> {
+function determineDiffTimeInner (config: Config): Promise<DiffTimeResult> {
 
 	let maxSampleCount 	= config.maxSampleCount || 20
 	let minSampleCount 	= config.minSampleCount || 10
@@ -138,7 +139,7 @@ function updateServerTime (retries: number = 0) {
 	let ntpServer = (ntpServerStr.split(',') || [])[0] || 'pool.ntp.org' // Just use the first one specified, for now
 	logger.info(`System time: Updating, using ntp-server "${ntpServer}"...`)
 
-	determineDiffTime({
+	determineDiffTimeInner({
 		host: ntpServer,
 		maxSampleCount: 20,
 		minSampleCount: 10,
@@ -180,8 +181,8 @@ function updateServerTime (retries: number = 0) {
 		}
 	})
 }
-setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting up...'] })
 Meteor.startup(() => {
+	setSystemStatus('systemTime', { statusCode: StatusCode.BAD, messages: ['Starting up...'] })
 	Meteor.setInterval(() => {
 		updateServerTime()
 	}, UPDATE_SYSTEM_TIME_INTERVAL)
@@ -198,3 +199,20 @@ Meteor.startup(() => {
 // 	logger.debug('result', result)
 // 	// if result.stdDev is less than one frame-time, we should be okay
 // })
+export function determineDiffTime () {
+	return determineDiffTimeInner({
+		maxSampleCount: 20,
+		minSampleCount: 10,
+		maxAllowedDelay: 500
+	})
+}
+
+export function getTimeDiff (): TimeDiff {
+	return {
+		currentTime: getCurrentTime(),
+		systemRawTime: Date.now(),
+		diff: systemTime.diff,
+		stdDev: systemTime.stdDev,
+		good: (systemTime.stdDev < 1000 / 50)
+	}
+}

@@ -1,10 +1,10 @@
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
-import { Optional } from '../lib'
+import { Omit, ProtectedString } from '../lib'
 
 declare module 'meteor/tracker' {
 	namespace Tracker {
-		// Fix an incomplete definition of Tracker.nonreactive in @typings/meteor 
+		// Fix an incomplete definition of Tracker.nonreactive in @typings/meteor
 		function nonreactive<U>(func: () => U): U
 	}
 }
@@ -88,8 +88,28 @@ export interface UpsertOptions {
 
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
 export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
+export interface Mongocursor<DBInterface extends { _id: ProtectedString<any>}> extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
+	observe(callbacks: ObserveCallbacks<DBInterface>): Meteor.LiveQueryHandle;
+    observeChanges(callbacks: ObserveChangesCallbacks<DBInterface>): Meteor.LiveQueryHandle;
+}
+export interface ObserveCallbacks<DBInterface> {
+	added?(document: DBInterface): void;
+	addedAt?(document: DBInterface, atIndex: number, before: DBInterface): void;
+	changed?(newDocument: DBInterface, oldDocument: DBInterface): void;
+	changedAt?(newDocument: DBInterface, oldDocument: DBInterface, indexAt: number): void;
+	removed?(oldDocument: DBInterface): void;
+	removedAt?(oldDocument: DBInterface, atIndex: number): void;
+	movedTo?(document: DBInterface, fromIndex: number, toIndex: number, before: Object): void;
+}
+export interface ObserveChangesCallbacks<DBInterface extends { _id: ProtectedString<any>}> {
+	added?(id: DBInterface['_id'], fields: Object): void;
+	addedBefore?(id: DBInterface['_id'], fields: Object, before: Object): void;
+	changed?(id: DBInterface['_id'], fields: Object): void;
+	movedBefore?(id: DBInterface['_id'], before: Object): void;
+	removed?(id: DBInterface['_id']): void;
+}
 
-export interface TransformedCollection<Class, DBInterface> {
+export interface TransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> {
 	allow (options: {
 		insert?: (userId: string, doc: DBInterface) => boolean
 		update?: (userId: string, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
@@ -104,15 +124,15 @@ export interface TransformedCollection<Class, DBInterface> {
 		fetch?: string[]
 		transform?: Function
 	}): boolean
-	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | string, options?: FindOptions): Mongo.Cursor<Class>
-	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | string, options?: Omit<FindOptions, 'limit'>): Class | undefined
-	insert (doc: DBInterface, callback?: Function): string
+	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: FindOptions): Mongocursor<Class>
+	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: Omit<FindOptions, 'limit'>): Class | undefined
+	insert (doc: DBInterface, callback?: Function): DBInterface['_id']
 	rawCollection (): any
 	rawDatabase (): any
-	remove (selector: MongoSelector<DBInterface> | Mongo.ObjectID | string, callback?: Function): number
-	update (selector: MongoSelector<DBInterface> | Mongo.ObjectID | string, modifier: MongoModifier<DBInterface>, options?: UpdateOptions, callback?: Function): number
-	upsert (selector: MongoSelector<DBInterface> | Mongo.ObjectID | string, modifier: MongoModifier<DBInterface>, options?: UpsertOptions, callback?: Function): {
-		numberAffected?: number; insertedId?: string
+	remove (selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], callback?: Function): number
+	update (selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], modifier: MongoModifier<DBInterface>, options?: UpdateOptions, callback?: Function): number
+	upsert (selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], modifier: MongoModifier<DBInterface>, options?: UpsertOptions, callback?: Function): {
+		numberAffected?: number; insertedId?: DBInterface['_id']
 	}
 	_ensureIndex (keys: {
 		[key: string]: number | string

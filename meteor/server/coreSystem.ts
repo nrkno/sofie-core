@@ -10,7 +10,7 @@ import {
 	VersionRange,
 	GENESIS_SYSTEM_VERSION
 } from '../lib/collections/CoreSystem'
-import { getCurrentTime } from '../lib/lib'
+import { getCurrentTime, unprotectString } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	CURRENT_SYSTEM_VERSION,
@@ -94,7 +94,7 @@ function checkDatabaseVersions () {
 		let blueprintIds: { [id: string]: true } = {}
 		Blueprints.find().forEach((blueprint) => {
 			if (blueprint.code) {
-				blueprintIds[blueprint._id] = true
+				blueprintIds[unprotectString(blueprint._id)] = true
 
 				// @ts-ignore
 				if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
@@ -117,7 +117,7 @@ function checkDatabaseVersions () {
 					if (o.statusCode === StatusCode.GOOD) {
 						o = checkDatabaseVersion(
 							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-							parseRange(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+							parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)] || '0.0.0'),
 							'to fix, run migration',
 							'blueprint.blueprintVersion',
 							`databaseVersion.showStyle[${showStyleBase._id}]`
@@ -127,13 +127,13 @@ function checkDatabaseVersions () {
 					Studios.find({
 						supportedShowStyleBase: showStyleBase._id
 					}).forEach((studio) => {
-						if (!studioIds[studio._id]) { // only run once per blueprint and studio
-							studioIds[studio._id] = true
+						if (!studioIds[unprotectString(studio._id)]) { // only run once per blueprint and studio
+							studioIds[unprotectString(studio._id)] = true
 
 							if (o.statusCode === StatusCode.GOOD) {
 								o = checkDatabaseVersion(
 									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-									parseRange(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+									parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)] || '0.0.0'),
 									'to fix, run migration',
 									'blueprint.blueprintVersion',
 									`databaseVersion.studio[${studio._id}]`

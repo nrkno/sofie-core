@@ -1,5 +1,6 @@
 import { TransformedCollection } from '../../lib/typings/meteor'
 import * as _ from 'underscore'
+import { ProtectedString } from '../../lib/lib'
 
 /*
 interface MockedCollection<T, Y extends any[]> {
@@ -12,7 +13,7 @@ interface MockedCollection {
 	mockReset: jest.MockInstance<void, any[]>['mockReset']
 }
 
-export function mockupCollection<A, B> (
+export function mockupCollection<A extends B, B extends { _id: ProtectedString<any> }> (
 	collection0: TransformedCollection<A, B>
 ) {
 

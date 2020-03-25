@@ -1,7 +1,10 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
+import { PeripheralDeviceId } from './PeripheralDevices'
+import { StudioId } from './Studios'
+import { MediaWorkFlowId } from './MediaWorkFlows'
 
 export enum WorkStepStatus {
 	IDLE = 'idle',
@@ -12,16 +15,18 @@ export enum WorkStepStatus {
 	CANCELED = 'canceled',
 	BLOCKED = 'blocked'
 }
+/** A string, identifying a MediaWorkFlowStep */
+export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
 
 export abstract class MediaWorkFlowStep {
-	_id: string
+	_id: MediaWorkFlowStepId
 	_rev: string
 
 	/** Which device this workflow originated from */
-	deviceId: string
-	studioId: string
+	deviceId: PeripheralDeviceId
+	studioId: StudioId
 
-	workFlowId: string
+	workFlowId: MediaWorkFlowId
 	action: string
 	status: WorkStepStatus
 	messages?: Array<string>

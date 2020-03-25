@@ -1,7 +1,9 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time } from '../lib'
+import { registerCollection, Time, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
+import { StudioId } from './Studios'
+import { PeripheralDeviceId } from './PeripheralDevices'
 
 export enum WorkFlowSource {
 	EXPECTED_MEDIA_ITEM = 'expected_media_item',
@@ -10,8 +12,11 @@ export enum WorkFlowSource {
 	TARGET_STORAGE_REMOVE = 'local_storage_remove'
 }
 
+/** A string, identifying a MediaWorkFlow */
+export type MediaWorkFlowId = ProtectedString<'MediaWorkFlowId'>
+
 export interface MediaWorkFlow {
-	_id: string
+	_id: MediaWorkFlowId
 	_rev: string
 
 	name?: string
@@ -19,8 +24,8 @@ export interface MediaWorkFlow {
 	comment?: string
 
 	/** Which device this workflow originated from */
-	deviceId: string
-	studioId: string
+	deviceId: PeripheralDeviceId
+	studioId: StudioId
 
 	source: WorkFlowSource
 	/** Id of the expectedMedia Item */

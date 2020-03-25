@@ -1,16 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
-import { logger } from '../../logging'
-import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
-import { setMeteorMethods, Methods } from '../../methods'
-import { PeripheralDevices, PeripheralDevice, getStudioIdFromDevice } from '../../../lib/collections/PeripheralDevices'
+import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
+import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { protectString } from '../../../lib/lib'
+import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 
 export namespace MediaScannerIntegration {
-	export function getMediaObjectRevisions (id: string, token: string, collectionId: string) {
+	export function getMediaObjectRevisions (deviceId: PeripheralDeviceId, token: string, collectionId: string): MediaObjectRevision[] {
 		// logger.debug('getMediaObjectRevisions')
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
 
 
 		const studioId = getStudioIdFromDevice(peripheralDevice)
@@ -30,13 +29,13 @@ export namespace MediaScannerIntegration {
 			throw new Meteor.Error(400, 'getMediaObjectRevisions: Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
-	export function updateMediaObject (id: string, token: string, collectionId: string, objId: string, doc: MediaObject | null) {
+	export function updateMediaObject (deviceId: PeripheralDeviceId, token: string, collectionId: string, objId: string, doc: MediaObject | null) {
 		// logger.debug('updateMediaObject')
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(id, token, this)
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
 
 		const studioId = getStudioIdFromDevice(peripheralDevice)
 
-		let _id = collectionId + '_' + objId
+		let _id: MediaObjId = protectString(collectionId + '_' + objId)
 		if (_.isNull(doc)) {
 			MediaObjects.remove(_id)
 		} else if (doc) {
@@ -54,13 +53,3 @@ export namespace MediaScannerIntegration {
 		}
 	}
 }
-
-let methods: Methods = {}
-methods[PeripheralDeviceAPI.methods.getMediaObjectRevisions] = (deviceId: string, deviceToken: string, collectionId: string,) => {
-	return MediaScannerIntegration.getMediaObjectRevisions(deviceId, deviceToken, collectionId)
-}
-methods[PeripheralDeviceAPI.methods.updateMediaObject] = (deviceId: string, deviceToken: string, collectionId: string, id: string, doc: MediaObject | null) => {
-	return MediaScannerIntegration.updateMediaObject(deviceId, deviceToken, collectionId, id, doc)
-}
-// Apply methods:
-setMeteorMethods(methods)

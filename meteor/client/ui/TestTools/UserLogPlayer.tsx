@@ -5,16 +5,17 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { MomentFromNow } from '../../lib/Moment'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionsLogItem, UserActionsLog } from '../../../lib/collections/UserActionsLog'
-import { Time, getCurrentTime } from '../../../lib/lib'
+import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import * as moment from 'moment'
 import { Meteor } from 'meteor/meteor'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import { UserActionsList } from '../Status/UserActivity'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
 import { Link } from 'react-router-dom'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { MeteorCall, CallUserActionAPIMethod } from '../../../lib/api/methods'
+import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 interface NextUserLogAction {
 	message: UserActionsLogItem
@@ -25,7 +26,7 @@ interface NextUserLogAction {
 interface IRecordingListProps {
 	match?: {
 		params?: {
-			rundownId: string
+			rundownId: RundownId
 		}
 	}
 }
@@ -137,19 +138,19 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 	executeSingle (e, msg: UserActionsLogItem) {
 		const { t } = this.props
 
-		const method = msg.method as UserActionAPI.methods
+		const method = msg.method as UserActionAPIMethods
 		const args = JSON.parse(msg.args)
 
 		// Modify any parameters here
 		switch (msg.method) {
-			case UserActionAPI.methods.activate:
-			case UserActionAPI.methods.resetAndActivate:
+			case UserActionAPIMethods.activate:
+			case UserActionAPIMethods.resetAndActivate:
 				// Always run in rehearsal mode
 				args[1] = true
 				break
 		}
 
-		doUserAction(t, e, method, args)
+		doUserAction(t, e, `Method ${method}`, () => CallUserActionAPIMethod(method, args))
 	}
 
 	renderButtons (msg: UserActionsLogItem) {
@@ -212,7 +213,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 					{this.renderDatePicker()}
 				</div>
 				<div className='mod mvl'>
-					<UserActionsList items={this.props.log} renderButtons={this.renderButtons.bind(this)} />
+					<UserActionsList logItems={this.props.log} renderButtons={this.renderButtons.bind(this)} />
 				</div>
 			</div>
 		)
@@ -233,12 +234,12 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 
 	const rundownMap: IRundownSelectTrackedProps['rundowns'] = {}
 	_.each(rundowns, rundown => {
-		rundownMap[rundown._id] = `${rundown.name} (${rundown._id})`
+		rundownMap[unprotectString(rundown._id)] = `${rundown.name} (${rundown._id})`
 	})
 
 	_.each(snapshots, snapshot => {
-		if (snapshot.rundownId && !rundownMap[snapshot.rundownId]) {
-			rundownMap[snapshot.rundownId] = `${snapshot.rundownId}`
+		if (snapshot.rundownId && !rundownMap[unprotectString(snapshot.rundownId)]) {
+			rundownMap[unprotectString(snapshot.rundownId)] = `${snapshot.rundownId}`
 		}
 	})
 

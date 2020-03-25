@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-01-10T17:37:50.515Z\n"
-"PO-Revision-Date: 2020-01-10T17:37:50.515Z\n"
+"POT-Creation-Date: 2020-03-04T08:26:08.620Z\n"
+"PO-Revision-Date: 2020-03-04T08:26:08.620Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -1213,6 +1213,9 @@ msgstr ""
 msgid "New Layout"
 msgstr ""
 
+msgid "Button"
+msgstr ""
+
 msgid "New Tab"
 msgstr ""
 
@@ -1228,16 +1231,10 @@ msgstr ""
 msgid "Are you sure you want to delete the shelf layout \"{{name}}\"?"
 msgstr ""
 
-msgid "Only Match Global AdLibs"
+msgid "Action Buttons"
 msgstr ""
 
-msgid "Tabs"
-msgstr ""
-
-msgid "Panels"
-msgstr ""
-
-msgid "Name"
+msgid "Label"
 msgstr ""
 
 msgid "X"
@@ -1250,6 +1247,18 @@ msgid "Width"
 msgstr ""
 
 msgid "Height"
+msgstr ""
+
+msgid "Only Match Global AdLibs"
+msgstr ""
+
+msgid "Tabs"
+msgstr ""
+
+msgid "Panels"
+msgstr ""
+
+msgid "Name"
 msgstr ""
 
 msgid "Button width scale factor"
@@ -1285,10 +1294,22 @@ msgstr ""
 msgid "Label contains"
 msgstr ""
 
+msgid "Tags must contain"
+msgstr ""
+
 msgid "Register Shortcuts for this Panel"
 msgstr ""
 
 msgid "Default Layout"
+msgstr ""
+
+msgid "Add tab"
+msgstr ""
+
+msgid "Add panel"
+msgstr ""
+
+msgid "Add button"
 msgstr ""
 
 msgid "Upload Layout?"
@@ -1956,6 +1977,15 @@ msgid "Parameters"
 msgstr ""
 
 msgid "User Activity Log"
+msgstr ""
+
+msgid "Disable hints by adding this to the URL:"
+msgstr ""
+
+msgid "Enable hints by adding this to the URL:"
+msgstr ""
+
+msgid "More documentation available at:"
 msgstr ""
 
 msgid "Recordings"
