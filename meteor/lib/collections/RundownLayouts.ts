@@ -79,6 +79,7 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 	y: number
 	width: number
 	height: number
+	scale: number
 }
 
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
