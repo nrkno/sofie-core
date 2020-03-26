@@ -33,9 +33,10 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 		if (this.props.studioMode) {
 			if (this.props.rundown.active) {
 				doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
+			} else {
+				doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id])
+				doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
 			}
-			doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id])
-			doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
 		}
 	}
 
@@ -68,7 +69,8 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 						key={button._id}
 						onButtonDown={this.onButtonDown}
 						onButtonUp={this.onButtonUp}
-						button={button} />
+						button={button}
+						rundown={this.props.rundown} />
 				)
 	}
 })

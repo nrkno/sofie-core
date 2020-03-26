@@ -2,10 +2,13 @@ import * as React from 'react'
 import * as ClassNames from 'classnames'
 
 import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
-import { DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
+import { Rundown } from '../../../lib/collections/Rundowns'
+import { rundownBaselineAdLibPieceStart } from '../../../server/api/userActions'
 
 export interface IDashboardButtonProps {
 	button: DashboardLayoutActionButton
+	rundown: Rundown
 
 	onButtonDown: (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => void
 	onButtonUp: (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => void
@@ -16,6 +19,19 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 
 	constructor (props: IDashboardButtonProps) {
 		super(props)
+	}
+
+	getSpecialClasses () {
+		const { button } = this.props
+		switch (button.type) {
+			case ActionButtonType.KLAR_ON_AIR:
+				return {
+					'rehearsal': this.props.rundown.rehearsal,
+					'active': this.props.rundown.active
+				}
+			default:
+				return {}
+		}
 	}
 
 	render () {
@@ -59,7 +75,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 					<div className={ClassNames(
 							'dashboard-panel__panel__button',
 							'dashboard-panel__panel__button--standalone',
-							`type--${button.type}`
+							`type--${button.type}`,
+							this.getSpecialClasses()
 						)}
 						onMouseDown={(e) => this.props.onButtonDown(button, e)}
 						onMouseUp={(e) => this.props.onButtonUp(button, e)}

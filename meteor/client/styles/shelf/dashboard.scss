@@ -51,6 +51,14 @@ $dashboard-button-height: 5.625em;
 				&.type--take {
 					background-color: $general-live-color;
 				}
+
+				&.active {
+					background-color: #761912;
+				}
+
+				&.active.rehearsal {
+					background-color: #CBCCCD;
+				}
 			}
 		}
 	}
