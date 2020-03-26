@@ -17,6 +17,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -128,13 +129,16 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		}
 	}
 
-	renderSplits () {
+	renderSplits (renderThumbnail: boolean = false) {
 		const splitAdLib = this.props.item as AdLibPieceUi
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
-			return (
-				<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
-			)
+			return <React.Fragment>
+				{renderThumbnail ?
+					<DashboardPieceButtonSplitPreview piece={this.props.item as any as AdLibPieceUi} /> :
+					<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
+				}
+			</React.Fragment>
 		}
 	}
 
@@ -165,10 +169,10 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				data-obj-id={this.props.item._id}
 				>
 				{
-					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
+					([SourceLayerType.VT, SourceLayerType.LIVE_SPEAK, SourceLayerType.TRANSITION].includes(this.props.layer.type)) ?
 						this.renderVTLiveSpeak() :
 					(this.props.layer.type === SourceLayerType.SPLITS) ?
-						this.renderSplits() :
+						this.renderSplits(isList) :
 						null
 				}
 				<span className='dashboard-panel__panel__button__label'>{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.item.name}</span>
