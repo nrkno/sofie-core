@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.7.0-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.7.0-0...v1.7.0-1) (2020-03-26)
+
+
+### Bug Fixes
+
+* cut icon logic for marking trimmed clips ([#201](https://github.com/nrkno/tv-automation-server-core/issues/201)) ([3d9404e](https://github.com/nrkno/tv-automation-server-core/commit/3d9404e))
+* Part Instances contentMetaData broken ([#205](https://github.com/nrkno/tv-automation-server-core/issues/205)) ([d6a9f94](https://github.com/nrkno/tv-automation-server-core/commit/d6a9f94))
+
+
+
 ## [1.7.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.1...v1.7.0-0) (2020-03-26)
 
 
