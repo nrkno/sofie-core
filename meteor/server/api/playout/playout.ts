@@ -445,7 +445,8 @@ export namespace ServerPlayoutAPI {
 		rundown: Rundown,
 		nextPartId: string | DBPart | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined
+		nextTimeOffset?: number | undefined,
+		skipRunResetPart?: boolean
 	) {
 		if (!rundown.active) throw new Meteor.Error(501, `Rundown "${rundown._id}" is not active!`)
 
@@ -463,7 +464,7 @@ export namespace ServerPlayoutAPI {
 
 		const takePart = rundown.currentPartId && Parts.findOne(rundown.currentPartId) || null
 
-		libSetNextPart(rundown, nextPart, takePart, setManually, nextTimeOffset)
+		libSetNextPart(rundown, nextPart, takePart, setManually, nextTimeOffset, skipRunResetPart)
 
 		// remove old auto-next from timeline, and add new one
 		updateTimeline(rundown.studioId)

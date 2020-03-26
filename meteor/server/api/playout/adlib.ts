@@ -223,16 +223,6 @@ export namespace ServerPlayoutAdLibAPI {
 				})
 			}
 
-			// keep infinite pieces
-			// TODO - what does this actually do? It looks like a bad attempt to efficiently update infinites, but that it will cause problems
-			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
-				// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
-				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
-					let newPiece = convertAdLibToPiece(piece, part!, true, 0)
-					Pieces.insert(newPiece)
-				}
-			})
-
 			// Copy across adlib-preroll and other properties needed on the part
 			if (newPiece.adlibPreroll !== undefined) {
 				Parts.update(partId, {
@@ -274,17 +264,15 @@ export namespace ServerPlayoutAdLibAPI {
 				})
 			}
 
-			ServerPlayoutAPI.setNextPartInner(rundown, partId)
-		} else {
-			updateSourceLayerInfinitesAfterPart(rundown)
-			cropInfinitesOnLayer(rundown, part, newPiece)
-			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
-			updateTimeline(rundown.studioId)
+			ServerPlayoutAPI.setNextPartInner(rundown, partId, undefined, undefined, true)
 		}
+
+		updateSourceLayerInfinitesAfterPart(rundown)
+		cropInfinitesOnLayer(rundown, part, newPiece)
+		stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
+		updateTimeline(rundown.studioId)
 	}
 	function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
-		logger.info('adlibQueueInsertPart')
-
 		const part = Parts.findOne(partId)
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 
