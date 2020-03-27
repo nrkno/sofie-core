@@ -36,6 +36,7 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
+import { getNextPiecesReactive } from './MultiViewPanel'
 
 interface IState {
 	outputLayers: {
@@ -57,6 +58,9 @@ interface IDashboardPanelProps {
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieces: {
+		[key: string]: Piece[]
+	}
+	nextPieces: {
 		[key: string]: Piece[]
 	}
 }
@@ -182,6 +186,13 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 
 	isAdLibOnAir (adLib: AdLibPieceUi) {
 		if (this.props.unfinishedPieces[adLib._id] && this.props.unfinishedPieces[adLib._id].length > 0) {
+			return true
+		}
+		return false
+	}
+
+	isAdLibNext (adLib: AdLibPieceUi) {
+		if (this.props.nextPieces[adLib._id] && this.props.nextPieces[adLib._id].length > 0) {
 			return true
 		}
 		return false
@@ -418,6 +429,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 												onToggleAdLib={usesTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
 												rundown={this.props.rundown}
 												isOnAir={this.isAdLibOnAir(item)}
+												isNext={this.isAdLibNext(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
@@ -540,7 +552,8 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return Object.assign({}, fetchAndFilter(props), {
 		studio: props.rundown.getStudio(),
-		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)
+		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId),
+		nextPieces: getNextPiecesReactive(props.rundown._id, props.rundown.nextPartId)
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)

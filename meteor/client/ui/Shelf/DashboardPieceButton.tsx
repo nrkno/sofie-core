@@ -36,6 +36,7 @@ export interface IDashboardButtonProps {
 	rundown: Rundown
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
+	isNext?: boolean
 	widthScale?: number
 	heightScale?: number
 	displayStyle?: PieceDisplayStyle
@@ -155,7 +156,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 
 				'live': this.props.isOnAir,
 				'list': isOfftubeList,
-				'selected': this.props.isSelected
+				'selected': this.props.isSelected || this.props.isNext
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
 					width: isOfftubeList ? 'calc(100% - 8px)' : (this.props.widthScale ?
