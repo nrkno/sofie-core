@@ -92,8 +92,9 @@ export namespace MOSDeviceActions {
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
-			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
+			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, response: MOS.IMOSAck) => {
 				if (err) reject(err)
+				else if (response.Status !== MOS.IMOSAckStatus.ACK) reject(response)
 				else resolve()
 			}, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story)
 		})
