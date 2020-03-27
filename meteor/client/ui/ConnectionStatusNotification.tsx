@@ -108,7 +108,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 	}
 
 	private getStatusText (
-		status: string,
+		status: DDP.Status,
 		reason: string | undefined,
 		retryTime: number | undefined
 	): string | React.ReactElement<HTMLElement> | null {
