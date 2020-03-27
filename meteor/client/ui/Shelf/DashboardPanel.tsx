@@ -277,7 +277,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, alwaysQueue: boolean, e: any) => {
+	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any, alwaysQueue: boolean = false) => {
 		const { t } = this.props
 
 		queue = queue || this.props.shouldQueue

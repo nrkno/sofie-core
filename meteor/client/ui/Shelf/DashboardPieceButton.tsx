@@ -32,7 +32,7 @@ export interface IDashboardButtonProps {
 	item: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, alwaysQueue: boolean, context: any) => void
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, alwaysQueue: boolean,) => void
 	rundown: Rundown
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
@@ -165,7 +165,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
-				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, isOfftubeList, e)}
+				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e, isOfftubeList)}
 				data-obj-id={this.props.item._id}
 				>
 				{
