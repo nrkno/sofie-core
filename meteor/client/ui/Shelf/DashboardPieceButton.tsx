@@ -143,7 +143,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	}
 
 	render () {
-		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
+		const isOfftubeList = this.props.displayStyle === PieceDisplayStyle.OFFTUBE_LIST
 		const hasMediaInfo = this.props.layer.type === SourceLayerType.VT && this.props.metadata && this.props.metadata.mediainfo
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
@@ -154,14 +154,14 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 				'live': this.props.isOnAir,
-				'list': isList,
+				'list': isOfftubeList,
 				'selected': this.props.isSelected
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
-					width: isList ? 'calc(100% - 8px)' : (this.props.widthScale ?
+					width: isOfftubeList ? 'calc(100% - 8px)' : (this.props.widthScale ?
 						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
 						undefined),
-					height: !isList && this.props.heightScale ?
+					height: !isOfftubeList && this.props.heightScale ?
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
@@ -172,10 +172,10 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 					([SourceLayerType.VT, SourceLayerType.LIVE_SPEAK, SourceLayerType.TRANSITION].includes(this.props.layer.type)) ?
 						this.renderVTLiveSpeak() :
 					(this.props.layer.type === SourceLayerType.SPLITS) ?
-						this.renderSplits(isList) :
+						this.renderSplits(isOfftubeList) :
 						null
 				}
-				<span className='dashboard-panel__panel__button__label'>{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.item.name}</span>
+				<span className='dashboard-panel__panel__button__label'>{isOfftubeList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.item.name}</span>
 			</div>
 		)
 	}

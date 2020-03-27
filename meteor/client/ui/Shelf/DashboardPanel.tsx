@@ -25,7 +25,7 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction } from '../../lib/userAction'
 import { UserActionAPI } from '../../../lib/api/userActions'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutFilter, DashboardLayoutFilter, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal, getCurrentTime } from '../../../lib/lib'
@@ -385,12 +385,13 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		const { t } = this.props
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
+			const isOfftubeList = filter.displayStyle === PieceDisplayStyle.OFFTUBE_LIST
 			if (!this.props.uiSegments || !this.props.rundown) {
 				return <Spinner />
 			} else {
 				return (
 					<div className={ClassNames('dashboard-panel', {
-						'dashboard-panel--take': filter.displayTakeButtons
+						'dashboard-panel--take': isOfftubeList && filter.displayTakeButtons
 					})}
 						style={dashboardElementPosition(filter)}
 					>

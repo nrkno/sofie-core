@@ -26,7 +26,8 @@ export enum RundownLayoutType {
  */
 export enum PieceDisplayStyle {
 	LIST = 'list',
-	BUTTONS = 'buttons'
+	BUTTONS = 'buttons',
+	OFFTUBE_LIST = 'offtube_list'
 }
 
 export enum RundownLayoutElementType {

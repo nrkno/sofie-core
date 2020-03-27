@@ -109,7 +109,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							t('New Panel') :
 							t('New Item'),
 					currentSegment: false,
-					displayStyle: isDashboardLayout ? PieceDisplayStyle.BUTTONS : PieceDisplayStyle.LIST,
+					displayStyle: PieceDisplayStyle.LIST,
 					label: undefined,
 					sourceLayerIds: undefined,
 					outputLayerIds: undefined,
@@ -292,7 +292,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	renderFilter (item: RundownLayoutBase, tab: RundownLayoutFilterBase, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
 		const { t } = this.props
-		const isList = tab.displayStyle === PieceDisplayStyle.LIST
+		const isOfftubeList = tab.displayStyle === PieceDisplayStyle.OFFTUBE_LIST
 		const rundownBaselineOptions = [
 			{
 				name: t('Yes'),
@@ -384,7 +384,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
-					{!isList &&
+					{!isOfftubeList &&
 						<React.Fragment>
 							<div className='mod mvs mhs'>
 								<label className='field'>
@@ -651,18 +651,20 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='mod mas' />
 						</label>
 					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Display Take buttons')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.displayTakeButtons`}
-								obj={item}
-								type='checkbox'
-								collection={RundownLayouts}
-								className='mod mas' />
-						</label>
-					</div>
+					{isOfftubeList &&
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Display Take buttons')}
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute={`filters.${index}.displayTakeButtons`}
+									obj={item}
+									type='checkbox'
+									collection={RundownLayouts}
+									className='mod mas' />
+							</label>
+						</div>
+					}
 				</React.Fragment>
 			}
 		</React.Fragment>
