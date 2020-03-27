@@ -277,7 +277,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, alwaysQueue: boolean, e: any) => {
 		const { t } = this.props
 
 		queue = queue || this.props.shouldQueue
@@ -298,14 +298,14 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 			return
 		}
 		if (this.props.rundown && this.props.rundown.currentPartId) {
-			if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+			if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey) || alwaysQueue) {
 				if (!piece.isGlobal) {
 					doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
-						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || alwaysQueue || false
 					])
 				} else if (piece.isGlobal && !piece.isSticky) {
 					doUserAction(t, e, UserActionAPI.methods.baselineAdLibPieceStart, [
-						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || false
+						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || alwaysQueue || false
 					])
 				} else if (piece.isSticky) {
 					this.onToggleSticky(piece.sourceLayerId, e)
@@ -375,7 +375,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	onSelectAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onSelectAdLib = (piece: AdLibPieceUi) => {
 		this.setState({
 			selectedAdLib: piece
 		})
@@ -386,12 +386,13 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			const isOfftubeList = filter.displayStyle === PieceDisplayStyle.OFFTUBE_LIST
+			const usesTakeButtons = isOfftubeList && filter.displayTakeButtons
 			if (!this.props.uiSegments || !this.props.rundown) {
 				return <Spinner />
 			} else {
 				return (
 					<div className={ClassNames('dashboard-panel', {
-						'dashboard-panel--take': isOfftubeList && filter.displayTakeButtons
+						'dashboard-panel--take': usesTakeButtons
 					})}
 						style={dashboardElementPosition(filter)}
 					>
@@ -414,7 +415,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 												item={item}
 												layer={this.state.sourceLayers[item.sourceLayerId]}
 												outputLayer={this.state.outputLayers[item.outputLayerId]}
-												onToggleAdLib={filter.displayTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
+												onToggleAdLib={usesTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
 												rundown={this.props.rundown}
 												isOnAir={this.isAdLibOnAir(item)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
