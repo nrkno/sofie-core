@@ -113,17 +113,18 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		retryTime: number | undefined
 	): string | React.ReactElement<HTMLElement> | null {
 		const t = this._translator
+		const platformName = t('Sofie Automation Server')
 		switch (status) {
 			case 'connecting':
-				return <span>{t('Connecting to the')} {t('Sofie Automation Server')}.</span>
+				return <span>{t('Connecting to the {{platformName}}', { platformName })}.</span>
 			case 'failed':
-				return <span>{t('Cannot connect to the')} {t('Sofie Automation Server:')} + reason}</span>
+				return <span>{t('Cannot connect to the {{platformName}}:', { platformName })} { reason }</span>
 			case 'waiting':
-				return <span>{t('Reconnecting to the')} {t('Sofie Automation Server')} <MomentFromNow unit='seconds'>{retryTime}</MomentFromNow></span>
+				return <span>{t('Reconnecting to the {{platformName}}', { platformName })} <MomentFromNow unit='seconds'>{retryTime}</MomentFromNow></span>
 			case 'offline':
-				return <span>{t('Your machine is offline and cannot connect to the')} {t('Sofie Automation Server')}.</span>
+				return <span>{t('Your machine is offline and cannot connect to the {{platformName}}.', { platformName })}</span>
 			case 'connected':
-				return <span>{t('Connected to the')} {t('Sofie Automation Server')}.</span>
+				return <span>{t('Connected to the {{platformName}}.', { platformName })}</span>
 		}
 		return null
 	}
