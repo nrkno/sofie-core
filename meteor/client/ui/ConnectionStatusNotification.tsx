@@ -118,7 +118,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			case 'connecting':
 				return <span>{t('Connecting to the {{platformName}}', { platformName })}.</span>
 			case 'failed':
-				return <span>{t('Cannot connect to the {{platformName}}:', { platformName })} { reason }</span>
+				return <span>{t('Cannot connect to the {{platformName}}: {{reason}}', { platformName, reason })}</span>
 			case 'waiting':
 				return <span>{t('Reconnecting to the {{platformName}}', { platformName })} <MomentFromNow unit='seconds'>{retryTime}</MomentFromNow></span>
 			case 'offline':
