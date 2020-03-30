@@ -44,6 +44,7 @@ export interface RundownLayoutElementBase {
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.EXTERNAL_FRAME
 	url: string
+	scale: number
 }
 
 /**
@@ -79,7 +80,6 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 	y: number
 	width: number
 	height: number
-	scale: number
 }
 
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
