@@ -197,6 +197,12 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
+											{t('Primary: dont use MOS query-port')}
+											<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.primary.dontUseQueryPort'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
 											{t('Secondary ID (Newsroom System MOS ID)')}
 											<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.secondary.id'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 										</label>
@@ -205,6 +211,12 @@ export const MosDeviceSettingsComponent = translate()(class MosDeviceSettingsCom
 										<label className='field'>
 											{t('Secondary Host (IP Address or Hostname)')}
 											<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.secondary.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Secondary: dont use MOS query-port')}
+											<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.secondary.dontUseQueryPort'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
 								</div>

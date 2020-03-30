@@ -916,6 +916,12 @@ body.no-overflow {
 					repeating-linear-gradient(-45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 4px, var(--invalid-reason-color-opaque) 4px, var(--invalid-reason-color-opaque) 8px) !important;
 			}
 		}
+		.segment-timeline__part.gap {
+			.segment-timeline__part__invalid-cover {
+				background: #000;
+				z-index: 0;
+			}
+		}
 	}
 
 	/* The timeline itself is constructed out of three overlapping layers:
@@ -1178,6 +1184,30 @@ body.no-overflow {
 				background-image:
 					repeating-linear-gradient(-45deg, transparent 0%, transparent 8px, darken($part-start-color, 50%) 8px, darken($part-start-color, 50%) 10px);
    				backdrop-filter: saturate(0%) brightness(50%);
+			}
+
+			&.gap {
+				.segment-timeline__part__invalid-cover {
+					z-index: 0;
+					background: #000;
+					background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTA4IDI3IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3R5bGU9ImZpbGwtcnVsZTpldmVub2RkO2NsaXAtcnVsZTpldmVub2RkOyI+PHBhdGggaWQ9IlBhdGgiIGQ9Ik0xMDEuMDYzLDEuNTc3Yy0yMC44MzcsMy42NzUgLTIzLjQwNCwyNC4zNTMgLTQ3Ljk3LDI0LjM1M2MtMjYuODg1LDAgLTI2LjQxOCwtMjQuNjI5IC01My4wOTMsLTI0LjkzbTEwMS4wNjMsMC41NzdjMi4xMTEsLTAuMzcyIDQuNDA5LC0wLjU3NyA2LjkzNywtMC41NzciIHN0eWxlPSJmaWxsOiNkOGQ4ZDg7ZmlsbC1vcGFjaXR5OjA7c3Ryb2tlOiM5Nzk3OTc7c3Ryb2tlLXdpZHRoOjJweDsiLz48L3N2Zz4=);
+					background-repeat: repeat-x;
+    				background-position: right center;
+					background-attachment: local;
+					background-size: 1.8em 1em;
+				}
+
+				.segment-timeline__part__nextline--endline {
+					border-left-style: dotted;
+
+					&::before {
+						display: none;
+					}
+					
+					&::after {
+						display: none;
+					}
+				}
 			}
 
 			&:not(.live) {
@@ -1897,6 +1927,12 @@ body.no-overflow {
 							min-height: 0.4em;
 							border-bottom: 1px solid $segment-layer-separator-color;
 						}
+					}
+				}
+
+				&.gap {
+					.segment-timeline__part__invalid-cover {
+						background-size: 0.6em 0.2em;
 					}
 				}
 			}

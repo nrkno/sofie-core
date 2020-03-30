@@ -435,7 +435,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, 'Start playing Sticky Piece', () => MeteorCall.userAction.sourceLayerStickyPieceStart(this.props.playlist._id, sourceLayerId))
+			doUserAction(t, e, 'Start playing Sticky Piece', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
 		}
 	}
 
@@ -466,7 +466,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 			const { t } = this.props
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Start Global Adlib', () => MeteorCall.userAction.baselineAdLibPieceStart(this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false))
+			doUserAction(t, e, 'Start Global Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e, this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false))
 		}
 	}
 
@@ -476,7 +476,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const { t } = this.props
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Stop Global Adlib', () => MeteorCall.userAction.sourceLayerOnPartStop(this.props.playlist._id, currentPartInstanceId, _.map(sourceLayers, sl => sl._id)))
+			doUserAction(t, e, 'Stop Global Adlib', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, _.map(sourceLayers, sl => sl._id)))
 		}
 	}
 

@@ -317,6 +317,7 @@ interface IProps {
 	firstPartInSegment?: PartUi
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	isLastInSegment: boolean
+	isAfterLastValidInSegmentAndItsLive: boolean
 	isLastSegment: boolean
 }
 
@@ -330,6 +331,15 @@ interface IState {
 }
 
 const LIVE_LINE_TIME_PADDING = 150
+
+const CARRIAGE_RETURN_ICON =
+	<div className='segment-timeline__part__nextline__label__carriage-return'>
+		<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11.36 7.92'>
+			<g>
+				<path d='M10.36,0V2.2A3.06,3.06,0,0,1,7.3,5.25H3.81V3.51L0,5.71,3.81,7.92V6.25H7.3a4.06,4.06,0,0,0,4.06-4V0Z' />
+			</g>
+		</svg>
+	</div>
 
 export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props: IProps) => {
 	return {
@@ -571,9 +581,10 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			return (
 				<div className={ClassNames('segment-timeline__part', {
 					'live': this.state.isLive,
-					'next': this.state.isNext,
-					'invalid': innerPart.invalid,
+					'next': this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive,
+					'invalid': innerPart.invalid && !innerPart.gap,
 					'floated': innerPart.floated,
+					'gap': innerPart.gap,
 
 					'duration-settling': this.state.isDurationSettling
 				})} data-obj-id={this.props.part.instance._id}
@@ -585,7 +596,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 
 					<div className={ClassNames('segment-timeline__part__nextline', { // This is the base, basic line
 						'auto-next': ((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)),
-						'invalid': innerPart.invalid,
+						'invalid': innerPart.invalid && !innerPart.gap,
 						'floated': innerPart.floated,
 						'offset': !!this.props.playlist.nextTimeOffset
 					})}>
@@ -593,19 +604,20 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							'segment-timeline__part__nextline__label--thin': (this.props.autoNextPart || this.props.part.willProbablyAutoNext) && !this.state.isNext
 						})}>
 							{(
-								innerPart.invalid ?
+								(innerPart.invalid && !innerPart.gap) ?
 									<span>{t('Invalid')}</span> :
 									<React.Fragment>
 										{((this.state.isNext && this.props.autoNextPart) || (!this.state.isNext && this.props.part.willProbablyAutoNext)) && t('Auto') + ' '}
-										{this.state.isNext && t('Next')}
+										{(this.state.isNext || this.props.isAfterLastValidInSegmentAndItsLive) && t('Next')}
 									</React.Fragment>
 							)}
+							{this.props.isAfterLastValidInSegmentAndItsLive && CARRIAGE_RETURN_ICON}
 						</div>
 					</div>
 					{this.props.playlist.nextTimeOffset && this.state.isNext && // This is the off-set line
 						<div className={ClassNames('segment-timeline__part__nextline', {
 							'auto-next': this.props.part.willProbablyAutoNext,
-							'invalid': innerPart.invalid,
+							'invalid': innerPart.invalid && !innerPart.gap,
 							'floated': innerPart.floated
 						})} style={{
 							'left': (this.props.relative ?
@@ -617,7 +629,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							})}>
 								{(
 									innerPart.invalid ?
-										<span>{t('Invalid')}</span> :
+										!innerPart.gap && <span>{t('Invalid')}</span> :
 										<React.Fragment>
 											{(this.props.autoNextPart || this.props.part.willProbablyAutoNext) && t('Auto') + ' '}
 											{this.state.isNext && t('Next')}
@@ -646,13 +658,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 						})}>
 							{innerPart.autoNext && t('Auto') + ' '}
 							{this.state.isLive && t('Next')}
-							{!isEndOfShow && <div className='segment-timeline__part__nextline__label__carriage-return'>
-								<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11.36 7.92'>
-									<g>
-										<path d='M10.36,0V2.2A3.06,3.06,0,0,1,7.3,5.25H3.81V3.51L0,5.71,3.81,7.92V6.25H7.3a4.06,4.06,0,0,0,4.06-4V0Z' />
-									</g>
-								</svg>
-							</div>}
+							{!isEndOfShow && CARRIAGE_RETURN_ICON}
 						</div>
 					</div>}
 					{isEndOfShow && <div className='segment-timeline__part__show-end'>

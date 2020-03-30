@@ -51,7 +51,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 	private mediaObjectSub: Meteor.SubscriptionHandle
 	private statusComp: Tracker.Computation
 	private objId: string
-	private overrides: any
+	private overrides: Partial<IPropsHeader>
 	private destroyed: boolean
 
 	updateMediaObjectSubscription () {
@@ -157,10 +157,10 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 							...origPiece.instance,
 							piece: {
 								...origPiece.instance.piece,
-								status: status,
-								contentMetaData: metadata
+								status: status
 							}
-						}
+						},
+						contentMetaData: metadata
 					}
 
 					if (

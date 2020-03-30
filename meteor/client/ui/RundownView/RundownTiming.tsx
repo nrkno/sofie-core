@@ -664,7 +664,46 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 			)}>{RundownUtils.formatDiffToTimecode(displayTimecode || 0, true, false, true, false, true, '', false, true)}</span>)
 	}
 
-	speak () {
+	speak (displayTime: number) {
+		let text = '' // Say nothing
+
+		navigator.vibrate([400, 300, 400, 300, 400])
+
+		switch (displayTime) {
+			case -1: text = 'One'; break
+			case -2: text = 'Two'; break
+			case -3: text = 'Three'; break
+			case -4: text = 'Four'; break
+			case -5: text = 'Five'; break
+			case -6: text = 'Six'; break
+			case -7: text = 'Seven'; break
+			case -8: text = 'Eight'; break
+			case -9: text = 'Nine'; break
+			case -10: text = 'Ten'; break
+		}
+		// if (displayTime === 0 && prevDisplayTime !== undefined) {
+		// 	text = 'Zero'
+		// }
+
+		if (text) {
+			SpeechSynthesiser.speak(text, 'countdown')
+		}
+	}
+
+	vibrate (displayTime: number) {
+		navigator.vibrate([400, 300, 400, 300, 400])
+
+		switch (displayTime) {
+			case 0:
+				navigator.vibrate([500])
+			case -1:
+			case -2:
+			case -3:
+				navigator.vibrate([250])
+		}
+	}
+
+	act () {
 		// Note that the displayTime is negative when counting down to 0.
 		let displayTime = this.props.timingDurations.remainingTimeOnCurrentPart || 0
 
@@ -676,39 +715,21 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 		}
 
 		if (prevDisplayTime !== displayTime) {
-			let text = '' // Say nothing
-
-			switch (displayTime) {
-				case -1: text = 'One'; break
-				case -2: text = 'Two'; break
-				case -3: text = 'Three'; break
-				case -4: text = 'Four'; break
-				case -5: text = 'Five'; break
-				case -6: text = 'Six'; break
-				case -7: text = 'Seven'; break
-				case -8: text = 'Eight'; break
-				case -9: text = 'Nine'; break
-				case -10: text = 'Ten'; break
+			if (this.props.speaking) {
+				this.speak(displayTime)
 			}
-			// if (displayTime === 0 && prevDisplayTime !== undefined) {
-			// 	text = 'Zero'
-			// }
 
-			if (text) {
-				SpeechSynthesiser.speak(text, 'countdown')
-			}
+			this.vibrate(displayTime)
 
 			prevDisplayTime = displayTime
 		}
 	}
 
 	componentDidUpdate (prevProps: WithTiming<IPartRemainingProps>) {
-		if (this.props.speaking) {
-			if (this.props.currentPartInstanceId !== prevProps.currentPartInstanceId) {
-				prevDisplayTime = undefined
-			}
-			this.speak()
+		if (this.props.currentPartInstanceId !== prevProps.currentPartInstanceId) {
+			prevDisplayTime = undefined
 		}
+		this.act()
 	}
 })
 

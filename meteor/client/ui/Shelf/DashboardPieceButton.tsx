@@ -118,11 +118,12 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
 			const adLib = this.props.adLibListItem as AdLibPieceUi
+			const vtContent = adLib.content as VTContent | undefined
 			return <React.Fragment>
 				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
-				{adLib.content && (adLib.content as VTContent) &&
+				{vtContent &&
 					<span className='dashboard-panel__panel__button__sub-label'>
-						{RundownUtils.formatDiffToTimecode((adLib.content as VTContent).sourceDuration || 0, false, undefined, undefined, undefined, true)}
+						{RundownUtils.formatDiffToTimecode(vtContent.sourceDuration || 0, false, undefined, undefined, undefined, true)}
 					</span>}
 			</React.Fragment>
 		}

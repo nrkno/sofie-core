@@ -15,7 +15,7 @@ export namespace PeripheralDevicesAPI {
 	}
 }
 
-function eventContextForLog (e: any): string {
+export function eventContextForLog (e: any): string {
 	if (!e) return ''
 	let str: string = ''
 	if (_.isString(e)) {

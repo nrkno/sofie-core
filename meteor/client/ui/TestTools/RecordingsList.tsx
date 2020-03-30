@@ -79,7 +79,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		if (this.props.match && this.props.match.params) {
 			const { t } = this.props
 			const studioId = this.props.match.params.studioId
-			doUserAction(t, e, 'Stopping recording', () => MeteorCall.userAction.recordStop(studioId))
+			doUserAction(t, e, 'Stopping recording', (e) => MeteorCall.userAction.recordStop(e, studioId))
 
 		}
 	}
@@ -87,7 +87,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		if (this.props.match && this.props.match.params) {
 			const { t } = this.props
 			const studioId = this.props.match.params.studioId
-			doUserAction(t, e, 'Starting recording', () => MeteorCall.userAction.recordStart(studioId, this.state.filename), () => {
+			doUserAction(t, e, 'Starting recording', (e) => MeteorCall.userAction.recordStart(e, studioId, this.state.filename), () => {
 				this.setState({
 					filename: ''
 				})
@@ -111,7 +111,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		if (this.state.deleteConfirmItem) {
 			const { t } = this.props
 			const recordingId = this.state.deleteConfirmItem._id
-			doUserAction(t, e, 'Deleting Recording', () => MeteorCall.userAction.recordDelete(recordingId))
+			doUserAction(t, e, 'Deleting Recording', (e) => MeteorCall.userAction.recordDelete(e, recordingId))
 		}
 		this.setState({
 			showDeleteConfirm: false

@@ -567,129 +567,130 @@ export function noop () {
 }
 
 class ServerUserActionAPI implements NewUserActionAPI {
-	take (rundownPlaylistId: RundownPlaylistId) {
+	take (_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return makePromise(() => take(rundownPlaylistId))
 	}
-	setNext (rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
+	setNext (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
 		return makePromise(() => setNext(rundownPlaylistId, partId, true, timeOffset))
 	}
-	setNextSegment (rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
+	setNextSegment (_userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
 		return makePromise(() => setNextSegment(rundownPlaylistId, segmentId))
 	}
-	moveNext (rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
+	moveNext (_userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
 		return makePromise(() => moveNext(rundownPlaylistId, horisontalDelta, verticalDelta, true))
 	}
-	prepareForBroadcast (rundownPlaylistId: RundownPlaylistId) {
+	prepareForBroadcast (_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return makePromise(() => prepareForBroadcast(rundownPlaylistId))
 	}
-	resetRundownPlaylist (rundownPlaylistId: RundownPlaylistId) {
+	resetRundownPlaylist (_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return makePromise(() => resetRundownPlaylist(rundownPlaylistId))
 	}
-	resetAndActivate (rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
+	resetAndActivate (_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
 		return makePromise(() => resetAndActivate(rundownPlaylistId, rehearsal))
 	}
-	activate (rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+	activate (_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
 		return makePromise(() => activate(rundownPlaylistId, rehearsal))
 	}
-	deactivate (rundownPlaylistId: RundownPlaylistId) {
+	deactivate (_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return makePromise(() => deactivate(rundownPlaylistId))
 	}
-	forceResetAndActivate (rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
+	forceResetAndActivate (_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
 		return makePromise(() => forceResetAndActivate(rundownPlaylistId, rehearsal))
 	}
-	reloadData (rundownPlaylistId: RundownPlaylistId) {
+	reloadData (_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return makePromise(() => reloadRundownPlaylistData(rundownPlaylistId))
 	}
-	unsyncRundown (rundownId: RundownId) {
+	unsyncRundown (_userEvent: string, rundownId: RundownId) {
 		return makePromise(() => unsyncRundown(rundownId))
 	}
-	disableNextPiece (rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	disableNextPiece (_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return makePromise(() => disableNextPiece(rundownPlaylistId, undo))
 	}
-	togglePartArgument (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string) {
+	togglePartArgument (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string) {
 		return makePromise(() => togglePartArgument(rundownPlaylistId, partInstanceId, property, value))
 	}
-	pieceTakeNow (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
+	pieceTakeNow (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
 		return makePromise(() => pieceTakeNow(rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy))
 	}
-	setInOutPoints (rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number) {
+	setInOutPoints (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number) {
 		return pieceSetInOutPoints(rundownPlaylistId, partId, pieceId, inPoint, duration)
 	}
-	segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
+	segmentAdLibPieceStart (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 		return makePromise(() => segmentAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue))
 	}
-	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]) {
+	sourceLayerOnPartStop (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]) {
 		return makePromise(() => sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerIds))
 	}
-	baselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
+	baselineAdLibPieceStart (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 		return makePromise(() => rundownBaselineAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue))
 	}
-	sourceLayerStickyPieceStart (rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
+	sourceLayerStickyPieceStart (_userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
 		return makePromise(() => sourceLayerStickyPieceStart(rundownPlaylistId, sourceLayerId))
 	}
-	activateHold (rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	activateHold (_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return makePromise(() => activateHold(rundownPlaylistId, undo))
 	}
-	saveEvaluation (evaluation: EvaluationBase) {
+	saveEvaluation (_userEvent: string, evaluation: EvaluationBase) {
 		return makePromise(() => userSaveEvaluation(this as any, evaluation))
 	}
-	storeRundownSnapshot (playlistId: RundownPlaylistId, reason: string) {
+	storeRundownSnapshot (_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
 		return makePromise(() => userStoreRundownSnapshot(playlistId, reason))
 	}
-	removeRundownPlaylist (playlistId: RundownPlaylistId) {
+	removeRundownPlaylist (_userEvent: string, playlistId: RundownPlaylistId) {
 		return makePromise(() => removeRundownPlaylist(playlistId))
 	}
-	resyncRundownPlaylist (playlistId: RundownPlaylistId) {
+	resyncRundownPlaylist (_userEvent: string, playlistId: RundownPlaylistId) {
 		return makePromise(() => resyncRundownPlaylist(playlistId))
 	}
-	removeRundown (rundownId: RundownId) {
+	removeRundown (_userEvent: string, rundownId: RundownId) {
 		return makePromise(() => removeRundown(rundownId))
 	}
-	resyncRundown (rundownId: RundownId) {
+	resyncRundown (_userEvent: string, rundownId: RundownId) {
 		return makePromise(() => resyncRundown(rundownId))
 	}
-	recordStop (studioId: StudioId) {
+	recordStop (_userEvent: string, studioId: StudioId) {
 		return makePromise(() => recordStop(studioId))
 	}
-	recordStart (studioId: StudioId, name: string) {
+	recordStart (_userEvent: string, studioId: StudioId, name: string) {
 		return makePromise(() => recordStart(studioId, name))
 	}
-	recordDelete (id: RecordedFileId) {
+	recordDelete (_userEvent: string, id: RecordedFileId) {
 		return makePromise(() => recordDelete(id))
 	}
-	mediaRestartWorkflow (workflowId: MediaWorkFlowId) {
+	mediaRestartWorkflow (_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaRestartWorkflow(workflowId))
 	}
-	mediaAbortWorkflow (workflowId: MediaWorkFlowId) {
+	mediaAbortWorkflow (_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaAbortWorkflow(workflowId))
 	}
-	mediaPrioritizeWorkflow (workflowId: MediaWorkFlowId) {
+	mediaPrioritizeWorkflow (_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaPrioritizeWorkflow(workflowId))
 	}
-	mediaRestartAllWorkflows () {
+	mediaRestartAllWorkflows (_userEvent: string, ) {
 		return makePromise(() => mediaRestartAllWorkflows())
 	}
-	mediaAbortAllWorkflows () {
+	mediaAbortAllWorkflows (_userEvent: string, ) {
 		return makePromise(() => mediaAbortAllWorkflows())
 	}
-	regenerateRundownPlaylist (playlistId: RundownPlaylistId) {
+	regenerateRundownPlaylist (_userEvent: string, playlistId: RundownPlaylistId) {
 		return makePromise(() => regenerateRundownPlaylist(playlistId))
 	}
-	generateRestartToken () {
+	generateRestartToken (_userEvent: string, ) {
 		return makePromise(() => generateRestartToken())
 	}
-	restartCore (token: string) {
+	restartCore (_userEvent: string, token: string) {
 		return makePromise(() => restartCore(token))
 	}
-	guiFocused (_viewInfo: any[]) {
+	guiFocused (_userEvent: string, _viewInfo: any[]) {
 		return makePromise(() => noop())
 	}
-	guiBlurred (_viewInfo: any[]) {
+	guiBlurred (_userEvent: string, _viewInfo: any[]) {
 		return makePromise(() => noop())
 	}
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
-	return ServerClientAPI.runInUserLog(methodContext, '', methodName, args, () => {
+	const eventContext = args[0]
+	return ServerClientAPI.runInUserLog(methodContext, eventContext, methodName, args, () => {
 		return fcn(...args)
 	})
 })
