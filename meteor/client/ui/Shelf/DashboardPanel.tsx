@@ -455,7 +455,6 @@ export function getUnfinishedPieceInstancesReactive (currentPartInstanceId: Part
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
-			partInstanceId: currentPartInstanceId,
 			'piece.startedPlayback': {
 				$exists: true
 			},
