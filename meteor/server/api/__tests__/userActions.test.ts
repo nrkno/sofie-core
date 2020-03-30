@@ -121,7 +121,7 @@ describe('User Actions', () => {
 		{
 			// Prepare and activate in rehersal:
 			expect(
-				Meteor.call(UserActionAPIMethods.prepareForBroadcast, playlistId0)
+				Meteor.call(UserActionAPIMethods.prepareForBroadcast, 'e', playlistId0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -138,7 +138,7 @@ describe('User Actions', () => {
 		}
 		// Activate a second rundown (this should throw an error)
 		expect(
-			Meteor.call(UserActionAPIMethods.activate, playlistId1, false)
+			Meteor.call(UserActionAPIMethods.activate, 'e', playlistId1, false)
 		).toMatchObject({
 			error: 409,
 			message: expect.stringMatching(/only one rundown/i)
@@ -148,7 +148,7 @@ describe('User Actions', () => {
 		{
 			// Take the first Part:
 			expect(
-				Meteor.call(UserActionAPIMethods.take, playlistId0)
+				Meteor.call(UserActionAPIMethods.take, 'e', playlistId0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -161,7 +161,7 @@ describe('User Actions', () => {
 		{
 			// Take the second Part:
 			expect(
-				Meteor.call(UserActionAPIMethods.take, playlistId0)
+				Meteor.call(UserActionAPIMethods.take, 'e', playlistId0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -174,7 +174,7 @@ describe('User Actions', () => {
 		{
 			// Reset rundown:
 			expect(
-				Meteor.call(UserActionAPIMethods.resetRundownPlaylist, playlistId0)
+				Meteor.call(UserActionAPIMethods.resetRundownPlaylist, 'e', playlistId0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -191,7 +191,7 @@ describe('User Actions', () => {
 		{
 			// Set Part as next:
 			expect(
-				Meteor.call(UserActionAPIMethods.setNext, playlistId0, parts[parts.length - 2]._id)
+				Meteor.call(UserActionAPIMethods.setNext, 'e', playlistId0, parts[parts.length - 2]._id)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -208,7 +208,7 @@ describe('User Actions', () => {
 		{
 			// Take the Nexted Part:
 			expect(
-				Meteor.call(UserActionAPIMethods.take, playlistId0)
+				Meteor.call(UserActionAPIMethods.take, 'e', playlistId0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -218,11 +218,10 @@ describe('User Actions', () => {
 			expect(nextPartInstance!.part._id).toEqual(parts[parts.length - 1]._id)
 		}
 
-		console.log('-------------------')
 		{
 			// Take the last Part:
 			expect(
-				Meteor.call(UserActionAPIMethods.take, playlistId0)
+				Meteor.call(UserActionAPIMethods.take, 'e', playlistId0)
 			).toMatchObject({ success: 200 })
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
@@ -238,7 +237,7 @@ describe('User Actions', () => {
 		{
 			// Move the next-point backwards:
 			expect(
-				Meteor.call(UserActionAPIMethods.moveNext, playlistId0, -1, 0)
+				Meteor.call(UserActionAPIMethods.moveNext, 'e', playlistId0, -1, 0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -251,7 +250,7 @@ describe('User Actions', () => {
 		{
 			// Move the next-point backwards:
 			expect(
-				Meteor.call(UserActionAPIMethods.moveNext, playlistId0, -1, 0)
+				Meteor.call(UserActionAPIMethods.moveNext, 'e', playlistId0, -1, 0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -264,7 +263,7 @@ describe('User Actions', () => {
 		{
 			// Take the nexted Part:
 			expect(
-				Meteor.call(UserActionAPIMethods.take, playlistId0)
+				Meteor.call(UserActionAPIMethods.take, 'e', playlistId0)
 			).toMatchObject({ success: 200 })
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
@@ -276,7 +275,7 @@ describe('User Actions', () => {
 
 		// Deactivate rundown:
 		expect(
-			Meteor.call(UserActionAPIMethods.deactivate, playlistId0)
+			Meteor.call(UserActionAPIMethods.deactivate, 'e', playlistId0)
 		).toMatchObject({ success: 200 })
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
@@ -289,7 +288,7 @@ describe('User Actions', () => {
 		jest.useFakeTimers()
 
 		// Generate restart token
-		const res = Meteor.call(UserActionAPIMethods.generateRestartToken)
+		const res = Meteor.call(UserActionAPIMethods.generateRestartToken, 'e')
 		expect(res).toMatchObject({ success: 200 })
 		expect(typeof res.result).toBe('string')
 
@@ -297,7 +296,7 @@ describe('User Actions', () => {
 
 		// Use an invalid token to try and restart it
 		try {
-			Meteor.call(UserActionAPIMethods.restartCore, 'invalidToken')
+			Meteor.call(UserActionAPIMethods.restartCore, 'e', 'invalidToken')
 			// calling this method with an invalid token should throw
 			expect(false).toBeTruthy()
 		} catch (e) {
@@ -305,7 +304,7 @@ describe('User Actions', () => {
 		}
 
 		expect(
-			Meteor.call(UserActionAPIMethods.restartCore, getHash(RESTART_SALT + res.result))
+			Meteor.call(UserActionAPIMethods.restartCore, 'e', getHash(RESTART_SALT + res.result))
 		).toMatchObject({ success: 200 })
 
 		jest.runAllTimers()
