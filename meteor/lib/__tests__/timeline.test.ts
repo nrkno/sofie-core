@@ -1,8 +1,8 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { transformTimeline } from '../timeline'
-import { DeviceType } from 'timeline-state-resolver-types'
 import { TimelineObjGeneric, TimelineObjType, TimelineObjRundown } from '../collections/Timeline'
 import { protectString } from '../lib'
+import { TSR } from 'tv-automation-sofie-blueprints-integration';
 
 
 describe('lib/timeline', () => {
@@ -18,7 +18,7 @@ describe('lib/timeline', () => {
 					start: 0
 				},
 				content: {
-					deviceType: DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT
 				},
 				layer: 'L1'
 			},
@@ -31,7 +31,7 @@ describe('lib/timeline', () => {
 					start: 0
 				},
 				content: {
-					deviceType: DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT
 				},
 				layer: 'L1',
 				inGroup: 'group0'
@@ -45,7 +45,7 @@ describe('lib/timeline', () => {
 					start: 0
 				},
 				content: {
-					deviceType: DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT
 				},
 				layer: 'L1',
 				inGroup: 'group0'
@@ -59,7 +59,7 @@ describe('lib/timeline', () => {
 					start: 0
 				},
 				content: {
-					deviceType: DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT
 				},
 				layer: 'L1',
 				isGroup: true
@@ -149,7 +149,7 @@ describe('lib/timeline', () => {
 					studioId: protectString('studio0'),
 					objectType: TimelineObjType.RUNDOWN,
 					enable: { start: 0 },
-					content: { deviceType: DeviceType.ABSTRACT },
+					content: { deviceType: TSR.DeviceType.ABSTRACT },
 					layer: 'L1'
 				},
 			] as TimelineObjGeneric[])
