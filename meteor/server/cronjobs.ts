@@ -97,7 +97,7 @@ Meteor.startup(() => {
 					// TODO: implement better way to determine if CasparCG, ref: client/ui/Status/SystemStatus.tsx:237
 					if (
 						subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-						subDevice.subType === .DeviceType.CASPARCG
+						subDevice.subType === TSR.DeviceType.CASPARCG
 					) {
 						logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 

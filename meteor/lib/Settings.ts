@@ -25,6 +25,8 @@ export interface ISettings {
 	disableBlurBorder: boolean
 	/** Default time scale zooming for the UI. Default: 1  */
 	defaultTimeScale: number
+	// Allow grabbing the entire timeline
+	allowGrabbingTimeline: boolean
 }
 
 export let Settings: ISettings
@@ -38,7 +40,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	autoExpandCurrentNextSegment: false,
 	autoRewindLeavingSegment: false,
 	disableBlurBorder: false,
-	defaultTimeScale: 1
+	defaultTimeScale: 1,
+	allowGrabbingTimeline: true
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
