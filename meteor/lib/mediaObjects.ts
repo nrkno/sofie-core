@@ -173,11 +173,6 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 											isStereo = true
 										}
 										audioStreams++
-
-										const format = buildFormatString(mediaObject.mediainfo, stream)
-										if (!acceptFormat(format, formats)) {
-											messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
-										}
 									}
 								}
 								if (timebase) {

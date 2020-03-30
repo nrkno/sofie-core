@@ -13,6 +13,7 @@ import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString, protectString } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { getSegmentId } from '../lib';
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -718,7 +719,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
 			expect(true).toBe(false) // Should throw rather than run this test
 		} catch (e) {
-			expect(e.message).toBe(`[404] Segment ${segExternalId} not found`)
+			expect(e.message).toBe(`[404] handleRemovedSegment: Segment "${getSegmentId(rundown._id, segExternalId)}" not found`)
 		}
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
@@ -1088,7 +1089,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		// expect(dynamicPart0).toBeFalsy()
 	})
 
-	testInFiberOnly('unsyncing of rundown', () => {
+	testInFiber('unsyncing of rundown', () => {
+		// Cleanup any rundowns/playlists
+		RundownPlaylists.find().fetch().forEach(r => r.remove())
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -1167,9 +1170,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 
-		// TODO-Next2020Q1 - fix
 		ServerPlayoutAPI.takeNextPart(playlist._id)
-		const partInstance = PartInstances.find({ partId: parts[0]._id }).fetch()
+		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 		expect(partInstance).toHaveLength(1)
 		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
 
