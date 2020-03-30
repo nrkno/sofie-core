@@ -277,11 +277,14 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					this.props.rundownPlaylist.active &&
 					!this.props.rundownPlaylist.rehearsal
 				) ?
-					(this.props.rundownPlaylist.expectedStart &&
+					(this.props.rundownPlaylist.expectedStart ?
 						<span className='timing-clock countdown playback-started left'>
 						<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.rundownPlaylist.startedPlayback - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
-						</span>) || undefined
+						</span> :
+						<span className='timing-clock countdown playback-started left'>
+							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
+						</span>)
 					:
 					(this.props.rundownPlaylist.expectedStart ?
 						<span className={ClassNames('timing-clock countdown plan-start left', {
