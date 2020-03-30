@@ -14,14 +14,14 @@ import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/Cor
 // x.x.x (Release X)
 addMigrationSteps('1.4.0', [
 	// add steps here:
-	// {
-	// 	id: 'my fancy step',
-	// 	canBeRunAutomatically: true,
-	// 	validate: () => {
-	// 		return false
-	// 	},
-	// 	migrate: () => {
-	// 		//
-	// 	}
-	// },
+	{
+		id: 'no media scanner',
+		canBeRunAutomatically: true,
+		validate: () => {
+			return false
+		},
+		migrate: () => {
+			//
+		}
+	},
 ])
