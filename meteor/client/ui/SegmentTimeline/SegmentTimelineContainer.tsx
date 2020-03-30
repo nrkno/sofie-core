@@ -530,6 +530,10 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
 	}
 
+	onZoomChange = (newScale: number, e: any) => {
+		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
+	}
+
 	render () {
 		return this.props.segmentui && (
 			<SegmentTimeline
