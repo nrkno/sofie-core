@@ -84,6 +84,8 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 					protectString('ClipTrimDialog')
 				))
 			}
+
+			return false // do not use default doUserAction failure handler
 		})
 		pendingInOutPoints = setTimeout(() => {
 			NotificationCenter.push(new Notification(
