@@ -69,6 +69,7 @@ import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { isNumber } from 'util'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -721,6 +722,17 @@ function transformPartIntoTimeline (
 					pieceInstance.piece.enable.start = `#${getPieceGroupId(unprotectObject(transition.piece))}.start ${transitionContentsDelayStr}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 					pieceInstance.piece.enable.start = Math.max(0, transitionPieceDelay)
+				}
+			}
+
+			if (pieceInstance.piece.infiniteId && pieceInstance.piece.infiniteId === pieceInstance.piece._id) {
+				if (
+					pieceInstance.piece.enable.start &&
+					isNumber(pieceInstance.piece.enable.start) &&
+					pieceInstance.piece.enable.start > 0 &&
+					pieceInstance.piece.startedPlayback
+				) {
+					pieceInstance.piece.enable.start = 0
 				}
 			}
 
