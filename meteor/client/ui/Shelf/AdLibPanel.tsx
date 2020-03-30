@@ -30,11 +30,12 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal, extendMandadory } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry';
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
 	onSelectAdLib: (piece: AdLibPieceUi) => void
-	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
+	onToggleAdLib: (e: ExtendedKeyboardEvent, piece: AdLibPieceUi, queue: boolean) => void
 	selectedPart: AdLibPieceUi | undefined
 	selectedSegment: SegmentUi | undefined
 	searchFilter: string | undefined
@@ -610,18 +611,20 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
-		this.usedHotkeys.length = 0
-
-		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
-			this.setState({
-				selectedSegment: this.props.liveSegment
-			})
+	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps, prevState: IState) {
+		if (!_.isEqual(prevProps, this.props) || !_.isEqual(prevState, this.state)) {
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+			this.usedHotkeys.length = 0
+	
+			if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
+				this.setState({
+					selectedSegment: this.props.liveSegment
+				})
+			}
+	
+			this.refreshKeyboardHotkeys()
 		}
-
-		this.refreshKeyboardHotkeys()
 	}
 
 	componentWillUnmount () {
@@ -640,15 +643,32 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			e.preventDefault()
 		}
 
+		RegisteredHotkeys.remove({
+			tag: HOTKEY_GROUP
+		})
+
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
-						this.onToggleAdLib(item, false, e)
+						this.onToggleAdLib(e, item, false)
 					}, 'keyup', HOTKEY_GROUP)
 					this.usedHotkeys.push(item.hotkey)
+
+					if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+						registerHotkey(
+							item.hotkey,
+							item.name,
+							HotkeyAssignmentType.ADLIB,
+							this.props.sourceLayerLookup[item.sourceLayerId],
+							item.toBeQueued || false,
+							this.onToggleAdLib,
+							[item, false],
+							HOTKEY_GROUP
+						)
+					}
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
@@ -656,9 +676,22 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleAdLib(item, true, e)
+							this.onToggleAdLib(e, item, true)
 						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(queueHotkey)
+
+						if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+							registerHotkey(
+								item.hotkey,
+								item.name,
+								HotkeyAssignmentType.ADLIB,
+								this.props.sourceLayerLookup[item.sourceLayerId],
+								true,
+								this.onToggleAdLib,
+								[item, true],
+								HOTKEY_GROUP
+							)
+						}
 					}
 				}
 			})
@@ -678,7 +711,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		})
 	}
 
-	onToggleAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+	onToggleAdLib = (e: any, piece: AdLibPieceUi, queue: boolean) => {
 		const { t } = this.props
 
 		if (piece.invalid) {
