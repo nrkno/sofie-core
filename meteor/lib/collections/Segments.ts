@@ -33,6 +33,7 @@ export class Segment implements DBSegment {
 	public status?: string
 	public expanded?: boolean
 	public notes?: Array<PartNote>
+	public isHidden?: boolean
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {

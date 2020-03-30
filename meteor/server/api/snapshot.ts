@@ -376,7 +376,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	// First, some special (debugging) cases:
 	// @ts-ignore is's not really a snapshot here:
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') { // Special: Not a snapshot, but a datadump of a MOS rundown
-		const studio = Studios.findOne() // just pick one.. this probably need to be refactored at some point..
+		const studio = Studios.findOne(Meteor.settings.manualSnapshotIngestStudioId || undefined)
 		if (studio) {
 			ingestMOSRundown(studio._id, snapshot)
 			return

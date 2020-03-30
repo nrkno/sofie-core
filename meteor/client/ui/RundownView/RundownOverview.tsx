@@ -125,19 +125,32 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 	if (props.rundownId) rundown = Rundowns.findOne(props.rundownId)
 	let segments: Array<SegmentUi> = []
 	if (rundown) {
-		segments = _.map(rundown.getSegments(), (segment) => {
-			return extendMandadory<Segment, SegmentUi>(segment, {
-				items: _.map(segment.getParts(), (part) => {
-					let sle = extendMandadory<Part, PartExtended>(part, {
-						pieces: [],
-						renderedDuration: 0,
-						startsAt: 0,
-						willProbablyAutoNext: false
-					})
+		const segmentMap = new Map<string, SegmentUi>()
+		segments = rundown.getSegments({
+			isHidden: {
+				$ne: true
+			}
+		}).map((segment) => {
+			const segmentUi = extendMandadory<Segment, SegmentUi>(segment, {
+				items: []
+			}) 
+			segmentMap.set(segment._id, segmentUi)
+			return segmentUi
+		})
 
-					return extendMandadory<PartExtended, PartUi>(sle, {})
-				})
-			})
+		rundown.getParts({
+			segmentId: {
+				$in: Array.from(segmentMap.keys())
+			}
+		}).map((part) => {
+			const partUi = extendMandadory<Part, PartExtended>(part, {
+				pieces: [],
+				renderedDuration: 0,
+				startsAt: 0,
+				willProbablyAutoNext: false
+			}) as PartUi
+			const segment = segmentMap.get(part.segmentId)
+			if (segment) segment.items.push(partUi)
 		})
 	}
 	return {

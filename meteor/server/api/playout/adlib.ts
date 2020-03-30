@@ -12,10 +12,10 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Pieces, Piece } from '../../../lib/collections/Pieces'
 import { Parts } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds } from './lib'
-import { convertAdLibToPiece, getResolvedPieces } from './pieces'
+import { convertAdLibToPiece, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
 import { updateTimeline } from './timeline'
-import { updatePartRanks } from '../rundown'
+import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
@@ -136,6 +136,11 @@ export namespace ServerPlayoutAdLibAPI {
 		})
 	}
 	function innerStartAdLibPiece (rundown: Rundown, queue: boolean, partId: string, adLibPiece: AdLibPiece) {
+		if (adLibPiece.toBeQueued) {
+			// Allow adlib to request to always be queued
+			queue = true
+		}
+
 		let orgPartId = partId
 		if (queue) {
 			// insert a NEW, adlibbed part after this part
@@ -173,6 +178,24 @@ export namespace ServerPlayoutAdLibAPI {
 		const part = Parts.findOne(partId)
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 
+		const afterPartId = part.afterPart || part._id
+
+		// check if there's already a queued part after this:
+		const alreadyQueuedPart = Parts.findOne({
+			rundownId: rundown._id,
+			segmentId: part.segmentId,
+			afterPart: afterPartId,
+			_rank: { $gt: part._rank }
+		}, {
+			sort: { _rank: -1, _id: -1 }
+		})
+		if (alreadyQueuedPart) {
+			if (rundown.currentPartId !== alreadyQueuedPart._id) {
+				Parts.remove(alreadyQueuedPart._id)
+				afterRemoveParts(rundown._id, [alreadyQueuedPart])
+			}
+		}
+
 		const newPartId = Random.id()
 		Parts.insert({
 			_id: newPartId,
@@ -183,7 +206,8 @@ export namespace ServerPlayoutAdLibAPI {
 			title: adLibPiece.name,
 			dynamicallyInserted: true,
 			afterPart: part.afterPart || part._id,
-			typeVariant: 'adlib'
+			typeVariant: 'adlib',
+			prerollDuration: adLibPiece.adlibPreroll
 		})
 
 		updatePartRanks(rundown._id) // place in order
@@ -249,6 +273,41 @@ export namespace ServerPlayoutAdLibAPI {
 			})
 
 			updateTimeline(rundown.studioId)
+		})
+	}
+	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
+		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
+			if (!rundown.currentPartId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
+
+			let showStyleBase = rundown.getShowStyleBase()
+
+			const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
+			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
+			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
+
+			const lastPieces = Pieces.find({
+				rundownId: rundown._id,
+				sourceLayerId: sourceLayer._id,
+				startedPlayback: {
+					$exists: true
+				}
+			}, {
+				sort: {
+					startedPlayback: -1
+				},
+				limit: 1
+			}).fetch()
+
+			if (lastPieces.length > 0) {
+				const currentPart = Parts.findOne(rundown.currentPartId)
+				if (!currentPart) throw new Meteor.Error(501, `Current Part "${rundown.currentPartId}" could not be found.`)
+
+				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
+				innerStartAdLibPiece(rundown, false, rundown.currentPartId, lastPiece)
+			}
 		})
 	}
 }

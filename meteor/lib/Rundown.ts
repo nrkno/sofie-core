@@ -189,7 +189,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		const TIMELINE_TEMP_OFFSET = 1
 
 		// create a lookup map to match original pieces to their resolved counterparts
-		let piecesLookup: IPieceExtendedDictionary = {}
+		let piecesLookup = new Map<string, PieceExtended>()
 		// a buffer to store durations for the displayDuration groups
 		const displayDurationGroups: _.Dictionary<number> = {}
 
@@ -292,10 +292,11 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				}
 
 				// add the piece to the map to make future searches quicker
-				piecesLookup[piece._id] = piece
-				if (piece.continuesRefId && piecesLookup[piece.continuesRefId]) {
-					piecesLookup[piece.continuesRefId].continuedByRef = piece
-					piece.continuesRef = piecesLookup[piece.continuesRefId]
+				piecesLookup.set(piece._id, piece)
+				const continues = piece.continuesRefId && piecesLookup.get(piece.continuesRefId)
+				if (piece.continuesRefId && continues) {
+					continues.continuedByRef = piece
+					piece.continuesRef = continues
 				}
 			})
 
@@ -306,9 +307,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			_.each(tlResolved.objects, (obj) => {
 				if (obj.resolved.resolved) {
 					// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
-					let piece = piecesLookup[obj.content.id]
+					let piece = piecesLookup.get(obj.content.id)
 					const instance = obj.resolved.instances[0]
-					if (instance) {
+					if (piece && instance) {
 						piece.renderedDuration = instance.end ? (instance.end - instance.start) : null
 
 						// if there is no renderedInPoint, use 0 as the starting time for the item

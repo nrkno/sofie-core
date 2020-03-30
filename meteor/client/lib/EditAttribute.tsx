@@ -253,6 +253,7 @@ const EditAttributeMultilineText = wrapEditAttribute(class extends EditAttribute
 		return (
 			<textarea
 				className={'form-control' + ' ' + (this.state.valueError ? 'error ' : '') + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttribute() || ''}
 				onChange={this.handleChange}
@@ -291,6 +292,7 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 			<input type='number'
 				step='1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttributeNumber()}
 				onChange={this.handleChange}
@@ -328,6 +330,7 @@ const EditAttributeFloat = wrapEditAttribute(class extends EditAttributeBase {
 			<input type='number'
 				step='0.1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttributeNumber()}
 				onChange={this.handleChange}

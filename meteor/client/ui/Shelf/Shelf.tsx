@@ -17,13 +17,15 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DashboardPanel } from './DashboardPanel'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { DashboardActionButton } from './DashboardActionButton';
+import { DashboardActionButtonGroup } from './DashboardActionButtonGroup';
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -58,6 +60,7 @@ interface IState {
 	overrideHeight: number | undefined
 	moving: boolean
 	selectedTab: string | undefined
+	shouldQueue: boolean
 }
 
 const CLOSE_MARGIN = 45
@@ -95,7 +98,8 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined)
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined),
+			shouldQueue: false
 		}
 
 		const { t } = props
@@ -226,6 +230,67 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		document.removeEventListener('mouseleave', this.dropHandle)
 		document.removeEventListener('mousemove', this.dragHandle)
 
+		this.endResize()
+
+		e.preventDefault()
+	}
+
+	dragHandle = (e: MouseEvent) => {
+		this.setState({
+			overrideHeight: e.clientY + this._mouseOffset.y
+		})
+
+		e.preventDefault()
+	}
+
+	grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
+		document.addEventListener('mouseup', this.dropHandle)
+		document.addEventListener('mouseleave', this.dropHandle)
+		document.addEventListener('mousemove', this.dragHandle)
+
+		this.beginResize(e.clientX, e.clientY, e.currentTarget)
+
+		e.preventDefault()
+	}
+
+	touchMoveHandle = (e: TouchEvent) => {
+		this.setState({
+			overrideHeight: e.touches[0].clientY + this._mouseOffset.y
+		})
+
+		e.preventDefault()
+	}
+
+	touchOffHandle = (e: TouchEvent) => {
+		document.removeEventListener('touchmove', this.touchMoveHandle)
+		document.removeEventListener('touchcancel', this.touchOffHandle)
+		document.removeEventListener('touchend', this.touchOffHandle)
+
+		this.endResize()
+
+		e.preventDefault()
+	}
+
+	touchOnHandle = (e: React.TouchEvent<HTMLDivElement>) => {
+		document.addEventListener('touchmove', this.touchMoveHandle, {
+			passive: false
+		})
+		document.addEventListener('touchcancel', this.touchOffHandle)
+		document.addEventListener('touchend', this.touchOffHandle, {
+			passive: false
+		})
+
+		if (e.touches.length > 1) {
+			this.touchOffHandle(e.nativeEvent)
+			return
+		}
+
+		this.beginResize(e.touches[0].clientX, e.touches[0].clientY, e.currentTarget)
+
+		e.preventDefault()
+	}
+
+	endResize = () => {
 		let stateChange = {
 			moving: false,
 			overrideHeight: undefined
@@ -253,24 +318,15 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		localStorage.setItem('rundownView.shelf.shelfHeight', this.state.shelfHeight)
 	}
 
-	dragHandle = (e: MouseEvent) => {
-		this.setState({
-			overrideHeight: e.clientY - this._mouseOffset.y
-		})
-	}
+	beginResize = (x: number, y: number, targetElement: HTMLElement) => {
+		this._mouseStart.x = x
+		this._mouseStart.y = y
 
-	grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
-		document.addEventListener('mouseup', this.dropHandle)
-		document.addEventListener('mouseleave', this.dropHandle)
-		document.addEventListener('mousemove', this.dragHandle)
-
-		this._mouseStart.x = e.clientX
-		this._mouseStart.y = e.clientY
-
-		const handlePosition = getElementDocumentOffset(e.currentTarget)
+		const handlePosition = getElementDocumentOffset(targetElement.parentElement)
 		if (handlePosition) {
 			this._mouseOffset.x = (handlePosition.left - window.scrollX) - this._mouseStart.x
 			this._mouseOffset.y = (handlePosition.top - window.scrollY) - this._mouseStart.y
+			debugger
 		}
 
 		this._mouseDown = Date.now()
@@ -333,6 +389,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		</React.Fragment>
 	}
 
+	onChangeQueueAdLib = (shouldQueue: boolean, e: any) => {
+		this.setState({
+			shouldQueue
+		})
+	}
+
 	renderDashboardLayout (rundownLayout: DashboardLayout) {
 		const { t } = this.props
 		return <div className='dashboard'>
@@ -345,9 +407,17 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 						filter={panel}
 						visible={true}
 						registerHotkeys={panel.assignHotKeys}
-						{...this.props}
+						rundown={this.props.rundown}
+						showStyleBase={this.props.showStyleBase}
+						studioMode={this.props.studioMode}
+						shouldQueue={this.state.shouldQueue}
 						/>
 			)}
+			{rundownLayout.actionButtons &&
+				<DashboardActionButtonGroup
+					rundown={this.props.rundown}
+					buttons={rundownLayout.actionButtons}
+					studioMode={this.props.studioMode} />}
 		</div>
 	}
 
@@ -357,7 +427,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			<div className={ClassNames('rundown-view__shelf dark', {
 				'full-viewport': fullViewport
 			})} style={fullViewport ? undefined : this.getStyle()}>
-				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle}>
+				{ !fullViewport && <div className='rundown-view__shelf__handle dark' tabIndex={0} onMouseDown={this.grabHandle} onTouchStart={this.touchOnHandle}>
 					<FontAwesomeIcon icon={faBars} />
 				</div>}
 				<ErrorBoundary>

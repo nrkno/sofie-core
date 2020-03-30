@@ -104,18 +104,20 @@ export enum ActionButtonType {
 }
 
 export interface DashboardLayoutActionButton {
+	_id: string
 	type: ActionButtonType
 	x: number
 	y: number
 	width: number
 	height: number
+	label: string
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
 	// TODO: Interface to be defined later
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	filters: DashboardLayoutFilter[]
-	actionButtons: DashboardLayoutActionButton[]
+	actionButtons?: DashboardLayoutActionButton[]
 }
 
 export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>

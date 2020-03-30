@@ -22,7 +22,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, GenericNote } from '../../../lib/api/notes'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
@@ -299,17 +299,34 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactivePartNotes (rRundownId: string) {
 		const t = i18nTranslator
 
+		function getSegmentPartNotes(rRundownId: string) {
+			let notes: Array<PartNote & {rank: number}> = []
+			const segments = Segments.find({
+				rundownId: rRundownId
+			}, { sort: { _rank: 1 }}).fetch()
+
+			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
+				rank: segment._rank,
+				notes: segment.notes
+			} ])) as { [key: string ]: { notes: PartNote[], rank: number } } 
+			Parts.find({
+				rundownId: rRundownId,
+				segmentId: { $in: segments.map(segment => segment._id) }
+			}, { sort: { _rank: 1 }}).map(part => part.notes && segmentNotes[part.segmentId] && segmentNotes[part.segmentId].notes.concat(part.notes))
+			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
+				return o.notes.map(note => _.extend(note, {
+					rank: o.rank
+				}))
+			})))
+
+			return notes
+		}
+
 		let oldNoteIds: Array<string> = []
 		this.autorun(() => {
 			// console.log('RundownViewNotifier 4')
-			const segments = Segments.find({
-				rundownId: rRundownId
-			}).fetch()
-
 			const newNoteIds: Array<string> = []
-			_.flatten(_.compact(segments.map(i => i.getNotes(true).map(j => _.extend(j, {
-				rank: i._rank
-			}))))).forEach((item: PartNote & {rank: number}) => {
+			getSegmentPartNotes(rRundownId).forEach((item: PartNote & {rank: number}) => {
 				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{

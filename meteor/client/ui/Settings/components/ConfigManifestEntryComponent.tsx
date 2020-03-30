@@ -17,17 +17,24 @@ export const ConfigManifestEntryComponent = translate()(class ConfigManifestEntr
 
 	renderEditAttribute (configField: ConfigManifestEntry, obj: object, prefix?: string) {
 		let attribute = prefix + configField.id
+		const opts = {
+			modifiedClassName: 'bghl',
+			attribute,
+			obj,
+			collection: PeripheralDevices,
+			label: configField.placeholder
+		}
 
 		if (configField.type === ConfigManifestEntryType.FLOAT || configField.type === ConfigManifestEntryType.INT) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type={configField.type} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute {...opts} type={configField.type} className='input text-input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.STRING) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute {...opts} type='text'className='input text-input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.BOOLEAN) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type='checkbox' collection={PeripheralDevices} className='input input-l'></EditAttribute>
+			return <EditAttribute {...opts} type='checkbox' className='input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.ENUM) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} obj={obj} type='dropdown' options={configField.values} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute {...opts} type='dropdown' options={configField.values} className='input text-input input-l'></EditAttribute>
 		} else if (configField.type === ConfigManifestEntryType.OBJECT) {
-			return <EditAttribute modifiedClassName='bghl' attribute={attribute} mutateDisplayValue={v => JSON.stringify(v, undefined, 2)} mutateUpdateValue={v => JSON.parse(v)} obj={obj} type='multiline' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+			return <EditAttribute {...opts} mutateDisplayValue={v => JSON.stringify(v, undefined, 2)} mutateUpdateValue={v => JSON.parse(v)} type='multiline' className='input text-input input-l'></EditAttribute>
 		}
 	}
 

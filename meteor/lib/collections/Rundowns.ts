@@ -12,7 +12,7 @@ import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases } from './ShowStyleBases'
-import { RundownNote } from '../api/notes'
+import { RundownNote, GenericNote } from '../api/notes'
 import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { createMongoCollection } from './lib'
@@ -269,6 +269,23 @@ export class Rundown implements DBRundown {
 	getNotes (): Array<RundownNote> {
 		let notes: Array<RundownNote> = []
 		notes = notes.concat(this.notes || [])
+
+		return notes
+	}
+	getAllStoredNotes (): Array<GenericNote & {rank: number}> {
+		let notes: Array<GenericNote & {rank: number}> = []
+		notes = notes.concat((this.notes || []).map(note => _.extend(note, { rank: 0 })))
+
+		const segmentNotes = _.object(this.getSegments().map(segment => [ segment._id, {
+			rank: segment._rank,
+			notes: segment.notes
+		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } } 
+		this.getParts().map(part => part.notes && segmentNotes[part.segmentId] && segmentNotes[part.segmentId].notes.concat(part.notes))
+		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
+			return o.notes.map(note => _.extend(note, {
+				rank: o.rank
+			}))
+		})))
 
 		return notes
 	}
