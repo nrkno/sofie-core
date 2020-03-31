@@ -290,6 +290,7 @@ export function pieceSetInOutPoints (rundownPlaylistId: RundownPlaylistId, partI
 	// TODO: replace this with a general, non-MOS specific method
 	return MOSDeviceActions.setPieceInOutPoint(rundown, piece, partCache.data as IngestPart, inPoint / 1000, duration / 1000) // MOS data is in seconds
 	.then(() => ClientAPI.responseSuccess(undefined))
+	.catch((error) => ClientAPI.responseError(error))
 }
 export function segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 	check(rundownPlaylistId, String)
