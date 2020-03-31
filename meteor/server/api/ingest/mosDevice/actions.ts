@@ -85,18 +85,22 @@ export namespace MOSDeviceActions {
 
 			const story = mosPayload.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
 			const timeBase = story.TimeBase || 1
-			story.EditorialStart = inPoint * timeBase
-			story.EditorialDuration = duration * timeBase
-			story.TimeBase = timeBase
+			const modifiedFields = {
+				EditorialStart: inPoint * timeBase,
+				EditorialDuration: duration * timeBase,
+				TimeBase: timeBase
+			}
+			Object.assign(story, modifiedFields)
 
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
 			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, response: MOS.IMOSAck) => {
+				console.debug(`Received response from device: ${JSON.stringify(err)}, ${JSON.stringify(response)}`)
 				if (err) reject(err)
 				else if (response.Status !== MOS.IMOSAckStatus.ACK) reject(response)
 				else resolve()
-			}, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story)
+			}, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story, modifiedFields)
 		})
 	}
 }
