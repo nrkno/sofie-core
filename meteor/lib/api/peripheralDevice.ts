@@ -261,9 +261,7 @@ export interface PiecePlaybackStartedResult {
 }
 export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
-
-
-export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result) => void, functionName: string, ...args: any[]) {
+export function executeFunctionWithCustomTimeout (deviceId: PeripheralDeviceId, cb: (err, result) => void, timeoutTime: number, functionName: string, ...args: any[]) {
 
 	let commandId: PeripheralDeviceCommandId = getRandomId()
 	PeripheralDeviceCommands.insert({
@@ -278,7 +276,6 @@ export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result)
 	if (Meteor.isClient) {
 		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
 	}
-	const timeoutTime = 3000
 	// logger.debug('command created: ' + functionName)
 	const cursor = PeripheralDeviceCommands.find({
 		_id: commandId
@@ -326,6 +323,11 @@ export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result)
 		changed: checkReply,
 	})
 	timeoutCheck = Meteor.setTimeout(checkReply, timeoutTime)
+}
+
+export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result) => void, functionName: string, ...args: any[]) {
+	const timeoutTime = 3000
+	return executeFunctionWithCustomTimeout(deviceId, cb, timeoutTime, functionName, ...args)
 }
 
 }

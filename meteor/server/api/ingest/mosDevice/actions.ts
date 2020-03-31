@@ -95,12 +95,13 @@ export namespace MOSDeviceActions {
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
-			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: any, response: MOS.IMOSAck) => {
+			PeripheralDeviceAPI.executeFunctionWithCustomTimeout(peripheralDevice._id, (err: any, response: MOS.IMOSAck) => {
 				console.debug(`Received response from device: ${JSON.stringify(err)}, ${JSON.stringify(response)}`)
 				if (err) reject(err)
 				else if (response.Status !== MOS.IMOSAckStatus.ACK) reject(response)
 				else resolve()
-			}, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story, modifiedFields)
+			// we need a very long timeout to make sure we receive notification from the device
+			}, 120 * 1000, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story, modifiedFields)
 		})
 	}
 }
