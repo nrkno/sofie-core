@@ -10,6 +10,7 @@ import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications';
 import { protectString } from '../../../lib/lib';
+import { ClientAPI } from '../../../lib/api/client';
 
 export interface IProps {
 	playlistId: RundownPlaylistId
@@ -53,7 +54,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 		), (err, res) => {
 			clearTimeout(pendingInOutPoints)
 
-			if (typeof err === 'string' && err.match(/timed out/)) {
+			if (ClientAPI.isClientResponseError(err) && err.message && err.message.match(/timed out/)) {
 				NotificationCenter.push(new Notification(
 					undefined,
 					NoticeLevel.CRITICAL,
@@ -63,13 +64,13 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 					</>,
 					protectString('ClipTrimDialog')
 				))
-			} else if (err) {
+			} else if (ClientAPI.isClientResponseError(err) || err) {
 				NotificationCenter.push(new Notification(
 					undefined,
 					NoticeLevel.CRITICAL,
 					<>
 						<strong>{selectedPiece.name}</strong>:
-						{t('Trimming this clip has failed due to an error: {{error}}.', { error: err })}
+						{t('Trimming this clip has failed due to an error: {{error}}.', { error: err.message || err.error || err })}
 					</>,
 					protectString('ClipTrimDialog')
 				))
