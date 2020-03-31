@@ -86,6 +86,11 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 					case SourceLayerType.LIVE_SPEAK:
 						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
 						break
+					case SourceLayerType.TRANSITION:
+						if (piece.content.fileName) {
+							objId = (piece.content as VTContent).fileName.toUpperCase()
+						}
+						break
 				}
 			}
 
