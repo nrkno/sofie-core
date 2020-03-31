@@ -54,14 +54,6 @@ export function getCurrentTime (): Time {
 }
 export { systemTime }
 
-export type Optional<T> = {
-	[K in keyof T]?: T[K]
-}
-
-// type Test<T> = {
-// 	[K in keyof T]: T[K]
-// }
-
 export interface DBObj {
 	_id: ProtectedString<any>,
 	[key: string]: any

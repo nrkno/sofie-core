@@ -41,7 +41,6 @@ import {
 	unprotectString,
 	protectString,
 	omit,
-	Optional,
 	ProtectedString
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
@@ -740,24 +739,6 @@ function updateSegmentFromIngestData (
 		})
 	]))
 
-	// Update segment info:
-	asyncCollectionUpsert(Segments, {
-		_id: segmentId,
-		rundownId: rundown._id
-	}, newSegment),
-
-	// Move over parts from other segments:
-	asyncCollectionUpdate(Parts, {
-		rundownId: rundown._id,
-		segmentId: { $ne: segmentId },
-		dynamicallyInserted: { $ne: true },
-		_id: { $in: _.pluck(parts, '_id') }
-	}, { $set: {
-		segmentId: segmentId
-	}}, {
-		multi: true
-	})
-
 	const prepareSaveParts = prepareSaveIntoDb<Part, DBPart>(Parts, {
 		rundownId: rundown._id,
 		segmentId: segmentId,
@@ -1014,9 +995,9 @@ function generateSegmentContents (
 export function isUpdateAllowed (
 	rundownPlaylist: RundownPlaylist,
 	rundown: Rundown,
-	rundownChanges: Optional<PreparedChanges<DBRundown>>,
-	segmentChanges: Optional<PreparedChanges<DBSegment>>,
-	partChanges: Optional<PreparedChanges<DBPart>>
+	rundownChanges: Partial<PreparedChanges<DBRundown>>,
+	segmentChanges: Partial<PreparedChanges<DBSegment>>,
+	partChanges: Partial<PreparedChanges<DBPart>>
 ): boolean {
 	let allowed: boolean = true
 
@@ -1066,7 +1047,7 @@ export function isUpdateAllowed (
 	}
 	return allowed
 }
-function printChanges (changes: Optional<PreparedChanges<{_id: ProtectedString<any>}>>): string {
+function printChanges (changes: Partial<PreparedChanges<{_id: ProtectedString<any>}>>): string {
 	let str = ''
 
 	if (changes.changed)	str += _.map(changes.changed,	doc => 'change:' + doc.doc._id).join(',')

@@ -132,7 +132,6 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	renderSplits () {
 		const splitAdLib = this.props.adLibListItem as AdLibPieceUi
 		if (splitAdLib && splitAdLib.content) {
-			const splitContent = splitAdLib.content as SplitsContent
 			return (
 				<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
 			)

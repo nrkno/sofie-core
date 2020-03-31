@@ -481,7 +481,6 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	// TODO-Next2020Q1 - Is this available in the config-manifest renderer too?
 	renderVizMSEDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: PeripheralDeviceId) {
 		const { t } = this.props
 		return <React.Fragment>

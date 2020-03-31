@@ -118,7 +118,6 @@ export function setNextSegment (
 	if (!playlist.active) return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
 
 	let nextSegment: Segment | null = null
-	let firstValidPartInSegment: Part | undefined
 
 	if (nextSegmentId) {
 		nextSegment = Segments.findOne(nextSegmentId) || null
@@ -130,7 +129,7 @@ export function setNextSegment (
 		}
 
 		const partsInSegment = nextSegment.getParts()
-		firstValidPartInSegment = _.find(partsInSegment, p => p.isPlayable())
+		const firstValidPartInSegment = _.find(partsInSegment, p => p.isPlayable())
 
 		if (!firstValidPartInSegment)return ClientAPI.responseError('Segment contains no valid parts')
 
