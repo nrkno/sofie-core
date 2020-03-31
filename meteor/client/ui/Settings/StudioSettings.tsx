@@ -26,8 +26,8 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, } from '../../../lib/collections/ShowStyleBases'
-import { LookaheadMode, BlueprintManifestType, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
+import { LookaheadMode, BlueprintManifestType, TSR, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
 	mappingIsAbstract,
@@ -882,6 +882,7 @@ interface IStudioSettingsTrackedProps {
 		showStyleBase: ShowStyleBase
 	}>
 	availableDevices: Array<PeripheralDevice>
+	blueprintConfigManifest: ConfigManifestEntry[]
 }
 
 interface IStudioBaselineStatusProps {
@@ -966,6 +967,10 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>((props: IStudioSettingsProps, state) => {
 	const studio = Studios.findOne(props.match.params.studioId)
+	const blueprint = studio ? Blueprints.findOne({
+		_id: studio.blueprintId,
+		blueprintType: BlueprintManifestType.STUDIO
+	}) : undefined
 
 	return {
 		studio: studio,
@@ -1004,7 +1009,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			sort: {
 				lastConnected: -1
 			}
-		}).fetch()
+		}).fetch(),
+		blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : []
 	}
 })(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>, IStudioSettingsState> {
 	getBlueprintOptions () {
@@ -1207,7 +1213,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
 							t={this.props.t}
-							manifest={collectConfigs(this.props.studio)}
+							manifest={this.props.blueprintConfigManifest}
 							object={this.props.studio}
 							collection={Studios}
 							configPath={'config'}

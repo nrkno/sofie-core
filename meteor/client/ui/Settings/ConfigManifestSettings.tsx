@@ -541,36 +541,3 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 		)
 	}
 }
-
-export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntry[] {
-	if (item instanceof Studio) {
-		if (item.blueprintId) {
-			const blueprint = Blueprints.findOne(item.blueprintId)
-			if (blueprint) {
-				return blueprint.studioConfigManifest || []
-			}
-		}
-	} else if (item instanceof ShowStyleBase) {
-		if (item.blueprintId) {
-			const blueprint = Blueprints.findOne(item.blueprintId)
-			if (blueprint) {
-				return blueprint.showStyleConfigManifest || []
-			}
-		}
-	} else if (item instanceof ShowStyleVariant) {
-		const showStyleBase = ShowStyleBases.findOne({
-			_id: item.showStyleBaseId
-		})
-
-		if (showStyleBase && showStyleBase.blueprintId) {
-			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
-			if (blueprint) {
-				return blueprint.showStyleConfigManifest || []
-			}
-		}
-	} else {
-		logger.error('collectConfigs: unknown item type', item)
-	}
-
-	return []
-}

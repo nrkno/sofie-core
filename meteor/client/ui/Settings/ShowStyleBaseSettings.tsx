@@ -21,7 +21,7 @@ import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
@@ -56,13 +56,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			$in: [showStyleBase._id]
 		}
 	}).fetch() : []
+	const blueprint = showStyleBase ? Blueprints.findOne({
+		_id: showStyleBase.blueprintId,
+		blueprintType: BlueprintManifestType.SHOWSTYLE
+	}) : undefined
+
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase ? ShowStyleVariants.find({
 			showStyleBaseId: showStyleBase._id
 		}).fetch() : [],
 		compatibleStudios: compatibleStudios,
-		blueprintConfigManifest: showStyleBase ? collectConfigs(showStyleBase) : []
+		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : []
 	}
 })(class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
