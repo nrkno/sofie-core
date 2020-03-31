@@ -1018,13 +1018,17 @@ export function isUpdateAllowed (
 				}
 			})
 		}
-		const { currentPartInstance } = rundownPlaylist.getSelectedPartInstances()
+		const { currentPartInstance, nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
 		if (currentPartInstance) {
 			if (allowed && partChanges.removed && partChanges.removed.length) {
 				_.each(partChanges.removed, part => {
 					if (currentPartInstance.part._id === part._id) {
 						// Don't allow removing currently playing part
 						logger.warn(`Not allowing removal of currently playing part "${part._id}", making rundown unsynced instead`)
+						allowed = false
+					} else if (nextPartInstance && nextPartInstance.part._id === part._id && isTooCloseToAutonext(currentPartInstance, false)) {
+						// Don't allow removing next part, when autonext is about to happen
+						logger.warn(`Not allowing removal of nexted part "${part._id}", making rundown unsynced instead`)
 						allowed = false
 					}
 				})

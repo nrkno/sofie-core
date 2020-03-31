@@ -77,7 +77,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public externalId: string
 	public studioId: StudioId
 	public peripheralDeviceId: PeripheralDeviceId
-	public restoredFromSnapshotId?: RundownPlaylistId // TODO-Next2020Q1 set this
+	public restoredFromSnapshotId?: RundownPlaylistId
 	public name: string
 	public created: Time
 	public modified: Time
