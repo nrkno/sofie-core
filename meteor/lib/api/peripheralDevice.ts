@@ -293,7 +293,7 @@ export function executeFunctionWithCustomTimeout (deviceId: PeripheralDeviceId, 
 				// logger.debug('got reply ' + commandId)
 
 				// Cleanup before the callback to ensure it doesnt get a timeout during the callback
-				observer.stop()
+				if (observer) observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 				if (timeoutCheck) {
@@ -309,7 +309,7 @@ export function executeFunctionWithCustomTimeout (deviceId: PeripheralDeviceId, 
 				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				cb('Timeout when executing the function "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ', null)
-				observer.stop()
+				if (observer) observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 			}
