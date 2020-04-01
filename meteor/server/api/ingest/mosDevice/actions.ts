@@ -86,11 +86,16 @@ export namespace MOSDeviceActions {
 			const story = mosPayload.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
 			const timeBase = story.TimeBase || 1
 			const modifiedFields = {
-				EditorialStart: inPoint * timeBase,
+				EditorialStart: inPoint * timeBase as number | undefined,
 				EditorialDuration: duration * timeBase,
 				TimeBase: timeBase
 			}
 			Object.assign(story, modifiedFields)
+
+			// ENPS will doesn't send a 0-length EditorialStart, instead it just ommits it from the object
+			if (modifiedFields.EditorialStart === 0) {
+				modifiedFields.EditorialStart = undefined
+			}
 
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
