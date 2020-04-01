@@ -59,7 +59,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 					undefined,
 					NoticeLevel.CRITICAL,
 					<>
-						<strong>{selectedPiece.name}</strong>:
+						<strong>{selectedPiece.name}</strong>:&ensp;
 						{t('Trimming this clip has timed out. It\'s possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.', { nrcsName: 'ENPS' })}
 					</>,
 					protectString('ClipTrimDialog')
@@ -69,7 +69,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 					undefined,
 					NoticeLevel.CRITICAL,
 					<>
-						<strong>{selectedPiece.name}</strong>:
+						<strong>{selectedPiece.name}</strong>:&ensp;
 						{t('Trimming this clip has failed due to an error: {{error}}.', { error: err.message || err.error || err })}
 					</>,
 					protectString('ClipTrimDialog')
@@ -79,7 +79,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 					undefined,
 					NoticeLevel.NOTIFICATION,
 					<>
-						<strong>{selectedPiece.name}</strong>:
+						<strong>{selectedPiece.name}</strong>:&ensp;
 						{t('Trimmed succesfully.')}
 					</>,
 					protectString('ClipTrimDialog')
@@ -93,7 +93,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 				undefined,
 				NoticeLevel.WARNING,
 				<>
-					<strong>{selectedPiece.name}</strong>: 
+					<strong>{selectedPiece.name}</strong>:&ensp;
 					{t('Trimming this clip is taking longer than expected. It\'s possible that the story is locked for writing in {{nrcsName}}.', { nrcsName: 'ENPS' })}
 				</>,
 				protectString('ClipTrimDialog')

@@ -101,7 +101,7 @@ export namespace MOSDeviceActions {
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
 			PeripheralDeviceAPI.executeFunctionWithCustomTimeout(peripheralDevice._id, (err: any, response: any) => {
-				console.debug(`Received response from device: ${JSON.stringify(err)}, ${JSON.stringify(response)}`)
+				// console.debug(`Received response from device: ${JSON.stringify(err)}, ${JSON.stringify(response)}`)
 				if (err) reject(err)
 				else if (response && response.mos && response.mos.roAck && response.mos.roAck.roStatus !== "OK") reject(response)
 				else resolve()
