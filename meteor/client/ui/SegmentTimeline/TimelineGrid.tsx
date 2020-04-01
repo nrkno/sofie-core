@@ -1,4 +1,3 @@
-import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as _ from 'underscore'
 
@@ -6,6 +5,7 @@ import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
 import { getElementWidth, getElementHeight } from '../../utils/dimensions'
+import { onElementResize, offElementResize } from '../../lib/resizeObserver'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -39,7 +39,9 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	pixelRatio: number
 	scheduledRepaint?: number | null
 
-	contextResize = _.throttle(() => {
+	private _resizeObserver: ResizeObserver
+
+	contextResize = _.throttle((parentElementWidth: number, parentElementHeight: number) => {
 		if (this.ctx) {
 			let devicePixelRatio = window.devicePixelRatio || 1
 
@@ -51,15 +53,15 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			this.pixelRatio = devicePixelRatio / backingStoreRatio
 
-			this.width = (this.canvasElement.scrollWidth || 0) * this.pixelRatio
-			this.height = (this.canvasElement.scrollHeight || 0) * this.pixelRatio
+			this.width = (parentElementWidth || 0) * this.pixelRatio
+			this.height = (parentElementHeight || 0) * this.pixelRatio
 			this.canvasElement.width = this.width
 			this.canvasElement.height = this.height
 
 			this.repaint()
 		}
 		if (this.props.onResize) {
-			this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
+			this.props.onResize([parentElementWidth || 1, parentElementHeight || 1])
 		}
 	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
 
@@ -71,8 +73,12 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.canvasElement = element
 	}
 
-	onCanvasResize = (event: Event) => {
-		this.contextResize()
+	onCanvasResize = (entries: ResizeObserverEntry[]) => {
+		if (entries && entries[0] && entries[0].contentBoxSize) {
+			this.contextResize(entries[0].contentBoxSize!.width, entries[0].contentBoxSize!.height)
+		} else {
+			this.contextResize(getElementWidth(this.parentElement), getElementHeight(this.parentElement))
+		}
 	}
 
 	ring (value, ringMax) {
@@ -200,10 +206,12 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// alpha: false
 		})
 		if (this.ctx) {
-			this.contextResize()
+			const parentWidth = getElementWidth(this.parentElement)
+			const parentHeight = getElementHeight(this.parentElement)
+			this.contextResize(parentWidth, parentHeight)
 
 			// $(window).on('resize', this.onCanvasResize)
-			elementResizeEvent(this.parentElement, this.onCanvasResize)
+			this._resizeObserver = onElementResize(this.parentElement, this.onCanvasResize)
 
 			if (!gridFont && typeof FontFace !== 'undefined') {
 
@@ -229,7 +237,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			}
 
 			if (this.props.onResize) {
-				this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
+				this.props.onResize([parentWidth || 1, parentHeight || 1])
 			}
 		}
 	}
@@ -249,6 +257,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		// console.log('Detach resize notifiers')
 
 		// $(window).off('resize', this.onCanvasResize)
-		elementResizeEvent.unbind(this.parentElement, this.onCanvasResize)
+		this._resizeObserver.disconnect()
 	}
 }
