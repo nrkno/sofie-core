@@ -144,7 +144,8 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							{/* <Route exact path='/' component={Dashboard} /> */}
 							<Route exact path='/' component={RundownList} />
 							<Route path='/rundowns' component={RundownList} />
-							<Route path='/rundown/:rundownId' component={RundownView} />
+							<Route path='/rundown/:rundownId' component={RundownView} exact/>
+							<Route path='/rundown/:rundownId/shelf' exact render={(props) => <RundownView {...props} onlyShelf={true}/>}/>
 							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
