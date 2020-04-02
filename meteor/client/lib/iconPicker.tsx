@@ -1,0 +1,132 @@
+import * as React from 'react'
+import * as _ from 'underscore'
+import * as ClassNames from 'classnames'
+
+import * as faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+
+import pack, { IconPack, IconDefinition } from '@fortawesome/fontawesome-free-solid'
+import { translate } from 'react-i18next'
+import { Translated } from './ReactMeteorData/ReactMeteorData'
+
+export interface IconPickerEvent {
+	selectedValue: string
+}
+
+interface IProps {
+	availableOptions: Array<string>
+	placeholder?: string
+	className?: string
+	value?: string
+	onChange?: (event: IconPickerEvent) => void
+}
+
+interface IState {
+	selectedValue: string
+	expanded: boolean
+	iconPack: IconPack
+	searchText: string
+}
+
+export const IconPicker = translate()(class IconPicker extends React.Component<Translated<IProps>, IState> {
+	constructor (props: Translated<IProps>) {
+		super(props)
+
+		delete pack['faFontAwesomeLogoFull']
+
+		this.state = {
+			selectedValue: '',
+			expanded: false,
+			iconPack: pack,
+			searchText: ''
+		}
+	}
+
+	componentDidMount () {
+		this.refreshChecked()
+	}
+
+	componentDidUpdate (prevProps: IProps) {
+		if (this.props.value !== prevProps.value) {
+			this.refreshChecked()
+		}
+	}
+
+	refreshChecked () {
+		if (this.props.value) {
+			this.setState({
+				selectedValue: this.props.value
+			})
+		} else {
+			this.setState({
+				selectedValue: ''
+			})
+		}
+	}
+
+	handleChange = (value) => {
+		this.setState({
+			selectedValue: value
+		})
+
+		if (this.props.onChange && typeof this.props.onChange === 'function') {
+			this.props.onChange({ selectedValue: value })
+		}
+		this.toggleExpco()
+	}
+
+	handleSearchChange = (event) => {
+		this.setState({
+			searchText: event.target.value
+		})
+	}
+
+	toggleExpco = () => {
+		this.setState({
+			expanded: !this.state.expanded
+		})
+	}
+
+	getFilteredIcons () {
+		return this.state.searchText ? _.pick(this.state.iconPack, (value: IconDefinition) => {
+			return value.iconName.includes(this.state.searchText)
+		}) : this.state.iconPack
+	}
+
+	render () {
+		const { t } = this.props
+		return (
+			<div className={ClassNames('expco focusable subtle iconpicker', {
+				'expco-expanded': this.state.expanded
+			}, this.props.className)}>
+				<div className={ClassNames('expco-title focusable-main')} onClick={this.toggleExpco}>
+					{this.state.selectedValue && <FontAwesomeIcon icon={this.state.selectedValue} />}
+				</div>
+				<a className='action-btn right expco-expand subtle' onClick={this.toggleExpco}>
+					<FontAwesomeIcon icon={faChevronUp} />
+				</a>
+				<div className='expco-body bd'>
+					<input type='text' className='search-input' placeholder={t('Search...')} onChange={this.handleSearchChange}></input>
+					<div className='expco-list'>
+						{!this.state.searchText &&
+							<div className='expco-item'>
+								<label className='action-btn' onClick={() => this.handleChange('')}>&nbsp;</label>
+							</div>
+						}
+						{
+							_.values(_.mapObject(this.getFilteredIcons(), (value, key) => {
+								return (
+									<div className='expco-item' key={key}>
+										<label className='action-btn' title={value.iconName} onClick={() => this.handleChange(value)}>
+											<FontAwesomeIcon icon={value.iconName} />
+										</label>
+									</div>
+								)
+							}))
+						}
+					</div>
+				</div>
+			</div>
+		)
+	}
+})

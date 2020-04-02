@@ -31,6 +31,7 @@ import { Spinner } from '../lib/Spinner'
 import { SplitDropdown } from '../lib/splitDropdown'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../lib/UIStateStorage'
+import * as ClassNames from 'classnames'
 
 const PackageInfo = require('../../package.json')
 
@@ -111,40 +112,41 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		UIStateStorage.setItem(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', key)
 	}
 
+	renderLinkItem (layout: RundownLayoutBase, link: string, key: string) {
+		return (
+			<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
+				<div className='action-btn expco-item'>
+					<div className={ClassNames('action-btn layout-icon', { small: !layout.icon })} style={{ color: layout.iconColor || 'transparent' }}>
+						<FontAwesomeIcon icon={layout.icon || 'circle'} />
+					</div>
+					{layout.name}
+				</div>
+			</Link>
+		)
+	}
+
 	renderViewLinks () {
 		const standaloneLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsStandalone).map(layout => {
-			const key = `standalone${layout._id}`
-			return (
-				<Link to={this.getShelfLink(this.props.rundown._id, layout._id)} onClick={() => this.saveViewChoice(key)} key={key}>
-					<div className='action-btn expco-item'>
-						<div className='action-btn layout-indicator' style={{ backgroundColor: layout.color }}></div>
-						{layout.name}
-					</div>
-				</Link>
-			)
+			return this.renderLinkItem(layout, this.getShelfLink(this.props.rundown._id, layout._id), `standalone${layout._id}`)
 		})
 		const shelfLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsShelf).map(layout => {
-			const key = `shelf${layout._id}`
-			return (
-				<Link to={this.getRundownWithLayoutLink(this.props.rundown._id, layout._id)} onClick={() => this.saveViewChoice(key)} key={key}>
-					<div className='action-btn expco-item'>
-						<div className='action-btn layout-indicator' style={{ backgroundColor: layout.color }}></div>
-						{layout.name}
-					</div>
-				</Link>
-			)
+			return this.renderLinkItem(layout, this.getRundownWithLayoutLink(this.props.rundown._id, layout._id), `shelf${layout._id}`)
 		})
 		const allElements = [
-			<div className='expco-header' key={'separator0'}>Standalone shelfs</div>,
+			<div className='expco-header' key={'header1'}>Standalone shelfs</div>,
 			...standaloneLayouts,
-			<div className='expco-header' key={'separator1'}>Rundown + Shelf</div>,
+			<div className='expco-header' key={'header2'}>Rundown + Shelf</div>,
 			...shelfLayouts,
-			<div className='expco-separator' key={'separator2'}></div>,
-			<Link to={this.getRundownLink(this.props.rundown._id)} onClick={() => this.saveViewChoice('default')} key={'default'}><div className='action-btn expco-item'>Default</div></Link>
+			<div className='expco-separator' key={'separator1'}></div>,
+			<Link to={this.getRundownLink(this.props.rundown._id)} onClick={() => this.saveViewChoice('default')} key={'default'}>
+				<div className='action-btn expco-item'>Default</div>
+			</Link>
 		]
-		return <React.Fragment>
-			<SplitDropdown selectedKey={this.state.selectedView} elements={allElements}/>
-		</React.Fragment>
+		return (
+			<React.Fragment>
+				<SplitDropdown selectedKey={this.state.selectedView} elements={allElements}/>
+			</React.Fragment>
+		)
 	}
 
 	render () {

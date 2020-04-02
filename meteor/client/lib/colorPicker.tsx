@@ -66,6 +66,7 @@ export class ColorPicker extends React.Component<IProps, IState> {
 		if (this.props.onChange && typeof this.props.onChange === 'function') {
 			this.props.onChange({ selectedValue: value })
 		}
+		this.toggleExpco()
 	}
 
 	toggleExpco = () => {

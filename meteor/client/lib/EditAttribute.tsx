@@ -8,11 +8,12 @@ import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
+import { IconPicker } from './iconPicker'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
 }
-export type EditAttributeType = 'text' | 'multiline' | 'int' | 'float' | 'checkbox' | 'dropdown' | 'switch' | 'multiselect' | 'colorpicker'
+export type EditAttributeType = 'text' | 'multiline' | 'int' | 'float' | 'checkbox' | 'dropdown' | 'switch' | 'multiselect' | 'colorpicker' | 'iconpicker'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render () {
 
@@ -51,6 +52,10 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 		} else if (this.props.type === 'colorpicker') {
 			return (
 				<EditAttributeColorPicker {...this.props} />
+			)
+		} else if (this.props.type === 'iconpicker') {
+			return (
+				<EditAttributeIconPicker {...this.props} />
 			)
 		}
 
@@ -574,6 +579,27 @@ const EditAttributeColorPicker = wrapEditAttribute(class extends EditAttributeBa
 				placeholder={this.props.label}
 				onChange={this.handleChange}>
 			</ColorPicker>
+		)
+	}
+})
+const EditAttributeIconPicker = wrapEditAttribute(class extends EditAttributeBase {
+	constructor (props) {
+		super(props)
+
+		this.handleChange = this.handleChange.bind(this)
+	}
+	handleChange (event: ColorPickerEvent) {
+		this.handleUpdate(event.selectedValue)
+	}
+	render () {
+		return (
+			<IconPicker
+				className={this.props.className}
+				availableOptions={this.props.options}
+				value={this.getAttribute()}
+				placeholder={this.props.label}
+				onChange={this.handleChange}>
+			</IconPicker>
 		)
 	}
 })

@@ -711,10 +711,22 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								</div>
 								<div className='mod mvs mhs'>
 									<label className='field'>
-										{t('Label color')}
+										{t('Icon')}
 										<EditAttribute
 											modifiedClassName='bghl'
-											attribute={'color'}
+											attribute={'icon'}
+											obj={item}
+											type='iconpicker'
+											collection={RundownLayouts}
+											className='input text-input input-s'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Icon color')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'iconColor'}
 											obj={item}
 											options={defaultColorPickerPalette}
 											type='colorpicker'
