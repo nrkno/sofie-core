@@ -54,6 +54,6 @@ class ServerManualPlayoutAPI implements NewManualPlayoutAPI {
 }
 registerClassToMeteorMethods(ManualPlayoutAPIMethods, ServerManualPlayoutAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
 	return ServerClientAPI.runInUserLog(methodContext, '', methodName, args, () => {
-		return fcn(...args)
+		return fcn.apply(methodContext, args)
 	})
 })
