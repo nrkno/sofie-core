@@ -36,11 +36,6 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	/** The id of the group object this object is in  */
 	inGroup?: string
-
-	// TODO - this needs to be scrapped. there is already a metaData property
-	metadata?: {
-		[key: string]: any
-	}
 }
 // export type TimelineObj = TimelineObjRundown | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 

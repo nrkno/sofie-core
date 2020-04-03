@@ -207,7 +207,7 @@ export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[
 }
 export function setupMockStudioBlueprint (showStyleBaseId: ShowStyleBaseId): Blueprint {
 
-	const TSRInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
 	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.STUDIO
@@ -249,7 +249,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: ShowStyleBaseId): Blu
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: ShowStyleVariantId): Blueprint {
 
-	const TSRInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
+	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
 	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 	const BLUEPRINT_TYPE						= BlueprintManifestType.SHOWSTYLE

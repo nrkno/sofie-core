@@ -297,7 +297,7 @@ function getTimelineRundown (studio: Studio, playoutData: RundownPlaylistPlayout
 						objectType: TimelineObjType.RUNDOWN,
 						enable: { start: 0 },
 						layer: id,
-						metadata: {
+						metaData: {
 							versions: {
 								core: PackageInfo.version,
 								blueprintId: studio.blueprintId,

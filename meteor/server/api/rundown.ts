@@ -18,7 +18,8 @@ import {
 	unprotectObjectArray,
 	protectString,
 	unprotectString,
-	makePromise
+	makePromise,
+	Omit
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -119,7 +120,14 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
-		const playlist = _.extend(existingPlaylist || {}, _.omit(literal<DBRundownPlaylist>({
+		const playlist: DBRundownPlaylist = {
+			created:				getCurrentTime(),
+			currentPartInstanceId:	null,
+			nextPartInstanceId:		null,
+			previousPartInstanceId:	null,
+
+			...existingPlaylist,
+
 			_id: playlistId,
 			externalId: playlistInfo.playlist.externalId,
 			studioId: studio._id,
@@ -127,15 +135,10 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
 
-			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
 			modified: getCurrentTime(),
-
+			
 			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
-
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null
-		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId', 'created' ])) as DBRundownPlaylist
+		}
 
 		let order = playlistInfo.order
 		if (!order) {
@@ -160,7 +163,14 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
-		const playlist = _.extend(existingPlaylist || {}, _.omit(literal<DBRundownPlaylist>({
+		const playlist: DBRundownPlaylist = {
+			created:				getCurrentTime(),
+			currentPartInstanceId:	null,
+			nextPartInstanceId:		null,
+			previousPartInstanceId:	null,
+
+			...existingPlaylist,
+
 			_id: playlistId,
 			externalId: currentRundown.externalId,
 			studioId: studio._id,
@@ -168,16 +178,11 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedStart: currentRundown.expectedStart,
 			expectedDuration: currentRundown.expectedDuration,
 
-			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
 			modified: getCurrentTime(),
-
+			
 			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
-
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null
-		}), [ 'currentPartInstanceId', 'nextPartInstanceId', 'previousPartInstanceId' ])) as DBRundownPlaylist
-
+		}
+		
 		return {
 			rundownPlaylist: playlist,
 			order: _.object([[currentRundown._id, 1]])

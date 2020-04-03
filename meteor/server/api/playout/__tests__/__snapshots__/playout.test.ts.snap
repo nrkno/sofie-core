@@ -125,7 +125,7 @@ Array [
     },
     "id": "baseline_version",
     "layer": "baseline_version",
-    "metadata": Object {
+    "metaData": Object {
       "versions": Object {
         "blueprintId": "mockBlueprint0",
         "blueprintVersion": "0.0.0",

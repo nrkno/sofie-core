@@ -83,9 +83,6 @@ export interface DBRundown extends ProtectedStringProperties<IBlueprintRundownDB
 	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
-
-	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
-	previousPersistentState?: TimelinePersistentState
 }
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
