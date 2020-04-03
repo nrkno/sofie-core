@@ -68,6 +68,8 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	runtimeArguments?: BlueprintRuntimeArguments
 	/** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
 	dirty?: boolean
+	/** Human readable unqiue identifier of the part */
+	identifier?: string
 }
 export interface PartTimings extends IBlueprintPartDBTimings {
 	/** The playback offset that was set for the last take */
@@ -124,6 +126,7 @@ export class Part implements DBPart {
 	public dynamicallyInserted?: boolean
 	public runtimeArguments?: BlueprintRuntimeArguments
 	public dirty?: boolean
+	public identifier?: string
 
 	constructor (document: DBPart) {
 		_.each(_.keys(document), (key) => {
