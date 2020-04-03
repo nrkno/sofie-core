@@ -23,7 +23,7 @@ import {
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { scrollToSegment } from '../../lib/viewPort'
+import { scrollToSegment, scrollToPart } from '../../lib/viewPort'
 
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
@@ -492,6 +492,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
+	onClickSegmentIdent = (partId: PartId) => {
+		scrollToPart(partId)
+	}
+
 	getSegmentContext = (props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
@@ -655,6 +659,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			return prev
 		}, 0)
 
+		const identifiers: Array<{ partId: PartId, ident?: string }> = this.props.parts.map(p => {
+			return { partId: p.partId, ident: p.instance.part.identifier }
+		})
+
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
 			const nextPart = this.props.isNextSegment ?
@@ -714,6 +722,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							</div>
 						</div>}
 					</div>}
+					<div className='segment-timeline__part-identifiers'>
+						{ identifiers.map(ident => <div
+							className='segment-timeline__part-identifiers__identifier'
+							key={ident.partId + ''}
+							onClick={() => this.onClickSegmentIdent(ident.partId)}>{ident.ident}</div>) }
+					</div>
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>

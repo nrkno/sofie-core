@@ -3,7 +3,11 @@ $timeline-layer-height: 1em;
 .segment-timeline {
     display: block;
     width: 100%;
-    max-width: 100%;
+	max-width: 100%;
+	
+	.segment-timeline__title {
+		position: relative;
+	}
 }
 .segment-timeline__title__label.identifier::before {
 	content: attr(data-identifier);
@@ -12,6 +16,22 @@ $timeline-layer-height: 1em;
 	padding: 3px;
 	white-space: nowrap;
 	border-radius: 3px;
+}
+.segment-timeline__part-identifiers {
+	display: flex;
+	position: absolute;
+	bottom: 2.5px;
+	flex-wrap: wrap;
+
+	.segment-timeline__part-identifiers__identifier {
+		float: left;
+		margin: 2.5px;
+		padding:  0 10px 0 10px;
+		box-sizing: border-box;
+		background-color: #7400d5;
+		border-radius: 10px;
+		cursor: pointer;
+	}
 }
 .segment-timeline__liveline {
     position: absolute;
