@@ -67,7 +67,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	toggleAdLib (e: any, piece?: AdLibPieceUi) {
+	toggleAdLib (e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
 		const { t } = this.props
 		if (!piece) {
 			return
@@ -82,7 +82,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 			return
 		}
 
-		if (!this.isAdLibOnAir(piece) && this.props.rundown && this.props.rundown.currentPartId) {
+		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.rundown && this.props.rundown.currentPartId) {
 			if (!piece.isGlobal) {
 				doUserAction(t, e, UserActionAPI.methods.segmentAdLibPieceStart, [
 					this.props.rundown._id, this.props.rundown.currentPartId, piece._id, true
@@ -107,7 +107,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 	onAction = (e: any, piece?: AdLibPieceUi) => {
 		switch (this.props.panel.role) {
 			case RundownLayoutMultiViewRole.QUEUE:
-				this.toggleAdLib(e, piece)
+				this.toggleAdLib(e, piece, true)
 				break
 			case RundownLayoutMultiViewRole.TAKE:
 				this.take(e)
