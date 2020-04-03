@@ -12,6 +12,9 @@ import { TimecodeEncoder } from './TimecodeEncoder'
 import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartId } from '../../../lib/collections/Parts'
+import { faUndo } from '@fortawesome/fontawesome-free-solid'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+const Tooltip = require('rc-tooltip')
 
 export interface IProps {
 	pieceId: PieceId
@@ -21,6 +24,8 @@ export interface IProps {
 
 	inPoint: number
 	duration: number
+	originalInPoint?: number
+	originalDuration?: number
 	onChange: (inPoint: number, duration: number) => void
 
 	invalidDuration?: boolean
@@ -180,6 +185,33 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		}
 	}
 
+	onResetIn = () => {
+		const ns = this.checkInOutPoints({
+			inPoint: 0,
+			duration: this.state.duration + this.state.inPoint
+		})
+		this.setState(ns)
+		this.props.onChange(ns.inPoint / this.fps * 1000, ns.duration / this.fps * 1000)
+	}
+
+	onResetOut = () => {
+		const ns = this.checkInOutPoints({
+			inPoint: this.state.inPoint,
+			duration: this.state.maxDuration - this.state.inPoint
+		})
+		this.setState(ns)
+		this.props.onChange(ns.inPoint / this.fps * 1000, ns.duration / this.fps * 1000)
+	}
+
+	onResetAll = () => {
+		const ns = this.checkInOutPoints({
+			inPoint: 0,
+			duration: this.state.maxDuration
+		})
+		this.setState(ns)
+		this.props.onChange(ns.inPoint / this.fps * 1000, ns.duration / this.fps * 1000)
+	}
+
 	render () {
 		const { t } = this.props
 		let previewUrl: string | undefined = undefined
@@ -212,6 +244,12 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 				</div>
 				<div className='clip-trim-panel__timecode-encoders'>
 					<div className='clip-trim-panel__timecode-encoders__input'>
+						<Tooltip overlay={t('Remove in-trimming')} placement='top'>
+							<button className='action-btn clip-trim-panel__timecode-encoders__input__reset'
+								onClick={this.onResetIn}>
+								<FontAwesomeIcon icon={faUndo} />
+							</button>
+						</Tooltip>
 						<label>{t('In')}</label>
 						<TimecodeEncoder
 							fps={this.fps}
@@ -220,6 +258,12 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 						/>
 					</div>
 					<div className='clip-trim-panel__timecode-encoders__input'>
+						<Tooltip overlay={t('Remove all trimming')} placement='top'>
+							<button className='action-btn clip-trim-panel__timecode-encoders__input__reset'
+								onClick={this.onResetAll}>
+								<FontAwesomeIcon icon={faUndo} />
+							</button>
+						</Tooltip>
 						<label>{t('Duration')}</label>
 						<TimecodeEncoder
 							fps={this.fps}
@@ -229,6 +273,12 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 						/>
 					</div>
 					<div className='clip-trim-panel__timecode-encoders__input'>
+						<Tooltip overlay={t('Remove out-trimming')} placement='top'>
+							<button className='action-btn clip-trim-panel__timecode-encoders__input__reset'
+								onClick={this.onResetOut}>
+								<FontAwesomeIcon icon={faUndo} />
+							</button>
+						</Tooltip>
 						<label>{t('Out')}</label>
 						<TimecodeEncoder
 							fps={this.fps}
