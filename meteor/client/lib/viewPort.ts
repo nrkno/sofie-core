@@ -61,7 +61,7 @@ export function scrollToPart (partId: PartId, forceScroll?: boolean, noAnimation
 	return Promise.reject('Could not find part')
 }
 
-export const HEADER_HEIGHT = 54 // was: 150
+export const HEADER_HEIGHT = 150 // TV2 has: 54
 export const HEADER_MARGIN = 15
 
 export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | SegmentId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
