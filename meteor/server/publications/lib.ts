@@ -21,6 +21,6 @@ export function meteorPublish<T extends { _id: ProtectedString<any> }> (name: Pu
 	MeteorPublications[name] = callback
 
 	Meteor.publish(name, function (...args: any[]) {
-		return callback(...args) || this.ready
+		return callback.apply(this, args) || this.ready
 	})
 }

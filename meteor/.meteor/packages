@@ -34,3 +34,4 @@ meteorhacks:picker
 ostrio:meteor-root
 underscore
 mdg:validated-method
+accounts-password

@@ -21,7 +21,7 @@ import {
 	getUIZoom
 } from '../lib/localStorage'
 import Status from './Status'
-import Settings from './Settings'
+import SettingsComponent from './Settings'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
@@ -37,6 +37,8 @@ import {
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
+import { Settings } from '../../lib/Settings'
+import { LoginPage } from './LoginPage'
 
 interface IAppState {
 	allowStudio: boolean
@@ -123,6 +125,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 	}
 
 	render () {
+		console.log(Settings)
 		return (
 			<Router>
 				<div className='container-fluid'>
@@ -141,14 +144,20 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					<ErrorBoundary>
 						<Switch>
 							{/* <Route exact path='/' component={Dashboard} /> */}
-							<Route exact path='/' component={RundownList} />
+							{Settings.enableUserAccounts ?
+								<React.Fragment>
+									<Route exact path='/' component={LoginPage} />
+									<Route exact path='/lobby' component={RundownList} />
+								</React.Fragment> :
+								<Route exact path='/' component={RundownList} />
+							}
 							<Route path='/rundowns' component={RundownList} />
 							<Route path='/rundown/:playlistId' component={RundownView} />
 							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
 							<Route path='/prompter/:studioId' component={PrompterView} />
 							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
 							<Route path='/status' component={Status} />
-							<Route path='/settings' component={Settings} />
+							<Route path='/settings' component={SettingsComponent} />
 							<Route path='/testTools' component={TestTools} />
 							<Redirect to='/' />
 						</Switch>

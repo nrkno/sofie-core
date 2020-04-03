@@ -27,6 +27,8 @@ export interface ISettings {
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
 	allowGrabbingTimeline: boolean
+	/**  */
+	enableUserAccounts: boolean
 }
 
 export let Settings: ISettings
@@ -41,7 +43,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	autoRewindLeavingSegment: false,
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
-	allowGrabbingTimeline: true
+	allowGrabbingTimeline: true,
+	enableUserAccounts: false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
