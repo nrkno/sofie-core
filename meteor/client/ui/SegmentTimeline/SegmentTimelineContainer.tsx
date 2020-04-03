@@ -16,7 +16,7 @@ import {
 	PartExtended,
 	SegmentExtended
 } from '../../../lib/Rundown'
-import { RundownViewEvents, IContextMenuContext } from '../RundownView'
+import { RundownViewEvents, IContextMenuContext, IGoToPartEvent, IGoToPartInstanceEvent } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
@@ -312,6 +312,8 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 			}
 		}
 		window.addEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+		window.addEventListener(RundownViewEvents.goToPart, this.onGoToPart)
+		window.addEventListener(RundownViewEvents.goToPartInstance, this.onGoToPart)
 		window.requestAnimationFrame(() => {
 			this.mountedTime = Date.now()
 			if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
@@ -456,6 +458,30 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 			this.setState({
 				scrollLeft: 0
 			})
+		}
+	}
+
+	onGoToPart = (e: CustomEvent<IGoToPartEvent>) => {
+		if (this.props.segmentId === e.detail.segmentId) {
+			for (const part of this.props.parts) {
+				if (part.partId === e.detail.partId) {
+					this.setState({
+						scrollLeft: part.startsAt
+					})
+				}
+			}
+		}
+	}
+
+	onGoToPartInstance = (e: CustomEvent<IGoToPartInstanceEvent>) => {
+		if (this.props.segmentId === e.detail.segmentId) {
+			for (const part of this.props.parts) {
+				if (part.instance._id === e.detail.partInstanceId) {
+					this.setState({
+						scrollLeft: part.startsAt
+					})
+				}
+			}
 		}
 	}
 

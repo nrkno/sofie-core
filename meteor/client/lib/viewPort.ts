@@ -6,6 +6,7 @@ import { Parts, PartId } from '../../lib/collections/Parts'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { SegmentId } from '../../lib/collections/Segments'
 import { isProtectedString } from '../../lib/lib'
+import { RundownViewEvents, IGoToPartEvent, IGoToPartInstanceEvent } from '../ui/RundownView'
 
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
@@ -42,20 +43,34 @@ function quitFocusOnPart () {
 }
 
 export function scrollToPartInstance (partInstanceId: PartInstanceId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
-	// TODO: do scrolling within segment as well?
 	quitFocusOnPart()
 	const partInstance = PartInstances.findOne(partInstanceId)
 	if (partInstance) {
+		window.dispatchEvent(
+			new CustomEvent<IGoToPartInstanceEvent>(
+				RundownViewEvents.goToPart, {
+					detail: {
+						segmentId: partInstance.segmentId,
+						partInstanceId: partInstanceId
+					}
+				}))
 		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation)
 	}
 	return Promise.reject('Could not find PartInstance')
 }
 
 export function scrollToPart (partId: PartId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
-	// TODO: do scrolling within segment as well?
 	quitFocusOnPart()
 	let part = Parts.findOne(partId)
 	if (part) {
+		window.dispatchEvent(
+			new CustomEvent<IGoToPartEvent>(
+				RundownViewEvents.goToPart, {
+					detail: {
+						segmentId: part.segmentId,
+						partId: partId
+					}
+				}))
 		return scrollToSegment(part.segmentId, forceScroll, noAnimation)
 	}
 	return Promise.reject('Could not find part')
