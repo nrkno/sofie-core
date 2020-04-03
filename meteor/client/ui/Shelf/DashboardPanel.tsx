@@ -443,12 +443,12 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	onOut = (e: any) => {
+	onOut = (e: any, outButton?: boolean) => {
 		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
-			if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+			if (sourceLayer && (sourceLayer.clearKeyboardHotkey || outButton)) {
 				this.onClearAllSourceLayers([sourceLayer], e)
 			}
 		}
@@ -514,7 +514,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 									<span className='dashboard-panel__panel__button__label'>{t('In')}</span>
 								</div>
 								<div className={ClassNames('dashboard-panel__panel__button')}
-									onClick={(e) => { this.onOut(e) }}
+									onClick={(e) => { this.onOut(e, true) }}
 								>
 									<span className='dashboard-panel__panel__button__label'>{t('Out')}</span>
 								</div>
