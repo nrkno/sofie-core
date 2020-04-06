@@ -1683,7 +1683,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		const { t } = this.props
 		if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
 			const playlistId = this.props.playlist._id
-			doUserAction(t, e, 'Set next Segment', () => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId), (err, res) => {
+			doUserAction(t, e, 'Set next Segment', (e) => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId), (err, res) => {
 				if (err) console.error(err)
 				this.setState({
 					manualSetAsNext: true
