@@ -721,7 +721,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												type='checkbox'
 												collection={ShowStyleBases}
 												className=''></EditAttribute>
-											{t('Items on this layer are sticky')}
+											{t('Pieces on this layer are sticky')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -733,12 +733,12 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												type='checkbox'
 												collection={ShowStyleBases}
 												className=''></EditAttribute>
-											{t('Sticky: Only use original pieces')}
+											{t('Only Pieces present in rundown are sticky')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Activate Sticky Item Shortcut')}
+											{t('Activate Sticky Piece Shortcut')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.activateStickyKeyboardHotkey'}
@@ -758,7 +758,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												collection={ShowStyleBases}
 												className=''
 											/>
-											{t('Allow disabling of elements')}
+											{t('Allow disabling of Pieces')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -770,7 +770,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												type='checkbox'
 												collection={ShowStyleBases}
 												className=''></EditAttribute>
-											{t('Adlibs on this layer can be queued')}
+											{t('AdLibs on this layer can be queued')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>

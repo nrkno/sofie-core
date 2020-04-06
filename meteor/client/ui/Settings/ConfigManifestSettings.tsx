@@ -488,11 +488,8 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 
 	render () {
 		const { t } = this.props
-		const divStyle: React.CSSProperties = {
-			overflowX: 'scroll'
-		}
 		return (
-			<div style={divStyle}>
+			<div className='scroll-x'>
 				<ModalDialog title={t('Add config item')} acceptText={t('Add')}
 					secondaryText={t('Cancel')} show={this.state.showAddItem}
 					onAccept={(e) => this.handleConfirmAddItemAccept(e)}
