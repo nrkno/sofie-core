@@ -125,6 +125,8 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
 
+			loop: playlistInfo.playlist.loop,
+
 			created: existingPlaylist ? existingPlaylist.created : getCurrentTime(),
 			modified: getCurrentTime(),
 

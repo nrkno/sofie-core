@@ -20,18 +20,31 @@ export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
+	/** External ID (source) of the playlist */
 	externalId: string
+	/** Studio that this playlist is assigned to */
 	studioId: StudioId
+	/** The source of the playlist */
 	peripheralDeviceId: PeripheralDeviceId
+	/** A name to be displayed to the user */
 	name: string
+	/** Created timestamp */
 	created: Time
+	/** Last modified timestamp */
 	modified: Time
+	/** When the playlist is expected to start */
 	expectedStart?: Time
+	/** How long the playlist is expected to take ON AIR */
 	expectedDuration?: number
+	/** Is the playlist in rehearsal mode (can be used, when active: true) */
 	rehearsal?: boolean
+	/** Playout hold state */
 	holdState?: RundownHoldState
-
+	/** Is the playlist currently active in the studio */
 	active?: boolean
+	/** Should the playlist loop at the end */
+	loop?: boolean
+
 	/** the id of the Live Part - if empty, no part in this rundown is live */
 	currentPartInstanceId: PartInstanceId | null
 	/** the id of the Next Part - if empty, no segment will follow Live Part */
