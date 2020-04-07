@@ -1,4 +1,4 @@
-import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 
 // Setup rules:
 PieceInstances.allow({

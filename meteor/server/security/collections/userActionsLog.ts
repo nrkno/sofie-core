@@ -1,4 +1,4 @@
-import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 
 export namespace UserActionsLogSecurity {
 	export function allowReadAccess (selector: object, context: any) {

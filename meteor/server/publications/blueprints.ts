@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { BlueprintsSecurity } from '../security/blueprints'
+import { BlueprintsSecurity } from '../security/collections/blueprints'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

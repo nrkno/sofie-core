@@ -1,4 +1,4 @@
-import { Segments, Segment } from '../../lib/collections/Segments'
+import { Segments, Segment } from '../../../lib/collections/Segments'
 
 // Setup rules:
 Segments.allow({

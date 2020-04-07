@@ -1,4 +1,4 @@
-import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
+import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 
 // Setup rules:
 AdLibPieces.allow({

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { RundownPlaylistSecurity } from '../security/rundownPlaylists'
+import { RundownPlaylistSecurity } from '../security/collections/rundownPlaylists'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

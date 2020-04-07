@@ -4,7 +4,7 @@ import * as MOS from 'mos-connection'
 
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
-import { PeripheralDeviceSecurity } from '../../../security/peripheralDevices'
+import { PeripheralDeviceSecurity } from '../../../security/collections/peripheralDevices'
 import { logger } from '../../../logging'
 import { getStudioFromDevice, canBeUpdated } from '../lib'
 import { handleRemovedRundown } from '../rundownInput'

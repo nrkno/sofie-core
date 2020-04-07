@@ -1,8 +1,8 @@
-import { Parts, Part } from '../../lib/collections/Parts'
+import { Pieces, Piece } from '../../../lib/collections/Pieces'
 
 // Setup rules:
-Parts.allow({
-	insert (userId: string, doc: Part): boolean {
+Pieces.allow({
+	insert (userId: string, doc: Piece): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {

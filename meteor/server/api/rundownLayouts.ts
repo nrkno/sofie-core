@@ -5,7 +5,7 @@ import { registerClassToMeteorMethods } from '../methods'
 import { RundownLayoutsAPI, NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
 import { RundownLayouts, RundownLayoutType, RundownLayoutBase, RundownLayoutId } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
-import { RundownLayoutSecurity } from '../security/rundownLayouts'
+import { RundownLayoutSecurity } from '../security/collections/rundownLayouts'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 // @ts-ignore Meteor package not recognized by Typescript

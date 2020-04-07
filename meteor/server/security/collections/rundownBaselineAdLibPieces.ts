@@ -1,4 +1,4 @@
-import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 
 // Setup rules:
 RundownBaselineAdLibPieces.allow({

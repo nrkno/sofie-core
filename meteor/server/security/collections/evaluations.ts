@@ -1,4 +1,4 @@
-import { Evaluations, Evaluation } from '../../lib/collections/Evaluations'
+import { Evaluations, Evaluation } from '../../../lib/collections/Evaluations'
 
 export namespace EvaluationsSecurity {
 	export function allowReadAccess (selector: object, context: any) {

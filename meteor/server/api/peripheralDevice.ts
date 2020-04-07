@@ -5,7 +5,7 @@ import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise } from '../../lib/lib'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
+import { PeripheralDeviceSecurity } from '../security/collections/peripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, getTimelineId } from '../../lib/collections/Timeline'

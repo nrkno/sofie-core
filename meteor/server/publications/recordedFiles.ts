@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
-import { RecordedFileSecurity } from '../security/recordedFiles'
+import { RecordedFileSecurity } from '../security/collections/recordedFiles'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

@@ -1,4 +1,4 @@
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { rejectFields } from './lib'
 
 // Setup rules:

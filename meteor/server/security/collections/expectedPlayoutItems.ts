@@ -1,8 +1,8 @@
 import { check } from 'meteor/check'
 
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/PeripheralDevices'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDevices, getStudioIdFromDevice } from '../../../lib/collections/PeripheralDevices'
 
 import { Mongo } from 'meteor/mongo'
 

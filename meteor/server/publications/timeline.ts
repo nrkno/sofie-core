@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 
-import { TimelineSecurity } from '../security/timeline'
+import { TimelineSecurity } from '../security/collections/timeline'
 import { Timeline } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'

@@ -1,4 +1,4 @@
-import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
+import { IngestDataCache, IngestDataCacheObj } from '../../../lib/collections/IngestDataCache'
 
 // Setup rules:
 

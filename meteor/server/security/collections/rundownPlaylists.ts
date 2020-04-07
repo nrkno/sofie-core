@@ -1,5 +1,5 @@
-import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 
 export namespace RundownPlaylistSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {

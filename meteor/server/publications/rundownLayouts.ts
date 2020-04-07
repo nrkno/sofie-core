@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
-import { RundownSecurity } from '../security/rundowns'
+import { RundownSecurity } from '../security/collections/rundowns'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

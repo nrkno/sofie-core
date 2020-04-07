@@ -1,7 +1,7 @@
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { rejectFields } from './lib'
 
-export namespace StudiosSecurity {
+export namespace ShowStyleBasesSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
@@ -11,11 +11,10 @@ export namespace StudiosSecurity {
 		// TODO
 	}
 }
-// Setup rules:
 
 // Setup rules:
-Studios.allow({
-	insert (userId: string, doc: Studio): boolean {
+ShowStyleBases.allow({
+	insert (userId: string, doc: ShowStyleBase): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {

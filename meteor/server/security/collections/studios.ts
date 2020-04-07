@@ -1,7 +1,7 @@
-import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
-import { allowOnlyFields } from './lib'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { rejectFields } from './lib'
 
-export namespace BlueprintsSecurity {
+export namespace StudiosSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
@@ -14,13 +14,13 @@ export namespace BlueprintsSecurity {
 // Setup rules:
 
 // Setup rules:
-Blueprints.allow({
-	insert (userId: string, doc: Blueprint): boolean {
+Studios.allow({
+	insert (userId: string, doc: Studio): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {
-		return allowOnlyFields(fields, [
-			'name'
+		return rejectFields(fields, [
+			'_id'
 		])
 	},
 	remove (userId, doc) {

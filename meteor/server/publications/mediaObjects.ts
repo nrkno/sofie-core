@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
-import { StudiosSecurity } from '../security/studios'
+import { StudiosSecurity } from '../security/collections/studios'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'

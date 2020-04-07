@@ -43,7 +43,7 @@ import {
 	omit,
 	ProtectedString
 } from '../../../lib/lib'
-import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
+import { PeripheralDeviceSecurity } from '../../security/collections/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'

@@ -1,5 +1,5 @@
-import { MediaWorkFlows, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlows, MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 
 export namespace MediaWorkFlowStepsSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {

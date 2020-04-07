@@ -1,4 +1,4 @@
-import { PartInstances, PartInstance } from '../../lib/collections/PartInstances'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 
 // Setup rules:
 PartInstances.allow({

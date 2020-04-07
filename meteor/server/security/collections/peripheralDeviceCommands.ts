@@ -1,4 +1,4 @@
-import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../../lib/collections/PeripheralDeviceCommands'
 
 PeripheralDeviceCommands.allow({
 	insert (userId: string, doc: PeripheralDeviceCommand): boolean {

@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 
 import { Studios } from '../../lib/collections/Studios'
-import { StudiosSecurity } from '../security/studios'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
+import { StudiosSecurity } from '../security/collections/studios'
+import { PeripheralDeviceSecurity } from '../security/collections/peripheralDevices'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'

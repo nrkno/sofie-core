@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBasesSecurity } from '../security/showStyleBases'
+import { ShowStyleBasesSecurity } from '../security/collections/showStyleBases'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

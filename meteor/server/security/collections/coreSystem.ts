@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { CoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
+import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 
 // Setup rules:
 CoreSystem.allow({

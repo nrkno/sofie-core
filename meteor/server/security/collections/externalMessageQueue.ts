@@ -1,4 +1,4 @@
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 
 // Setup rules:
 ExternalMessageQueue.allow({

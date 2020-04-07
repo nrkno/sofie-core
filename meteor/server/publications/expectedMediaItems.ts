@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExpectedMediaItemsSecurity } from '../security/expectedMediaItems'
+import { ExpectedMediaItemsSecurity } from '../security/collections/expectedMediaItems'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

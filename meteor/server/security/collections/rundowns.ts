@@ -1,6 +1,6 @@
-import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 
-export namespace TimelineSecurity {
+export namespace RundownSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
@@ -10,13 +10,14 @@ export namespace TimelineSecurity {
 		// TODO
 	}
 }
-
 // Setup rules:
-Timeline.allow({
-	insert (userId: string, doc: TimelineObjGeneric): boolean {
+
+Rundowns.allow({
+	insert (userId: string, doc: Rundown): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {
+		// return true // tmp!
 		return false
 	},
 	remove (userId, doc) {

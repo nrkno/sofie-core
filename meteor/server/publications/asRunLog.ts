@@ -1,5 +1,5 @@
 import { AsRunLog } from '../../lib/collections/AsRunLog'
-import { AsRunLogSecurity } from '../security/asRunLog'
+import { AsRunLogSecurity } from '../security/collections/asRunLog'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 

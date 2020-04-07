@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { rejectFields } from './lib'
 import { Mongo } from 'meteor/mongo'
-import { protectString } from '../../lib/lib'
+import { protectString } from '../../../lib/lib'
 
 export namespace PeripheralDeviceSecurity {
 

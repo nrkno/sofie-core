@@ -1,4 +1,4 @@
-import { Snapshots, SnapshotItem } from '../../lib/collections/Snapshots'
+import { Snapshots, SnapshotItem } from '../../../lib/collections/Snapshots'
 
 // Setup rules:
 Snapshots.allow({

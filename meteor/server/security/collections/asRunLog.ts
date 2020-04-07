@@ -1,4 +1,4 @@
-import { AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
+import { AsRunLog, AsRunLogEvent } from '../../../lib/collections/AsRunLog'
 
 export namespace AsRunLogSecurity {
 	export function allowReadAccess (selector: object, context: any) {

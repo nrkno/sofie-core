@@ -1,4 +1,4 @@
-import { RundownLayouts, RundownLayout } from '../../lib/collections/RundownLayouts'
+import { RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
 import { rejectFields } from './lib'
 
 export namespace RundownLayoutSecurity {

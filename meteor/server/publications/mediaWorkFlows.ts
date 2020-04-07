@@ -1,7 +1,7 @@
 import { check } from 'meteor/check'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { MediaWorkFlowsSecurity, MediaWorkFlowStepsSecurity } from '../security/mediaWorkFlows'
+import { MediaWorkFlowsSecurity, MediaWorkFlowStepsSecurity } from '../security/collections/mediaWorkFlows'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
 

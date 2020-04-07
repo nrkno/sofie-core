@@ -1,6 +1,7 @@
-import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
+import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
+import { allowOnlyFields } from './lib'
 
-export namespace RundownSecurity {
+export namespace BlueprintsSecurity {
 	export function allowReadAccess (selector: object, token: string, context: any) {
 
 		return true
@@ -12,13 +13,15 @@ export namespace RundownSecurity {
 }
 // Setup rules:
 
-Rundowns.allow({
-	insert (userId: string, doc: Rundown): boolean {
+// Setup rules:
+Blueprints.allow({
+	insert (userId: string, doc: Blueprint): boolean {
 		return false
 	},
 	update (userId, doc, fields, modifier) {
-		// return true // tmp!
-		return false
+		return allowOnlyFields(fields, [
+			'name'
+		])
 	},
 	remove (userId, doc) {
 		return false

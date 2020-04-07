@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
+import { PeripheralDeviceSecurity } from '../security/collections/peripheralDevices'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 
