@@ -423,7 +423,10 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 			for (let i = 0; i < this.linearParts.length; i++) {
 				if (i < nextAIndex) { // this is a line before next line
 					localAccum = this.linearParts[i][1] || 0
-					this.linearParts[i][1] = null // we use null to express 'will not probably be played out, if played in order'
+					// only null the values if not looping, if looping, these will be offset by the countdown for the last part
+					if (!playlist.loop) {
+						this.linearParts[i][1] = null // we use null to express 'will not probably be played out, if played in order'
+					}
 				} else if (i === nextAIndex) {
 					// this is a calculation for the next line, which is basically how much there is left of the current line
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
@@ -434,6 +437,13 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
+				}
+			}
+			// contiunation of linearParts calculations for looping playlists
+			if (playlist.loop) {
+				for (let i = 0; i < nextAIndex; i++) {
+					// offset the parts before the on air line by the countdown for the end of the rundown
+					this.linearParts[i][1] = (this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
 				}
 			}
 
