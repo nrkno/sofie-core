@@ -292,7 +292,7 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 
 	if (rundownPlaylist.active) {
 		// put the first on queue:
-		const firstPart = selectNextPart(null, rundownPlaylist.getAllOrderedParts())
+		const firstPart = selectNextPart(null, rundownPlaylist.getAllOrderedParts(), !!rundownPlaylist.loop)
 		setNextPart(rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(rundownPlaylist, null)
@@ -347,12 +347,13 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	// updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 }
 
-export function selectNextPart (previousPartInstance: PartInstance | null, parts: Part[]): { part: Part, index: number} | undefined {
+export function selectNextPart (previousPartInstance: PartInstance | null, parts: Part[], loop: boolean): { part: Part, index: number} | undefined {
 	let possibleParts = parts
 
 	let offset = 0
+	let currentIndex = -1
 	if (previousPartInstance !== null) {
-		const currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
+		currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
 		// TODO - choose something better for next?
 		if (currentIndex !== -1) {
 			offset = currentIndex + 1
@@ -366,6 +367,17 @@ export function selectNextPart (previousPartInstance: PartInstance | null, parts
 			return { part, index }
 		}
 	}
+
+	// if loop & not found any playable, select first playable before the on air line
+	if (loop) {
+		for (let index = 0; index < currentIndex; index ++) {
+			const part = possibleParts[index]
+			if (part.isPlayable()) {
+				return { part, index }
+			}
+		}
+	}
+
 	return undefined
 }
 export function setNextPart (

@@ -179,7 +179,11 @@ export function findLookaheadForlayer (
 	}
 
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPart = selectNextPart(_.last(partInstancesOnTimeline) || playoutData.previousPartInstance || null, playoutData.parts)
+	const nextPart = selectNextPart(
+		_.last(partInstancesOnTimeline) || playoutData.previousPartInstance || null,
+		playoutData.parts,
+		!!playoutData.rundownPlaylist.loop
+	)
 	const futureParts = nextPart ? playoutData.parts.slice(nextPart.index) : []
 	if (futureParts.length === 0) {
 		return res

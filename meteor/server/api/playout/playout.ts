@@ -323,7 +323,7 @@ export namespace ServerPlayoutAPI {
 			const takeRundown: Rundown | undefined = rundownData.rundownsMap[unprotectString(takePartInstance.rundownId)]
 			if (!takeRundown) throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			const nextPart = selectNextPart(takePartInstance, rundownData.parts)
+			const nextPart = selectNextPart(takePartInstance, rundownData.parts, !!rundownData.rundownPlaylist.loop)
 
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPartInstance || null, takePartInstance)
@@ -998,7 +998,7 @@ export namespace ServerPlayoutAPI {
 
 						reportPartHasStarted(playingPartInstance, startedPlayback)
 
-						const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts())
+						const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts(), !!playlist.loop)
 						libSetNextPart(playlist, nextPart ? nextPart.part : null)
 					} else {
 						// a part is being played that has not been selected for playback by Core
@@ -1023,7 +1023,7 @@ export namespace ServerPlayoutAPI {
 
 							reportPartHasStarted(playingPartInstance, startedPlayback)
 
-							const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts())
+							const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts(), !!playlist.loop)
 							libSetNextPart(playlist, nextPart ? nextPart.part : null)
 						}
 

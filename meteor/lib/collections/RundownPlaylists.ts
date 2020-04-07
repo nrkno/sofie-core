@@ -101,6 +101,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null
+	public loop?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
 

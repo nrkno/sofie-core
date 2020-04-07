@@ -55,7 +55,7 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 	let rundown: Rundown | undefined
 
 	if (!rundownPlaylist.nextPartInstanceId) {
-		const firstPart = selectNextPart(null, rundownPlaylist.getAllOrderedParts())
+		const firstPart = selectNextPart(null, rundownPlaylist.getAllOrderedParts(), !!rundownPlaylist.loop)
 		setNextPart(rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
