@@ -51,6 +51,7 @@ import { RONotificationEvent, onRONotificationClick as rundownNotificationHandle
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
+import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
@@ -67,71 +68,6 @@ import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
-
-interface IKeyboardFocusMarkerState {
-	inFocus: boolean
-}
-interface IKeyboardFocusMarkerProps {
-}
-class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
-	private keyboardFocusInterval: number
-
-	constructor (props) {
-		super(props)
-
-		this.state = {
-			inFocus: true
-		}
-	}
-
-	componentDidMount () {
-		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(), 3000)
-		document.body.addEventListener('focusin', this.checkFocus)
-		document.body.addEventListener('focus', this.checkFocus)
-		document.body.addEventListener('mousedown', this.checkFocus)
-		document.addEventListener('visibilitychange', this.checkFocus)
-	}
-
-	componentWillUnmount () {
-		Meteor.clearInterval(this.keyboardFocusInterval)
-		document.body.removeEventListener('focusin', this.checkFocus)
-		document.body.removeEventListener('focus', this.checkFocus)
-		document.body.removeEventListener('mousedown', this.checkFocus)
-		document.removeEventListener('visibilitychange', this.checkFocus)
-	}
-
-	checkFocus = () => {
-		const focusNow = document.hasFocus()
-		if (this.state.inFocus !== focusNow) {
-			this.setState({
-				inFocus: focusNow
-			})
-			const viewInfo = [
-				window.location.href + window.location.search,
-				window.innerWidth,
-				window.innerHeight,
-				getAllowStudio(),
-				getAllowConfigure(),
-				getAllowService()
-			]
-			if (focusNow) {
-				MeteorCall.userAction.guiFocused('checkFocus', viewInfo).catch(console.error)
-			} else {
-				MeteorCall.userAction.guiBlurred('checkFocus', viewInfo).catch(console.error)
-			}
-		}
-	}
-
-	render () {
-		if (this.state.inFocus) {
-			return null
-		} else {
-			return (
-				<div className='rundown-view__focus-lost-frame'></div>
-			)
-		}
-	}
-}
 
 interface ITimingWarningProps {
 	playlist: RundownPlaylist
@@ -1893,7 +1829,10 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 							'rundown-view--studio-mode': this.state.studioMode
 						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 							<ErrorBoundary>
-								{ this.state.studioMode && !Settings.disableBlurBorder && <KeyboardFocusMarker /> }
+								{ this.state.studioMode && !Settings.disableBlurBorder &&
+									<KeyboardFocusIndicator>
+										<div className='rundown-view__focus-lost-frame'></div>
+									</KeyboardFocusIndicator> }
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<RundownFullscreenControls
