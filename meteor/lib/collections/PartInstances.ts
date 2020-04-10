@@ -63,7 +63,7 @@ export class PartInstance implements DBPartInstance {
 		this.isTemporary = isTemporary === true
 		this.part = new Part(document.part)
 	}
-	getPieceInstances (selector?: MongoSelector<PieceInstance>, options?: FindOptions) {
+	getPieceInstances (selector?: MongoSelector<PieceInstance>, options?: FindOptions<PieceInstance>) {
 		if (this.isTemporary) {
 			throw new Error('Not implemented') // TODO?
 			// const pieces = Pieces.find(

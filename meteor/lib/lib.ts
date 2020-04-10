@@ -757,7 +757,7 @@ export function toc (name: string = 'default', logStr?: string | Promise<any>[])
 export function asyncCollectionFindFetch<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
-	options?: FindOptions
+	options?: FindOptions<DBInterface>
 ): Promise<Array<DocClass>> {
 	// Make the collection fethcing in another Fiber:
 	const p = makePromise(() => {

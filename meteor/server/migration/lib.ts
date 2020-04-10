@@ -32,7 +32,7 @@ export function ensureCollectionProperty<T = any> (
 	defaultValue?: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	let collection: Mongo.Collection<T> = Collections[collectionName]
+	let collection: Mongo.Collection<T> = Collections[collectionName] as any
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {

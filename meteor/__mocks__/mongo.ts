@@ -38,7 +38,7 @@ export namespace MongoMock {
 			this.localName = localName
 			this._options = options || {}
 		}
-		find (query: any, options?: FindOptions) {
+		find (query: any, options?: FindOptions<T>) {
 			if (_.isString(query)) query = { _id: query }
 			query = query || {}
 
@@ -121,7 +121,7 @@ export namespace MongoMock {
 				}
 			}
 		}
-		findOne (query, options?: Omit<FindOptions, 'limit'>) {
+		findOne (query, options?: Omit<FindOptions<T>, 'limit'>) {
 			return this.find(query, options).fetch()[0]
 		}
 		update (query: any, modifier, options?: UpdateOptions, cb?: Function) {

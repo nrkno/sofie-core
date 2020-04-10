@@ -2,6 +2,11 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { Omit, ProtectedString } from '../lib'
 
+// This is a copy of the type used in the Users collection,
+// to avoid nasty dependencies
+/** A string, identifying a User */
+export type UserId = ProtectedString<'UserId'>
+
 declare module 'meteor/tracker' {
 	namespace Tracker {
 		// Fix an incomplete definition of Tracker.nonreactive in @typings/meteor
@@ -66,15 +71,24 @@ export type MongoSelector<DBInterface> = Query<T> | QueryWithModifiers<T>
 // export interface TransformedCollection<Class, DBInterface> extends Mongo.Collection<Class> {
 */
 
-export interface SortSpecifier {
-	[key: string]: -1 | 1
+export type SortSpecifier<T> = {
+	[P in keyof T]?: -1 | 1
 }
 
-export interface FindOptions {
-	sort?: SortSpecifier
+// From Meteor docs: It is not possible to mix inclusion and exclusion styles: the keys must either be all 1 or all 0
+export type MongoFieldSpecifierOnes<T> = {
+	[P in keyof T]?: 1
+}
+export type MongoFieldSpecifierZeroes<T> = {
+	[P in keyof T]?: 0
+}
+export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
+
+export interface FindOptions<DBInterface> {
+	sort?: SortSpecifier<DBInterface>
 	skip?: number
 	limit?: number
-	fields?: Mongo.FieldSpecifier
+	fields?: MongoFieldSpecifier<DBInterface>
 	reactive?: boolean
 	transform?: Function
 }
@@ -88,6 +102,9 @@ export interface UpsertOptions {
 
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
 export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
+export type MongoQuery<DBInterface> = Mongo.Query<DBInterface> // used for simplified expressions (ie not using $and, $or etc..)
+export type MongoQueryKey<T> = RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
+
 export interface Mongocursor<DBInterface extends { _id: ProtectedString<any>}> extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
 	observe(callbacks: ObserveCallbacks<DBInterface>): Meteor.LiveQueryHandle;
     observeChanges(callbacks: ObserveChangesCallbacks<DBInterface>): Meteor.LiveQueryHandle;
@@ -108,24 +125,25 @@ export interface ObserveChangesCallbacks<DBInterface extends { _id: ProtectedStr
 	movedBefore?(id: DBInterface['_id'], before: Object): void;
 	removed?(id: DBInterface['_id']): void;
 }
+export type FieldNames<DBInterface> = (keyof DBInterface)[]
 
 export interface TransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> {
 	allow (options: {
-		insert?: (userId: string, doc: DBInterface) => boolean
-		update?: (userId: string, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
-		remove?: (userId: string, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (userId: UserId, doc: DBInterface, fieldNames: FieldNames<DBInterface>, modifier: any) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
 	deny (options: {
-		insert?: (userId: string, doc: DBInterface) => boolean
-		update?: (userId: string, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
-		remove?: (userId: string, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (userId: UserId, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
-	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: FindOptions): Mongocursor<Class>
-	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: Omit<FindOptions, 'limit'>): Class | undefined
+	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: FindOptions<DBInterface>): Mongocursor<Class>
+	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: Omit<FindOptions<DBInterface>, 'limit'>): Class | undefined
 	insert (doc: DBInterface, callback?: Function): DBInterface['_id']
 	rawCollection (): any
 	rawDatabase (): any

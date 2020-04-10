@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Parts } from './Parts'
+import { Parts, DBPart } from './Parts'
 import { Rundowns, RundownId } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
@@ -43,7 +43,7 @@ export class Segment implements DBSegment {
 			this[key] = document[key]
 		})
 	}
-	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
+	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions<DBPart>) {
 		selector = selector || {}
 		options = options || {}
 		return Parts.find(

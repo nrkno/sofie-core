@@ -8,7 +8,7 @@ import { Pieces } from './Pieces'
 import { Meteor } from 'meteor/meteor'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
-import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
@@ -153,7 +153,7 @@ export class Rundown implements DBRundown {
 
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
-	getSegments (selector?: MongoSelector<DBSegment>, options?: FindOptions): Segment[] {
+	getSegments (selector?: MongoSelector<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		selector = selector || {}
 		options = options || {}
 		return Segments.find(
@@ -165,7 +165,7 @@ export class Rundown implements DBRundown {
 			}, options)
 		).fetch()
 	}
-	getParts (selector?: MongoSelector<Part>, options?: FindOptions, segmentsInOrder?: Segment[]): Part[] {
+	getParts (selector?: MongoSelector<Part>, options?: FindOptions<DBPart>, segmentsInOrder?: Segment[]): Part[] {
 		selector = selector || {}
 		options = options || {}
 
@@ -201,7 +201,7 @@ export class Rundown implements DBRundown {
 			parts: RundownPlaylist._sortPartsInner(await pParts, segments)
 		}
 	}
-	getGlobalAdLibPieces (selector?: MongoSelector<AdLibPiece>, options?: FindOptions) {
+	getGlobalAdLibPieces (selector?: MongoSelector<AdLibPiece>, options?: FindOptions<RundownBaselineAdLibItem>) {
 		selector = selector || {}
 		options = options || {}
 		return RundownBaselineAdLibPieces.find(
@@ -213,7 +213,7 @@ export class Rundown implements DBRundown {
 			}, options)
 		).fetch()
 	}
-	getAllPartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getAllPartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions<PartInstance>) {
 		selector = selector || {}
 		options = options || {}
 		return PartInstances.find(
@@ -225,7 +225,7 @@ export class Rundown implements DBRundown {
 			}, options)
 		).fetch()
 	}
-	getActivePartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions<PartInstance>) {
 		const newSelector = {
 			...selector,
 			reset: { $ne: true }
