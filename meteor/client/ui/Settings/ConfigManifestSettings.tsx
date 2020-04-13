@@ -5,14 +5,15 @@ import * as _ from 'underscore'
 const Tooltip = require('rc-tooltip')
 import {
 	Studio,
-	Studios
+	Studios,
+	MappingsExt
 } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue, ConfigManifestEntrySourceLayers, ConfigManifestEntryLayerMappings, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -24,6 +25,32 @@ import { Random } from 'meteor/random'
 import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload, faSort, faSortUp, faSortDown } from '@fortawesome/fontawesome-free-solid'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+
+function filterSourceLayers (select: ConfigManifestEntrySourceLayers, layers: Array<{name: string, value: string, type: SourceLayerType}>) {
+	if (select.filters && select.filters.sourceLayerTypes) {
+		const sourceLayerTypes = select.filters.sourceLayerTypes
+		return _.filter(layers, layer => {
+			return sourceLayerTypes.includes(layer.type)
+		})
+	} else {
+		return layers
+	}
+}
+
+function filterLayerMappings (select: ConfigManifestEntryLayerMappings, mappings: {[key: string]: MappingsExt}) {
+	if (select.filters && select.filters.deviceTypes) {
+		const deviceTypes = select.filters.deviceTypes
+		return _.mapObject(mappings, studioMappings => {
+			return Object.keys(_.pick(studioMappings, mapping => {
+				return deviceTypes.includes(mapping.device)
+			}))
+		})
+	} else {
+		return _.mapObject(mappings, studioMappings => {
+			return Object.keys(studioMappings)
+		})
+	}
+}
 
 function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2, TObj>, object: TObj, item: BasicConfigManifestEntry, attribute: string) {
 	switch (item.type) {
@@ -61,6 +88,26 @@ function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2,
 				options={item2.options || []}
 				collection={collection}
 				className='input text-input input-l' />
+		case ConfigManifestEntryType.SOURCE_LAYERS:
+			const select = item as ConfigManifestEntrySourceLayers
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type={select.multiple ? 'multiselect' : 'dropdown'}
+				options={filterSourceLayers(select, object['sourceLayersFlat'])}
+				collection={collection}
+				className='input text-input dropdown input-l' />
+		case ConfigManifestEntryType.LAYER_MAPPINGS:
+			const select2 = item as ConfigManifestEntryLayerMappings
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type={select2.multiple ? 'multiselect' : 'dropdown'}
+				options={filterLayerMappings(select2, object['layerMappingsFlat'])}
+				collection={collection}
+				className='input text-input dropdown input-l' />
 		default:
 			return null
 	}

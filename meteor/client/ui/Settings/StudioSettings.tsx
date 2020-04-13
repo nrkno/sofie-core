@@ -1061,6 +1061,14 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		return (buttons)
 	}
 
+	getLayerMappingsFlat () {
+		const mappings = {}
+		if (this.props.studio) {
+			mappings[this.props.studio.name] = this.props.studio.mappings
+		}
+		return mappings
+	}
+
 	renderEditForm () {
 		const { t } = this.props
 
@@ -1224,7 +1232,10 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						<ConfigManifestSettings
 							t={this.props.t}
 							manifest={collectConfigs(this.props.studio)}
-							object={this.props.studio}
+							object={{
+								...this.props.studio,
+								layerMappingsFlat: this.getLayerMappingsFlat(),
+							}}
 							collection={Studios}
 							configPath={'config'}
 							/>
