@@ -37,6 +37,7 @@ import { PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInst
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
+import { syncFunctionIgnore, syncFunction } from '../codeControl'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -54,9 +55,8 @@ export function setMinimumTakeSpan (span: number) {
 */
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
-export function take (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
+export const take = syncFunction((rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> => {
 	// Called by the user. Wont throw as nasty errors
-
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) {
@@ -82,7 +82,7 @@ export function take (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientRes
 		}
 	}
 	return ServerPlayoutAPI.takeNextPart(playlist._id)
-}
+}, 'userActionsTake$0')
 export function setNext (rundownPlaylistId: RundownPlaylistId, nextPartId: PartId | null, setManually?: boolean, timeOffset?: number | undefined): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
 	if (nextPartId) check(nextPartId, String)
