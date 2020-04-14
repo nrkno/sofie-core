@@ -86,7 +86,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								<Route path='/testTools/recordings/:studioId/:recordingId' component={RecordingView} />
 								<Route path='/testTools/recordings/:studioId' component={RecordingsList} />
 								<Route path='/testTools/recordings' component={RecordingsStudioSelect} />
-								<Route path='/testTools/userlogplayer/:rundownId' component={UserLogPlayerPage} />
+								<Route path='/testTools/userlogplayer/:rundownPlaylistId' component={UserLogPlayerPage} />
 								<Route path='/testTools/userlogplayer' component={UserLogRundownSelect} />
 								<Redirect to='/testTools/recordings' />
 							</Switch>
