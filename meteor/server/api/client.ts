@@ -3,7 +3,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -12,6 +12,37 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../lib/api/methods'
+
+function handleMethodResponse (actionId: UserActionsLogItemId, startTime: number, result: any) {
+	if (
+		ClientAPI.isClientResponseError(result)
+	) {
+		UserActionsLog.update(actionId, {$set: {
+			success: false,
+			doneTime: getCurrentTime(),
+			executionTime: Date.now() - startTime,
+			errorMessage: `ClientResponseError: ${result.error}: ${result.message}`
+		}})
+	} else {
+		UserActionsLog.update(actionId, {$set: {
+			success: true,
+			doneTime: getCurrentTime(),
+			executionTime: Date.now() - startTime
+		}})
+	}
+}
+
+function handleMethodFailure (actionId: UserActionsLogItemId, methodName: string, startTime: number, e: any) {
+	logger.error(`Error in ${methodName}`)
+	let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+	logger.error(errMsg + '\n' + (e.stack || ''))
+	UserActionsLog.update(actionId, {$set: {
+		success: false,
+		doneTime: getCurrentTime(),
+		executionTime: Date.now() - startTime,
+		errorMessage: errMsg
+	}})
+}
 
 export namespace ServerClientAPI {
 	export function clientErrorReport (methodContext: MethodContext, timestamp: Time, errorObject: any, location: string): void {
@@ -40,35 +71,22 @@ export namespace ServerClientAPI {
 
 			// check the nature of the result
 			if (
-				ClientAPI.isClientResponseError(result)
+				isPromise(result)
 			) {
-				UserActionsLog.update(actionId, {$set: {
-					success: false,
-					doneTime: getCurrentTime(),
-					executionTime: Date.now() - startTime,
-					errorMessage: `ClientResponseError: ${result.error}: ${result.message}`
-				}})
+				result.then((value) => {
+					handleMethodResponse(actionId, startTime, value)
+				}).catch((e) => {
+					handleMethodFailure(actionId, methodName, startTime, e)
+				})
 			} else {
-				UserActionsLog.update(actionId, {$set: {
-					success: true,
-					doneTime: getCurrentTime(),
-					executionTime: Date.now() - startTime
-				}})
+				handleMethodResponse(actionId, startTime, result)
 			}
 
 			return result
 		} catch (e) {
 			// console.log('eeeeeeeeeeeeeee')
 			// allow the exception to be handled by the Client code
-			logger.error(`Error in ${methodName}`)
-			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-			logger.error(errMsg + '\n' + (e.stack || ''))
-			UserActionsLog.update(actionId, {$set: {
-				success: false,
-				doneTime: getCurrentTime(),
-				executionTime: Date.now() - startTime,
-				errorMessage: errMsg
-			}})
+			handleMethodFailure(actionId, methodName, startTime, e)
 			throw e
 		}
 	}
