@@ -24,10 +24,8 @@ import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/col
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 
 export namespace ServerPlayoutAdLibAPI {
-	export function pieceTakeNow (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	export function pieceTakeNow (rundownPlaylist: RundownPlaylist, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
+		return rundownPlaylistSyncFunction(rundownPlaylist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 			if (rundownPlaylist.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 
@@ -105,10 +103,8 @@ export namespace ServerPlayoutAdLibAPI {
 			updateTimeline(rundown.studioId)
 		})
 	}
-	export function segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean) {
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	export function segmentAdLibPieceStart (rundownPlaylist: RundownPlaylist, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean) {
+		return rundownPlaylistSyncFunction(rundownPlaylist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in an active rundown!`)
 			if (rundownPlaylist.holdState === RundownHoldState.ACTIVE || rundownPlaylist.holdState === RundownHoldState.PENDING) {
 				throw new Meteor.Error(403, `Part AdLib-pieces can not be used in combination with hold!`)
@@ -118,7 +114,7 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 			const rundown = Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
-			if (rundown.playlistId !== rundownPlaylistId) throw new Meteor.Error(406, `Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylistId}!"`)
+			if (rundown.playlistId !== rundownPlaylist._id) throw new Meteor.Error(406, `Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylist._id}!"`)
 
 			const adLibPiece = AdLibPieces.findOne({
 				_id: adLibPieceId,
@@ -133,12 +129,10 @@ export namespace ServerPlayoutAdLibAPI {
 			innerStartAdLibPiece(rundownPlaylist, rundown, queue, partInstanceId, adLibPiece)
 		})
 	}
-	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, baselineAdLibPieceId: PieceId, queue: boolean) {
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+	export function rundownBaselineAdLibPieceStart (rundownPlaylist: RundownPlaylist, partInstanceId: PartInstanceId, baselineAdLibPieceId: PieceId, queue: boolean) {
+		return rundownPlaylistSyncFunction(rundownPlaylist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			logger.debug('rundownBaselineAdLibPieceStart')
 
-			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Rundown Baseline AdLib-pieces can be only placed in an active rundown!`)
 			if (rundownPlaylist.holdState === RundownHoldState.ACTIVE || rundownPlaylist.holdState === RundownHoldState.PENDING) {
 				throw new Meteor.Error(403, `Part AdLib-pieces can not be used in combination with hold!`)
@@ -148,7 +142,7 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 			const rundown = Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
-			if (rundown.playlistId !== rundownPlaylistId) throw new Meteor.Error(406, `Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylistId}!"`)
+			if (rundown.playlistId !== rundownPlaylist._id) throw new Meteor.Error(406, `Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylist._id}!"`)
 
 			const adLibPiece = RundownBaselineAdLibPieces.findOne({
 				_id: baselineAdLibPieceId,
@@ -215,7 +209,11 @@ export namespace ServerPlayoutAdLibAPI {
 			'part.afterPart': afterPartId,
 			'part._rank': { $gt: afterPartInstance.part._rank }
 		}, {
-			sort: { _rank: -1, _id: -1 }
+			sort: {
+				// TODO: fix this:
+				_rank: -1,
+				_id: -1
+			}
 		})
 		if (alreadyQueuedPartInstance) {
 			if (rundownPlaylist.currentPartInstanceId !== alreadyQueuedPartInstance._id) {
@@ -254,10 +252,10 @@ export namespace ServerPlayoutAdLibAPI {
 
 		return newPartInstanceId
 	}
-	export function sourceLayerStickyPieceStart (rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	export function sourceLayerStickyPieceStart (rundownPlaylist: RundownPlaylist, sourceLayerId: string) {
+		return rundownPlaylistSyncFunction(rundownPlaylist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylist._id)
+			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylist._id}" not found!`)
 			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
 			if (!playlist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
 
@@ -290,6 +288,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 			const lastPieceInstances = PieceInstances.find(query, {
 				sort: {
+					// @ts-ignore deep reference:
 					'piece.startedPlayback': -1
 				},
 				limit: 1

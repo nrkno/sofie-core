@@ -12,6 +12,8 @@ import * as request from 'request'
 import { promisify } from 'util'
 import { check } from '../../lib/check'
 import { updateTimeline } from './playout/timeline'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { StudioContentWriteAccess } from '../security/studio'
 
 const deleteRequest = promisify(request.delete)
 
@@ -88,8 +90,11 @@ export namespace ServerTestToolsAPI {
 	/**
 	 * Stop a currently running recording
 	 */
-	export function recordStop (studioId: StudioId) {
+	export function recordStop (context: MethodContext, studioId: StudioId) {
 		check(studioId, String)
+
+		checkAccessAndGetStudio(context, studioId)
+
 		const updated = RecordedFiles.update({
 			studioId: studioId,
 			stoppedAt: { $exists: false }
@@ -104,11 +109,11 @@ export namespace ServerTestToolsAPI {
 		updateTimeline(studioId)
 	}
 
-	export function recordStart (studioId: StudioId, name: string) {
+	export function recordStart (context: MethodContext, studioId: StudioId, name: string) {
 		check(studioId, String)
 		check(name, String)
-		const studio = Studios.findOne(studioId)
-		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
+
+		const studio = checkAccessAndGetStudio(context, studioId)
 
 		const active = RecordedFiles.findOne({
 			studioId: studioId,
@@ -159,9 +164,11 @@ export namespace ServerTestToolsAPI {
 		updateTimeline(studioId)
 	}
 
-	export function recordDelete (fileId: RecordedFileId) {
+	export function recordDelete (context: MethodContext, fileId: RecordedFileId) {
 		check(fileId, String)
-		const file = RecordedFiles.findOne(fileId)
+
+		const access = StudioContentWriteAccess.recordedFile(context, fileId)
+		const file = access.file
 		if (!file) throw new Meteor.Error(404, `Recording "${fileId}" was not found!`)
 
 		const studio = Studios.findOne(file.studioId)
@@ -180,15 +187,21 @@ export namespace ServerTestToolsAPI {
 		RecordedFiles.remove(fileId)
 	}
 }
-class ServerTestToolsAPIClass implements NewTestToolsAPI {
+function checkAccessAndGetStudio (context: MethodContext, studioId: StudioId): Studio {
+	const access = StudioContentWriteAccess.recordedFiles(context, studioId)
+	const studio = access.studio
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
+	return studio
+}
+class ServerTestToolsAPIClass extends MethodContextAPI implements NewTestToolsAPI {
 	recordStop (studioId: StudioId) {
-		return makePromise(() => ServerTestToolsAPI.recordStop(studioId))
+		return makePromise(() => ServerTestToolsAPI.recordStop(this, studioId))
 	}
 	recordStart (studioId: StudioId, name: string) {
-		return makePromise(() => ServerTestToolsAPI.recordStart(studioId, name))
+		return makePromise(() => ServerTestToolsAPI.recordStart(this, studioId, name))
 	}
 	recordDelete (fileId: RecordedFileId) {
-		return makePromise(() => ServerTestToolsAPI.recordDelete(fileId))
+		return makePromise(() => ServerTestToolsAPI.recordDelete(this, fileId))
 	}
 }
 registerClassToMeteorMethods(TestToolsAPIMethods, ServerTestToolsAPIClass, false)

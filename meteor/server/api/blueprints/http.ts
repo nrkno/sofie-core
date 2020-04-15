@@ -6,7 +6,7 @@ import { ServerResponse, IncomingMessage } from 'http'
 // @ts-ignore Meteor package not recognized by Typescript
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
-import { check, Match } from 'meteor/check'
+import { check, Match } from '../../../lib/check'
 import { parse as parseUrl } from 'url'
 import { uploadBlueprint } from './api'
 import { protectString } from '../../../lib/lib'

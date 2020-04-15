@@ -1,19 +1,18 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PeripheralDeviceSecurity } from '../../security/collections/peripheralDevices'
+import { PeripheralDeviceSecurity } from '../../security/peripheralDevice'
 import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { protectString } from '../../../lib/lib'
 import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
+import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
+import { MethodContext } from '../../../lib/api/methods'
 
 export namespace MediaScannerIntegration {
-	export function getMediaObjectRevisions (deviceId: PeripheralDeviceId, token: string, collectionId: string): MediaObjectRevision[] {
+	export function getMediaObjectRevisions (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string): MediaObjectRevision[] {
 		// logger.debug('getMediaObjectRevisions')
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-
-
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = getStudioIdFromDevice(peripheralDevice)
-
 
 		if (studioId) {
 			return _.map(MediaObjects.find({
@@ -29,10 +28,9 @@ export namespace MediaScannerIntegration {
 			throw new Meteor.Error(400, 'getMediaObjectRevisions: Device "' + peripheralDevice._id + '" has no studio')
 		}
 	}
-	export function updateMediaObject (deviceId: PeripheralDeviceId, token: string, collectionId: string, objId: string, doc: MediaObject | null) {
+	export function updateMediaObject (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string, objId: string, doc: MediaObject | null) {
 		// logger.debug('updateMediaObject')
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		const studioId = getStudioIdFromDevice(peripheralDevice)
 
 		let _id: MediaObjId = protectString(collectionId + '_' + objId)

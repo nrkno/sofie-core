@@ -6,11 +6,18 @@ import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collec
 import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
 import { literal, protectString, getRandomId, makePromise } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { OrganizationContentWriteAccess } from '../security/organization'
+import { ShowStyleContentWriteAccess } from '../security/showStyle'
 
-export function insertShowStyleBase (): ShowStyleBaseId {
+export function insertShowStyleBase (context: MethodContext): ShowStyleBaseId {
+
+	const access = OrganizationContentWriteAccess.studio(context)
+
 	let id = ShowStyleBases.insert(literal<ShowStyleBase>({
 		_id: getRandomId(),
 		name: 'New show style',
+		organizationId: access.organizationId,
 		blueprintId: protectString(''),
 		outputLayers: [],
 		sourceLayers: [],
@@ -18,13 +25,14 @@ export function insertShowStyleBase (): ShowStyleBaseId {
 		runtimeArguments: [],
 		_rundownVersionHash: '',
 	}))
-	insertShowStyleVariant(id, 'Default')
+	insertShowStyleVariant(context, id, 'Default')
 	return id
 }
-export function insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId, name?: string): ShowStyleVariantId {
+export function insertShowStyleVariant (context: MethodContext, showStyleBaseId: ShowStyleBaseId, name?: string): ShowStyleVariantId {
 	check(showStyleBaseId, String)
 
-	let showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const showStyleBase = access.showStyleBase
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
 
 	return ShowStyleVariants.insert({
@@ -35,37 +43,42 @@ export function insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId, name?:
 		_rundownVersionHash: '',
 	})
 }
-export function removeShowStyleBase (showStyleBaseId: ShowStyleBaseId) {
+export function removeShowStyleBase (context: MethodContext, showStyleBaseId: ShowStyleBaseId) {
 	check(showStyleBaseId, String)
+	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
+	const showStyleBase = access.showStyleBase
+	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
 
-	ShowStyleBases.remove(showStyleBaseId)
-
+	ShowStyleBases.remove(showStyleBase._id)
 	ShowStyleVariants.remove({
-		showStyleBaseId: showStyleBaseId
+		showStyleBaseId: showStyleBase._id
 	})
-
 	RundownLayouts.remove({
-		showStyleBaseId: showStyleBaseId
+		showStyleBaseId: showStyleBase._id
 	})
 }
-export function removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId) {
+export function removeShowStyleVariant (context: MethodContext, showStyleVariantId: ShowStyleVariantId) {
 	check(showStyleVariantId, String)
 
-	ShowStyleVariants.remove(showStyleVariantId)
+	const access = ShowStyleContentWriteAccess.showStyleVariant(context, showStyleVariantId)
+	const showStyleVariant = access.showStyleVariant
+	if (!showStyleVariant) throw new Meteor.Error(404, `showStyleVariant "${showStyleVariantId}" not found`)
+
+	ShowStyleVariants.remove(showStyleVariant._id)
 }
 
-class ServerShowStylesAPI implements NewShowStylesAPI {
+class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	insertShowStyleBase () {
-		return makePromise(() => insertShowStyleBase())
+		return makePromise(() => insertShowStyleBase(this))
 	}
 	insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId) {
-		return makePromise(() => insertShowStyleVariant(showStyleBaseId))
+		return makePromise(() => insertShowStyleVariant(this, showStyleBaseId))
 	}
 	removeShowStyleBase (showStyleBaseId: ShowStyleBaseId) {
-		return makePromise(() => removeShowStyleBase(showStyleBaseId))
+		return makePromise(() => removeShowStyleBase(this, showStyleBaseId))
 	}
 	removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId) {
-		return makePromise(() => removeShowStyleVariant(showStyleVariantId))
+		return makePromise(() => removeShowStyleVariant(this, showStyleVariantId))
 	}
 }
 registerClassToMeteorMethods(ShowStylesAPIMethods, ServerShowStylesAPI, false)

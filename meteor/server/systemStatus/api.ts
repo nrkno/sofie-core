@@ -4,14 +4,27 @@ import { getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'
 import { Picker } from 'meteor/meteorhacks:picker'
 import { protectString, makePromise } from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
+import { MethodContextAPI } from '../../lib/api/methods'
 
-// Server routes:
-Picker.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
-	let status = getSystemStatus()
+if (!Settings.enableUserAccounts) {
+	// For backwards compatibility:
+
+	Picker.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
+		let status = getSystemStatus({})
+		health(status, res)
+	})
+	Picker.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+		let status = getSystemStatus({}, protectString(params.studioId))
+		health(status, res)
+	})
+}
+Picker.route('/health/:token', (params, req: IncomingMessage, res: ServerResponse) => {
+	let status = getSystemStatus({ token: params.token })
 	health(status, res)
 })
-Picker.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
-	let status = getSystemStatus(protectString(params.studioId))
+Picker.route('/health/:token/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+	let status = getSystemStatus({ token: params.token }, protectString(params.studioId))
 	health(status, res)
 })
 function health (status: StatusResponse, res: ServerResponse) {
@@ -31,9 +44,9 @@ function health (status: StatusResponse, res: ServerResponse) {
 	res.end(content)
 }
 
-class ServerSystemStatusAPI implements NewSystemStatusAPI {
+class ServerSystemStatusAPI extends MethodContextAPI implements NewSystemStatusAPI {
 	getSystemStatus () {
-		return makePromise(() => getSystemStatus())
+		return makePromise(() => getSystemStatus(this))
 	}
 }
 registerClassToMeteorMethods(SystemStatusAPIMethods, ServerSystemStatusAPI, false)

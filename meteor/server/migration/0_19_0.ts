@@ -41,6 +41,7 @@ addMigrationSteps('0.19.0', [
 				ShowStyleBases.insert({
 					_id: id,
 					name: showstyle.name || 'Default showstyle',
+					organizationId: null,
 					blueprintId: protectString(''),
 					// @ts-ignore
 					outputLayers: studio.outputLayers,
@@ -72,6 +73,7 @@ addMigrationSteps('0.19.0', [
 				ShowStyleBases.insert({
 					_id: protectString('show0'),
 					name: 'Default showstyle',
+					organizationId: null,
 					blueprintId: protectString(''),
 					outputLayers: [],
 					sourceLayers: [],

@@ -1,5 +1,5 @@
 import { ClientAPI } from '../api/client'
-import { MeteorCall } from './methods'
+import { MeteorCall, MethodContext } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartId } from '../collections/Parts'
 import { RundownId } from '../collections/Rundowns'
@@ -13,7 +13,7 @@ import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
 
-export interface NewUserActionAPI {
+export interface NewUserActionAPI extends MethodContext {
 	take						(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	setNext						(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number): Promise<ClientAPI.ClientResponse<void>>
 	setNextSegment				(userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId | null): Promise<ClientAPI.ClientResponse<void>>

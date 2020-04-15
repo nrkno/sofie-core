@@ -8,11 +8,14 @@ import { afterUpdateTimeline } from './playout/timeline'
 import { check } from '../../lib/check'
 import { makePromise } from '../../lib/lib'
 import { ServerClientAPI } from './client'
-import { MethodContext } from '../../lib/api/methods'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
+import { StudioContentWriteAccess } from '../security/studio'
 
-function insertTimelineObject (studioId: StudioId, timelineObjectOrg: TimelineObjectCoreExt) {
+function insertTimelineObject (context: MethodContext, studioId: StudioId, timelineObjectOrg: TimelineObjectCoreExt) {
 	check(studioId, String)
+
+	StudioContentWriteAccess.timeline(context, studioId)
 
 	const timelineObject: TimelineObjGeneric = {
 		...timelineObjectOrg,
@@ -31,9 +34,12 @@ function insertTimelineObject (studioId: StudioId, timelineObjectOrg: TimelineOb
 	}
 
 }
-function removeTimelineObject (studioId: StudioId, id: string) {
+function removeTimelineObject (context: MethodContext, studioId: StudioId, id: string) {
 	check(studioId, String)
 	check(id, String)
+
+	StudioContentWriteAccess.timeline(context, studioId)
+
 	let studio = Studios.findOne(studioId)
 
 	if (studio) {
@@ -44,16 +50,16 @@ function removeTimelineObject (studioId: StudioId, id: string) {
 
 }
 
-class ServerManualPlayoutAPI implements NewManualPlayoutAPI {
+class ServerManualPlayoutAPI extends MethodContextAPI implements NewManualPlayoutAPI {
 	insertTimelineObject (studioId: StudioId, timelineObject: TimelineObjectCoreExt) {
-		return makePromise(() => insertTimelineObject(studioId, timelineObject))
+		return makePromise(() => insertTimelineObject(this, studioId, timelineObject))
 	}
 	removeTimelineObject (studioId: StudioId, id: string) {
-		return makePromise(() => removeTimelineObject(studioId, id))
+		return makePromise(() => removeTimelineObject(this, studioId, id))
 	}
 }
 registerClassToMeteorMethods(ManualPlayoutAPIMethods, ServerManualPlayoutAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
 	return ServerClientAPI.runInUserLog(methodContext, '', methodName, args, () => {
-		return fcn(...args)
+		return fcn.apply(methodContext, args)
 	})
 })

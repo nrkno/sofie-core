@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { ServerPlayoutAPI } from '../playout/playout'
+import { ServerPlayoutAPI, setNextPartInner } from '../playout/playout'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
 import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
@@ -32,11 +32,11 @@ export namespace UpdateNext {
 				}
 
 				// Set to the newly selected part
-				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
+				setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 			} else if (!nextPartInstance) {
 				// Don't have a currentPart or a nextPart, so set next to first in the show
 				const newNextPart = selectNextPart(playlist, null, allParts)
-				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
+				setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 			}
 		}
 	}
@@ -49,7 +49,7 @@ export namespace UpdateNext {
 				// Try and choose something
 				const { currentPartInstance } = playlist.getSelectedPartInstances()
 				const newNextPart = selectNextPart(playlist, currentPartInstance || null, playlist.getAllOrderedParts())
-				ServerPlayoutAPI.setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
+				setNextPartInner(playlist, newNextPart ? newNextPart.part : null)
 
 			} else if (playlist.nextPartManual && removePrevious) {
 				const { nextPartInstance } = playlist.getSelectedPartInstances()
@@ -62,7 +62,7 @@ export namespace UpdateNext {
 					const firstNewPart = allParts.find(part => newPartExternalIds.indexOf(part.externalId) !== -1 && part.isPlayable())
 					if (firstNewPart) {
 						// Matched a part that replaced the old, so set to it
-						ServerPlayoutAPI.setNextPartInner(playlist, firstNewPart)
+						setNextPartInner(playlist, firstNewPart)
 
 					} else {
 						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it

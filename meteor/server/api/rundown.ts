@@ -34,12 +34,15 @@ import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
+import { RundownPlaylistContentWriteAccess, RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -386,92 +389,100 @@ export function updatePartRanks (rundown: Rundown): Array<Part> {
 
 export namespace ServerRundownAPI {
 	/** Remove a RundownPlaylist and all its contents */
-	export function removeRundownPlaylist (playlistId: RundownPlaylistId) {
+	export function removeRundownPlaylist (context: MethodContext, playlistId: RundownPlaylistId) {
 		check(playlistId, String)
-		logger.info('removeRundownPlaylist ' + playlistId)
-
-		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-		if (playlist.active) throw new Meteor.Error(400,`Not allowed to remove an active RundownPlaylist "${playlistId}".`)
-
-		playlist.remove()
+		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		return innerRemoveRundownPlaylist(access.playlist)
 	}
 	/** Remove an individual rundown */
-	export function removeRundown (rundownId: RundownId) {
+	export function removeRundown (context: MethodContext, rundownId: RundownId) {
 		check(rundownId, String)
-		logger.info('removeRundown ' + rundownId)
-
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		if (rundown.playlistId) {
-			const playlist = RundownPlaylists.findOne(rundown.playlistId)
-			if (playlist && playlist.active && playlist.currentPartInstanceId) {
-				const partInstance = PartInstances.findOne(playlist.currentPartInstanceId)
-				if (partInstance && partInstance.rundownId === rundown._id) {
-					throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundownId}". (active part: "${partInstance._id}" in playlist "${playlist._id}")`)
-				}
-			}
-		}
-		rundown.remove()
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+		return innerRemoveRundown(access.rundown)
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {
+	export function resyncRundownPlaylist (context: MethodContext, playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {
 		check(playlistId, String)
-		logger.info('resyncRundownPlaylist ' + playlistId)
-
-		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-
-		const response: ReloadRundownPlaylistResponse = {
-			rundownsResponses: playlist.getRundowns().map(rundown => {
-				return {
-					rundownId: rundown._id,
-					response: resyncRundown(rundown._id)
-				}
-			})
-		}
-		return response
+		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		return innerResyncRundownPlaylist(access.playlist)
 	}
-	export function resyncRundown (rundownId: RundownId): ReloadRundownResponse {
+	export function resyncRundown (context: MethodContext, rundownId: RundownId): ReloadRundownResponse {
 		check(rundownId, String)
-		logger.info('resyncRundown ' + rundownId)
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+		return innerResyncRundown(access.rundown)
+	}
+	export function unsyncRundown (context: MethodContext, rundownId: RundownId): void {
+		check(rundownId, String)
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+		return innerUnsyncRundown(access.rundown)
+	}
+}
+/** Remove a RundownPlaylist and all its contents */
+export function innerRemoveRundownPlaylist (playlist: RundownPlaylist) {
+	logger.info('removeRundownPlaylist ' + playlist._id)
+	if (playlist.active) throw new Meteor.Error(400,`Not allowed to remove an active RundownPlaylist "${playlist._id}".`)
 
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
+	playlist.remove()
+}
+/** Remove an individual rundown */
+export function innerRemoveRundown (rundown: Rundown) {
+	logger.info('removeRundown ' + rundown._id)
 
-		Rundowns.update(rundown._id, {
-			$set: {
-				unsynced: false
+	if (rundown.playlistId) {
+		const playlist = RundownPlaylists.findOne(rundown.playlistId)
+		if (playlist && playlist.active && playlist.currentPartInstanceId) {
+			const partInstance = PartInstances.findOne(playlist.currentPartInstanceId)
+			if (partInstance && partInstance.rundownId === rundown._id) {
+				throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundown._id}". (active part: "${partInstance._id}" in playlist "${playlist._id}")`)
+			}
+		}
+	}
+	rundown.remove()
+}
+/** Resync all rundowns in a rundownPlaylist */
+export function innerResyncRundownPlaylist (playlist: RundownPlaylist): ReloadRundownPlaylistResponse {
+	logger.info('resyncRundownPlaylist ' + playlist._id)
+
+	const response: ReloadRundownPlaylistResponse = {
+		rundownsResponses: playlist.getRundowns().map(rundown => {
+			return {
+				rundownId: rundown._id,
+				response: innerResyncRundown(rundown)
 			}
 		})
-
-		return IngestActions.reloadRundown(rundown)
 	}
-	export function unsyncRundown (rundownId: RundownId): void {
-		check(rundownId, String)
-		logger.info('unsyncRundown ' + rundownId)
+	return response
+}
+export function innerResyncRundown (rundown: Rundown): ReloadRundownResponse {
+	logger.info('resyncRundown ' + rundown._id)
 
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+	// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
 
-		if (!rundown.unsynced) {
-			Rundowns.update(rundown._id, {$set: {
-				unsynced: true,
-				unsyncedTime: getCurrentTime()
-			}})
-		} else {
-			logger.info(`Rundown "${rundownId}" was already unsynced`)
+	Rundowns.update(rundown._id, {
+		$set: {
+			unsynced: false
 		}
+	})
+
+	return IngestActions.reloadRundown(rundown)
+}
+export function innerUnsyncRundown (rundown: Rundown): void {
+	logger.info('unsyncRundown ' + rundown._id)
+
+	if (!rundown.unsynced) {
+		Rundowns.update(rundown._id, {$set: {
+			unsynced: true,
+			unsyncedTime: getCurrentTime()
+		}})
+	} else {
+		logger.info(`Rundown "${rundown._id}" was already unsynced`)
 	}
 }
 export namespace ClientRundownAPI {
-	export function rundownPlaylistNeedsResync (playlistId: RundownPlaylistId): string[] {
+	export function rundownPlaylistNeedsResync (context: MethodContext, playlistId: RundownPlaylistId): string[] {
 		check(playlistId, String)
-		// logger.info('rundownPlaylistNeedsResync ' + playlistId)
-
-		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const playlist = access.playlist
 
 		const rundowns = playlist.getRundowns()
 		const errors = rundowns.map(rundown => {
@@ -500,24 +511,24 @@ export namespace ClientRundownAPI {
 	}
 }
 
-class ServerRundownAPIClass implements NewRundownAPI {
+class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	removeRundownPlaylist (playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(playlistId))
+		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(this, playlistId))
 	}
 	resyncRundownPlaylist (playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(playlistId))
+		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(this, playlistId))
 	}
 	rundownPlaylistNeedsResync (playlistId: RundownPlaylistId) {
-		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(playlistId))
+		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
 	}
 	removeRundown (rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.removeRundown(rundownId))
+		return makePromise(() => ServerRundownAPI.removeRundown(this, rundownId))
 	}
 	resyncRundown (rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.resyncRundown(rundownId))
+		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
 	}
 	unsyncRundown (rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.unsyncRundown(rundownId))
+		return makePromise(() => ServerRundownAPI.unsyncRundown(this, rundownId))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

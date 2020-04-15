@@ -69,6 +69,7 @@ export function setupMockPeripheralDevice (
 	const defaultDevice: PeripheralDevice = {
 		_id: protectString('mockDevice' + (dbI++)),
 		name: 'mockDevice',
+		organizationId: null,
 		studioId: studio ? studio._id : undefined,
 
 		category: category,
@@ -116,6 +117,7 @@ export function setupMockStudio (doc?: Partial<DBStudio>): Studio {
 	const defaultStudio: DBStudio = {
 		_id: protectString('mockStudio' + (dbI++)),
 		name: 'mockStudio',
+		organizationId: null,
 		// blueprintId?: BlueprintId
 		mappings: {},
 		supportedShowStyleBase: [],
@@ -137,6 +139,7 @@ export function setupMockShowStyleBase (blueprintId: BlueprintId, doc?: Partial<
 	const defaultShowStyleBase: DBShowStyleBase = {
 		_id: protectString('mockShowStyleBase' + (dbI++)),
 		name: 'mockShowStyleBase',
+		organizationId: null,
 		outputLayers: [
 			literal<IOutputLayer>({
 				_id: LAYER_IDS.OUTPUT_PGM,

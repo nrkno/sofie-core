@@ -43,11 +43,11 @@ import {
 	omit,
 	ProtectedString
 } from '../../../lib/lib'
-import { PeripheralDeviceSecurity } from '../../security/collections/peripheralDevices'
+import { PeripheralDeviceSecurity, PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'
-import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, produceRundownPlaylistInfo } from '../rundown'
+import { selectShowStyleVariant, afterRemoveSegments, afterRemoveParts, ServerRundownAPI, removeSegments, updatePartRanks, produceRundownPlaylistInfo, innerUnsyncRundown } from '../rundown'
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -58,7 +58,7 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../l
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
-import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated, getRundownPlaylist } from './lib'
+import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated, getRundownPlaylist, checkAccessAndGetPeripheralDevice } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
@@ -73,6 +73,7 @@ import { Mongo } from 'meteor/mongo'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances, wrapPieceToInstance, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { MethodContext } from '../../../lib/api/methods'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -89,77 +90,77 @@ export function rundownPlaylistSyncFunction<T extends Function> (rundownPlaylist
 
 export namespace RundownInput {
 	// Get info on the current rundowns from this device:
-	export function dataRundownList (self: any, deviceId: PeripheralDeviceId, deviceToken: string) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataRundownList (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownList')
 		return listIngestRundowns(peripheralDevice)
 	}
-	export function dataRundownGet (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataRundownGet (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownGet', rundownExternalId)
 		check(rundownExternalId, String)
 		return getIngestRundown(peripheralDevice, rundownExternalId)
 	}
 	// Delete, Create & Update Rundown (and it's contents):
-	export function dataRundownDelete (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataRundownDelete (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownDelete', rundownExternalId)
 		check(rundownExternalId, String)
 		handleRemovedRundown(peripheralDevice, rundownExternalId)
 	}
-	export function dataRundownCreate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataRundownCreate (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownCreate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownCreate')
 	}
-	export function dataRundownUpdate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataRundownUpdate (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownUpdate')
 	}
 	// Delete, Create & Update Segment (and it's contents):
-	export function dataSegmentDelete (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataSegmentDelete (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataSegmentDelete', rundownExternalId, segmentExternalId)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		handleRemovedSegment(peripheralDevice, rundownExternalId, segmentExternalId)
 	}
-	export function dataSegmentCreate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataSegmentCreate (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataSegmentCreate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
 	}
-	export function dataSegmentUpdate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataSegmentUpdate (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataSegmentUpdate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
 	}
 	// Delete, Create & Update Part:
-	export function dataPartDelete (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataPartDelete (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataPartDelete', rundownExternalId, segmentExternalId, partExternalId)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(partExternalId, String)
 		handleRemovedPart(peripheralDevice, rundownExternalId, segmentExternalId, partExternalId)
 	}
-	export function dataPartCreate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataPartCreate (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataPartCreate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		check(ingestPart, Object)
 		handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
 	}
-	export function dataPartUpdate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataPartUpdate (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataPartUpdate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
@@ -167,6 +168,7 @@ export namespace RundownInput {
 		handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
 	}
 }
+
 
 function getIngestRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
 	const rundown = Rundowns.findOne({
@@ -217,12 +219,12 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 			} else {
 				// Don't allow removing currently playing rundown playlists:
 				logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				innerUnsyncRundown(rundown)
 			}
 		 } else {
 			logger.info(`Rundown "${rundown._id}" cannot be updated`)
 			if (!rundown.unsynced) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				innerUnsyncRundown(rundown)
 			}
 		}
 	})
@@ -435,7 +437,7 @@ function updateRundownFromIngestData (
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(dbPlaylist, dbRundown, { changed: [{ doc: dbRundown, oldId: dbRundown._id }] }, prepareSaveSegments, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundown(dbRundown._id)
+		innerUnsyncRundown(dbRundown)
 		return false
 	}
 
@@ -639,7 +641,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 
 		if (canBeUpdated(rundown, segmentId)) {
 			if (!isUpdateAllowed(playlist, rundown, {}, { removed: [segment] }, {})) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				innerUnsyncRundown(rundown)
 			} else {
 				if (removeSegments(rundownId, [segmentId]) === 0) {
 					throw new Meteor.Error(404, `handleRemovedSegment: removeSegments: Segment ${segmentExternalId} not found`)
@@ -756,7 +758,7 @@ function updateSegmentFromIngestData (
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(playlist, rundown, {}, { changed: [{ doc: newSegment, oldId: newSegment._id }] }, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundown(rundown._id)
+		innerUnsyncRundown(rundown)
 		return null
 	}
 
@@ -842,7 +844,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 			if (!part) throw new Meteor.Error(404, 'Part not found')
 
 			if (!isUpdateAllowed(playlist, rundown, {}, {}, { removed: [part] })) {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				innerUnsyncRundown(rundown)
 			} else {
 
 				// Blueprints will handle the deletion of the Part
@@ -886,7 +888,7 @@ export function handleUpdatedPartInner (studio: Studio, playlist: RundownPlaylis
 
 	if (
 		part && !isUpdateAllowed(playlist, rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })) {
-		ServerRundownAPI.unsyncRundown(rundown._id)
+		innerUnsyncRundown(rundown)
 	} else {
 
 		// Blueprints will handle the creation of the Part

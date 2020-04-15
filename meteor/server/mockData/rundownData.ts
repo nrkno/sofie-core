@@ -11,72 +11,76 @@ import { Parts, PartId } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { Settings } from '../../lib/Settings'
 
-// These are temporary method to fill the rundown database with some sample data
-// for development
+if (!Settings.enableUserAccounts) {
 
-Meteor.methods({
+	// These are temporary method to fill the rundown database with some sample data
+	// for development
 
-	'debug_scrambleDurations' () {
-		let pieces = Pieces.find().fetch()
-		_.each(pieces, (piece) => {
-			Pieces.update(
-				{ _id: piece._id },
-				{$inc: {
-					expectedDuration: ((Random.fraction() * 500) - 250)
-				}}
-			)
-		})
-	},
+	Meteor.methods({
 
-	'debug_purgeMediaDB' () {
-		MediaObjects.remove({})
-	},
+		'debug_scrambleDurations' () {
+			let pieces = Pieces.find().fetch()
+			_.each(pieces, (piece) => {
+				Pieces.update(
+					{ _id: piece._id },
+					{$inc: {
+						expectedDuration: ((Random.fraction() * 500) - 250)
+					}}
+				)
+			})
+		},
 
-	'debug_rundownSetStarttimeSoon' () {
-		let rundown = Rundowns.findOne({
-			active: true
-		})
-		if (rundown) {
-			Rundowns.update(rundown._id, {$set: {
-				expectedStart: getCurrentTime() + 70 * 1000
-			}})
+		'debug_purgeMediaDB' () {
+			MediaObjects.remove({})
+		},
+
+		'debug_rundownSetStarttimeSoon' () {
+			let rundown = Rundowns.findOne({
+				active: true
+			})
+			if (rundown) {
+				Rundowns.update(rundown._id, {$set: {
+					expectedStart: getCurrentTime() + 70 * 1000
+				}})
+			}
+		},
+
+		'debug_removeRundown' (id: RundownPlaylistId) {
+			logger.debug('Remove rundown "' + id + '"')
+
+			const playlist = RundownPlaylists.findOne(id)
+			if (playlist) playlist.remove()
+		},
+
+		'debug_removeAllRos' () {
+			logger.debug('Remove all rundowns')
+
+			RundownPlaylists.find({}).forEach((playlist) => {
+				playlist.remove()
+			})
+		},
+
+		'debug_updateSourceLayerInfinitesAfterPart' (rundownId: RundownId, previousPartId?: PartId, runToEnd?: boolean) {
+			check(rundownId, String)
+			if (previousPartId) check(previousPartId, String)
+			if (runToEnd !== undefined) check(runToEnd, Boolean)
+
+			const rundown = Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
+
+			const prevPart = previousPartId ? Parts.findOne(previousPartId) : undefined
+
+			updateSourceLayerInfinitesAfterPart(rundown, prevPart, runToEnd)
+
+			logger.info('debug_updateSourceLayerInfinitesAfterPart: done')
+		},
+
+		'debug_recreateExpectedMediaItems' () {
+			const rundowns = Rundowns.find().fetch()
+
+			rundowns.map((i) => updateExpectedMediaItemsOnRundown(i._id))
 		}
-	},
-
-	'debug_removeRundown' (id: RundownPlaylistId) {
-		logger.debug('Remove rundown "' + id + '"')
-
-		const playlist = RundownPlaylists.findOne(id)
-		if (playlist) playlist.remove()
-	},
-
-	'debug_removeAllRos' () {
-		logger.debug('Remove all rundowns')
-
-		RundownPlaylists.find({}).forEach((playlist) => {
-			playlist.remove()
-		})
-	},
-
-	'debug_updateSourceLayerInfinitesAfterPart' (rundownId: RundownId, previousPartId?: PartId, runToEnd?: boolean) {
-		check(rundownId, String)
-		if (previousPartId) check(previousPartId, String)
-		if (runToEnd !== undefined) check(runToEnd, Boolean)
-
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
-
-		const prevPart = previousPartId ? Parts.findOne(previousPartId) : undefined
-
-		updateSourceLayerInfinitesAfterPart(rundown, prevPart, runToEnd)
-
-		logger.info('debug_updateSourceLayerInfinitesAfterPart: done')
-	},
-
-	'debug_recreateExpectedMediaItems' () {
-		const rundowns = Rundowns.find().fetch()
-
-		rundowns.map((i) => updateExpectedMediaItemsOnRundown(i._id))
-	}
-})
+	})
+}

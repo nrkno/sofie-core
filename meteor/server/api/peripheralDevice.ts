@@ -5,7 +5,6 @@ import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise } from '../../lib/lib'
-import { PeripheralDeviceSecurity } from '../security/collections/peripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
@@ -29,11 +28,21 @@ import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkF
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import * as MOS from 'mos-connection'
 import { determineDiffTime, getTimeDiff } from './systemTime/systemTime'
+import { PeripheralDeviceSecurity, PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
-	export function initialize (deviceId: PeripheralDeviceId, token: string, options: PeripheralDeviceAPI.InitOptions): PeripheralDeviceId {
+	export function initialize (context: MethodContext, deviceId: PeripheralDeviceId, token: string, options: PeripheralDeviceAPI.InitOptions): PeripheralDeviceId {
+		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
+		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (peripheralDevice) {
+			PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
+		}
+
 		check(token, String)
 		check(options, Object)
 		check(options.name, String)
@@ -45,10 +54,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		logger.debug('Initialize device ' + deviceId, options)
 
-		let peripheralDevice
-		try {
-			peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-
+		if (peripheralDevice) {
 			PeripheralDevices.update(deviceId, {
 				$set: {
 					lastSeen: getCurrentTime(),
@@ -67,49 +73,46 @@ export namespace ServerPeripheralDeviceAPI {
 					configManifest: options.configManifest
 				}
 			})
-		} catch (e) {
-			if ((e as Meteor.Error).error === 404) {
-				PeripheralDevices.insert({
-					_id: deviceId,
-					created: getCurrentTime(),
-					status: {
-						statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
-					},
-					studioId: protectString(''),
-					connected: true,
-					connectionId: options.connectionId,
-					lastSeen: getCurrentTime(),
-					lastConnected: getCurrentTime(),
-					token: token,
+		} else {
+			PeripheralDevices.insert({
+				_id: deviceId,
+				organizationId: null,
+				created: getCurrentTime(),
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.UNKNOWN
+				},
+				studioId: protectString(''),
+				connected: true,
+				connectionId: options.connectionId,
+				lastSeen: getCurrentTime(),
+				lastConnected: getCurrentTime(),
+				token: token,
 
-					category: options.category,
-					type: options.type,
-					subType: options.subType,
+				category: options.category,
+				type: options.type,
+				subType: options.subType,
 
-					name: options.name,
-					parentDeviceId: options.parentDeviceId,
-					versions: options.versions,
-					// settings: {},
+				name: options.name,
+				parentDeviceId: options.parentDeviceId,
+				versions: options.versions,
+				// settings: {},
 
-					configManifest: options.configManifest
-				})
-			} else {
-				throw e
-			}
+				configManifest: options.configManifest
+			})
 		}
 		return deviceId
 	}
-	export function unInitialize (deviceId: PeripheralDeviceId, token: string): PeripheralDeviceId {
-
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + deviceId + "' not found!")
+	export function unInitialize (context: MethodContext, deviceId: PeripheralDeviceId, token: string): PeripheralDeviceId {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// TODO: Add an authorization for this?
 
 		PeripheralDevices.remove(deviceId)
 		return deviceId
 	}
-	export function setStatus (deviceId: PeripheralDeviceId, token: string, status: PeripheralDeviceAPI.StatusObject): PeripheralDeviceAPI.StatusObject {
+	export function setStatus (context: MethodContext, deviceId: PeripheralDeviceId, token: string, status: PeripheralDeviceAPI.StatusObject): PeripheralDeviceAPI.StatusObject {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
 		check(deviceId, String)
 		check(token, String)
 		check(status, Object)
@@ -118,9 +121,6 @@ export namespace ServerPeripheralDeviceAPI {
 			status.statusCode > PeripheralDeviceAPI.StatusCode.FATAL) {
 			throw new Meteor.Error(400, 'device status code is not known')
 		}
-
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + deviceId + "' not found!")
 
 		// check if we have to update something:
 		if (!_.isEqual(status, peripheralDevice.status)) {
@@ -133,26 +133,25 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return status
 	}
-	export function ping (deviceId: PeripheralDeviceId, token: string): void {
+	export function ping (context: MethodContext, deviceId: PeripheralDeviceId, token: string): void {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
 		check(deviceId, String)
 		check(token, String)
-
-		// logger.debug('device ping', id)
-
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + deviceId + "' not found!")
 
 		// Update lastSeen
 		PeripheralDevices.update(deviceId, {$set: {
 			lastSeen: getCurrentTime()
 		}})
 	}
-	export function getPeripheralDevice (deviceId: PeripheralDeviceId, token: string) {
-		return PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
+	export function getPeripheralDevice (context: MethodContext, deviceId: PeripheralDeviceId, token: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
+		return peripheralDevice
 	}
-	export const timelineTriggerTime = syncFunction(function timelineTriggerTime (deviceId: PeripheralDeviceId, token: string, results: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, `peripheralDevice "${deviceId}" not found!`)
+	export const timelineTriggerTime = syncFunction(function timelineTriggerTime (context: MethodContext, deviceId: PeripheralDeviceId, token: string, results: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
 		if (!peripheralDevice.studioId) throw new Meteor.Error(401, `peripheralDevice "${deviceId}" not attached to a studio`)
 
 		const studioId = peripheralDevice.studioId
@@ -192,7 +191,7 @@ export namespace ServerPeripheralDeviceAPI {
 					obj.enable.start = o.time
 					obj.enable.setFromNow = true
 
-					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(allowedRundownsIds, obj, o.time)
+					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(context, allowedRundownsIds, obj, o.time)
 				}
 			})
 		}
@@ -202,57 +201,52 @@ export namespace ServerPeripheralDeviceAPI {
 		if (studio) {
 			afterUpdateTimeline(studio)
 		}
-	}, 'timelineTriggerTime$0,$1')
-	export function partPlaybackStarted (deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
+	}, 'timelineTriggerTime$1')
+	export function partPlaybackStarted (context: MethodContext, deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
 		// This is called from the playout-gateway when a part starts playing.
 		// Note that this function can / might be called several times from playout-gateway for the same part
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStarted(r.rundownId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(context, r.rundownId, r.partInstanceId, r.time)
 	}
-	export function partPlaybackStopped (deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PartPlaybackStoppedResult) {
+	export function partPlaybackStopped (context: MethodContext, deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PartPlaybackStoppedResult) {
 		// This is called from the playout-gateway when an
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStopped(r.rundownId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownId, r.partInstanceId, r.time)
 	}
-	export function piecePlaybackStarted (deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
+	export function piecePlaybackStarted (context: MethodContext, deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStarted(context, r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
 	}
-	export function piecePlaybackStopped (deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
+	export function piecePlaybackStopped (context: MethodContext, deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
 		// This is called from the playout-gateway when an auto-next event occurs
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
 		check(r.rundownId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStopped(context, r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
 	}
-	export function pingWithCommand (deviceId: PeripheralDeviceId, token: string, message: string, cb?: Function) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
+	export function pingWithCommand (context: MethodContext, deviceId: PeripheralDeviceId, token: string, message: string, cb?: Function) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err, res) => {
 			if (err) {
@@ -262,12 +256,11 @@ export namespace ServerPeripheralDeviceAPI {
 			if (cb) cb(err, res)
 		}, 'pingResponse', message)
 
-		ping(deviceId, token)
+		ping(context, deviceId, token)
 	}
-	export function killProcess (deviceId: PeripheralDeviceId, token: string, really: boolean) {
+	export function killProcess (context: MethodContext, deviceId: PeripheralDeviceId, token: string, really: boolean) {
 		// This is used in integration tests only
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// Make sure this never runs if this server isn't empty:
 		if (Rundowns.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
@@ -281,16 +274,13 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return false
 	}
-	export function testMethod (deviceId: PeripheralDeviceId, token: string, returnValue: string, throwError?: boolean): string {
+	export function testMethod (context: MethodContext, deviceId: PeripheralDeviceId, token: string, returnValue: string, throwError?: boolean): string {
 		// used for integration tests with core-connection
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
 		check(deviceId, String)
 		check(token, String)
 		check(returnValue, String)
-
-		// logger.debug('device ping', id)
-
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + deviceId + "' not found!")
 
 		if (throwError) {
 			throw new Meteor.Error(418, 'Error thrown, as requested')
@@ -304,9 +294,9 @@ export namespace ServerPeripheralDeviceAPI {
 		PeripheralDeviceAPI.executeFunction(deviceId, cb, functionName, ...args0)
 	})
 
-	export function requestUserAuthToken (deviceId: PeripheralDeviceId, token: string, authUrl: string) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + deviceId + "' not found!")
+	export function requestUserAuthToken (context: MethodContext, deviceId: PeripheralDeviceId, token: string, authUrl: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
 		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only request user auth token for peripheral device of spreadsheet type')
 		}
@@ -316,9 +306,9 @@ export namespace ServerPeripheralDeviceAPI {
 			accessTokenUrl: authUrl
 		}})
 	}
-	export function storeAccessToken (deviceId: PeripheralDeviceId, token: string, accessToken: any) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
-		if (!peripheralDevice) throw new Meteor.Error(404,"peripheralDevice '" + deviceId + "' not found!")
+	export function storeAccessToken (context: MethodContext, deviceId: PeripheralDeviceId, token: string, accessToken: any) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
 		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only store access token for peripheral device of spreadsheet type')
 		}
@@ -329,17 +319,19 @@ export namespace ServerPeripheralDeviceAPI {
 			'settings.secretAccessToken' : true
 		}})
 	}
-	export function removePeripheralDevice (deviceId: PeripheralDeviceId) {
-		// TODO: Replace this function with an authorized one
-		logger.info(`Removing PeripheralDevice ${deviceId}`)
+	export function removePeripheralDevice (context: MethodContext, deviceId: PeripheralDeviceId, token?: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		PeripheralDevices.remove(deviceId)
+		logger.info(`Removing PeripheralDevice ${peripheralDevice._id}`)
+
+		PeripheralDevices.remove(peripheralDevice._id)
 		PeripheralDevices.remove({
-			parentDeviceId: deviceId
+			parentDeviceId: peripheralDevice._id
 		})
 		PeripheralDeviceCommands.remove({
-			deviceId: deviceId
+			deviceId: peripheralDevice._id
 		})
+		// TODO: add others here (MediaWorkflows, etc?)
 	}
 }
 
@@ -348,29 +340,30 @@ postRoute.middleware(bodyParser.text({
 	type: 'text/javascript',
 	limit: '1mb'
 }))
-postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
+postRoute.route('/devices/:deviceId/:token/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
-
-	let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
-
-	let url = parseUrl(req.url || '', true)
-
-	let fileNames = url.query['name'] || undefined
-	let fileName: string = (
-		_.isArray(fileNames) ?
-		fileNames[0] :
-		fileNames
-	) || ''
-
-	check(deviceId, String)
-	check(fileName, String)
-
-	// console.log('Upload of file', fileName, deviceId)
 
 	let content = ''
 	try {
-		const peripheralDevice = PeripheralDevices.findOne(deviceId) // TODO: a better security model is needed here. Token is a no-go, but something else to verify the user?
-		if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice ${deviceId} not found`)
+		let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		let token: string = decodeURIComponent(params.token) // TODO: verify that this works
+
+		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
+		if (!token) throw new Meteor.Error(400, `parameter token is missing`)
+
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token)
+
+		let url = parseUrl(req.url || '', true)
+
+		let fileNames = url.query['name'] || undefined
+		let fileName: string = (
+			_.isArray(fileNames) ?
+			fileNames[0] :
+			fileNames
+		) || ''
+
+		check(deviceId, String)
+		check(fileName, String)
 
 		const body = (req as any).body
 		if (!body) throw new Meteor.Error(400, 'Upload credentials: Missing request body')
@@ -397,9 +390,14 @@ postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMe
 })
 
 /** WHen a device has executed a PeripheralDeviceCommand, it will reply to this endpoint with the result */
-function functionReply (deviceId: PeripheralDeviceId, deviceToken: string, commandId: PeripheralDeviceCommandId, err: any, result: any): void {
+function functionReply (context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string, commandId: PeripheralDeviceCommandId, err: any, result: any): void {
+	checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+
 	// logger.debug('functionReply', err, result)
-	PeripheralDeviceCommands.update(commandId, {
+	PeripheralDeviceCommands.update({
+		_id: commandId,
+		deviceId: deviceId
+	}, {
 		$set: {
 			hasReply: true,
 			reply: result,
@@ -410,71 +408,74 @@ function functionReply (deviceId: PeripheralDeviceId, deviceToken: string, comma
 }
 
 // Set up ALL PeripheralDevice methods:
-class ServerPeripheralDeviceAPIClass implements NewPeripheralDeviceAPI {
+class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeripheralDeviceAPI {
 	// -------- System time --------
 	determineDiffTime () {
+		triggerWriteAccessBecauseNoCheckNecessary()
 		return determineDiffTime()
 	}
 	getTimeDiff () {
+		triggerWriteAccessBecauseNoCheckNecessary()
 		return makePromise(() => getTimeDiff())
 	}
 	getTime () {
+		triggerWriteAccessBecauseNoCheckNecessary()
 		return makePromise(() => getCurrentTime())
 	}
 
 	// ----- PeripheralDevice --------------
 	initialize (deviceId: PeripheralDeviceId, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) {
-		return makePromise(() => ServerPeripheralDeviceAPI.initialize(deviceId, deviceToken, options))
+		return makePromise(() => ServerPeripheralDeviceAPI.initialize(this, deviceId, deviceToken, options))
 	}
 	unInitialize (deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.unInitialize(deviceId, deviceToken))
+		return makePromise(() => ServerPeripheralDeviceAPI.unInitialize(this, deviceId, deviceToken))
 	}
 	setStatus (deviceId: PeripheralDeviceId, deviceToken: string, status: PeripheralDeviceAPI.StatusObject) {
-		return makePromise(() => ServerPeripheralDeviceAPI.setStatus(deviceId, deviceToken, status))
+		return makePromise(() => ServerPeripheralDeviceAPI.setStatus(this, deviceId, deviceToken, status))
 	}
 	ping (deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.ping(deviceId, deviceToken))
+		return makePromise(() => ServerPeripheralDeviceAPI.ping(this, deviceId, deviceToken))
 	}
 	getPeripheralDevice (deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken))
+		return makePromise(() => ServerPeripheralDeviceAPI.getPeripheralDevice(this, deviceId, deviceToken))
 	}
 	partPlaybackStarted (deviceId: PeripheralDeviceId, deviceToken: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
-		return makePromise(() => ServerPeripheralDeviceAPI.partPlaybackStarted(deviceId, deviceToken, r))
+		return makePromise(() => ServerPeripheralDeviceAPI.partPlaybackStarted(this, deviceId, deviceToken, r))
 	}
 	partPlaybackStopped (deviceId: PeripheralDeviceId, deviceToken: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
-		return makePromise(() => ServerPeripheralDeviceAPI.partPlaybackStopped(deviceId, deviceToken, r))
+		return makePromise(() => ServerPeripheralDeviceAPI.partPlaybackStopped(this, deviceId, deviceToken, r))
 	}
 	piecePlaybackStopped (deviceId: PeripheralDeviceId, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
-		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStopped(deviceId, deviceToken, r))
+		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStopped(this, deviceId, deviceToken, r))
 	}
 	piecePlaybackStarted (deviceId: PeripheralDeviceId, deviceToken: string, r: PeripheralDeviceAPI.PiecePlaybackStartedResult) {
-		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStarted(deviceId, deviceToken, r))
+		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStarted(this, deviceId, deviceToken, r))
 	}
 	pingWithCommand (deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: Function) {
-		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message, cb))
+		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb))
 	}
 	killProcess (deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {
-		return makePromise(() => ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really))
+		return makePromise(() => ServerPeripheralDeviceAPI.killProcess(this, deviceId, deviceToken, really))
 	}
 	testMethod (deviceId: PeripheralDeviceId, deviceToken: string, returnValue: string, throwError?: boolean) {
-		return makePromise(() => ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError))
+		return makePromise(() => ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError))
 	}
 	timelineTriggerTime (deviceId: PeripheralDeviceId, deviceToken: string, r: PeripheralDeviceAPI.TimelineTriggerTimeResult) {
-		return makePromise(() => ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r))
+		return makePromise(() => ServerPeripheralDeviceAPI.timelineTriggerTime(this, deviceId, deviceToken, r))
 	}
-	removePeripheralDevice (deviceId: PeripheralDeviceId) {
-		return makePromise(() => ServerPeripheralDeviceAPI.removePeripheralDevice(deviceId))
+	removePeripheralDevice (deviceId: PeripheralDeviceId, token?: string) {
+		return makePromise(() => ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token))
 	}
 	functionReply (deviceId: PeripheralDeviceId, deviceToken: string, commandId: PeripheralDeviceCommandId, err: any, result: any) {
-		return makePromise(() => functionReply(deviceId, deviceToken, commandId, err, result))
+		return makePromise(() => functionReply(this, deviceId, deviceToken, commandId, err, result))
 	}
 
 	// ------ Spreadsheet Gateway --------
 	requestUserAuthToken (deviceId: PeripheralDeviceId, deviceToken: string, authUrl: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.requestUserAuthToken(deviceId, deviceToken, authUrl))
+		return makePromise(() => ServerPeripheralDeviceAPI.requestUserAuthToken(this, deviceId, deviceToken, authUrl))
 	}
 	storeAccessToken (deviceId: PeripheralDeviceId, deviceToken: string, authToken: any) {
-		return makePromise(() => ServerPeripheralDeviceAPI.storeAccessToken(deviceId, deviceToken, authToken))
+		return makePromise(() => ServerPeripheralDeviceAPI.storeAccessToken(this, deviceId, deviceToken, authToken))
 	}
 
 	// ------ Ingest methods: ------------
@@ -514,81 +515,81 @@ class ServerPeripheralDeviceAPIClass implements NewPeripheralDeviceAPI {
 
 	// ------ MOS methods: --------
 	mosRoCreate (deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) {
-		return makePromise(() => MosIntegration.mosRoCreate(deviceId, deviceToken, mosRunningOrder))
+		return makePromise(() => MosIntegration.mosRoCreate(this, deviceId, deviceToken, mosRunningOrder))
 	}
 	mosRoReplace (deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: MOS.IMOSRunningOrder) {
-		return makePromise(() => MosIntegration.mosRoReplace(deviceId, deviceToken, mosRunningOrder))
+		return makePromise(() => MosIntegration.mosRoReplace(this, deviceId, deviceToken, mosRunningOrder))
 	}
 	mosRoDelete (deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: MOS.MosString128, force?: boolean) {
-		return makePromise(() => MosIntegration.mosRoDelete(deviceId, deviceToken, mosRunningOrderId, force))
+		return makePromise(() => MosIntegration.mosRoDelete(this, deviceId, deviceToken, mosRunningOrderId, force))
 	}
 	mosRoMetadata (deviceId: PeripheralDeviceId, deviceToken: string, metadata: MOS.IMOSRunningOrderBase) {
-		return makePromise(() => MosIntegration.mosRoMetadata(deviceId, deviceToken, metadata))
+		return makePromise(() => MosIntegration.mosRoMetadata(this, deviceId, deviceToken, metadata))
 	}
 	mosRoStatus (deviceId: PeripheralDeviceId, deviceToken: string, status: MOS.IMOSRunningOrderStatus) {
-		return makePromise(() => MosIntegration.mosRoStatus(deviceId, deviceToken, status))
+		return makePromise(() => MosIntegration.mosRoStatus(this, deviceId, deviceToken, status))
 	}
 	mosRoStoryStatus (deviceId: PeripheralDeviceId, deviceToken: string, status: MOS.IMOSStoryStatus) {
-		return makePromise(() => MosIntegration.mosRoStoryStatus(deviceId, deviceToken, status))
+		return makePromise(() => MosIntegration.mosRoStoryStatus(this, deviceId, deviceToken, status))
 	}
 	mosRoItemStatus (deviceId: PeripheralDeviceId, deviceToken: string, status: MOS.IMOSItemStatus) {
-		return makePromise(() => MosIntegration.mosRoItemStatus(deviceId, deviceToken, status))
+		return makePromise(() => MosIntegration.mosRoItemStatus(this, deviceId, deviceToken, status))
 	}
 	mosRoStoryInsert (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
-		return makePromise(() => MosIntegration.mosRoStoryInsert(deviceId, deviceToken, Action, Stories))
+		return makePromise(() => MosIntegration.mosRoStoryInsert(this, deviceId, deviceToken, Action, Stories))
 	}
 	mosRoItemInsert (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
-		return makePromise(() => MosIntegration.mosRoItemInsert(deviceId, deviceToken, Action, Items))
+		return makePromise(() => MosIntegration.mosRoItemInsert(this, deviceId, deviceToken, Action, Items))
 	}
 	mosRoStoryReplace (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.IMOSROStory>) {
-		return makePromise(() => MosIntegration.mosRoStoryReplace(deviceId, deviceToken, Action, Stories))
+		return makePromise(() => MosIntegration.mosRoStoryReplace(this, deviceId, deviceToken, Action, Stories))
 	}
 	mosRoItemReplace (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.IMOSItem>) {
-		return makePromise(() => MosIntegration.mosRoItemReplace(deviceId, deviceToken, Action, Items))
+		return makePromise(() => MosIntegration.mosRoItemReplace(this, deviceId, deviceToken, Action, Items))
 	}
 	mosRoStoryMove (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSStoryAction, Stories: Array<MOS.MosString128>) {
-		return makePromise(() => MosIntegration.mosRoStoryMove(deviceId, deviceToken, Action, Stories))
+		return makePromise(() => MosIntegration.mosRoStoryMove(this, deviceId, deviceToken, Action, Stories))
 	}
 	mosRoItemMove (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSItemAction, Items: Array<MOS.MosString128>) {
-		return makePromise(() => MosIntegration.mosRoItemMove(deviceId, deviceToken, Action, Items))
+		return makePromise(() => MosIntegration.mosRoItemMove(this, deviceId, deviceToken, Action, Items))
 	}
 	mosRoStoryDelete (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSROAction, Stories: Array<MOS.MosString128>) {
-		return makePromise(() => MosIntegration.mosRoStoryDelete(deviceId, deviceToken, Action, Stories))
+		return makePromise(() => MosIntegration.mosRoStoryDelete(this, deviceId, deviceToken, Action, Stories))
 	}
 	mosRoItemDelete (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSStoryAction, Items: Array<MOS.MosString128>) {
-		return makePromise(() => MosIntegration.mosRoItemDelete(deviceId, deviceToken, Action, Items))
+		return makePromise(() => MosIntegration.mosRoItemDelete(this, deviceId, deviceToken, Action, Items))
 	}
 	mosRoStorySwap (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSROAction, StoryID0: MOS.MosString128, StoryID1: MOS.MosString128) {
-		return makePromise(() => MosIntegration.mosRoStorySwap(deviceId, deviceToken, Action, StoryID0, StoryID1))
+		return makePromise(() => MosIntegration.mosRoStorySwap(this, deviceId, deviceToken, Action, StoryID0, StoryID1))
 	}
 	mosRoItemSwap (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSStoryAction, ItemID0: MOS.MosString128, ItemID1: MOS.MosString128) {
-		return makePromise(() => MosIntegration.mosRoItemSwap(deviceId, deviceToken, Action, ItemID0, ItemID1))
+		return makePromise(() => MosIntegration.mosRoItemSwap(this, deviceId, deviceToken, Action, ItemID0, ItemID1))
 	}
 	mosRoReadyToAir (deviceId: PeripheralDeviceId, deviceToken: string, Action: MOS.IMOSROReadyToAir) {
-		return makePromise(() => MosIntegration.mosRoReadyToAir(deviceId, deviceToken, Action))
+		return makePromise(() => MosIntegration.mosRoReadyToAir(this, deviceId, deviceToken, Action))
 	}
 	mosRoFullStory (deviceId: PeripheralDeviceId, deviceToken: string, story: MOS.IMOSROFullStory) {
-		return makePromise(() => MosIntegration.mosRoFullStory(deviceId, deviceToken, story))
+		return makePromise(() => MosIntegration.mosRoFullStory(this, deviceId, deviceToken, story))
 	}
 	// ------- Media Manager (Media Scanner)
 	getMediaObjectRevisions (deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string,) {
-		return makePromise(() => MediaScannerIntegration.getMediaObjectRevisions(deviceId, deviceToken, collectionId))
+		return makePromise(() => MediaScannerIntegration.getMediaObjectRevisions(this, deviceId, deviceToken, collectionId))
 	}
 	updateMediaObject (deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string, id: string, doc: MediaObject | null) {
-		return makePromise(() => MediaScannerIntegration.updateMediaObject(deviceId, deviceToken, collectionId, id, doc))
+		return makePromise(() => MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc))
 	}
 	// ------- Media Manager --------------
 	getMediaWorkFlowRevisions (deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowRevisions(deviceId, deviceToken))
+		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowRevisions(this, deviceId, deviceToken))
 	}
 	getMediaWorkFlowStepRevisions (deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowStepRevisions(deviceId, deviceToken))
+		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowStepRevisions(this, deviceId, deviceToken))
 	}
 	updateMediaWorkFlow (deviceId: PeripheralDeviceId, deviceToken: string, workFlowId: MediaWorkFlowId , obj: MediaWorkFlow | null) {
-		return makePromise(() => MediaManagerIntegration.updateMediaWorkFlow(deviceId, deviceToken, workFlowId, obj))
+		return makePromise(() => MediaManagerIntegration.updateMediaWorkFlow(this, deviceId, deviceToken, workFlowId, obj))
 	}
 	updateMediaWorkFlowStep (deviceId: PeripheralDeviceId, deviceToken: string, docId: MediaWorkFlowStepId, obj: MediaWorkFlowStep | null) {
-		return makePromise(() => MediaManagerIntegration.updateMediaWorkFlowStep(deviceId, deviceToken, docId, obj))
+		return makePromise(() => MediaManagerIntegration.updateMediaWorkFlowStep(this, deviceId, deviceToken, docId, obj))
 	}
 }
 registerClassToMeteorMethods(PeripheralDeviceAPIMethods, ServerPeripheralDeviceAPIClass, false)

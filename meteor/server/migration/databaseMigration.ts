@@ -35,7 +35,7 @@ import {
 	StudioBlueprintManifest
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../lib/logging'
-import { storeSystemSnapshot } from '../api/snapshot'
+import { storeSystemSnapshot, internalStoreSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios } from '../../lib/collections/Studios'
@@ -499,7 +499,7 @@ export function runMigration (
 		let system = getCoreSystem()
 		if (system && system.storePath) {
 			try {
-				snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration`)
+				snapshotId = internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)
 			} catch (e) {
 				warningMessages.push(`Error when taking snapshot:${e.toString()}`)
 				logger.error(e)

@@ -1,19 +1,24 @@
 import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, getRandomId } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import { Studios } from '../../lib/collections/Studios'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
 import { MethodContext } from '../../lib/api/methods'
+import { OrganizationContentWriteAccess } from '../security/organization'
 
 export function saveEvaluation (methodContext: MethodContext, evaluation: EvaluationBase): void {
-	Evaluations.insert(_.extend(evaluation, {
-		userId: methodContext.userId,
+	const allowedCred = OrganizationContentWriteAccess.evaluation({ userId: methodContext.userId })
+
+	Evaluations.insert({
+		...evaluation,
+		_id: getRandomId(),
+		organizationId: allowedCred.organizationId,
+		userId: allowedCred.userId,
 		timestamp: getCurrentTime(),
-	}))
+	})
 	logger.info({
 		message: 'evaluation',
 		evaluation: evaluation

@@ -1,13 +1,20 @@
-import { Random } from 'meteor/random'
+import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, unprotectString } from '../../lib/lib'
+import { getCurrentTime, Time, unprotectString, getRandomId } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { parseVersion, parseRange } from '../../lib/collections/CoreSystem'
-import { StatusResponse, CheckObj, ExternalStatus, CheckError } from '../../lib/api/systemStatus'
+import { StatusResponse, CheckObj, ExternalStatus, CheckError, SystemInstanceId } from '../../lib/api/systemStatus'
 import { getRelevantSystemVersions } from '../coreSystem'
 import * as semver from 'semver'
 import { StudioId } from '../../lib/collections/Studios'
+import { OrganizationId } from '../../lib/collections/Organization'
+import { Settings } from '../../lib/Settings'
+import { StudioReadAccess } from '../security/studio'
+import { OrganizationReadAccess } from '../security/organization'
+import { resolveCredentials, Credentials } from '../security/lib/credentials'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { SystemWriteAccess } from '../security/system'
 
 /**
  * Handling of system statuses
@@ -48,8 +55,10 @@ export interface StatusObjectInternal {
  * Returns system status
  * @param studioId (Optional) If provided, limits the status to what's affecting the studio
  */
-export function getSystemStatus (studioId?: StudioId): StatusResponse {
+export function getSystemStatus (cred0: Credentials, studioId?: StudioId): StatusResponse {
 	let checks: Array<CheckObj> = []
+
+	SystemWriteAccess.systemStatusRead(cred0)
 
 	// Check systemStatuses:
 	_.each(systemStatuses, (status: StatusObjectInternal, key: string) => {
@@ -84,12 +93,24 @@ export function getSystemStatus (studioId?: StudioId): StatusResponse {
 		checks: checks,
 	}
 
-	let devices = (
-		studioId ?
-		PeripheralDevices.find({ studioId: studioId }).fetch() :
-		PeripheralDevices.find({}).fetch()
-	)
-
+	let devices: PeripheralDevice[] = []
+	if (studioId) {
+		if (!StudioReadAccess.studioContent({ studioId: studioId }, cred0)) {
+			throw new Meteor.Error(403, `Not allowed`)
+		}
+		devices = PeripheralDevices.find({ studioId: studioId }).fetch()
+	} else {
+		if (Settings.enableUserAccounts) {
+			const cred = resolveCredentials(cred0)
+			if (!cred.organization) throw new Meteor.Error(500, 'user has no organization')
+			if (!OrganizationReadAccess.organizationContent({ organizationId: cred.organization._id }, cred)) {
+				throw new Meteor.Error(403, `Not allowed`)
+			}
+			devices = PeripheralDevices.find({ organizationId: cred.organization._id }).fetch()
+		} else {
+			devices = PeripheralDevices.find({}).fetch()
+		}
+	}
 	_.each(devices, (device: PeripheralDevice) => {
 
 		let deviceStatus: StatusCode = device.status.statusCode
@@ -156,7 +177,7 @@ export function getSystemStatus (studioId?: StudioId): StatusResponse {
 		}
 		let so: StatusResponse = {
 			name: device.name,
-			instanceId: unprotectString(device._id),
+			instanceId: device._id,
 			status: 'UNDEFINED',
 			updated: new Date(device.lastSeen).toISOString(),
 			_status: deviceStatus,
@@ -235,7 +256,7 @@ export function removeSystemStatus (type: string) {
 	delete systemStatuses[type]
 }
 /** Random id for this running instance of core */
-const instanceId = Random.id()
+const instanceId: SystemInstanceId = getRandomId()
 /** Map of surrent system statuses */
 const systemStatuses: {[key: string]: StatusObjectInternal} = {}
 function setStatus (statusObj: StatusResponse): StatusCode {

@@ -1,10 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { RundownLayoutsAPI, NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
+import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
 import { RundownLayouts, RundownLayoutType, RundownLayoutBase, RundownLayoutId } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
-import { RundownLayoutSecurity } from '../security/collections/rundownLayouts'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 // @ts-ignore Meteor package not recognized by Typescript
@@ -12,15 +11,16 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
 import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { BlueprintId } from '../../lib/collections/Blueprints'
-import { MethodContext } from '../../lib/api/methods'
-import { ServerClientAPI } from './client'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { UserId } from '../../lib/collections/Users'
+import { ShowStyleContentWriteAccess } from '../security/showStyle'
 
 export function createRundownLayout (
 	name: string,
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
 	blueprintId: BlueprintId | undefined,
-	userId?: string | undefined
+	userId?: UserId | undefined
 ) {
 	const id: RundownLayoutId = getRandomId()
 	RundownLayouts.insert(literal<RundownLayoutBase>({
@@ -111,28 +111,32 @@ getJsRoute.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, re
 	res.end(content)
 })
 
-function apiCreateRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
+/** Add RundownLayout into showStyleBase */
+function apiCreateRundownLayout (context: MethodContext, name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
 	check(name, String)
 	check(type, String)
 	check(showStyleBaseId, String)
 
-	if (!RundownLayoutSecurity.allowWriteAccess(this.connection.userId)) throw new Meteor.Error(403, 'Access denied')
+	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 
-	return createRundownLayout(name, type, showStyleBaseId, undefined, this.connection.userId)
+	return createRundownLayout(name, type, showStyleBaseId, undefined, access.userId || undefined)
 }
-function apiRemoveRundownLayout (id: RundownLayoutId) {
+function apiRemoveRundownLayout (context: MethodContext, id: RundownLayoutId) {
 	check(id, String)
 
-	if (!RundownLayoutSecurity.allowWriteAccess(this.connection.userId)) throw new Meteor.Error(403, 'Access denied')
+	const access = ShowStyleContentWriteAccess.rundownLayout(context, id)
+	const rundownLayout = access.rundownLayout
+	if (!rundownLayout) throw new Meteor.Error(404, `RundownLayout "${id}" not found`)
+
 	removeRundownLayout(id)
 }
 
-class ServerRundownLayoutsAPI implements NewRundownLayoutsAPI {
+class ServerRundownLayoutsAPI extends MethodContextAPI implements NewRundownLayoutsAPI {
 	createRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
-		return makePromise(() => apiCreateRundownLayout(name, type, showStyleBaseId))
+		return makePromise(() => apiCreateRundownLayout(this, name, type, showStyleBaseId))
 	}
 	removeRundownLayout (rundownLayoutId: RundownLayoutId) {
-		return makePromise(() => apiRemoveRundownLayout(rundownLayoutId))
+		return makePromise(() => apiRemoveRundownLayout(this, rundownLayoutId))
 	}
 }
 registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false)

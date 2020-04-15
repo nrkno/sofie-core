@@ -31,7 +31,7 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments } from '../../../../lib/collections/Segments'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
-import { removeSegments, ServerRundownAPI } from '../../rundown'
+import { removeSegments, ServerRundownAPI, innerUnsyncRundown } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -482,7 +482,7 @@ function diffAndApplyChanges (
 		if (!currentPart) {
 			// Looks like the currently playing part has been removed.
 			logger.warn(`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`)
-			ServerRundownAPI.unsyncRundown(rundown._id)
+			innerUnsyncRundown(rundown)
 			return
 		} else {
 			// TODO: add logic for determining whether to allow changes to the currently playing Part.

@@ -10,7 +10,6 @@ export enum PubSub {
 	externalMessageQueue = 'externalMessageQueue',
 	mediaObjects = 'mediaObjects',
 	peripheralDeviceCommands = 'peripheralDeviceCommands',
-	allPeripheralDeviceCommands = 'allPeripheralDeviceCommands',
 	peripheralDevices = 'peripheralDevices',
 	peripheralDevicesAndSubDevices = ' peripheralDevicesAndSubDevices',
 	recordedFiles = 'recordedFiles',
@@ -36,7 +35,8 @@ export enum PubSub {
 	mediaWorkFlows = 'mediaWorkFlows',
 	mediaWorkFlowSteps = 'mediaWorkFlowSteps',
 	rundownLayouts = 'rundownLayouts',
-	loggedInUser = 'loggedInUser'
+	loggedInUser = 'loggedInUser',
+	usersInOrganization = 'usersInOrganization'
 }
 
 export function meteorSubscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

@@ -26,6 +26,9 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { StudioContentWriteAccess } from '../security/studio'
+import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 
 export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
@@ -229,22 +232,28 @@ Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
 })
 
-function removeExternalMessage (messageId: ExternalMessageQueueObjId): void {
+function removeExternalMessage (context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
+	StudioContentWriteAccess.externalMessage(context, messageId)
+
 	ExternalMessageQueue.remove(messageId)
 }
-function toggleHold (messageId: ExternalMessageQueueObjId): void {
+function toggleHold (context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
-	let m = ExternalMessageQueue.findOne(messageId)
+	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on toggleHold`)
+
 	ExternalMessageQueue.update(messageId, {$set: {
 		hold: !m.hold
 	}})
 }
-function retry (messageId: ExternalMessageQueueObjId): void {
+function retry (context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
-	let m = ExternalMessageQueue.findOne(messageId)
+	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on retry`)
+
 	let tryGap = getCurrentTime() - 1 * 60 * 1000
 	ExternalMessageQueue.update(messageId, {$set: {
 		manualRetry: true,
@@ -254,8 +263,10 @@ function retry (messageId: ExternalMessageQueueObjId): void {
 	}})
 	triggerdoMessageQueue(1000)
 }
-function setRunMessageQueue (value: boolean): void {
+function setRunMessageQueue (_context: MethodContext, value: boolean): void {
 	check(value, Boolean)
+	triggerWriteAccessBecauseNoCheckNecessary()
+
 	logger.info('setRunMessageQueue: set to ' + value)
 	runMessageQueue = value
 	if (runMessageQueue) {
@@ -263,18 +274,18 @@ function setRunMessageQueue (value: boolean): void {
 	}
 }
 
-class ServerExternalMessageQueueAPI implements NewExternalMessageQueueAPI {
+class ServerExternalMessageQueueAPI extends MethodContextAPI implements NewExternalMessageQueueAPI {
 	remove (messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => removeExternalMessage(messageId))
+		return makePromise(() => removeExternalMessage(this, messageId))
 	}
 	toggleHold (messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => toggleHold(messageId))
+		return makePromise(() => toggleHold(this, messageId))
 	}
 	retry (messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => retry(messageId))
+		return makePromise(() => retry(this, messageId))
 	}
 	setRunMessageQueue (value: boolean) {
-		return makePromise(() => setRunMessageQueue(value))
+		return makePromise(() => setRunMessageQueue(this, value))
 	}
 }
 registerClassToMeteorMethods(ExternalMessageQueueAPIMethods, ServerExternalMessageQueueAPI, false)
