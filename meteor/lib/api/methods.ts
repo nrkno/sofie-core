@@ -15,6 +15,7 @@ import { NewTestToolsAPI, TestToolsAPIMethods } from './testTools'
 import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
+import { UserId } from '../typings/meteor'
 
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
@@ -63,8 +64,16 @@ function makeMethods (methods: object): any {
 	return o
 }
 export interface MethodContext {
-	userId?: string
-	connection: {
+	userId?: UserId
+	/** Info about the connection that called the method. Undefined if called internally from server-side */
+	connection?: {
+		clientAddress: string
+	}
+}
+/** Abstarct class to be used when defining Mehod-classes */
+export abstract class MethodContextAPI implements MethodContext {
+	public userId?: UserId
+	public connection?: {
 		clientAddress: string
 	}
 }

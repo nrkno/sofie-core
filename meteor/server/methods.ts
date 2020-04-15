@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
-import { MethodContext } from '../lib/api/methods'
+import { MethodContext, MethodContextAPI } from '../lib/api/methods'
 
 interface Methods {
 	[method: string]: Function
@@ -10,7 +10,10 @@ interface Methods {
 export interface MethodsInner {
 	[method: string]: { wrapped: Function, original: Function}
 }
+/** All (non-secret) methods */
 export const MeteorMethodSignatures: {[key: string]: string[]} = {}
+/** All methods */
+export const AllMeteorMethods: string[] = []
 
 let runningMethods: {[methodId: string]: {
 	method: string,
@@ -26,7 +29,7 @@ function getAllClassMethods (myClass: any): string[] {
 	return classProps.filter((name) => objectProtProps.indexOf(name) < 0).filter((name) => typeof myClass.prototype[name] === 'function')
 }
 
-export function registerClassToMeteorMethods (methodEnum: any, orgClass: any, secret?: boolean, wrapper?: (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => any): void {
+export function registerClassToMeteorMethods (methodEnum: any, orgClass: typeof MethodContextAPI, secret?: boolean, wrapper?: (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => any): void {
 	const methods: MethodsInner = {}
 	_.each(getAllClassMethods(orgClass), classMethodName => {
 		const enumValue = methodEnum[classMethodName]
@@ -94,6 +97,7 @@ function setMeteorMethods (orgMethods: MethodsInner, secret?: boolean): void {
 				const signature = extractFunctionSignature(m.original)
 				if (signature) MeteorMethodSignatures[methodName] = signature
 			}
+			AllMeteorMethods.push(methodName)
 		}
 	})
 	Meteor.methods(methods)

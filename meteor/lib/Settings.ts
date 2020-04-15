@@ -27,7 +27,7 @@ export interface ISettings {
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
 	allowGrabbingTimeline: boolean
-	/**  */
+	/** If true, enables security measures, access control and user accounts. */
 	enableUserAccounts: boolean
 }
 

@@ -686,7 +686,7 @@ const cacheResultCache: {
 export function cacheResult<T> (name: string, fcn: () => T, limitTime: number = 1000) {
 
 	if (Math.random() < 0.01) {
-		Meteor.setTimeout(cleanCacheResult, 10000)
+		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
 	const cache = cacheResultCache[name]
 	if (!cache || cache.ttl < Date.now()) {
@@ -700,9 +700,12 @@ export function cacheResult<T> (name: string, fcn: () => T, limitTime: number = 
 		return cache.value
 	}
 }
-function cleanCacheResult () {
+export function clearCacheResult (name: string) {
+	delete cacheResultCache[name]
+}
+function cleanOldCacheResult () {
 	_.each(cacheResultCache, (cache, name) => {
-		if (cache.ttl < Date.now()) delete cacheResultCache[name]
+		if (cache.ttl < Date.now()) clearCacheResult(name)
 	})
 }
 
@@ -1202,6 +1205,7 @@ export function unprotectString (protectedStr: ProtectedString<any> | undefined)
 export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined {
 	return protectedStr as any as string
 }
+/** Used on protectedStrings instead of _.isString or typeof x === 'string' */
 export function isProtectedString (str: any): str is ProtectedString<any> {
 	return typeof str === 'string'
 }

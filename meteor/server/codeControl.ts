@@ -66,10 +66,9 @@ export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout:
 }
 function syncFunctionInner<T extends Function> (id1: string, fcn: T, id0?: string, timeout: number = 10000, priority: number = 1): T {
 	return Meteor.wrapAsync((...args0: any[]) => {
-
 		let args = args0.slice(0,-1)
 		// @ts-ignore
-		let cb: Callback = _.last(args0) // the callback is the last argument
+		let cb: Callback = _.last(_.compact(args0)) // the callback is the last (non-falsy) argument
 
 		if (!cb) throw new Meteor.Error(500, 'Callback is not defined')
 		if (!_.isFunction(cb)) {

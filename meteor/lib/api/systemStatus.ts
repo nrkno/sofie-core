@@ -1,6 +1,10 @@
 import { StatusCode } from '../../server/systemStatus/systemStatus'
+import { ProtectedString } from '../lib'
 
 export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
+
+/** An id, representing the currently running instance of this process */
+export type SystemInstanceId = ProtectedString<'SystemInstanceId'>
 export interface CheckObj {
 	description: string
 	status: ExternalStatus
@@ -22,7 +26,7 @@ export interface StatusResponseBase {
 	updated: string
 
 	statusMessage?: string // Tekstlig beskrivelse av status. (Eks: OK, Running, Standby, Completed successfully, 2/3 nodes running, Slow response time).
-	instanceId?: string
+	instanceId?: ProtectedString<any>
 	utilises?: Array<string>
 	consumers?: Array<string>
 	version?: '3' // version of healthcheck
