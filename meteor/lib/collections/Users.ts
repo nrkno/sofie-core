@@ -28,13 +28,35 @@ export interface DBUser {
 	],
 	profile: {
 		name: string
-	}
-
+	},
+	organizationId: OrganizationId
+	roles: UserRole[]
+	superAdmin?: boolean
+}
+export interface UserRole {
+	type: UserRoleType
+}
+export enum UserRoleType {
+	/** Can play out things in a studio */
+	STUDIO_PLAYOUT = 'studio_playout',
+	/** Can access and modify the settings */
+	CONFIGURATOR = 'configurator'
 }
 
+export type User = DBUser // to be replaced by a class somet ime later?
+
 // This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
-export const Users: TransformedCollection<DBUser, DBUser> = Meteor.users as any
+export const Users: TransformedCollection<User, DBUser> = Meteor.users as any
 registerCollection('Users', Users)
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Users._ensureIndex({
+			organizationId: 1
+		})
+	}
+})
+
 
 /** Returns the currently logged in user, or null if not logged in */
 export function getUser (): DBUser | null {
