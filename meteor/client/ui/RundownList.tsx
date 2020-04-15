@@ -126,6 +126,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 	}
 
 	renderViewLinks () {
+		const { t } = this.props
 		const standaloneLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsStandalone).map(layout => {
 			return this.renderLinkItem(layout, this.getShelfLink(this.props.rundown._id, layout._id), `standalone${layout._id}`)
 		})
@@ -133,13 +134,11 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			return this.renderLinkItem(layout, this.getRundownWithLayoutLink(this.props.rundown._id, layout._id), `shelf${layout._id}`)
 		})
 		const allElements = [
-			<div className='expco-header' key={'header1'}>Standalone shelfs</div>,
 			...standaloneLayouts,
-			<div className='expco-header' key={'header2'}>Rundown + Shelf</div>,
+			<div className='expco-header' key={'header2'}>{t('Timeline views')}</div>,
 			...shelfLayouts,
-			<div className='expco-separator' key={'separator1'}></div>,
 			<Link to={this.getRundownLink(this.props.rundown._id)} onClick={() => this.saveViewChoice('default')} key={'default'}>
-				<div className='action-btn expco-item'>Default</div>
+				<div className='action-btn expco-item'>{t('Default')}</div>
 			</Link>
 		]
 		return (
