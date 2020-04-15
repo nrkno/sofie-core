@@ -53,29 +53,3 @@ export namespace SystemWriteAccess {
 		return true
 	}
 }
-CoreSystem.allow({
-	insert (): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		const access = allowAccessToCoreSystem({ userId: userId })
-		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
-		return allowOnlyFields(doc, fields, [
-			'support', 'systemInfo', 'name'
-		])
-	},
-	remove () {
-		return false
-	}
-})
-Users.allow({
-	insert (userId, doc) {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		return false
-	},
-	remove (userId, doc) {
-		return false
-	}
-})

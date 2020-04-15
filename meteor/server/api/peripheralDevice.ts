@@ -28,7 +28,7 @@ import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkF
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import * as MOS from 'mos-connection'
 import { determineDiffTime, getTimeDiff } from './systemTime/systemTime'
-import { PeripheralDeviceSecurity, PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'

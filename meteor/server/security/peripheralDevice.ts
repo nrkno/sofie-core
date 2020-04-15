@@ -1,20 +1,16 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { Mongo } from 'meteor/mongo'
 import { PeripheralDeviceId, PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { protectString, isProtectedString } from '../../lib/lib'
-import { rejectFields, logNotAllowed } from './lib/lib'
-import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
-import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { isProtectedString } from '../../lib/lib'
+import { logNotAllowed } from './lib/lib'
 import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
-import { allowAccessToPeripheralDevice, allowAccessToStudio, allowAccessToPeripheralDeviceContent } from './lib/security'
+import { allowAccessToPeripheralDevice, allowAccessToPeripheralDeviceContent } from './lib/security'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
-import { noAccess } from './lib/access'
 
 type PeripheralDeviceContent = { deviceId: PeripheralDeviceId }
 export namespace PeripheralDeviceReadAccess {
@@ -93,65 +89,3 @@ export namespace PeripheralDeviceContentWriteAccess {
 		}
 	}
 }
-
-PeripheralDevices.allow({
-	insert (userId, doc: PeripheralDevice): boolean {
-		return true
-	},
-	update (userId, doc, fields, modifier) {
-		return rejectFields(doc, fields, [
-			'type',
-			'parentDeviceId',
-			'versions',
-			'expectedVersions',
-			'created',
-			'status',
-			'lastSeen',
-			'lastConnected',
-			'connected',
-			'connectionId',
-			'token',
-			// 'settings' is allowed
-		])
-	},
-
-	remove (userId, doc) {
-		return false
-	}
-})
-
-PeripheralDeviceCommands.allow({
-	insert (userId, doc: PeripheralDeviceCommand): boolean {
-		return true // TODO
-	},
-	update (userId, doc, fields, modifier) {
-		return false
-	},
-	remove (userId, doc) {
-		return true // TODO
-	}
-})
-
-// Media work flows:
-MediaWorkFlowSteps.allow({
-	insert (userId, doc: MediaWorkFlowStep): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		return false
-	},
-	remove (userId, doc) {
-		return false
-	}
-})
-MediaWorkFlows.allow({
-	insert (userId, doc: MediaWorkFlow): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		return false
-	},
-	remove (userId, doc) {
-		return false
-	}
-})

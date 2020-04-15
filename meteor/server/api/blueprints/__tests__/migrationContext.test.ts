@@ -411,6 +411,7 @@ describe('Test blueprint migrationContext', () => {
 				return PeripheralDevices.insert({
 					_id: getRandomId(),
 					name: 'Fake parent device',
+					organizationId: null,
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,

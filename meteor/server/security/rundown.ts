@@ -6,21 +6,13 @@ import { MongoQuery } from '../../lib/typings/meteor'
 import { Credentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundown } from './lib/security'
-import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
+import { RundownId } from '../../lib/collections/Rundowns'
 import { protectString } from '../../lib/lib'
-import { Parts } from '../../lib/collections/Parts'
-import { Pieces } from '../../lib/collections/Pieces'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
-import { PartInstances } from '../../lib/collections/PartInstances'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
-import { AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
-import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
 import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
 
 type RundownContent = { rundownId: RundownId }
@@ -116,174 +108,8 @@ export namespace RundownReadAccess {
 		}
 	}
 }
-
-function rundownContentAllowWrite (userId, doc: RundownContent): boolean {
+export function rundownContentAllowWrite (userId, doc: RundownContent): boolean {
 	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true
 }
-// function segmentAllowWrite (userId, doc: DBSegment): boolean {
-// 	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
-// 	if (!access.update) return logNotAllowed('Segments', access.reason)
-// 	return true
-// }
-// function partAllowWrite (userId, doc: DBPart | DBPartInstance): boolean {
-// 	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
-// 	if (!access.update) return logNotAllowed('Parts', access.reason)
-// 	return true
-// }
-// function pieceAllowWrite (userId, doc: PieceGeneric | PieceInstance): boolean {
-// 	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
-// 	if (!access.update) return logNotAllowed('Piece', access.reason)
-// 	return true
-// }
-
-
-Rundowns.allow({
-	insert (): boolean {
-		return false
-	},
-	update () {
-		// return true // tmp!
-		return false
-	},
-	remove () {
-		return false
-	}
-})
-
-// ----------------------------------------------------------------------------
-// Rundown content:
-// ----------------------------------------------------------------------------
-
-// Collections security set up:
-
-Segments.allow({
-	insert (userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-
-
-Parts.allow({
-	insert (userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-PartInstances.allow({
-	insert (userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-Pieces.allow({
-	insert (userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-PieceInstances.allow({
-	insert (userId, doc: PieceInstance): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-AdLibPieces.allow({
-	insert (userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-RundownBaselineAdLibPieces.allow({
-	insert (userId, doc: RundownBaselineAdLibItem): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-IngestDataCache.allow({
-	insert (userId, doc: IngestDataCacheObj): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-AsRunLog.allow({
-	insert (userId, doc: AsRunLogEvent): boolean {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	update (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	},
-	remove (userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
-	}
-})
-
-ExpectedMediaItems.allow({
-	insert (): boolean {
-		return false
-	},
-
-	update () {
-		return false
-	},
-
-	remove () {
-		return false
-	}
-})
-
-ExpectedPlayoutItems.allow({
-	insert (): boolean {
-		return false
-	},
-
-	update () {
-		return false
-	},
-
-	remove () {
-		return false
-	}
-})

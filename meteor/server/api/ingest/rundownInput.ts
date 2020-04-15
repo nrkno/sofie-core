@@ -33,7 +33,6 @@ import {
 	asyncCollectionFindOne,
 	waitForPromiseAll,
 	asyncCollectionRemove,
-	normalizeArray,
 	normalizeArrayFunc,
 	asyncCollectionInsert,
 	asyncCollectionFindFetch,
@@ -43,7 +42,7 @@ import {
 	omit,
 	ProtectedString
 } from '../../../lib/lib'
-import { PeripheralDeviceSecurity, PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
+import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio } from '../../../lib/collections/Studios'

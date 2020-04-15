@@ -1,11 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { Organizations, OrganizationId } from '../../lib/collections/Organization'
-import { Evaluations } from '../../lib/collections/Evaluations'
+import { OrganizationId } from '../../lib/collections/Organization'
 import { Snapshots, SnapshotItem, SnapshotId } from '../../lib/collections/Snapshots'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { allowOnlyFields, logNotAllowed } from './lib/lib'
+import { logNotAllowed } from './lib/lib'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { allowAccessToOrganization } from './lib/security'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
@@ -15,7 +13,6 @@ import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
 import { Studio, StudioId, Studios } from '../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { MediaWorkFlow, MediaWorkFlows, MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 
 type OrganizationContent = { organizationId: OrganizationId }
 export namespace OrganizationReadAccess {
@@ -116,59 +113,3 @@ export namespace OrganizationContentWriteAccess {
 		}
 	}
 }
-Organizations.allow({
-	insert (userId, doc): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		return false
-	},
-	remove (userId, doc) {
-		return false
-	}
-})
-
-UserActionsLog.allow({
-	insert (userId, doc): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		return false
-	},
-	remove (userId, doc) {
-		return false
-	}
-})
-Evaluations.allow({
-	insert (userId, doc): boolean {
-		return true
-	},
-	update (userId, doc, fields, modifier) {
-		return false
-	},
-	remove (userId, doc) {
-		return false
-	}
-})
-Snapshots.allow({
-	insert (userId, doc): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		return allowOnlyFields(doc, fields, ['comment'])
-	},
-	remove (userId, doc) {
-		return false
-	}
-})
-Blueprints.allow({
-	insert (userId, doc): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		return allowOnlyFields(doc, fields, ['name'])
-	},
-	remove (userId, doc) {
-		return false
-	}
-})

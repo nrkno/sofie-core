@@ -79,20 +79,3 @@ export namespace RundownPlaylistContentWriteAccess {
 		}
 	}
 }
-
-RundownPlaylists.allow({
-	insert (userId, doc: RundownPlaylist): boolean {
-		return false
-	},
-	update (userId, doc, fields, modifier) {
-		// return true // tmp!
-		return false
-	},
-	remove (userId, doc) {
-		return false
-	}
-})
-// ----------------------------------------------------------------------------
-// RundownPlaylist content:
-// ----------------------------------------------------------------------------
-

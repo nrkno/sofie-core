@@ -8,8 +8,11 @@ import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/
 import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { Meteor } from 'meteor/meteor'
 import { insertBlueprint, uploadBlueprint } from '../api'
+import { MethodContext } from '../../../../lib/api/methods'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
+
+const DEFAULT_CONTEXT: MethodContext = {}
 
 describe('Test blueprint management api', () => {
 
@@ -28,6 +31,7 @@ describe('Test blueprint management api', () => {
 			const blueprint: Blueprint = {
 				_id: getRandomId(),
 				name: 'Fake blueprint',
+				organizationId: null,
 				code: `{default: (() => 5)()}`,
 				created: 0,
 				modified: 0,
@@ -178,7 +182,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('with name', () => {
 			const rawName = 'some_fake_name'
-			const newId = insertBlueprint(undefined, rawName)
+			const newId = insertBlueprint(DEFAULT_CONTEXT, undefined, rawName)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -189,7 +193,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('with type', () => {
 			const type = BlueprintManifestType.STUDIO
-			const newId = insertBlueprint(type, undefined)
+			const newId = insertBlueprint(DEFAULT_CONTEXT, type, undefined)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -297,6 +301,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: protectString('tmp_showstyle'),
 				name: 'tmp_showstyle',
+				organizationId: null,
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintId: protectString('ss1'),
 				blueprintVersion: '0.1.0',
@@ -329,6 +334,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: protectString('tmp_studio'),
 				name: 'tmp name',
+				organizationId: null,
 				blueprintId: protectString(''),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
@@ -362,6 +368,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: protectString('tmp_system'),
 				name: 'tmp name',
+				organizationId: null,
 				blueprintId: protectString('sys'),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
@@ -398,6 +405,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: existingBlueprint._id,
 				name: existingBlueprint.name,
+				organizationId: null,
 				blueprintId: protectString(''),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',
@@ -438,6 +446,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toMatchObject(literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 				_id: existingBlueprint._id,
 				name: existingBlueprint.name,
+				organizationId: null,
 				blueprintId: protectString('ss1'),
 				blueprintType: BLUEPRINT_TYPE,
 				blueprintVersion: '0.1.0',

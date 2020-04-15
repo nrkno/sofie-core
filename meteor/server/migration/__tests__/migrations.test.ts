@@ -137,6 +137,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					Studios.insert({
 						_id: protectString('studioMock2'),
 						name: 'Default studio',
+						organizationId: null,
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
@@ -161,6 +162,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					Studios.insert({
 						_id: protectString('studioMock3'),
 						name: 'Default studio',
+						organizationId: null,
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
@@ -185,6 +187,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					Studios.insert({
 						_id: protectString('studioMock1'),
 						name: 'Default studio',
+						organizationId: null,
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
@@ -341,6 +344,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		ShowStyleBases.insert({
 			_id: protectString('showStyle0'),
 			name: '',
+			organizationId: null,
 			blueprintId: protectString('showStyle0'),
 			outputLayers: [],
 			sourceLayers: [],

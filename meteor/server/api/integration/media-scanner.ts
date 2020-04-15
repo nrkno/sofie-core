@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { PeripheralDeviceSecurity } from '../../security/peripheralDevice'
 import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { protectString } from '../../../lib/lib'
