@@ -84,6 +84,10 @@ export type MongoFieldSpecifierZeroes<T> = {
 }
 export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
+export type IndexSpecifier<T> = {
+	[P in keyof T]?: -1 | 1 | string
+}
+
 export interface FindOptions<DBInterface> {
 	sort?: SortSpecifier<DBInterface>
 	skip?: number
@@ -152,9 +156,7 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 	upsert (selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], modifier: MongoModifier<DBInterface>, options?: UpsertOptions, callback?: Function): {
 		numberAffected?: number; insertedId?: DBInterface['_id']
 	}
-	_ensureIndex (keys: {
-		[key: string]: number | string
-	} | string, options?: {
+	_ensureIndex (keys: IndexSpecifier<DBInterface> | string, options?: {
 		[key: string]: any
 	}): void
 	_dropIndex (keys: {
