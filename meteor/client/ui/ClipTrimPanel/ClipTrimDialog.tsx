@@ -8,6 +8,7 @@ import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
@@ -55,6 +56,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 				<ClipTrimPanel
 					studioId={this.props.studio._id}
 					playlistId={this.props.playlistId}
+					rundownId={this.props.selectedPiece.rundownId}
 					pieceId={this.props.selectedPiece._id}
 					partId={this.props.selectedPiece.partId}
 					inPoint={this.state.inPoint}

@@ -1763,6 +1763,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									studio={this.props.studio}
 									showStyleBase={this.props.showStyleBase}
 									followLiveSegments={this.state.followLiveSegments}
+									rundownId={segment.rundownId}
 									segmentId={segment._id}
 									playlist={this.props.playlist}
 									liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}

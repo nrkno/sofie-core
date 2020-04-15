@@ -40,8 +40,6 @@ interface RundownPlaylistUi extends RundownPlaylist {
 	showStyles: Array<{ id: ShowStyleBaseId, baseName?: string, variantName?: string }>
 }
 
-
-
 enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
 	TOOLTIP_RUN_MIGRATIONS = 'TOOLTIP_RUN_MIGRATIONS',
@@ -63,7 +61,7 @@ export const LoginPage = translateWithTracker(() => {
 	const user = getUser()
 	if (user) {
 		// If user is logged in, forward to lobby:
-
+		// https://reacttraining.com/react-router/web/api/Redirect
 	}
 
 	return {
@@ -90,6 +88,14 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 
 	render () {
 		const { t } = this.props
+
+		/*
+		location will override the current location in the history stack, like server-side redirects (HTTP 3xx) do.
+
+		<Route exact path="/">
+		{loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
+		</Route>
+		*/
 
 		return <React.Fragment>
 			<div>Login page</div>

@@ -12,10 +12,12 @@ import { TimecodeEncoder } from './TimecodeEncoder'
 import { Settings } from '../../../lib/Settings'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartId } from '../../../lib/collections/Parts'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 export interface IProps {
 	pieceId: PieceId
 	playlistId: RundownPlaylistId
+	rundownId: RundownId
 	partId: PartId
 	studioId: StudioId
 
@@ -80,7 +82,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 	}
 
 	componentDidMount () {
-		this.subscribe(PubSub.pieces, { _id: this.props.pieceId })
+		this.subscribe(PubSub.pieces, { _id: this.props.pieceId, rundownId: this.props.rundownId })
 		this.autorun(() => {
 			if (this.props.piece && this.props.piece.content && this.props.piece.content.fileName) {
 				const piece = this.props.piece

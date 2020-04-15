@@ -26,6 +26,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -58,6 +59,7 @@ export interface PieceUi extends PieceExtended {
 }
 interface IProps {
 	id: string
+	rundownId: RundownId,
 	segmentId: SegmentId,
 	studio: Studio,
 	showStyleBase: ShowStyleBase,
@@ -263,9 +265,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			_id: this.props.segmentId
 		})
 		this.subscribe(PubSub.parts, {
+			rundownId: this.props.rundownId,
 			segmentId: this.props.segmentId
 		})
 		this.subscribe(PubSub.partInstances, {
+			rundownId: this.props.rundownId,
 			segmentId: this.props.segmentId,
 			reset: { $ne: true }
 		})

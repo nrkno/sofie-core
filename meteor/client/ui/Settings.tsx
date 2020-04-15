@@ -52,6 +52,7 @@ interface ISettingsMenuTrackedProps {
 	peripheralDevices: Array<PeripheralDevice>
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
+	// TODO: add organizationId:
 	meteorSubscribe(PubSub.studios, {})
 	meteorSubscribe(PubSub.showStyleBases, {})
 	meteorSubscribe(PubSub.showStyleVariants, {})
@@ -369,6 +370,7 @@ interface ISettingsProps {
 class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	componentWillMount () {
 		// Subscribe to data:
+		// TODO: add organizationId:
 		this.subscribe(PubSub.peripheralDevices, {})
 		this.subscribe(PubSub.studios, {})
 		this.subscribe(PubSub.showStyleBases, {})
