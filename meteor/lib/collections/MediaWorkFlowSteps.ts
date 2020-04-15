@@ -45,8 +45,10 @@ registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaWorkFlowSteps._ensureIndex({
-			// TODO: add deviceId: 1,
-			mediaWorkFlowId: 1
+			deviceId: 1
+		})
+		MediaWorkFlowSteps._ensureIndex({
+			workFlowId: 1
 		})
 		MediaWorkFlowSteps._ensureIndex({
 			status: 1,

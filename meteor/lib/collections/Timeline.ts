@@ -155,8 +155,7 @@ registerCollection('Timeline', Timeline)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({
-			studioId: 1,
-			rundownId: 1,
+			studioId: 1
 		})
 	}
 })

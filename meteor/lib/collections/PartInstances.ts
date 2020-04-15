@@ -126,8 +126,12 @@ Meteor.startup(() => {
 		})
 		PartInstances._ensureIndex({
 			rundownId: 1,
-			partId: 1,
+			// @ts-ignore deep property
+			'part._id': 1,
 			takeCount: 1
+		})
+		PartInstances._ensureIndex({
+			rundownId: 1
 		})
 	}
 })

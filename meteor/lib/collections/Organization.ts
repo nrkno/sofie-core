@@ -24,7 +24,8 @@ export interface UserAdmin {
 	userId: UserId
 	// permissions: // add later
 }
+export type Organization = DBOrganization // to be replaced by a class some time later?
 
-export const Organizations: TransformedCollection<DBOrganization, DBOrganization>
+export const Organizations: TransformedCollection<Organization, DBOrganization>
 	= createMongoCollection<DBOrganization>('organizations')
 registerCollection('Organizations', Organizations)
