@@ -645,7 +645,7 @@ class ServerUserActionAPI implements NewUserActionAPI {
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
 	const eventContext = args[0]
-	return ServerClientAPI.runInUserLog(methodContext, eventContext, methodName, args, () => {
+	return ServerClientAPI.runInUserLog(methodContext, eventContext, methodName, args.slice(1), () => {
 		return fcn.apply(methodContext, args)
 	})
 })
