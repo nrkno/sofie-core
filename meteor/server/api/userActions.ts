@@ -55,7 +55,7 @@ export function setMinimumTakeSpan (span: number) {
 */
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
-export const take = syncFunction((rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> => {
+export const take = syncFunction(function take (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
 	// Called by the user. Wont throw as nasty errors
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
