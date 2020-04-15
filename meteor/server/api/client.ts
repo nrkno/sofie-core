@@ -3,7 +3,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -13,44 +13,13 @@ import { registerClassToMeteorMethods } from '../methods'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../lib/api/methods'
 
-function handleMethodResponse (actionId: UserActionsLogItemId, startTime: number, result: any) {
-	if (
-		ClientAPI.isClientResponseError(result)
-	) {
-		UserActionsLog.update(actionId, {$set: {
-			success: false,
-			doneTime: getCurrentTime(),
-			executionTime: Date.now() - startTime,
-			errorMessage: `ClientResponseError: ${result.error}: ${result.message}`
-		}})
-	} else {
-		UserActionsLog.update(actionId, {$set: {
-			success: true,
-			doneTime: getCurrentTime(),
-			executionTime: Date.now() - startTime
-		}})
-	}
-}
-
-function handleMethodFailure (actionId: UserActionsLogItemId, methodName: string, startTime: number, e: any) {
-	logger.error(`Error in ${methodName}`)
-	let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-	logger.error(errMsg + '\n' + (e.stack || ''))
-	UserActionsLog.update(actionId, {$set: {
-		success: false,
-		doneTime: getCurrentTime(),
-		executionTime: Date.now() - startTime,
-		errorMessage: errMsg
-	}})
-}
-
 export namespace ServerClientAPI {
 	export function clientErrorReport (methodContext: MethodContext, timestamp: Time, errorObject: any, location: string): void {
 		check(timestamp, Number)
 		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${methodContext.connection.clientAddress}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
 	}
 
-	export function runInUserLog<Result> (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => Result): Result {
+	export function runInUserLog<Result> (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => Result | Promise<Result>): Result {
 		let startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
@@ -69,24 +38,41 @@ export namespace ServerClientAPI {
 		try {
 			let result = fcn()
 
+			if (isPromise(result)) {
+				result = waitForPromise(result) as Result
+			}
+
 			// check the nature of the result
 			if (
-				isPromise(result)
+				ClientAPI.isClientResponseError(result)
 			) {
-				result.then((value) => {
-					handleMethodResponse(actionId, startTime, value)
-				}).catch((e) => {
-					handleMethodFailure(actionId, methodName, startTime, e)
-				})
+				UserActionsLog.update(actionId, {$set: {
+					success: false,
+					doneTime: getCurrentTime(),
+					executionTime: Date.now() - startTime,
+					errorMessage: `ClientResponseError: ${result.error}: ${result.message}`
+				}})
 			} else {
-				handleMethodResponse(actionId, startTime, result)
+				UserActionsLog.update(actionId, {$set: {
+					success: true,
+					doneTime: getCurrentTime(),
+					executionTime: Date.now() - startTime
+				}})
 			}
 
 			return result
 		} catch (e) {
 			// console.log('eeeeeeeeeeeeeee')
 			// allow the exception to be handled by the Client code
-			handleMethodFailure(actionId, methodName, startTime, e)
+			logger.error(`Error in ${methodName}`)
+			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+			logger.error(errMsg + '\n' + (e.stack || ''))
+			UserActionsLog.update(actionId, {$set: {
+				success: false,
+				doneTime: getCurrentTime(),
+				executionTime: Date.now() - startTime,
+				errorMessage: errMsg
+			}})
 			throw e
 		}
 	}

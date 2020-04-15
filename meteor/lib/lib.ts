@@ -1171,7 +1171,7 @@ export function isStringOrProtectedString<T extends ProtectedString<any>> (val: 
 	return _.isString(val)
 }
 
-export function isPromise<T extends object> (val: any): val is Promise<T> {
+export function isPromise<T extends any> (val: any): val is Promise<T> {
 	return (_.isObject(val)) && (typeof val.then === 'function') && (typeof val.catch === 'function')
 }
 // const aaa: ProtectedString<'aaaa'> = protectString('asdf')
