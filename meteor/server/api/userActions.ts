@@ -37,6 +37,7 @@ import { PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInst
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
+import { syncFunctionIgnore, syncFunction } from '../codeControl'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -54,8 +55,9 @@ export function setMinimumTakeSpan (span: number) {
 */
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
-export function take (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
+export const take = syncFunction(function take (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
 	// Called by the user. Wont throw as nasty errors
+	const now = getCurrentTime()
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -71,7 +73,7 @@ export function take (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientRes
 			const lastStartedPlayback = _.last(currentPartInstance.part.timings.startedPlayback || []) || 0
 			const lastTake = _.last(currentPartInstance.part.timings.take || []) || 0
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
-			if (getCurrentTime() - lastChange < MINIMUM_TAKE_SPAN) {
+			if (now - lastChange < MINIMUM_TAKE_SPAN) {
 				logger.debug(`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${currentPartInstance._id}: ${getCurrentTime() - lastStartedPlayback}`)
 				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
 				return ClientAPI.responseError(`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`)
@@ -82,7 +84,7 @@ export function take (rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientRes
 		}
 	}
 	return ServerPlayoutAPI.takeNextPart(playlist._id)
-}
+}, 'userActionsTake$0')
 export function setNext (rundownPlaylistId: RundownPlaylistId, nextPartId: PartId | null, setManually?: boolean, timeOffset?: number | undefined): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
 	if (nextPartId) check(nextPartId, String)
@@ -645,7 +647,7 @@ class ServerUserActionAPI implements NewUserActionAPI {
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
 	const eventContext = args[0]
-	return ServerClientAPI.runInUserLog(methodContext, eventContext, methodName, args, () => {
+	return ServerClientAPI.runInUserLog(methodContext, eventContext, methodName, args.slice(1), () => {
 		return fcn.apply(methodContext, args)
 	})
 })
