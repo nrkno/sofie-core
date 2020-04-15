@@ -1,4 +1,4 @@
-import { check } from 'meteor/check'
+import { check } from '../../../lib/check'
 import { PieceGeneric, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'

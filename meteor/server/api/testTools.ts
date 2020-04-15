@@ -10,7 +10,7 @@ import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/
 import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import { updateTimeline } from './playout/timeline'
 
 const deleteRequest = promisify(request.delete)

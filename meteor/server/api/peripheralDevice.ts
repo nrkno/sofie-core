@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
+import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'

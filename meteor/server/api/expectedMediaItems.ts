@@ -1,4 +1,4 @@
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ExpectedMediaItems, ExpectedMediaItem, ExpectedMediaItemId } from '../../lib/collections/ExpectedMediaItems'
 import { Rundowns, RundownId } from '../../lib/collections/Rundowns'

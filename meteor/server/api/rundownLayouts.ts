@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
-import { ClientAPI } from '../../lib/api/client'
+import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownLayoutsAPI, NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
 import { RundownLayouts, RundownLayoutType, RundownLayoutBase, RundownLayoutId } from '../../lib/collections/RundownLayouts'

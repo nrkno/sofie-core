@@ -5,7 +5,7 @@ import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from '../../lib/api/manu
 import { Timeline, TimelineObjGeneric, getTimelineId, TimelineObjType } from '../../lib/collections/Timeline'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { afterUpdateTimeline } from './playout/timeline'
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import { makePromise } from '../../lib/lib'
 import { ServerClientAPI } from './client'
 import { MethodContext } from '../../lib/api/methods'

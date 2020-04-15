@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../lib/api/studios'
 import { Studios, DBStudio, StudioId } from '../../lib/collections/Studios'

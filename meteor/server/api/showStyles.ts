@@ -1,4 +1,4 @@
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'

@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { getHash, formatDateAsTimecode, formatDurationAsTimecode, unprotectString, unprotectObject, unprotectObjectArray, protectString } from '../../../lib/lib'
 import { DBPart, PartId } from '../../../lib/collections/Parts'
-import { check, Match } from 'meteor/check'
+import { check, Match } from '../../../lib/check'
 import { logger } from '../../../lib/logging'
 import {
 	ICommonContext,

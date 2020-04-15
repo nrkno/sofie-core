@@ -1,6 +1,6 @@
 import { MediaWorkFlows, MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
-import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
+import { check } from '../../lib/check'
 import { waitForPromise } from '../../lib/lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'

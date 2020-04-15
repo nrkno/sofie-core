@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { check } from 'meteor/check'
+import { check } from '../../../lib/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'

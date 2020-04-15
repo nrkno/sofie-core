@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import {

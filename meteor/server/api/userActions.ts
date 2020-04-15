@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { check, Match } from 'meteor/check'
+import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import {

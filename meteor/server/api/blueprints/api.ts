@@ -7,7 +7,7 @@ import {
 	BlueprintManifestType,
 	SomeBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
-import { check, Match } from 'meteor/check'
+import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'
 import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
 import { Part, PartId } from '../collections/Parts'

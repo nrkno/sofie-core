@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { check } from 'meteor/check'
+import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart, PartId } from '../../lib/collections/Parts'
 import { Pieces, Piece } from '../../lib/collections/Pieces'

@@ -5,7 +5,7 @@ import { Picker } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import * as bodyParser from 'body-parser'
-import { check, Match } from 'meteor/check'
+import { check, Match } from '../../lib/check'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {
 	Snapshots,
