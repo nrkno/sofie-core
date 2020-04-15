@@ -10,6 +10,7 @@ export function generateFakeBlueprint (
 	return literal<Blueprint>({
 		_id: protectString(id),
 		name: 'Fake blueprint',
+		organizationId: null,
 		code: `{default: (${(codeFcn && codeFcn.toString()) || '() => 5'})()}`,
 		created: 0,
 		modified: 0,

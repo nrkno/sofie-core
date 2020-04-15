@@ -11,6 +11,9 @@ import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { protectString } from '../../../../lib/lib'
+import { MethodContext } from '../../../../lib/api/methods'
+
+const DEFAULT_CONTEXT: MethodContext = {}
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
@@ -48,7 +51,7 @@ describe('Timeline', () => {
 
 		{
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.activateRundownPlaylist(playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, false)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
@@ -63,7 +66,7 @@ describe('Timeline', () => {
 
 		{
 			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(playlistId0)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
@@ -86,7 +89,7 @@ describe('Timeline', () => {
 
 		{
 			// Deactivate rundown:
-			ServerPlayoutAPI.deactivateRundownPlaylist(playlistId0)
+			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 			expect(getPlaylist0()).toMatchObject({
 				active: false,
 				currentPartInstanceId: null,

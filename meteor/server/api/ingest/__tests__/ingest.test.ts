@@ -7,13 +7,13 @@ import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { updatePartRanks, ServerRundownAPI } from '../../rundown'
+import { updatePartRanks, ServerRundownAPI, innerResyncRundown } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString, protectString } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { getSegmentId } from '../lib';
+import { getSegmentId } from '../lib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1144,7 +1144,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
 		const resyncRundown = () => {
 			try {
-				ServerRundownAPI.resyncRundown(rundown._id)
+				innerResyncRundown(rundown)
 			} catch (e) {
 				if (e.toString().match(/does not support the method "reloadRundown"/)) {
 					// This is expected
@@ -1161,7 +1161,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts).toHaveLength(3)
 
 		// Activate the rundown, make data updates and verify that it gets unsynced properly
-		ServerPlayoutAPI.activateRundownPlaylist(playlist._id, true)
+		ServerPlayoutAPI.activateRundownPlaylist({}, playlist._id, true)
 		expect(getRundown().unsynced).toEqual(false)
 
 		RundownInput.dataRundownDelete({}, device2._id, device2.token, rundownData.externalId)
@@ -1170,7 +1170,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 
-		ServerPlayoutAPI.takeNextPart(playlist._id)
+		ServerPlayoutAPI.takeNextPart({}, playlist._id)
 		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 		expect(partInstance).toHaveLength(1)
 		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)

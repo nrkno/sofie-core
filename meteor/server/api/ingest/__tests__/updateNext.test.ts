@@ -8,7 +8,7 @@ import { literal, saveIntoDb, protectString } from '../../../../lib/lib'
 
 import { UpdateNext } from '../updateNext'
 
-import { ServerPlayoutAPI } from '../../playout/playout'
+import { ServerPlayoutAPI, setNextPartInner } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 jest.mock('../../playout/playout')
@@ -266,15 +266,15 @@ describe('Test mos update next part helpers', () => {
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
+		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
 	testInFiber('ensureNextPartIsValid: Missing next part', () => {
 		resetPartIds('mock_part_instance3', 'fake_part')
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(setNextPartInner).toHaveBeenCalledTimes(1)
+		expect(setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
 		// expectNextPartId('mock_part4')
 	})
 	// testInFiber('ensureNextPartIsValid: Missing distant future part', () => {
@@ -289,61 +289,61 @@ describe('Test mos update next part helpers', () => {
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(0)
+		expect(setNextPartInner).toHaveBeenCalledTimes(0)
 	})
 	testInFiber('ensureNextPartIsValid: Missing current and next parts', () => {
 		resetPartIds('fake_part', 'not_real_either')
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part1' }))
+		expect(setNextPartInner).toHaveBeenCalledTimes(1)
+		expect(setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part1' }))
 	})
 	testInFiber('ensureNextPartIsValid: Ensure correct part doesnt change', () => {
 		resetPartIds('mock_part_instance3', 'mock_part_instance4')
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
+		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
 	testInFiber('ensureNextPartIsValid: Ensure manual part doesnt change', () => {
 		resetPartIds('mock_part_instance3', 'mock_part_instance5', true)
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
+		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
 	testInFiber('ensureNextPartIsValid: Ensure non-manual part does change', () => {
 		resetPartIds('mock_part_instance3', 'mock_part_instance5', false)
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(setNextPartInner).toHaveBeenCalledTimes(1)
+		expect(setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
 	})
 	testInFiber('ensureNextPartIsValid: Ensure manual but missing part does change', () => {
 		resetPartIds('mock_part_instance3', 'fake_part', true)
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(setNextPartInner).toHaveBeenCalledTimes(1)
+		expect(setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
 	})
 	testInFiber('ensureNextPartIsValid: Ensure manual but floated part does change', () => {
 		resetPartIds('mock_part_instance7', 'mock_part_instance8', true)
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part9' }))
+		expect(setNextPartInner).toHaveBeenCalledTimes(1)
+		expect(setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part9' }))
 	})
 	testInFiber('ensureNextPartIsValid: Ensure floated part does change', () => {
 		resetPartIds('mock_part_instance7', 'mock_part_instance8', false)
 
 		UpdateNext.ensureNextPartIsValid(getRundownPlaylist())
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part9' }))
+		expect(setNextPartInner).toHaveBeenCalledTimes(1)
+		expect(setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part9' }))
 	})
 
 	testInFiber('afterInsertParts: Did not remove previous', () => {
@@ -370,7 +370,7 @@ describe('Test mos update next part helpers', () => {
 		UpdateNext.afterInsertParts(getRundownPlaylist(), null as any, false)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
-		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
+		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
 
 	testInFiber('afterInsertParts: Next part no longer exists', () => {
@@ -380,7 +380,7 @@ describe('Test mos update next part helpers', () => {
 
 		UpdateNext.afterInsertParts(getRundownPlaylist(), ['p4', 'p5'], true)
 		expect(ensureMock).not.toHaveBeenCalled()
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(setNextPartInner).toHaveBeenCalledWith(expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
 	})
 
 	testInFiber('afterInsertParts: Next part no longer exists, missing new parts', () => {
@@ -390,7 +390,7 @@ describe('Test mos update next part helpers', () => {
 
 		UpdateNext.afterInsertParts(getRundownPlaylist(), ['p99'], true)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
+		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
 
 	testInFiber('afterInsertParts: Next part was not affected', () => {
@@ -400,7 +400,7 @@ describe('Test mos update next part helpers', () => {
 
 		UpdateNext.afterInsertParts(getRundownPlaylist(), ['p3', 'p4'], true)
 		expect(ensureMock).not.toHaveBeenCalled()
-		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
+		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
 
 	testInFiber('afterInsertParts: Next part was not affected2', () => {
@@ -410,7 +410,7 @@ describe('Test mos update next part helpers', () => {
 
 		UpdateNext.afterInsertParts(getRundownPlaylist(), ['p4', 'p5'], true)
 		expect(ensureMock).not.toHaveBeenCalled()
-		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
+		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
 
 })

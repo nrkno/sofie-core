@@ -15,8 +15,11 @@ import { PeripheralDeviceCommands } from '../../../../lib/collections/Peripheral
 import { Pieces } from '../../../../lib/collections/Pieces'
 import { AdLibPieces } from '../../../../lib/collections/AdLibPieces'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { MethodContext } from '../../../../lib/api/methods'
 
 const Timeline = mockupCollection(OrgTimeline)
+
+const DEFAULT_CONTEXT: MethodContext = {}
 
 describe('Playout API', () => {
 	let env: DefaultEnvironment
@@ -77,12 +80,12 @@ describe('Playout API', () => {
 		expect(Timeline.upsert).not.toHaveBeenCalled()
 		expect(Timeline.update).not.toHaveBeenCalled()
 
-		ServerPlayoutAPI.resetRundownPlaylist(playlistId0)
+		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 		const orgRundownData = getAllRundownData(getRundown0())
 
 		{
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.activateRundownPlaylist(playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, false)
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
@@ -104,7 +107,7 @@ describe('Playout API', () => {
 
 		{
 			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(playlistId0)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
 
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
@@ -122,7 +125,7 @@ describe('Playout API', () => {
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
 		// Deactivate rundown:
-		ServerPlayoutAPI.deactivateRundownPlaylist(playlistId0)
+		ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
 			currentPartInstanceId: null,
@@ -138,7 +141,7 @@ describe('Playout API', () => {
 		expect(Timeline.update).toHaveBeenCalled()
 
 		// lastly: reset rundown
-		ServerPlayoutAPI.resetRundownPlaylist(playlistId0)
+		ServerPlayoutAPI.resetRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 
 		// Verify that the data is back to as it was before any of the operations:
 		const rundownData = getAllRundownData(getRundown0())
@@ -168,7 +171,7 @@ describe('Playout API', () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(playlistId0)
+		ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(DEFAULT_CONTEXT, playlistId0)
 
 		expect(getPlaylist0()).toMatchObject({
 			active: true,
