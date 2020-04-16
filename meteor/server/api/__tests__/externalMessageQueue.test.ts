@@ -13,7 +13,7 @@ import {
 	ExternalMessageQueueObjRabbitMQ,
 	ExternalMessageQueueObjSlack
 } from 'tv-automation-sofie-blueprints-integration'
-import { testInFiber, runAllTimers } from '../../../__mocks__/helpers/jest'
+import { testInFiber, runAllTimers, testInFiberOnly } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment
 } from '../../../__mocks__/helpers/database'
@@ -119,9 +119,9 @@ describe('Test external message queue static methods', () => {
 	testInFiber('toggleHold unknown id', () => {
 		try {
 			Meteor.call(ExternalMessageQueueAPIMethods.toggleHold, 'cake')
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
-			expect(e.message).toBe('[404] ExternalMessageQueue "cake" not found on toggleHold')
+			expect(e.message).toBe('[404] ExternalMessage "cake" not found!')
 		}
 	})
 
@@ -144,9 +144,9 @@ describe('Test external message queue static methods', () => {
 	testInFiber('retry unknown id', () => {
 		try {
 			Meteor.call(ExternalMessageQueueAPIMethods.retry, 'is_a_lie')
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
-			expect(e.message).toBe('[404] ExternalMessageQueue "is_a_lie" not found on retry')
+			expect(e.message).toBe('[404] ExternalMessage "is_a_lie" not found!')
 		}
 	})
 

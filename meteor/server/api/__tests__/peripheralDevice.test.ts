@@ -341,12 +341,6 @@ describe('test peripheralDevice general API methods', () => {
 				deviceConfig: []
 			}
 		}
-		try {
-			Meteor.call(PeripheralDeviceAPIMethods.initialize, 'wibbly', device.token, options)
-			fail('expected to throw')
-		} catch (e) {
-			expect(e.message).toBe(`[404] PeripheralDevice "wibbly" not found`)
-		}
 
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.initialize, device._id, device.token.slice(0, -1), options)

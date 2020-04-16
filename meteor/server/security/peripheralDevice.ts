@@ -50,7 +50,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
 	export function anyContent (
-		cred0: Credentials | MethodContext,
+		cred0: Credentials,
 		deviceId: PeripheralDeviceId
 	): {
 		userId: UserId | null,
@@ -61,18 +61,25 @@ export namespace PeripheralDeviceContentWriteAccess {
 	} {
 		triggerWriteAccess()
 		check(deviceId, String)
+
+		const device = PeripheralDevices.findOne(deviceId)
+		if (!cred0.userId && device) {
+			// External = from an external device. For backwards compability, this extra procedure is done:
+			if (device.token !== cred0.token) {
+				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
+			}
+		}
+
 		if (!Settings.enableUserAccounts) {
 			return {
 				userId: null,
 				organizationId: null,
 				deviceId: deviceId,
-				device: PeripheralDevices.findOne(deviceId) || null,
+				device: device || null,
 				cred: cred0
 			}
 		}
 		const cred = resolveCredentials(cred0)
-		if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
-		if (!cred.organization) throw new Meteor.Error(500, `User has no organization`)
 		const access = allowAccessToPeripheralDeviceContent(
 			cred,
 			deviceId
@@ -81,8 +88,8 @@ export namespace PeripheralDeviceContentWriteAccess {
 		if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
 
 		return {
-			userId: cred.user._id,
-			organizationId: cred.organization._id,
+			userId: cred.user ? cred.user._id : null,
+			organizationId: cred.organization ? cred.organization._id : null,
 			deviceId: deviceId,
 			device: access.document,
 			cred: cred

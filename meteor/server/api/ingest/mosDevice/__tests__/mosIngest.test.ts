@@ -112,7 +112,6 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
-
 	testInFiber('mosRoDelete', () => {
 		const roData = mockRO.roCreate()
 		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
@@ -137,7 +136,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoDelete(device._id, device.token, roData.ID))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -185,7 +184,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStatus(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -228,7 +227,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoReadyToAir(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -282,7 +281,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -305,7 +304,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${partExternalId} in rundown ${rundown.externalId} not found`)
 		}
@@ -398,7 +397,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 		}
@@ -421,7 +420,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[500] Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`)
 		}
@@ -443,7 +442,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 	// 	// try {
 	// waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
-	// 	// 	expect(true).toBe(false) // Please throw and don't get here
+	// 	// 	fail('expected to throw')
 	// 	// } catch (e) {
 	// 	// 	expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 	// 	// }
@@ -502,7 +501,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData]))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 		}
@@ -559,7 +558,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, partExternalIds))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Parts fakeId in rundown ${rundown.externalId} were not found`)
 		}
@@ -605,7 +604,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part "${story.ID.toString()}" in rundown "${rundown.externalId}" is missing cached ingest data`)
 		}
@@ -623,7 +622,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/not found/)
 		}
@@ -711,7 +710,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story0))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[400] Cannot swap part ${story0} with itself in rundown ${action.RunningOrderID.toString()}`)
 		}
@@ -729,14 +728,14 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
 		}
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story1, story0))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
 		}
@@ -897,7 +896,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`)
 		}
@@ -919,7 +918,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`)
 		}
@@ -944,7 +943,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`)
 		}

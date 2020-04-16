@@ -495,7 +495,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token, externalId)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -505,13 +505,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, unprotectString(device._id).slice(0, -1), device.token, externalId)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[404] PeripheralDevice "mockDevice" not found')
 		}
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token.slice(0, -1), externalId)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[401] Not allowed access to peripheralDevice')
 		}
@@ -626,7 +626,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, 'wibble', ingestSegment)
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -717,7 +717,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
-			expect(true).toBe(false) // Should throw rather than run this test
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] handleRemovedSegment: Segment "${getSegmentId(rundown._id, segExternalId)}" not found`)
 		}
@@ -731,7 +731,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, 'wibble', segExternalId)
-			expect(true).toBe(false) // Should throw rather than run this test
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -750,7 +750,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, 'wibble', ingestSegment)
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/not found/)
 		}

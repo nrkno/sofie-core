@@ -73,7 +73,7 @@ export namespace StudioContentWriteAccess {
 		if (existingMessage && isProtectedString(existingMessage)) {
 			const messageId = existingMessage
 			const m = ExternalMessageQueue.findOne(messageId)
-			if (!m) throw new Meteor.Error(404, `Snapshot "${messageId}" not found!`)
+			if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 			existingMessage = m
 		}
 		return { ...anyContent(cred0, existingMessage.studioId), message: existingMessage }

@@ -63,13 +63,13 @@ describe('Test blueprint config', () => {
 
 			try {
 				expect(ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier, true)).toEqual('undefined_extra')
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[404] Ref \"\${studio.one.two}\": Studio \"one\" not found`)
 			}
 			try {
 				expect(ConfigRef.retrieveRefs('${showStyle.one.two}_extra', modifier, true)).toEqual('undefined_extra')
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[404] Ref \"\${showStyle.one.two}\": Showstyle variant \"one\" not found`)
 			}

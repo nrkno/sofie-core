@@ -36,7 +36,7 @@ export function triggerWriteAccessBecauseNoCheckNecessary () {
 
 
 Meteor.startup(() => {
-	if (!Meteor.isProduction) {
+	if (!Meteor.isProduction && !Meteor.isTest) {
 		Meteor.setTimeout(() => {
 			console.log('Security check: Verifying methods...')
 			verifyAllMethods()
@@ -57,7 +57,7 @@ Meteor.startup(() => {
 	}
 })
 
-async function verifyAllMethods () {
+export async function verifyAllMethods () {
 	// Verify all Meteor methods
 	let ok = true
 	for (let methodName of AllMeteorMethods) {

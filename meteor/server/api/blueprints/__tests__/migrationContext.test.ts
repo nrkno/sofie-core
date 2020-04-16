@@ -94,7 +94,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.insertMapping('', rawMapping)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Mapping id "" is invalid`)
 				}
@@ -121,7 +121,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.insertMapping('mapping2', rawMapping)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] Mapping "mapping2" cannot be inserted as it already exists`)
 				}
@@ -174,7 +174,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.updateMapping('', { device: TSR.DeviceType.HYPERDECK })
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] Mapping "" cannot be updated as it does not exist`)
 				}
@@ -190,7 +190,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.updateMapping('mapping1', rawMapping)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] Mapping "mapping1" cannot be updated as it does not exist`)
 				}
@@ -275,7 +275,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setConfig('', 34)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Config id "" is invalid`)
 				}
@@ -493,7 +493,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT } as any)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
 				}
@@ -508,7 +508,7 @@ describe('Test blueprint migrationContext', () => {
 
 			// 	try {
 			// 		ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT })
-			// 		expect(true).toBe(false) // Please throw and don't get here
+			// 		fail('expected to throw')
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
 			// 	}
@@ -524,7 +524,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.insertDevice('device01', { type: TSR.DeviceType.CASPARCG } as any)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device01" cannot be inserted as it already exists`)
 				}
@@ -557,7 +557,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
 				}
@@ -572,7 +572,7 @@ describe('Test blueprint migrationContext', () => {
 
 			// 	try {
 			// 		ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
-			// 		expect(true).toBe(false) // Please throw and don't get here
+			// 		fail('expected to throw')
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
 			// 	}
@@ -588,7 +588,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.updateDevice('device22', { type: TSR.DeviceType.ATEM })
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device22" cannot be updated as it does not exist`)
 				}
@@ -625,7 +625,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.removeDevice('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
 				}
@@ -640,7 +640,7 @@ describe('Test blueprint migrationContext', () => {
 
 			// 	try {
 			// 		ctx.removeDevice('', { type: TSR.DeviceType.ABSTRACT })
-			// 		expect(true).toBe(false) // Please throw and don't get here
+			// 		fail('expected to throw')
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
 			// 	}
@@ -745,7 +745,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.getVariant('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Variant id "" is invalid`)
 				}
@@ -765,7 +765,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertVariant('', {
 						name: 'test2'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Variant id "" is invalid`)
 				}
@@ -781,7 +781,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertVariant('variant1', {
 						name: 'test2'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					// TODO - tidy up the error type
 					// expect(e.message).toBe(`[500] Variant id "variant1" already exists`)
@@ -818,7 +818,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateVariant('', {
 						name: 'test12'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Variant id "" is invalid`)
 				}
@@ -834,7 +834,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateVariant('variant11', {
 						name: 'test2'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					// TODO - tidy up the error type
 					// expect(e.message).toBe(`[404] Variant id "variant1" does not exist`)
@@ -865,7 +865,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.removeVariant('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Variant id "" is invalid`)
 				}
@@ -907,7 +907,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.getSourceLayer('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
 				}
@@ -941,7 +941,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
 				}
@@ -960,7 +960,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] SourceLayer "vt0" already exists`)
 				}
@@ -1000,7 +1000,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
 				}
@@ -1019,7 +1019,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						type: SourceLayerType.UNKNOWN
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] SourceLayer "fake99" cannot be updated as it does not exist`)
 				}
@@ -1059,7 +1059,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.removeSourceLayer('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] SourceLayer id "" is invalid`)
 				}
@@ -1106,7 +1106,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.getOutputLayer('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
 				}
@@ -1136,7 +1136,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						isPGM: true
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
 				}
@@ -1155,7 +1155,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						isPGM: true
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] OutputLayer "pgm" already exists`)
 				}
@@ -1195,7 +1195,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						isPGM: true
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
 				}
@@ -1214,7 +1214,7 @@ describe('Test blueprint migrationContext', () => {
 						_rank: 10,
 						isPGM: true
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] OutputLayer "fake99" cannot be updated as it does not exist`)
 				}
@@ -1253,7 +1253,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.removeOutputLayer('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] OutputLayer id "" is invalid`)
 				}
@@ -1329,7 +1329,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setBaseConfig('', 34)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Config id "" is invalid`)
 				}
@@ -1365,7 +1365,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setBaseConfig('confUndef', undefined as any)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[400] setBaseConfig \"confUndef\": value is undefined`)
 				}
@@ -1402,7 +1402,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setBaseConfig('conf1', undefined as any)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[400] setBaseConfig \"conf1\": value is undefined`)
 				}
@@ -1467,7 +1467,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.getVariantConfig('', 'conf1')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`)
 				}
@@ -1477,7 +1477,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.getVariantConfig('fake_variant', 'conf1')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] ShowStyleVariant \"fake_variant\" not found`)
 				}
@@ -1510,7 +1510,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setVariantConfig('', 'conf1', 5)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`)
 				}
@@ -1520,7 +1520,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setVariantConfig('fake_variant', 'conf1', 5)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] ShowStyleVariant \"fake_variant\" not found`)
 				}
@@ -1532,7 +1532,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setVariantConfig('configVariant', '', 34)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] Config id "" is invalid`)
 				}
@@ -1564,7 +1564,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setVariantConfig('configVariant', 'confUndef', undefined as any)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[400] setVariantConfig \"configVariant\", \"confUndef\": value is undefined`)
 				}
@@ -1597,7 +1597,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.setVariantConfig('configVariant', 'conf1', undefined as any)
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[400] setVariantConfig \"configVariant\", \"conf1\": value is undefined`)
 				}
@@ -1611,7 +1611,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.removeVariantConfig('', 'conf1')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] ShowStyleVariant \"\" not found`)
 				}
@@ -1621,7 +1621,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.removeVariantConfig('fake_variant', 'conf1')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] ShowStyleVariant \"fake_variant\" not found`)
 				}
@@ -1676,7 +1676,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.getRuntimeArgument('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`)
 				}
@@ -1706,7 +1706,7 @@ describe('Test blueprint migrationContext', () => {
 						property: 'bcd',
 						value: '1'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`)
 				}
@@ -1725,7 +1725,7 @@ describe('Test blueprint migrationContext', () => {
 						property: 'bcd',
 						value: '1'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] RuntimeArgument "ra0" already exists`)
 				}
@@ -1764,7 +1764,7 @@ describe('Test blueprint migrationContext', () => {
 						hotkeys: 'new',
 						value: '9'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`)
 				}
@@ -1782,7 +1782,7 @@ describe('Test blueprint migrationContext', () => {
 						hotkeys: 'new',
 						value: '9'
 					})
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[404] RuntimeArgument "fake99" cannot be updated as it does not exist`)
 				}
@@ -1822,7 +1822,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.removeRuntimeArgument('')
-					expect(true).toBe(false) // Please throw and don't get here
+					fail('expected to throw')
 				} catch (e) {
 					expect(e.message).toBe(`[500] RuntimeArgument id "" is invalid`)
 				}

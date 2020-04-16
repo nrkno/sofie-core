@@ -351,7 +351,7 @@ postRoute.route('/devices/:deviceId/:token/uploadCredentials', (params, req: Inc
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 		if (!token) throw new Meteor.Error(400, `parameter token is missing`)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, {})
 
 		let url = parseUrl(req.url || '', true)
 

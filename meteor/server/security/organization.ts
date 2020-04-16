@@ -54,12 +54,12 @@ export namespace OrganizationContentWriteAccess {
 		// "All mediaWOrkflows in all devices of an organization"
 		return anyContent(cred0, { organizationId: organizationId })
 	}
-	export function blueprint (cred0: Credentials, existingBlueprint?: Blueprint | BlueprintId) {
+	export function blueprint (cred0: Credentials, existingBlueprint?: Blueprint | BlueprintId, allowMissing?: boolean) {
 		triggerWriteAccess()
 		if (existingBlueprint && isProtectedString(existingBlueprint)) {
 			const blueprintId = existingBlueprint
 			existingBlueprint = Blueprints.findOne(blueprintId)
-			if (!existingBlueprint) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found!`)
+			if (!existingBlueprint && !allowMissing) throw new Meteor.Error(404, `Blueprint "${blueprintId}" not found!`)
 		}
 		return { ...anyContent(cred0, existingBlueprint), blueprint: existingBlueprint }
 	}

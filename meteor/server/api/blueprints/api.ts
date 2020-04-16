@@ -16,6 +16,8 @@ import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../../security/organization'
 import { SystemWriteAccess } from '../../security/system'
+import { OrganizationId } from '../../../lib/collections/Organization'
+import { Credentials } from '../../security/lib/credentials'
 
 export function insertBlueprint (methodContext: MethodContext, type?: BlueprintManifestType, name?: string): BlueprintId {
 	const { organizationId } = OrganizationContentWriteAccess.blueprint(methodContext)
@@ -47,23 +49,47 @@ export function insertBlueprint (methodContext: MethodContext, type?: BlueprintM
 }
 export function removeBlueprint (methodContext: MethodContext, blueprintId: BlueprintId) {
 	check(blueprintId, String)
-	OrganizationContentWriteAccess.blueprint(methodContext, blueprintId)
+	OrganizationContentWriteAccess.blueprint(methodContext, blueprintId, true)
+	if (!blueprintId) throw new Meteor.Error(404, `Blueprint id "${blueprintId}" was not found`)
 
 	Blueprints.remove(blueprintId)
 	removeSystemStatus('blueprintCompability_' + blueprintId)
 }
 
-export function uploadBlueprint (blueprintId: BlueprintId, body: string, blueprintName?: string, ignoreIdChange?: boolean): Blueprint {
+export function uploadBlueprint (context: Credentials, blueprintId: BlueprintId, body: string, blueprintName?: string, ignoreIdChange?: boolean): Blueprint {
 	check(blueprintId, String)
 	check(body, String)
 	check(blueprintName, Match.Maybe(String))
 
 	// TODO: add access control here
-	const { organizationId, blueprint } = OrganizationContentWriteAccess.blueprint(methodContext, blueprintId)
+	const { organizationId, blueprint } = OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
-	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
+	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
+}
+/** Only to be called from internal functions */
+export function internalUploadBlueprint (
+	blueprintId: BlueprintId,
+	body: string,
+	blueprintName?: string,
+	ignoreIdChange?: boolean,
+): Blueprint {
+	const organizationId = null
+	const blueprint = Blueprints.findOne(blueprintId)
+
+	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
+}
+export function innerUploadBlueprint (
+	organizationId: OrganizationId | null,
+	blueprint: Blueprint | undefined,
+	blueprintId: BlueprintId,
+	body: string,
+	blueprintName?: string,
+	ignoreIdChange?: boolean,
+): Blueprint {
+
+	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	const newBlueprint: Blueprint = {
 		_id: blueprintId,

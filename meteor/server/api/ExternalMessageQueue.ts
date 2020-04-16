@@ -242,7 +242,7 @@ function toggleHold (context: MethodContext, messageId: ExternalMessageQueueObjI
 	check(messageId, String)
 	const access = StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on toggleHold`)
+	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
 	ExternalMessageQueue.update(messageId, {$set: {
 		hold: !m.hold
@@ -252,7 +252,7 @@ function retry (context: MethodContext, messageId: ExternalMessageQueueObjId): v
 	check(messageId, String)
 	const access = StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on retry`)
+	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
 	let tryGap = getCurrentTime() - 1 * 60 * 1000
 	ExternalMessageQueue.update(messageId, {$set: {

@@ -564,12 +564,12 @@ export function generateRestartToken (context: MethodContext) {
 	)
 }
 
-export function restartCore (context: MethodContext, restartToken: string): ClientAPI.ClientResponseSuccess<string> {
-	check(restartToken, String)
+export function restartCore (context: MethodContext, hashedRestartToken: string): ClientAPI.ClientResponseSuccess<string> {
+	check(hashedRestartToken, String)
 
 	SystemWriteAccess.system(context)
 
-	if (restartToken !== getHash(RESTART_SALT + restartToken)) {
+	if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
 		throw new Meteor.Error(401, `Restart token is invalid`)
 	}
 

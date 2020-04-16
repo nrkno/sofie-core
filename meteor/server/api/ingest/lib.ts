@@ -12,8 +12,8 @@ import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDev
 import { MethodContext } from '../../../lib/api/methods'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
-export function checkAccessAndGetPeripheralDevice (deviceId: PeripheralDeviceId, token?: string, context?: MethodContext): PeripheralDevice {
-	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context && context.userId, token }, deviceId)
+export function checkAccessAndGetPeripheralDevice (deviceId: PeripheralDeviceId, token: string | undefined, context: MethodContext): PeripheralDevice {
+	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 	const peripheralDevice = access.device
 	if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 

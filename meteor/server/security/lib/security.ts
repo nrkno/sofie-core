@@ -169,7 +169,10 @@ export function allowAccessToPeripheralDevice (cred0: Credentials | ResolvedCred
 	}
 }
 
-export function allowAccessToPeripheralDeviceContent (cred0: Credentials | ResolvedCredentials, deviceId: MongoQueryKey<PeripheralDeviceId>): Access<PeripheralDevice | null> {
+export function allowAccessToPeripheralDeviceContent (
+	cred0: Credentials | ResolvedCredentials,
+	deviceId: MongoQueryKey<PeripheralDeviceId>
+): Access<PeripheralDevice | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!deviceId) return noAccess('deviceId missing')
 	if (!isProtectedString(deviceId)) return noAccess('deviceId is not a string')

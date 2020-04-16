@@ -275,16 +275,18 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 			_rundownVersionHash: ''
 		}))
 	}
-	updateVariant (variantId: string, variant: Partial<ShowStyleVariantPart>): void {
+	updateVariant (variantId: string, newVariant: Partial<ShowStyleVariantPart>): void {
 		check(variantId, String)
 		if (!variantId) {
 			throw new Meteor.Error(500, `Variant id "${variantId}" is invalid`)
 		}
-
-		ShowStyleVariants.update({
+		const variant = ShowStyleVariants.findOne({
 			_id: this.getProtectedVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id,
-		}, { $set: variant })
+		})
+		if (!variant) throw new Meteor.Error(404, `Variant "${variantId}" not found`)
+
+		ShowStyleVariants.update(variant._id, { $set: newVariant })
 	}
 	removeVariant (variantId: string): void {
 		check(variantId, String)

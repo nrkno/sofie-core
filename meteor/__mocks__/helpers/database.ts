@@ -38,7 +38,7 @@ import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants, ShowStyleVaria
 import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import { uploadBlueprint } from '../../server/api/blueprints/api'
+import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
@@ -248,7 +248,7 @@ export function setupMockStudioBlueprint (showStyleBaseId: ShowStyleBaseId): Blu
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + (dbI++))
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export function setupMockShowStyleBlueprint (showStyleVariantId: ShowStyleVariantId): Blueprint {
 
@@ -357,7 +357,7 @@ export function setupMockShowStyleBlueprint (showStyleVariantId: ShowStyleVarian
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + (dbI++))
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: ShowStyleBaseId
