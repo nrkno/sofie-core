@@ -162,7 +162,7 @@ interface WithTimingComponentState {
 }
 const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
 	isHighResolution: false
-})(class extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {
+})(class WithTimingComponent extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {
 	_refreshTimer: number | undefined
 
 	constructor (props: WithTiming<WithTimingComponentProps>) {

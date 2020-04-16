@@ -252,7 +252,7 @@ export enum RundownViewKbdShortcuts {
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
-class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
+class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
 		const { t } = this.props
 
@@ -377,7 +377,7 @@ interface IRundownHeaderState {
 	errorMessage?: string
 }
 
-const RundownHeader = translate()(class extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
+const RundownHeader = translate()(class RundownHeader extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 	bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any

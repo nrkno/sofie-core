@@ -21,7 +21,7 @@ interface IProps {
 interface IState {
 }
 
-export const SegmentContextMenu = translate()(class extends React.Component<Translated<IProps>, IState> {
+export const SegmentContextMenu = translate()(class SegmentContextMenu extends React.Component<Translated<IProps>, IState> {
 	constructor (props: Translated<IProps>) {
 		super(props)
 	}

@@ -47,7 +47,7 @@ interface IPropsHeader {
 	scrollWidth: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
-export const SourceLayerItemContainer = class extends MeteorReactComponent<IPropsHeader> {
+export const SourceLayerItemContainer = class SourceLayerItemContainer extends MeteorReactComponent<IPropsHeader> {
 	private mediaObjectSub: Meteor.SubscriptionHandle
 	private statusComp: Tracker.Computation
 	private objId: string

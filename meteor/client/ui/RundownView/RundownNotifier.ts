@@ -576,7 +576,7 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 }
 
-export const RundownNotifier = class extends React.Component<IProps> {
+export const RundownNotifier = class RundownNotifier extends React.Component<IProps> {
 	private notifier: RundownViewNotifier
 
 	constructor (props: IProps) {
