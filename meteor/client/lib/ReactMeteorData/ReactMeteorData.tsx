@@ -200,9 +200,7 @@ export function withTracker<IProps, IState, TrackedProps> (
 
 	return (WrappedComponent) => {
 		// return ''
-		return class extends ReactMeteorComponentWrapper<IProps, IState> {
-			displayName: string = `ReactMeteorComponentWrapper(${WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'})`
-
+		const HOC = class extends ReactMeteorComponentWrapper<IProps, IState> {
 			getMeteorData () {
 				return expandedOptions.getMeteorData.call(this, this.props)
 			}
@@ -221,6 +219,8 @@ export function withTracker<IProps, IState, TrackedProps> (
 				return content
 			}
 		}
+		HOC['displayName'] = `ReactMeteorComponentWrapper(${WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'})`
+		return HOC
 	}
 }
 export function translateWithTracker<IProps, IState, TrackedProps> (
