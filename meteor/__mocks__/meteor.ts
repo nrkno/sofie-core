@@ -56,13 +56,6 @@ const $ = {
 	get orgClearInterval (): Function { return orgClearInterval },
 }
 
-const mockThis = {
-	userId: 1,
-	connection: {
-		clientAddress: '1.1.1.1'
-	}
-}
-
 export namespace MeteorMock {
 
 	export let isTest: boolean = true
@@ -87,9 +80,17 @@ export namespace MeteorMock {
 	export function userId (): string | undefined {
 		return mockUser ? mockUser._id : undefined
 	}
+	function getMethodContext () {
+		return {
+			userId: mockUser ? mockUser._id : undefined,
+			connection: {
+				clientAddress: '1.1.1.1'
+			}
+		}
+	}
 	export class Error {
 		private _stack?: string
-		constructor (public errorCode: number, public reason?: string) {
+		constructor (public error: number, public reason?: string) {
 			const e = new $.Error('')
 			let stack: string = e.stack || ''
 
@@ -107,11 +108,20 @@ export namespace MeteorMock {
 		get message () {
 			return this.toString()
 		}
+		get details () {
+			return undefined
+		}
+		get errorType () {
+			return 'Meteor.Error'
+		}
+		get isClientSafe () {
+			return false
+		}
 		get stack () {
 			return this._stack
 		}
 		toString () {
-			return `[${this.errorCode}] ${this.reason}`
+			return `[${this.error}] ${this.reason}` // TODO: This should be changed to "${this.reason} [${this.error}]"
 		}
 	}
 	export function methods (methods: {[name: string]: Function}) {
@@ -133,7 +143,7 @@ export namespace MeteorMock {
 
 			this.defer(() => {
 				try {
-					const result = fcn.call(mockThis, ...args)
+					const result = fcn.call(getMethodContext(), ...args)
 					Promise.resolve(result)
 					.then(result => {
 						callback(undefined, result)
@@ -147,7 +157,7 @@ export namespace MeteorMock {
 			})
 		} else {
 			return waitForPromise(Promise.resolve(
-				fcn.call(mockThis, ...args)
+				fcn.call(getMethodContext(), ...args)
 			))
 		}
 
@@ -159,7 +169,7 @@ export namespace MeteorMock {
 		throwStubExceptions?: boolean;
 	}, asyncCallback?: Function): any {
 		// ?
-		mockMethods[methodName].call(mockThis, ...args)
+		mockMethods[methodName].call(getMethodContext(), ...args)
 	}
 	export function absoluteUrl (path?: string): string {
 		return path + '' // todo
@@ -224,6 +234,10 @@ export namespace MeteorMock {
 			return returnValue
 		}
 	}
+	export let users: any = undefined
+
+	// export let users = new Mongo.Collection('Meteor.users')
+	// export const users = {}
 	/*
 	export function subscribe () {
 
@@ -237,6 +251,12 @@ export namespace MeteorMock {
 		_.each(mockStartupFunctions, fcn => {
 			fcn()
 		})
+	}
+	export function mockLoginUser (user: Meteor.User) {
+		mockUser = user
+	}
+	export function mockSetUsersCollection (usersCollection) {
+		users = usersCollection
 	}
 
 	// locally defined function here, so there are no import to the rest of the code

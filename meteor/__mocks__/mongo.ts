@@ -34,7 +34,7 @@ export namespace MongoMock {
 		private _isMock: true = true // used in test to check that it's a mock
 		private observers: ObserverEntry[] = []
 
-		constructor (localName: string, options: any) {
+		constructor (localName: string, options?: any) {
 			this.localName = localName
 			this._options = options || {}
 		}
@@ -292,3 +292,5 @@ export function setup () {
 		Mongo: MongoMock
 	}
 }
+
+MeteorMock.mockSetUsersCollection(new MongoMock.Collection('Meteor.users'))

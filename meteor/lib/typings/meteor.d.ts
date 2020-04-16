@@ -163,3 +163,16 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 		[key: string]: number | string
 	} | string): void
 }
+
+export interface MeteorError {
+	isClientSafe: boolean
+	/** Error code. Example: 500 */
+	error: number
+	/** "Error reason" */
+	reason: string
+	/** "Error reason [500]" */
+	message: string
+	/** "Meteor.Error" */
+	errorType: string
+	details: string
+}
