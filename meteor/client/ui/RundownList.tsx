@@ -395,7 +395,6 @@ class RundownList extends MeteorReactComponent<Translated<IRundownsListProps>, I
 										?configure=1
 									</a>
 								</Tooltip>
-								{this.tooltipStep}
 							</li>
 							<li>
 								{t('Then, run the migrations script:')}&nbsp;
