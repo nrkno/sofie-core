@@ -21,11 +21,11 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
 import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId, getAllNotesForSegmentAndParts } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
@@ -203,7 +203,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					let rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
-							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.origin.rundownId + '_' + note.message + '_' + note.type
+							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
 							const newNotification = new Notification(
 								rundownNoteId,
 								note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
@@ -305,28 +305,18 @@ class RundownViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 
 		function getSegmentPartNotes (rRundownIds: RundownId[]) {
-			let notes: Array<PartNote & {rank: number}> = []
 			const segments = Segments.find({
 				rundownId: {
 					$in: rRundownIds
 				}
 			}, { sort: { _rank: 1 } }).fetch()
-
-			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
-				rank: segment._rank,
-				notes: segment.notes
-			} ])) as { [key: string ]: { notes: PartNote[], rank: number } }
-			Parts.find({
+			
+			const parts = Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 } }).map(part => segmentNotes[unprotectString(part.segmentId)] && segmentNotes[unprotectString(part.segmentId)].notes.push(...part.notes || [], ...part.getInvalidReasonNotes()))
-			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
-				return o.notes.map(note => _.extend(note, {
-					rank: o.rank
-				}))
-			})))
+			}, { sort: { _rank: 1 } }).fetch()
 
-			return notes
+			return getAllNotesForSegmentAndParts(segments, parts)
 		}
 
 		const rRundowns = reactiveData.getRRundowns(playlistId)
@@ -336,7 +326,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			const rundownIds = rRundowns.get().map(r => r._id)
 			// console.log('RundownViewNotifier 4')
 			const newNoteIds: Array<string> = []
-			getSegmentPartNotes(rundownIds).forEach((item: PartNote & {rank: number}) => {
+			getSegmentPartNotes(rundownIds).forEach((item: TrackedNote) => {
 				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{

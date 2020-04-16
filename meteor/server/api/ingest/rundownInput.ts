@@ -278,7 +278,6 @@ function updateRundownFromIngestData (
 		message: note.message,
 		origin: {
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
-			rundownId: rundownId,
 		}
 	}))
 
@@ -859,8 +858,6 @@ function generateSegmentContents (
 		message: note.message,
 		origin: {
 			name: '', // TODO
-			rundownId,
-			segmentId
 		}
 	}))
 
@@ -888,9 +885,6 @@ function generateSegmentContents (
 			message: note.message,
 			origin: {
 				name: '', // TODO
-				rundownId,
-				segmentId,
-				partId
 			}
 		}))
 

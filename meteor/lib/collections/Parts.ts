@@ -173,9 +173,6 @@ export class Part implements DBPart {
 				message: this.invalidReason.title + (this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
 				origin: {
 					name: this.title,
-					partId: this._id,
-					segmentId: this.segmentId,
-					rundownId: this.rundownId
 				}
 			}
 		] : []
@@ -197,9 +194,6 @@ export class Part implements DBPart {
 						type: NoteType.WARNING,
 						origin: {
 							name: 'Media Check',
-							rundownId: this.rundownId,
-							segmentId: this.segmentId,
-							partId: this._id,
 							pieceId: piece._id
 						},
 						message: st.message || ''
