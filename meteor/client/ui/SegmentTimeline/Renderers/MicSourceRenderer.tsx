@@ -18,7 +18,7 @@ interface IProps extends ICustomLayerItemProps {
 interface IState {
 }
 
-export const MicSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export const MicSourceRenderer = translate()(class MicSourceRenderer extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 
 	itemPosition: number
 	itemWidth: number

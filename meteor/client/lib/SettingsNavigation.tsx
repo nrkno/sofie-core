@@ -87,7 +87,7 @@ function wrapSettingsNavigation (newClass) {
 	})(newClass)
 }
 
-const Blueprint = wrapSettingsNavigation(translate()(class extends SettingsNavigationBase {
+const Blueprint = wrapSettingsNavigation(translate()(class Blueprint extends SettingsNavigationBase {
 	constructor (props) {
 		super(props)
 	}
@@ -127,7 +127,7 @@ const Blueprint = wrapSettingsNavigation(translate()(class extends SettingsNavig
 	}
 }))
 
-const ShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavigationBase {
+const ShowStyle = wrapSettingsNavigation(translate()(class ShowStyle extends SettingsNavigationBase {
 	constructor (props) {
 		super(props)
 	}
@@ -146,7 +146,7 @@ const ShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavig
 	}
 }))
 
-const NewShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavigationBase {
+const NewShowStyle = wrapSettingsNavigation(translate()(class NewShowStyle extends SettingsNavigationBase {
 	constructor (props) {
 		super(props)
 	}

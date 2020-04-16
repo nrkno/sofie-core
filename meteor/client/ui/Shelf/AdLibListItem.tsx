@@ -52,7 +52,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 	return {
 		status
 	}
-})(class extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
+})(class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
 	private objId: string
 
 	constructor (props: IListViewItemProps) {

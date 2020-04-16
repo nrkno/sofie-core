@@ -244,7 +244,7 @@ export const RundownList = translateWithTracker(() => {
 		})
 	}
 })(
-class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
+class RundownList extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
 	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 
 	constructor (props) {
@@ -502,6 +502,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 												{t('Status Messages:')}
 												<ul>
 													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
+														// console.log(message)
 														return (
 															<li key={i}>
 																{message}

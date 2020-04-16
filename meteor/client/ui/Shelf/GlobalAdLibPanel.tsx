@@ -52,7 +52,7 @@ interface IListViewStateHeader {
 	}
 }
 
-const AdLibListView = translate()(class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
+const AdLibListView = translate()(class AdLibListView extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
 	table: HTMLTableElement
 
 	constructor (props: Translated<IListViewPropsHeader>) {
