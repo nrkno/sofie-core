@@ -23,7 +23,9 @@ export function getLookeaheadObjects (playoutData: RundownPlaylistPlayoutData, s
 		obj.priority = priority
 		obj.enable = enable
 		obj.isLookahead = true
-		delete obj.keyframes
+		if (obj.keyframes) {
+			obj.keyframes = obj.keyframes.filter(kf => (kf as any).preserveForLookahead)
+		}
 		delete obj.inGroup // force it to be cleared
 
 		if (mapping.lookahead === LookaheadMode.PRELOAD) {
