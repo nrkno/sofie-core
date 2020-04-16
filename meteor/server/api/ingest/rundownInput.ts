@@ -893,7 +893,6 @@ function generateSegmentContents (
 				partId
 			}
 		}))
-		_.each(notes, note => note.origin.partId = partId)
 
 		const existingPart = _.find(existingParts, p => p._id === partId)
 		const part = literal<DBPart>({

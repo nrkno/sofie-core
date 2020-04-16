@@ -206,11 +206,11 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 
 	/** NotesContext */
-	error (message: string) {
-		this.notesContext.error(message)
+	error (message: string, trackingId?: string) {
+		this.notesContext.error(message, trackingId)
 	}
-	warning (message: string) {
-		this.notesContext.warning(message)
+	warning (message: string, trackingId?: string) {
+		this.notesContext.warning(message, trackingId)
 	}
 	getHashId (str: string, isNotUnique?: boolean) {
 		return this.notesContext.getHashId(str, isNotUnique)
