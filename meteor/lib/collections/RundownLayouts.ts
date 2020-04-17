@@ -44,6 +44,7 @@ export interface RundownLayoutElementBase {
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.EXTERNAL_FRAME
 	url: string
+	scale: number
 }
 
 /**

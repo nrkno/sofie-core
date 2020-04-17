@@ -241,6 +241,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 	}
 
 	render () {
+		const scale = this.props.panel.scale || 1
 		return <div className='external-frame-panel'
 			style={
 				_.extend(
@@ -256,7 +257,12 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			ref={this.setElement}
 			className='external-frame-panel__iframe'
 			src={this.props.panel.url}
-			sandbox='allow-forms allow-popups allow-scripts'></iframe>
+			sandbox='allow-forms allow-popups allow-scripts'
+			style={{
+				transform: `scale(${scale})`,
+				width: `calc(100% / ${scale})`,
+				height: `calc(100% / ${scale})`,
+			}}></iframe>
 		</div> 
 	}
 }
