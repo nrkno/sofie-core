@@ -13,6 +13,10 @@ export interface MultiSelectEvent {
 }
 
 interface IProps {
+	/**
+	 * A value of type string results in a checkbox with the key becoming the label.
+	 * A value of type string[] results in a group of checkboxes with the key becoming the header of the group.
+	 */
 	availableOptions: _.Dictionary<string | string[]>
 	placeholder?: string
 	className?: string
