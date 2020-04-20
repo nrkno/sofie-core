@@ -242,6 +242,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 	}
 
 	render () {
+		const panel = this.props.panel as DashboardLayoutExternalFrame
 		return <div className='external-frame-panel'
 			style={
 				_.extend(
@@ -257,7 +258,12 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			ref={this.setElement}
 			className='external-frame-panel__iframe'
 			src={this.props.panel.url}
-			sandbox='allow-forms allow-popups allow-scripts allow-same-origin'></iframe>
+			sandbox='allow-forms allow-popups allow-scripts allow-same-origin'
+			style={{
+				transform: `scale(${panel.scale})`,
+				width: `calc(100% / ${panel.scale})`,
+				height: `calc(100% / ${panel.scale})`,
+			}}></iframe>
 		</div>
 	}
 }

@@ -744,6 +744,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Scale')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.scale`}
+								obj={item}
+								type='float'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
 					{isDashboardLayout &&
 						<React.Fragment>
 							<div className='mod mvs mhs'>

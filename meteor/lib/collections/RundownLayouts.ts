@@ -96,6 +96,7 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 	y: number
 	width: number
 	height: number
+	scale: number
 }
 
 export interface DashboardLayoutMultiView extends RundownLayoutMultiView {
