@@ -17,5 +17,6 @@ RUN npm install
 # DEPLOY IMAGE
 FROM node:8.11.4-slim
 COPY --from=0 /opt/bundle /opt/core
+COPY docker-entrypoint.sh /opt
 WORKDIR /opt/core/
-CMD ["node", "main.js"]
+CMD ["/opt/docker-entrypoint.sh"]
