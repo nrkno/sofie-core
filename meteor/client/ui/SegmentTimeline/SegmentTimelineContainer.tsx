@@ -25,7 +25,8 @@ import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/vi
 import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { Parts } from '../../../lib/collections/Parts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -104,6 +105,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 	const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
+
+	// console.log(`${props.segmentId}: running tracker`)
 
 	// We need the segment to do anything
 	if (!segment) {
@@ -211,8 +214,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	) {
 		return true
 	}
-
-	return false
 })(class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
@@ -259,6 +260,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentWillMount () {
+		console.log(`Subscribing to: ${this.props.segmentId}`)
 		this.subscribe(PubSub.segments, {
 			_id: this.props.segmentId
 		})
@@ -267,7 +269,31 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		})
 		this.subscribe(PubSub.partInstances, {
 			segmentId: this.props.segmentId,
-			reset: { $ne: true }
+			reset: {
+				$ne: true
+			}
+		})
+		this.autorun(() => {
+			const partIds = Parts.find({
+				segmentId: this.props.segmentId
+			}).map(part => part._id)
+			const partInstanceIds = PartInstances.find({
+				segmentId: this.props.segmentId
+			}).map(instance => instance._id)
+			this.subscribe(PubSub.pieces, {
+				partId: {
+					$in: partIds
+				}
+			})
+			this.subscribe(PubSub.pieceInstances, {
+				partId: {
+					$in: partInstanceIds
+				},
+				reset: {
+					$ne: true
+				}
+			})
+			// console.log(`Subscribing: ${partIds.join(',')}; ${partInstanceIds.join(',')}`)
 		})
 		SpeechSynthesiser.init()
 	}

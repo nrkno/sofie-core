@@ -262,6 +262,7 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		}
 	}
 
+	// TODO(Performance): use ResizeObserver to avoid style recalculations
 	checkElementWidth = () => {
 		if (this.state.itemElement && this._forceSizingRecheck) {
 			this._forceSizingRecheck = false
