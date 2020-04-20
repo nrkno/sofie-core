@@ -192,6 +192,47 @@ export namespace ServerPlayoutAdLibAPI {
 			// Update any infinites
 			updateSourceLayerInfinitesAfterPart(rundown, previousPartInstance!.part)
 
+			// Copy across adlib-preroll and other properties needed on the part
+			if (adLibPiece.adlibPreroll !== undefined) {
+				PartInstances.update(partInstance._id, {
+					$set: {
+						prerollDuration: adLibPiece.adlibPreroll
+					}
+				})
+			}
+
+			if (adLibPiece.adlibAutoNext !== undefined) {
+				PartInstances.update(partInstance._id, {
+					$set: {
+						autoNext: adLibPiece.adlibAutoNext
+					}
+				})
+			}
+
+			if (adLibPiece.adlibAutoNextOverlap !== undefined) {
+				PartInstances.update(partInstance._id, {
+					$set: {
+						autoNextOverlap: adLibPiece.adlibAutoNextOverlap
+					}
+				})
+			}
+
+			if (adLibPiece.adlibDisableOutTransition !== undefined) {
+				PartInstances.update(partInstance._id, {
+					$set: {
+						disableOutTransition: adLibPiece.adlibDisableOutTransition
+					}
+				})
+			}
+
+			if (adLibPiece.expectedDuration !== undefined) {
+				PartInstances.update(partInstance._id, {
+					$set: {
+						expectedDuration: adLibPiece.expectedDuration
+					}
+				})
+			}
+
 			setNextPart(rundownPlaylist, partInstance)
 		} else {
 			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
