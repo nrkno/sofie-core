@@ -205,31 +205,32 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 
 		return (
 			<div>
-				<table className='table'>
-					<thead>
-						<tr>
-							{ _.map(configEntry.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
-							<th>&nbsp;</th>
-						</tr>
-					</thead>
-					<tbody>
-					{
-						_.map(vals, (val, i) => <tr key={i}>
-							{ _.map(configEntry.columns, col => <td key={col.id}>{
-								getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${i}.${col.id}`)
-							}</td>) }
-							<td>
-								<button className={ClassNames('btn btn-danger', {
-									'btn-tight': this.props.subPanel
-								})} onClick={() => this.removeRow(val._id, baseAttribute)}>
-									<FontAwesomeIcon icon={faTrash} />
-								</button>
-							</td>
-						</tr>)
-					}
-					</tbody>
-				</table>
-
+				<div className='settings-studio-sticky-scroller'>
+					<table className='table'>
+						<thead>
+							<tr>
+								{ _.map(configEntry.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
+								<th>&nbsp;</th>
+							</tr>
+						</thead>
+						<tbody>
+						{
+							_.map(vals, (val, i) => <tr key={i}>
+								{ _.map(configEntry.columns, col => <td key={col.id}>{
+									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${i}.${col.id}`)
+								}</td>) }
+								<td>
+									<button className={ClassNames('btn btn-danger', {
+										'btn-tight': this.props.subPanel
+									})} onClick={() => this.removeRow(val._id, baseAttribute)}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+								</td>
+							</tr>)
+						}
+						</tbody>
+					</table>
+				</div>
 				<button className={ClassNames('btn btn-primary', {
 					'btn-tight': this.props.subPanel
 				})} onClick={() => this.addRow(configEntry, baseAttribute)}>
