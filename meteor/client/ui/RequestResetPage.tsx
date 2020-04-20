@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-import { RouteComponentProps } from 'react-router'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -35,33 +34,23 @@ const PackageInfo = require('../../package.json')
 
 const validEmailRegex = new RegExp('/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/')
 
-interface RundownPlaylistUi extends RundownPlaylist {
-	rundownStatus: string
-	rundownAirStatus: string
-	unsyncedRundowns: Rundown[]
-	studioName: string
-	showStyles: Array<{ id: ShowStyleBaseId, baseName?: string, variantName?: string }>
-}
-
 enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
 	TOOLTIP_RUN_MIGRATIONS = 'TOOLTIP_RUN_MIGRATIONS',
 	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS'
 }
 
-interface ILoginPageProps extends RouteComponentProps {
+interface IRequestResetPageProps {
 	coreSystem: ICoreSystem
-	rundownPlaylists: Array<RundownPlaylistUi>
 }
 
-interface ILoginPageState {
+interface IRequestResetPageState {
 	systemStatus?: StatusResponse
 	subsReady: boolean
 	email: string
-	password: string
 }
 
-export const LoginPage = translateWithTracker(() => {
+export const RequestResetPage = translateWithTracker(() => {
 
 	const user = getUser()
 	if (user) {
@@ -73,91 +62,51 @@ export const LoginPage = translateWithTracker(() => {
 		
 	}
 })(
-class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState> {
-	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-
+class extends MeteorReactComponent<Translated<IRequestResetPageProps>, IRequestResetPageState> {
 	constructor (props) {
 		super(props)
 
 		this.state = {
 			subsReady: false,
-			email: '',
-			password: ''
+			email: ''
 		}
 	}
 
-	private handleChange (e: React.ChangeEvent<HTMLInputElement>) {
-		if(!this.state[e.currentTarget.name]) return
-		return this.setState({...this.state, [e.currentTarget.name]: e.currentTarget.value})
-	}
-
-	private attempLogin(e: React.MouseEvent<HTMLButtonElement>): void {
-		try {
-			if(!this.state.email.length) throw new Error('Please enter an email address')
-			if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
-			if(!this.state.password.length) throw new Error('Please enter an password')
-		} catch (error) {
+	private validateEmail (e: React.FocusEvent<HTMLInputElement>) {
+		if(!validEmailRegex.test(this.state.email)) {
 			/** @TODO Display error to user in UI */
 		}
-		Meteor.loginWithPassword(this.state.email, this.state.password, this.handleLoginAttempt)
 	}
 
-	private handleLoginAttempt (error: Error) {
-		if(error) {
-			/** @TODO dispaly error to client in ui */
+	private resetPassword (e: React.MouseEvent<HTMLButtonElement>): void {
+		if(!this.state.email.length || !validEmailRegex.test(this.state.email)) {
+			/** @TODO Display error to user in UI */
 		} else {
-			this.props.history.push('/lobby')
+			/**
+			 * Attmept to get userid for email entered
+			 * Accounts.sendResetPasswordEmail(userid, *optional email*)
+			 */
 		}
+		
 	}
+ 
 
-	componentDidMount () {
+	render() {
 		const { t } = this.props
-
-		// Subscribe to data:
-		this.subscribe(PubSub.loggedInUser, {})
-	}
-
-	render () {
-		const { t } = this.props
-
-		/*
-		location will override the current location in the history stack, like server-side redirects (HTTP 3xx) do.
-
-		<Route exact path="/">
-		{loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
-		</Route>
-		*/
-
 		return (
-			<React.Fragment>
-				<div className="sofie-logo"></div>
-				<h1>{t('Sofie - TV Automation System')}</h1>
-				<p>{t('Service provided by SuperFly.tv')}</p>
-				<div className="login">
-					<div className="container">
-						<input 
-							type="text" 
-							value={this.state.email} 
-							onChange={this.handleChange} 
-							placeholder={t('Email Address')}
-							name="email"
-						/>
-						<input 
-							type="password" 
-							value={this.state.password} 
-							onChange={this.handleChange} 
-							placeholder={t('Password')}
-							name="password"
-						/>
-						<button onClick={this.attempLogin}>Sign In</button>
-						<Link className="float-left" to="/reset">{t('Lost password?')}</Link>
-					</div>
-					<div className="container">
-					<Link to="/signup"><button>{t('Create new account')}</button></Link>
-					</div>
-				</div>
-			</React.Fragment>
+			<div className="reset-password container">
+				<p>Lost password?</p>
+				<input 
+					type="text" 
+					value={this.state.email} 
+					onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+						this.setState({...this.state, email: e.target.value})} 
+					onBlur={this.validateEmail}
+					placeholder={t('Email Address')}
+					name="email"
+				/>
+				<button onClick={this.resetPassword}>{t('Send reset email')}</button>
+			</div>
 		)
 	}
-}
-)
+})

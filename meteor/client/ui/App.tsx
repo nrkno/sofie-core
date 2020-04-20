@@ -39,6 +39,9 @@ import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 import { Settings } from '../../lib/Settings'
 import { LoginPage } from './LoginPage'
+import { SignupPage } from './SignupPage'
+import { RequestResetPage } from './RequestResetPage'
+import { ResetPage } from './ResetPage'
 
 interface IAppState {
 	allowStudio: boolean
@@ -147,6 +150,9 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							{Settings.enableUserAccounts ?
 								<React.Fragment>
 									<Route exact path='/' component={LoginPage} />
+									<Route exact path='/signup' component={SignupPage} />
+									<Route exact path='/reset' component={RequestResetPage} />
+									<Route exact path='/reset/:token' component={ResetPage} />
 									<Route exact path='/lobby' component={RundownList} />
 								</React.Fragment> :
 								<Route exact path='/' component={RundownList} />
