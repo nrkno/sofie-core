@@ -110,6 +110,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 
 	onReceiveMessage = (e: MessageEvent) => {
 		if (e.origin === 'null' && this.frame && e.source === this.frame.contentWindow) {
+		if (this.frame && e.source === this.frame.contentWindow) {
 			const data = e.data || e['message']
 			if (!data) return
 			this.actMessage(data)
@@ -257,7 +258,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			ref={this.setElement}
 			className='external-frame-panel__iframe'
 			src={this.props.panel.url}
-			sandbox='allow-forms allow-popups allow-scripts'></iframe>
-		</div>
+			sandbox='allow-forms allow-popups allow-scripts allow-same-origin'></iframe>
+		</div> 
 	}
 }

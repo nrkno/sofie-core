@@ -107,7 +107,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		if (
 			filter.tags !== undefined &&
 			filter.tags.reduce((p, v) => {
-				return p && (item.tags && item.tags.indexOf(v) >= 0)
+				return p && (item.tags !== undefined && item.tags.indexOf(v) >= 0)
 			}, true) === false
 		) {
 			return false
@@ -120,7 +120,19 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 	}
 }
 
-const AdLibListView = translate()(class AdLibListView extends React.Component<
+export function matchTags (item: AdLibPieceUi, tags?: string[]) {
+	if (
+		tags !== undefined &&
+		tags.reduce((p, v) => {
+			return p && (item.tags !== undefined && item.tags.indexOf(v) >= 0)
+		}, true) === false
+	) {
+		return false
+	}
+	return true
+}
+
+const AdLibListView = translate()(class extends React.Component<
 	Translated<IListViewPropsHeader>, IListViewStateHeader
 > {
 	table: HTMLTableElement

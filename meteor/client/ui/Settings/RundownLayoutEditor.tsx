@@ -21,6 +21,8 @@ import {
 	RundownLayoutElementType,
 	RundownLayoutElementBase,
 	RundownLayoutExternalFrame,
+    RundownLayoutMultiView,
+    RundownLayoutMultiViewRole,
 	RundownLayoutId
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -301,6 +303,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	renderFilter (item: RundownLayoutBase, tab: RundownLayoutFilterBase, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
 		const { t } = this.props
+		const isList = tab.displayStyle === PieceDisplayStyle.LIST
 		const rundownBaselineOptions = [
 			{
 				name: t('Yes'),
@@ -392,30 +395,34 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Button width scale factor')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.buttonWidthScale`}
-								obj={item}
-								type='float'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Button height scale factor')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.buttonHeightScale`}
-								obj={item}
-								type='float'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
+					{!isList &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button width scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonWidthScale`}
+										obj={item}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button height scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonHeightScale`}
+										obj={item}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 				</React.Fragment>
 			}
 			<div className='mod mvs mhs'>
@@ -758,6 +765,153 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		</React.Fragment>
 	}
 
+	renderMultiView (item: RundownLayoutBase, tab: RundownLayoutMultiView, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Name')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.name`}
+						obj={item}
+						type='text'
+						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Role')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.role`}
+						obj={item}
+						type='dropdown'
+						collection={RundownLayouts}
+						options={RundownLayoutMultiViewRole}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Window Number')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.windowNumber`}
+						obj={item}
+						type='int'
+						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Adlib Rank')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.adlibRank`}
+						obj={item}
+						type='int'
+						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+				{t('Tags must contain')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas'
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true}
+						mutateUpdateValue={(v) => undefined} />
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='text'
+						collection={RundownLayouts}
+						className='input text-input input-l'
+						label={t('Filter Disabled')}
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
+						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+				</label>
+			</div>
+			{isDashboardLayout &&
+				<React.Fragment>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('X')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.x`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Y')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.y`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Width')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.width`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Height')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.height`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Register Shortcuts for this Panel')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.assignHotKeys`}
+										obj={item}
+										type='checkbox'
+										collection={RundownLayouts}
+										className='mod mas' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
+				</React.Fragment>
+			}
+		</React.Fragment>
+	}
+
 	renderElements (item: RundownLayoutBase) {
 		const { t } = this.props
 
@@ -805,6 +959,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						this.renderFilter(item, tab, index, isRundownLayout, isDashboardLayout) :
 					 RundownLayoutsAPI.isExternalFrame(tab) ?
 						this.renderFrame(item, tab, index, isRundownLayout, isDashboardLayout) :
+					 RundownLayoutsAPI.isMultiView(tab) ?
+					 	this.renderMultiView(item, tab, index, isRundownLayout, isDashboardLayout) :
 						undefined}
 				</div>
 			))}

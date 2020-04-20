@@ -7,9 +7,12 @@ import {
 	RundownLayoutElementBase,
 	RundownLayoutFilterBase,
 	RundownLayoutElementType,
-	RundownLayoutExternalFrame
+	RundownLayoutExternalFrame,
+    RundownLayoutMultiView,
+    PieceDisplayStyle,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
+import * as _ from 'underscore'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId): Promise<RundownLayoutId>
@@ -36,5 +39,23 @@ export namespace RundownLayoutsAPI {
 
 	export function isExternalFrame (element: RundownLayoutElementBase): element is RundownLayoutExternalFrame {
 		return element.type === RundownLayoutElementType.EXTERNAL_FRAME
+	}
+
+	export function isMultiView (element: RundownLayoutElementBase): element is RundownLayoutMultiView {
+		return element.type === RundownLayoutElementType.MULTIVIEW
+	}
+
+	export function multiViewToFilter (element: RundownLayoutMultiView): RundownLayoutFilterBase {
+		return {
+			...(_.pick(element, '_id', 'name', 'rank', 'tags')),
+			rundownBaseline: true,
+			type: RundownLayoutElementType.FILTER,
+			sourceLayerIds: [],
+			sourceLayerTypes: [],
+			outputLayerIds: [],
+			label: [],
+			displayStyle: PieceDisplayStyle.BUTTONS,
+			currentSegment: false
+		}
 	}
 }
