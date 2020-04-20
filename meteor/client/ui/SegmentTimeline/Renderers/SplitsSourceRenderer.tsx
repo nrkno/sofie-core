@@ -49,6 +49,13 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
 
+	constructor (props) {
+		super(props)
+		this.state = {
+			subItems: []
+		}
+	}
+
 	static getDerivedStateFromProps (props: IProps): IState {
 		let subItems: Array<SplitSubItem> = []
 		const splitContent = props.piece.instance.piece.content as SplitsContent | undefined

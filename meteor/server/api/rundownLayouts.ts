@@ -130,10 +130,14 @@ function apiRemoveRundownLayout (id: RundownLayoutId) {
 
 class ServerRundownLayoutsAPI implements NewRundownLayoutsAPI {
 	createRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
-		return makePromise(() => apiCreateRundownLayout(name, type, showStyleBaseId))
+		const that = this
+		return makePromise(() => apiCreateRundownLayout.apply(that, [name, type, showStyleBaseId]))
 	}
 	removeRundownLayout (rundownLayoutId: RundownLayoutId) {
-		return makePromise(() => apiRemoveRundownLayout(rundownLayoutId))
+		const that = this
+		return makePromise(() => apiRemoveRundownLayout.apply(that, [rundownLayoutId]))
 	}
 }
-registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false)
+registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
+	return fcn.apply(methodContext, args)
+})

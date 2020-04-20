@@ -65,7 +65,7 @@ import { SnapshotId } from '../../lib/collections/Snapshots'
  * 1.5.0: Release 17  (TBD)
  * 1.6.0: Release 18  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.6.0'
+export const CURRENT_SYSTEM_VERSION = '1.7.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)

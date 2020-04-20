@@ -420,17 +420,22 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	const segments = props.playlist.getSegments()
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
-	const { uiSegments: uiSegments0, liveSegment } = memoizedIsolatedAutorun((
+	
+	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun((
 		currentPartId: PartId,
 		nextPartId: PartId,
 		segments: Segment[],
 		sourceLayerLookup: SourceLayerLookup,
 		sourceHotKeyUse: { [key: string]: number}
 	) => {
+		// This is a map of partIds mapped onto segments they are part of
+		const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
+
 		if (!segments) {
 			return {
 				uiSegments: [],
 				liveSegment: undefined,
+				uiPartSegmentMap
 			}
 		}
 
@@ -446,10 +451,11 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 				isLive: false,
 				isNext: false
 			})
+
 			uiSegmentMap.set(segmentUi._id, segmentUi)
+			
 			return segmentUi
 		})
-
 
 		props.playlist.getUnorderedParts({
 			segmentId: {
@@ -459,6 +465,9 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 			const segment = uiSegmentMap.get(part.segmentId)
 			if (segment) {
 				segment.parts.push(part)
+
+				uiPartSegmentMap.set(part._id, segment)
+
 				if (part._id === currentPartId) {
 					segment.isLive = true
 					liveSegment = segment
@@ -476,7 +485,8 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 
 		return {
 			uiSegments,
-			liveSegment
+			liveSegment,
+			uiPartSegmentMap
 		}
 	},
 	'uiSegments',
@@ -486,20 +496,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	sourceLayerLookup,
 	sourceHotKeyUse)
 
-	// This is a map of partIds mapped onto segments they are part of
-	const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
-	const uiSegments: AdlibSegmentUi[] = []
-	_.each(uiSegments0, seg => {
-		const seg2 = {
-			...seg,
-			pieces: []
-		}
-		uiSegments.push(seg2)
-
-		_.each(seg.parts, part => {
-			uiPartSegmentMap.set(part._id, seg2)
-		})
-	})
+	uiSegments.forEach(segment => segment.pieces.length = 0)
 
 	AdLibPieces.find({
 		rundownId: {
@@ -512,7 +509,6 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 		sort: { _rank: 1 }
 	}).fetch().forEach((piece) => {
 		const segment = uiPartSegmentMap.get(piece.partId!)
-		console.log()
 
 		if (segment) {
 			segment.pieces.push(piece)

@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-03-04T08:26:08.620Z\n"
-"PO-Revision-Date: 2020-03-04T08:26:08.620Z\n"
+"POT-Creation-Date: 2020-03-23T12:03:30.423Z\n"
+"PO-Revision-Date: 2020-03-23T12:03:30.423Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -133,31 +133,34 @@ msgstr ""
 msgid "End of script"
 msgstr ""
 
-msgid "Delete this Item?"
+msgid "Delete this RundownPlaylist?"
 msgstr ""
 
 msgid "Delete"
 msgstr ""
 
-msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
+msgid "Are you sure you want to delete the \"{{name}}\" RundownPlaylist?"
 msgstr ""
 
 msgid "Please note: This action is irreversible!"
 msgstr ""
 
-msgid "Re-Sync this rundown?"
+msgid "Re-Sync this rundownPlaylist?"
 msgstr ""
 
 msgid "Re-Sync"
 msgstr ""
 
-msgid "Are you sure you want to re-sync the \"{{name}}\" rundown with MOS script?"
+msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
 msgstr ""
 
 msgid "This rundown is currently active"
 msgstr ""
 
-msgid "Re-sync with MOS"
+msgid "Multiple ({{count}})"
+msgstr ""
+
+msgid "Re-sync all rundowns in playlist"
 msgstr ""
 
 msgid "Enable configuration mode by adding ?configure=1 to the address bar."
@@ -406,10 +409,10 @@ msgstr ""
 msgid "Do you want to restart CasparCG Server \"{{device}}\"?"
 msgstr ""
 
-msgid "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
+msgid "CasparCG on device \"{{deviceName}}\" restarting..."
 msgstr ""
 
-msgid "CasparCG on device \"{{deviceName}}\" restarting..."
+msgid "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Show Hotkeys"
@@ -436,18 +439,28 @@ msgstr ""
 msgid "Unknown error"
 msgstr ""
 
-msgid "Rundown {{rundownName}} is missing, what do you want to do?"
+msgid ""
+"Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do "
+"you want to do?"
 msgstr ""
 
-msgid "Mark rundown as unsynced"
+msgid "Mark the rundown as unsynced"
 msgstr ""
 
-msgid "Remove rundown"
+msgid "Remove just the rundown"
 msgstr ""
 
 msgid ""
-"Do you really want to remove the rundown \"{{rundownName}}\"? This cannot "
-"be undone!"
+"Do you really want to remove just the rundown \"{{rundownName}}\" in the "
+"playlist {{playlistName}}? This cannot be undone!"
+msgstr ""
+
+msgid "Remove rundown playlist"
+msgstr ""
+
+msgid ""
+"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
+"cannot be undone!"
 msgstr ""
 
 msgid ""
@@ -455,7 +468,10 @@ msgid ""
 "come through."
 msgstr ""
 
-msgid "Re-Sync Rundown"
+msgid "Re-sync"
+msgstr ""
+
+msgid "Re-sync Rundown"
 msgstr ""
 
 msgid ""
@@ -484,12 +500,12 @@ msgstr ""
 msgid "External message queue has unsent messages."
 msgstr ""
 
-msgid "Unable to check the system configuration for changes"
-msgstr ""
-
 msgid ""
 "The system configuration has been changed since importing this rundown. It "
 "might not run correctly"
+msgstr ""
+
+msgid "Unable to check the system configuration for changes"
 msgstr ""
 
 msgid "Device {{deviceName}} is disconnected"
@@ -956,10 +972,16 @@ msgstr ""
 msgid "Primary Host (IP or Hostname)"
 msgstr ""
 
+msgid "Primary: dont use MOS query-port"
+msgstr ""
+
 msgid "Secondary ID (Newsroom System MOS ID)"
 msgstr ""
 
 msgid "Secondary Host (IP Address or Hostname)"
+msgstr ""
+
+msgid "Secondary: dont use MOS query-port"
 msgstr ""
 
 msgid "MOS ID of Gateway (Sofie MOS ID)"
@@ -1133,12 +1155,6 @@ msgstr ""
 msgid ""
 "Are you sure you want to reset the database version?\n"
 "Only do this if you plan on running the migration right after."
-msgstr ""
-
-msgid "Set Database Version"
-msgstr ""
-
-msgid "Are you sure you want to set the database version to"
 msgstr ""
 
 msgid "Version for {{name}}: From {{fromVersion}} to {{toVersion}}"
@@ -1903,10 +1919,10 @@ msgstr ""
 msgid "Do you want to restart Quantel Gateway?"
 msgstr ""
 
-msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
+msgid "Quantel Gateway restarting..."
 msgstr ""
 
-msgid "Quantel Gateway restarting..."
+msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
 msgstr ""
 
 msgid "Format HyperDeck disks"
@@ -1917,10 +1933,10 @@ msgid ""
 "cannot be undone."
 msgstr ""
 
-msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
+msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
 msgstr ""
 
-msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
+msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Last seen"
@@ -1932,18 +1948,6 @@ msgstr ""
 msgid "Are you sure you want to delete this device: \"{{deviceId}}\"?"
 msgstr ""
 
-msgid "Restart this device?"
-msgstr ""
-
-msgid "Could not generate restart token!"
-msgstr ""
-
-msgid "Could not generate restart core: {{err}}"
-msgstr ""
-
-msgid "Sofie Automation Server Core will restart in {{time}}s..."
-msgstr ""
-
 msgid "Sofie Automation Server Core: {{name}}"
 msgstr ""
 
@@ -1953,6 +1957,15 @@ msgstr ""
 msgid ""
 "Are you sure you want to restart this Sofie Automation Server Core: "
 "{{name}}?"
+msgstr ""
+
+msgid "Could not generate restart token!"
+msgstr ""
+
+msgid "Could not generate restart core: {{err}}"
+msgstr ""
+
+msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr ""
 
 msgid "Not Connected"
@@ -2052,6 +2065,10 @@ msgid "Clip is being ingested"
 msgstr ""
 
 msgid "{{displayName}}: {{messages}}"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Multiple ({{count}})°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"
