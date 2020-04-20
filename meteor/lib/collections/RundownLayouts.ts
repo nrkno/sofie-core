@@ -47,6 +47,7 @@ export interface RundownLayoutElementBase {
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.EXTERNAL_FRAME
 	url: string
+	scale: number
 }
 
 export enum RundownLayoutMultiViewRole {
@@ -96,7 +97,6 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 	y: number
 	width: number
 	height: number
-	scale: number
 }
 
 export interface DashboardLayoutMultiView extends RundownLayoutMultiView {
