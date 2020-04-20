@@ -1,9 +1,35 @@
-# Change Log
+# Changelog
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<a name="1.7.0-0"></a>
-# [1.7.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.1...v1.7.0-0) (2020-03-25)
+## [1.7.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.7.0-3...v1.7.0) (2020-03-31)
+
+
+
+## [1.7.0-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.7.0-2...v1.7.0-3) (2020-03-30)
+
+
+
+## [1.7.0-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.7.0-1...v1.7.0-2) (2020-03-30)
+
+
+### Bug Fixes
+
+* fetchAndFilter after PI hotkey assignments ([7b99208](https://github.com/nrkno/tv-automation-server-core/commit/7b99208))
+
+
+
+## [1.7.0-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.7.0-0...v1.7.0-1) (2020-03-26)
+
+
+### Bug Fixes
+
+* cut icon logic for marking trimmed clips ([#201](https://github.com/nrkno/tv-automation-server-core/issues/201)) ([3d9404e](https://github.com/nrkno/tv-automation-server-core/commit/3d9404e))
+* Part Instances contentMetaData broken ([#205](https://github.com/nrkno/tv-automation-server-core/issues/205)) ([d6a9f94](https://github.com/nrkno/tv-automation-server-core/commit/d6a9f94))
+
+
+
+## [1.7.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.1...v1.7.0-0) (2020-03-26)
 
 
 ### Bug Fixes
@@ -133,6 +159,242 @@ All notable changes to this project will be documented in this file. See [standa
 * WIP implement RundownPlaylist ([ee231e9](https://github.com/nrkno/tv-automation-server-core/commit/ee231e9))
 * WIP rundownPlaylists ([21e3b96](https://github.com/nrkno/tv-automation-server-core/commit/21e3b96))
 * WIP rundownPlaylists ([3310a8b](https://github.com/nrkno/tv-automation-server-core/commit/3310a8b))
+
+
+
+### [1.6.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.0...v1.6.1) (2020-03-04)
+
+
+### Bug Fixes
+
+* Updated translations R18 ([e293d4f](https://github.com/nrkno/tv-automation-server-core/commit/e293d4f))
+
+
+
+## [1.6.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.6.0-0...v1.6.0) (2020-03-04)
+
+
+### Bug Fixes
+
+* **getAllStoredNotes:** check that we have stuff to append to ([996eeeb](https://github.com/nrkno/tv-automation-server-core/commit/996eeeb))
+* **getAllStoredNotes:** check that we have stuff to append to ([4fd5eba](https://github.com/nrkno/tv-automation-server-core/commit/4fd5eba))
+* resolve an issue with optimizing parts away when parts are inserted/removed ([1eae907](https://github.com/nrkno/tv-automation-server-core/commit/1eae907))
+
+
+
+## [1.6.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0...v1.6.0-0) (2020-02-19)
+
+
+### Bug Fixes
+
+* bug fix: making queued adlibs only queue one ([5f9db2f](https://github.com/nrkno/tv-automation-server-core/commit/5f9db2f))
+* dont call uploadFileToAtem as part of deviceMakeReady ([85ebf30](https://github.com/nrkno/tv-automation-server-core/commit/85ebf30))
+* exception when converting adlib to part if preroll not defined ([5fb6cc8](https://github.com/nrkno/tv-automation-server-core/commit/5fb6cc8))
+* fix asyncCollectionFindFetch implementation to make it better asynchronously. ([bf65dde](https://github.com/nrkno/tv-automation-server-core/commit/bf65dde))
+* hide hidden segments from prompter ([7e606c8](https://github.com/nrkno/tv-automation-server-core/commit/7e606c8))
+* improve UI performance ([#157](https://github.com/nrkno/tv-automation-server-core/issues/157)) ([71a3885](https://github.com/nrkno/tv-automation-server-core/commit/71a3885))
+* layout of DocumentationLink & make strings translate'able ([3d6dde3](https://github.com/nrkno/tv-automation-server-core/commit/3d6dde3))
+* protect DashboardPanelButton against crashes ([a70a6b0](https://github.com/nrkno/tv-automation-server-core/commit/a70a6b0))
+* remove leftover help system notification ([755b5d4](https://github.com/nrkno/tv-automation-server-core/commit/755b5d4))
+* set Part.prerollDuration when queueing adlib ([1bd3a6b](https://github.com/nrkno/tv-automation-server-core/commit/1bd3a6b))
+* some more tweaks for the dashboard ([384a5c8](https://github.com/nrkno/tv-automation-server-core/commit/384a5c8))
+* sticky adlibs will follow toBeQueued property of pieces ([0b57f4b](https://github.com/nrkno/tv-automation-server-core/commit/0b57f4b))
+* tweak dashboard button readability ([7f93a6e](https://github.com/nrkno/tv-automation-server-core/commit/7f93a6e))
+* update incorrect typings of asyncCollectionFindOne ([eadf334](https://github.com/nrkno/tv-automation-server-core/commit/eadf334))
+* use adlibPrerollDuration when converting adlib to a part ([e512ffb](https://github.com/nrkno/tv-automation-server-core/commit/e512ffb))
+* **DeviceConfigManifests:** change the way default objects are created ([9182324](https://github.com/nrkno/tv-automation-server-core/commit/9182324))
+* **DeviceConfigManifests:** replace defaultVal truthy check with a defaultVal undefined check ([#190](https://github.com/nrkno/tv-automation-server-core/issues/190)) ([6be8870](https://github.com/nrkno/tv-automation-server-core/commit/6be8870))
+* **fonts:** add roboto condensed font for dashboard buttons ([ba1b2d4](https://github.com/nrkno/tv-automation-server-core/commit/ba1b2d4))
+
+
+### Features
+
+* action buttons in dashboard ([fd7b492](https://github.com/nrkno/tv-automation-server-core/commit/fd7b492))
+* allow adlib to request to always be queued ([98c49d3](https://github.com/nrkno/tv-automation-server-core/commit/98c49d3))
+* allow tag filtering in RundownLayouts ([02612f4](https://github.com/nrkno/tv-automation-server-core/commit/02612f4))
+* animated unfocused border in rundown ([#192](https://github.com/nrkno/tv-automation-server-core/issues/192)) ([d643086](https://github.com/nrkno/tv-automation-server-core/commit/d643086))
+* force parts in hidden segment to be invalid ([7a70457](https://github.com/nrkno/tv-automation-server-core/commit/7a70457))
+* log focus/defocus events from GUI in UserLog ([#191](https://github.com/nrkno/tv-automation-server-core/issues/191)) ([352b03a](https://github.com/nrkno/tv-automation-server-core/commit/352b03a))
+* specify studioId for manual snapshot ingest in Meteor.settings ([52c298c](https://github.com/nrkno/tv-automation-server-core/commit/52c298c))
+* support hidden segments. Will not be shown in the RundownView, but will be shown in the Shelf ([95bb2d8](https://github.com/nrkno/tv-automation-server-core/commit/95bb2d8))
+
+
+
+## [1.5.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-10...v1.5.0) (2020-01-24)
+
+
+### Bug Fixes
+
+* RundownList "unsynced from MOS" header colspan ([bc8b3c9](https://github.com/nrkno/tv-automation-server-core/commit/bc8b3c9))
+
+
+
+## [1.5.0-10](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-8...v1.5.0-10) (2020-01-21)
+
+
+### Bug Fixes
+
+* **hotfix:** looping between 2 parts in a race-condition between pl-gw and core ([#160](https://github.com/nrkno/tv-automation-server-core/issues/160)) ([af5f540](https://github.com/nrkno/tv-automation-server-core/commit/af5f540))
+* AdLib panel doesn't scroll with takes ([3a9db63](https://github.com/nrkno/tv-automation-server-core/commit/3a9db63))
+
+
+
+## [1.5.0-9](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-8...v1.5.0-9) (2020-01-21)
+
+
+### Bug Fixes
+
+* **hotfix:** looping between 2 parts in a race-condition between pl-gw and core ([#160](https://github.com/nrkno/tv-automation-server-core/issues/160)) ([af5f540](https://github.com/nrkno/tv-automation-server-core/commit/af5f540))
+
+
+
+## [1.5.0-8](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-7...v1.5.0-8) (2020-01-21)
+
+
+### Bug Fixes
+
+* displayDurationGroup countdowns ([af76df2](https://github.com/nrkno/tv-automation-server-core/commit/af76df2))
+
+
+
+## [1.5.0-7](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-6...v1.5.0-7) (2020-01-20)
+
+
+### Bug Fixes
+
+* make the shortcut field larger ([9e4cf36](https://github.com/nrkno/tv-automation-server-core/commit/9e4cf36))
+
+
+
+## [1.5.0-6](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-5...v1.5.0-6) (2020-01-17)
+
+
+### Bug Fixes
+
+* update mediaObject subscriptions for AdLibListItems and DashboardPieceButtons ([c2263d9](https://github.com/nrkno/tv-automation-server-core/commit/c2263d9))
+
+
+
+## [1.5.0-5](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-4...v1.5.0-5) (2020-01-16)
+
+
+### Bug Fixes
+
+* meteor build error in jenkins ([362164a](https://github.com/nrkno/tv-automation-server-core/commit/362164a))
+
+
+
+## [1.5.0-4](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-3...v1.5.0-4) (2020-01-14)
+
+
+### Bug Fixes
+
+* **config manifest:** GenericDeviceSettingsComponent crashes ([9e4f8cb](https://github.com/nrkno/tv-automation-server-core/commit/9e4f8cb))
+
+
+
+## [1.5.0-3](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-2...v1.5.0-3) (2020-01-10)
+
+
+### Bug Fixes
+
+* change lifecycle hooks for Prompter, debounce collection updates ([afdeea3](https://github.com/nrkno/tv-automation-server-core/commit/afdeea3))
+* **prompter:** only use new lifecycle methods ([172db47](https://github.com/nrkno/tv-automation-server-core/commit/172db47))
+* **prompter:** resolve issue with updates messing up prompter ([f504caf](https://github.com/nrkno/tv-automation-server-core/commit/f504caf))
+* **prompter:** track timeout in _debounceUpdate ([d4e3f76](https://github.com/nrkno/tv-automation-server-core/commit/d4e3f76))
+
+
+
+## [1.5.0-2](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-1...v1.5.0-2) (2020-01-10)
+
+
+### Bug Fixes
+
+* resolve mousetrapHelper hotkeys issue ([15e7755](https://github.com/nrkno/tv-automation-server-core/commit/15e7755))
+
+
+
+## [1.5.0-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.5.0-0...v1.5.0-1) (2020-01-09)
+
+
+### Bug Fixes
+
+* hotkey crash in Shelf panels ([8951cb8](https://github.com/nrkno/tv-automation-server-core/commit/8951cb8))
+
+
+
+## [1.5.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.4.1...v1.5.0-0) (2020-01-08)
+
+
+### Bug Fixes
+
+* don't emit status.BAD for messages in queue. We no longer consider these to be critical to the broadcast. ([837ccd6](https://github.com/nrkno/tv-automation-server-core/commit/837ccd6))
+* resolve issues with hotkeys in ModialDialogs ([#132](https://github.com/nrkno/tv-automation-server-core/issues/132)) ([879bd8f](https://github.com/nrkno/tv-automation-server-core/commit/879bd8f))
+* warn even if there is only one unsent item in queue ([d01470a](https://github.com/nrkno/tv-automation-server-core/commit/d01470a))
+
+
+### Features
+
+* device config manifests ([#145](https://github.com/nrkno/tv-automation-server-core/issues/145)) ([2982dc8](https://github.com/nrkno/tv-automation-server-core/commit/2982dc8))
+* ignore piece media status ([fc6afab](https://github.com/nrkno/tv-automation-server-core/commit/fc6afab))
+
+
+
+## [1.4.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.3.0...v1.4.0) (2020-01-02)
+
+
+### Bug Fixes
+
+* allow Next:ing past an empty segment. ([115a922](https://github.com/nrkno/tv-automation-server-core/commit/115a922))
+* bugfix: not able to reset rundown when first part was playing ([d8f607f](https://github.com/nrkno/tv-automation-server-core/commit/d8f607f))
+* don't reset invalid part actual duration, only displayDuration ([#114](https://github.com/nrkno/tv-automation-server-core/issues/114)) ([298e005](https://github.com/nrkno/tv-automation-server-core/commit/298e005))
+* hotkey overlap crash ([#135](https://github.com/nrkno/tv-automation-server-core/issues/135)) ([c916dc3](https://github.com/nrkno/tv-automation-server-core/commit/c916dc3))
+* support rundown layouts in snapshots ([#137](https://github.com/nrkno/tv-automation-server-core/issues/137)) ([af9e0c4](https://github.com/nrkno/tv-automation-server-core/commit/af9e0c4))
+
+
+### Features
+
+* check blueprintId field before updating blueprint to ensure it is safe ([993fa50](https://github.com/nrkno/tv-automation-server-core/commit/993fa50))
+* prompt the user to replace blueprint if it can be forced ([b594279](https://github.com/nrkno/tv-automation-server-core/commit/b594279))
+
+
+
+### [1.4.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.4.0-0...v1.4.1) (2020-01-02)
+
+
+### Bug Fixes
+
+* removed call to afterIngestChangedData, as it is called from inside updateSegmentsFromIngestData anyway ([dcad22a](https://github.com/nrkno/tv-automation-server-core/commit/dcad22a))
+* removed unneccesary calls to ensureNextPartIsValid, as it is called in other places as well ([4bd19bd](https://github.com/nrkno/tv-automation-server-core/commit/4bd19bd))
+
+
+
+## [1.4.0-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.3.0...v1.4.0-0) (2019-12-09)
+
+
+### Bug Fixes
+
+* bad migration step: PeripheralDevices that has a parent should not be assigned to a Studio ([ed232c4](https://github.com/nrkno/tv-automation-server-core/commit/ed232c4))
+* bubble up error messages from later migrations ([9599942](https://github.com/nrkno/tv-automation-server-core/commit/9599942))
+* check if loaded over https before trying to register service worker ([#134](https://github.com/nrkno/tv-automation-server-core/issues/134)) ([253e144](https://github.com/nrkno/tv-automation-server-core/commit/253e144))
+* failed rabbitmq initialisation should not block new connections ([6b9b491](https://github.com/nrkno/tv-automation-server-core/commit/6b9b491))
+* give Piece.transitions simpler typings specific to how it is used ([f9fe43f](https://github.com/nrkno/tv-automation-server-core/commit/f9fe43f))
+* handle closed rabbitmq instance throwing upon calling close ([b56cb62](https://github.com/nrkno/tv-automation-server-core/commit/b56cb62))
+* make contextName mandatory on SegmentContext and PartContext ([d249b6f](https://github.com/nrkno/tv-automation-server-core/commit/d249b6f))
+* migrations: mechanism for breaking infinite loops ([14570a7](https://github.com/nrkno/tv-automation-server-core/commit/14570a7))
+* tests ([d95f078](https://github.com/nrkno/tv-automation-server-core/commit/d95f078))
+* update ReadMe ([059b9b4](https://github.com/nrkno/tv-automation-server-core/commit/059b9b4))
+* warnings on segments should now have segment-sourced labels ([f9bea61](https://github.com/nrkno/tv-automation-server-core/commit/f9bea61))
+
+
+### Features
+
+* **autorewind:** auto rewind leaving segment ([b88ea43](https://github.com/nrkno/tv-automation-server-core/commit/b88ea43))
+* Floated parts and adLibs ([a4cbde8](https://github.com/nrkno/tv-automation-server-core/commit/a4cbde8))
+* Invalid Reason information on invalid parts ([#129](https://github.com/nrkno/tv-automation-server-core/issues/129)) ([b4f5126](https://github.com/nrkno/tv-automation-server-core/commit/b4f5126))
+* restart core from status view ([#131](https://github.com/nrkno/tv-automation-server-core/issues/131)) ([154f999](https://github.com/nrkno/tv-automation-server-core/commit/154f999))
+* use tsr-types from blueprints-integration ([e15dd59](https://github.com/nrkno/tv-automation-server-core/commit/e15dd59))
+* use tsr-types from blueprints-integration ([#127](https://github.com/nrkno/tv-automation-server-core/issues/127)) ([1d7b659](https://github.com/nrkno/tv-automation-server-core/commit/1d7b659))
 
 
 

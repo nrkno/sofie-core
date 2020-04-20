@@ -766,7 +766,7 @@ export function isTooCloseToAutonext (currentPartInstance: PartInstance | undefi
 
 	const start = currentPartInstance.part.getLastStartedPlayback()
 	const offset = currentPartInstance.part.getLastPlayOffset()
-	if (start && offset && currentPartInstance.part.expectedDuration) {
+	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
 		// date.now - start = playback duration, duration + offset gives position in part
 		const playbackDuration = getCurrentTime() - start + offset
 

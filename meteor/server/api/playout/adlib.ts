@@ -193,16 +193,11 @@ export namespace ServerPlayoutAdLibAPI {
 			updateSourceLayerInfinitesAfterPart(rundown, previousPartInstance!.part)
 
 			setNextPart(rundownPlaylist, partInstance)
-
-			// remove old auto-next from timeline, and add new one
-			if (previousPartInstance && previousPartInstance.part.autoNext && rundownPlaylist.currentPartInstanceId === previousPartInstance._id) {
-				updateTimeline(rundownPlaylist.studioId)
-			}
 		} else {
 			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
 			stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
-			updateTimeline(rundown.studioId)
 		}
+		updateTimeline(rundownPlaylist.studioId)
 	}
 	function adlibQueueInsertPartInstance (rundownPlaylist: RundownPlaylist, rundown: Rundown, afterPartInstance: PartInstance, adLibPiece: AdLibPiece): PartInstanceId {
 		logger.info('adlibQueueInsertPartInstance')
