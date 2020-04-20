@@ -11,13 +11,9 @@ import { parse as parseUrl } from 'url'
 import { uploadBlueprint } from './api'
 import { protectString } from '../../../lib/lib'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { PickerPOST } from '../http'
 
-const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
-postJsRoute.middleware(bodyParser.text({
-	type: 'text/javascript',
-	limit: '1mb'
-}))
-postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	const blueprintId = params.blueprintId
@@ -52,12 +48,7 @@ postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMess
 
 	res.end(content)
 })
-const postJsonRoute = Picker.filter((req, res) => req.method === 'POST')
-postJsonRoute.middleware(bodyParser.text({
-	type: 'application/json',
-	limit: '10mb'
-}))
-postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''

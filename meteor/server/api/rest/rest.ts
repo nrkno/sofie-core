@@ -6,15 +6,8 @@ import { MeteorMethodSignatures } from '../../methods'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
+import { PickerPOST, PickerGET } from '../http'
 
-
-const POST = Picker.filter((req: IncomingMessage, _res: ServerResponse) => {
-	return req.method === 'POST'
-})
-
-const GET = Picker.filter((req: IncomingMessage, _res: ServerResponse) => {
-	return req.method === 'GET'
-})
 
 const apiVersion = 0
 
@@ -74,8 +67,8 @@ function assignRoute (routeType: 'POST' | 'GET', resource: string, indexResource
 
 	const route: Router = (
 		routeType === 'POST' ?
-		POST :
-		GET
+		PickerPOST :
+		PickerGET
 	)
 
 	index.push(routeType + ' ' + indexResource)

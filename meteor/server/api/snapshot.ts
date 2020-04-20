@@ -4,7 +4,6 @@ import { Meteor } from 'meteor/meteor'
 import { Picker } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-import * as bodyParser from 'body-parser'
 import { check, Match } from 'meteor/check'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {
@@ -67,6 +66,7 @@ import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
+import { PickerPOST, PickerGET } from './http'
 
 interface DeprecatedRundownSnapshot { // Old, from the times before rundownPlaylists
 	version: string
@@ -434,7 +434,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 
 	// Then, continue as if it's a normal snapshot:
 
-	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
+	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 
 	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown (to be deprecated)
 		if ((snapshot as RundownPlaylistSnapshot).playlistId) { // temporary check, from snapshots where the type was rundown, but it actually was a rundownPlaylist
@@ -722,35 +722,33 @@ export function removeSnapshot (snapshotId: SnapshotId) {
 	Snapshots.remove(snapshot._id)
 }
 
-Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
+PickerGET.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.studioId, Match.Optional(String))
 		return createSystemSnapshot(protectString(params.studioId))
 	})
 })
-Picker.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
+PickerGET.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.playlistId, String)
 		return createRundownPlaylistSnapshot(protectString(params.playlistId))
 	})
 })
-Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
+PickerGET.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.studioId, String)
 		return createDebugSnapshot(protectString(params.studioId))
 	})
 })
-const postRoute = Picker.filter((req) => req.method === 'POST')
-postRoute.middleware(bodyParser.json({
-	limit: '15mb' // Arbitrary limit
-}))
-postRoute.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse) => {
-	response.setHeader('Content-Type', 'text/plain')
-
-	let content = ''
+PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse) => {
+	let content = 'ok'
 	try {
+		response.setHeader('Content-Type', 'text/plain')
 		let snapshot = (req as any).body
+		console.log('typeof: ' + typeof snapshot)
+		console.log('keys', _.keys(snapshot))
 		if (typeof snapshot !== 'object') { // sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
+			console.log('parsing length:' + snapshot.length)
 			snapshot = JSON.parse(snapshot)
 		}
 
