@@ -121,8 +121,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		const isTake = this.props.panel.role === RundownLayoutMultiViewRole.TAKE
 		const isProgram = this.props.panel.role === RundownLayoutMultiViewRole.PROGRAM
 		const isLarge = isProgram || isTake
-		console.log(this.props.rundownBaselineAdLibs)
-		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs
+const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs
 		.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces)))[this.props.adlibRank ? this.props.adlibRank : 0]
 		return <div className='multiview-panel'
 			style={
