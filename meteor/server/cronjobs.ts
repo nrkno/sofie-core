@@ -94,7 +94,6 @@ Meteor.startup(() => {
 				PeripheralDevices.find({
 					parentDeviceId: device._id
 				}).forEach(subDevice => {
-					// TODO: implement better way to determine if CasparCG, ref: client/ui/Status/SystemStatus.tsx:237
 					if (
 						subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 						subDevice.subType === TSR.DeviceType.CASPARCG
