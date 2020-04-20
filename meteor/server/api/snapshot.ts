@@ -745,10 +745,7 @@ PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: S
 	try {
 		response.setHeader('Content-Type', 'text/plain')
 		let snapshot = (req as any).body
-		console.log('typeof: ' + typeof snapshot)
-		console.log('keys', _.keys(snapshot))
 		if (typeof snapshot !== 'object') { // sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
-			console.log('parsing length:' + snapshot.length)
 			snapshot = JSON.parse(snapshot)
 		}
 
