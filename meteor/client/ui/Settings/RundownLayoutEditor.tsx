@@ -122,7 +122,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							t('New Panel') :
 							t('New Item'),
 					currentSegment: false,
-					displayStyle: PieceDisplayStyle.LIST,
+					displayStyle: isDashboardLayout ? PieceDisplayStyle.BUTTONS : PieceDisplayStyle.LIST,
 					label: undefined,
 					sourceLayerIds: undefined,
 					outputLayerIds: undefined,
@@ -331,6 +331,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			</div>
 			{isDashboardLayout &&
 				<React.Fragment>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Display Style')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.displayStyle`}
+								obj={item}
+								type='dropdown'
+								collection={RundownLayouts}
+								options={PieceDisplayStyle}
+								className='input text-input input-l' />
+						</label>
+					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('X')}

@@ -132,7 +132,7 @@ $dashboard-button-height: 5.625em;
 	.dashboard-panel__panel {
 		font-size: 0.8em;
 		margin: -4px;
-		overflow: overlay;
+		overflow: auto;
 		max-height: calc(100% - 12px);
 
 		&.dashboard-panel__panel--horizontal {
@@ -325,6 +325,26 @@ $dashboard-button-height: 5.625em;
 			left: 0;
 			height: 100%;
 			width: 100%;
+		}
+
+		&.list {
+			height: 2.4em;
+			align-items: center;
+			font-size: 16px;
+
+			> .dashboard-panel__panel__button__sub-label {
+				font-size: 22px;
+				top: auto;
+			}
+
+			&.vt > .dashboard-panel__panel__button__label {
+				left: 75px;
+			}
+
+			> .dashboard-panel__panel__button__thumbnail {
+				height: 100%;
+				right: auto;
+			}
 		}
 	}
 }
