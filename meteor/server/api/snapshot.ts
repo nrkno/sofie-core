@@ -650,7 +650,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
 	saveIntoDb(ExpectedMediaItems, { partId: { $in: protectStringArray(_.keys(partIdMap)) } }, updateItemIds(snapshot.expectedMediaItems, true))
-	saveIntoDb(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.expectedPlayoutItems, true))
+	saveIntoDb(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.expectedPlayoutItems || [], true))
 
 	logger.info(`Restore done`)
 }
