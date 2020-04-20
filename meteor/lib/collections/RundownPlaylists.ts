@@ -148,6 +148,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		const allRundowns = this.getRundowns()
 		allRundowns.forEach(i => i.remove())
+
+		RundownPlaylists.remove(this._id)
 	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio (): Studio {
