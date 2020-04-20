@@ -525,6 +525,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 			rd.unsyncedTime = getCurrentTime()
 		}
 
+		rd.playlistId = playlistId
 		rd.restoredFromSnapshotId = rd._id
 		rd.peripheralDeviceId = snapshot.playlist.peripheralDeviceId
 		rd.studioId = snapshot.playlist.studioId
