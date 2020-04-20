@@ -114,39 +114,114 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 		this.props.collection.update(obj._id, updateObj)
 	}
 
+	removeRow (id: string, baseAttribute: string) {
+		const m: any = {}
+		m[baseAttribute] = {
+			_id: id
+		}
+		this.updateObject(this.props.object, { $pull: m })
+	}
+
+	addRow (configEntry: ConfigManifestEntryTable, baseAttribute: string) {
+		const rowDefault: any = {
+			_id: Random.id()
+		}
+		_.each(configEntry.columns, col => rowDefault[col.id] = col.defaultVal)
+
+		const m: any = {}
+		m[baseAttribute] = rowDefault
+		this.updateObject(this.props.object, { $push: m })
+	}
+
+	exportJSON (configEntry: ConfigManifestEntryTable, vals: any) {
+		const jsonStr = JSON.stringify(vals, undefined, 4)
+
+		const element = document.createElement('a')
+		element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+		element.download = `${this.props.object._id}_config_${configEntry.id}.json`
+
+		document.body.appendChild(element) // Required for this to work in FireFox
+		element.click()
+		document.body.removeChild(element) // Required for this to work in FireFox
+	}
+
+	importJSON (e: React.ChangeEvent<HTMLInputElement>, configEntry: ConfigManifestEntryTable, baseAttribute: string) {
+		const { t } = this.props
+
+		const file = e.target.files ? e.target.files[0] : null
+		if (!file) {
+			return
+		}
+
+		const reader = new FileReader()
+		reader.onload = (e2) => {
+			// On file upload
+
+			this.setState({
+				uploadFileKey: Date.now()
+			})
+
+			const uploadFileContents = (e2.target as any).result
+
+			// Parse the config
+			let newConfig: TableConfigItemValue = []
+			try {
+				newConfig = JSON.parse(uploadFileContents)
+				if (!_.isArray(newConfig)) {
+					throw new Error('Not an array')
+				}
+			} catch (err) {
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }), 'ConfigManifestSettings'))
+				return
+			}
+
+			// Validate the config
+			const conformedConfig: TableConfigItemValue = []
+			_.forEach(newConfig, entry => {
+				const newEntry: TableConfigItemValue[0] = {
+					_id: entry._id || Random.id()
+				}
+
+				// Ensure all fields are defined
+				_.forEach(configEntry.columns, col => {
+					newEntry[col.id] = entry[col.id] !== undefined ? entry[col.id] : col.defaultVal
+				})
+				conformedConfig.push(newEntry)
+			})
+
+			const m: any = {}
+			m[baseAttribute] = conformedConfig
+			this.updateObject(this.props.object, { $set: m })
+		}
+		reader.readAsText(file)
+	}
+
 	render () {
 		const { t } = this.props
 
 		const baseAttribute = this.props.baseAttribute
 		const vals: TableConfigItemValue = objectPath.get(this.props.object, baseAttribute) || []
-		const item2 = this.props.item
-		const item = item2
+		const configEntry = this.props.item
 
 		return (
 			<div>
-				<table style={{ width: '100%' }}>
+				<table className='table'>
 					<thead>
 						<tr>
-							{ _.map(item2.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
+							{ _.map(configEntry.columns, col => <th key={col.id}><span title={col.description}>{ col.name} </span></th>) }
 							<th>&nbsp;</th>
 						</tr>
 					</thead>
 					<tbody>
 					{
 						_.map(vals, (val, i) => <tr key={i}>
-							{ _.map(item2.columns, col => <td key={col.id}>{
+							{ _.map(configEntry.columns, col => <td key={col.id}>{
 								getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${i}.${col.id}`)
 							}</td>) }
 							<td>
 								<button className={ClassNames('btn btn-danger', {
 									'btn-tight': this.props.subPanel
-								})} onClick={() => {
-									const m: any = {}
-									m[baseAttribute] = {
-										_id: val._id
-									}
-									this.updateObject(this.props.object, { $pull: m })
-								}}>
+								})} onClick={() => this.removeRow(val._id, baseAttribute)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							</td>
@@ -157,92 +232,22 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 
 				<button className={ClassNames('btn btn-primary', {
 					'btn-tight': this.props.subPanel
-				})} onClick={() => {
-					const rowDefault: any = {
-						_id: Random.id()
-					}
-					_.each(item2.columns, col => rowDefault[col.id] = col.defaultVal)
-
-					const m: any = {}
-					m[baseAttribute] = rowDefault
-					this.updateObject(this.props.object, { $push: m })
-				}}>
+				})} onClick={() => this.addRow(configEntry, baseAttribute)}>
 					<FontAwesomeIcon icon={faPlus} />
-					{ ' ' }
-					{ t('Row') }
 				</button>
-				{ ' ' }
-				<button className={ClassNames('btn btn-primary', {
+				<button className={ClassNames('btn mlm btn-secondary', {
 					'btn-tight': this.props.subPanel
-				})} onClick={() => {
-					const jsonStr = JSON.stringify(vals, undefined, 4)
-
-					const element = document.createElement('a')
-					element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
-					element.download = `${this.props.object._id}_config_${item.id}.json`
-
-					document.body.appendChild(element) // Required for this to work in FireFox
-					element.click()
-					document.body.removeChild(element) // Required for this to work in FireFox
-				}}>
-					<FontAwesomeIcon icon={faDownload} />
-					{ ' ' }
-					{ t('Export') }
+				})} onClick={() => this.exportJSON(configEntry, vals)}>
+					<FontAwesomeIcon icon={faDownload} />&nbsp;{ t('Export') }
 				</button>
-				{ ' ' }
-				<UploadButton className='btn btn-primary' accept='application/json,.json' onChange={e => {
-					const { t } = this.props
-
-					const file = e.target.files ? e.target.files[0] : null
-					if (!file) {
-						return
-					}
-
-					const reader = new FileReader()
-					reader.onload = (e2) => {
-						// On file upload
-
-						this.setState({
-							uploadFileKey: Date.now()
-						})
-
-						const uploadFileContents = (e2.target as any).result
-
-						// Parse the config
-						let newConfig: TableConfigItemValue = []
-						try {
-							newConfig = JSON.parse(uploadFileContents)
-							if (!_.isArray(newConfig)) {
-								throw new Error('Not an array')
-							}
-						} catch (err) {
-							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }), 'ConfigManifestSettings'))
-							return
-						}
-
-						// Validate the config
-						const conformedConfig: TableConfigItemValue = []
-						_.forEach(newConfig, entry => {
-							const newEntry: TableConfigItemValue[0] = {
-								_id: entry._id || Random.id()
-							}
-
-							// Ensure all fields are defined
-							_.forEach(item2.columns, col => {
-								newEntry[col.id] = entry[col.id] !== undefined ? entry[col.id] : col.defaultVal
-							})
-							conformedConfig.push(newEntry)
-						})
-
-						const m: any = {}
-						m[baseAttribute] = conformedConfig
-						this.updateObject(this.props.object, { $set: m })
-					}
-					reader.readAsText(file)
-				}} key={this.state.uploadFileKey}>
-					<FontAwesomeIcon icon={faUpload} />
-					{ ' ' }
-					{ t('Import') }
+				<UploadButton
+					className={ClassNames('btn btn-secondary mls', {
+						'btn-tight': this.props.subPanel
+					})}
+					accept='application/json,.json'
+					onChange={e => this.importJSON(e, configEntry, baseAttribute)}
+					key={this.state.uploadFileKey}>
+					<FontAwesomeIcon icon={faUpload} />&nbsp;{ t('Import') }
 				</UploadButton>
 			</div>
 		)
