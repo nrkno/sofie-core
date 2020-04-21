@@ -214,6 +214,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	) {
 		return true
 	}
+
+	return false
 })(class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
@@ -260,7 +262,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	componentWillMount () {
-		console.log(`Subscribing to: ${this.props.segmentId}`)
 		this.subscribe(PubSub.segments, {
 			_id: this.props.segmentId
 		})
@@ -286,14 +287,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				}
 			})
 			this.subscribe(PubSub.pieceInstances, {
-				partId: {
+				partInstanceId: {
 					$in: partInstanceIds
 				},
 				reset: {
 					$ne: true
 				}
 			})
-			// console.log(`Subscribing: ${partIds.join(',')}; ${partInstanceIds.join(',')}`)
 		})
 		SpeechSynthesiser.init()
 	}
