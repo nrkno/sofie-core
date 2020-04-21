@@ -1,7 +1,5 @@
 import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
-// @ts-ignore Meteor package not recognized by Typescript
-import { Picker } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from 'meteor/check'
@@ -765,7 +763,7 @@ PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: S
 	}
 })
 // Retrieve snapshot:
-Picker.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
+PickerGET.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.snapshotId, String)
 		return retreiveSnapshot(protectString(params.snapshotId))

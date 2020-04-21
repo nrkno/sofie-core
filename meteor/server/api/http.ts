@@ -14,7 +14,7 @@ PickerPOST.middleware(bodyParser.text({
 }))
 PickerPOST.middleware(bodyParser.text({
 	type: 'text/javascript',
-	limit: '50mb' // 1
+	limit: '50mb'
 }))
 
 

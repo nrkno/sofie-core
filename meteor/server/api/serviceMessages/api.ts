@@ -1,13 +1,10 @@
 import { CoreSystem } from '../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
-import { Picker } from 'meteor/meteorhacks:picker'
 import { postHandler } from './postHandler'
 import { logger } from '../../logging'
-import * as bodyParser from 'body-parser'
 import { deleteMessage, readAllMessages } from './serviceMessagesApi'
 import { PickerPOST, PickerGET, PickerDELETE } from '../http'
 
-PickerPOST.middleware(bodyParser.json())
 PickerPOST.route('/serviceMessages', postHandler)
 
 PickerGET.route('/serviceMessages', getHandler)

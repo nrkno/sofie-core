@@ -7,7 +7,6 @@ import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
 import { RundownLayoutSecurity } from '../security/rundownLayouts'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-import * as bodyParser from 'body-parser'
 import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { BlueprintId } from '../../lib/collections/Blueprints'
 import { MethodContext } from '../../lib/api/methods'
@@ -37,10 +36,6 @@ export function removeRundownLayout (layoutId: RundownLayoutId) {
 	RundownLayouts.remove(layoutId)
 }
 
-PickerPOST.middleware(bodyParser.text({
-	type: 'text/javascript',
-	limit: '1mb'
-}))
 PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 

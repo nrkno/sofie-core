@@ -1,5 +1,5 @@
 import { ServerResponse, IncomingMessage } from 'http'
-import { Picker, Router, Params } from 'meteor/meteorhacks:picker'
+import { Router, Params } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../methods'
@@ -116,12 +116,12 @@ function assignRoute (routeType: 'POST' | 'GET', resource: string, indexResource
 	})
 }
 
-Picker.route('/api', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/api', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.statusCode = 301
 	res.setHeader('Location', '/api/0') // redirect to latest API version
 	res.end()
 })
-Picker.route('/api/0', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/api/0', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'application/json')
 	res.statusCode = 200
 	res.end(JSON.stringify(index, undefined, 2))
