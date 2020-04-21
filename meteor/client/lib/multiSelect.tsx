@@ -47,9 +47,13 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		this.refreshChecked()
 	}
 
-	componentDidUpdate (prevProps: IProps) {
+	async componentDidUpdate (prevProps: IProps) {
 		if (this.props.value !== prevProps.value) {
 			this.refreshChecked()
+		}
+
+		if (this.state.expanded && typeof this._popperUpdate === 'function') {
+			await this._popperUpdate()
 		}
 	}
 
