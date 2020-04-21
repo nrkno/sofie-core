@@ -1882,7 +1882,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 										translateX: ['100%', '0%']
 									}, easing: 'ease-in', duration: 500
 								}}>
-									{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+									{this.state.isNotificationsCenterOpen && <NotificationCenterPanel limitCount={15} />}
 								</VelocityReact.VelocityTransitionGroup>
 								<VelocityReact.VelocityTransitionGroup enter={{
 									animation: {
