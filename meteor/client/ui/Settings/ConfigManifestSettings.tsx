@@ -6,7 +6,8 @@ const Tooltip = require('rc-tooltip')
 import {
 	Studio,
 	Studios,
-	MappingsExt
+	MappingsExt,
+	StudioId
 } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
@@ -54,7 +55,9 @@ function filterLayerMappings (select: ConfigManifestEntryLayerMappings<true | fa
 
 function getEditAttribute<DBInterface extends { _id: ProtectedString<any>}, DocClass extends DBInterface> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	object: DBInterface, item: BasicConfigManifestEntry, attribute: string) {
+	object: DBInterface, item: BasicConfigManifestEntry, attribute: string,
+	layerMappings?: {[key: string]: MappingsExt},
+	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>) {
 	switch (item.type) {
 		case ConfigManifestEntryType.STRING:
 			return <EditAttribute
@@ -102,24 +105,31 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any>}, DocC
 				className='input text-input dropdown input-l' />
 		case ConfigManifestEntryType.SOURCE_LAYERS:
 			const selectSourceLayer = item as ConfigManifestEntrySourceLayers<true | false>
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
-				options={filterSourceLayers(selectSourceLayer, object['sourceLayersFlat'])}
-				collection={collection}
-				className='input text-input dropdown input-l' />
+			if (sourceLayers) {
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={object}
+					type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
+					options={filterSourceLayers(selectSourceLayer, sourceLayers)}
+					collection={collection}
+					className='input text-input dropdown input-l'
+				/>
+			}
+			break
 		case ConfigManifestEntryType.LAYER_MAPPINGS:
 			const selectLayerMappings = item as ConfigManifestEntryLayerMappings <true | false>
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
-				options={filterLayerMappings(selectLayerMappings, object['layerMappingsFlat'])}
-				collection={collection}
-				className='input text-input dropdown input-l' />
+			if (layerMappings) {
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={object}
+					type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
+					options={filterLayerMappings(selectLayerMappings, layerMappings)}
+					collection={collection}
+					className='input text-input dropdown input-l' />
+			}
+			break
 		default:
 			return null
 	}
@@ -131,6 +141,9 @@ interface IConfigManifestSettingsProps<TCol extends TransformedCollection<DocCla
 	collection: TCol
 	object: DBInterface
 	configPath: KeysByType<DBInterface, Array<IConfigItem>>
+
+	layerMappings?: {[key: string]: MappingsExt}
+	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>
 
 	subPanel?: boolean
 }
@@ -529,7 +542,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 			return (
 				<label className='field'>
 					{t('Value')}
-					{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+					{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute, this.props.layerMappings, this.props.sourceLayers) }
 				</label>
 			)
 		}

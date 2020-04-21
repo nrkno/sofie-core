@@ -21,7 +21,7 @@ import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
@@ -219,12 +219,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<ConfigManifestSettings
 							t={this.props.t}
 							manifest={this.props.blueprintConfigManifest}
-							object={{
-								...showStyleBase,
-								layerMappingsFlat: this.getLayerMappingsFlat(),
-								sourceLayersFlat: this.getSourceLayersFlat()
-							}}
+							object={showStyleBase}
 							collection={ShowStyleBases}
+							layerMappings={this.getLayerMappingsFlat()}
+							sourceLayers={this.getSourceLayersFlat()}
 							configPath={'config'}
 							/>
 					</div>

@@ -1222,10 +1222,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						<ConfigManifestSettings
 							t={this.props.t}
 							manifest={this.props.blueprintConfigManifest}
-							object={{
-								...this.props.studio,
-								layerMappingsFlat: this.getLayerMappingsFlat(),
-							}}
+							object={this.props.studio}
+							layerMappings={ this.getLayerMappingsFlat() }
 							collection={Studios}
 							configPath={'config'}
 							/>
