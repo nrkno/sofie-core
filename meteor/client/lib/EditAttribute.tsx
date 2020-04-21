@@ -456,10 +456,17 @@ const EditAttributeDropdown = wrapEditAttribute(class EditAttributeDropdown exte
 
 				for (let key in this.props.options) {
 					let val = this.props.options[key]
-					options.push({
-						name: key + ': ' + val,
-						value: val
-					})
+					if (Array.isArray(val)) {
+						options.push({
+							name: key,
+							value: val
+						})
+					} else {
+						options.push({
+							name: key + ': ' + val,
+							value: val
+						})
+					}
 				}
 			}
 
@@ -468,6 +475,9 @@ const EditAttributeDropdown = wrapEditAttribute(class EditAttributeDropdown exte
 		if (addOptionForCurrentValue) {
 			let currentValue = this.getAttribute()
 			let currentOption = _.find(options, (o) => {
+				if	(Array.isArray(o.value)) {
+					return _.contains(o.value, currentValue)
+				}
 				return o.value === currentValue
 			})
 			if (!currentOption) {
@@ -493,7 +503,13 @@ const EditAttributeDropdown = wrapEditAttribute(class EditAttributeDropdown exte
 				value={this.getAttributeText()}
 				onChange={this.handleChange}
 			>
-				{this.getOptions(true).map((o) => (
+				{this.getOptions(true).map((o, j) => (
+					Array.isArray(o.value) ?
+					<optgroup key={j} label={o.name}>
+						{o.value.map((v, i) => (
+							<option key={i} value={v + ''}>{v}</option>
+						))}
+					</optgroup> :
 					<option key={o.i} value={o.value + ''}>{o.name}</option>
 				))}
 			</select>
@@ -510,7 +526,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(class EditAttributeMultiSelec
 		this.handleUpdate(event.selectedValues)
 	}
 	getOptions () {
-		let options: _.Dictionary<string> = {}
+		let options: _.Dictionary<string | string[]> = {}
 
 		if (Array.isArray(this.props.options)) {
 			// is it an enum?
@@ -523,7 +539,6 @@ const EditAttributeMultiSelect = wrapEditAttribute(class EditAttributeMultiSelec
 				}
 			}
 		} else if (typeof this.props.options === 'object') {
-
 			// Is options an enum?
 			let keys = Object.keys(this.props.options)
 			let first = this.props.options[keys[0]]
@@ -539,7 +554,11 @@ const EditAttributeMultiSelect = wrapEditAttribute(class EditAttributeMultiSelec
 			} else {
 				for (let key in this.props.options) {
 					let val = this.props.options[key]
-					options[val] = key + ': ' + val
+					if (Array.isArray(val)) {
+						options[key] = val
+					} else {
+						options[val] = key + ': ' + val
+					}
 				}
 			}
 
