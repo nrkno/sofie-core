@@ -50,12 +50,13 @@ interface IResetPageState {
 	password: string
 }
 
-export const ResetPage = translateWithTracker(() => {
+export const ResetPage = translateWithTracker((props: IResetPageProps) => {
 
 	const user = getUser()
 	if (user) {
 		// If user is logged in, forward to lobby:
 		// https://reacttraining.com/react-router/web/api/Redirect
+		props.history.push('/lobby')
 	}
 
 	return {

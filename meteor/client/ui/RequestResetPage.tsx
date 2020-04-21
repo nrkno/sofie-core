@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
+import { RouteComponentProps } from 'react-router'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -40,7 +41,7 @@ enum ToolTipStep {
 	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS'
 }
 
-interface IRequestResetPageProps {
+interface IRequestResetPageProps extends RouteComponentProps {
 	coreSystem: ICoreSystem
 }
 
@@ -50,12 +51,13 @@ interface IRequestResetPageState {
 	email: string
 }
 
-export const RequestResetPage = translateWithTracker(() => {
+export const RequestResetPage = translateWithTracker((props: IRequestResetPageProps) => {
 
 	const user = getUser()
 	if (user) {
 		// If user is logged in, forward to lobby:
 		// https://reacttraining.com/react-router/web/api/Redirect
+		props.history.push('/lobby')
 	}
 
 	return {

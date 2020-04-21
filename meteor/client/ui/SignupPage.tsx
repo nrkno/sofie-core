@@ -1,7 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
+import { RouteComponentProps } from 'react-router'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -32,7 +34,7 @@ import { getUser } from '../../lib/collections/Users'
 
 const PackageInfo = require('../../package.json')
 
-const validEmailRegex = new RegExp('/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/')
+const validEmailRegex = new RegExp("/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/igm")
 
 interface RundownPlaylistUi extends RundownPlaylist {
 	rundownStatus: string
@@ -48,7 +50,7 @@ enum ToolTipStep {
 	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS'
 }
 
-interface ISignupPageProps {
+interface ISignupPageProps extends RouteComponentProps {
 	coreSystem: ICoreSystem
 	rundownPlaylists: Array<RundownPlaylistUi>
 }
@@ -58,14 +60,16 @@ interface ISignupPageState {
 	subsReady: boolean
 	email: string
 	password: string
+	organization: string
 }
 
-export const SignupPage = translateWithTracker(() => {
+export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 
 	const user = getUser()
 	if (user) {
 		// If user is logged in, forward to lobby:
 		// https://reacttraining.com/react-router/web/api/Redirect
+		props.history.push('/lobby')
 	}
 
 	return {
@@ -78,15 +82,39 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 
 		this.state = {
 			subsReady: false,
-			email: '',
-			password: ''
+			email: 'chrisryanouellette@gmail.com',
+			password: '123123',
+			organization: 'New Org!'
 		}
+	}
+
+	private createAccount() {
+		
+		try {
+			if(!this.state.email.length) throw new Error('Please enter an email address')
+			if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
+			if(!this.state.password.length) throw new Error('Please enter an password')
+		} catch (error) {
+			/** @TODO Display error to user in UI */
+			console.error(error)
+		}
+
+		const userId = Accounts.createUser({
+			email: this.state.email, 
+			password: this.state.password
+		}, (error) => {
+			if(error) {
+				console.error(error);
+			}
+			console.log(userId)
+			MeteorCall.organization.insertOrganization(this.state.organization).catch(console.error)
+		})
 	}
 	render() {
 		const { t } = this.props
 		return (
 			<React.Fragment>
-
+				<button onClick={() => this.createAccount()} >Sign Up</button>
 			</React.Fragment>
 		)
 	}

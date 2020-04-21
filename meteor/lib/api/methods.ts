@@ -15,6 +15,7 @@ import { NewTestToolsAPI, TestToolsAPIMethods } from './testTools'
 import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
+import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { UserId } from '../typings/meteor'
 
 
@@ -38,6 +39,7 @@ interface IMeteorCall {
 	systemStatus: NewSystemStatusAPI
 	testTools: NewTestToolsAPI
 	userAction: NewUserActionAPI
+	organization: NewOrganizationAPI
 }
 export const MeteorCall: IMeteorCall = {
 	blueprint:			makeMethods(BlueprintAPIMethods),
@@ -54,7 +56,8 @@ export const MeteorCall: IMeteorCall = {
 	studio:				makeMethods(StudiosAPIMethods),
 	systemStatus:		makeMethods(SystemStatusAPIMethods),
 	testTools:			makeMethods(TestToolsAPIMethods),
-	userAction:			makeMethods(UserActionAPIMethods)
+	userAction:			makeMethods(UserActionAPIMethods),
+	organization:		makeMethods(OrganizationAPIMethods)
 }
 function makeMethods (methods: object): any {
 	const o = {}

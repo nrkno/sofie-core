@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
-	enableUserAccounts: false
+	enableUserAccounts: true
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

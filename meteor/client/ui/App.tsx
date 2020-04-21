@@ -42,6 +42,7 @@ import { LoginPage } from './LoginPage'
 import { SignupPage } from './SignupPage'
 import { RequestResetPage } from './RequestResetPage'
 import { ResetPage } from './ResetPage'
+import { AccountPage } from './AccountPage';
 
 interface IAppState {
 	allowStudio: boolean
@@ -153,6 +154,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 									<Route exact path='/signup' component={SignupPage} />
 									<Route exact path='/reset' component={RequestResetPage} />
 									<Route exact path='/reset/:token' component={ResetPage} />
+									<Route exact path='/account' component={AccountPage} />
 									<Route exact path='/lobby' component={RundownList} />
 								</React.Fragment> :
 								<Route exact path='/' component={RundownList} />
