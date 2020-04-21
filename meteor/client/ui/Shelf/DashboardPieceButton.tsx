@@ -38,6 +38,7 @@ export interface IDashboardButtonProps {
 	playlist: RundownPlaylist
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
+	isNext?: boolean
 	widthScale?: number
 	heightScale?: number
 	displayStyle?: PieceDisplayStyle
@@ -153,7 +154,8 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 				'live': this.props.isOnAir,
-				'list': isList
+				'list': isList,
+				'selected': this.props.isNext
 			}, this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
 					width: isList ? 'calc(100% - 8px)' : (this.props.widthScale ?

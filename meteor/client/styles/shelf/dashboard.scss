@@ -327,6 +327,7 @@ $dashboard-button-height: 5.625em;
 			height: 2.4em;
 			align-items: center;
 			font-size: 16px;
+			border: 2px solid transparent;
 
 			> .dashboard-panel__panel__button__sub-label {
 				font-size: 22px;
@@ -340,6 +341,63 @@ $dashboard-button-height: 5.625em;
 			> .dashboard-panel__panel__button__thumbnail {
 				height: 100%;
 				right: auto;
+			}
+
+			> .video-preview {
+				position: relative;
+				overflow: hidden;
+				background: #000;
+				height: 100%;
+				width: 67px;
+	
+				> .background {
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					right: 0;
+				}
+	
+				> .box {
+					position: absolute;
+					transform: translate(-50%, -50%);
+				}
+	
+				& > * {
+					@include item-type-colors();
+				}
+			}
+
+			&.selected {
+				border-color: var(--general-next-color);
+			}
+		}
+	}
+
+	&.dashboard-panel--take {
+		display: flex;
+		flex-direction: column;
+
+		> .dashboard-panel__panel {
+			flex: 1;
+			
+		}
+
+		> .dashboard-panel__buttons {
+			display: flex;
+			margin-top: 0.625rem;
+			
+			> .dashboard-panel__panel__button {
+				flex: 1;
+				background: var(--general-live-color);
+				height: 3em;
+				align-items: center;
+
+				> .dashboard-panel__panel__button__label {
+					width: 100%;
+					text-align: center;
+					font-size: 1.4em;
+				}
 			}
 		}
 	}

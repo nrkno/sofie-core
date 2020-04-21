@@ -39,6 +39,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { getNextPiecesReactive } from './MultiViewPanel'
 
 interface IState {
 	outputLayers: {
@@ -58,6 +59,9 @@ interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieceInstanceIds: {
 		[adlibId: string]: PieceInstanceId[]
+	}
+	nextPieces: {
+		[key: string]: PieceInstanceId[]
 	}
 }
 
@@ -225,6 +229,13 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 
 	isAdLibOnAir (adLib: AdLibPieceUi) {
 		if (this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)] && this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)].length > 0) {
+			return true
+		}
+		return false
+	}
+
+	isAdLibNext (adLib: AdLibPieceUi) {
+		if (this.props.nextPieces[unprotectString(adLib._id)] && this.props.nextPieces[unprotectString(adLib._id)].length > 0) {
 			return true
 		}
 		return false
@@ -434,6 +445,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 												onToggleAdLib={this.onToggleAdLib}
 												playlist={this.props.playlist}
 												isOnAir={this.isAdLibOnAir(adLibPiece)}
+												isNext={this.isAdLibNext(adLibPiece)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
@@ -537,7 +549,8 @@ export function getUnfinishedPieceInstancesReactive (currentPartInstanceId: Part
 export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return Object.assign({}, fetchAndFilter(props), {
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
+		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+		nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId)
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
