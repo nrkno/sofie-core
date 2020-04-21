@@ -507,6 +507,16 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 				return value ? t('true') : t('false')
 			case ConfigManifestEntryType.TABLE:
 				return t('{{count}} rows', { count: ((rawValue as any[] || []).length) })
+			case ConfigManifestEntryType.SELECT:
+			case ConfigManifestEntryType.LAYER_MAPPINGS:
+			case ConfigManifestEntryType.SOURCE_LAYERS:
+				return _.isArray(value) ?
+				<React.Fragment>
+					<ul className='table-values-list'>
+						{_.map(value as string[] || [], val => <li key={val}>{val}</li>)}
+					</ul>
+				</React.Fragment> :
+				value.toString()
 			default:
 				return value.toString()
 		}
@@ -515,16 +525,26 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
 		const baseAttribute = `config.${valIndex}.value`
 		const { t, collection, object } = this.props
-		if (item.type === ConfigManifestEntryType.TABLE) {
-			const item2 = item as ConfigManifestEntryTable
-			return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
-		} else {
-			return (
-				<label className='field'>
-					{t('Value')}
-					{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
-				</label>
-			)
+		switch (item.type) {
+			case ConfigManifestEntryType.TABLE:
+				const item2 = item as ConfigManifestEntryTable
+				return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+			case ConfigManifestEntryType.SELECT:
+			case ConfigManifestEntryType.LAYER_MAPPINGS:
+			case ConfigManifestEntryType.SOURCE_LAYERS:
+				return (
+					<div className='field'>
+						{t('Value')}
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+					</div>
+				)
+			default:
+				return (
+					<label className='field'>
+						{t('Value')}
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+					</label>
+				)
 		}
 	}
 
