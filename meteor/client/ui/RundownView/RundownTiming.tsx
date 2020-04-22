@@ -332,7 +332,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 						(this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0) + (partInstance.part.expectedDuration || 0)
 					displayDurationFromGroup = partInstance.part.displayDuration
-						|| Math.max(0, this.displayDurationGroups[partInstance.part.displayDurationGroup], this.props.defaultDuration || DEFAULT_DURATION)
+						|| Math.max(0, this.displayDurationGroups[partInstance.part.displayDurationGroup], partInstance.part.gap ? 1 : this.props.defaultDuration || DEFAULT_DURATION)
 					memberOfDisplayDurationGroup = true
 				}
 
@@ -411,7 +411,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 				}
 
 				// Handle invalid parts by overriding the values to preset values for Invalid parts
-				if (partInstance.part.invalid) {
+				if (partInstance.part.invalid && !partInstance.part.gap) {
 					partDisplayDuration = this.props.defaultDuration || DEFAULT_DURATION
 					this.partPlayed[unprotectString(partInstance.part._id)] = 0
 				}
