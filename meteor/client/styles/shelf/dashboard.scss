@@ -401,4 +401,40 @@ $dashboard-button-height: 5.625em;
 			}
 		}
 	}
+
+	&.dashboard-panel--take {
+		display: flex;
+		flex-direction: column;
+
+		> .dashboard-panel__panel {
+			flex: 1;
+
+			> .dashboard-panel__panel__button {
+				border: 2px solid transparent;
+				
+				&.selected {
+					border-color: var(--general-next-color);
+				}
+			}
+			
+		}
+
+		> .dashboard-panel__buttons {
+			display: flex;
+			margin-top: 0.625rem;
+			
+			> .dashboard-panel__panel__button {
+				flex: 1;
+				background: var(--general-live-color);
+				height: 3em;
+				align-items: center;
+
+				> .dashboard-panel__panel__button__label {
+					width: 100%;
+					text-align: center;
+					font-size: 1.4em;
+				}
+			}
+		}
+	}
 }

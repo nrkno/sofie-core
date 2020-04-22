@@ -121,6 +121,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	overflowHorizontally?: boolean
 	showAsTimeline?: boolean
 	hide?: boolean
+	displayTakeButtons?: boolean
 }
 
 /** A string, identifying a RundownLayout */

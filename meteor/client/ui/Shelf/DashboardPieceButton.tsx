@@ -42,6 +42,7 @@ export interface IDashboardButtonProps {
 	widthScale?: number
 	heightScale?: number
 	displayStyle?: PieceDisplayStyle
+	isSelected?: boolean
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -155,7 +156,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 
 				'live': this.props.isOnAir,
 				'list': isList,
-				'selected': this.props.isNext
+				'selected': this.props.isNext || this.props.isSelected
 			}, this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
 					width: isList ? 'calc(100% - 8px)' : (this.props.widthScale ?

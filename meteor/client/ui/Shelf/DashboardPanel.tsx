@@ -48,7 +48,8 @@ interface IState {
 	sourceLayers: {
 		[key: string]: ISourceLayer
 	},
-	searchFilter: string | undefined
+	searchFilter: string | undefined,
+	selectedAdLib?: AdLibPieceUi
 }
 
 interface IDashboardPanelProps {
@@ -413,14 +414,63 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		})
 	}
 
+	onIn = (e: any) => {
+		const { t } = this.props
+		if (this.state.selectedAdLib) {
+			const piece = this.state.selectedAdLib
+			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+					if (!piece.isGlobal) {
+						doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
+							this.props.playlist._id,
+							this.props.playlist.currentPartInstanceId as PartInstanceId,
+							piece._id,
+							false
+						))
+					} else if (piece.isGlobal && !piece.isSticky) {
+						doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
+							this.props.playlist._id,
+							this.props.playlist.currentPartInstanceId as PartInstanceId,
+							piece._id,
+							false
+						))
+					} else if (piece.isSticky) {
+						this.onToggleSticky(piece.sourceLayerId, e)
+					}
+				}
+			}
+		}
+	}
+
+	onOut = (e: any) => {
+		const { t } = this.props
+		if (this.state.selectedAdLib) {
+			const piece = this.state.selectedAdLib
+			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
+			if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
+				this.onClearAllSourceLayers([sourceLayer], e)
+			}
+		}
+	}
+
+	onSelectAdLib = (piece: AdLibPieceUi, queue: boolean, e: any) => {
+		this.setState({
+			selectedAdLib: piece
+		})
+	}
+
 	render () {
+		const { t } = this.props
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />
 			} else {
 				return (
-					<div className='dashboard-panel'
+					<div className={ClassNames('dashboard-panel', {
+						'dashboard-panel--take': filter.displayTakeButtons
+					})}
 						style={dashboardElementPosition(filter)}
 					>
 						<h4 className='dashboard-panel__header'>
@@ -442,7 +492,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 												adLibListItem={adLibPiece}
 												layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
 												outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
-												onToggleAdLib={this.onToggleAdLib}
+												onToggleAdLib={filter.displayTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
 												playlist={this.props.playlist}
 												isOnAir={this.isAdLibOnAir(adLibPiece)}
 												isNext={this.isAdLibNext(adLibPiece)}
@@ -450,11 +500,26 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
 												displayStyle={filter.displayStyle}
+												isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
 											>
 												{adLibPiece.name}
 									</DashboardPieceButton>
 								})}
 						</div>
+						{filter.displayTakeButtons &&
+							<div className='dashboard-panel__buttons'>
+								<div className={ClassNames('dashboard-panel__panel__button')}
+									onClick={(e) => { this.onIn(e) }}
+								>
+									<span className='dashboard-panel__panel__button__label'>{t('In')}</span>
+								</div>
+								<div className={ClassNames('dashboard-panel__panel__button')}
+									onClick={(e) => { this.onOut(e) }}
+								>
+									<span className='dashboard-panel__panel__button__label'>{t('Out')}</span>
+								</div>
+							</div>
+						}
 					</div>
 				)
 			}
