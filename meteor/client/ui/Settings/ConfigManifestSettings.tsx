@@ -163,6 +163,9 @@ interface IConfigManifestTableProps<TCol extends TransformedCollection<DocClass,
 	collection: TCol
 	object: DBInterface
 
+	layerMappings?: {[key: string]: MappingsExt}
+	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>
+
 	subPanel?: boolean
 }
 interface IConfigManifestTableState {
@@ -352,7 +355,7 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 						{
 							_.map(vals, (val, i) => <tr key={sortedIndices[i]}>
 								{ _.map(configEntry.columns, col => <td key={col.id}>{
-									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${sortedIndices[i]}.${col.id}`)
+									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${sortedIndices[i]}.${col.id}`, this.props.layerMappings, this.props.sourceLayers)
 								}</td>) }
 								<td>
 									<button className={ClassNames('btn btn-danger', {
@@ -548,21 +551,21 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
 				const item2 = item as ConfigManifestEntryTable
-				return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+				return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} layerMappings={this.props.layerMappings} sourceLayers={this.props.sourceLayers} />
 			case ConfigManifestEntryType.SELECT:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:
 				return (
 					<div className='field'>
 						{t('Value')}
-						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute, this.props.layerMappings, this.props.sourceLayers) }
 					</div>
 				)
 			default:
 				return (
 					<label className='field'>
 						{t('Value')}
-						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute, this.props.layerMappings, this.props.sourceLayers) }
 					</label>
 				)
 		}
