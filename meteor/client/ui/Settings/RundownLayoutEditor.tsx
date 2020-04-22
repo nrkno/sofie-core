@@ -21,8 +21,8 @@ import {
 	RundownLayoutElementType,
 	RundownLayoutElementBase,
 	RundownLayoutExternalFrame,
-    RundownLayoutMultiView,
-    RundownLayoutMultiViewRole,
+	RundownLayoutMultiView,
+	RundownLayoutMultiViewRole,
 	RundownLayoutId
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -124,7 +124,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							t('New Panel') :
 							t('New Item'),
 					currentSegment: false,
-					displayStyle: isDashboardLayout ? PieceDisplayStyle.BUTTONS : PieceDisplayStyle.LIST,
+					displayStyle: PieceDisplayStyle.BUTTONS,
 					label: undefined,
 					sourceLayerIds: undefined,
 					outputLayerIds: undefined,
