@@ -22,11 +22,17 @@ export interface ShowStyleCompound extends ShowStyleBase {
 	showStyleVariantId: ShowStyleVariantId
 }
 export function getShowStyleCompound (showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
-	let showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
+	const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
 	if (!showStyleVariant) return undefined
-	let showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
+	const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
 	if (!showStyleBase) return undefined
 
+	return createShowStyleCompound(showStyleBase, showStyleVariant)
+}
+
+export function createShowStyleCompound(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): ShowStyleCompound | undefined {
+	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
+	
 	let configs: {[id: string]: IConfigItem} = {}
 	_.each(showStyleBase.config, (config: IConfigItem) => {
 		configs[config._id] = config

@@ -4,10 +4,21 @@ import * as _ from 'underscore'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from './userActions'
 
+export interface RundownPlaylistValidateBlueprintConfigResult {
+	studio: string[]
+	showStyles: Array<{
+		id: string
+		name: string
+		checkFailed: boolean 
+		fields: string[]
+	}>
+}
+
 export interface NewRundownAPI {
 	removeRundownPlaylist (playlistId: RundownPlaylistId): Promise<void>
 	resyncRundownPlaylist (playlistId: RundownPlaylistId): Promise<ReloadRundownPlaylistResponse>
 	rundownPlaylistNeedsResync (playlistId: RundownPlaylistId): Promise<string[]>
+	rundownPlaylistValidateBlueprintConfig (playlistId: RundownPlaylistId): Promise<RundownPlaylistValidateBlueprintConfigResult>
 	removeRundown (rundownId: RundownId): Promise<void>
 	resyncRundown (rundownId: RundownId): Promise<ReloadRundownResponse>
 	unsyncRundown (rundownId: RundownId): Promise<void>
@@ -17,6 +28,7 @@ export enum RundownAPIMethods {
 	'removeRundownPlaylist' = 'rundown.removeRundownPlaylist',
 	'resyncRundownPlaylist' = 'rundown.resyncRundownPlaylist',
 	'rundownPlaylistNeedsResync' = 'rundown.rundownPlaylistNeedsResync',
+	'rundownPlaylistValidateBlueprintConfig' = 'rundown.rundownPlaylistValidateBlueprintConfig',
 
 	'removeRundown' 		= 'rundown.removeRundown',
 	'resyncRundown' 		= 'rundown.resyncRundown',

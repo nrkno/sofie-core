@@ -28,7 +28,7 @@ import {
 	IBlueprintAsRunLogEvent
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig } from './config'
+import { ConfigRef, compileStudioConfig, findMissingConfigs } from './config'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
@@ -39,6 +39,7 @@ import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/Run
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { PieceInstances, unprotectPieceInstance } from '../../../lib/collections/PieceInstances'
 import { InternalIBlueprintPartInstance, PartInstanceId, unprotectPartInstance, PartInstance } from '../../../lib/collections/PartInstances'
+import { Blueprints } from '../../../lib/collections/Blueprints'
 
 /** Common */
 
@@ -151,6 +152,16 @@ export class StudioConfigContext implements IStudioConfigContext {
 		return this.studio
 	}
 	getStudioConfig (): Readonly<{[key: string]: ConfigItemValue}> {
+		const studioBlueprint = Blueprints.findOne(this.studio.blueprintId)
+		if (studioBlueprint) {
+			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest, this.studio.config)
+			if (diffs && diffs.length) {
+				logger.warn(`Studio "${this.studio._id}" missing required config: ${diffs.join(', ')}`)
+			}
+		} else {
+			logger.warn(`Studio blueprint "${this.studio.blueprintId}" not found!`)
+		}
+
 		return compileStudioConfig(this.studio)
 	}
 	getStudioConfigRef (configKey: string): string {
@@ -194,6 +205,16 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	getShowStyleConfig (): {[key: string]: ConfigItemValue} {
 		const showStyleCompound = getShowStyleCompound(this.showStyleVariantId)
 		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.showStyleVariantId}"`)
+
+		const showStyleBlueprint = Blueprints.findOne(showStyleCompound.blueprintId)
+		if (showStyleBlueprint) {
+			const diffs = findMissingConfigs(showStyleBlueprint.showStyleConfigManifest, showStyleCompound.config)
+			if (diffs && diffs.length) {
+				logger.warn(`ShowStyle "${showStyleCompound._id}-${showStyleCompound.showStyleVariantId}" missing required config: ${diffs.join(', ')}`)
+			}
+		} else {
+			logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
+		}
 
 		const res: {[key: string]: ConfigItemValue} = {}
 		_.each(showStyleCompound.config, (c) => {
