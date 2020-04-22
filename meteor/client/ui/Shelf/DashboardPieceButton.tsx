@@ -43,6 +43,7 @@ export interface IDashboardButtonProps {
 	heightScale?: number
 	displayStyle?: PieceDisplayStyle
 	isSelected?: boolean
+	queueAllAdlibs?: boolean
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -166,7 +167,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
-				onClick={(e) => this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey, e)}
+				onClick={(e) => this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey || !!this.props.queueAllAdlibs, e)}
 				data-obj-id={this.props.adLibListItem._id}
 				>
 				{

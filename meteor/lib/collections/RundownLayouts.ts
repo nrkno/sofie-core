@@ -122,6 +122,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	showAsTimeline?: boolean
 	hide?: boolean
 	displayTakeButtons?: boolean
+	queueAllAdlibs?: boolean
 }
 
 /** A string, identifying a RundownLayout */
