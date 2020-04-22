@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.7.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.7.0...v1.7.1) (2020-04-16)
+
+
+### Bug Fixes
+
+* isClosetoAutonext check incorrect when play-offset was 0 ([ebcba37](https://github.com/nrkno/tv-automation-server-core/commit/ebcba37))
+* make the userActions.take method be a syncFunction on a rundownPlaylist ([#214](https://github.com/nrkno/tv-automation-server-core/issues/214)) ([ecb5299](https://github.com/nrkno/tv-automation-server-core/commit/ecb5299))
+* rundown layouts api methods exception ([bcb4b8d](https://github.com/nrkno/tv-automation-server-core/commit/bcb4b8d))
+* server UserMethods use methodContext as context ([ee0386e](https://github.com/nrkno/tv-automation-server-core/commit/ee0386e))
+* temporary workaround for weird key assignments ([ce0d826](https://github.com/nrkno/tv-automation-server-core/commit/ce0d826))
+
+
+
 ## [1.7.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.7.0-3...v1.7.0) (2020-03-31)
 
 

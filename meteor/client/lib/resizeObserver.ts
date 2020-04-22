@@ -6,6 +6,7 @@ declare global {
 	interface ResizeObserverEntry {
 		contentBoxSize?: DOMRectReadOnly
 		borderBoxSize?: DOMRectReadOnly
+		contentRect?: DOMRectReadOnly
 		target?: HTMLElement
 	}
 
