@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { Piece, InternalIBlueprintPieceGeneric } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { extendMandadory, getHash, protectString, unprotectString, Omit } from '../../../lib/lib'
+import { extendMandadory, getHash, protectString, unprotectString, Omit, literal } from '../../../lib/lib'
 import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
@@ -16,10 +16,13 @@ import {
 	IBlueprintAdLibPiece,
 	RundownContext,
 	TSR,
+	IBlueprintActionManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PartId } from '../../../lib/collections/Parts'
+import { AdLibAction } from '../../../lib/collections/AdLibActions';
+import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions';
 
 export function postProcessPieces (innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
 	let i = 0
@@ -92,6 +95,23 @@ export function postProcessAdLibPieces (innerContext: RundownContext, adLibPiece
 
 		return piece
 	})
+}
+
+export function postProcessGlobalAdLibActions(innerContext: RundownContext, adlibActions: IBlueprintActionManifest[], blueprintId: BlueprintId): RundownBaselineAdLibAction[] {
+	return _.map(adlibActions, (action, i) => literal<RundownBaselineAdLibAction>({
+		...action,
+		_id: protectString(getHash(`${blueprintId}_global_adlib_action_${i}`)),
+		rundownId: protectString(innerContext.rundownId)
+	}))
+}
+
+export function postProcessAdLibActions(innerContext: RundownContext, adlibActions: IBlueprintActionManifest[], blueprintId: BlueprintId, partId: PartId): AdLibAction[] {
+	return _.map(adlibActions, (action, i) => literal<AdLibAction>({
+		...action,
+		_id: protectString(getHash(`${blueprintId}_${partId}_adlib_action_${i}`)),
+		rundownId: protectString(innerContext.rundownId),
+		partId: partId
+	}))
 }
 
 export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
