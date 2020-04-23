@@ -503,6 +503,15 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 		}
 		currentPartGroup = createPartGroup(currentPartInstance, currentPartEnable)
 
+		const nextPartInfinites: { [infiniteId: string]: PieceInstance | undefined } = {}
+		if (currentPartInstance.part.autoNext && nextPartInstance) {
+			nextPartInstance.getAllPieceInstances().forEach(piece => {
+				if (piece.piece.infiniteId) {
+					nextPartInfinites[unprotectString(piece.piece.infiniteId)] = piece
+				}
+			})
+		}
+
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
 			const infiniteGroup = createPartGroup(currentPartInstance, {
@@ -536,6 +545,14 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 							infiniteGroup.enable.duration = offsetTimelineEnableExpression(piece.piece.userDuration.duration, previousPartsDuration)
 						}
 					}
+				}
+
+				// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
+				const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) => enable.duration !== undefined || enable.end !== undefined
+				const infiniteInNextPart = nextPartInfinites[unprotectString(piece.piece.infiniteId)]
+				if (infiniteInNextPart && !hasDurationOrEnd(infiniteGroup.enable) && hasDurationOrEnd(infiniteInNextPart.piece.enable)) {
+					infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
+					infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
 				}
 			}
 
