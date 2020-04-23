@@ -630,10 +630,6 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 			}, 'rundownBaselineAdLibs', currentRundown._id, sourceLayerLookup, props.showStyleBase.sourceLayers, sourceHotKeyUse)
 		}
 
-		if (props.filter.rundownBaseline === 'only') {
-			uiSegments.length = 0
-		}
-
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun((sourceLayers: ISourceLayer[]) => {
 				return sourceLayers.filter(i => !!i.clearKeyboardHotkey).
@@ -660,7 +656,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	}
 
 	return {
-		uiSegments,
+		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs
