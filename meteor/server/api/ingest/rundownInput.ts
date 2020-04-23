@@ -56,7 +56,7 @@ import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import { RundownBaselineObj, RundownBaselineObjs, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
-import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
+import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces, postProcessAdLibActions, postProcessGlobalAdLibActions } from '../blueprints/postProcess'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -79,6 +79,8 @@ import { PieceInstances, wrapPieceToInstance, PieceInstance, PieceInstanceId } f
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
 import { Settings } from '../../../lib/Settings'
+import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { RundownBaselineAdLibActions, RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -89,7 +91,7 @@ export enum RundownSyncFunctionPriority {
 	/** Events initiated from user, for playout */
 	USER_PLAYOUT = 10
 }
-export function rundownPlaylistSyncFunction<T extends Function> (rundownPlaylistId: RundownPlaylistId, priority: RundownSyncFunctionPriority, fcn: T): ReturnType<T> {
+export function rundownPlaylistSyncFunction<T extends Function>(rundownPlaylistId: RundownPlaylistId, priority: RundownSyncFunctionPriority, fcn: T): ReturnType<T> {
 	return syncFunction(fcn, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
 }
 
@@ -103,52 +105,52 @@ interface SegmentChanges {
 
 export namespace RundownInput {
 	// Get info on the current rundowns from this device:
-	export function dataRundownList (self: any, deviceId: PeripheralDeviceId, deviceToken: string) {
+	export function dataRundownList(self: any, deviceId: PeripheralDeviceId, deviceToken: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataRundownList')
 		return listIngestRundowns(peripheralDevice)
 	}
-	export function dataRundownGet (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
+	export function dataRundownGet(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataRundownGet', rundownExternalId)
 		check(rundownExternalId, String)
 		return getIngestRundown(peripheralDevice, rundownExternalId)
 	}
 	// Delete, Create & Update Rundown (and it's contents):
-	export function dataRundownDelete (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
+	export function dataRundownDelete(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataRundownDelete', rundownExternalId)
 		check(rundownExternalId, String)
 		handleRemovedRundown(peripheralDevice, rundownExternalId)
 	}
-	export function dataRundownCreate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
+	export function dataRundownCreate(self: any, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataRundownCreate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownCreate')
 	}
-	export function dataRundownUpdate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
+	export function dataRundownUpdate(self: any, deviceId: PeripheralDeviceId, deviceToken: string, ingestRundown: IngestRundown) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownUpdate')
 	}
 	// Delete, Create & Update Segment (and it's contents):
-	export function dataSegmentDelete (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string) {
+	export function dataSegmentDelete(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataSegmentDelete', rundownExternalId, segmentExternalId)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		handleRemovedSegment(peripheralDevice, rundownExternalId, segmentExternalId)
 	}
-	export function dataSegmentCreate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
+	export function dataSegmentCreate(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataSegmentCreate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
 	}
-	export function dataSegmentUpdate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
+	export function dataSegmentUpdate(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, ingestSegment: IngestSegment) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataSegmentUpdate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
@@ -156,7 +158,7 @@ export namespace RundownInput {
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
 	}
 	// Delete, Create & Update Part:
-	export function dataPartDelete (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
+	export function dataPartDelete(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataPartDelete', rundownExternalId, segmentExternalId, partExternalId)
 		check(rundownExternalId, String)
@@ -164,7 +166,7 @@ export namespace RundownInput {
 		check(partExternalId, String)
 		handleRemovedPart(peripheralDevice, rundownExternalId, segmentExternalId, partExternalId)
 	}
-	export function dataPartCreate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
+	export function dataPartCreate(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataPartCreate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
@@ -172,7 +174,7 @@ export namespace RundownInput {
 		check(ingestPart, Object)
 		handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
 	}
-	export function dataPartUpdate (self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
+	export function dataPartUpdate(self: any, deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
 		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
 		logger.info('dataPartUpdate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
@@ -182,7 +184,7 @@ export namespace RundownInput {
 	}
 }
 
-function getIngestRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
+function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
 	const rundown = Rundowns.findOne({
 		peripheralDeviceId: peripheralDevice._id,
 		externalId: rundownExternalId
@@ -193,7 +195,7 @@ function getIngestRundown (peripheralDevice: PeripheralDevice, rundownExternalId
 
 	return loadCachedRundownData(rundown._id, rundown.externalId)
 }
-function listIngestRundowns (peripheralDevice: PeripheralDevice): string[] {
+function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 	const rundowns = Rundowns.find({
 		peripheralDeviceId: peripheralDevice._id
 	}).fetch()
@@ -201,7 +203,7 @@ function listIngestRundowns (peripheralDevice: PeripheralDevice): string[] {
 	return rundowns.map(r => r.externalId)
 }
 
-export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundownExternalId: string) {
+export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const rundownPlaylistId = getRundown(rundownId, rundownExternalId).playlistId
@@ -235,7 +237,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 				logger.warn(`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`)
 				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 			}
-		 } else {
+		} else {
 			logger.info(`Rundown "${rundown._id}" cannot be updated`)
 			if (!rundown.unsynced) {
 				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
@@ -246,7 +248,7 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 	})
 }
 /** Handle an updated (or inserted) Rundown */
-export function handleUpdatedRundown (
+export function handleUpdatedRundown(
 	peripheralDevice: PeripheralDevice,
 	ingestRundown: IngestRundown,
 	dataSource: string
@@ -264,7 +266,7 @@ export function handleUpdatedRundown (
 		handleUpdatedRundownInner(studio, rundownId, makeNewIngestRundown(ingestRundown), dataSource, peripheralDevice)
 	)
 }
-export function handleUpdatedRundownInner (
+export function handleUpdatedRundownInner(
 	studio: Studio,
 	rundownId: RundownId,
 	ingestRundown: IngestRundown | LocalIngestRundown,
@@ -276,7 +278,7 @@ export function handleUpdatedRundownInner (
 
 	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
-export function updateRundownAndSaveCache (
+export function updateRundownAndSaveCache(
 	studio: Studio,
 	rundownId: RundownId,
 	existingDbRundown: Rundown | undefined,
@@ -288,15 +290,15 @@ export function updateRundownAndSaveCache (
 
 	const newIngestRundown = (
 		isLocalIngestRundown(ingestRundown) ?
-		ingestRundown :
-		makeNewIngestRundown(ingestRundown)
+			ingestRundown :
+			makeNewIngestRundown(ingestRundown)
 	)
 
 	saveRundownCache(rundownId, newIngestRundown)
 
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
-function updateRundownFromIngestData (
+function updateRundownFromIngestData(
 	studio: Studio,
 	existingDbRundown: Rundown | undefined,
 	ingestRundown: IngestRundown,
@@ -370,35 +372,35 @@ function updateRundownFromIngestData (
 	const rundownChanges = saveIntoDb(Rundowns, {
 		_id: dbRundownData._id
 	}, [dbRundownData], {
-		beforeInsert: (o) => {
-			o.modified = getCurrentTime()
-			o.created = getCurrentTime()
-			return o
-		},
-		beforeUpdate: (o) => {
-			o.modified = getCurrentTime()
-			return o
-		}
-	})
+			beforeInsert: (o) => {
+				o.modified = getCurrentTime()
+				o.created = getCurrentTime()
+				return o
+			},
+			beforeUpdate: (o) => {
+				o.modified = getCurrentTime()
+				return o
+			}
+		})
 
 	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
 
 	const playlistChanges = saveIntoDb(RundownPlaylists, {
 		_id: rundownPlaylistInfo.rundownPlaylist._id
 	}, [rundownPlaylistInfo.rundownPlaylist], {
-		beforeInsert: (o) => {
-			o.created = getCurrentTime()
-			o.modified = getCurrentTime()
-			o.previousPartInstanceId = null
-			o.currentPartInstanceId = null
-			o.nextPartInstanceId = null
-			return o
-		},
-		beforeUpdate: (o) => {
-			o.modified = getCurrentTime()
-			return o
-		}
-	})
+			beforeInsert: (o) => {
+				o.created = getCurrentTime()
+				o.modified = getCurrentTime()
+				o.previousPartInstanceId = null
+				o.currentPartInstanceId = null
+				o.nextPartInstanceId = null
+				return o
+			},
+			beforeUpdate: (o) => {
+				o.modified = getCurrentTime()
+				return o
+			}
+		})
 
 	const dbRundown = Rundowns.findOne(dbRundownData._id)
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
@@ -423,7 +425,9 @@ function updateRundownFromIngestData (
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
-	const adlibItems = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, showStyle.base.blueprintId)
+	const baselineAdlibPieces = postProcessAdLibPieces(blueprintRundownContext, rundownRes.globalAdLibPieces, showStyle.base.blueprintId)
+	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
+	const baselineAdlibActions = postProcessGlobalAdLibActions(blueprintRundownContext, rundownRes.globalActions || [], showStyle.base.blueprintId)
 
 	// TODO - store notes from rundownNotesContext
 
@@ -435,6 +439,7 @@ function updateRundownFromIngestData (
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
+	const adlibActions: AdLibAction[] = []
 
 	const { blueprint, blueprintId } = getBlueprintOfRundown(dbRundown)
 
@@ -454,6 +459,7 @@ function updateRundownFromIngestData (
 		parts.push(...segmentContents.parts)
 		segmentPieces.push(...segmentContents.segmentPieces)
 		adlibPieces.push(...segmentContents.adlibPieces)
+		adlibActions.push(...segmentContents.adlibActions)
 	})
 
 	// Prepare updates:
@@ -470,6 +476,9 @@ function updateRundownFromIngestData (
 	let prepareSaveAdLibPieces = prepareSaveIntoCache<AdLibPiece, AdLibPiece>(cache.AdLibPieces, {
 		rundownId: rundownId,
 	}, adlibPieces)
+	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(AdLibActions, {
+		rundownId: rundownId,
+	}, adlibActions)
 
 	if (Settings.allowUnsyncedSegments) {
 
@@ -548,62 +557,77 @@ function updateRundownFromIngestData (
 		// Save the global adlibs
 		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(cache.RundownBaselineAdLibPieces, {
 			rundownId: dbRundown._id
-		}, adlibItems),
+		}, baselineAdlibPieces),
+		saveIntoDb<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(RundownBaselineAdLibActions, {
+			rundownId: dbRundown._id
+		}, baselineAdlibActions),
 
 		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
 
 		savePreparedChangesIntoCache<Piece, Piece>(prepareSavePieces, cache.Pieces, {
-			afterInsert (piece) {
+			afterInsert(piece) {
 				logger.debug('inserted piece ' + piece._id)
 				logger.debug(piece)
 			},
-			afterUpdate (piece) {
+			afterUpdate(piece) {
 				logger.debug('updated piece ' + piece._id)
 			},
-			afterRemove (piece) {
+			afterRemove(piece) {
 				logger.debug('deleted piece ' + piece._id)
 			}
 		}),
 
+		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdLibActions, cache.AdLibActions, {
+			afterInsert(adlibAction) {
+				logger.debug('inserted adlibAction ' + adlibAction._id)
+				logger.debug(adlibAction)
+			},
+			afterUpdate(adlibAction) {
+				logger.debug('updated adlibAction ' + adlibAction._id)
+			},
+			afterRemove(adlibAction) {
+				logger.debug('deleted adlibAction ' + adlibAction._id)
+			}
+		}),
 		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
-			afterInsert (adLibPiece) {
+			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
 			},
-			afterUpdate (adLibPiece) {
+			afterUpdate(adLibPiece) {
 				logger.debug('updated piece ' + adLibPiece._id)
 			},
-			afterRemove (adLibPiece) {
+			afterRemove(adLibPiece) {
 				logger.debug('deleted piece ' + adLibPiece._id)
 			}
 		}),
 		savePreparedChangesIntoCache<Part, DBPart>(prepareSaveParts, cache.Parts, {
-			afterInsert (part) {
+			afterInsert(part) {
 				logger.debug('inserted part ' + part._id)
 			},
-			afterUpdate (part) {
+			afterUpdate(part) {
 				logger.debug('updated part ' + part._id)
 			},
-			afterRemove (part) {
+			afterRemove(part) {
 				logger.debug('deleted part ' + part._id)
 			},
-			afterRemoveAll (parts) {
+			afterRemoveAll(parts) {
 				afterRemoveParts(cache, rundownId, parts)
 			}
 		}),
 
 		// Update Segments:
 		savePreparedChangesIntoCache(prepareSaveSegments, cache.Segments, {
-			afterInsert (segment) {
+			afterInsert(segment) {
 				logger.info('inserted segment ' + segment._id)
 			},
-			afterUpdate (segment) {
+			afterUpdate(segment) {
 				logger.info('updated segment ' + segment._id)
 			},
-			afterRemove (segment) {
+			afterRemove(segment) {
 				logger.info('removed segment ' + segment._id)
 			},
-			afterRemoveAll (segments) {
+			afterRemoveAll(segments) {
 				afterRemoveSegments(cache, rundownId, _.map(segments, s => s._id))
 			}
 		})
@@ -621,10 +645,10 @@ function updateRundownFromIngestData (
 	return didChange
 }
 
-function syncChangesToSelectedPartInstances (cache: CacheForRundownPlaylist, playlist: RundownPlaylist, parts: DBPart[], pieces: Piece[]) {
+function syncChangesToSelectedPartInstances(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, parts: DBPart[], pieces: Piece[]) {
 	// TODO-PartInstances - to be removed once new data flow
 
-	function syncPartChanges (partInstance: PartInstance | undefined, rawPieceInstances: PieceInstance[]) {
+	function syncPartChanges(partInstance: PartInstance | undefined, rawPieceInstances: PieceInstance[]) {
 		// We need to do this locally to avoid wiping out any stored changes
 		if (partInstance) {
 			const newPart = parts.find(p => p._id === partInstance.part._id)
@@ -690,7 +714,7 @@ function syncChangesToSelectedPartInstances (cache: CacheForRundownPlaylist, pla
 	})
 }
 
-function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
+function handleUpdatedRundownPlaylist(currentRundown: DBRundown, playlist: DBRundownPlaylist, order: _.Dictionary<number>) {
 	let rundowns: DBRundown[] = []
 	let selector: Mongo.Selector<DBRundown> = {}
 	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
@@ -698,7 +722,7 @@ function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRu
 		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
 	} else if (!currentRundown.playlistExternalId) {
 		selector = { _id: currentRundown._id }
-		rundowns = [ currentRundown ]
+		rundowns = [currentRundown]
 	} else if (currentRundown.playlistExternalId && playlist.externalId !== currentRundown.playlistExternalId) {
 		throw new Meteor.Error(501, `Rundown "${currentRundown._id}" is assigned to a playlist "${currentRundown.playlistExternalId}", but the produced playlist has external ID: "${playlist.externalId}".`)
 	} else {
@@ -719,7 +743,7 @@ function handleUpdatedRundownPlaylist (currentRundown: DBRundown, playlist: DBRu
 	saveIntoDb(Rundowns, selector, updated)
 }
 
-function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
+function handleRemovedSegment(peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
@@ -747,7 +771,7 @@ function handleRemovedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExternalId: string, ingestSegment: IngestSegment) {
+export function handleUpdatedSegment(peripheralDevice: PeripheralDevice, rundownExternalId: string, ingestSegment: IngestSegment) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
@@ -772,7 +796,7 @@ export function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundow
 		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function updateSegmentsFromIngestData (
+export function updateSegmentsFromIngestData(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
 	playlist: RundownPlaylist,
@@ -798,7 +822,7 @@ export function updateSegmentsFromIngestData (
  * @param ingestSegment
  * @returns a segmentId if data has changed, null otherwise
  */
-function updateSegmentFromIngestData (
+function updateSegmentFromIngestData(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
 	playlist: RundownPlaylist,
@@ -825,7 +849,7 @@ function updateSegmentFromIngestData (
 	const context = new SegmentContext(rundown, studio, existingParts, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 
-	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
+	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
 
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(cache.Parts, {
 		rundownId: rundown._id,
@@ -848,6 +872,10 @@ function updateSegmentFromIngestData (
 		rundownId: rundown._id,
 		partId: { $in: parts.map(p => p._id) },
 	}, adlibPieces)
+	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(AdLibActions, {
+		rundownId: rundown._id,
+		partId: { $in: parts.map(p => p._id) },
+	}, adlibActions)
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [{ doc: newSegment, oldId: newSegment._id }] }, prepareSaveParts)) {
@@ -865,40 +893,52 @@ function updateSegmentFromIngestData (
 		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
 
 		savePreparedChangesIntoCache<Piece, Piece>(prepareSavePieces, cache.Pieces, {
-			afterInsert (piece) {
+			afterInsert(piece) {
 				logger.debug('inserted piece ' + piece._id)
 				logger.debug(piece)
 			},
-			afterUpdate (piece) {
+			afterUpdate(piece) {
 				logger.debug('updated piece ' + piece._id)
 			},
-			afterRemove (piece) {
+			afterRemove(piece) {
 				logger.debug('deleted piece ' + piece._id)
 			}
 		}),
-		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces!, {
-			afterInsert (adLibPiece) {
+		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
+			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
 			},
-			afterUpdate (adLibPiece) {
+			afterUpdate(adLibPiece) {
 				logger.debug('updated adLibPiece ' + adLibPiece._id)
 			},
-			afterRemove (adLibPiece) {
+			afterRemove(adLibPiece) {
 				logger.debug('deleted adLibPiece ' + adLibPiece._id)
 			}
 		}),
+		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdLibActions, cache.AdLibActions, {
+			afterInsert(adLibAction) {
+				logger.debug('inserted adLibAction ' + adLibAction._id)
+				logger.debug(adLibAction)
+			},
+			afterUpdate(adLibAction) {
+				logger.debug('updated adLibAction ' + adLibAction._id)
+			},
+			afterRemove(adLibAction) {
+				logger.debug('deleted adLibAction ' + adLibAction._id)
+			}
+		}),
 		savePreparedChangesIntoCache<Part, DBPart>(prepareSaveParts, cache.Parts, {
-			afterInsert (part) {
+			afterInsert(part) {
 				logger.debug('inserted part ' + part._id)
 			},
-			afterUpdate (part) {
+			afterUpdate(part) {
 				logger.debug('updated part ' + part._id)
 			},
-			afterRemove (part) {
+			afterRemove(part) {
 				logger.debug('deleted part ' + part._id)
 			},
-			afterRemoveAll (parts) {
+			afterRemoveAll(parts) {
 				afterRemoveParts(cache, rundown._id, parts)
 			}
 		})
@@ -908,7 +948,7 @@ function updateSegmentFromIngestData (
 
 	return anythingChanged(changes) ? segmentId : null
 }
-function afterIngestChangedData (cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
+function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
@@ -924,7 +964,7 @@ function afterIngestChangedData (cache: CacheForRundownPlaylist, rundown: Rundow
 	triggerUpdateTimelineAfterIngestData(cache, rundown._id, changedSegmentIds)
 }
 
-export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
+export function handleRemovedPart(peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, partExternalId: string) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
@@ -968,7 +1008,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		}
 	})
 }
-export function handleUpdatedPart (
+export function handleUpdatedPart(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	segmentExternalId: string,
@@ -988,7 +1028,7 @@ export function handleUpdatedPart (
 		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function handleUpdatedPartInner (
+export function handleUpdatedPartInner(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
 	playlist: RundownPlaylist,
@@ -1031,7 +1071,7 @@ export function handleUpdatedPartInner (
 	}
 }
 
-function generateSegmentContents (
+function generateSegmentContents(
 	context: SegmentContext,
 	blueprintId: BlueprintId,
 	ingestSegment: IngestSegment,
@@ -1068,6 +1108,7 @@ function generateSegmentContents (
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
+	const adlibActions: AdLibAction[] = []
 
 	// Parts
 	blueprintRes.parts.forEach((blueprintPart, i) => {
@@ -1100,22 +1141,21 @@ function generateSegmentContents (
 		}
 
 		// Update pieces
-		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)
-		segmentPieces.push(...pieces)
-
-		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id)
-		adlibPieces.push(...adlibs)
+		segmentPieces.push(...postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id))
+		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
+		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
 
 	return {
 		newSegment,
 		parts,
 		segmentPieces,
-		adlibPieces
+		adlibPieces,
+		adlibActions
 	}
 }
 
-export function isUpdateAllowed (
+export function isUpdateAllowed(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist,
 	rundown: Rundown,
@@ -1195,19 +1235,19 @@ export function isUpdateAllowed (
 	}
 	return allowed
 }
-function printChanges (changes: Partial<PreparedChanges<{_id: ProtectedString<any>}>>): string {
+function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {
 	let str = ''
 
-	if (changes.changed)	str += _.map(changes.changed,	doc => 'change:' + doc.doc._id).join(',')
-	if (changes.inserted)	str += _.map(changes.inserted,	doc => 'insert:' + doc._id).join(',')
-	if (changes.removed)	str += _.map(changes.removed,	doc => 'remove:' + doc._id).join(',')
+	if (changes.changed) str += _.map(changes.changed, doc => 'change:' + doc.doc._id).join(',')
+	if (changes.inserted) str += _.map(changes.inserted, doc => 'insert:' + doc._id).join(',')
+	if (changes.removed) str += _.map(changes.removed, doc => 'remove:' + doc._id).join(',')
 
 	return str
 }
 
 type PartIdToSegmentId = Map<PartId, SegmentId>
 
-function splitIntoSegments (
+function splitIntoSegments(
 	prepareSaveSegments: PreparedChanges<DBSegment>,
 	prepareSaveParts: PreparedChanges<DBPart>,
 	prepareSavePieces: PreparedChanges<Piece>,
@@ -1319,14 +1359,14 @@ function splitIntoSegments (
 	return changes
 }
 
-function processChangeGroup <
+function processChangeGroup<
 	ChangeType extends keyof PreparedChanges<DBSegment>,
 	ChangedObj extends DBSegment | DBPart | Piece | AdLibPiece
-> (
-	changes: SegmentChanges[],
-	preparedChanges: PreparedChanges<ChangedObj>,
-	changeField: ChangeType
-) {
+	>(
+		changes: SegmentChanges[],
+		preparedChanges: PreparedChanges<ChangedObj>,
+		changeField: ChangeType
+	) {
 	const subset = preparedChanges[changeField]
 	// @ts-ignore
 	subset.forEach((ch) => {
@@ -1340,9 +1380,9 @@ function processChangeGroup <
 	})
 }
 
-function processChangeGroupInner <
+function processChangeGroupInner<
 	ChangeType extends keyof PreparedChanges<DBSegment>
-> (existing: number, changes: SegmentChanges[], changeField: ChangeType, changedObject: PreparedChangesChangesDoc<DBSegment> | DBSegment, segmentId) {
+	>(existing: number, changes: SegmentChanges[], changeField: ChangeType, changedObject: PreparedChangesChangesDoc<DBSegment> | DBSegment, segmentId) {
 	if (existing !== -1) {
 		if (!changes[existing].segment) {
 			changes[existing].segment = {
@@ -1363,7 +1403,7 @@ function processChangeGroupInner <
 	}
 }
 
-function makeChangeObj (segmentId: SegmentId): SegmentChanges {
+function makeChangeObj(segmentId: SegmentId): SegmentChanges {
 	return {
 		segmentId,
 		segment: {
