@@ -75,9 +75,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	componentDidMount () {
 		super.componentDidMount && super.componentDidMount()
 
-		this.subscribe(PubSub.rundownLayouts, {
-			showStyleBaseId: this.props.showStyleBase._id
-		})
+		this.subscribe(PubSub.rundownLayouts, {})
 	}
 
 	onAddLayout = (e: any) => {
