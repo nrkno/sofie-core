@@ -185,7 +185,7 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 	// pure?: boolean
 }
 // @todo: add withTrackerPure()
-type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => MeteorReactComponent<IProps & TrackedProps, IState>
+type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>
 export function withTracker<IProps, IState, TrackedProps> (
 	autorunFunction: (props: IProps) => TrackedProps,
 	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
