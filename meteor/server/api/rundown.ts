@@ -47,6 +47,7 @@ import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist, initCacheForRundownPlaylistFromRundown } from '../DatabaseCaches'
 import { saveIntoCache } from '../DatabaseCache'
 import { removeRundownFromCache, removeRundownPlaylistFromCache, getRundownsSegmentsAndPartsFromCache } from './playout/lib'
+import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 
@@ -158,10 +159,10 @@ export function produceRundownPlaylistInfo(studio: Studio, currentRundown: DBRun
 			const rundownsInPlaylist = Rundowns.find({
 				playlistExternalId: playlist.externalId
 			}, {
-				sort: {
-					name: 1
-				}
-			}).fetch()
+					sort: {
+						name: 1
+					}
+				}).fetch()
 			order = _.object(rundownsInPlaylist.map((i, index) => [i._id, index + 1]))
 		}
 
@@ -231,10 +232,10 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
 		rundownId: rundownId,
 		segmentId: { $in: segmentIds }
 	}, [], {
-		afterRemoveAll(parts) {
-			afterRemoveParts(cache, rundownId, parts)
-		}
-	})
+			afterRemoveAll(parts) {
+				afterRemoveParts(cache, rundownId, parts)
+			}
+		})
 
 	triggerUpdateTimelineAfterIngestData(cache, rundownId, segmentIds)
 }
@@ -251,11 +252,11 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		dynamicallyInserted: true,
 		afterPart: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
-		afterRemoveAll(parts) {
-			// Do the same for any affected dynamicallyInserted Parts
-			afterRemoveParts(cache, rundownId, parts)
-		}
-	})
+			afterRemoveAll(parts) {
+				// Do the same for any affected dynamicallyInserted Parts
+				afterRemoveParts(cache, rundownId, parts)
+			}
+		})
 
 	// Clean up all the db items that belong to the removed Parts
 	// TODO - is there anything else to remove?
@@ -264,10 +265,10 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		rundownId: rundownId,
 		partId: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
-		afterRemoveAll(pieces) {
-			afterRemovePieces(cache, rundownId, pieces)
-		}
-	})
+			afterRemoveAll(pieces) {
+				afterRemovePieces(cache, rundownId, pieces)
+			}
+		})
 
 	afterRemovePartsAuxiliary(cache, rundownId, removedParts)
 
@@ -290,9 +291,14 @@ export function afterRemovePartsAuxiliary(cache: CacheForRundownPlaylist, rundow
 			rundownId: rundownId,
 			partId: { $in: _.map(removedParts, p => p._id) }
 		}, [], {
-			afterRemoveAll(pieces) {
-				afterRemovePieces(cache, rundownId, pieces)
-			}
+				afterRemoveAll(pieces) {
+					afterRemovePieces(cache, rundownId, pieces)
+				}
+			})
+
+		AdLibActions.remove({
+			rundownId: rundownId,
+			partId: { $in: _.map(removedParts, p => p._id) }
 		})
 	})
 }
@@ -433,7 +439,7 @@ export namespace ServerRundownAPI {
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
-	export function unsyncSegment (rundownId: RundownId, segmentId: SegmentId): void {
+	export function unsyncSegment(rundownId: RundownId, segmentId: SegmentId): void {
 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
 		const result = unsyncSegmentInner(cache, rundownId, segmentId)
 		waitForPromise(cache.saveAllToDatabase())
@@ -489,7 +495,7 @@ export namespace ServerRundownAPI {
 		return response
 	}
 
-	export function resyncRundown (rundownId: RundownId): TriggerReloadDataResponse {
+	export function resyncRundown(rundownId: RundownId): TriggerReloadDataResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 
@@ -505,7 +511,7 @@ export namespace ServerRundownAPI {
 
 		return IngestActions.reloadRundown(rundown)
 	}
-	export function resyncSegment (segmentId: SegmentId): TriggerReloadDataResponse {
+	export function resyncSegment(segmentId: SegmentId): TriggerReloadDataResponse {
 		check(segmentId, String)
 		logger.info('resyncSegment ' + segmentId)
 
@@ -524,7 +530,7 @@ export namespace ServerRundownAPI {
 
 		return IngestActions.reloadSegment(rundown, segment)
 	}
-	export function unsyncRundownInner (cache: CacheForRundownPlaylist, rundownId: RundownId): void {
+	export function unsyncRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
 
@@ -543,7 +549,7 @@ export namespace ServerRundownAPI {
 		}
 	}
 
-	export function unsyncSegmentInner (cache: CacheForRundownPlaylist, rundownId: RundownId, segmentId: SegmentId): void {
+	export function unsyncSegmentInner(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentId: SegmentId): void {
 		check(segmentId, String)
 		logger.info('unsyncSegment' + segmentId)
 		let segment = cache.Segments.findOne({
@@ -558,10 +564,12 @@ export namespace ServerRundownAPI {
 		}
 
 		if (!segment.unsynced) {
-			cache.Segments.update(segmentId, { $set: {
-				unsynced: true,
-				unsyncedTime: getCurrentTime()
-			} })
+			cache.Segments.update(segmentId, {
+				$set: {
+					unsynced: true,
+					unsyncedTime: getCurrentTime()
+				}
+			})
 		} else {
 			logger.info(`Segment "${segmentId}" was already unsynced`)
 		}
@@ -692,13 +700,13 @@ class ServerRundownAPIClass implements NewRundownAPI {
 	resyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(rundownId))
 	}
-	resyncSegment (segmentId: SegmentId) {
+	resyncSegment(segmentId: SegmentId) {
 		return makePromise(() => ServerRundownAPI.resyncSegment(segmentId))
 	}
-	unsyncRundown (rundownId: RundownId) {
+	unsyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.unsyncRundown(rundownId))
 	}
-	unsyncSegment (rundownId: RundownId, segmentId: SegmentId) {
+	unsyncSegment(rundownId: RundownId, segmentId: SegmentId) {
 		return makePromise(() => ServerRundownAPI.unsyncSegment(rundownId, segmentId))
 	}
 }
