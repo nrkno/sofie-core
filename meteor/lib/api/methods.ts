@@ -16,6 +16,7 @@ import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
 import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
+import { NewUserAPI, UserAPIMethods } from './user'
 import { UserId } from '../typings/meteor'
 
 
@@ -38,6 +39,7 @@ interface IMeteorCall {
 	studio: NewStudiosAPI
 	systemStatus: NewSystemStatusAPI
 	testTools: NewTestToolsAPI
+	user: NewUserAPI
 	userAction: NewUserActionAPI
 	organization: NewOrganizationAPI
 }
@@ -56,6 +58,7 @@ export const MeteorCall: IMeteorCall = {
 	studio:				makeMethods(StudiosAPIMethods),
 	systemStatus:		makeMethods(SystemStatusAPIMethods),
 	testTools:			makeMethods(TestToolsAPIMethods),
+	user: 				makeMethods(UserAPIMethods),
 	userAction:			makeMethods(UserActionAPIMethods),
 	organization:		makeMethods(OrganizationAPIMethods)
 }

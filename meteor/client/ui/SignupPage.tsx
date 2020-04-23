@@ -34,7 +34,7 @@ import { getUser } from '../../lib/collections/Users'
 
 const PackageInfo = require('../../package.json')
 
-const validEmailRegex = new RegExp("/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/igm")
+const validEmailRegex = new RegExp("/[^@]+@[^\.]+\..+/g")
 
 interface RundownPlaylistUi extends RundownPlaylist {
 	rundownStatus: string
@@ -92,11 +92,12 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 		
 		try {
 			if(!this.state.email.length) throw new Error('Please enter an email address')
-			if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
+			// if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
 			if(!this.state.password.length) throw new Error('Please enter an password')
 		} catch (error) {
 			/** @TODO Display error to user in UI */
 			console.error(error)
+			return;
 		}
 
 		const userId = Accounts.createUser({
@@ -107,7 +108,9 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 				console.error(error);
 			}
 			console.log(userId)
-			MeteorCall.organization.insertOrganization(this.state.organization).catch(console.error)
+			MeteorCall.organization.insertOrganization(this.state.organization)
+			.then(id => console.log('NEW ORG:' + id))
+			.catch(console.error)
 		})
 	}
 	render() {

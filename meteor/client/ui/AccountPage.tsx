@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { Link } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
 const Tooltip = require('rc-tooltip')
 import timer from 'react-timer-hoc'
@@ -64,13 +63,23 @@ export const AccountPage = translateWithTracker(() => {
 		
 	}
 })(
-class extends MeteorReactComponent<Translated<IAccountPageState>, IAccountPageProps> {
+class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageState> {
 	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
 
 	constructor (props) {
 		super(props)
 	}
 
+	private handleRemoveUser () {
+		MeteorCall.user.removeUser().then((error) => {
+			if(error) {
+				/** @TODO display error to client */
+				console.error('Error removing user')
+			} else {
+				this.props.history.push('/')
+			}
+		})
+	}
 
 
 	componentDidMount () {
@@ -94,6 +103,7 @@ class extends MeteorReactComponent<Translated<IAccountPageState>, IAccountPagePr
 		return (
 			<React.Fragment>
 				<p>Account Page</p>
+				<button onClick={() => this.handleRemoveUser()}>Remove Self</button>
 			</React.Fragment>
 		)
 	}

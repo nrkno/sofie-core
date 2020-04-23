@@ -34,7 +34,7 @@ import { getUser } from '../../lib/collections/Users'
 
 const PackageInfo = require('../../package.json')
 
-const validEmailRegex = new RegExp('/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/')
+const validEmailRegex = new RegExp("/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/igm")
 
 interface RundownPlaylistUi extends RundownPlaylist {
 	rundownStatus: string
@@ -53,6 +53,7 @@ enum ToolTipStep {
 interface ILoginPageProps extends RouteComponentProps {
 	coreSystem: ICoreSystem
 	rundownPlaylists: Array<RundownPlaylistUi>
+	updateLoggedInStatus: (status: boolean) => void
 }
 
 interface ILoginPageState {
@@ -67,8 +68,8 @@ export const LoginPage = translateWithTracker((props: ILoginPageProps) => {
 	const user = getUser()
 	if (user) {
 		// If user is logged in, forward to lobby:
-		// https://reacttraining.com/react-router/web/api/Redirect
 		props.history.push('/lobby')
+		props.updateLoggedInStatus(true)
 	}
 
 	return {
@@ -93,19 +94,20 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 	}
 
 	private handleChange (e: React.ChangeEvent<HTMLInputElement>) {
-		console.log(e.currentTarget.name)
 		if(this.state[e.currentTarget.name] === undefined) return
 		
 		return this.setState({...this.state, [e.currentTarget.name]: e.currentTarget.value})
 	}
 
-	private attempLogin(e: React.MouseEvent<HTMLButtonElement>): void {
+	private attempLogin(): void {
 		try {
 			if(!this.state.email.length) throw new Error('Please enter an email address')
-			if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
+			// if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
 			if(!this.state.password.length) throw new Error('Please enter an password')
 		} catch (error) {
 			/** @TODO Display error to user in UI */
+			console.error(error)
+			return
 		}
 		Meteor.loginWithPassword(this.state.email, this.state.password, this.handleLoginAttempt)
 	}
@@ -114,6 +116,7 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 		if(error) {
 			/** @TODO dispaly error to client in ui */
 		} else {
+			this.props.updateLoggedInStatus(true)
 			this.props.history.push('/lobby')
 		}
 	}
@@ -125,20 +128,10 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 
 		// Subscribe to data:
 		this.subscribe(PubSub.loggedInUser, {})
-		const user = getUser()
-		console.log(user)
 	}
 
 	render () {
 		const { t } = this.props
-
-		/*
-		location will override the current location in the history stack, like server-side redirects (HTTP 3xx) do.
-
-		<Route exact path="/">
-		{loggedIn ? <Redirect to="/dashboard" /> : <PublicHomePage />}
-		</Route>
-		*/
 
 		return (
 			<React.Fragment>
@@ -161,7 +154,7 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 							placeholder={t('Password')}
 							name="password"
 						/>
-						<button onClick={this.attempLogin}>Sign In</button>
+						<button onClick={() => this.attempLogin()}>Sign In</button>
 						<Link className="float-left" to="/reset">{t('Lost password?')}</Link>
 					</div>
 					<div className="container">

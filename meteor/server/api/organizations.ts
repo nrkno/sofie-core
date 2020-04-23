@@ -7,11 +7,11 @@ import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organi
 import { registerClassToMeteorMethods } from '../methods'
 import { Organizations, OrganizationId, DBOrganization } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
-import { triggerWriteAccess } from '../security/lib/securityVerify'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 
 
 export function insertOrganization (context: MethodContext, name: string) {
-	triggerWriteAccess() /** @TODO Is this ok? */
+	triggerWriteAccessBecauseNoCheckNecessary()
 	const userId = context.userId
 	if(!userId) throw new Meteor.Error(401, 'User is not logged in')
 	const admin = {userId}

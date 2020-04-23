@@ -59,9 +59,33 @@ const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
 const WINDOW_START_HOUR = 3
 const WINDOW_END_HOUR = 5
 
+const authenticate = {
+	auth: false,
+	login: function() {
+		this.auth = true
+	},
+	logout: function() {
+		this.auth = false
+	}
+}
+
+const ProtectedRoute = ({component: Component, ...args}: any) => {
+	if(!Settings.enableUserAccounts) {
+		return <Route {...args} render={Component}/>
+	} else {
+		return <Route {...args} render={(props) => (
+			authenticate.auth 
+				? <Component {...props} />
+				: <Redirect to='/' />
+		)}/>
+	}
+	
+}
+
 // App component - represents the whole app
 class App extends React.Component<InjectedI18nProps, IAppState> {
 	private lastStart = 0
+	
 
 	constructor (props) {
 		super(props)
@@ -97,8 +121,8 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		}
 
 		this.lastStart = Date.now()
+		this.updateLoggedInStatus = this.updateLoggedInStatus.bind(this)
 	}
-
 	cronJob = () => {
 		const now = new Date()
 		const hour = now.getHours() + (now.getMinutes() / 60)
@@ -114,6 +138,11 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 			setTimeout(() => window.location.reload(true))
 		}
 	}
+
+	updateLoggedInStatus (status: boolean) {
+		status ? authenticate.login() : authenticate.logout()
+	}
+
 
 	componentDidMount () {
 		const { i18n } = this.props
@@ -147,27 +176,26 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 					{/* Main app switch */}
 					<ErrorBoundary>
 						<Switch>
-							{/* <Route exact path='/' component={Dashboard} /> */}
 							{Settings.enableUserAccounts ?
-								<React.Fragment>
-									<Route exact path='/' component={LoginPage} />
-									<Route exact path='/signup' component={SignupPage} />
-									<Route exact path='/reset' component={RequestResetPage} />
-									<Route exact path='/reset/:token' component={ResetPage} />
-									<Route exact path='/account' component={AccountPage} />
-									<Route exact path='/lobby' component={RundownList} />
-								</React.Fragment> :
+								[
+									<Route exact path='/' component={(props) => <LoginPage updateLoggedInStatus={this.updateLoggedInStatus} {...props}/>} />,
+									<Route exact path='/login' component={() => <Redirect to='/'/>}/>,
+									<Route exact path='/signup' component={SignupPage} />,
+									<Route exact path='/reset' component={RequestResetPage} />,
+									<Route exact path='/reset/:token' component={ResetPage} />,
+									<ProtectedRoute exact path='/account' component={AccountPage} />,
+									<ProtectedRoute exact path='/lobby' component={RundownList} />
+								]:
 								<Route exact path='/' component={RundownList} />
 							}
-							<Route path='/rundowns' component={RundownList} />
-							<Route path='/rundown/:playlistId' component={RundownView} />
-							<Route path='/activeRundown/:studioId' component={ActiveRundownView} />
-							<Route path='/prompter/:studioId' component={PrompterView} />
-							<Route path='/countdowns/:studioId/presenter' component={ClockView} />
-							<Route path='/status' component={Status} />
-							<Route path='/settings' component={SettingsComponent} />
+							<ProtectedRoute path='/rundowns' component={RundownList} />
+							<ProtectedRoute path='/rundown/:playlistId' component={RundownView} />
+							<ProtectedRoute path='/activeRundown/:studioId' component={ActiveRundownView} />
+							<ProtectedRoute path='/prompter/:studioId' component={PrompterView} />
+							<ProtectedRoute path='/countdowns/:studioId/presenter' component={ClockView} />
+							<ProtectedRoute path='/status' component={Status} />
+							<ProtectedRoute path='/settings' component={SettingsComponent} />
 							<Route path='/testTools' component={TestTools} />
-							<Redirect to='/' />
 						</Switch>
 					</ErrorBoundary>
 					<ErrorBoundary>
