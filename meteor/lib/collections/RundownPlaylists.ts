@@ -249,7 +249,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		}
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
-	getSegmentsAndPartsSync (): { segments: Segment[], parts: Part[] } {
+	getSegmentsAndPartsSync (segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>, partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>): { segments: Segment[], parts: Part[] } {
 
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
@@ -260,7 +260,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const segments = Segments.find({
 			rundownId: {
 				$in: rundowns.map(i => i._id)
-			}
+			},
+			...segmentsQuery
 		}, {
 			sort: {
 				rundownId: 1,
@@ -271,7 +272,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const parts = Parts.find({
 			rundownId: {
 				$in: rundowns.map(i => i._id)
-			}
+			},
+			...partsQuery
 		}, {
 			sort: {
 				rundownId: 1,

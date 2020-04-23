@@ -73,17 +73,19 @@ class MeteorDataManager {
 						component.setState = savedSetState
 					}
 				} else {
-							// Stop this computation instead of using the re-run.
-							// We use a brand-new autorun for each call to getMeteorData
-							// to capture dependencies on any reactive data sources that
-							// are accessed.  The reason we can't use a single autorun
-							// for the lifetime of the component is that Tracker only
-							// re-runs autoruns at flush time, while we need to be able to
-							// re-call getMeteorData synchronously whenever we want, e.g.
-							// from componentWillUpdate.
+					// Stop this computation instead of using the re-run.
+					// We use a brand-new autorun for each call to getMeteorData
+					// to capture dependencies on any reactive data sources that
+					// are accessed.  The reason we can't use a single autorun
+					// for the lifetime of the component is that Tracker only
+					// re-runs autoruns at flush time, while we need to be able to
+					// re-call getMeteorData synchronously whenever we want, e.g.
+					// from componentWillUpdate.
 					c.stop()
-							// Calling forceUpdate() triggers componentWillUpdate which
-							// recalculates getMeteorData() and re-renders the component.
+					// Calling forceUpdate() triggers componentWillUpdate which
+					// recalculates getMeteorData() and re-renders the component.
+
+					// TODO(performance): optionally queue tracker updates for a while
 					component.forceUpdate()
 				}
 			})

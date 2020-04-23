@@ -9,7 +9,7 @@ import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { getResolvedSegment,
+import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 	PieceExtended,
@@ -24,6 +24,7 @@ import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString } from '../../../lib/lib'
+import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { Parts } from '../../../lib/collections/Parts'
@@ -127,7 +128,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	let o = getResolvedSegment(props.showStyleBase, props.playlist, segment)
+	let o = RundownUtils.getResolvedSegment(props.showStyleBase, props.playlist, segment)
 	let notes: Array<SegmentNote> = []
 	_.each(o.parts, (part) => {
 		notes = notes.concat(part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase), part.instance.part.getInvalidReasonNotes())
