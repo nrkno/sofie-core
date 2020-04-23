@@ -334,9 +334,11 @@ $dashboard-button-height: 5.625em;
 				top: auto;
 			}
 
-			&.vt > .dashboard-panel__panel__button__label {
-				left: 75px;
-			}
+			&.vt, &.live-speak, &.transition, &.splits {
+				> .dashboard-panel__panel__button__label {
+					left: 75px;
+				}
+			} 
 
 			> .dashboard-panel__panel__button__thumbnail {
 				height: 100%;
