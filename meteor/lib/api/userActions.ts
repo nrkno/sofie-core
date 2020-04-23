@@ -12,6 +12,8 @@ import { RecordedFileId } from '../collections/RecordedFiles'
 import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
+import { AdLibActionId } from '../collections/AdLibActions'
+import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 
 export interface NewUserActionAPI {
 	take						(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -30,6 +32,7 @@ export interface NewUserActionAPI {
 	togglePartArgument			(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string): Promise<ClientAPI.ClientResponse<void>>
 	pieceTakeNow				(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId): Promise<ClientAPI.ClientResponse<void>>
 	setInOutPoints				(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number): Promise<ClientAPI.ClientResponse<void>>
+	executeAction				(userEvent: string, rundownPlaylistId: RundownPlaylistId, actionId: string, userData: ActionUserData): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean)
 	sourceLayerOnPartStop		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[])
 	baselineAdLibPieceStart		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean)
@@ -75,6 +78,7 @@ export enum UserActionAPIMethods {
 	'togglePartArgument'					= 'userAction.togglePartArgument',
 	'pieceTakeNow'							= 'userAction.pieceTakeNow',
 	'setInOutPoints'						= 'userAction.pieceSetInOutPoints',
+	'executeAction'							= 'userAction.executeAction',
 
 	'segmentAdLibPieceStart'				= 'userAction.segmentAdLibPieceStart',
 	'sourceLayerOnPartStop'					= 'userAction.sourceLayerOnPartStop',

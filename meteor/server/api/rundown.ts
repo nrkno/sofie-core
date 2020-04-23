@@ -44,6 +44,7 @@ import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist, initCacheForRundownPlaylistFromRundown } from '../DatabaseCaches'
 import { saveIntoCache } from '../DatabaseCache'
 import { removeRundownFromCache, removeRundownPlaylistFromCache, getRundownsSegmentsAndPartsFromCache } from './playout/lib'
+import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions';
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -284,6 +285,11 @@ export function afterRemovePartsAuxiliary (cache: CacheForRundownPlaylist, rundo
 			afterRemoveAll (pieces) {
 				afterRemovePieces(cache, rundownId, pieces)
 			}
+		})
+		
+		AdLibActions.remove({
+			rundownId: rundownId,
+			partId: { $in: _.map(removedParts, p => p._id) }
 		})
 	})
 }

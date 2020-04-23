@@ -21,6 +21,8 @@ import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance } from './PartInstances'
 import { PieceInstances, PieceInstance } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
+import { AdLibActions } from './AdLibActions';
+import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions';
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -246,8 +248,10 @@ export class Rundown implements DBRundown {
 		Pieces.remove({ rundownId: this._id })
 		PieceInstances.remove({ rundownId: this._id })
 		AdLibPieces.remove({ rundownId: this._id })
+		AdLibActions.remove({ rundownId: this._id })
 		RundownBaselineObjs.remove({ rundownId: this._id })
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
+		RundownBaselineAdLibActions.remove({ rundownId: this._id })
 		IngestDataCache.remove({ rundownId: this._id })
 		ExpectedMediaItems.remove({ rundownId: this._id })
 		ExpectedPlayoutItems.remove({ rundownId: this._id })
