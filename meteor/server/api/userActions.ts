@@ -19,7 +19,7 @@ import {
 } from '../../lib/collections/Evaluations'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart, ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -615,6 +615,10 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	}
 	setInOutPoints (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number) {
 		return pieceSetInOutPoints(rundownPlaylistId, partId, pieceId, inPoint, duration)
+	}
+	executeAction(_userEvent: string, rundownPlaylistId: RundownPlaylistId, actionId: string, userData: ActionUserData) {
+		// TODO - implement
+		return makePromise(() => noop())
 	}
 	segmentAdLibPieceStart (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 		return makePromise(() => segmentAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue))
