@@ -19,7 +19,7 @@ import {
 } from '../../lib/collections/Evaluations'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -338,8 +338,8 @@ export function pieceSetInOutPoints(rundownPlaylistId: RundownPlaylistId, partId
 
 	// TODO: replace this with a general, non-MOS specific method
 	return MOSDeviceActions.setPieceInOutPoint(rundown, piece, partCache.data as IngestPart, inPoint / 1000, duration / 1000) // MOS data is in seconds
-	.then(() => ClientAPI.responseSuccess(undefined))
-	.catch((error) => ClientAPI.responseError(error))
+		.then(() => ClientAPI.responseSuccess(undefined))
+		.catch((error) => ClientAPI.responseError(error))
 }
 export function segmentAdLibPieceStart(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 	check(rundownPlaylistId, String)
@@ -714,6 +714,10 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	setInOutPoints(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number) {
 		return pieceSetInOutPoints(rundownPlaylistId, partId, pieceId, inPoint, duration)
 	}
+	executeAction(_userEvent: string, rundownPlaylistId: RundownPlaylistId, actionId: string, userData: ActionUserData) {
+		// TODO - implement
+		return makePromise(() => noop())
+	}
 	segmentAdLibPieceStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 		return makePromise(() => segmentAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue))
 	}
@@ -774,16 +778,16 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	mediaPrioritizeWorkflow(_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaPrioritizeWorkflow(workflowId))
 	}
-	mediaRestartAllWorkflows (_userEvent: string) {
+	mediaRestartAllWorkflows(_userEvent: string) {
 		return makePromise(() => mediaRestartAllWorkflows())
 	}
-	mediaAbortAllWorkflows (_userEvent: string) {
+	mediaAbortAllWorkflows(_userEvent: string) {
 		return makePromise(() => mediaAbortAllWorkflows())
 	}
 	regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
 		return makePromise(() => regenerateRundownPlaylist(playlistId))
 	}
-	generateRestartToken (_userEvent: string) {
+	generateRestartToken(_userEvent: string) {
 		return makePromise(() => generateRestartToken())
 	}
 	restartCore(_userEvent: string, token: string) {
