@@ -217,7 +217,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	return false
-})(class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
+}, true)(class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}
