@@ -184,7 +184,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const { parts } = this.getSegmentsAndPartsSync()
 		return parts
 	}
-	getUnorderedParts (selector?: MongoSelector<DBRundownPlaylist>): Part[] {
+	getUnorderedParts (selector?: MongoSelector<DBPart>, options?: FindOptions): Part[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_id: 1,
@@ -192,11 +192,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				name: 1
 			}
 		})
-		const parts = Parts.find(_.extend({
+		const parts = Parts.find({
+			...selector,
 			rundownId: {
 				$in: rundowns.map(i => i._id)
 			}
-		}, selector), {
+		}, {
+			...options,
 			sort: {
 				rundownId: 1,
 				_rank: 1
@@ -434,17 +436,31 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	}
 
 	getAllStoredNotes (): Array<GenericNote & {rank: number}> {
-		const rundownNotes: RundownNote[] = _.flatten(_.compact(this.getRundowns().map(r => r.notes)))
+		const rundownNotes: RundownNote[] = _.flatten(_.compact(this.getRundowns({}, {
+			fields: {
+				notes: 1
+			}
+		}).map(r => r.notes)))
 
 		let notes: Array<GenericNote & {rank: number}> = []
 		notes = notes.concat(rundownNotes.map(note => _.extend(note, { rank: 0 })))
 
-		const segmentNotes = _.object(this.getSegments().map(segment => [ segment._id, {
+		const segmentNotes = _.object(this.getSegments({}, {
+			fields: {
+				rank: 1,
+				notes: 1
+			}
+		}).map(segment => [ segment._id, {
 			rank: segment._rank,
 			notes: segment.notes
 		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } }
 
-		this.getUnorderedParts().map(part => {
+		this.getUnorderedParts({}, {
+			fields: {
+				segmentId: 1,
+				notes: 1
+			}
+		}).map(part => {
 			if (part.notes) {
 				const segmentNote = segmentNotes[unprotectString(part.segmentId)]
 				if (segmentNote) {

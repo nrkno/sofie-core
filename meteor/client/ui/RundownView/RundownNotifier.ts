@@ -310,7 +310,14 @@ class RundownViewNotifier extends WithManagedTracker {
 				rundownId: {
 					$in: rRundownIds
 				}
-			}, { sort: { _rank: 1 } }).fetch()
+			}, {
+				sort: { _rank: 1 },
+				fields: {
+					_id: 1,
+					_rank: 1,
+					notes: 1
+				}
+			}).fetch()
 
 			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
 				rank: segment._rank,
@@ -319,7 +326,13 @@ class RundownViewNotifier extends WithManagedTracker {
 			Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 } }).map(part => {
+			}, {
+				sort: { _rank: 1 },
+				fields: {
+					segmentId: 1,
+					notes: 1
+				}
+			}).map(part => {
 				if (part.notes) {
 					const sn = segmentNotes[unprotectString(part.segmentId)]
 					if (sn) {
