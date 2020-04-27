@@ -385,16 +385,23 @@ interface IPrompterProps {
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
-	prompterData: PrompterData
+	prompterData: PrompterData | undefined
 }
 
 type ScrollAnchor = [number, string] | null
 
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
-	const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
+	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
 
-	return {
-		prompterData
+	if (!playlist) {
+		const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
+		return {
+			prompterData
+		}
+	} else {
+		return {
+			prompterData: undefined
+		}
 	}
 })(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
 	private _debounceUpdate: NodeJS.Timer
