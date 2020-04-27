@@ -10,9 +10,11 @@ import { MeteorReactComponent } from '../MeteorReactComponent'
 import * as _ from 'underscore'
 
 const globalTrackerQueue: Array<Function> = []
+let globalTrackerTimestamp: number | undefined = undefined
 let globalTrackerTimeout: number | undefined = undefined
 
 const METEOR_DATA_DEBOUNCE = 120
+const METEOR_DATA_DEBOUNCE_STALE = 200
 
 // A class to keep the state and utility methods needed to manage
 // the Meteor data for a component.
@@ -38,7 +40,9 @@ class MeteorDataManager {
 
 	static runUpdates () {
 		console.log(`running ${globalTrackerQueue.length} queued updates`)
+		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
+		globalTrackerTimestamp = undefined
 		globalTrackerQueue.map(func => func())
 		globalTrackerQueue.length = 0
 	}
@@ -48,8 +52,15 @@ class MeteorDataManager {
 			clearTimeout(globalTrackerTimeout)
 			globalTrackerTimeout = undefined
 		}
+		if (globalTrackerTimestamp === undefined) {
+			globalTrackerTimestamp = Date.now()
+		}
 		globalTrackerQueue.push(func)
-		globalTrackerTimeout = Meteor.setTimeout(MeteorDataManager.runUpdates, METEOR_DATA_DEBOUNCE)
+		if (Date.now() - globalTrackerTimestamp < METEOR_DATA_DEBOUNCE_STALE) {
+			globalTrackerTimeout = Meteor.setTimeout(MeteorDataManager.runUpdates, METEOR_DATA_DEBOUNCE)
+		} else {
+			MeteorDataManager.runUpdates()
+		}
 	}
 
 	calculateData () {
