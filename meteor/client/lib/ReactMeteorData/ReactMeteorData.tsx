@@ -39,7 +39,7 @@ class MeteorDataManager {
 	}
 
 	static runUpdates () {
-		console.log(`running ${globalTrackerQueue.length} queued updates`)
+		// console.log(`running ${globalTrackerQueue.length} queued updates`)
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined
@@ -122,7 +122,9 @@ class MeteorDataManager {
 					// TODO(performance): optionally queue tracker updates for a while
 					if (this.queueTrackerUpdates) {
 						MeteorDataManager.enqueueUpdate(() => {
-							component.forceUpdate()
+							if (this.computation) {
+								component.forceUpdate()
+							}
 						})
 					} else {
 						component.forceUpdate()
