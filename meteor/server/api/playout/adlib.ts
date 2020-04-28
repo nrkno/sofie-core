@@ -234,10 +234,9 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 
 			setNextPart(rundownPlaylist, partInstance)
-		} else {
-			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
-			stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 		}
+		cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
+		stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 		updateTimeline(rundownPlaylist.studioId)
 	}
 	function adlibQueueInsertPartInstance (rundownPlaylist: RundownPlaylist, rundown: Rundown, afterPartInstance: PartInstance, adLibPiece: AdLibPiece): PartInstanceId {
