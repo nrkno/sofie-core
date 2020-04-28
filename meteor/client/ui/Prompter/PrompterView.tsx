@@ -393,7 +393,7 @@ type ScrollAnchor = [number, string] | null
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
 	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
 
-	if (!playlist) {
+	if (playlist) {
 		const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
 		return {
 			prompterData
