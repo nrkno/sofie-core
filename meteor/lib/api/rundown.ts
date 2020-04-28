@@ -82,7 +82,6 @@ function handleRundownContextError (rundown: Rundown, errorInformMessage: string
 		) + `Error message: ${(error || 'N/A').toString()}`,
 		origin: {
 			name: rundown.name,
-			rundownId: rundown._id
 		}
 	})
 }
