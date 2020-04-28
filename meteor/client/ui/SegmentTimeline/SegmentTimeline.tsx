@@ -563,7 +563,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		let partIsLive = false
 		return <React.Fragment>
 			{this.props.parts.map((part, index) => {
-				let previousPartIsLive = partIsLive 
+				let previousPartIsLive = partIsLive
 				partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
 				return (
 					<SegmentTimelinePart key={unprotectString(part.partId)}
@@ -730,6 +730,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							partId={countdownToPartId}
 							hideOnZero={true}
 						/>
+					}
+					{
+						Settings.allowUnsyncedSegments && this.props.segment.unsynced && t('UNSYNCED')
 					}
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.externalId}</div>

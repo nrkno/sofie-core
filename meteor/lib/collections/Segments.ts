@@ -4,7 +4,7 @@ import { Parts } from './Parts'
 import { Rundowns, RundownId } from './Rundowns'
 import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintSegmentDB } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintSegmentDB, Time } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, SegmentNote } from '../api/notes'
 import { createMongoCollection } from './lib'
 
@@ -23,6 +23,11 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	status?: string
 	expanded?: boolean
 
+	/** Is the segment in an unsynced state? */
+	unsynced?: boolean
+	/** Timestamp of when segment was unsynced */
+	unsyncedTime?: Time
+
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<SegmentNote>
 }
@@ -38,6 +43,8 @@ export class Segment implements DBSegment {
 	public notes?: Array<PartNote>
 	public isHidden?: boolean
 	public identifier?: string
+	public unsynced?: boolean
+	public unsyncedTime?: Time
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {

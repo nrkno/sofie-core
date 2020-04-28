@@ -27,6 +27,8 @@ export interface ISettings {
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
 	allowGrabbingTimeline: boolean
+	/** Allow Segments to become unsynced, rather than the entire rundown */
+	allowUnsyncedSegments: boolean
 }
 
 export let Settings: ISettings
@@ -41,7 +43,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	autoRewindLeavingSegment: false,
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
-	allowGrabbingTimeline: true
+	allowGrabbingTimeline: true,
+	allowUnsyncedSegments: true
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

@@ -43,7 +43,8 @@ import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems
 import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PartInstances } from '../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
+import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
@@ -187,10 +188,10 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedDuration: currentRundown.expectedDuration,
 
 			modified: getCurrentTime(),
-			
+
 			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
 		}
-		
+
 		return {
 			rundownPlaylist: playlist,
 			order: _.object([[currentRundown._id, 1]])
@@ -445,7 +446,7 @@ export namespace ServerRundownAPI {
 		}
 		return response
 	}
-	export function resyncRundown (rundownId: RundownId): ReloadRundownResponse {
+	export function resyncRundown (rundownId: RundownId): TriggerReloadDataResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 
@@ -461,6 +462,25 @@ export namespace ServerRundownAPI {
 
 		return IngestActions.reloadRundown(rundown)
 	}
+	export function resyncSegment (segmentId: SegmentId): TriggerReloadDataResponse {
+		check(segmentId, String)
+		logger.info('resyncSegment ' + segmentId)
+
+		const segment = Segments.findOne(segmentId)
+		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
+
+		Segments.update(segment._id, {
+			$set: {
+				unsynced: false
+			}
+		})
+
+		const rundown = Rundowns.findOne({ _id: segment.rundownId })
+
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${segment.rundownId}" not found!`)
+
+		return IngestActions.reloadSegment(rundown, segment)
+	}
 	export function unsyncRundown (rundownId: RundownId): void {
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
@@ -475,6 +495,27 @@ export namespace ServerRundownAPI {
 			}})
 		} else {
 			logger.info(`Rundown "${rundownId}" was already unsynced`)
+		}
+	}
+
+	export function unsyncSegment (segmentId: SegmentId): void {
+		check(segmentId, String)
+		logger.info('unsyncSegment' + segmentId)
+		let segment = Segments.findOne(segmentId)
+		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
+
+		// Fallback to unsyncing rundown
+		if (!Settings.allowUnsyncedSegments) {
+			return unsyncRundown(segment.rundownId)
+		}
+
+		if (!segment.unsynced) {
+			Segments.update(segmentId, { $set: {
+				unsynced: true,
+				unsyncedTime: getCurrentTime()
+			} })
+		} else {
+			logger.info(`Segment "${segmentId}" was already unsynced`)
 		}
 	}
 }
@@ -603,8 +644,14 @@ class ServerRundownAPIClass implements NewRundownAPI {
 	resyncRundown (rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(rundownId))
 	}
+	resyncSegment (segmentId: SegmentId) {
+		return makePromise(() => ServerRundownAPI.resyncSegment(segmentId))
+	}
 	unsyncRundown (rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.unsyncRundown(rundownId))
+	}
+	unsyncSegment (segmentId: SegmentId) {
+		return makePromise(() => ServerRundownAPI.unsyncSegment(segmentId))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

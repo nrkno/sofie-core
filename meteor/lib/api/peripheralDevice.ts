@@ -158,6 +158,7 @@ export enum PeripheralDeviceAPIMethods {
 	'dataPartUpdate'	= 'peripheralDevice.rundown.partUpdate',
 
 	'resyncRundown'			= 'peripheralDevice.mos.roResync',
+	'resyncSegment'			= 'peripheralDevice.mos.segmentResync',
 
 	'getMediaObjectRevisions' 	= 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' 		= 'peripheralDevice.mediaScanner.updateMediaObject',
@@ -263,7 +264,6 @@ export interface PiecePlaybackStartedResult {
 	time: number
 }
 export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
-
 
 
 export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result) => void, functionName: string, ...args: any[]) {
