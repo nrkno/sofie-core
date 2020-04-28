@@ -1,14 +1,18 @@
-import { RundownNotificationsAPI as APIInterface, IMediaObjectIssue } from '../../lib/api/rundownNotifications'
+import { RundownNotificationsAPI as APIInterface, IMediaObjectIssue, RundownNotificationsAPIMethods } from '../../lib/api/rundownNotifications'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownId } from '../../lib/collections/Rundowns'
 import { PartNote } from '../../lib/api/notes'
+import { makePromise } from '../../lib/lib'
+import { getSegmentPartNotes, getMediaObjectIssues } from '../../lib/rundownNotifications'
 
 class RundownNotificationsAPI implements APIInterface {
-	getSegmentPartNotes(rRundownIds: RundownId[]): Promise<(PartNote & { rank: number; })[]> {
-		
+	getSegmentPartNotes (rundownIds: RundownId[]): Promise<(PartNote & { rank: number; })[]> {
+		const that = this
+		return makePromise(() => getSegmentPartNotes.apply(that, [rundownIds]))
 	}
-	getMediaObjectIssues(rundownId: RundownId): Promise<IMediaObjectIssue[]> {
-		
+	getMediaObjectIssues (rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
+		const that = this
+		return makePromise(() => getMediaObjectIssues.apply(that, [rundownIds]))
 	}
 }
-registerClassToMeteorMethods(RundownNotificationsAPI, RundownNotificationsAPI, false)
+registerClassToMeteorMethods(RundownNotificationsAPIMethods, RundownNotificationsAPI, false)

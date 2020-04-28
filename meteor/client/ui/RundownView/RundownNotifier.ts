@@ -28,6 +28,8 @@ import { handleRundownPlaylistReloadResponse } from '../RundownView'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
+import { ReactiveArray } from '../../../lib/typings/reactivearray'
+import { RankedPartNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -41,6 +43,8 @@ export interface RONotificationEvent {
 		pieceId?: PieceId
 	}
 }
+
+const BACKEND_POLL_INTERVAL = 10 * 1000
 
 class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -317,6 +321,9 @@ class RundownViewNotifier extends WithManagedTracker {
 
 	private reactivePartNotes (playlistId: RundownPlaylistId) {
 		const t = i18nTranslator
+		let allNotesPollInterval: number
+		let allNotesPollLock: boolean = false
+		const NOTES_POLL_INTERVAL = BACKEND_POLL_INTERVAL
 
 		const rRundowns = reactiveData.getRRundowns(playlistId, {
 			fields: {
@@ -324,12 +331,34 @@ class RundownViewNotifier extends WithManagedTracker {
 			}
 		})
 
+		const fullNotes: ReactiveVar<RankedPartNote[]> = new ReactiveVar([], _.isEqual)
+		const localNotes: ReactiveVar<RankedPartNote[]> = new ReactiveVar([], _.isEqual)
+
 		let oldNoteIds: Array<string> = []
+
 		this.autorun(() => {
 			const rundownIds = rRundowns.get().map(r => r._id)
+			clearInterval(allNotesPollInterval)
+			allNotesPollInterval = Meteor.setInterval(() => {
+				if (allNotesPollLock) return
+				allNotesPollLock = true
+				MeteorCall.rundownNotifications.getSegmentPartNotes(rundownIds).then((result) => {
+					fullNotes.set(result)
+					allNotesPollLock = false
+				}).catch((e) => console.error)
+			}, NOTES_POLL_INTERVAL)
+		})
+
+		this.autorun(() => {
+			const rundownIds = rRundowns.get().map(r => r._id)
+			localNotes.set(getSegmentPartNotes(rundownIds))
+		})
+
+		this.autorun(() => {
 			// console.log('RundownViewNotifier 4')
 			const newNoteIds: Array<string> = []
-			getSegmentPartNotes(rundownIds).forEach((item: PartNote & {rank: number}) => {
+			const combined = fullNotes.get().concat(localNotes.get())
+			combined.forEach((item: PartNote & {rank: number}) => {
 				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
@@ -367,6 +396,13 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactiveMediaStatus (playlistId: RundownPlaylistId, showStyleBase: ShowStyleBase, studio: Studio) {
 		const t = i18nTranslator
 
+		let mediaObjectsPollInterval: number
+		let mediaObjectsPollLock: boolean = false
+		const MEDIAOBJECTS_POLL_INTERVAL = BACKEND_POLL_INTERVAL
+
+		const fullMediaStatus: ReactiveVar<IMediaObjectIssue[]> = new ReactiveVar([], _.isEqual)
+		const localMediaStatus: ReactiveVar<IMediaObjectIssue[]> = new ReactiveVar([], _.isEqual)
+
 		let oldPieceIds: PieceId[] = []
 		const rPieces = reactiveData.getRPieces(playlistId, {
 			fields: {
@@ -377,10 +413,30 @@ class RundownViewNotifier extends WithManagedTracker {
 				content: 1
 			}
 		})
+		this.autorun(() => {
+			const rundownIds = reactiveData.getRRundowns(playlistId, {
+				fields: {
+					_id: 1
+				}
+			}).get().map(rundown => rundown._id)
+
+			clearInterval(mediaObjectsPollInterval)
+			mediaObjectsPollInterval = Meteor.setInterval(() => {
+				if (mediaObjectsPollLock) return
+				mediaObjectsPollLock = true
+
+				MeteorCall.rundownNotifications.getMediaObjectIssues(rundownIds)
+				.then((result) => {
+					fullMediaStatus.set(result)
+					mediaObjectsPollLock = false
+				})
+				.catch(e => console.error)
+			}, MEDIAOBJECTS_POLL_INTERVAL)
+		})
 		this.autorun((comp: Tracker.Computation) => {
 			const pieces = rPieces.get()
-			const newPieceIds = pieces.map(item => item._id)
 			pieces.forEach((piece) => {
+				const localStatus: IMediaObjectIssue[] = []
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 				const part = Parts.findOne(piece.partId, {
 					fields: {
@@ -402,42 +458,59 @@ class RundownViewNotifier extends WithManagedTracker {
 							})
 						}
 						const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
-						let newNotification: Notification | undefined = undefined
-						if ((status !== RundownAPI.PieceStatusCode.OK) && (status !== RundownAPI.PieceStatusCode.UNKNOWN) && (status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET)) {
-							newNotification = new Notification(piece._id, NoticeLevel.WARNING, message || 'Media is broken', segment ? segment._id : 'line_' + piece.partId, getCurrentTime(), true, [
-								{
-									label: t('Show issue'),
-									type: 'default'
-								}
-							], segment._rank * 1000 + part._rank)
-							newNotification.on('action', (notification, type, e) => {
-								switch (type) {
-									case 'default':
-										const handler = onRONotificationClick.get()
-										if (handler && typeof handler === 'function') {
-											handler({
-												sourceLocator: {
-													name: piece.name,
-													rundownId: piece.rundownId,
-													pieceId: piece._id,
-													partId: piece.partId
-												}
-											})
-										}
-								}
-							})
-						}
+						localStatus.push({
+							name: piece.name,
+							rundownId: part.rundownId,
+							pieceId: piece._id,
+							partId: part._id,
+							segmentId: segment._id,
+							segmentRank: segment._rank,
+							partRank: part._rank,
+							status,
+							message
+						})
+					})
+				}
+				localMediaStatus.set(localStatus)
+			})
+		})
+		this.autorun(() => {
+			const allIssues = fullMediaStatus.get().concat(localMediaStatus.get())
+			const newPieceIds = _.unique(allIssues.map(item => item.pieceId))
 
-						if (newNotification && !Notification.isEqual(this._mediaStatus[unprotectString(piece._id)], newNotification)) {
-							this._mediaStatus[unprotectString(piece._id)] = newNotification
-							this._mediaStatusDep.changed()
-						} else if (!newNotification && this._mediaStatus[unprotectString(piece._id)]) {
-							delete this._mediaStatus[unprotectString(piece._id)]
-							this._mediaStatusDep.changed()
+			allIssues.forEach((issue) => {
+				const { status, message } = issue
+				let newNotification: Notification | undefined = undefined
+				if ((status !== RundownAPI.PieceStatusCode.OK) && (status !== RundownAPI.PieceStatusCode.UNKNOWN) && (status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET)) {
+					newNotification = new Notification(issue.pieceId, NoticeLevel.WARNING, message || 'Media is broken', issue.segmentId ? issue.segmentId : 'line_' + issue.partId, getCurrentTime(), true, [
+						{
+							label: t('Show issue'),
+							type: 'default'
+						}
+					], issue.segmentRank * 1000 + issue.partRank)
+					newNotification.on('action', (notification, type, e) => {
+						switch (type) {
+							case 'default':
+								const handler = onRONotificationClick.get()
+								if (handler && typeof handler === 'function') {
+									handler({
+										sourceLocator: {
+											name: issue.name,
+											rundownId: issue.rundownId,
+											pieceId: issue.pieceId,
+											partId: issue.partId
+										}
+									})
+								}
 						}
 					})
-				} else {
-					delete this._mediaStatus[unprotectString(piece._id)]
+				}
+
+				if (newNotification && !Notification.isEqual(this._mediaStatus[unprotectString(issue.pieceId)], newNotification)) {
+					this._mediaStatus[unprotectString(issue.pieceId)] = newNotification
+					this._mediaStatusDep.changed()
+				} else if (!newNotification && this._mediaStatus[unprotectString(issue.pieceId)]) {
+					delete this._mediaStatus[unprotectString(issue.pieceId)]
 					this._mediaStatusDep.changed()
 				}
 			})
@@ -457,7 +530,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 	private reactiveVersionStatus (playlistId: RundownPlaylistId) {
 
-		const updatePeriod = 30000 // every 30s
+		const updatePeriod = 30 * 1000 // every 30s
 
 		if (this._rundownImportVersionInterval) Meteor.clearInterval(this._rundownImportVersionInterval)
 		this._rundownImportVersionInterval = playlistId ? Meteor.setInterval(() => this.updateVersionStatus(playlistId), updatePeriod) : undefined

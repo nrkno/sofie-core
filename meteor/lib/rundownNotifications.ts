@@ -1,6 +1,6 @@
 import { RundownId, Rundowns } from './collections/Rundowns'
 import { PartNote } from './api/notes'
-import { Segments } from './collections/Segments'
+import { Segments, Segment } from './collections/Segments'
 import { Parts } from './collections/Parts'
 import { unprotectString, makePromise, waitForPromise } from './lib'
 import * as _ from 'underscore'
@@ -11,11 +11,11 @@ import { Studios, Studio } from './collections/Studios'
 import { RundownAPI } from './api/rundown'
 import { IMediaObjectIssue } from './api/rundownNotifications'
 
-export function getSegmentPartNotes (rRundownIds: RundownId[]): (PartNote & { rank: number; })[] {
+export function getSegmentPartNotes (rundownIds: RundownId[]): (PartNote & { rank: number; })[] {
 	let notes: Array<PartNote & {rank: number}> = []
 	const segments = Segments.find({
 		rundownId: {
-			$in: rRundownIds
+			$in: rundownIds
 		}
 	}, {
 		sort: { _rank: 1 },
@@ -31,7 +31,7 @@ export function getSegmentPartNotes (rRundownIds: RundownId[]): (PartNote & { ra
 		notes: segment.notes
 	} ])) as { [key: string ]: { notes: PartNote[], rank: number } }
 	Parts.find({
-		rundownId: { $in: rRundownIds },
+		rundownId: { $in: rundownIds },
 		segmentId: { $in: segments.map(segment => segment._id) }
 	}, {
 		sort: { _rank: 1 },
@@ -56,16 +56,24 @@ export function getSegmentPartNotes (rRundownIds: RundownId[]): (PartNote & { ra
 	return notes
 }
 
-export function getMediaObjectIssues (rundownId: RundownId): IMediaObjectIssue[] {
-	const rundown = Rundowns.findOne(rundownId)
+export function getMediaObjectIssues (rundownIds: RundownId[]): IMediaObjectIssue[] {
+	const rundowns = Rundowns.find({
+		_id: {
+			$in: rundownIds
+		}
+	})
 
-	if (rundown) {
+	const p = Promise.all(rundowns.map((rundown) => makePromise(() => {
 		let showStyle: ShowStyleBase | undefined
 		let rundownStudio: Studio | undefined
+		let segments: {
+			[key: string]: Segment
+		}
 
 		const p: Promise<void>[] = []
 		p.push(makePromise(() => { showStyle = ShowStyleBases.findOne(rundown.showStyleBaseId) }))
 		p.push(makePromise(() => { rundownStudio = Studios.findOne(rundown.studioId) }))
+		p.push(makePromise(() => { segments = _.object(Segments.find({ rundownId: rundown._id }).fetch().map(segment => [segment._id, segment])) }))
 		waitForPromise(Promise.all(p))
 
 		if (showStyle && rundownStudio) {
@@ -77,19 +85,22 @@ export function getMediaObjectIssues (rundownId: RundownId): IMediaObjectIssue[]
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
 				const part = Parts.findOne(piece.partId, {
 					fields: {
-						_rank: 1
+						_rank: 1,
+						name: 1,
+						segmentId: 1,
 					}
 				})
-				const segment = part ? Segments.findOne(part.segmentId, {
-					fields: {
-						_rank: 1
-					}
-				}) : undefined
+				const segment = part ? segments[unprotectString(part.segmentId)] : undefined
 				if (segment && sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					const { status, message } = checkPieceContentStatus(piece, sourceLayer, studio.settings)
 					if ((status !== RundownAPI.PieceStatusCode.OK) && (status !== RundownAPI.PieceStatusCode.UNKNOWN) && (status !== RundownAPI.PieceStatusCode.SOURCE_NOT_SET)) {
 						return {
+							rundownId: part.rundownId,
+							segmentId: segment._id,
+							segmentRank: segment._rank,
+							partId: part._id,
+							partRank: part._rank,
 							pieceId: piece._id,
 							name: piece.name,
 							status,
@@ -101,6 +112,8 @@ export function getMediaObjectIssues (rundownId: RundownId): IMediaObjectIssue[]
 			})
 			return _.compact(pieceStatus)
 		}
-	}
-	return []
+	})))
+	const allStatus = waitForPromise(p)
+
+	return _.flatten(allStatus)
 }

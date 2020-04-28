@@ -64,7 +64,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 						translateX: ['100%', '0%']
 					}, easing: 'ease-in', duration: 500
 				}}>
-					{this.state.showNotifications && <NotificationCenterPanel />}
+					{this.state.showNotifications && <NotificationCenterPanel limitCount={15} />}
 				</VelocityReact.VelocityTransitionGroup>
 				<VelocityReact.VelocityTransitionGroup enter={{
 					animation: {
