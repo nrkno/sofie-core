@@ -45,6 +45,7 @@ export interface IDashboardButtonProps {
 	displayStyle?: PieceDisplayStyle
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
+	dvePreviewsAsThumbnails?: boolean
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -181,7 +182,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
 						this.renderVTLiveSpeak() :
 					(this.props.layer.type === SourceLayerType.SPLITS) ?
-						this.renderSplits(isList) :
+						this.renderSplits(isList && this.props.dvePreviewsAsThumbnails) :
 						null
 				}
 				<span className='dashboard-panel__panel__button__label'>{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}</span>

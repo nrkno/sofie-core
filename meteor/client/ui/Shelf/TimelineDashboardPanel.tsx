@@ -102,6 +102,7 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 													mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
+													dvePreviewsAsThumbnails={filter.dvePreviewsAsThumbnails}
 												>
 													{item.name}
 										</DashboardPieceButton>
@@ -135,6 +136,7 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 														mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
+														dvePreviewsAsThumbnails={filter.dvePreviewsAsThumbnails}
 													>
 														{item.name}
 											</DashboardPieceButton>

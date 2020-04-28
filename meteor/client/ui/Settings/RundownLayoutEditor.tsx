@@ -130,6 +130,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					tags: undefined,
 					rank: 0,
 					rundownBaseline: false,
+					dvePreviewsAsThumbnails: false,
 					default: false
 				})
 			}
@@ -345,6 +346,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
+					{
+						isList &&
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Show DVE layouts as thumbnails')}
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute={`filters.${index}.dvePreviewsAsThumbnails`}
+									obj={item}
+									type='checkbox'
+									collection={RundownLayouts}
+									className='mod mas' />
+							</label>
+						</div>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('X')}
