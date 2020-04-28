@@ -27,6 +27,7 @@ import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
+import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -143,7 +144,12 @@ class RundownViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 		let oldNoteIds: Array<string> = []
 
-		const rRundowns = reactiveData.getRRundowns(playlistId)
+		const rRundowns = reactiveData.getRRundowns(playlistId, {
+			fields: {
+				_id: 1,
+				unsynced: 1
+			}
+		})
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 
@@ -240,7 +246,15 @@ class RundownViewNotifier extends WithManagedTracker {
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]> | undefined
 		if (studioId) {
 			meteorSubscribe(PubSub.peripheralDevicesAndSubDevices, { studioId: studioId })
-			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId)
+			reactivePeripheralDevices = reactiveData.getRPeripheralDevices(studioId, {
+				fields: {
+					name: 1,
+					ignore: 1,
+					status: 1,
+					connected: 1,
+					parentDeviceId: 1,
+				}
+			})
 		}
 		this.autorun(() => {
 			// console.log('RundownViewNotifier 3')
@@ -304,52 +318,11 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactivePartNotes (playlistId: RundownPlaylistId) {
 		const t = i18nTranslator
 
-		function getSegmentPartNotes (rRundownIds: RundownId[]) {
-			let notes: Array<PartNote & {rank: number}> = []
-			const segments = Segments.find({
-				rundownId: {
-					$in: rRundownIds
-				}
-			}, {
-				sort: { _rank: 1 },
-				fields: {
-					_id: 1,
-					_rank: 1,
-					notes: 1
-				}
-			}).fetch()
-
-			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
-				rank: segment._rank,
-				notes: segment.notes
-			} ])) as { [key: string ]: { notes: PartNote[], rank: number } }
-			Parts.find({
-				rundownId: { $in: rRundownIds },
-				segmentId: { $in: segments.map(segment => segment._id) }
-			}, {
-				sort: { _rank: 1 },
-				fields: {
-					segmentId: 1,
-					notes: 1
-				}
-			}).map(part => {
-				if (part.notes) {
-					const sn = segmentNotes[unprotectString(part.segmentId)]
-					if (sn) {
-						return sn.notes.concat(part.notes)
-					}
-				}
-			})
-			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
-				return o.notes.map(note => _.extend(note, {
-					rank: o.rank
-				}))
-			})))
-
-			return notes
-		}
-
-		const rRundowns = reactiveData.getRRundowns(playlistId)
+		const rRundowns = reactiveData.getRRundowns(playlistId, {
+			fields: {
+				_id: 1
+			}
+		})
 
 		let oldNoteIds: Array<string> = []
 		this.autorun(() => {
@@ -395,14 +368,30 @@ class RundownViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 
 		let oldPieceIds: PieceId[] = []
-		const rPieces = reactiveData.getRPieces(playlistId)
+		const rPieces = reactiveData.getRPieces(playlistId, {
+			fields: {
+				_id: 1,
+				sourceLayerId: 1,
+				outputLayerId: 1,
+				name: 1,
+				content: 1
+			}
+		})
 		this.autorun((comp: Tracker.Computation) => {
 			const pieces = rPieces.get()
 			const newPieceIds = pieces.map(item => item._id)
 			pieces.forEach((piece) => {
 				const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === piece.sourceLayerId)
-				const part = Parts.findOne(piece.partId)
-				const segment = part ? Segments.findOne(part.segmentId) : undefined
+				const part = Parts.findOne(piece.partId, {
+					fields: {
+						_rank: 1
+					}
+				})
+				const segment = part ? Segments.findOne(part.segmentId, {
+					fields: {
+						_rank: 1
+					}
+				}) : undefined
 				if (segment && sourceLayer && part) {
 					// we don't want this to be in a non-reactive context, so we manage this computation manually
 					this._mediaStatusComps[unprotectString(piece._id)] = Tracker.autorun(() => {
@@ -457,7 +446,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			removedPieceIds.forEach((pieceId) => {
 				const pId = unprotectString(pieceId)
 				delete this._mediaStatus[pId]
-				this._mediaStatusComps[pId].stop()
+				if (this._mediaStatusComps[pId]) this._mediaStatusComps[pId].stop()
 				delete this._mediaStatusComps[pId]
 
 				this._mediaStatusDep.changed()
