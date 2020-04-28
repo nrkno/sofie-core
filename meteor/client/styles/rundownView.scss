@@ -609,6 +609,11 @@ body.no-overflow {
 		display: none;
 	}
 
+	// the identifier is an installation-specific feature that needs to be supported by the blueprints. It's disabled in the UI by default.
+	.segment-timeline__identifier {
+		display: none;
+	}
+
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__duration {
 		position: relative;
