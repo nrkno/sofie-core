@@ -35,7 +35,6 @@ import {
 	PartEndState
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, StudioId } from '../../../lib/collections/Studios'
-import { getResolvedSegment, ISourceLayerExtended } from '../../../lib/Rundown'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,

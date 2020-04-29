@@ -9,7 +9,7 @@ import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { RundownTiming, computeSegmentDuration, TimingEvent } from '../RundownView/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { getResolvedSegment,
+import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 	PieceExtended,
@@ -24,8 +24,10 @@ import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString } from '../../../lib/lib'
+import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { Parts } from '../../../lib/collections/Parts'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -105,6 +107,8 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 	const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
 
+	// console.log(`${props.segmentId}: running tracker`)
+
 	// We need the segment to do anything
 	if (!segment) {
 		return {
@@ -124,7 +128,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	let o = getResolvedSegment(props.showStyleBase, props.playlist, segment)
+	let o = RundownUtils.getResolvedSegment(props.showStyleBase, props.playlist, segment)
 	let notes: Array<SegmentNote> = []
 	_.each(o.parts, (part) => {
 		notes = notes.concat(part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase), part.instance.part.getInvalidReasonNotes())
@@ -213,7 +217,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	return false
-})(class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
+}, true)(class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -267,7 +271,30 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		})
 		this.subscribe(PubSub.partInstances, {
 			segmentId: this.props.segmentId,
-			reset: { $ne: true }
+			reset: {
+				$ne: true
+			}
+		})
+		this.autorun(() => {
+			const partIds = Parts.find({
+				segmentId: this.props.segmentId
+			}).map(part => part._id)
+			const partInstanceIds = PartInstances.find({
+				segmentId: this.props.segmentId
+			}).map(instance => instance._id)
+			this.subscribe(PubSub.pieces, {
+				partId: {
+					$in: partIds
+				}
+			})
+			this.subscribe(PubSub.pieceInstances, {
+				partInstanceId: {
+					$in: partInstanceIds
+				},
+				reset: {
+					$ne: true
+				}
+			})
 		})
 		SpeechSynthesiser.init()
 	}

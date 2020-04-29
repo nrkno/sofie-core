@@ -1,5 +1,3 @@
-/// <reference path="../../../lib/typings/reactivearray.d.ts" />
-
 import { ReactiveVar } from 'meteor/reactive-var'
 import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'

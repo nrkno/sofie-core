@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"target": "es6",
+		"target": "es2017",
 		"experimentalDecorators": true,
 		"moduleResolution": "node",
 		"strictNullChecks": true,
@@ -12,7 +12,7 @@
 				"name": "typescript-tslint-plugin"
 			}
 		],
-		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017.object"]
+		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017.object", "es2017"]
 	},
 	"exclude": [
 		"node_modules",
