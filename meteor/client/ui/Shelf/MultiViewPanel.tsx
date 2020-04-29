@@ -28,10 +28,10 @@ interface IMultiViewPanelProps {
 
 interface IMultiViewPanelTrackedProps {
 	unfinishedPieces: {
-		[key: string]: PieceInstanceId[]
+		[key: string]: PieceInstance[]
 	}
 	nextPieces: {
-		[key: string]: PieceInstanceId[]
+		[key: string]: PieceInstance[]
 	}
 }
 
@@ -153,7 +153,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 }
 
 
-export function getNextPiecesReactive (nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstanceId[] } {
+export function getNextPiecesReactive (nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -173,8 +173,8 @@ export function getNextPiecesReactive (nextPartInstanceId: PartInstanceId | null
 		}).fetch()
 	}
 
-	const nextPieces: { [adlib: string]: PieceInstanceId[] } = {}
-	_.each(_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId), (grp, id) => nextPieces[id] = _.map(grp, instance => instance._id))
+	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
+	_.each(_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId), (grp, id) => nextPieces[id] = _.map(grp, instance => instance))
 	return nextPieces
 }
 

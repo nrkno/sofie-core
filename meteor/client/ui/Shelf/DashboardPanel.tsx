@@ -33,7 +33,7 @@ import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { invalidateAt } from '../../lib/invalidatingTime'
@@ -59,10 +59,10 @@ interface IDashboardPanelProps {
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieceInstanceIds: {
-		[adlibId: string]: PieceInstanceId[]
+		[adlibId: string]: PieceInstance[]
 	}
 	nextPieces: {
-		[key: string]: PieceInstanceId[]
+		[key: string]: PieceInstance[]
 	}
 }
 
@@ -606,8 +606,8 @@ export function getUnfinishedPieceInstancesReactive (currentPartInstanceId: Part
 	}
 
 	// Convert to array of ids as that is all that is needed
-	const unfinishedPieceInstanceIds: { [adlibId: string]: PieceInstanceId[] } = {}
-	_.each(_.groupBy(prospectivePieces, (piece) => piece.piece.adLibSourceId), (grp, id) => unfinishedPieceInstanceIds[id] = _.map(grp, instance => instance._id))
+	const unfinishedPieceInstanceIds: { [adlibId: string]: PieceInstance[] } = {}
+	_.each(_.groupBy(prospectivePieces, (piece) => piece.piece.adLibSourceId), (grp, id) => unfinishedPieceInstanceIds[id] = _.map(grp, instance => instance))
 
 	return unfinishedPieceInstanceIds
 }
