@@ -45,7 +45,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 	return {
 		log: UserActionsLog.find({}, { sort: { timestamp: 1 } }).fetch()
 	}
-})(class extends MeteorReactComponent<Translated<IRecordingListProps & IRecordingListTrackedProps>, IRecordingListState> {
+})(class UserLogPlayerPage extends MeteorReactComponent<Translated<IRecordingListProps & IRecordingListTrackedProps>, IRecordingListState> {
 	private _currentsub: string = ''
 	private _sub?: Meteor.SubscriptionHandle
 

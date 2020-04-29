@@ -54,14 +54,6 @@ export function getCurrentTime (): Time {
 }
 export { systemTime }
 
-// export type Optional<T> = {
-// 	[K in keyof T]?: T[K]
-// }
-
-// type Test<T> = {
-// 	[K in keyof T]: T[K]
-// }
-
 export interface DBObj {
 	_id: ProtectedString<any>,
 	[key: string]: any
@@ -96,13 +88,41 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	collection: TransformedCollection<DocClass, DBInterface>,
 	filter: MongoSelector<DBInterface>,
 	newData: Array<DBInterface>,
-	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
+	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
-	let change: Changes = {
-		added: 0,
-		updated: 0,
-		removed: 0
+
+	const preparedChanges = prepareSaveIntoDb(
+		collection,
+		filter,
+		newData,
+		options
+	)
+
+	return savePreparedChanges(
+		preparedChanges,
+		collection,
+		options
+	)
+}
+export interface PreparedChanges<T> {
+	inserted: T[]
+	changed: {doc: T, oldId: ProtectedString<any>}[]
+	removed: T[]
+	unchanged: T[]
+}
+export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	filter: MongoSelector<DBInterface>,
+	newData: Array<DBInterface>,
+	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
+): PreparedChanges<DBInterface> {
+	let preparedChanges: PreparedChanges<DBInterface> = {
+		inserted: [],
+		changed: [],
+		removed: [],
+		unchanged: []
 	}
+
 	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
 	const identifier = '_id'
@@ -112,23 +132,18 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	const newObjIds: {[identifier: string]: true} = {}
 	_.each(newData, (o) => {
 		if (newObjIds[o[identifier] as any]) {
-			throw new Meteor.Error(500, `saveIntoDb into collection "${(collection as any)._name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
+			throw new Meteor.Error(500, `prepareSaveIntoDb into collection "${(collection as any)._name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
 		}
 		newObjIds[o[identifier] as any] = true
 	})
 
 	const oldObjs: Array<DocClass> = waitForPromise(pOldObjs)
 
-	const ps: Array<Promise<any>> = []
-
 	const removeObjs: {[id: string]: DocClass} = {}
-	_.each(oldObjs,function (o: DocClass) {
-
+	_.each(oldObjs, (o: DocClass) => {
 		if (removeObjs['' + o[identifier]]) {
 			// duplicate id:
-			// collection.remove(o._id)
-			ps.push(asyncCollectionRemove(collection, o._id))
-			change.removed++
+			preparedChanges.removed.push(o)
 		} else {
 			removeObjs['' + o[identifier]] = o
 		}
@@ -143,72 +158,112 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 			const eql = compareObjs(oldObj, o2)
 
 			if (!eql) {
-				let p: Promise<any> | undefined
 				let oUpdate = (options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o)
-				if (options.update) {
-					options.update(oldObj._id, oUpdate)
-				} else {
-					p = asyncCollectionUpdate(collection, oldObj._id, oUpdate)
-				}
-				if (options.afterUpdate) {
-					p = Promise.resolve(p)
-					.then(() => {
-						if (options.afterUpdate) options.afterUpdate(oUpdate)
-					})
-				}
-
-				if (p) ps.push(p)
-				change.updated++
+				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id })
 			} else {
-				if (options.unchanged) options.unchanged(oldObj)
+				preparedChanges.unchanged.push(oldObj)
 			}
 		} else {
 			if (!_.isNull(oldObj)) {
-				let p: Promise<any> | undefined
 				let oInsert = (options.beforeInsert ? options.beforeInsert(o) : o)
-				if (options.insert) {
-					options.insert(oInsert)
-				} else {
-					p = asyncCollectionInsert(collection, oInsert)
-				}
-				if (options.afterInsert) {
-					p = Promise.resolve(p)
-					.then(() => {
-						if (options.afterInsert) options.afterInsert(oInsert)
-					})
-				}
-				if (p) ps.push(p)
-				change.added++
+				preparedChanges.inserted.push(oInsert)
 			}
 		}
 		delete removeObjs['' + o[identifier]]
 	})
-	_.each(removeObjs, function (obj: DocClass, key) {
+	_.each(removeObjs, function (obj: DocClass) {
 		if (obj) {
-			let p: Promise<any> | undefined
 			let oRemove: DBInterface = (options.beforeRemove ? options.beforeRemove(obj) : obj)
-			if (options.remove) {
-				options.remove(oRemove)
-			} else {
-				p = asyncCollectionRemove(collection, oRemove._id)
-			}
-
-			if (options.afterRemove) {
-				p = Promise.resolve(p)
-				.then(() => {
-					// console.log('+++ lib/lib.ts +++', Fiber.current)
-					if (options.afterRemove) options.afterRemove(oRemove)
-				})
-			}
-			if (p) ps.push(p)
-			change.removed++
-
+			preparedChanges.removed.push(oRemove)
 		}
 	})
+	return preparedChanges
+}
+export function savePreparedChanges<DocClass extends DBInterface, DBInterface extends DBObj> (
+	preparedChanges: PreparedChanges<DBInterface>,
+	collection: TransformedCollection<DocClass, DBInterface>,
+	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
+) {
+	let change: Changes = {
+		added: 0,
+		updated: 0,
+		removed: 0
+	}
+	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
+
+	const ps: Array<Promise<any>> = []
+
+	const newObjIds: {[identifier: string]: true} = {}
+	const checkInsertId = (id) => {
+		if (newObjIds[id]) {
+			throw new Meteor.Error(500, `savePreparedChanges into collection "${(collection as any)._name}": Duplicate identifier "${id}"`)
+		}
+		newObjIds[id] = true
+	}
+
+	_.each(preparedChanges.changed || [], oUpdate => {
+		checkInsertId(oUpdate.doc._id)
+		let p: Promise<any> | undefined
+		if (options.update) {
+			options.update(oUpdate.oldId, oUpdate.doc)
+		} else {
+			p = asyncCollectionUpdate(collection, oUpdate.oldId, oUpdate.doc)
+		}
+		if (options.afterUpdate) {
+			p = Promise.resolve(p)
+			.then(() => {
+				if (options.afterUpdate) options.afterUpdate(oUpdate.doc)
+			})
+		}
+
+		if (p) ps.push(p)
+		change.updated++
+	})
+
+	_.each(preparedChanges.inserted || [], oInsert => {
+		checkInsertId(oInsert._id)
+		let p: Promise<any> | undefined
+		if (options.insert) {
+			options.insert(oInsert)
+		} else {
+			p = asyncCollectionInsert(collection, oInsert)
+		}
+		if (options.afterInsert) {
+			p = Promise.resolve(p)
+			.then(() => {
+				if (options.afterInsert) options.afterInsert(oInsert)
+			})
+		}
+		if (p) ps.push(p)
+		change.added++
+	})
+
+	_.each(preparedChanges.removed || [], oRemove => {
+		let p: Promise<any> | undefined
+		if (options.remove) {
+			options.remove(oRemove)
+		} else {
+			p = asyncCollectionRemove(collection, oRemove._id)
+		}
+
+		if (options.afterRemove) {
+			p = Promise.resolve(p)
+			.then(() => {
+				if (options.afterRemove) options.afterRemove(oRemove)
+			})
+		}
+		if (p) ps.push(p)
+		change.removed++
+	})
+	if (options.unchanged) {
+		_.each(preparedChanges.unchanged || [], o => {
+			if (options.unchanged) options.unchanged(o)
+		})
+	}
 	waitForPromiseAll(ps)
 
 	if (options.afterRemoveAll) {
-		const objs = _.compact(_.values(removeObjs))
+		const objs = _.compact(preparedChanges.removed || [])
 		if (objs.length > 0) {
 			options.afterRemoveAll(objs)
 		}
@@ -1138,6 +1193,9 @@ export function protectString<T extends ProtectedString<any>> (str: string | nul
 export function protectString<T extends ProtectedString<any>> (str: string | undefined): T | undefined
 export function protectString<T extends ProtectedString<any>> (str: string | undefined | null): T | undefined | null {
 	return str as any as T
+}
+export function protectStringArray<T extends ProtectedString<any>> (arr: string[]): T[] {
+	return arr as any as T[]
 }
 export function unprotectString (protectedStr: ProtectedString<any>): string
 export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined

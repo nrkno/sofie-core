@@ -2,6 +2,7 @@ import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 
 export namespace RundownUtils {
 	function padZerundown (input: number, places?: number): string {
@@ -9,9 +10,9 @@ export namespace RundownUtils {
 		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
 	}
 
-	export function getSegmentDuration (parts: Array<PartUi>) {
+	export function getSegmentDuration (parts: Array<PartUi>, display?: boolean) {
 		return parts.reduce((memo, part) => {
-			return memo + (part.instance.part.duration || part.instance.part.expectedDuration || part.renderedDuration || 0)
+			return memo + (part.instance.part.duration || part.instance.part.expectedDuration || part.renderedDuration || (display ? DEFAULT_DISPLAY_DURATION : 0))
 		}, 0)
 	}
 

@@ -43,7 +43,7 @@ interface RundownOverviewTrackedProps {
 	rundownIds: RundownId[]
 }
 
-const Timediff = class extends React.Component<{ time: number }> {
+const Timediff = class Timediff extends React.Component<{ time: number }> {
 	render () {
 		const time = -this.props.time
 		const isNegative = (Math.floor(time / 1000) > 0)
@@ -127,7 +127,7 @@ const ClockComponent = translate()(withTiming<RundownOverviewProps, RundownOverv
 			rundownIds
 		}
 	})(
-		class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
+		class ClockComponent extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>, RundownOverviewState> {
 			componentWillMount () {
 				this.autorun(() => {
 					let playlist = RundownPlaylists.findOne(this.props.playlistId)
@@ -307,7 +307,7 @@ export const ClockView = translate()(withTracker(function (props: IPropsHeader) 
 		parts
 	}
 })(
-	class extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
+	class ClockView extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 		componentDidMount () {
 			document.body.classList.add('dark', 'xdark')
 			let studioId = objectPathGet(this.props, 'match.params.studioId')

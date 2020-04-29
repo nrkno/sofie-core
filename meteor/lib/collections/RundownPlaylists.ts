@@ -23,6 +23,7 @@ export interface DBRundownPlaylist {
 	externalId: string
 	studioId: StudioId
 	peripheralDeviceId: PeripheralDeviceId
+	restoredFromSnapshotId?: RundownPlaylistId
 	name: string
 	created: Time
 	modified: Time
@@ -43,10 +44,16 @@ export interface DBRundownPlaylist {
 	/** the id of the Previous Part */
 	previousPartInstanceId: PartInstanceId | null
 
+	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
+	nextSegmentId?: SegmentId
+
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 	/** Timestamp for the last time an incorrect part was reported as started */
 	lastIncorrectPartPlaybackReported?: Time
+
+	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
+	previousPersistentState?: TimelinePersistentState
 }
 
 export interface RundownPlaylistPlayoutData {
@@ -73,6 +80,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public externalId: string
 	public studioId: StudioId
 	public peripheralDeviceId: PeripheralDeviceId
+	public restoredFromSnapshotId?: RundownPlaylistId
 	public name: string
 	public created: Time
 	public modified: Time
@@ -85,6 +93,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public active?: boolean
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
+	public nextSegmentId: SegmentId
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null
@@ -139,6 +148,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		const allRundowns = this.getRundowns()
 		allRundowns.forEach(i => i.remove())
+
+		RundownPlaylists.remove(this._id)
 	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio (): Studio {

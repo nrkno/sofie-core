@@ -1,21 +1,16 @@
 import { CoreSystem } from '../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
-import { Picker } from 'meteor/meteorhacks:picker'
 import { postHandler } from './postHandler'
 import { logger } from '../../logging'
-import * as bodyParser from 'body-parser'
 import { deleteMessage, readAllMessages } from './serviceMessagesApi'
+import { PickerPOST, PickerGET, PickerDELETE } from '../http'
 
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
-postRoute.middleware(bodyParser.json())
-postRoute.route('/serviceMessages', postHandler)
+PickerPOST.route('/serviceMessages', postHandler)
 
-const getRoute = Picker.filter((req, res) => req.method === 'GET')
-getRoute.route('/serviceMessages', getHandler)
-getRoute.route('/serviceMessages/:id', getMessageHandler)
+PickerGET.route('/serviceMessages', getHandler)
+PickerGET.route('/serviceMessages/:id', getMessageHandler)
 
-const deleteRoute = Picker.filter((req, res) => req.method === 'DELETE')
-deleteRoute.route('/serviceMessages/:id', deleteHandler)
+PickerDELETE.route('/serviceMessages/:id', deleteHandler)
 
 
 /**

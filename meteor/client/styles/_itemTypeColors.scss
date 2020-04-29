@@ -2,150 +2,155 @@ $segment-timeline-background-color: #1F1F1F;
 
 $segment-layer-background-unknown: #4b4b4b;
 $segment-layer-background-camera:#18791c;
+$segment-layer-background-camera--second: darken($segment-layer-background-camera, 10%);
 $segment-layer-background-lower-third: #ff6f00;
+$segment-layer-background-lower-third--second: darken($segment-layer-background-lower-third, 10%);
 $segment-layer-background-graphics: #ef6800;
+$segment-layer-background-graphics--second: darken($segment-layer-background-graphics, 10%);
 $segment-layer-background-live-speak: #00c800;
 $segment-layer-background-remote: #e80064;
+$segment-layer-background-remote--second: darken($segment-layer-background-remote, 10%);
+$segment-layer-background-vt: #1769ff;
+$segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
 $segment-layer-background-script: #005a25;
 $segment-layer-background-mic:#1e6820;
-$segment-layer-background-vt: #1769ff;
 $segment-layer-background-guest: #008a92;
 
 @mixin item-type-colors {
 	&.camera {
-		background: $segment-layer-background-camera;
+		background: var(--segment-layer-background-camera);
 
 		&.second {
-			background: darken($segment-layer-background-camera, 10%);
+			background: var(--segment-layer-background-camera--second);
 		}
 	}
 
 	&.graphics {
-		background: $segment-layer-background-graphics;
+		background: var(--segment-layer-background-graphics);
 
 		&.second {
-			background: darken($segment-layer-background-graphics, 10%);
+			background: var(--segment-layer-background-graphics--second);
 		}
 	}
 
 	&.lower-third {
-		background: $segment-layer-background-lower-third;
+		background: var(--segment-layer-background-lower-third);
 
 		&.second {
-			background: darken($segment-layer-background-lower-third, 10%);
+			background: var(--segment-layer-background-lower-third--second);
 		}
 	}
 
 	&.live-speak {
-		background: linear-gradient(to bottom, $segment-layer-background-vt 50%, $segment-layer-background-camera 50.0001%);
+		background: linear-gradient(to bottom, var(--segment-layer-background-vt) 50%, var(--segment-layer-background-camera) 50.0001%);
 	}
 
 	&.vt {
-		background: $segment-layer-background-vt;
+		background: var(--segment-layer-background-vt);
 
 		&.second {
-			background: darken($segment-layer-background-vt, 10%);
+			background: var(--segment-layer-background-vt--second);
 		}
 	}
 
 	&.remote {
-		background: $segment-layer-background-remote;
+		background: var(--segment-layer-background-remote);
 
 		&.second {
-			background: darken($segment-layer-background-remote, 10%);
+			background: var(--segment-layer-background-remote--second);
 		}
 	}
 
 	&.script {
-		background: $segment-layer-background-script;
+		background: var(--segment-layer-background-script);
 	}
 
 	&.mic {
-		background: $segment-layer-background-guest;
+		background: var(--segment-layer-background-guest);
 	}
 }
 
 @mixin item-type-borders {
 	&.camera {
-		border-color: $segment-layer-background-camera;
+		border-color: var(--segment-layer-background-camera);
 	}
 
 	&.graphics {
-		border-color: $segment-layer-background-graphics;
+		border-color: var(--segment-layer-background-graphics);
 	}
 
 	&.lower-third {
-		border-color: $segment-layer-background-lower-third;
+		border-color: var(--segment-layer-background-lower-third);
 	}
 
 	&.live-speak {
-		border-color: $segment-layer-background-live-speak;
+		border-color: var(--segment-layer-background-live-speak);
 	}
 
 	&.vt {
-		border-color: $segment-layer-background-vt;
+		border-color: var(--segment-layer-background-vt);
 	}
 
 	&.remote {
-		border-color: $segment-layer-background-remote;
+		border-color: var(--segment-layer-background-remote);
 	}
 
 	&.script {
-		border-color: $segment-layer-background-script;
+		border-color: var(--segment-layer-background-script);
 	}
 
 	&.mic {
-		border-color: $segment-layer-background-mic;
+		border-color: var(--segment-layer-background-mic);
 	}
 }
 
 @mixin item-type-colors-svg {
 	&.camera {
-		fill: $segment-layer-background-camera;
+		fill: var(--segment-layer-background-camera);
 
 		&.second {
-			fill: darken($segment-layer-background-camera, 10%);
+			fill: var(--segment-layer-background-camera--second);
 		}
 	}
 
 	&.graphics {
-		fill: $segment-layer-background-graphics;
+		fill: var(--segment-layer-background-graphics);
 
 		&.second {
-			fill: darken($segment-layer-background-graphics, 10%);
+			fill: var(--segment-layer-background-graphics--second);
 		}
 	}
 
 	&.lower-third {
-		fill: $segment-layer-background-lower-third;
+		fill: var(--segment-layer-background-lower-third);
 	}
 
 	&.live-speak {
-		fill: $segment-layer-background-live-speak;
+		fill: var(--segment-layer-background-live-speak);
 	}
 
 	&.vt {
-		fill: $segment-layer-background-vt;
+		fill: var(--segment-layer-background-vt);
 
 		&.second {
-			fill: darken($segment-layer-background-vt, 10%);
+			fill: var(--segment-layer-background-vt--second);
 		}
 	}
 
 	&.remote {
-		fill: $segment-layer-background-remote;
+		fill: var(--segment-layer-background-remote);
 
 		&.second {
-			fill: darken($segment-layer-background-remote, 10%);
+			fill: var(--segment-layer-background-remote--second);
 		}
 	}
 
 	&.script {
-		fill: $segment-layer-background-script;
+		fill: var(--segment-layer-background-script);
 	}
 
 	&.mic {
-		fill: $segment-layer-background-mic;
+		fill: var(--segment-layer-background-mic);
 	}
 }
 

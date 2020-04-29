@@ -21,7 +21,7 @@ interface IMOSStatusProps {
 	lastUpdate: Time
 }
 
-export const MOSLastUpdateStatus = translate()(class extends React.Component<IMOSStatusProps & InjectedTranslateProps> {
+export const MOSLastUpdateStatus = translate()(class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & InjectedTranslateProps> {
 	_interval: number
 
 	componentDidMount () {

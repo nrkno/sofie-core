@@ -73,7 +73,7 @@ export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: numb
 	let unresolvedCount = tlResolved.statistics.unresolvedCount
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
-		const pieceInstanceId = (obj.metadata || {}).pieceId
+		const pieceInstanceId = (obj.metaData || {}).pieceId
 		const piece = _.clone(pieceMap[pieceInstanceId]) as PieceResolved
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			piece.resolvedStart = obj0.resolved.instances[0].start || 0
@@ -172,7 +172,7 @@ export function createPieceGroup (
 		objectType: TimelineObjType.RUNDOWN,
 		enable: calculatePieceTimelineEnable(pieceInstance.piece),
 		layer: pieceInstance.piece.sourceLayerId,
-		metadata: {
+		metaData: {
 			pieceId: pieceInstance._id
 		}
 	})
@@ -187,7 +187,7 @@ function resolvePieceTimeline (objs: TimelineObjGeneric[], baseTime: number, pie
 	let unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = obj0 as any as TimelineObjRundown
-		const id = (obj.metadata || {}).pieceId
+		const id = (obj.metaData || {}).pieceId
 
 		if (!id) return
 
@@ -282,7 +282,7 @@ export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceIns
 	return resolvedPieces
 }
 export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
-	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId))))
+	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId))))
 
 	const now = getCurrentTime()
 

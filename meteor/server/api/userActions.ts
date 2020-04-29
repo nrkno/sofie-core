@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import {
@@ -37,7 +37,8 @@ import { PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInst
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
-import { syncFunctionIgnore, syncFunction } from '../codeControl'
+import { SegmentId, Segment, Segments } from '../../lib/collections/Segments'
+import { syncFunction } from '../codeControl'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan (span: number) {
@@ -104,8 +105,48 @@ export function setNext (rundownPlaylistId: RundownPlaylistId, nextPartId: PartI
 	if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
 		return ClientAPI.responseError('The Next cannot be changed next during a Hold!')
 	}
-
 	return ServerPlayoutAPI.setNextPart(rundownPlaylistId, nextPartId, setManually, timeOffset)
+}
+export function setNextSegment (
+	rundownPlaylistId: RundownPlaylistId,
+	nextSegmentId: SegmentId | null
+): ClientAPI.ClientResponse<void> {
+	check(rundownPlaylistId, String)
+	if (nextSegmentId) check(nextSegmentId, String)
+	else check(nextSegmentId, null)
+
+	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	if (!playlist.active) return ClientAPI.responseError('Rundown is not active, please activate it before setting a part as Next')
+
+	let nextSegment: Segment | null = null
+
+	if (nextSegmentId) {
+		nextSegment = Segments.findOne(nextSegmentId) || null
+		if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
+
+		const rundownIds = playlist.getRundownIDs()
+		if (rundownIds.indexOf(nextSegment.rundownId) === -1) {
+			throw new Meteor.Error(404, `Segment "${nextSegmentId}" does not belong to Rundown Playlist "${rundownPlaylistId}"!`)
+		}
+
+		const partsInSegment = nextSegment.getParts()
+		const firstValidPartInSegment = _.find(partsInSegment, p => p.isPlayable())
+
+		if (!firstValidPartInSegment)return ClientAPI.responseError('Segment contains no valid parts')
+
+		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+		if (
+			!currentPartInstance ||
+			!nextPartInstance ||
+			nextPartInstance.segmentId !== currentPartInstance.segmentId
+		) {
+			// Special: in this case, the user probably dosen't want to setNextSegment, but rather just setNextPart
+			return ServerPlayoutAPI.setNextPart(rundownPlaylistId, firstValidPartInSegment._id, true, 0)
+		}
+	}
+
+	return ServerPlayoutAPI.setNextSegment(rundownPlaylistId, nextSegmentId)
 }
 export function moveNext (
 	rundownPlaylistId: RundownPlaylistId,
@@ -309,17 +350,17 @@ export function segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, pa
 		ServerPlayoutAPI.segmentAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue)
 	)
 }
-export function sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string) {
+export function sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]) {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
-	check(sourceLayerId, String)
+	check(sourceLayerIds, Match.OneOf(String, Array))
 
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, can't stop an AdLib on a deactivated Rundown!`)
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerId)
+		ServerPlayoutAPI.sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerIds)
 	)
 }
 export function rundownBaselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
@@ -533,6 +574,9 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	setNext (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
 		return makePromise(() => setNext(rundownPlaylistId, partId, true, timeOffset))
 	}
+	setNextSegment (_userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
+		return makePromise(() => setNextSegment(rundownPlaylistId, segmentId))
+	}
 	moveNext (_userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
 		return makePromise(() => moveNext(rundownPlaylistId, horisontalDelta, verticalDelta, true))
 	}
@@ -575,8 +619,8 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	segmentAdLibPieceStart (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 		return makePromise(() => segmentAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue))
 	}
-	sourceLayerOnPartStop (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string) {
-		return makePromise(() => sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerId))
+	sourceLayerOnPartStop (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]) {
+		return makePromise(() => sourceLayerOnPartStop(rundownPlaylistId, partInstanceId, sourceLayerIds))
 	}
 	baselineAdLibPieceStart (_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 		return makePromise(() => rundownBaselineAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue))

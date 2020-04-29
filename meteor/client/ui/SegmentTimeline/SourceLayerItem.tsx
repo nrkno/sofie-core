@@ -66,7 +66,7 @@ interface ISourceLayerItemState {
 	leftAnchoredWidth: number
 	rightAnchoredWidth: number
 }
-export const SourceLayerItem = translate()(class extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
+export const SourceLayerItem = translate()(class SourceLayerItem extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
 	private _forceSizingRecheck: boolean
 	private _placeHolderElement: boolean
 

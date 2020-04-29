@@ -151,6 +151,7 @@ Array [
   },
   Object {
     "_id": "randomId11002_part0_0_randomId11006_randomId11011",
+    "definitelyEnded": 13000,
     "partInstanceId": "randomId11002_part0_0_randomId11006",
     "piece": Object {
       "_id": "randomId11011",

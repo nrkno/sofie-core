@@ -45,8 +45,9 @@ export function getLookeaheadObjects (playoutData: RundownPlaylistPlayoutData, s
 	}
 
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
-		const lookaheadDepth = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
-		const lookaheadObjs = findLookaheadForlayer(playoutData, layerId, mapping.lookahead, lookaheadDepth)
+		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
+		const lookaheadMaxSearchDistance = mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0 ? mapping.lookaheadMaxSearchDistance : undefined
+		const lookaheadObjs = findLookaheadForlayer(playoutData, layerId, mapping.lookahead, lookaheadTargetObjects, lookaheadMaxSearchDistance)
 
 		// Add the objects that have some timing info
 		_.each(lookaheadObjs.timed, (entry, i) => {
@@ -108,9 +109,9 @@ export function findLookaheadForlayer (
 	playoutData: RundownPlaylistPlayoutData,
 	layer: string,
 	mode: LookaheadMode,
-	lookaheadDepth: number
-	): LookaheadResult {
-
+	lookaheadTargetObjects: number,
+	lookaheadMaxSearchDistance?: number
+): LookaheadResult {
 	const res: LookaheadResult = {
 		timed: [],
 		future: []
@@ -179,8 +180,9 @@ export function findLookaheadForlayer (
 	}
 
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPart = selectNextPart(_.last(partInstancesOnTimeline) || playoutData.previousPartInstance || null, playoutData.parts)
-	const futureParts = nextPart ? playoutData.parts.slice(nextPart.index) : []
+	const nextPart = selectNextPart(playoutData.rundownPlaylist, _.last(partInstancesOnTimeline) || playoutData.previousPartInstance || null, playoutData.parts)
+	const lastPartIndex = nextPart && lookaheadMaxSearchDistance !== undefined ? nextPart.index + lookaheadMaxSearchDistance : undefined
+	const futureParts = nextPart ? playoutData.parts.slice(nextPart.index, lastPartIndex) : []
 	if (futureParts.length === 0) {
 		return res
 	}
@@ -198,7 +200,7 @@ export function findLookaheadForlayer (
 
 	for (const part of futureParts) {
 		// Stop if we have enough objects already
-		if (res.future.length >= lookaheadDepth) {
+		if (res.future.length >= lookaheadTargetObjects) {
 			break
 		}
 

@@ -45,7 +45,7 @@ export default translate()(class Dashboard extends React.Component<Translated<IP
 					<h1>{t('Welcome to the Sofie Automation system')}</h1>
 				</div>
 				<div className='mtl gutter version-info'>
-					<p>{t('Sofie Automation version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Sofie status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
+					<p>{t('Sofie Automation version')}: {PackageInfo.versionExtended || PackageInfo.version || 'UNSTABLE'}, {t('Sofie status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
 				</div>
 			</div>
 		)

@@ -1,5 +1,3 @@
-import { Picker } from 'meteor/meteorhacks:picker'
-import * as bodyParser from 'body-parser'
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
@@ -9,12 +7,9 @@ import { check } from 'meteor/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId } from './lib'
 import { protectString } from '../../../lib/lib'
+import { PickerPOST } from '../http'
 
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
-postRoute.middleware(bodyParser.json({
-	limit: '15mb' // Arbitrary limit
-}))
-postRoute.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	check(params.studioId, String)
 	response.setHeader('Content-Type', 'text/plain')
 

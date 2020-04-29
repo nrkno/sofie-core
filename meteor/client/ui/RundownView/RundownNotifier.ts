@@ -503,7 +503,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					this._rundownImportVersionStatusDep.changed()
 				}
 			}).catch(err => {
-				// console.error(err)
+				console.error(err)
 				let newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), `rundownPlaylist_${playlistId}`, getCurrentTime(), true, undefined, -1)
 				if (!Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
 					this._rundownImportVersionStatus = newNotification
@@ -626,7 +626,7 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 }
 
-export const RundownNotifier = class extends React.Component<IProps> {
+export const RundownNotifier = class RundownNotifier extends React.Component<IProps> {
 	private notifier: RundownViewNotifier
 
 	constructor (props: IProps) {

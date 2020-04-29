@@ -20,8 +20,8 @@ import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
+import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
@@ -47,6 +47,7 @@ interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
+	blueprintConfigManifest: ConfigManifestEntry[]
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
@@ -55,12 +56,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			$in: [showStyleBase._id]
 		}
 	}).fetch() : []
+	const blueprint = showStyleBase ? Blueprints.findOne({
+		_id: showStyleBase.blueprintId,
+		blueprintType: BlueprintManifestType.SHOWSTYLE
+	}) : undefined
+
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase ? ShowStyleVariants.find({
 			showStyleBaseId: showStyleBase._id
 		}).fetch() : [],
-		compatibleStudios: compatibleStudios
+		compatibleStudios: compatibleStudios,
+		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : []
 	}
 })(class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -189,7 +196,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
 							t={this.props.t}
-							manifest={collectConfigs(showStyleBase)}
+							manifest={this.props.blueprintConfigManifest}
 							object={showStyleBase}
 							collection={ShowStyleBases}
 							configPath={'config'}
@@ -200,6 +207,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<div className='col c12 r1-c12'>
 						<ShowStyleVariantsSettings
 							showStyleVariants={this.props.showStyleVariants}
+							blueprintConfigManifest={this.props.blueprintConfigManifest}
 							showStyleBase={showStyleBase}
 						/>
 					</div>
@@ -713,12 +721,24 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												type='checkbox'
 												collection={ShowStyleBases}
 												className=''></EditAttribute>
-											{t('Items on this layer are sticky')}
+											{t('Pieces on this layer are sticky')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Activate Sticky Item Shortcut')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.stickyOriginalOnly'}
+												obj={this.props.showStyleBase}
+												type='checkbox'
+												collection={ShowStyleBases}
+												className=''></EditAttribute>
+											{t('Only Pieces present in rundown are sticky')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Activate Sticky Piece Shortcut')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.activateStickyKeyboardHotkey'}
@@ -738,7 +758,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												collection={ShowStyleBases}
 												className=''
 											/>
-											{t('Allow disabling of elements')}
+											{t('Allow disabling of Pieces')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -750,7 +770,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												type='checkbox'
 												collection={ShowStyleBases}
 												className=''></EditAttribute>
-											{t('Adlibs on this layer can be queued')}
+											{t('AdLibs on this layer can be queued')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -989,6 +1009,30 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + item.index + '.isDefaultCollapsed'}
+												obj={this.props.showStyleBase}
+												type='checkbox'
+												collection={ShowStyleBases}
+												className=''></EditAttribute>
+											{t('Is collapsed by default')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + item.index + '.isFlattened'}
+												obj={this.props.showStyleBase}
+												type='checkbox'
+												collection={ShowStyleBases}
+												className=''></EditAttribute>
+											{t('Is flattened')}
+										</label>
+									</div>
 								</div>
 								<div className='mod alright'>
 									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
@@ -1198,6 +1242,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
+	blueprintConfigManifest: ConfigManifestEntry[]
 }
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
@@ -1292,7 +1337,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 									<div className='col c12 r1-c12 phs'>
 										<ConfigManifestSettings
 											t={this.props.t}
-											manifest={collectConfigs(showStyleVariant)}
+											manifest={this.props.blueprintConfigManifest}
 											collection={ShowStyleVariants}
 											configPath={'config'}
 											object={showStyleVariant}

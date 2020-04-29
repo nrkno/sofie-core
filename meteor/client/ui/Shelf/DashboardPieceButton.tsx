@@ -9,7 +9,7 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
-import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
@@ -17,6 +17,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceId } from '../../../lib/collections/Pieces'
+import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 
 export interface IAdLibListItem {
 	_id: PieceId,
@@ -56,7 +57,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		status,
 		metadata
 	}
-})(class extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
+})(class DashboardPieceButton extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
 	private objId: string
 
 	constructor (props: IDashboardButtonProps) {
@@ -80,13 +81,15 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 			const piece = this.props.adLibListItem as any as AdLibPieceUi
 			let objId: string | undefined = undefined
 
-			switch (this.props.layer.type) {
-				case SourceLayerType.VT:
-					objId = (piece.content as VTContent).fileName.toUpperCase()
-					break
-				case SourceLayerType.LIVE_SPEAK:
-					objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-					break
+			if (piece.content) {
+				switch (this.props.layer.type) {
+					case SourceLayerType.VT:
+						objId = (piece.content as VTContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.LIVE_SPEAK:
+						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+				}
 			}
 
 			if (objId && objId !== this.objId) {
@@ -115,14 +118,23 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
 			const adLib = this.props.adLibListItem as AdLibPieceUi
-			const adLibContent = adLib.content as VTContent
+			const vtContent = adLib.content as VTContent | undefined
 			return <React.Fragment>
 				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
-				{adLibContent &&
+				{vtContent &&
 					<span className='dashboard-panel__panel__button__sub-label'>
-						{RundownUtils.formatDiffToTimecode((adLibContent).sourceDuration || 0, false, undefined, undefined, undefined, true)}
+						{RundownUtils.formatDiffToTimecode(vtContent.sourceDuration || 0, false, undefined, undefined, undefined, true)}
 					</span>}
 			</React.Fragment>
+		}
+	}
+
+	renderSplits () {
+		const splitAdLib = this.props.adLibListItem as AdLibPieceUi
+		if (splitAdLib && splitAdLib.content) {
+			return (
+				<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
+			)
 		}
 	}
 
@@ -150,8 +162,12 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				data-obj-id={this.props.adLibListItem._id}
 				>
 				{
-					this.props.layer && (this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+					!this.props.layer ?
+						null :
+					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
 						this.renderVTLiveSpeak() :
+					(this.props.layer.type === SourceLayerType.SPLITS) ?
+						this.renderSplits() :
 						null
 				}
 				<span className='dashboard-panel__panel__button__label'>{this.props.adLibListItem.name}</span>

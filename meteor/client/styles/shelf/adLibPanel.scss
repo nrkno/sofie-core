@@ -1,7 +1,11 @@
 @import "../colorScheme";
 @import "../itemTypeColors";
 
-$adlib-item-selected-color: #009DFF;
+:root {
+	--adlib-item-selected-color: #009DFF; 
+}
+
+$adlib-item-selected-color: var(--adlib-item-selected-color);
 
 .adlib-panel {
 	display: grid;
@@ -186,11 +190,11 @@ $adlib-item-selected-color: #009DFF;
 				@include missing-overlay();
 
 				&.live-speak {
-					background: linear-gradient(to bottom, $segment-layer-background-vt 50%, $segment-layer-background-camera 50.0001%);
+					background: linear-gradient(to bottom, var(--segment-layer-background-vt) 50%, var(--$segment-layer-background-camera) 50.0001%);
 				}
 
 				&.splits {
-					background: linear-gradient(to right, $segment-layer-background-camera 50%, $segment-layer-background-remote 50.0001%);
+					background: linear-gradient(to right, var(--$segment-layer-background-camera) 50%, var(--$segment-layer-background-remote) 50.0001%);
 				}
 			}
 			.adlib-panel__list-view__list__table__cell--shortcut {

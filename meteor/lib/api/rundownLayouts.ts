@@ -1,4 +1,14 @@
-import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutId } from '../collections/RundownLayouts'
+import {
+	RundownLayoutBase,
+	RundownLayout,
+	DashboardLayout,
+	RundownLayoutType,
+	RundownLayoutId,
+	RundownLayoutElementBase,
+	RundownLayoutFilterBase,
+	RundownLayoutElementType,
+	RundownLayoutExternalFrame
+} from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 
 export interface NewRundownLayoutsAPI {
@@ -18,5 +28,13 @@ export namespace RundownLayoutsAPI {
 
 	export function isDashboardLayout (layout: RundownLayoutBase): layout is DashboardLayout {
 		return layout.type === RundownLayoutType.DASHBOARD_LAYOUT
+	}
+
+	export function isFilter (element: RundownLayoutElementBase): element is RundownLayoutFilterBase {
+		return element.type === undefined || element.type === RundownLayoutElementType.FILTER
+	}
+
+	export function isExternalFrame (element: RundownLayoutElementBase): element is RundownLayoutExternalFrame {
+		return element.type === RundownLayoutElementType.EXTERNAL_FRAME
 	}
 }

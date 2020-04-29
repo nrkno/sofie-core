@@ -47,7 +47,7 @@ interface IPropsHeader {
 	scrollWidth: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
-export const SourceLayerItemContainer = class extends MeteorReactComponent<IPropsHeader> {
+export const SourceLayerItemContainer = class SourceLayerItemContainer extends MeteorReactComponent<IPropsHeader> {
 	private mediaObjectSub: Meteor.SubscriptionHandle
 	private statusComp: Tracker.Computation
 	private objId: string
@@ -61,13 +61,15 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			const piece = this.props.piece
 			let objId: string | undefined = undefined
 
-			switch (this.props.piece.sourceLayer.type) {
-				case SourceLayerType.VT:
-					objId = (piece.instance.piece.content as VTContent).fileName.toUpperCase()
-					break
-				case SourceLayerType.LIVE_SPEAK:
-					objId = (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
-					break
+			if (piece.instance.piece.content) {
+				switch (this.props.piece.sourceLayer.type) {
+					case SourceLayerType.VT:
+						objId = (piece.instance.piece.content as VTContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.LIVE_SPEAK:
+						objId = (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+				}
 			}
 
 			if (objId && objId !== this.objId) {
@@ -145,7 +147,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			// Check item status
 			if (props.piece.sourceLayer) {
 
-				const { metadata, status } = checkPieceContentStatus(props.piece.instance.piece, props.piece.sourceLayer, props.playlist.getStudio().settings)
+				const { metadata, status, contentDuration } = checkPieceContentStatus(props.piece.instance.piece, props.piece.sourceLayer, props.playlist.getStudio().settings)
 				if (status !== props.piece.instance.piece.status || metadata) {
 					// Deep clone the required bits
 					const origPiece = (overrides.piece || props.piece) as PieceUi
@@ -159,6 +161,14 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 							}
 						},
 						contentMetaData: metadata
+					}
+
+					if (
+						pieceCopy.instance.piece.content &&
+						pieceCopy.instance.piece.content.sourceDuration === undefined &&
+						contentDuration !== undefined
+					) {
+						pieceCopy.instance.piece.content.sourceDuration = contentDuration
 					}
 
 					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)

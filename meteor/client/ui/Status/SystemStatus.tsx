@@ -56,7 +56,7 @@ export function statusCodeToString (t: i18next.TranslationFunction, statusCode: 
 	)
 }
 
-export const DeviceItem = i18next.translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = i18next.translate()(class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -303,7 +303,7 @@ interface ICoreItemState {
 
 const PackageInfo = require('../../../package.json')
 
-export const CoreItem = i18next.translate()(class extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
+export const CoreItem = i18next.translate()(class CoreItem extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
 	constructor (props: Translated<ICoreItemProps>) {
 		super(props)
 		this.state = {}

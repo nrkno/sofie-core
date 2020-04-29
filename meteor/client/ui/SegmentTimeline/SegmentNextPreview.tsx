@@ -32,7 +32,7 @@ interface IProps {
 	isCollapsed?: boolean
 }
 
-export const SegmentNextPreview = translate()(class extends React.Component<Translated<IProps>> {
+export const SegmentNextPreview = translate()(class SegmentNextPreview extends React.Component<Translated<IProps>> {
 	renderSourceLayers (outputLayer: IOutputLayerUi, layers: ISourceLayerUi[] | undefined) {
 		if (layers) {
 			return layers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank).map((layer, id) => {

@@ -9,9 +9,11 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi } from './SegmentTimelineContainer'
+import { SegmentId } from '../../../lib/collections/Segments'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
+	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
@@ -19,7 +21,7 @@ interface IProps {
 interface IState {
 }
 
-export const SegmentContextMenu = translate()(class extends React.Component<Translated<IProps>, IState> {
+export const SegmentContextMenu = translate()(class SegmentContextMenu extends React.Component<Translated<IProps>, IState> {
 	constructor (props: Translated<IProps>) {
 		super(props)
 	}
@@ -50,9 +52,19 @@ export const SegmentContextMenu = translate()(class extends React.Component<Tran
 								</MenuItem>
 							</React.Fragment> : null}
 						</React.Fragment>}
-						{part && timecode === null && <MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)} disabled={isCurrentPart}>
-							<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
-						</MenuItem>}
+						{part && timecode === null && <React.Fragment>
+							<MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)} disabled={isCurrentPart}>
+								<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
+							</MenuItem>
+							{part.instance.segmentId !== this.props.playlist.nextSegmentId ?
+								<MenuItem onClick={(e) => this.props.onSetNextSegment(part.instance.segmentId, e)}>
+									<span>{t('Queue segment')}</span>
+								</MenuItem> :
+								<MenuItem onClick={(e) => this.props.onSetNextSegment(null, e)}>
+									<span>{t('Clear queued segment')}</span>
+								</MenuItem>
+							}
+						</React.Fragment>}
 					</ContextMenu>
 				</Escape>
 				: null

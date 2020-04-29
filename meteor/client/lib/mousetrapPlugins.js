@@ -95,6 +95,18 @@ import { mousetrapHelper } from './mousetrapHelper'
 
 	Mousetrap.init();
 
-	mousetrapHelper.bind('esc', escDown, 'keydown', undefined, true);
-	mousetrapHelper.bind('esc', escUp, 'keyup', undefined, true);
+// 	mousetrapHelper.bind('esc', escDown, 'keydown', undefined, true);
+// 	mousetrapHelper.bind('esc', escUp, 'keyup', undefined, true);
+})(Mousetrap);
+
+// Disable default browser action for alt keys - focus window menu
+(function () {
+	Mousetrap.init();
+
+	function preventDefault(e) {
+		e.preventDefault();
+	}
+
+	Mousetrap.bind('alt', preventDefault, 'keydown');
+	Mousetrap.bind('alt', preventDefault, 'keyup');
 })(Mousetrap);
