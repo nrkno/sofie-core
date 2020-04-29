@@ -44,6 +44,8 @@ export interface DBRundownPlaylist {
 	/** the id of the Previous Part */
 	previousPartInstanceId: PartInstanceId | null
 
+	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
+	outOfOrderTiming?: boolean
 	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
 	nextSegmentId?: SegmentId
 
@@ -97,6 +99,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null
+	public outOfOrderTiming?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
 
