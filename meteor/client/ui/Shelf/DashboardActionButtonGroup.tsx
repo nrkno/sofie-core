@@ -31,11 +31,11 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 	klarOnAir = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			if (this.props.rundown.active) {
-				doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
+			if (this.props.playlist.active) {
+				doUserAction(t, e, 'Deactivate', (e) => MeteorCall.userAction.deactivate(e, this.props.playlist._id))
 			} else {
-				doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id])
-				doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
+				doUserAction(t, e, 'Reset and Activate', (e) => MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id))
+				doUserAction(t, e, 'Take', (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
 			}
 		}
 	}
@@ -70,7 +70,7 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 						onButtonDown={this.onButtonDown}
 						onButtonUp={this.onButtonUp}
 						button={button}
-						rundown={this.props.rundown} />
+						palylist={this.props.playlist} />
 				)
 	}
 })

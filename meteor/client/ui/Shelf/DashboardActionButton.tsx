@@ -5,10 +5,11 @@ import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceBut
 import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { rundownBaselineAdLibPieceStart } from '../../../server/api/userActions'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 
 export interface IDashboardButtonProps {
 	button: DashboardLayoutActionButton
-	rundown: Rundown
+	palylist: RundownPlaylist
 
 	onButtonDown: (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => void
 	onButtonUp: (button: DashboardLayoutActionButton, e: React.SyntheticEvent<HTMLElement>) => void
@@ -26,8 +27,8 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		switch (button.type) {
 			case ActionButtonType.KLAR_ON_AIR:
 				return {
-					'rehearsal': this.props.rundown.rehearsal,
-					'active': this.props.rundown.active
+					'rehearsal': this.props.palylist.rehearsal,
+					'active': this.props.palylist.active
 				}
 			default:
 				return {}
