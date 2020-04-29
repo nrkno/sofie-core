@@ -21,7 +21,7 @@ describe('systemStatus API', () => {
 	let env: DefaultEnvironment
 
 	describe('General health endpoint', () => {
-		function callRoute (): MockResponseDataString {
+		function callRoute(): MockResponseDataString {
 			const routeName = '/health'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -32,7 +32,7 @@ describe('systemStatus API', () => {
 				url: `/health`
 			})
 
-			route.handler({ }, req, res, jest.fn())
+			route.handler({}, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
 			expect(resStr).toMatchObject(literal<Partial<MockResponseDataString>>({
@@ -44,7 +44,7 @@ describe('systemStatus API', () => {
 			}))
 			return resStr
 		}
-		
+
 		testInFiber('REST /health with state BAD', () => {
 			env = setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
@@ -70,11 +70,11 @@ describe('systemStatus API', () => {
 			expect(systemHealth).toMatchObject({
 				status: status2ExternalStatus(expectedStatus0)
 			})
-		})	
+		})
 	})
 
 	describe('Specific studio health endpoint', () => {
-		function callRoute (studioId?: string): MockResponseDataString {
+		function callRoute(studioId?: string): MockResponseDataString {
 			const routeName = '/health/:studioId'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
