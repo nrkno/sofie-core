@@ -29,7 +29,7 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -179,7 +179,7 @@ export function prepareForBroadcast (rundownPlaylistId: RundownPlaylistId): Clie
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (playlist.active) return ClientAPI.responseError('Rundown Playlist is active, please deactivate before preparing it for broadcast')
-	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
@@ -206,7 +206,7 @@ export function resetAndActivate (rundownPlaylistId: RundownPlaylistId, rehearsa
 	if (playlist.active && !playlist.rehearsal) {
 		return ClientAPI.responseError('RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
-	const anyOtherActiveRundownPlaylists = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
+	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
 	if (anyOtherActiveRundownPlaylists.length) {
 		return ClientAPI.responseError(409, 'Only one rundownPlaylist can be active at the same time. Currently active rundownPlaylists: ' + _.map(anyOtherActiveRundownPlaylists, p => p.name).join(', '), anyOtherActiveRundownPlaylists)
 	}
@@ -231,7 +231,7 @@ export function activate (rundownPlaylistId: RundownPlaylistId, rehearsal: boole
 	check(rehearsal, Boolean)
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
@@ -667,16 +667,16 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	mediaPrioritizeWorkflow (_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaPrioritizeWorkflow(workflowId))
 	}
-	mediaRestartAllWorkflows (_userEvent: string, ) {
+	mediaRestartAllWorkflows (_userEvent: string) {
 		return makePromise(() => mediaRestartAllWorkflows())
 	}
-	mediaAbortAllWorkflows (_userEvent: string, ) {
+	mediaAbortAllWorkflows (_userEvent: string) {
 		return makePromise(() => mediaAbortAllWorkflows())
 	}
 	regenerateRundownPlaylist (_userEvent: string, playlistId: RundownPlaylistId) {
 		return makePromise(() => regenerateRundownPlaylist(playlistId))
 	}
-	generateRestartToken (_userEvent: string, ) {
+	generateRestartToken (_userEvent: string) {
 		return makePromise(() => generateRestartToken())
 	}
 	restartCore (_userEvent: string, token: string) {

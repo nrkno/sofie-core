@@ -4,10 +4,10 @@ import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/Exp
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/PeripheralDevices'
 
-import { Mongo } from 'meteor/mongo'
+import { MongoSelector } from '../../lib/typings/meteor'
 
 export namespace ExpectedMediaItemsSecurity {
-	export function allowReadAccess (selector: Mongo.Query<ExpectedMediaItem> | any, token: string, context: any) {
+	export function allowReadAccess (selector: MongoSelector<ExpectedMediaItem> | any, token: string, context: any) {
 		check(selector, Object)
 		if (selector.mediaFlowId) {
 			check(selector.mediaFlowId, Object)

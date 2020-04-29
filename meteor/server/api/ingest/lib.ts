@@ -8,6 +8,8 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { touchRundownPlaylistsInCache } from '../playout/lib'
 
 export function getRundownId (studio: Studio, rundownExternalId: string): RundownId {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')

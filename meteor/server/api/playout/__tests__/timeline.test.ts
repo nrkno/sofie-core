@@ -10,7 +10,8 @@ import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { protectString } from '../../../../lib/lib'
+import { protectString, waitForPromise } from '../../../../lib/lib'
+import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist, initCacheForRundownPlaylistFromStudio } from '../../../DatabaseCaches'
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
@@ -19,7 +20,9 @@ describe('Timeline', () => {
 	})
 	testInFiber('non-existing studio', () => {
 		expect(() => {
-			updateTimeline(protectString('asdf'))
+			const studioId = protectString('asdf')
+			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			updateTimeline(cache, protectString('asdf'))
 		}).toThrowError(/not found/i)
 	})
 	testInFiber('Basic rundown', () => {
@@ -75,12 +78,18 @@ describe('Timeline', () => {
 			// })
 		}
 
-		updateTimeline(getRundown0().studioId)
+		let cache = waitForPromise(initCacheForRundownPlaylistFromStudio(getRundown0().studioId))
+
+		updateTimeline(cache, getRundown0().studioId)
+		waitForPromise(cache.saveAllToDatabase())
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
+		cache = waitForPromise(initCacheForRundownPlaylistFromStudio(getRundown0().studioId))
+
 		const currentTime = 100 * 1000
-		updateTimeline(getRundown0().studioId, currentTime)
+		updateTimeline(cache, getRundown0().studioId, currentTime)
+		waitForPromise(cache.saveAllToDatabase())
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 

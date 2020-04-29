@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString, protectString, unprotectObject, unprotectString } from '../lib'
+import { stringifyObjects, getHash, ProtectedString } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 
@@ -9,7 +9,12 @@ const ObserveChangeBufferTimeout = 2000
 
 type Timeout = number
 
-export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: ProtectedString<any> }> (collection: TransformedCollection<Ta, Tb>, hashName: string, hashFields: string[], skipEnsureUpdatedOnStart?: boolean) {
+export function ObserveChangesForHash<Ta extends Tb, Tb extends { _id: ProtectedString<any> }> (
+	collection: TransformedCollection<Ta, Tb>,
+	hashName: string,
+	hashFields: string[],
+	skipEnsureUpdatedOnStart?: boolean
+) {
 	const doUpdate = (id: Tb['_id'], obj: any) => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
 
@@ -69,6 +74,9 @@ export function createMongoCollection<T> (
 	const overrideMethod = <C>(collection: C, key: keyof C) => {
 		const originalFcn: any = collection[key]
 
+		// @ts-ignore temporary hack
+		if (collection._tmpDenyAccess) throw new Meteor.Error(500, `Internal Error: Access to "${name}.${key}" is denied`)
+
 		// @ts-ignore
 		collection[key] = (...args) => {
 			try {
@@ -80,6 +88,11 @@ export function createMongoCollection<T> (
 	}
 
 	const collection: TransformedCollection<T, any> = new Mongo.Collection<T>(name, options) as any
+
+	// @ts-ignore temporary hack
+	collection._tmpDenyAccess = false
+	// @ts-ignore temp hack too
+	collection.name = name
 
 	overrideMethod(collection, 'find')
 	overrideMethod(collection, 'findOne')

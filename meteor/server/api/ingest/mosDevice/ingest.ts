@@ -10,7 +10,7 @@ import {
 	fixIllegalObject,
 	parseMosString
 } from './lib'
-import { literal, asyncCollectionUpdate, waitForPromiseAll, protectString, unprotectString } from '../../../../lib/lib'
+import { literal, asyncCollectionUpdate, waitForPromiseAll, protectString, unprotectString, waitForPromise } from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
@@ -37,6 +37,8 @@ import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Parts, PartId } from '../../../../lib/collections/Parts'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -226,13 +228,15 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 			unprotectString(cachedPartData.segmentId)
 		)
 
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 		const ingestPart: IngestPart = cachedPartData.data
 		// TODO - can the name change during a fullStory? If so then we need to be sure to update the segment groupings too
 		// ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
 		ingestPart.payload = story
 
 		// Update db with the full story:
-		handleUpdatedPartInner(studio, playlist, rundown, ingestSegment.externalId, ingestPart)
+		handleUpdatedPartInner(cache, studio, playlist, rundown, ingestSegment.externalId, ingestPart)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
 export function handleMosDeleteStory (
@@ -274,8 +278,10 @@ export function handleMosDeleteStory (
 
 		logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
 
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
-		UpdateNext.ensureNextPartIsValid(playlist)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, filteredParts)
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
 
@@ -348,9 +354,10 @@ export function handleInsertParts (
 		// Update parts list
 		ingestParts.splice(insertIndex, 0, ...newParts)
 
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
-
-		UpdateNext.afterInsertParts(playlist, newPartIds, removePrevious)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, ingestParts)
+		UpdateNext.afterInsertParts(cache, playlist, newPartIds, removePrevious)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
 export function handleSwapStories (
@@ -395,9 +402,11 @@ export function handleSwapStories (
 		ingestParts[story0Index] = ingestParts[story1Index]
 		ingestParts[story1Index] = tmp
 
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, ingestParts)
 
-		UpdateNext.ensureNextPartIsValid(playlist)
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
 export function handleMoveStories (
@@ -451,13 +460,16 @@ export function handleMoveStories (
 		// Reinsert parts
 		filteredParts.splice(insertIndex, 0, ...movingParts)
 
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, filteredParts)
 
-		UpdateNext.ensureNextPartIsValid(playlist)
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
 
 function diffAndApplyChanges (
+	cache: CacheForRundownPlaylist,
 	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
@@ -473,7 +485,7 @@ function diffAndApplyChanges (
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries)
 
 	// Check if operation affect currently playing Part:
-	const { currentPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
 	if (playlist.active && currentPartInstance) {
 		const currentPart = _.find(ingestParts, (ingestPart) => {
 			const partId = getPartId(rundown._id, ingestPart.externalId)
@@ -482,7 +494,7 @@ function diffAndApplyChanges (
 		if (!currentPart) {
 			// Looks like the currently playing part has been removed.
 			logger.warn(`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`)
-			ServerRundownAPI.unsyncRundown(rundown._id)
+			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 			return
 		} else {
 			// TODO: add logic for determining whether to allow changes to the currently playing Part.
@@ -497,22 +509,13 @@ function diffAndApplyChanges (
 	saveRundownCache(rundown._id, newIngestRundown)
 
 	// Update segment ranks:
-	let ps: Array<Promise<any>> = []
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
-		ps.push(
-			asyncCollectionUpdate(
-				Segments,
-				{
-					rundownId: rundown._id,
-					_id: getSegmentId(rundown._id, segmentExternalId)
-				},
-				{
-					$set: {
-						_rank: newRank
-					}
-				}
-			)
-		)
+		cache.Segments.update({
+			rundownId: rundown._id,
+			_id: getSegmentId(rundown._id, segmentExternalId)
+		}, { $set: {
+			_rank: newRank
+		}})
 	})
 	// Updated segments that has had their segment.externalId changed:
 	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
@@ -521,53 +524,31 @@ function diffAndApplyChanges (
 
 		// Move over those parts to the new segmentId.
 		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
-		ps.push(
-			asyncCollectionUpdate(
-				Parts,
-				{
-					rundownId: rundown._id,
-					segmentId: oldSegmentId
-				},
-				{
-					$set: {
-						segmentId: newSegmentId
-					}
-				},
-				{
-					multi: true
-				}
-			)
-		)
-		ps.push(
-			asyncCollectionUpdate(
-				PartInstances,
-				{
-					rundownId: rundown._id,
-					segmentId: oldSegmentId
-				},
-				{
-					$set: {
-						segmentId: newSegmentId,
-						'part.segmentId': newSegmentId
-					}
-				},
-				{
-					multi: true
-				}
-			)
-		)
-	})
+		cache.Parts.update({
+			rundownId: rundown._id,
+			segmentId: oldSegmentId
+		}, { $set: {
+			segmentId: newSegmentId
+		}})
 
-	waitForPromiseAll(ps)
+		cache.PartInstances.update({
+			rundownId: rundown._id,
+			segmentId: oldSegmentId
+		}, { $set: {
+			segmentId: newSegmentId,
+			'part.segmentId': newSegmentId
+		}})
+	})
 
 	// Remove old segments
 	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
 		getSegmentId(rundown._id, segmentExternalId)
 	)
-	removeSegments(rundown._id, removedSegmentIds)
+	removeSegments(cache, rundown._id, removedSegmentIds)
 
 	// Create/Update segments
 	updateSegmentsFromIngestData(
+		cache,
 		studio,
 		playlist,
 		rundown,

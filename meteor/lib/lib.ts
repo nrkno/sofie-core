@@ -296,7 +296,7 @@ export function anythingChanged (changes: Changes): boolean {
  * @param onlyKeysFromA If true, only uses the keys of (a) for comparison
  * @param omit Array of keys to omit in the comparison
  */
-function compareObjs (a: any, b: any, onlyKeysFromA?: boolean, omit?: Array<string>): boolean {
+export function compareObjs (a: any, b: any, onlyKeysFromA?: boolean, omit?: Array<string>): boolean {
 
 	// let omit = ['_id','type','created','owner','OP','disabled']
 	omit = omit || []
@@ -969,11 +969,82 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 				}
 			}
 		} catch (e) {
-			logger.warn(e)
+			logger.warn(e || e.reason || e.toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}
 	})
 	return ok
+}
+export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
+	if (options) {
+		if (options.sort) {
+			let tmpDocs = _.chain(docs)
+			for (const key of _.keys(options.sort)) {
+				const dir = options.sort[key]
+				// TODO - direction
+				tmpDocs = tmpDocs.sortBy(doc => doc[key])
+			}
+			docs = tmpDocs.value()
+		}
+
+		if (options.limit !== undefined) {
+			docs = _.take(docs, options.limit)
+		}
+
+		if (options.fields !== undefined) {
+			docs = _.map(docs, doc => _.omit(doc, _.keys(options.fields).filter(key => options.fields![key] === 0)))
+		}
+		if (options.skip) {
+			docs = docs.slice(options.skip)
+		}
+		if (options.limit) {
+			docs = docs.slice(0, options.limit)
+		}
+
+		// options.reactive // Not used server-side
+		if (options.transform) throw new Meteor.Error(`options.transform not supported`)
+	}
+	return docs
+}
+export function mongoModify<DBInterface extends {_id: ProtectedString<any>}> (selector: MongoSelector<DBInterface>, doc: DBInterface, modifier: MongoModifier<DBInterface>): DBInterface {
+	let replace = false
+	_.each(modifier, (value: any, key: string) => {
+		if (key === '$set') {
+			_.each(value, (value: any, key: string) => {
+				setOntoPath(doc, key, selector, value)
+			})
+		} else if (key === '$unset') {
+			_.each(value, (value: any, key: string) => {
+				unsetPath(doc, key, selector)
+			})
+		} else if (key === '$push') {
+			_.each(value, (value: any, key: string) => {
+				pushOntoPath(doc, key, value)
+			})
+		} else if (key === '$pull') {
+			_.each(value, (value: any, key: string) => {
+				pullFromPath(doc, key, value)
+			})
+		} else if (key === '$rename') {
+			_.each(value, (value: any, key: string) => {
+				renamePath(doc, key, value)
+			})
+		} else {
+			if (key[0] === '$') {
+				throw Error(`Update method "${key}" not implemented yet`)
+			} else {
+				replace = true
+			}
+		}
+
+	})
+	if (replace) {
+		const newDoc = modifier as any
+		if (!newDoc._id) newDoc._id = doc._id
+		return newDoc
+	} else {
+		return doc
+	}
 }
 /**
  * Mutate a value on a object
@@ -1112,6 +1183,18 @@ export function setOntoPath<T> (obj: Object, path: string, substitutions: Object
  */
 export function unsetPath (obj: Object, path: string, substitutions: Object) {
 	mutatePath(obj, path, substitutions, (parentObj: Object, key: string) => delete parentObj[key])
+}
+/**
+ * Rename a path to value
+ * @param obj Object
+ * @param oldPath Old path to value in object
+ * @param newPath New path to value
+ */
+export function renamePath (obj: Object, oldPath: string, newPath: string) {
+	mutatePath(obj, oldPath, {}, (parentObj: Object, key: string) => {
+		setOntoPath(obj, newPath, {}, parentObj[key])
+		delete parentObj[key]
+	})
 }
 /**
  * Replaces all invalid characters in order to make the path a valid one

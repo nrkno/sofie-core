@@ -13,6 +13,7 @@ import { PieceInstance, PieceInstances } from './PieceInstances'
 import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
+import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
@@ -94,7 +95,6 @@ export class PartInstance implements DBPartInstance {
 	getAllPieceInstances () {
 		return this.getPieceInstances()
 	}
-
 }
 
 export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {

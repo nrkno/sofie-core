@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath, pullFromPath, Omit, ProtectedString, unprotectString, protectString } from '../lib/lib'
+import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath, pullFromPath, Omit, ProtectedString, unprotectString, protectString, mongoModify, mongoFindOptions } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions, MongoSelector, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
@@ -54,23 +54,7 @@ export namespace MongoMock {
 				_.filter(docsArray, (doc) => mongoWhere(doc, query))
 			))
 
-			if (options && options.sort) {
-				let tmpDocs = _.chain(docs)
-				for (const key of _.keys(options.sort)) {
-					const dir = options.sort[key]
-					// TODO - direction
-					tmpDocs = tmpDocs.sortBy(doc => doc[key])
-				}
-				docs = tmpDocs.value()
-			}
-
-			if (options && options.limit !== undefined) {
-				docs = _.take(docs, options.limit)
-			}
-
-			if (options && options.fields !== undefined) {
-				docs = _.map(docs, doc => _.omit(doc, _.keys(options.fields).filter(key => options.fields![key] === 0)))
-			}
+			docs = mongoFindOptions(docs, options)
 
 			const observers = this.observers
 
@@ -141,40 +125,8 @@ export namespace MongoMock {
 
 				// console.log(query, docs)
 				_.each(docs, (doc) => {
-					let replace = false
-
-					_.each(modifier, (value: any, key: string) => {
-						if (key === '$set') {
-							_.each(value, (value: any, key: string) => {
-								setOntoPath(doc, key, query, value)
-							})
-						} else if (key === '$unset') {
-							_.each(value, (value: any, key: string) => {
-								unsetPath(doc, key, query)
-							})
-						} else if (key === '$push') {
-							_.each(value, (value: any, key: string) => {
-								pushOntoPath(doc, key, value)
-							})
-						} else if (key === '$pull') {
-							_.each(value, (value: any, key: string) => {
-								pullFromPath(doc, key, value)
-							})
-						} else {
-							if (key[0] === '$') {
-								throw Error(`Update method "${key}" not implemented yet`)
-							} else {
-								replace = true
-							}
-							// setOntoPath(doc, key, value )
-						}
-
-					})
-					if (replace) {
-						this.remove(doc._id)
-						if (!modifier._id) modifier._id = doc._id
-						this.insert(modifier)
-					}
+					const modifiedDoc = mongoModify(query, doc, modifier)
+					this.documents[unprotectString(doc._id)] = modifiedDoc
 
 					_.each(_.clone(this.observers), obs => {
 						if (mongoWhere(doc, obs.query)) {
