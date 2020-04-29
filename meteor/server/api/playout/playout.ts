@@ -1,7 +1,7 @@
 
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
+import { check, Match } from 'meteor/check'
 import { Rundowns, Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Part, Parts, DBPart, PartId } from '../../../lib/collections/Parts'
 import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
@@ -53,6 +53,7 @@ import { updateTimeline } from './timeline'
 import {
 	resetRundownPlaylist as libResetRundownPlaylist,
 	setNextPart as libSetNextPart,
+	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	refreshPart,
 	getPartBeforeSegment,
@@ -63,7 +64,8 @@ import {
 	prepareStudioForBroadcast,
 	activateRundownPlaylist as libActivateRundownPlaylist,
 	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
-	deactivateRundownPlaylistInner
+	deactivateRundownPlaylistInner,
+	standDownStudio
 } from './actions'
 import { PieceResolved, getOrderedPiece, getResolvedPieces, convertAdLibToPieceInstance, convertPieceToAdLibPiece, orderPieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
@@ -98,7 +100,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(playlist)
-			prepareStudioForBroadcast(playlist.getStudio())
+			prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
 
 			return libActivateRundownPlaylist(playlist, true) // Activate rundownPlaylist (rehearsal)
 		})
@@ -129,6 +131,7 @@ export namespace ServerPlayoutAPI {
 			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
 
 			libResetRundownPlaylist(playlist)
+			prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
 
 			return libActivateRundownPlaylist(playlist, !!rehearsal) // Activate rundown
 		})
@@ -164,6 +167,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(playlist)
+			prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
 
 			return libActivateRundownPlaylist(playlist, rehearsal)
 		})
@@ -177,6 +181,8 @@ export namespace ServerPlayoutAPI {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 
+			prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
+
 			return libActivateRundownPlaylist(playlist, rehearsal)
 		})
 	}
@@ -187,6 +193,8 @@ export namespace ServerPlayoutAPI {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+
+			standDownStudio(playlist.getStudio(), true)
 
 			return libDeactivateRundownPlaylist(playlist)
 		})
@@ -323,7 +331,7 @@ export namespace ServerPlayoutAPI {
 			const takeRundown: Rundown | undefined = rundownData.rundownsMap[unprotectString(takePartInstance.rundownId)]
 			if (!takeRundown) throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 			// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
-			const nextPart = selectNextPart(takePartInstance, rundownData.parts, !!rundownData.rundownPlaylist.loop)
+			const nextPart = selectNextPart(playlist, takePartInstance, rundownData.parts)
 
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(rundownData, previousPartInstance || null, takePartInstance)
@@ -706,6 +714,34 @@ export namespace ServerPlayoutAPI {
 			return part._id
 		}
 	}
+	export function setNextSegment (
+		rundownPlaylistId: RundownPlaylistId,
+		nextSegmentId: SegmentId | null
+	): ClientAPI.ClientResponse<void> {
+		check(rundownPlaylistId, String)
+		if (nextSegmentId) check(nextSegmentId, String)
+
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (!playlist.active) throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
+
+			let nextSegment: Segment | null = null
+			if (nextSegmentId) {
+				nextSegment = Segments.findOne(nextSegmentId) || null
+
+				if (!nextSegment) throw new Meteor.Error(404, `Segment "${nextSegmentId}" not found!`)
+				const acceptableRundownIds = playlist.getRundownIDs()
+				if (acceptableRundownIds.indexOf(nextSegment.rundownId) === -1) {
+					throw new Meteor.Error(501, `Segment "${nextSegmentId}" does not belong to Rundown Playlist "${rundownPlaylistId}"!`)
+				}
+			}
+
+			libSetNextSegment(playlist, nextSegment)
+
+			return ClientAPI.responseSuccess(undefined)
+		})
+	}
 	export function activateHold (rundownPlaylistId: RundownPlaylistId) {
 		check(rundownPlaylistId, String)
 		logger.debug('rundownActivateHold')
@@ -713,6 +749,7 @@ export namespace ServerPlayoutAPI {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (!playlist.active) throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
 
 			if (!playlist.currentPartInstanceId) throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" no current part!`)
 			if (!playlist.nextPartInstanceId) throw new Meteor.Error(400, `Rundown Playlist "${rundownPlaylistId}" no next part!`)
@@ -984,7 +1021,6 @@ export namespace ServerPlayoutAPI {
 						}
 
 						setRundownStartedPlayback(playlist, rundown, startedPlayback) // Set startedPlayback on the rundown if this is the first item to be played
-
 						const playlistChange = literal<Partial<RundownPlaylist>>({
 							previousPartInstanceId: playlist.currentPartInstanceId,
 							currentPartInstanceId: playingPartInstance._id,
@@ -998,7 +1034,7 @@ export namespace ServerPlayoutAPI {
 
 						reportPartHasStarted(playingPartInstance, startedPlayback)
 
-						const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts(), !!playlist.loop)
+						const nextPart = selectNextPart(playlist, playingPartInstance, playlist.getAllOrderedParts())
 						libSetNextPart(playlist, nextPart ? nextPart.part : null)
 					} else {
 						// a part is being played that has not been selected for playback by Core
@@ -1023,11 +1059,11 @@ export namespace ServerPlayoutAPI {
 
 							reportPartHasStarted(playingPartInstance, startedPlayback)
 
-							const nextPart = selectNextPart(playingPartInstance, playlist.getAllOrderedParts(), !!playlist.loop)
+							const nextPart = selectNextPart(playlist, playingPartInstance, playlist.getAllOrderedParts())
 							libSetNextPart(playlist, nextPart ? nextPart.part : null)
 						}
 
-						// TODO-ASAP - should this even change the next?
+						// TODO - should this even change the next?
 						logger.error(`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
 
@@ -1110,10 +1146,13 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(rundownPlaylistId, sourceLayerId)
 	}
-	export function sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string) {
+	export function sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]) {
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
-		check(sourceLayerId, String)
+		check(sourceLayerIds, Match.OneOf(String, Array))
+
+		if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
+
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -1134,7 +1173,7 @@ export namespace ServerPlayoutAPI {
 			const orderedPieces = getResolvedPieces(partInstance)
 
 			orderedPieces.forEach((pieceInstance) => {
-				if (pieceInstance.piece.sourceLayerId === sourceLayerId) {
+				if (sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1) {
 					if (!pieceInstance.piece.userDuration) {
 						let newExpectedDuration: number | undefined = undefined
 
@@ -1256,10 +1295,10 @@ export namespace ServerPlayoutAPI {
 		check(timelineObj, Object)
 		check(time, Number)
 
-		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metadata && timelineObj.metadata.pieceId) {
-			logger.debug('Update PieceInstance: ', timelineObj.metadata.pieceId, (new Date(time)).toTimeString())
+		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metaData && timelineObj.metaData.pieceId) {
+			logger.debug('Update PieceInstance: ', timelineObj.metaData.pieceId, (new Date(time)).toTimeString())
 			PieceInstances.update({
-				_id: timelineObj.metadata.pieceId,
+				_id: timelineObj.metaData.pieceId,
 				rundownId: { $in: activeRundownIds }
 			}, {
 				$set: {
@@ -1268,7 +1307,7 @@ export namespace ServerPlayoutAPI {
 			})
 
 			const pieceInstance = PieceInstances.findOne({
-				_id: timelineObj.metadata.pieceId,
+				_id: timelineObj.metaData.pieceId,
 				rundownId: { $in: activeRundownIds }
 			})
 			if (pieceInstance) {
@@ -1318,9 +1357,9 @@ export namespace ServerPlayoutAPI {
 			const markerObject = Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'
 
-			const versionsContent = (markerObject.metadata || {}).versions || {}
+			const versionsContent = (markerObject.metaData || {}).versions || {}
 
-			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
+			if (versionsContent.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
 
 			if (versionsContent.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 

@@ -55,7 +55,7 @@ export function activateRundownPlaylist (rundownPlaylist: RundownPlaylist, rehea
 	let rundown: Rundown | undefined
 
 	if (!rundownPlaylist.nextPartInstanceId) {
-		const firstPart = selectNextPart(null, rundownPlaylist.getAllOrderedParts(), !!rundownPlaylist.loop)
+		const firstPart = selectNextPart(rundownPlaylist, null, rundownPlaylist.getAllOrderedParts())
 		setNextPart(rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
@@ -146,7 +146,12 @@ export function deactivateRundownPlaylistInner (rundownPlaylist: RundownPlaylist
 	}
 	return rundown
 }
-export function prepareStudioForBroadcast (studio: Studio) {
+/**
+ * Prepares studio before a broadcast is about to start
+ * @param studio
+ * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
+ */
+export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boolean, rundownPlaylistToBeActivated: RundownPlaylist) {
 	logger.info('prepareStudioForBroadcast ' + studio._id)
 
 	let playoutDevices = PeripheralDevices.find({
@@ -155,14 +160,35 @@ export function prepareStudioForBroadcast (studio: Studio) {
 	}).fetch()
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
-		let okToDestoryStuff = true
 		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
 			if (err) {
 				logger.error(err)
 			} else {
 				logger.info('devicesMakeReady OK')
 			}
-		}, 'devicesMakeReady', okToDestoryStuff)
+		}, 'devicesMakeReady', okToDestoryStuff, rundownPlaylistToBeActivated._id)
 	})
 }
+/**
+ * Makes a studio "stand down" after a broadcast
+ * @param studio
+ * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
+ */
+export function standDownStudio (studio: Studio, okToDestoryStuff: boolean) {
+	logger.info('standDownStudio ' + studio._id)
 
+	let playoutDevices = PeripheralDevices.find({
+		studioId: studio._id,
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+	}).fetch()
+
+	_.each(playoutDevices, (device: PeripheralDevice) => {
+		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
+			if (err) {
+				logger.error(err)
+			} else {
+				logger.info('devicesStandDown OK')
+			}
+		}, 'devicesStandDown', okToDestoryStuff)
+	})
+}

@@ -1,20 +1,16 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
-import { ClientAPI } from '../../lib/api/client'
 import { registerClassToMeteorMethods } from '../methods'
-import { RundownLayoutsAPI, NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
+import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
 import { RundownLayouts, RundownLayoutType, RundownLayoutBase, RundownLayoutId } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
 import { RundownLayoutSecurity } from '../security/rundownLayouts'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-// @ts-ignore Meteor package not recognized by Typescript
-import { Picker } from 'meteor/meteorhacks:picker'
-import * as bodyParser from 'body-parser'
 import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { BlueprintId } from '../../lib/collections/Blueprints'
 import { MethodContext } from '../../lib/api/methods'
-import { ServerClientAPI } from './client'
+import { PickerPOST, PickerGET } from './http'
 
 export function createRundownLayout (
 	name: string,
@@ -40,12 +36,7 @@ export function removeRundownLayout (layoutId: RundownLayoutId) {
 	RundownLayouts.remove(layoutId)
 }
 
-const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
-postJsRoute.middleware(bodyParser.text({
-	type: 'text/javascript',
-	limit: '1mb'
-}))
-postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	const showStyleBaseId: ShowStyleBaseId = protectString(params.showStyleBaseId)
@@ -83,8 +74,7 @@ postJsRoute.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incomin
 	res.end(content)
 })
 
-const getJsRoute = Picker.filter((req, res) => req.method === 'GET')
-getJsRoute.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	let layoutId: RundownLayoutId = protectString(params.id)
 
 	check(layoutId, String)
@@ -130,10 +120,14 @@ function apiRemoveRundownLayout (id: RundownLayoutId) {
 
 class ServerRundownLayoutsAPI implements NewRundownLayoutsAPI {
 	createRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
-		return makePromise(() => apiCreateRundownLayout(name, type, showStyleBaseId))
+		const that = this
+		return makePromise(() => apiCreateRundownLayout.apply(that, [name, type, showStyleBaseId]))
 	}
 	removeRundownLayout (rundownLayoutId: RundownLayoutId) {
-		return makePromise(() => apiRemoveRundownLayout(rundownLayoutId))
+		const that = this
+		return makePromise(() => apiRemoveRundownLayout.apply(that, [rundownLayoutId]))
 	}
 }
-registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false)
+registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
+	return fcn.apply(methodContext, args)
+})

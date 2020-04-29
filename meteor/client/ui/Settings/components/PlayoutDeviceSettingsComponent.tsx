@@ -202,6 +202,8 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 												this.renderSisyfosDeviceSettings(subDevice, deviceId) :
 											subDevice.type === TSR.DeviceType.QUANTEL ?
 												this.renderQuantelDeviceSettings(subDevice, deviceId) :
+											subDevice.type === TSR.DeviceType.VIZMSE ?
+												this.renderVizMSEDeviceSettings(subDevice, deviceId) :
 											null
 										}
 									</div>
@@ -376,7 +378,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			<div className='mod mvs mhs'>
 				<label className='field'>
 					{t('Enable SSL')}
-					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.spart'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>
@@ -475,6 +477,89 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				<label className='field'>
 					{t('Quantel Server ID')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.serverId'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+		</React.Fragment>
+	}
+	renderVizMSEDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: PeripheralDeviceId) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Host')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.host'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('(Optional) REST port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.restPort'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('(Optional) Websocket port')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.wsPort'} obj={this.props.device} type='int' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Show ID')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.showID'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Profile')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.profile'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('(Optional) Playlist id')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.playlistID'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Preload all elements')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.preloadAllElements'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Automatically load internal elements when added')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.autoLoadInternalElements'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Clear-All template name')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.clearAllTemplateName'} obj={this.props.device} type='text' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Clear-All on make-ready (activate rundown)')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.clearAllOnMakeReady'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Dont deactivate on stand-down (deactivate rundown)')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.dontDeactivateOnStandDown'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Only preload elements in active Rundown')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.onlyPreloadActiveRundown'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('On preload-All elements, also initialize the rundown playlist again')}
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.initializeRundownOnLoadAll'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>
 				</label>
 			</div>
 		</React.Fragment>

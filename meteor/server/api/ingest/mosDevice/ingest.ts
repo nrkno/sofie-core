@@ -206,6 +206,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
 		const rundown = getRundown(rundownId, parseMosString(story.RunningOrderId))
+		const playlist = getRundownPlaylist(rundown)
 		// canBeUpdated is done inside handleUpdatedPartInner
 
 		const cachedPartData = loadIngestDataCachePart(
@@ -231,7 +232,7 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 		ingestPart.payload = story
 
 		// Update db with the full story:
-		handleUpdatedPartInner(studio, rundown, ingestSegment.externalId, ingestPart)
+		handleUpdatedPartInner(studio, playlist, rundown, ingestSegment.externalId, ingestPart)
 	})
 }
 export function handleMosDeleteStory (
@@ -485,6 +486,7 @@ function diffAndApplyChanges (
 			return
 		} else {
 			// TODO: add logic for determining whether to allow changes to the currently playing Part.
+			// TODO: use isUpdateAllowed()
 		}
 	}
 
@@ -567,6 +569,7 @@ function diffAndApplyChanges (
 	// Create/Update segments
 	updateSegmentsFromIngestData(
 		studio,
+		playlist,
 		rundown,
 		_.sortBy([
 			..._.values(segmentDiff.added),

@@ -7,6 +7,9 @@ import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { AsRunLog } from '../lib/collections/AsRunLog'
+import { UserActionsLog } from '../lib/collections/UserActionsLog'
+import { Snapshots } from '../lib/collections/Snapshots'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -42,6 +45,47 @@ Meteor.startup(() => {
 			})
 			if (rundownCacheCount) logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
 
+			const cleanLimitTime = getCurrentTime() - 1000 * 3600 * 24 * 50 // 50 days ago
+
+			// Remove old entries in AsRunLog:
+			const oldAsRunLogCount: number = AsRunLog.find({
+				timestamp: { $lt: cleanLimitTime }
+			}).count()
+			if (oldAsRunLogCount > 0) {
+				logger.info(`Cronjob: Will remove ${oldAsRunLogCount} entries from AsRunLog`)
+				lowPrioFcn(() => {
+					AsRunLog.remove({
+						timestamp: { $lt: cleanLimitTime }
+					})
+				})
+			}
+
+			// Remove old entries in UserActionsLog:
+			const oldUserActionsLogCount: number = UserActionsLog.find({
+				timestamp: { $lt: cleanLimitTime }
+			}).count()
+			if (oldUserActionsLogCount > 0) {
+				logger.info(`Cronjob: Will remove ${oldUserActionsLogCount} entries from UserActionsLog`)
+				lowPrioFcn(() => {
+					UserActionsLog.remove({
+						timestamp: { $lt: cleanLimitTime }
+					})
+				})
+			}
+
+			// Remove old entries in Snapshots:
+			const oldSnapshotsCount: number = Snapshots.find({
+				timestamp: { $lt: cleanLimitTime }
+			}).count()
+			if (oldSnapshotsCount > 0) {
+				logger.info(`Cronjob: Will remove ${oldSnapshotsCount} entries from Snapshots`)
+				lowPrioFcn(() => {
+					Snapshots.remove({
+						created: { $lt: cleanLimitTime }
+					})
+				})
+			}
+
 			let ps: Array<Promise<any>> = []
 			// restart casparcg
 			PeripheralDevices.find({
@@ -50,7 +94,6 @@ Meteor.startup(() => {
 				PeripheralDevices.find({
 					parentDeviceId: device._id
 				}).forEach(subDevice => {
-					// TODO: implement better way to determine if CasparCG, ref: client/ui/Status/SystemStatus.tsx:237
 					if (
 						subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
 						subDevice.subType === TSR.DeviceType.CASPARCG

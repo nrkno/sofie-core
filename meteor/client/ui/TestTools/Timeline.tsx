@@ -246,7 +246,7 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 		}
 	}
 })(
-class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateState> {
+class ComponentTimelineSimulate extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateState> {
 	renderTimelineState (state: TimelineState) {
 		return _.map(_.sortBy(_.values(state.layers), o => o.layer), o => (
 			<tr key={o.layer}>

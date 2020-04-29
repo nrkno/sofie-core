@@ -24,7 +24,7 @@ export interface NewPlayoutAPI {
 	rundownDisableNextPiece (rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<void>
 	segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceId: PieceId, queue: boolean): Promise<void>
 	rundownBaselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceId: PieceId, queue: boolean): Promise<void>
-	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string): Promise<void>
+	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]): Promise<void>
 	sourceLayerStickyPieceStart (playlistId: RundownPlaylistId, sourceLayerId: string): Promise<void>
 	updateStudioBaseline (studioId: StudioId): Promise<string | false>
 	shouldUpdateStudioBaseline (studioId: StudioId): Promise<string | false>

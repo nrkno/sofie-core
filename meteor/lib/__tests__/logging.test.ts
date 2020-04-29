@@ -1,7 +1,4 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import { transformTimeline } from '../timeline'
-import { DeviceType } from 'timeline-state-resolver-types'
-import { TimelineObjGeneric, TimelineObjType } from '../collections/Timeline'
 import { logger } from '../logging'
 
 

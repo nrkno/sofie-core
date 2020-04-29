@@ -51,10 +51,11 @@ import { RONotificationEvent, onRONotificationClick as rundownNotificationHandle
 import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
 import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
+import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction } from '../lib/userAction'
-import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, ReloadRundownResponse, UserActionAPIMethods } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
@@ -65,73 +66,12 @@ import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRend
 import { OffsetPosition } from '../utils/positions'
 import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
+import { PointerLockCursor } from '../lib/PointerLockCursor'
+import { AdlibSegmentUi } from './Shelf/AdLibPanel'
+
+export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
 type WrappedShelf = ShelfBase & { getWrappedInstance (): ShelfBase }
-
-interface IKeyboardFocusMarkerState {
-	inFocus: boolean
-}
-interface IKeyboardFocusMarkerProps {
-}
-class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKeyboardFocusMarkerState> {
-	private keyboardFocusInterval: number
-
-	constructor (props) {
-		super(props)
-
-		this.state = {
-			inFocus: true
-		}
-	}
-
-	componentDidMount () {
-		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(), 3000)
-		document.body.addEventListener('focusin', this.checkFocus)
-		document.body.addEventListener('focus', this.checkFocus)
-		document.body.addEventListener('mousedown', this.checkFocus)
-		document.addEventListener('visibilitychange', this.checkFocus)
-	}
-
-	componentWillUnmount () {
-		Meteor.clearInterval(this.keyboardFocusInterval)
-		document.body.removeEventListener('focusin', this.checkFocus)
-		document.body.removeEventListener('focus', this.checkFocus)
-		document.body.removeEventListener('mousedown', this.checkFocus)
-		document.removeEventListener('visibilitychange', this.checkFocus)
-	}
-
-	checkFocus = () => {
-		const focusNow = document.hasFocus()
-		if (this.state.inFocus !== focusNow) {
-			this.setState({
-				inFocus: focusNow
-			})
-			const viewInfo = [
-				window.location.href + window.location.search,
-				window.innerWidth,
-				window.innerHeight,
-				getAllowStudio(),
-				getAllowConfigure(),
-				getAllowService()
-			]
-			if (focusNow) {
-				MeteorCall.userAction.guiFocused('checkFocus', viewInfo).catch(console.error)
-			} else {
-				MeteorCall.userAction.guiBlurred('checkFocus', viewInfo).catch(console.error)
-			}
-		}
-	}
-
-	render () {
-		if (this.state.inFocus) {
-			return null
-		} else {
-			return (
-				<div className='rundown-view__focus-lost-frame'></div>
-			)
-		}
-	}
-}
 
 interface ITimingWarningProps {
 	playlist: RundownPlaylist
@@ -146,7 +86,7 @@ interface ITimingWarningState {
 }
 const WarningDisplay = translate()(timer(5000)(
 	class WarningDisplay extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
-		private REHEARSAL_MARGIN = 1 * 60 * 1000
+		private readonly REHEARSAL_MARGIN = 1 * 60 * 1000
 
 		constructor (props: Translated<ITimingWarningProps>) {
 			super(props)
@@ -243,11 +183,12 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_NEXT_UP = 'shift+f10',
 	RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
-	RUNDOWN_LOG_ERROR	= 'backspace'
+	RUNDOWN_LOG_ERROR	= 'backspace',
+	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = ''
 }
 
 const TimingDisplay = translate()(withTiming<ITimingDisplayProps, {}>()(
-class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
+class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
 		const { t } = this.props
 
@@ -272,18 +213,25 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 					this.props.rundownPlaylist.active &&
 					!this.props.rundownPlaylist.rehearsal
 				) ?
-					(this.props.rundownPlaylist.expectedStart &&
+					(this.props.rundownPlaylist.expectedStart ?
 						<span className='timing-clock countdown playback-started left'>
 						<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
 							{RundownUtils.formatDiffToTimecode(this.props.rundownPlaylist.startedPlayback - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
-						</span>) || undefined
+						</span> :
+						<span className='timing-clock countdown playback-started left'>
+							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
+						</span>)
 					:
-					(this.props.rundownPlaylist.expectedStart &&
+					(this.props.rundownPlaylist.expectedStart ?
 						<span className={ClassNames('timing-clock countdown plan-start left', {
 							'heavy': getCurrentTime() > this.props.rundownPlaylist.expectedStart
 						})}>
 							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
-						{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
+							{RundownUtils.formatDiffToTimecode(getCurrentTime() - this.props.rundownPlaylist.expectedStart, true, false, true, true, true)}
+						</span>
+						:
+						<span className={ClassNames('timing-clock countdown plan-start left')}>
+							<span className='timing-clock-label left hide-overflow rundown-name' title={this.props.rundownPlaylist.name}>{this.props.rundownPlaylist.name}</span>
 						</span>) || undefined
 				}
 				<span className='timing-clock time-now'>
@@ -365,7 +313,7 @@ interface IRundownHeaderState {
 	errorMessage?: string
 }
 
-const RundownHeader = translate()(class extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
+const RundownHeader = translate()(class RundownHeader extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 	bindKeys: Array<{
 		key: string,
 		up?: (e: KeyboardEvent) => any
@@ -1099,7 +1047,9 @@ interface IState {
 export enum RundownViewEvents {
 	'rewindsegments'	=	'sofie:rundownRewindSegments',
 	'goToLiveSegment'	=	'sofie:goToLiveSegment',
-	'goToTop'			=	'sofie:goToTop'
+	'goToTop'			=	'sofie:goToTop',
+	'segmentZoomOn'		=	'sofie:segmentZoomOn',
+	'segmentZoomOff'	=	'sofie:segmentZoomOff'
 }
 
 interface ITrackedProps {
@@ -1163,6 +1113,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 })(
 class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	private readonly LIVELINE_HISTORY_SIZE = 100
 
 	private bindKeys: Array<{
 		key: string,
@@ -1179,6 +1130,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		global?: boolean
 	}> = []
 	private _inspectorShelf: WrappedShelf | null
+	private _segmentZoomOn: boolean = false
 
 	constructor (props: Translated<IProps & ITrackedProps>) {
 		super(props)
@@ -1200,10 +1152,20 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			}
 		]
 
+		if (RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH) {
+			this.bindKeys.push({
+				key: RundownViewKbdShortcuts.SHOW_CURRENT_SEGMENT_FULL_NONLATCH,
+				down: this.onShowCurrentSegmentFullOn,
+				up: this.onShowCurrentSegmentFullOff,
+				label: t('Show entire current segment'),
+				global: false
+			})
+		}
+
 		this.usedArgumentKeys = []
 
 		this.state = {
-			timeScale: 0.03,
+			timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
 			studioMode: getAllowStudio(),
 			contextMenuContext: null,
 			bottomMargin: '',
@@ -1538,6 +1500,20 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 		window.dispatchEvent(new Event(RundownViewEvents.rewindsegments))
 	}
 
+	onShowCurrentSegmentFullOn = () => {
+		if (this._segmentZoomOn === false) {
+			console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOn}`)
+			window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOn))
+			this._segmentZoomOn = true
+		}
+	}
+
+	onShowCurrentSegmentFullOff = () => {
+		console.log(`Dispatching event: ${RundownViewEvents.segmentZoomOff}`)
+		window.dispatchEvent(new Event(RundownViewEvents.segmentZoomOff))
+		this._segmentZoomOn = false
+	}
+
 	onTimeScaleChange = (timeScaleVal) => {
 		if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
 			this.setState({
@@ -1639,6 +1615,18 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 			})
 		}
 	}
+	onSetNextSegment = (segmentId: SegmentId | null, e: any) => {
+		const { t } = this.props
+		if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
+			const playlistId = this.props.playlist._id
+			doUserAction(t, e, 'Set next Segment', (e) => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId), (err, res) => {
+				if (err) console.error(err)
+				this.setState({
+					manualSetAsNext: true
+				})
+			})
+		}
+	}
 
 	onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 		const { t } = this.props
@@ -1713,7 +1701,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									followLiveSegments={this.state.followLiveSegments}
 									segmentId={segment._id}
 									playlist={this.props.playlist}
-									liveLineHistorySize={100}
+									liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
 									timeScale={this.state.timeScale}
 									onTimeScaleChange={this.onTimeScaleChange}
 									onContextMenu={this.onContextMenu}
@@ -1893,7 +1881,10 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 							'rundown-view--studio-mode': this.state.studioMode
 						})} style={this.getStyle()} onWheelCapture={this.onWheel} onContextMenu={this.onContextMenuTop}>
 							<ErrorBoundary>
-								{ this.state.studioMode && !Settings.disableBlurBorder && <KeyboardFocusMarker /> }
+								{ this.state.studioMode && !Settings.disableBlurBorder &&
+									<KeyboardFocusIndicator>
+										<div className='rundown-view__focus-lost-frame'></div>
+									</KeyboardFocusIndicator> }
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<RundownFullscreenControls
@@ -1965,6 +1956,7 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 									contextMenuContext={this.state.contextMenuContext}
 									playlist={this.props.playlist}
 									onSetNext={this.onSetNext}
+									onSetNextSegment={this.onSetNextSegment}
 									studioMode={this.state.studioMode} />
 							</ErrorBoundary>
 							<ErrorBoundary>
@@ -1982,6 +1974,9 @@ class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps
 								{ this.props.segments && this.props.segments.length > 0 &&
 									<AfterBroadcastForm playlist={this.props.playlist} />
 								}
+							</ErrorBoundary>
+							<ErrorBoundary>
+								<PointerLockCursor />
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<Shelf

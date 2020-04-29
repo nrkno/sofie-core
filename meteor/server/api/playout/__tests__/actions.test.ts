@@ -11,7 +11,7 @@ import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
-import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { protectString } from '../../../../lib/lib'
 
 // const Timeline = mockupCollection(OrgTimeline)
@@ -83,11 +83,14 @@ describe('Playout Actions', () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 		// prepareStudioForBroadcast
-		prepareStudioForBroadcast(env.studio)
+		const playlistId = { _id: protectString<RundownPlaylistId>('some-id') } as RundownPlaylist
+		const okToDestroyStuff = true
+		prepareStudioForBroadcast(env.studio, okToDestroyStuff, playlistId)
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)
 		expect(getPeripheralDeviceCommands(playoutDevice)[0]).toMatchObject({
-			functionName: 'devicesMakeReady'
+			functionName: 'devicesMakeReady',
+			args: [okToDestroyStuff, playlistId._id]
 		})
 	})
 })

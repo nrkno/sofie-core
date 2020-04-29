@@ -7,12 +7,27 @@ import { Part, PartId } from '../../../lib/collections/Parts'
 import { syncFunctionIgnore, syncFunction } from '../../codeControl'
 import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
-import { asyncCollectionUpdate, waitForPromiseAll, asyncCollectionRemove, asyncCollectionInsert, makePromise, waitForPromise, asyncCollectionFindFetch, literal, protectString, unprotectObject } from '../../../lib/lib'
+import {
+	asyncCollectionUpdate,
+	waitForPromiseAll,
+	asyncCollectionRemove,
+	asyncCollectionInsert,
+	makePromise,
+	waitForPromise,
+	asyncCollectionFindFetch,
+	literal,
+	protectString,
+	unprotectObject,
+	getCurrentTime
+} from '../../../lib/lib'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getPartsAfter } from './lib'
 import { SegmentId } from '../../../lib/collections/Segments'
+
+/** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
+const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
 export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
 = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
@@ -196,6 +211,10 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 			   newPiece.startedPlayback = existingPiece.startedPlayback
 			   newPiece.stoppedPlayback = existingPiece.stoppedPlayback
 			   newPiece.timings = existingPiece.timings
+
+			   if (newPiece.expectedPlayoutItems) {
+				   newPiece.expectedPlayoutItems = []
+			   }
 		   }
 
 		   let pieceToInsert: Piece | null = (allowInsert ? newPiece : null)
@@ -291,18 +310,22 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 
 	let ps: Array<Promise<any>> = []
 	for (const instance of pieceInstances) {
-		ps.push(asyncCollectionUpdate(PieceInstances, instance._id, { $set: {
-			'piece.userDuration': { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
-			'piece.infiniteMode': PieceLifespan.Normal,
-			'piece.originalInfiniteMode': instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
-		}}))
+		if (!instance.piece.userDuration || (!instance.piece.userDuration.duration && !instance.piece.userDuration.end)) {
+			ps.push(asyncCollectionUpdate(PieceInstances, instance._id, { $set: {
+				'piece.userDuration': { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
+				definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPieceInstance.piece.adlibPreroll || 0),
+				'piece.infiniteMode': PieceLifespan.Normal,
+				'piece.originalInfiniteMode': instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
+			}}))
 
-		// TODO-PartInstance - pending new data flow
-		ps.push(asyncCollectionUpdate(Pieces, instance.piece._id, { $set: {
-			userDuration: { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
-			infiniteMode: PieceLifespan.Normal,
-			originalInfiniteMode: instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
-		}}))
+			// TODO-PartInstance - pending new data flow
+			ps.push(asyncCollectionUpdate(Pieces, instance.piece._id, { $set: {
+				userDuration: { end: `#${getPieceGroupId(unprotectObject(newPieceInstance.piece))}.start + ${newPieceInstance.piece.adlibPreroll || 0}` },
+				definitelyEnded: getCurrentTime() + DEFINITELY_ENDED_FUTURE_DURATION + (newPieceInstance.piece.adlibPreroll || 0),
+				infiniteMode: PieceLifespan.Normal,
+				originalInfiniteMode: instance.piece.originalInfiniteMode !== undefined ? instance.piece.originalInfiniteMode : instance.piece.infiniteMode
+			}}))
+		}
 	}
 	waitForPromiseAll(ps)
 })

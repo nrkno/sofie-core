@@ -14,6 +14,7 @@ import {
 	Time,
 	pushOntoPath,
 	clone,
+	toc,
 	literal,
 	asyncCollectionInsert,
 	asyncCollectionInsertMany,
@@ -27,10 +28,11 @@ import { loadCachedIngestSegment } from '../ingest/ingestCache'
 import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { Studios } from '../../../lib/collections/Studios'
-import { DBSegment, Segments } from '../../../lib/collections/Segments'
+import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 /**
  * Reset the rundown:
@@ -243,6 +245,7 @@ export function resetRundownPlaylist (rundownPlaylist: RundownPlaylist) {
 			playoutDuration: 1,
 			startedPlayback: 1,
 			userDuration: 1,
+			definitelyEnded: 1,
 			disabled: 1,
 			hidden: 1
 		}
@@ -292,7 +295,7 @@ function resetRundownPlaylistPlayhead (rundownPlaylist: RundownPlaylist) {
 
 	if (rundownPlaylist.active) {
 		// put the first on queue:
-		const firstPart = selectNextPart(null, rundownPlaylist.getAllOrderedParts(), !!rundownPlaylist.loop)
+		const firstPart = selectNextPart(rundownPlaylist, null, rundownPlaylist.getAllOrderedParts())
 		setNextPart(rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		setNextPart(rundownPlaylist, null)
@@ -336,8 +339,9 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	const studio = Studios.findOne(dbRundown.studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${dbRundown.studioId} was not found`)
 	const rundown = new Rundown(dbRundown)
+	const playlist = rundown.getRundownPlaylist()
 
-	updateSegmentsFromIngestData(studio, rundown, [ingestSegment])
+	updateSegmentsFromIngestData(studio, playlist, rundown, [ingestSegment])
 
 	// const segment = Segments.findOne(dbPart.segmentId)
 	// if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
@@ -347,38 +351,43 @@ export function refreshPart (dbRundown: DBRundown, dbPart: DBPart) {
 	// updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 }
 
-export function selectNextPart (previousPartInstance: PartInstance | null, parts: Part[], loop: boolean): { part: Part, index: number} | undefined {
-	let possibleParts = parts
+export function selectNextPart (rundownPlaylist: RundownPlaylist, previousPartInstance: PartInstance | null, parts: Part[]): { part: Part, index: number} | undefined {
+	const findFirstPlayablePart = (offset: number, condition?: (part: Part) => boolean) => {
+		// Filter to after and find the first playabale
+		for (let index = offset; index < parts.length; index ++) {
+			const part = parts[index]
+			if (part.isPlayable() && (!condition || condition(part))) {
+				return { part, index }
+			}
+		}
+		return undefined
+	}
 
 	let offset = 0
-	let currentIndex = -1
-	if (previousPartInstance !== null) {
-		currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
+	if (previousPartInstance) {
+		const currentIndex = parts.findIndex(p => p._id === previousPartInstance.part._id)
 		// TODO - choose something better for next?
 		if (currentIndex !== -1) {
 			offset = currentIndex + 1
 		}
 	}
 
-	// Filter to after and find the first playabale
-	for (let index = offset; index < possibleParts.length; index ++) {
-		const part = possibleParts[index]
-		if (part.isPlayable()) {
-			return { part, index }
-		}
-	}
+	let nextPart = findFirstPlayablePart(offset)
 
-	// if loop & not found any playable, select first playable before the on air line
-	if (loop) {
-		for (let index = 0; index < currentIndex; index ++) {
-			const part = possibleParts[index]
-			if (part.isPlayable()) {
-				return { part, index }
+	if (rundownPlaylist.nextSegmentId) {
+		// No previous part, or segment has changed
+		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
+			// Find first in segment
+			const nextPart2 = findFirstPlayablePart(0, part => part.segmentId === rundownPlaylist.nextSegmentId)
+			if (nextPart2) {
+				// If matched matched, otherwise leave on auto
+				nextPart = nextPart2
 			}
 		}
 	}
 
-	return undefined
+	// Filter to after and find the first playabale
+	return nextPart || findFirstPlayablePart(offset)
 }
 export function setNextPart (
 	rundownPlaylist: RundownPlaylist,
@@ -388,6 +397,12 @@ export function setNextPart (
 ) {
 	const acceptableRundowns = rundownPlaylist.getRundownIDs()
 	const { currentPartInstance, nextPartInstance } = rundownPlaylist.getSelectedPartInstances()
+
+	const movingToNewSegment = (
+		!currentPartInstance ||
+		!rawNextPart ||
+		rawNextPart.segmentId !== currentPartInstance.segmentId
+	)
 
 	const newNextPartInstance = rawNextPart && 'part' in rawNextPart ? rawNextPart : null
 	let newNextPart = rawNextPart && 'part' in rawNextPart ? null : rawNextPart
@@ -538,7 +553,48 @@ export function setNextPart (
 		rundownPlaylist.nextPartManual = !!setManually
 	}
 
+	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
+		ps.push(asyncCollectionUpdate(RundownPlaylists, rundownPlaylist._id, {
+			$unset: {
+				nextSegmentId: 1
+			}
+		}))
+		delete rundownPlaylist.nextSegmentId
+	}
+
 	waitForPromiseAll(ps)
+}
+export function setNextSegment (
+	rundownPlaylist: RundownPlaylist,
+	nextSegment: Segment | null
+) {
+	const acceptableRundowns = rundownPlaylist.getRundownIDs()
+	if (nextSegment) {
+
+		if (acceptableRundowns.indexOf(nextSegment.rundownId) === -1) {
+			throw new Meteor.Error(409, `Segment "${nextSegment._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`)
+		}
+
+		// Just run so that errors will be thrown if something wrong:
+		if (!nextSegment.getParts().find(p => p.isPlayable())) {
+			throw new Meteor.Error(400, 'Segment contains no valid parts')
+		}
+
+		RundownPlaylists.update(rundownPlaylist._id, {
+			$set: {
+				nextSegmentId: nextSegment._id,
+			}
+		})
+		rundownPlaylist.nextSegmentId = nextSegment._id
+
+	} else {
+		RundownPlaylists.update(rundownPlaylist._id, {
+			$unset: {
+				nextSegmentId: 1
+			}
+		})
+		delete rundownPlaylist.nextSegmentId
+	}
 }
 
 function resetPart (part: DBPart): Promise<void> {
@@ -566,6 +622,7 @@ function resetPart (part: DBPart): Promise<void> {
 		$unset: {
 			startedPlayback: 1,
 			userDuration: 1,
+			definitelyEnded: 1,
 			disabled: 1,
 			hidden: 1
 		}
@@ -646,6 +703,25 @@ export function onPartHasStoppedPlaying (partInstance: PartInstance, stoppedPlay
 		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
 	}
 }
+
+export function substituteObjectIds (rawEnable: TSR.Timeline.TimelineEnable, idMap: { [oldId: string]: string | undefined }) {
+	const replaceIds = (str: string) => {
+		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
+			const id = m.substr(1, m.length - 1)
+			return `#${idMap[id] || id}`
+		})
+	}
+
+	const enable = clone(rawEnable)
+
+	for (const key of _.keys(enable)) {
+		if (typeof enable[key] === 'string') {
+			enable[key] = replaceIds(enable[key])
+		}
+	}
+
+	return enable
+}
 export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], prefix: string, ignoreOriginal?: boolean): T[] {
 	const getUpdatePrefixedId = (o: T) => {
 		let id = o.id
@@ -663,28 +739,17 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric> (objList: T[], 
 		idMap[o.id] = getUpdatePrefixedId(o)
 	})
 
-	const replaceIds = (str: string) => {
-		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
-			const id = m.substr(1, m.length - 1)
-			return `#${idMap[id] || id}`
-		})
-	}
+	return objList.map(rawObj => {
+		const obj = clone(rawObj)
 
-	return objList.map(i => {
-		const o = clone(i)
-		o.id = getUpdatePrefixedId(o)
+		obj.id = getUpdatePrefixedId(obj)
+		obj.enable = substituteObjectIds(obj.enable, idMap)
 
-		for (const key of _.keys(o.enable)) {
-			if (typeof o.enable[key] === 'string') {
-				o.enable[key] = replaceIds(o.enable[key])
-			}
+		if (typeof obj.inGroup === 'string') {
+			obj.inGroup = idMap[obj.inGroup] || obj.inGroup
 		}
 
-		if (typeof o.inGroup === 'string') {
-			o.inGroup = idMap[o.inGroup] || o.inGroup
-		}
-
-		return o
+		return obj
 	})
 }
 
@@ -701,7 +766,7 @@ export function isTooCloseToAutonext (currentPartInstance: PartInstance | undefi
 
 	const start = currentPartInstance.part.getLastStartedPlayback()
 	const offset = currentPartInstance.part.getLastPlayOffset()
-	if (start && offset && currentPartInstance.part.expectedDuration) {
+	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
 		// date.now - start = playback duration, duration + offset gives position in part
 		const playbackDuration = getCurrentTime() - start + offset
 

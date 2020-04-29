@@ -11,11 +11,11 @@ import { Meteor } from 'meteor/meteor'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import { UserActionsList } from '../Status/UserActivity'
-import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Snapshots, SnapshotType } from '../../../lib/collections/Snapshots'
 import { Link } from 'react-router-dom'
 import { MeteorCall, CallUserActionAPIMethod } from '../../../lib/api/methods'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists';
 
 interface NextUserLogAction {
 	message: UserActionsLogItem
@@ -26,7 +26,7 @@ interface NextUserLogAction {
 interface IRecordingListProps {
 	match?: {
 		params?: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 		}
 	}
 }
@@ -45,7 +45,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 	return {
 		log: UserActionsLog.find({}, { sort: { timestamp: 1 } }).fetch()
 	}
-})(class extends MeteorReactComponent<Translated<IRecordingListProps & IRecordingListTrackedProps>, IRecordingListState> {
+})(class UserLogPlayerPage extends MeteorReactComponent<Translated<IRecordingListProps & IRecordingListTrackedProps>, IRecordingListState> {
 	private _currentsub: string = ''
 	private _sub?: Meteor.SubscriptionHandle
 
@@ -66,14 +66,14 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 	}
 	updateSubscription () {
 		if (this.props.match && this.props.match.params) {
-			let h = this.state.dateFrom + '_' + this.state.dateTo + '_' + this.props.match.params.rundownId
+			let h = this.state.dateFrom + '_' + this.state.dateTo + '_' + this.props.match.params.rundownPlaylistId
 			if (h !== this._currentsub) {
 				this._currentsub = h
 				if (this._sub) {
 					this._sub.stop()
 				}
 				this._sub = meteorSubscribe(PubSub.userActionsLog, {
-					args: { $regex: `.*"${this.props.match.params.rundownId}".*` },
+					args: { $regex: `.*"${this.props.match.params.rundownPlaylistId}".*` },
 					timestamp: {
 						$gte: this.state.dateFrom,
 						$lt: this.state.dateTo,
@@ -226,33 +226,33 @@ interface IRundownSelectProps {
 interface IRundownSelectState {
 }
 interface IRundownSelectTrackedProps {
-	rundowns: { [id: string]: string }
+	rundownPlaylists: { [id: string]: string }
 }
 const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownSelectState, IRundownSelectTrackedProps>((props: IRundownSelectProps) => {
-	const rundowns = Rundowns.find().fetch()
+	const rundownPlaylists = RundownPlaylists.find().fetch()
 	const snapshots = Snapshots.find().fetch()
 
-	const rundownMap: IRundownSelectTrackedProps['rundowns'] = {}
-	_.each(rundowns, rundown => {
-		rundownMap[unprotectString(rundown._id)] = `${rundown.name} (${rundown._id})`
+	const rundownPlaylistMap: IRundownSelectTrackedProps['rundownPlaylists'] = {}
+	_.each(rundownPlaylists, playlist => {
+		rundownPlaylistMap[unprotectString(playlist._id)] = `${playlist.name} (${playlist._id})`
 	})
 
 	_.each(snapshots, snapshot => {
-		if (snapshot.rundownId && !rundownMap[unprotectString(snapshot.rundownId)]) {
-			rundownMap[unprotectString(snapshot.rundownId)] = `${snapshot.rundownId}`
+		if (snapshot.playlistId && !rundownPlaylistMap[unprotectString(snapshot.playlistId)]) {
+			rundownPlaylistMap[unprotectString(snapshot.playlistId)] = `${snapshot.name}`
 		}
 	})
 
 	return {
-		rundowns: rundownMap
+		rundownPlaylists: rundownPlaylistMap
 	}
 })(class RundownSelection extends MeteorReactComponent<Translated<IRundownSelectProps & IRundownSelectTrackedProps>, IRundownSelectState> {
 	componentWillMount () {
 		// Subscribe to data:
 
-		this.subscribe(PubSub.rundowns, {})
+		this.subscribe(PubSub.rundownPlaylists, {})
 		this.subscribe(PubSub.snapshots, {
-			type: SnapshotType.RUNDOWN
+			type: SnapshotType.RUNDOWNPLAYLIST
 		})
 	}
 	render () {
@@ -267,7 +267,7 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 					<strong>Rundown</strong>
 					<ul>
 						{
-							_.map(this.props.rundowns, (name, id) => {
+							_.map(this.props.rundownPlaylists, (name, id) => {
 								return (
 									<li key={id}>
 										<Link to={`userlogplayer/${id}`}>{name}</Link>

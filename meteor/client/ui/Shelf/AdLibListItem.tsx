@@ -52,7 +52,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 	return {
 		status
 	}
-})(class extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
+})(class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
 	private objId: string
 
 	constructor (props: IListViewItemProps) {
@@ -76,13 +76,15 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 			const piece = this.props.adLibListItem as any as AdLibPieceUi
 			let objId: string | undefined = undefined
 
-			switch (this.props.layer.type) {
-				case SourceLayerType.VT:
-					objId = (piece.content as VTContent).fileName.toUpperCase()
-					break
-				case SourceLayerType.LIVE_SPEAK:
-					objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-					break
+			if (piece.content) {
+				switch (this.props.layer.type) {
+					case SourceLayerType.VT:
+						objId = (piece.content as VTContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.LIVE_SPEAK:
+						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+				}
 			}
 
 			if (objId && objId !== this.objId) {

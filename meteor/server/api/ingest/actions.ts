@@ -14,6 +14,7 @@ import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ReloadRundownResponse } from '../../../lib/api/userActions'
+import { INewsDeviceActions } from './iNewsDevice/actions'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -30,6 +31,8 @@ export namespace IngestActions {
 			return MOSDeviceActions.reloadRundown(device, rundown)
 		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
 			// TODO
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+			return INewsDeviceActions.reloadRundown(device, rundown)
 		} else {
 			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
 		}

@@ -28,7 +28,7 @@ export const ClipTrimDialog = translate()(class ClipTrimDialog extends React.Com
 
 		this.state = {
 			inPoint: ((this.props.selectedPiece.content as VTContent).editable as VTEditableParameters).editorialStart,
-			duration: ((this.props.selectedPiece.content as VTContent).editable as VTEditableParameters).editorialDuration
+			duration: ((this.props.selectedPiece.content as VTContent).editable as VTEditableParameters).editorialDuration,
 		}
 	}
 	handleChange = (inPoint: number, duration: number) => {

@@ -18,7 +18,7 @@ import * as loopAnimation from './icon-loop.json'
 import { InjectedTranslateProps, translate } from 'react-i18next'
 import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
 
-export const STKSourceRenderer = translate()(class extends VTSourceRendererBase {
+export const STKSourceRenderer = translate()(class STKSourceRenderer extends VTSourceRendererBase {
 	constructor (props) {
 		super(props)
 	}

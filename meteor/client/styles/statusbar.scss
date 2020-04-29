@@ -9,7 +9,7 @@
 	bottom: 0;
 	border-left: 1px solid rgba(0, 0, 0, 0.3);
 	z-index: 300;
-	padding-top: 70px;
+	padding-top: rem(70px);
 	background: #fff;
 
 	transition: 0.3s background-color;
@@ -25,7 +25,7 @@
 	}
 
 	.status-bar__controls__button {
-		margin-left: 5px;
+		margin-left: rem(5px);
 		position: relative;
 		display: block;
 		border: none;
@@ -69,7 +69,7 @@
 		}
 
 		&.status-bar__controls__button--open {
-			width: #{$fullscreen-controls__button--radius + 5px};
+			width: #{$fullscreen-controls__button--radius + 0.3125rem};
 			border-radius: 0 100% 100% 0;
 			background-color: #fff;
 			margin-left: 0;
@@ -118,7 +118,7 @@
 		text-align: center;
 		user-select: none;
 		margin-top: 2em;
-		margin-left: 5px;
+		margin-left: rem(5px);
 		margin-bottom: 3em;
 
 		.keyboard_key {
@@ -126,7 +126,7 @@
 			border: 1px solid #fff;
 			border-radius: 4px;
 			font-size: 0.8rem;
-			padding: 0 3px;
+			padding: 0 rem(3px);
 			margin-bottom: 0.2rem;
 			font-size: 0.9em;
 		}
@@ -135,12 +135,12 @@
 
 .rundown-view .status-bar {
 	position: fixed;
-    padding-right: 5px;
-    top: 64px;
-    padding-top: 15px;
+    padding-right: rem(5px);
+    top: rem(64px);
+    padding-top: rem(15px);
     bottom: 0;
     right: 0;
-	width: #{$fullscreen-controls__button--radius + 10px};
+	width: #{$fullscreen-controls__button--radius + 0.625rem};
 	z-index: 2000;
 	background: $ui-dark-color;
 	border-left: none;

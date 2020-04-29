@@ -385,9 +385,9 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 			case ConfigManifestEntryType.BOOLEAN:
 				return value ? t('true') : t('false')
 			case ConfigManifestEntryType.TABLE:
-				return `${(rawValue as any[] || []).length} ${t('rows')}`
+				return t('{{count}} rows', { count: ((rawValue as any[] || []).length) })
 			default:
-				return value
+				return value.toString()
 		}
 	}
 
@@ -489,7 +489,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 	render () {
 		const { t } = this.props
 		return (
-			<div>
+			<div className='scroll-x'>
 				<ModalDialog title={t('Add config item')} acceptText={t('Add')}
 					secondaryText={t('Cancel')} show={this.state.showAddItem}
 					onAccept={(e) => this.handleConfirmAddItemAccept(e)}
@@ -537,37 +537,4 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 			</div>
 		)
 	}
-}
-
-export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntry[] {
-	if (item instanceof Studio) {
-		if (item.blueprintId) {
-			const blueprint = Blueprints.findOne(item.blueprintId)
-			if (blueprint) {
-				return blueprint.studioConfigManifest || []
-			}
-		}
-	} else if (item instanceof ShowStyleBase) {
-		if (item.blueprintId) {
-			const blueprint = Blueprints.findOne(item.blueprintId)
-			if (blueprint) {
-				return blueprint.showStyleConfigManifest || []
-			}
-		}
-	} else if (item instanceof ShowStyleVariant) {
-		const showStyleBase = ShowStyleBases.findOne({
-			_id: item.showStyleBaseId
-		})
-
-		if (showStyleBase && showStyleBase.blueprintId) {
-			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
-			if (blueprint) {
-				return blueprint.showStyleConfigManifest || []
-			}
-		}
-	} else {
-		logger.error('collectConfigs: unknown item type', item)
-	}
-
-	return []
 }
