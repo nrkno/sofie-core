@@ -88,6 +88,7 @@ export interface UpsertOptions {
 
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
 export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
+export type MongoQuery<DBInterface> = Mongo.Query<DBInterface>
 export interface Mongocursor<DBInterface extends { _id: ProtectedString<any>}> extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
 	observe(callbacks: ObserveCallbacks<DBInterface>): Meteor.LiveQueryHandle;
     observeChanges(callbacks: ObserveChangesCallbacks<DBInterface>): Meteor.LiveQueryHandle;
