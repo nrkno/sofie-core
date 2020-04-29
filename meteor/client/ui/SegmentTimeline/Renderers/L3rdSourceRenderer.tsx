@@ -18,7 +18,7 @@ interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
 }
-export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export const L3rdSourceRenderer = translate()(class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 	leftLabel: HTMLElement
 	rightLabel: HTMLElement
 

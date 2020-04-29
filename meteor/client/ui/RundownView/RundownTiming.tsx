@@ -12,6 +12,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import * as ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 
 export interface TimeEventArgs {
 	currentTime: number
@@ -825,7 +826,7 @@ class SegmentDuration extends React.Component<WithTiming<ISegmentDurationProps>>
  * @return number
  */
 export function computeSegmentDuration (
-	timingDurations: RundownTiming.RundownTimingContext, partIds: PartId[]
+	timingDurations: RundownTiming.RundownTimingContext, partIds: PartId[], display?: boolean
 ): number {
 	let partDurations = timingDurations.partDurations
 
@@ -833,10 +834,11 @@ export function computeSegmentDuration (
 
 	return partIds.reduce((memo, partId) => {
 		const pId = unprotectString(partId)
-		return partDurations ?
-				partDurations[pId] !== undefined ?
-				memo + partDurations[pId] :
-				memo
-			: 0
+		const partDuration = (partDurations ?
+			 partDurations[pId] !== undefined ?
+				 partDurations[pId] :
+				 0
+			 : 0) || (display ? DEFAULT_DISPLAY_DURATION : 0)
+		return memo + partDuration
 	}, 0)
 }

@@ -171,7 +171,7 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 		playlist
 	}
 })(
-class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
+class RundownOverview extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
 	render () {
 		if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
 			const playlist = this.props.playlist

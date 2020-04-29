@@ -1,25 +1,39 @@
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
-import { updatePartRanks } from '../../rundown'
+import { updatePartRanks, ServerRundownAPI } from '../../rundown'
+import { ServerPlayoutAPI } from '../../playout/playout'
+import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString, protectString } from '../../../../lib/lib'
+import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { getSegmentId } from '../lib';
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
 describe('Test ingest actions for rundowns and segments', () => {
 
 	let device: PeripheralDevice
+	let device2: PeripheralDevice
 	let externalId = 'abcde'
 	let segExternalId = 'zyxwv'
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
+		const env = setupDefaultStudioEnvironment()
+		device = env.ingestDevice
+
+		device2 = setupMockPeripheralDevice(
+			PeripheralDeviceAPI.DeviceCategory.INGEST,
+			// @ts-ignore
+			'mockDeviceType',
+			PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			env.studio
+		)
 	})
 
 	testInFiber('dataRundownCreate', () => {
@@ -705,7 +719,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, externalId, segExternalId)
 			expect(true).toBe(false) // Should throw rather than run this test
 		} catch (e) {
-			expect(e.message).toBe(`[404] Segment ${segExternalId} not found`)
+			expect(e.message).toBe(`[404] handleRemovedSegment: Segment "${getSegmentId(rundown._id, segExternalId)}" not found`)
 		}
 
 		expect(Segments.find({ rundownId: rundown._id }).count()).toBe(2)
@@ -1073,5 +1087,105 @@ describe('Test ingest actions for rundowns and segments', () => {
 		// Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, rundownData.externalId, segmentData)
 		// dynamicPart0 = Parts.findOne(dynamicPart0Id) as Part
 		// expect(dynamicPart0).toBeFalsy()
+	})
+
+	testInFiber('unsyncing of rundown', () => {
+		// Cleanup any rundowns/playlists
+		RundownPlaylists.find().fetch().forEach(r => r.remove())
+
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part0',
+							name: 'Part 0',
+							rank: 0,
+						},
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 0,
+						}
+					]
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 0,
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 0,
+						}
+					]
+				}
+			]
+		}
+
+		// Preparation: set up rundown
+		expect(Rundowns.findOne()).toBeFalsy()
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device2._id, device2.token, rundownData)
+		const rundown = Rundowns.findOne() as Rundown
+		expect(rundown).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		const playlist = rundown.getRundownPlaylist()
+		expect(playlist).toBeTruthy()
+
+		const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
+		const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
+		const resyncRundown = () => {
+			try {
+				ServerRundownAPI.resyncRundown(rundown._id)
+			} catch (e) {
+				if (e.toString().match(/does not support the method "reloadRundown"/)) {
+					// This is expected
+					return
+				}
+				throw e
+			}
+		}
+
+		const segments = getRundown().getSegments()
+		const parts = getRundown().getParts()
+
+		expect(segments).toHaveLength(2)
+		expect(parts).toHaveLength(3)
+
+		// Activate the rundown, make data updates and verify that it gets unsynced properly
+		ServerPlayoutAPI.activateRundownPlaylist(playlist._id, true)
+		expect(getRundown().unsynced).toEqual(false)
+
+		RundownInput.dataRundownDelete({}, device2._id, device2.token, rundownData.externalId)
+		expect(getRundown().unsynced).toEqual(true)
+
+		resyncRundown()
+		expect(getRundown().unsynced).toEqual(false)
+
+		ServerPlayoutAPI.takeNextPart(playlist._id)
+		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
+		expect(partInstance).toHaveLength(1)
+		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
+
+		RundownInput.dataSegmentDelete({}, device2._id, device2.token, rundownData.externalId, segments[0].externalId)
+		expect(getRundown().unsynced).toEqual(true)
+
+		resyncRundown()
+		expect(getRundown().unsynced).toEqual(false)
+
+		RundownInput.dataPartDelete({}, device2._id, device2.token, rundownData.externalId, segments[0].externalId, parts[0].externalId)
+		expect(getRundown().unsynced).toEqual(true)
+
+		resyncRundown()
+		expect(getRundown().unsynced).toEqual(false)
+
 	})
 })

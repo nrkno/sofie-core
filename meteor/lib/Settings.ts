@@ -10,21 +10,23 @@ import * as _ from 'underscore'
  * --settings [filename] to provide a JSON file containing the settings
  */
 export interface ISettings {
-	// The framerate (frames per second) used to convert internal timing information (in milliseconds)
-	// into timecodes and timecode-like strings and interpret timecode user input
-	// Default: 25
+	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
+	 * into timecodes and timecode-like strings and interpret timecode user input
+	 * Default: 25
+	 */
 	frameRate: number,
-	// Should the Rundown view User Interface default all segments to "collapsed" state?
-	// Default: false
+	/** Should the Rundown view User Interface default all segments to "collapsed" state? Default: false */
 	defaultToCollapsedSegments: boolean,
-	// Should the segment in the Rundown view automatically rewind after it stops being live?
-	// Default: false
+	/* Should the segment in the Rundown view automatically rewind after it stops being live? Default: false */
 	autoRewindLeavingSegment: boolean,
-	// Should the Current and Next segments be automatically made expanded (uncollapsed)?
-	// Default: false
+	/** Should the Current and Next segments be automatically made expanded (uncollapsed)? Default: false */
 	autoExpandCurrentNextSegment: boolean
-	// Disable blur border in RundownView
+	/** Disable blur border in RundownView */
 	disableBlurBorder: boolean
+	/** Default time scale zooming for the UI. Default: 1  */
+	defaultTimeScale: number
+	// Allow grabbing the entire timeline
+	allowGrabbingTimeline: boolean
 }
 
 export let Settings: ISettings
@@ -33,11 +35,13 @@ export let Settings: ISettings
  * Default values for Settings
  */
 const DEFAULT_SETTINGS: ISettings = {
-	'frameRate': 25,
-	'defaultToCollapsedSegments': false,
-	'autoExpandCurrentNextSegment': false,
-	'autoRewindLeavingSegment': false,
-	'disableBlurBorder': false
+	frameRate: 25,
+	defaultToCollapsedSegments: false,
+	autoExpandCurrentNextSegment: false,
+	autoRewindLeavingSegment: false,
+	disableBlurBorder: false,
+	defaultTimeScale: 1,
+	allowGrabbingTimeline: true
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

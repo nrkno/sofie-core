@@ -17,6 +17,7 @@ import { IngestDataCache } from './IngestDataCache'
 import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
+import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance } from './PartInstances'
 import { PieceInstances, PieceInstance } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
@@ -48,6 +49,7 @@ export interface DBRundown extends ProtectedStringProperties<IBlueprintRundownDB
 	showStyleBaseId: ShowStyleBaseId
 	/** The peripheral device the rundown originates from */
 	peripheralDeviceId: PeripheralDeviceId
+	restoredFromSnapshotId?: RundownId
 	created: Time
 	modified: Time
 
@@ -81,13 +83,6 @@ export interface DBRundown extends ProtectedStringProperties<IBlueprintRundownDB
 	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
-
-	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
-	previousPersistentState?: TimelinePersistentState
-
-	/** Should the timing calculations assume out-of-order playback */
-	/** If false (default), past unplayed parts will be treated as played with 0 duration */
-	outOfOrderTiming?: boolean
 }
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
@@ -105,6 +100,7 @@ export class Rundown implements DBRundown {
 	public studioId: StudioId
 	public showStyleBaseId: ShowStyleBaseId
 	public peripheralDeviceId: PeripheralDeviceId
+	public restoredFromSnapshotId?: RundownId
 	public created: Time
 	public modified: Time
 	public importVersions: RundownImportVersions
@@ -254,6 +250,7 @@ export class Rundown implements DBRundown {
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
 		IngestDataCache.remove({ rundownId: this._id })
 		ExpectedMediaItems.remove({ rundownId: this._id })
+		ExpectedPlayoutItems.remove({ rundownId: this._id })
 	}
 	touch () {
 		if (getCurrentTime() - this.modified > 3600 * 1000) {

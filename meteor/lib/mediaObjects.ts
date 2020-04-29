@@ -114,6 +114,7 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null
+	let contentDuration: number | undefined = undefined
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer) {
@@ -237,6 +238,7 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 	return {
 		status: newStatus,
 		metadata: metadata,
-		message: message
+		message: message,
+		contentDuration: contentDuration
 	}
 }

@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
@@ -230,7 +231,8 @@ export namespace ServerPlayoutAdLibAPI {
 			dynamicallyInserted: true,
 			afterPart: afterPartInstance.part.afterPart || afterPartInstance.part._id,
 			typeVariant: 'adlib',
-			prerollDuration: adLibPiece.adlibPreroll
+			prerollDuration: adLibPiece.adlibPreroll,
+			expectedDuration: adLibPiece.expectedDuration
 		})
 		PartInstances.insert({
 			_id: newPartInstanceId,
@@ -266,13 +268,22 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
 			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
 
-			const lastPieceInstances = PieceInstances.find({
+			const query = {
 				rundownId: rundown._id,
 				'piece.sourceLayerId': sourceLayer._id,
 				'piece.startedPlayback': {
 					$exists: true
 				}
-			}, {
+			}
+
+			if (sourceLayer.stickyOriginalOnly) {
+				// Ignore adlibs if using original only
+				query['pieces.adLibSourceId'] = {
+					$exists: false
+				}
+			}
+
+			const lastPieceInstances = PieceInstances.find(query, {
 				sort: {
 					'piece.startedPlayback': -1
 				},

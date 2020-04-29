@@ -12,9 +12,7 @@ import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
-import { Picker } from 'meteor/meteorhacks:picker'
 import { IncomingMessage, ServerResponse } from 'http'
-import * as bodyParser from 'body-parser'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
 import { afterUpdateTimeline } from './playout/timeline'
@@ -29,6 +27,7 @@ import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkF
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import * as MOS from 'mos-connection'
 import { determineDiffTime, getTimeDiff } from './systemTime/systemTime'
+import { PickerPOST } from './http'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -343,12 +342,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
-postRoute.middleware(bodyParser.text({
-	type: 'text/javascript',
-	limit: '1mb'
-}))
-postRoute.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))

@@ -52,7 +52,7 @@ interface IListViewStateHeader {
 	}
 }
 
-const AdLibListView = translate()(class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
+const AdLibListView = translate()(class AdLibListView extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
 	table: HTMLTableElement
 
 	constructor (props: Translated<IListViewPropsHeader>) {
@@ -388,29 +388,36 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		if (this.props.sourceLayerLookup) {
-			_.each(this.props.sourceLayerLookup, (item) => {
-				if (item.clearKeyboardHotkey) {
-					item.clearKeyboardHotkey.split(',').forEach(element => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
-						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
-							preventDefault(e)
-							this.onClearAllSourceLayer(item, e)
-						}, 'keyup', HOTKEY_GROUP)
-						this.usedHotkeys.push(element)
-					})
 
+			const clearKeyboardHotkeySourceLayers: {[hotkey: string]: ISourceLayer[]} = {}
+
+			_.each(this.props.sourceLayerLookup, (sourceLayer) => {
+				if (sourceLayer.clearKeyboardHotkey) {
+					sourceLayer.clearKeyboardHotkey.split(',').forEach(hotkey => {
+						if (!clearKeyboardHotkeySourceLayers[hotkey]) clearKeyboardHotkeySourceLayers[hotkey] = []
+						clearKeyboardHotkeySourceLayers[hotkey].push(sourceLayer)
+					})
 				}
 
-				if (item.isSticky && item.activateStickyKeyboardHotkey) {
-					item.activateStickyKeyboardHotkey.split(',').forEach(element => {
+				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
+					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach(element => {
 						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleSticky(item._id, e)
+							this.onToggleSticky(sourceLayer._id, e)
 						}, 'keyup', HOTKEY_GROUP)
 						this.usedHotkeys.push(element)
 					})
 				}
+			})
+
+			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
+				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+				mousetrapHelper.bind(hotkey, (e: ExtendedKeyboardEvent) => {
+					preventDefault(e)
+					this.onClearAllSourceLayers(sourceLayers, e)
+				}, 'keyup', HOTKEY_GROUP)
+				this.usedHotkeys.push(hotkey)
 			})
 		}
 	}
@@ -463,13 +470,13 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 	}
 
-	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
+	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		// console.log(sourceLayer)
-
+		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const { t } = this.props
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Stop Global Adlib', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, sourceLayer._id))
+			doUserAction(t, e, 'Stop Global Adlib', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, _.map(sourceLayers, sl => sl._id)))
 		}
 	}
 

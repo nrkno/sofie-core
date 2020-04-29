@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { NotificationCenter, NotificationList, NotifierHandle, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownAPI, RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
@@ -21,11 +21,11 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 // import { translate, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
-import { PartNote, NoteType } from '../../../lib/api/notes'
+import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
 import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId, getAllNotesForSegmentAndParts } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
@@ -59,8 +59,10 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _deviceStatusDep: Tracker.Dependency
 
 	private _rundownImportVersionStatus: Notification | undefined = undefined
+	private _rundownShowStyleConfigStatuses: _.Dictionary<Notification | undefined> = {}
+	private _rundownStudioConfigStatus: Notification | undefined = undefined
 	private _rundownImportVersionStatusDep: Tracker.Dependency
-	private _rundownImportVersionInterval: number | undefined = undefined
+	private _rundownImportVersionAndConfigInterval: number | undefined = undefined
 
 	private _unsentExternalMessagesStatus: Notification | undefined = undefined
 	private _unsentExternalMessageStatusDep: Tracker.Dependency
@@ -84,7 +86,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 			if (playlistId) {
 				this.reactiveRundownStatus(playlistId)
-				this.reactiveVersionStatus(playlistId)
+				this.reactiveVersionAndConfigStatus(playlistId)
 
 				this.autorun(() => {
 					// console.log('RundownViewNotifier 1-1')
@@ -102,6 +104,8 @@ class RundownViewNotifier extends WithManagedTracker {
 				this._deviceStatus = {}
 				this._notes = {}
 				this._rundownImportVersionStatus = undefined
+				this._rundownStudioConfigStatus = undefined
+				this._rundownShowStyleConfigStatuses = {}
 				this._unsentExternalMessagesStatus = undefined
 				this.cleanUpMediaStatus()
 			}
@@ -120,7 +124,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				.concat(_.compact(_.values(this._deviceStatus)))
 				.concat(_.compact(_.values(this._notes)))
 				.concat(_.compact(_.values(this._rundownStatus)))
-				.concat(_.compact([this._rundownImportVersionStatus]))
+				.concat(_.compact([this._rundownImportVersionStatus, this._rundownStudioConfigStatus]), _.compact(_.values(this._rundownShowStyleConfigStatuses)))
 				.concat(_.compact([this._unsentExternalMessagesStatus]))
 
 			this._notificationList.set(
@@ -133,7 +137,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	stop () {
 		super.stop()
 
-		if (this._rundownImportVersionInterval) Meteor.clearInterval(this._rundownImportVersionInterval)
+		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
 
 		_.forEach(this._mediaStatusComps, (element, key) => element.stop())
 		this._notifier.stop()
@@ -203,7 +207,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					let rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
-							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.origin.rundownId + '_' + note.message + '_' + note.type
+							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
 							const newNotification = new Notification(
 								rundownNoteId,
 								note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
@@ -305,28 +309,18 @@ class RundownViewNotifier extends WithManagedTracker {
 		const t = i18nTranslator
 
 		function getSegmentPartNotes (rRundownIds: RundownId[]) {
-			let notes: Array<PartNote & {rank: number}> = []
 			const segments = Segments.find({
 				rundownId: {
 					$in: rRundownIds
 				}
 			}, { sort: { _rank: 1 } }).fetch()
-
-			const segmentNotes = _.object(segments.map(segment => [ segment._id, {
-				rank: segment._rank,
-				notes: segment.notes
-			} ])) as { [key: string ]: { notes: PartNote[], rank: number } }
-			Parts.find({
+			
+			const parts = Parts.find({
 				rundownId: { $in: rRundownIds },
 				segmentId: { $in: segments.map(segment => segment._id) }
-			}, { sort: { _rank: 1 } }).map(part => part.notes && segmentNotes[unprotectString(part.segmentId)] && segmentNotes[unprotectString(part.segmentId)].notes.concat(part.notes))
-			notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
-				return o.notes.map(note => _.extend(note, {
-					rank: o.rank
-				}))
-			})))
+			}, { sort: { _rank: 1 } }).fetch()
 
-			return notes
+			return getAllNotesForSegmentAndParts(segments, parts)
 		}
 
 		const rRundowns = reactiveData.getRRundowns(playlistId)
@@ -336,7 +330,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			const rundownIds = rRundowns.get().map(r => r._id)
 			// console.log('RundownViewNotifier 4')
 			const newNoteIds: Array<string> = []
-			getSegmentPartNotes(rundownIds).forEach((item: PartNote & {rank: number}) => {
+			getSegmentPartNotes(rundownIds).forEach((item: TrackedNote) => {
 				const id = item.message + '-' + (item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) + '-' + item.origin.name + '-' + item.type
 				let newNotification = new Notification(id, item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING, (item.origin.name ? item.origin.name + ': ' : '') + item.message, item.origin.segmentId || 'unknown', getCurrentTime(), true, [
 					{
@@ -446,19 +440,19 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private reactiveVersionStatus (playlistId: RundownPlaylistId) {
+	private reactiveVersionAndConfigStatus (playlistId: RundownPlaylistId) {
 
 		const updatePeriod = 30000 // every 30s
 
-		if (this._rundownImportVersionInterval) Meteor.clearInterval(this._rundownImportVersionInterval)
-		this._rundownImportVersionInterval = playlistId ? Meteor.setInterval(() => this.updateVersionStatus(playlistId), updatePeriod) : undefined
+		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
+		this._rundownImportVersionAndConfigInterval = playlistId ? Meteor.setInterval(() => this.updateVersionAndConfigStatus(playlistId), updatePeriod) : undefined
 
 		// const rundowns = reactiveData.getRRundowns()
 		this.autorun((comp: Tracker.Computation) => {
 			// console.log('RundownViewNotifier 5')
 
 			// Track the rundown as a dependency of this autorun
-			this.updateVersionStatus(playlistId)
+			this.updateVersionAndConfigStatus(playlistId)
 		})
 	}
 
@@ -479,10 +473,8 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 	}
 
-	private updateVersionStatus (playlistId: RundownPlaylistId) {
+	private updateVersionAndConfigStatus (playlistId: RundownPlaylistId) {
 		const t = i18nTranslator
-
-		// console.log('update_version_status, ' + rundownId)
 
 		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
 		MeteorCall.rundown.rundownPlaylistNeedsResync(playlistId)
@@ -511,10 +503,75 @@ class RundownViewNotifier extends WithManagedTracker {
 					this._rundownImportVersionStatusDep.changed()
 				}
 			}).catch(err => {
-				// console.error(err)
+				console.error(err)
 				let newNotification = new Notification('rundown_importVersions', NoticeLevel.WARNING, t('Unable to check the system configuration for changes'), `rundownPlaylist_${playlistId}`, getCurrentTime(), true, undefined, -1)
 				if (!Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
 					this._rundownImportVersionStatus = newNotification
+					this._rundownImportVersionStatusDep.changed()
+				}
+			})
+
+			// Verify the showstyle & studio config look good
+			MeteorCall.rundown.rundownPlaylistValidateBlueprintConfig(playlistId)
+			.then((configErrors: RundownPlaylistValidateBlueprintConfigResult) => {
+				let newStudioNotification: Notification | undefined = undefined
+				if (configErrors.studio.length > 0) {
+					let message = t('The Studio configuration is missing some required fields:')
+					message += configErrors.studio.join(',')
+					newStudioNotification = new Notification('rundown_validateStudioConfig', NoticeLevel.WARNING, message, `rundownPlaylist_${playlistId}`, getCurrentTime(), true, [], -1)
+				}
+
+				let hasChanges = false
+				if (!Notification.isEqual(this._rundownStudioConfigStatus, newStudioNotification)) {
+					this._rundownStudioConfigStatus = newStudioNotification
+					hasChanges = true
+				}
+
+				// Check show styles for changes
+				const oldShowStyleIds = _.keys(this._rundownShowStyleConfigStatuses)
+				const newShowStyleIds: string[] = []
+				_.each(configErrors.showStyles, showStyleErrors => {
+					let newNotification: Notification | undefined
+					if (showStyleErrors.checkFailed) {
+						const message = t('The Show Style configuration "{{name}}" could not be validated', { name: showStyleErrors.name })
+						newNotification = new Notification('rundown_validateStudioConfig', NoticeLevel.WARNING, message, `rundownPlaylist_${playlistId}`, getCurrentTime(), true, [], -1)
+					} else if (showStyleErrors.fields.length > 0) {
+						let message = t('The ShowStyle "{{name}}" configuration is missing some required fields:', { name: showStyleErrors.name })
+						message += showStyleErrors.fields.join(',')
+						newNotification = new Notification('rundown_validateShowStyleConfig', NoticeLevel.WARNING, message, `rundownPlaylist_${playlistId}`, getCurrentTime(), true, [], -1)
+					}
+					
+					if (!Notification.isEqual(this._rundownShowStyleConfigStatuses[showStyleErrors.id], newNotification)) {
+						if (newNotification) {
+							this._rundownShowStyleConfigStatuses[showStyleErrors.id] = newNotification
+						} else {
+							delete this._rundownShowStyleConfigStatuses[showStyleErrors.id]
+						}
+						hasChanges = true
+					}
+
+					if (newNotification) {
+						newShowStyleIds.push(showStyleErrors.id)
+					}
+				})
+
+				// Track any removed showStyles
+				const removedShowStyleIds = _.difference(oldShowStyleIds, newShowStyleIds)
+				if (removedShowStyleIds.length > 0) {
+					removedShowStyleIds.forEach((id) => {
+						delete this._rundownShowStyleConfigStatuses[id]
+					})
+					hasChanges = true
+				}
+				
+				if (hasChanges) {
+					this._rundownImportVersionStatusDep.changed()
+				}
+			}).catch(err => {
+				const newNotification = new Notification('rundown_validateStudioConfig', NoticeLevel.WARNING, t('Unable to validate the system configuration'), 'rundownPlaylist_' + playlistId, getCurrentTime(), true, undefined, -1)
+				if (_.size(this._rundownShowStyleConfigStatuses) > 0 || !Notification.isEqual(this._rundownStudioConfigStatus, newNotification)) {
+					this._rundownStudioConfigStatus = newNotification
+					this._rundownShowStyleConfigStatuses = {}
 					this._rundownImportVersionStatusDep.changed()
 				}
 			})
@@ -569,7 +626,7 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 }
 
-export const RundownNotifier = class extends React.Component<IProps> {
+export const RundownNotifier = class RundownNotifier extends React.Component<IProps> {
 	private notifier: RundownViewNotifier
 
 	constructor (props: IProps) {

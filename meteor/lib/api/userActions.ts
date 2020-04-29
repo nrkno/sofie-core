@@ -11,10 +11,12 @@ import { StudioId } from '../collections/Studios'
 import { RecordedFileId } from '../collections/RecordedFiles'
 import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
+import { SegmentId } from '../collections/Segments'
 
 export interface NewUserActionAPI {
 	take						(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	setNext						(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number): Promise<ClientAPI.ClientResponse<void>>
+	setNextSegment				(userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId | null): Promise<ClientAPI.ClientResponse<void>>
 	moveNext					(userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number): Promise<ClientAPI.ClientResponse<PartId | null>>
 	prepareForBroadcast			(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	resetRundownPlaylist		(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -29,7 +31,7 @@ export interface NewUserActionAPI {
 	pieceTakeNow				(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId): Promise<ClientAPI.ClientResponse<void>>
 	setInOutPoints				(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean)
-	sourceLayerOnPartStop		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerId: string)
+	sourceLayerOnPartStop		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[])
 	baselineAdLibPieceStart		(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean)
 	sourceLayerStickyPieceStart	(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string): Promise<ClientAPI.ClientResponse<void>>
 	activateHold				(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
@@ -45,10 +47,10 @@ export interface NewUserActionAPI {
 	mediaRestartWorkflow		(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortWorkflow			(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaPrioritizeWorkflow		(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
-	mediaRestartAllWorkflows	(userEvent: string, ): Promise<ClientAPI.ClientResponse<void>>
-	mediaAbortAllWorkflows		(userEvent: string, ): Promise<ClientAPI.ClientResponse<void>>
+	mediaRestartAllWorkflows	(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
+	mediaAbortAllWorkflows		(userEvent: string): Promise<ClientAPI.ClientResponse<void>>
 	regenerateRundownPlaylist	(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	generateRestartToken		(userEvent: string, ): Promise<ClientAPI.ClientResponse<string>>
+	generateRestartToken		(userEvent: string): Promise<ClientAPI.ClientResponse<string>>
 	restartCore					(userEvent: string, token: string): Promise<ClientAPI.ClientResponse<string>>
 	guiFocused					(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred					(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
@@ -57,6 +59,7 @@ export interface NewUserActionAPI {
 export enum UserActionAPIMethods {
 	'take' 									= 'userAction.take',
 	'setNext' 								= 'userAction.setNext',
+	'setNextSegment' 						= 'userAction.setNextSegment',
 	'moveNext' 								= 'userAction.moveNext',
 
 	'prepareForBroadcast' 					= 'userAction.prepareForBroadcast',

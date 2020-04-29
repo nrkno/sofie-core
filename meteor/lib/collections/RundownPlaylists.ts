@@ -11,7 +11,7 @@ import { Pieces, Piece } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
 import { PieceInstance, PieceInstances } from './PieceInstances'
-import { GenericNote, RundownNote } from '../api/notes'
+import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
 
@@ -23,6 +23,7 @@ export interface DBRundownPlaylist {
 	externalId: string
 	studioId: StudioId
 	peripheralDeviceId: PeripheralDeviceId
+	restoredFromSnapshotId?: RundownPlaylistId
 	name: string
 	created: Time
 	modified: Time
@@ -45,11 +46,16 @@ export interface DBRundownPlaylist {
 
 	/** Marker indicating if unplayed parts behind the onAir part, should be treated as "still to be played" or "skipped" in terms of timing calculations */
 	outOfOrderTiming?: boolean
+	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
+	nextSegmentId?: SegmentId
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
 	/** Timestamp for the last time an incorrect part was reported as started */
 	lastIncorrectPartPlaybackReported?: Time
+
+	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
+	previousPersistentState?: TimelinePersistentState
 }
 
 export interface RundownPlaylistPlayoutData {
@@ -76,6 +82,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public externalId: string
 	public studioId: StudioId
 	public peripheralDeviceId: PeripheralDeviceId
+	public restoredFromSnapshotId?: RundownPlaylistId
 	public name: string
 	public created: Time
 	public modified: Time
@@ -88,6 +95,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public active?: boolean
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
+	public nextSegmentId: SegmentId
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null
@@ -143,6 +151,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		const allRundowns = this.getRundowns()
 		allRundowns.forEach(i => i.remove())
+
+		RundownPlaylists.remove(this._id)
 	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio (): Studio {
@@ -424,33 +434,49 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 	}
 
-	getAllStoredNotes (): Array<GenericNote & {rank: number}> {
+	getAllStoredNotes (): Array<TrackedNote> {
 		const rundownNotes: RundownNote[] = _.flatten(_.compact(this.getRundowns().map(r => r.notes)))
 
-		let notes: Array<GenericNote & {rank: number}> = []
+		let notes: Array<TrackedNote> = []
 		notes = notes.concat(rundownNotes.map(note => _.extend(note, { rank: 0 })))
 
-		const segmentNotes = _.object(this.getSegments().map(segment => [ segment._id, {
-			rank: segment._rank,
-			notes: segment.notes
-		} ])) as { [key: string ]: { notes: GenericNote[], rank: number } }
+		const segments = this.getSegments()
+		const parts = this.getUnorderedParts()
 
-		this.getUnorderedParts().map(part => {
-			if (part.notes) {
-				const segmentNote = segmentNotes[unprotectString(part.segmentId)]
-				if (segmentNote) {
-					return segmentNote.notes.concat(part.notes)
-				}
-			}
-		})
-		notes = notes.concat(_.flatten(_.map(_.values(segmentNotes), (o) => {
-			return o.notes.map(note => _.extend(note, {
-				rank: o.rank
-			}))
-		})))
+		notes = notes.concat(getAllNotesForSegmentAndParts(segments, parts))
 
 		return notes
 	}
+}
+
+export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part[]): Array<TrackedNote> {
+	let notes: Array<TrackedNote> = []
+
+	const segmentNotes = _.object<{ [key: string ]: { notes: TrackedNote[], rank: number } }>(segments.map(segment => [ segment._id, {
+		rank: segment._rank,
+		notes: segment.notes
+	} ]))
+	parts.map(part => {
+		const newNotes = (part.notes || []).concat(part.getInvalidReasonNotes())
+		if (newNotes.length > 0) {
+			const segNotes = segmentNotes[unprotectString(part.segmentId)]
+			if (segNotes) {
+				segNotes.notes.push(...newNotes.map(n => ({
+					...n,
+					rank: segNotes.rank,
+					origin: {
+						...n.origin,
+						segmentId: (part.segmentId),
+						partId: (part._id),
+						rundownId: (part.rundownId),
+					}
+				})))
+			}
+		}
+	})
+	notes = notes.concat(_.flatten(_.map(segmentNotes, o => o.notes)))
+
+	return notes
 }
 
 export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist>

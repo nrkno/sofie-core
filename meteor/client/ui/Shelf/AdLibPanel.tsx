@@ -120,7 +120,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 	}
 }
 
-const AdLibListView = translate()(class extends React.Component<
+const AdLibListView = translate()(class AdLibListView extends React.Component<
 	Translated<IListViewPropsHeader>, IListViewStateHeader
 > {
 	table: HTMLTableElement
@@ -837,13 +837,13 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 	}
 
-	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
+	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Clearing SourceLayer', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e,
-				this.props.playlist._id, currentPartInstanceId, sourceLayer._id
+			doUserAction(t, e, 'Clearing SourceLayer', () => MeteorCall.userAction.sourceLayerOnPartStop(e,
+				this.props.playlist._id, currentPartInstanceId, _.map(sourceLayers, sl => sl._id)
 			))
 		}
 	}
