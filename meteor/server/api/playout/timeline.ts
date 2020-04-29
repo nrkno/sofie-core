@@ -566,7 +566,7 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 
 			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 			const showHoldExcept = piece.piece.infiniteId !== piece.piece._id
-			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline([piece], groupClasses, infiniteGroup, undefined, activePlaylist.holdState, showHoldExcept))
+			timelineObjs = timelineObjs.concat(infiniteGroup, transformPartIntoTimeline([piece], groupClasses, infiniteGroup, undefined, activePlaylist.holdState, showHoldExcept, isNumber(piece.piece.enable.start)))
 		}
 
 		const groupClasses: string[] = ['current_part']
@@ -704,7 +704,8 @@ function transformPartIntoTimeline (
 	partGroup?: TimelineObjRundown,
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
-	showHoldExcept?: boolean
+	showHoldExcept?: boolean,
+	ignorePieceStart?: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObj> {
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 
@@ -751,6 +752,10 @@ function transformPartIntoTimeline (
 				) {
 					pieceInstance.piece.enable.start = 0
 				}
+			}
+
+			if (ignorePieceStart) {
+				pieceInstance.piece.enable.start = 0
 			}
 
 			// create a piece group for the pieces and then place all of them there
