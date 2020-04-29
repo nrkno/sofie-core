@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, waitForPromise } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
@@ -16,7 +16,6 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
 import { afterUpdateTimeline } from './playout/timeline'
-import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
 import { RundownInput } from './ingest/rundownInput'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
@@ -28,6 +27,8 @@ import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/Me
 import * as MOS from 'mos-connection'
 import { determineDiffTime, getTimeDiff } from './systemTime/systemTime'
 import { PickerPOST } from './http'
+import { initCacheForNoRundownPlaylist, initCacheForStudio, initCacheForRundownPlaylist } from '../DatabaseCaches'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -164,9 +165,20 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			const playlistIds = _.map(areThereActiveRundownPlaylistsInStudio(studioId), r => r._id)
-			const allowedRundowns = Rundowns.find({ playlistId: { $in: playlistIds } }).fetch()
-			const allowedRundownsIds = _.map(allowedRundowns, r => r._id)
+			const activePlaylist = RundownPlaylists.findOne({
+				studioId: studioId,
+				active: true
+			})
+			const cache = (
+				activePlaylist ?
+				waitForPromise(initCacheForRundownPlaylist(activePlaylist)) :
+				waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			)
+			const allowedRundownsIds = (
+				activePlaylist ?
+				_.map(cache.Rundowns.findFetch({ playlistId: activePlaylist._id }), r => r._id) :
+				[]
+			)
 
 			_.each(results, (o) => {
 				check(o.id, String)
@@ -191,16 +203,17 @@ export namespace ServerPeripheralDeviceAPI {
 					obj.enable.start = o.time
 					obj.enable.setFromNow = true
 
-					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(allowedRundownsIds, obj, o.time)
+					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(cache, allowedRundownsIds, obj, o.time)
 				}
 			})
+			// After we've updated the timeline, we must call afterUpdateTimeline!
+			const studio = cache.Studios.findOne(studioId)
+			if (studio) {
+				afterUpdateTimeline(cache, studio)
+			}
+			waitForPromise(cache.saveAllToDatabase())
 		}
 
-		// After we've updated the timeline, we must call afterUpdateTimeline!
-		const studio = Studios.findOne(studioId)
-		if (studio) {
-			afterUpdateTimeline(studio)
-		}
 	}, 'timelineTriggerTime$0,$1')
 	export function partPlaybackStarted (deviceId: PeripheralDeviceId, token: string, r: PeripheralDeviceAPI.PartPlaybackStartedResult) {
 		// This is called from the playout-gateway when a part starts playing.

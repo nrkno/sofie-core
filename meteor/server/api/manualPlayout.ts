@@ -6,12 +6,13 @@ import { Timeline, TimelineObjGeneric, getTimelineId, TimelineObjType } from '..
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { afterUpdateTimeline } from './playout/timeline'
 import { check } from 'meteor/check'
-import { makePromise } from '../../lib/lib'
+import { makePromise, waitForPromise } from '../../lib/lib'
 import { ServerClientAPI } from './client'
 import { MethodContext } from '../../lib/api/methods'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
+import { CacheForStudio, initCacheForNoRundownPlaylist } from '../DatabaseCaches'
 
-function insertTimelineObject (studioId: StudioId, timelineObjectOrg: TimelineObjectCoreExt) {
+function insertTimelineObject (cache: CacheForStudio, studioId: StudioId, timelineObjectOrg: TimelineObjectCoreExt) {
 	check(studioId, String)
 
 	const timelineObject: TimelineObjGeneric = {
@@ -24,32 +25,40 @@ function insertTimelineObject (studioId: StudioId, timelineObjectOrg: TimelineOb
 
 	let studio = Studios.findOne(studioId)
 
-	Timeline.upsert(timelineObject._id, timelineObject)
+	cache.Timeline.upsert(timelineObject._id, timelineObject)
 
 	if (studio) {
-		afterUpdateTimeline(studio)
+		afterUpdateTimeline(cache, studio)
 	}
 
 }
-function removeTimelineObject (studioId: StudioId, id: string) {
+function removeTimelineObject (cache: CacheForStudio, studioId: StudioId, id: string) {
 	check(studioId, String)
 	check(id, String)
 	let studio = Studios.findOne(studioId)
 
 	if (studio) {
-		Timeline.remove(getTimelineId(studio._id, id))
+		cache.Timeline.remove(getTimelineId(studio._id, id))
 
-		afterUpdateTimeline(studio)
+		afterUpdateTimeline(cache, studio)
 	}
 
 }
 
 class ServerManualPlayoutAPI implements NewManualPlayoutAPI {
 	insertTimelineObject (studioId: StudioId, timelineObject: TimelineObjectCoreExt) {
-		return makePromise(() => insertTimelineObject(studioId, timelineObject))
+		return makePromise(() => {
+			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			insertTimelineObject(cache, studioId, timelineObject)
+			waitForPromise(cache.saveAllToDatabase())
+		})
 	}
 	removeTimelineObject (studioId: StudioId, id: string) {
-		return makePromise(() => removeTimelineObject(studioId, id))
+		return makePromise(() => {
+			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			removeTimelineObject(cache, studioId, id)
+			waitForPromise(cache.saveAllToDatabase())
+		})
 	}
 }
 registerClassToMeteorMethods(ManualPlayoutAPIMethods, ServerManualPlayoutAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {

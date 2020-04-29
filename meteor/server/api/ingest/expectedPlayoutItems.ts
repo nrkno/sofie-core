@@ -9,6 +9,8 @@ import { syncFunctionIgnore } from '../../codeControl'
 import { logger } from '../../logging'
 import { Parts, PartId } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString } from '../../../lib/lib'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { getAllPiecesFromCache } from '../playout/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
@@ -44,67 +46,80 @@ export function extractExpectedPlayoutItems (rundown: DBRundown, pieces: Array<P
 	})
 }
 
-export const updateExpectedPlayoutItemsOnRundown: (rundownId: RundownId) => void
-= syncFunctionIgnore(function updateExpectedPlayoutItemsOnRundown (rundownId: RundownId) {
+export const updateExpectedPlayoutItemsOnRundown: (cache: CacheForRundownPlaylist, rundownId: RundownId) => void
+= syncFunctionIgnore(function updateExpectedPlayoutItemsOnRundown (cache: CacheForRundownPlaylist, rundownId: RundownId) {
 	check(rundownId, String)
 
-	const rundown = Rundowns.findOne(rundownId)
+	const rundown = cache.Rundowns.findOne(rundownId)
 	if (!rundown) {
-		const removedItems = ExpectedPlayoutItems.remove({
-			rundownId: rundownId
+		cache.defer(() => {
+			const removedItems = ExpectedPlayoutItems.remove({
+				rundownId: rundownId
+			})
+			logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
 		})
-		logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
 		return
 	}
 
-	const allPieces: Piece[] = []
-	const adlibPieces: AdLibPiece[] = []
-	_.each(rundown.getParts(), part => {
-		_.each(part.getAllPieces(), piece => allPieces.push(piece))
-		_.each(part.getAllAdLibPieces(), adlibPiece => adlibPieces.push(adlibPiece))
+	const allPiecesInRundown: Piece[] = []
+	_.each(cache.Parts.findFetch({ rundownId: rundown._id }), part => {
+		_.each(getAllPiecesFromCache(cache, part), piece => allPiecesInRundown.push(piece))
 	})
 
-	const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
-		...allPieces,
-		...adlibPieces
-	])
+	cache.defer(() => {
+		const adlibPieces: AdLibPiece[] = []
+		_.each(rundown.getParts(), part => {
+			_.each(part.getAllAdLibPieces(), adlibPiece => adlibPieces.push(adlibPiece))
+		})
 
-	saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
-		rundownId: rundownId,
-	}, expectedPlayoutItems)
+		const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
+			...allPiecesInRundown,
+			...adlibPieces
+		])
+
+		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
+			rundownId: rundownId,
+		}, expectedPlayoutItems)
+	})
 })
 
-export const updateExpectedPlayoutItemsOnPart: (rundownId: RundownId, partId: PartId) => void
-= syncFunctionIgnore(function updateExpectedPlayoutItemsOnPart (rundownId: RundownId, partId: PartId) {
+export const updateExpectedPlayoutItemsOnPart: (cache: CacheForRundownPlaylist, rundownId: RundownId, partId: PartId) => void
+= syncFunctionIgnore(function updateExpectedPlayoutItemsOnPart (cache: CacheForRundownPlaylist, rundownId: RundownId, partId: PartId) {
 	check(rundownId, String)
 	check(partId, String)
 
-	const rundown = Rundowns.findOne(rundownId)
+	const rundown = cache.Rundowns.findOne(rundownId)
 	if (!rundown) {
-		const removedItems = ExpectedPlayoutItems.remove({
-			rundownId: rundownId
+		cache.defer(() => {
+			const removedItems = ExpectedPlayoutItems.remove({
+				rundownId: rundownId
+			})
+			logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
 		})
-		logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
 		return
 	}
 
-	const part = Parts.findOne(partId)
+	const part = cache.Parts.findOne(partId)
 	if (!part) {
-		const removedItems = ExpectedPlayoutItems.remove({
-			rundownId: rundownId,
-			partId: partId
+		cache.defer(() => {
+			const removedItems = ExpectedPlayoutItems.remove({
+				rundownId: rundownId,
+				partId: partId
+			})
+			logger.info(`Removed ${removedItems} expected playout items for deleted part "${partId}"`)
 		})
-		logger.info(`Removed ${removedItems} expected playout items for deleted part "${partId}"`)
 		return
 	}
 
-	const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
-		...part.getAllPieces(),
-		...part.getAllAdLibPieces()
-	])
+	cache.defer(() => {
+		const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
+			...getAllPiecesFromCache(cache, part),
+			...part.getAllAdLibPieces()
+		])
 
-	saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
-		rundownId: rundownId,
-		partId: part._id
-	}, expectedPlayoutItems)
+		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(ExpectedPlayoutItems, {
+			rundownId: rundownId,
+			partId: part._id
+		}, expectedPlayoutItems)
+	})
 })

@@ -4,10 +4,10 @@ import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/PeripheralDevices'
 
-import { Mongo } from 'meteor/mongo'
+import { MongoSelector } from '../../lib/typings/meteor'
 
 export namespace ExpectedPlayoutItemsSecurity {
-	export function allowReadAccess (selector: Mongo.Query<ExpectedPlayoutItem> | any, token: string, context: any) {
+	export function allowReadAccess (selector: MongoSelector<ExpectedPlayoutItem> | any, token: string, context: any) {
 		check(selector, Object)
 		check(selector.studioId, String)
 

@@ -168,7 +168,7 @@ function doMessageQueue () {
 export function logMessageError (msg: ExternalMessageQueueObj, e: any) {
 	try {
 		errorOnLastRunCount++
-		logger.warn(e)
+		logger.warn(e || e.reason || e.toString())
 		ExternalMessageQueue.update(msg._id, {$set: {
 			errorMessage: (e['reason'] || e['message'] || e.toString()),
 			errorMessageTime: getCurrentTime()

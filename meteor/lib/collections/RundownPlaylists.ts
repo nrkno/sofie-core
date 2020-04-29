@@ -144,16 +144,16 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		}
 	}
 	/** Remove this RundownPlaylist and all its contents */
-	remove () {
+	removeTOBEREMOVED () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		const allRundowns = this.getRundowns()
-		allRundowns.forEach(i => i.remove())
+		allRundowns.forEach(i => i.removeTOBEREMOVED())
 
 		RundownPlaylists.remove(this._id)
 	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio (): Studio {
-		if (!this.studioId) throw new Meteor.Error(500,'Rundown is not in a studio!')
+		if (!this.studioId) throw new Meteor.Error(500,'RundownPlaylist is not in a studio!')
 		let studio = Studios.findOne(this.studioId)
 		if (studio) {
 			return studio
@@ -336,7 +336,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	fetchAllPlayoutData (): RundownPlaylistPlayoutData {
 		const rundowns = Rundowns.find({ playlistId: this._id }, {
 			sort: {
-				_rank: 1
+				_rank: 1,
+				name: 1
 			}
 		}).fetch()
 		const rundownIds = rundowns.map(i => i._id)
