@@ -537,7 +537,6 @@ export function getUnfinishedPieceInstancesReactive (currentPartInstanceId: Part
 			'piece.startedPlayback': {
 				$exists: true
 			},
-			'piece.dynamicallyInserted': true,
 			$and: [
 				{
 					$or: [{
