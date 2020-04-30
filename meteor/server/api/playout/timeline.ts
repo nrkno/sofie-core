@@ -742,17 +742,6 @@ function transformPartIntoTimeline (
 				}
 			}
 
-			if (pieceInstance.piece.infiniteId && pieceInstance.piece.infiniteId === pieceInstance.piece._id) {
-				if (
-					pieceInstance.piece.enable.start &&
-					isNumber(pieceInstance.piece.enable.start) &&
-					pieceInstance.piece.enable.start > 0 &&
-					pieceInstance.piece.startedPlayback
-				) {
-					pieceInstance.piece.enable.start = 0
-				}
-			}
-
 			// create a piece group for the pieces and then place all of them there
 			const pieceGroup = createPieceGroup(pieceInstance, partGroup)
 			timelineObjs.push(pieceGroup)
