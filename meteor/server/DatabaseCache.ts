@@ -23,7 +23,7 @@ import * as _ from 'underscore'
 import { MongoSelector, TransformedCollection, MongoModifier, FindOptions } from '../lib/typings/meteor'
 
 export function isDbCacheCollection (o: any): o is DbCacheCollection<any, any> {
-	return !!(typeof o === 'object' && o.updateDatabaseWithData)
+	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
 }
 export class DbCacheCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
 	documents: {[_id: string]: DbCacheCollectionDocument<Class>} = {}
