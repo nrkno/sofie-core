@@ -296,8 +296,12 @@ export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistP
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	objs.forEach(o => {
-		if (o.enable.start === 'now') {
-			o.enable.start = now
+		if (o.enable.start === 'now' && o.isGroup) {
+			if ((o as any).isPartGroup) {
+				o.enable.start = now
+			} else if (o.metaData && o.metaData.pieceId) {
+				o.enable.start = 0
+			}
 		}
 	})
 
