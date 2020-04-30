@@ -273,15 +273,24 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 	// }
 
 	private onResize = (entries: ResizeObserverEntry[]) => {
-		if (entries && entries[0] && entries[0].contentBoxSize && entries[0].contentBoxSize.width) {
-			const width = entries[0].contentBoxSize!.width
+		const firstEntry = entries && entries[0]
+		if (
+			firstEntry &&
+			firstEntry.contentBoxSize &&
+			firstEntry.contentBoxSize.width
+		) {
+			const width = firstEntry.contentBoxSize!.width
 			if (this.state.elementWidth !== width) {
 				this.setState({
 					elementWidth: width
 				})
 			}
-		} else if (entries && entries[0] && entries[0].borderBoxSize && entries[0].borderBoxSize.width) {
-			const width = entries[0].borderBoxSize!.width
+		} else if (
+			firstEntry &&
+			firstEntry.borderBoxSize &&
+			firstEntry.borderBoxSize.width
+		) {
+			const width = firstEntry.borderBoxSize!.width
 			if (this.state.elementWidth !== width) {
 				this.setState({
 					elementWidth: width
