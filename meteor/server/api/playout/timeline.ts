@@ -125,7 +125,6 @@ export function updateTimeline (cache: CacheForRundownPlaylist, studioId: Studio
 
 	processTimelineObjects(studio, timelineObjs)
 
-
 	if (forceNowToTime) { // used when autoNexting
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
@@ -319,6 +318,7 @@ function getTimelineRundown (cache: CacheForRundownPlaylist, studio: Studio): Ti
 			return studioBaseline
 		}
 	} catch (e) {
+		logger.error(e)
 		return []
 	}
 

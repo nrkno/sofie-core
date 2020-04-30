@@ -2,7 +2,7 @@ import { RundownId, Rundowns } from './collections/Rundowns'
 import { PartNote } from './api/notes'
 import { Segments, Segment } from './collections/Segments'
 import { Parts } from './collections/Parts'
-import { unprotectString, makePromise, waitForPromise } from './lib'
+import { unprotectString, makePromise, waitForPromise, asyncCollectionFindOne } from './lib'
 import * as _ from 'underscore'
 import { Pieces } from './collections/Pieces'
 import { ShowStyleBases, ShowStyleBase } from './collections/ShowStyleBases'
@@ -71,6 +71,8 @@ export function getMediaObjectIssues (rundownIds: RundownId[]): IMediaObjectIssu
 		}
 
 		const p: Promise<void>[] = []
+
+		// p.push(asyncCollectionFindOne(ShowStyleBases, rundown.showStyleBaseId))
 		p.push(makePromise(() => { showStyle = ShowStyleBases.findOne(rundown.showStyleBaseId) }))
 		p.push(makePromise(() => { rundownStudio = Studios.findOne(rundown.studioId) }))
 		p.push(makePromise(() => { segments = _.object(Segments.find({ rundownId: rundown._id }).fetch().map(segment => [segment._id, segment])) }))

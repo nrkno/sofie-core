@@ -155,13 +155,13 @@ export namespace ServerPlayoutAdLibAPI {
 			const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
 
 
-			const partInstance = PartInstances.findOne(partInstanceId)
+			const partInstance = cache.PartInstances.findOne(partInstanceId)
 			if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-			const rundown = Rundowns.findOne(partInstance.rundownId)
+			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 			if (rundown.playlistId !== rundownPlaylistId) throw new Meteor.Error(406, `Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylistId}!"`)
 
-			const adLibPiece = RundownBaselineAdLibPieces.findOne({
+			const adLibPiece = cache.RundownBaselineAdLibPieces.findOne({
 				_id: baselineAdLibPieceId,
 				rundownId: partInstance.rundownId
 			})

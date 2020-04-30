@@ -804,40 +804,7 @@ export function getSegmentsAndPartsFromCache (
 } {
 
 	const rundowns = getRundownsFromCache(cache, playlist)
-	const rundownIds = rundowns.map(i => i._id)
-
-	const segments = RundownPlaylist._sortSegments(
-		cache.Segments.findFetch({
-			rundownId: {
-				$in: rundownIds
-			}
-		}, {
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		}),
-		rundowns
-	)
-
-	const parts = RundownPlaylist._sortPartsInner(
-		cache.Parts.findFetch({
-			rundownId: {
-				$in: rundownIds
-			}
-		}, {
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		}),
-		segments
-	)
-
-	return {
-		segments: segments,
-		parts: parts
-	}
+	return getRundownsSegmentsAndPartsFromCache(cache, rundowns)
 }
 export function getAllOrderedPartsFromCache (cache: CacheForRundownPlaylist, playlist: RundownPlaylist): Part[] {
 	const { parts } = getSegmentsAndPartsFromCache(cache, playlist)
@@ -863,6 +830,18 @@ export function getAllPiecesFromCache (cache: CacheForRundownPlaylist, part: Par
 	}, {
 		sort: {
 			_rank: 1
+		}
+	})
+}
+/** Get all adlib pieces in a part */
+export function getAllAdLibPiecesFromCache (cache: CacheForRundownPlaylist, part: Part) {
+	return cache.AdLibPieces.findFetch({
+		rundownId: part.rundownId,
+		partId: part._id
+	}, {
+		sort: {
+			_rank: 1,
+			name: 1
 		}
 	})
 }
@@ -931,9 +910,9 @@ export function removeRundownFromCache (cache: CacheForRundownPlaylist, rundown:
 }
 
 /** Get all piece instances in a part instance */
-export function getAllPieceInstancesFromCache (cache: CacheForRundownPlaylist, rundown: Rundown, partInstance: PartInstance): PieceInstance[] {
+export function getAllPieceInstancesFromCache (cache: CacheForRundownPlaylist, partInstance: PartInstance): PieceInstance[] {
 	return cache.PieceInstances.findFetch({
-		rundownId: rundown._id,
+		rundownId: partInstance.rundownId,
 		partInstanceId: partInstance._id
 	})
 }
@@ -955,18 +934,40 @@ export function getRundownPlaylistFromCache (cache: CacheForRundownPlaylist, run
 	} else throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
 }
 
-export function getRundownSegmentsAndPartsFromCache (cache: CacheForRundownPlaylist, rundown: Rundown): { segments: Segment[], parts: Part[] } {
+export function getRundownsSegmentsAndPartsFromCache (cache: CacheForRundownPlaylist, rundowns: Rundown[]): { segments: Segment[], parts: Part[] } {
 
-	const segments = cache.Segments.findFetch({
-		rundownId: rundown._id
-	}, { sort: { _rank: 1 } })
+	const rundownIds = rundowns.map(i => i._id)
 
-	const parts = cache.Parts.findFetch({
-		rundownId: rundown._id
-	}, { sort: { _rank: 1 } })
+	const segments = RundownPlaylist._sortSegments(
+		cache.Segments.findFetch({
+			rundownId: {
+				$in: rundownIds
+			}
+		}, {
+			sort: {
+				rundownId: 1,
+				_rank: 1
+			}
+		}),
+		rundowns
+	)
+
+	const parts = RundownPlaylist._sortPartsInner(
+		cache.Parts.findFetch({
+			rundownId: {
+				$in: rundownIds
+			}
+		}, {
+			sort: {
+				rundownId: 1,
+				_rank: 1
+			}
+		}),
+		segments
+	)
 
 	return {
-		segments,
-		parts,
+		segments: segments,
+		parts: parts
 	}
 }

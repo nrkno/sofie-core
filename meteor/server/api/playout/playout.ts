@@ -22,7 +22,9 @@ import { getCurrentTime,
 	unprotectObjectArray,
 	protectString,
 	isStringOrProtectedString,
-	getRandomId} from '../../../lib/lib'
+	getRandomId,
+	toc,
+	tic} from '../../../lib/lib'
 import { Timeline, TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import { Segments, Segment, SegmentId } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -64,7 +66,8 @@ import {
 	getRundownsFromCache,
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
-	getRundownPlaylistFromCache
+	getRundownPlaylistFromCache,
+	getAllPieceInstancesFromCache
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -286,9 +289,9 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 			if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
 			if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
+			tic('take')
+			const cache = waitForPromise(initCacheForRundownPlaylist(playlist, undefined, true))
+			toc('take', 'cache')
 			playlist = cache.RundownPlaylists.findOne(playlist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
@@ -577,14 +580,14 @@ export namespace ServerPlayoutAPI {
 
 			// Last:
 			const takeDoneTime = getCurrentTime()
-			cache.defer(() => { // should this stay or be changed to cache.defer?
+			cache.defer(() => { // todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 				if (takePartInstance) {
-					PartInstances.update(takePartInstance._id, {
+					cache.PartInstances.update(takePartInstance._id, {
 						$push: {
 							'part.timings.takeDone': takeDoneTime
 						}
 					})
-					Parts.update(takePartInstance.part._id, {
+					cache.Parts.update(takePartInstance.part._id, {
 						$push: {
 							'timings.takeDone': takeDoneTime
 						}
@@ -607,8 +610,9 @@ export namespace ServerPlayoutAPI {
 					}
 				}
 			})
-
+			toc('take', 'before save')
 			waitForPromise(cache.saveAllToDatabase())
+			toc('take', 'after save')
 
 			return ClientAPI.responseSuccess(undefined)
 		})
@@ -929,7 +933,7 @@ export namespace ServerPlayoutAPI {
 					}
 				}
 
-				const pieceInstances = partInstance.getAllPieceInstances()
+				const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance)
 				const orderedPieces: Array<PieceResolved> = orderPieces(pieceInstances.map(p => p.piece), partInstance.part._id, partInstance.part.getLastStartedPlayback())
 
 				let findLast: boolean = !!undo

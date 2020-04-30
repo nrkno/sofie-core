@@ -286,7 +286,7 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 	const newItemExclusivityGroup = exclusiveGroup ? exclusiveGroup.exclusiveGroup : undefined
 	const layersInExclusivityGroup = newItemExclusivityGroup ? _.map(_.filter(showStyleBase.sourceLayers, sl => sl.exclusiveGroup === newItemExclusivityGroup), i => i._id) : [newPieceInstance.piece.sourceLayerId]
 
-	const pieceInstances = getAllPieceInstancesFromCache(cache, rundown, partInstance).filter(i =>
+	const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance).filter(i =>
 		i._id !== newPieceInstance._id && i.piece.infiniteMode &&
 		(i.piece.sourceLayerId === newPieceInstance.piece.sourceLayerId || layersInExclusivityGroup.indexOf(i.piece.sourceLayerId) !== -1)
 	)
@@ -332,7 +332,7 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 	// Also update the nextPartInstance
 	const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
 	if (nextPartInstance && affectedPartIds.indexOf(nextPartInstance.part._id) !== -1) {
-		const toRemove = getAllPieceInstancesFromCache(cache, rundown, nextPartInstance)
+		const toRemove = getAllPieceInstancesFromCache(cache, nextPartInstance)
 			.filter(p => p.piece.infiniteMode && p.piece.infiniteId && p.piece.infiniteId !== p.piece._id && p.piece.sourceLayerId === sourceLayer)
 
 		cache.PieceInstances.remove({ _id: { $in: toRemove.map(p => p._id) } })

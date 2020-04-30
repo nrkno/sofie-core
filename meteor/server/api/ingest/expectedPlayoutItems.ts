@@ -10,7 +10,7 @@ import { logger } from '../../logging'
 import { Parts, PartId } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { getAllPiecesFromCache } from '../playout/lib'
+import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId
@@ -66,11 +66,12 @@ export const updateExpectedPlayoutItemsOnRundown: (cache: CacheForRundownPlaylis
 		_.each(getAllPiecesFromCache(cache, part), piece => allPiecesInRundown.push(piece))
 	})
 
+	const adlibPieces: AdLibPiece[] = []
+	_.each(cache.Parts.findFetch({ rundownId: rundown._id }), part => {
+		_.each(getAllAdLibPiecesFromCache(cache, part), adlibPiece => adlibPieces.push(adlibPiece))
+	})
+
 	cache.defer(() => {
-		const adlibPieces: AdLibPiece[] = []
-		_.each(rundown.getParts(), part => {
-			_.each(part.getAllAdLibPieces(), adlibPiece => adlibPieces.push(adlibPiece))
-		})
 
 		const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
 			...allPiecesInRundown,

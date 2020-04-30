@@ -70,10 +70,10 @@ import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { RundownPlaylists, DBRundownPlaylist, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Mongo } from 'meteor/mongo'
-import { isTooCloseToAutonext, getSelectedPartInstancesFromCache, getRundownPlaylistFromCache, getRundownSegmentsAndPartsFromCache, removeRundownFromCache } from '../playout/lib'
+import { isTooCloseToAutonext, getSelectedPartInstancesFromCache, getRundownPlaylistFromCache, getRundownsSegmentsAndPartsFromCache, removeRundownFromCache } from '../playout/lib'
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstances, wrapPieceToInstance, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, initCacheForRundownPlaylist, initAdLibPiecesInCache, initRundownBaselineAdLibPiecesInCache } from '../../DatabaseCaches'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
@@ -396,7 +396,7 @@ function updateRundownFromIngestData (
 
 	// TODO - store notes from rundownNotesContext
 
-	const segmentsAndParts = getRundownSegmentsAndPartsFromCache(cache, dbRundown)
+	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache, [dbRundown])
 	const existingRundownParts = _.filter(segmentsAndParts.parts, part => part.dynamicallyInserted !== true)
 	const existingSegments = segmentsAndParts.segments
 
@@ -436,10 +436,7 @@ function updateRundownFromIngestData (
 		rundownId: rundownId,
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted pieces (such as adLib pieces)
 	}, segmentPieces)
-	waitForPromise(initAdLibPiecesInCache(cache, {
-		rundownId: rundownId
-	}))
-	const prepareSaveAdLibPieces = prepareSaveIntoDb<AdLibPiece, AdLibPiece>(AdLibPieces, {
+	const prepareSaveAdLibPieces = prepareSaveIntoCache<AdLibPiece, AdLibPiece>(cache.AdLibPieces, {
 		rundownId: rundownId,
 	}, adlibPieces)
 
@@ -450,10 +447,6 @@ function updateRundownFromIngestData (
 		return false
 	}
 
-	waitForPromise(initRundownBaselineAdLibPiecesInCache(cache, {
-		rundownId: dbRundown._id,
-	}))
-
 	const allChanges = sumChanges(
 		rundownChanges,
 		playlistChanges,
@@ -462,7 +455,7 @@ function updateRundownFromIngestData (
 			rundownId: dbRundown._id,
 		}, [baselineObj]),
 		// Save the global adlibs
-		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(cache.RundownBaselineAdLibPieces!, {
+		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(cache.RundownBaselineAdLibPieces, {
 			rundownId: dbRundown._id
 		}, adlibItems),
 
@@ -481,7 +474,7 @@ function updateRundownFromIngestData (
 			}
 		}),
 
-		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces!, {
+		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
 			afterInsert (adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
@@ -757,11 +750,7 @@ function updateSegmentFromIngestData (
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted pieces (such as adLib pieces)
 	}, segmentPieces)
 
-	waitForPromise(initAdLibPiecesInCache(cache, {
-		rundownId: rundown._id,
-		partId: { $in: parts.map(p => p._id) },
-	}))
-	const prepareSaveAdLibPieces = prepareSaveIntoCache<AdLibPiece, AdLibPiece>(cache.AdLibPieces!, {
+	const prepareSaveAdLibPieces = prepareSaveIntoCache<AdLibPiece, AdLibPiece>(cache.AdLibPieces, {
 		rundownId: rundown._id,
 		partId: { $in: parts.map(p => p._id) },
 	}, adlibPieces)

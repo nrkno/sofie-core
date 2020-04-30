@@ -43,7 +43,7 @@ import { PartInstances } from '../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist, initCacheForRundownPlaylistFromRundown } from '../DatabaseCaches'
 import { saveIntoCache } from '../DatabaseCache'
-import { removeRundownFromCache, getRundownSegmentsAndPartsFromCache, removeRundownPlaylistFromCache } from './playout/lib'
+import { removeRundownFromCache, removeRundownPlaylistFromCache, getRundownsSegmentsAndPartsFromCache } from './playout/lib'
 
 export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
@@ -311,7 +311,7 @@ export function afterRemovePieces (cache: CacheForRundownPlaylist, rundownId: Ru
 export function updatePartRanks (cache: CacheForRundownPlaylist, rundown: Rundown): Array<Part> {
 	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point, or do we not care about their rank?
 
-	const { segments, parts: orgParts } = getRundownSegmentsAndPartsFromCache(cache, rundown)
+	const { segments, parts: orgParts } = getRundownsSegmentsAndPartsFromCache(cache, [rundown])
 
 	logger.debug(`updatePartRanks (${orgParts.length} parts, ${segments.length} segments)`)
 
@@ -453,7 +453,7 @@ export namespace ServerRundownAPI {
 			}
 		}
 
-		waitForPromise(cache.saveAllToDatabase())
+		removeRundownFromCache(cache, rundown)
 	}
 	/** Resync all rundowns in a rundownPlaylist */
 	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {

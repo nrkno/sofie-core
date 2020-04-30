@@ -46,7 +46,9 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			this._initialize()
 		}
 	}
-	extendWithData (cacheCollection: DbCacheCollection<any, any>) {
+	extendWithData (cacheCollection: DbCacheCollection<Class, DBInterface>) {
+		this._initialized = cacheCollection._initialized
+		this._initializer = cacheCollection._initializer
 		_.each(cacheCollection.documents, (doc, key) => {
 			if (!this.documents[key]) this.documents[key] = doc
 		})
@@ -55,10 +57,11 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 	private _initialize () {
 		if (!this._initialized) {
 			if (this._initializer !== undefined) {
+				const t = Date.now()
 				if (typeof this._initializer === 'function') {
 					waitForPromise(this._initializer())
 				} else {
-					waitForPromise(this.fillWithDataFromDatabase(this._initializer))
+					const count = waitForPromise(this.fillWithDataFromDatabase(this._initializer))
 				}
 			}
 			this._initialized = true
@@ -134,7 +137,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		_.each(this.findFetch(selector), (doc) => {
 			const _id = unprotectString(doc._id)
 
-			const newDoc: DBInterface = (
+			let newDoc: DBInterface = (
 				_.isFunction(modifier) ?
 				modifier(clone(doc)) :
 				mongoModify(selectorInModify, clone(doc), modifier)
@@ -144,16 +147,11 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			}
 
 			if (!_.isEqual(doc, newDoc)) {
+				newDoc = this._transform(newDoc)
+
 				_.each(_.uniq([..._.keys(newDoc), ..._.keys(doc)]), key => {
 					doc[key] = newDoc[key]
 				})
-				if (!this.documents[_id]) {
-					console.log('aaaaa')
-					console.log(doc)
-					console.log(_id)
-					// console.log(_.keys(this.documents))
-					console.log(this.findFetch(selector))
-				}
 				this.documents[_id].updated = true
 			}
 			count++
@@ -186,7 +184,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		}
 	}
 
-	async fillWithDataFromDatabase (selector: MongoSelector<DBInterface>) {
+	async fillWithDataFromDatabase (selector: MongoSelector<DBInterface>): Promise<number> {
 		// @ts-ignore temporary hack
 		this._collection._tmpDenyAccess = false
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
@@ -194,6 +192,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		// @ts-ignore temporary hack
 		this._collection._tmpDenyAccess = true // disallow reads & writes
 		this._innerfillWithDataFromArray(docs)
+		return docs.length
 	}
 	fillWithDataFromArray (documents: DBInterface[]) {
 		return this._innerfillWithDataFromArray(documents.map((doc) => this._transform(doc)))
