@@ -79,7 +79,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	label: string[] | undefined
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
-	dvePreviewsAsThumbnails: boolean
+	showThumbnailsInList: boolean
 	currentSegment: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces

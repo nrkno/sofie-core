@@ -130,7 +130,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					tags: undefined,
 					rank: 0,
 					rundownBaseline: false,
-					dvePreviewsAsThumbnails: false,
+					showThumbnailsInList: false,
 					default: false
 				})
 			}
@@ -350,10 +350,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						isList &&
 						<div className='mod mvs mhs'>
 							<label className='field'>
-								{t('Show DVE layouts as thumbnails')}
+								{t('Show thumbnails next to list items')}
 								<EditAttribute
 									modifiedClassName='bghl'
-									attribute={`filters.${index}.dvePreviewsAsThumbnails`}
+									attribute={`filters.${index}.showThumbnailsInList`}
 									obj={item}
 									type='checkbox'
 									collection={RundownLayouts}

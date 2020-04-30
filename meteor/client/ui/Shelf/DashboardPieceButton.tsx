@@ -45,7 +45,7 @@ export interface IDashboardButtonProps {
 	displayStyle?: PieceDisplayStyle
 	isSelected?: boolean
 	queueAllAdlibs?: boolean
-	dvePreviewsAsThumbnails?: boolean
+	showThumbnailsInList?: boolean
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -121,13 +121,13 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		return undefined
 	}
 
-	renderVTLiveSpeak () {
+	renderVTLiveSpeak (renderThumbnail?: boolean) {
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
 			const adLib = this.props.adLibListItem as AdLibPieceUi
 			const vtContent = adLib.content as VTContent | undefined
 			return <React.Fragment>
-				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
+				{previewUrl && renderThumbnail && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
 				{vtContent &&
 					<span className='dashboard-panel__panel__button__sub-label'>
 						{RundownUtils.formatDiffToTimecode(vtContent.sourceDuration || 0, false, undefined, undefined, undefined, true)}
@@ -151,6 +151,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 
 	render () {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
+		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
 		const hasMediaInfo = this.props.layer.type === SourceLayerType.VT && this.props.metadata && this.props.metadata.mediainfo
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
@@ -180,9 +181,10 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 					!this.props.layer ?
 						null :
 					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
-						this.renderVTLiveSpeak() :
+						// VT should have thumbnails in "Button" layout.
+						this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList)) :
 					(this.props.layer.type === SourceLayerType.SPLITS) ?
-						this.renderSplits(isList && this.props.dvePreviewsAsThumbnails) :
+						this.renderSplits(isList && this.props.showThumbnailsInList) :
 						null
 				}
 				<span className='dashboard-panel__panel__button__label'>{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}</span>

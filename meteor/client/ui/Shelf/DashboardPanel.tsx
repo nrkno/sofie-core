@@ -500,7 +500,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
 												displayStyle={filter.displayStyle}
-												dvePreviewsAsThumbnails={filter.dvePreviewsAsThumbnails}
+												showThumbnailsInList={filter.showThumbnailsInList}
 												isSelected={this.state.selectedAdLib && adLibPiece._id === this.state.selectedAdLib._id}
 											>
 												{adLibPiece.name}
