@@ -70,6 +70,15 @@
 				}
 			}
 		}
+
+		.table-values-list {
+			list-style-type: none;
+			margin: 0px;
+			
+			li {
+				margin: 0px;
+			}
+		}
 	}
 
 	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table,
@@ -97,6 +106,8 @@
 		.expando-details > td {
 			max-width: 0;
 		}
+
+
 	}
 
 	.settings-studio-sticky-scroller {
@@ -105,9 +116,9 @@
 		margin-bottom: 8px;
 
 		> table {
+			width: auto;
 
 			> tbody > tr > td {
-				text-align: center;
 				padding-right: 3px;
 			}
 	

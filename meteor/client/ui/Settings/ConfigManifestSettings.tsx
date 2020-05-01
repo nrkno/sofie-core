@@ -5,14 +5,15 @@ import * as _ from 'underscore'
 const Tooltip = require('rc-tooltip')
 import {
 	Studio,
-	Studios
+	Studios,
+	MappingsExt
 } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue, ConfigManifestEntrySourceLayers, ConfigManifestEntryLayerMappings, SourceLayerType, ConfigManifestEntrySelectFromOptions } from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -24,6 +25,32 @@ import { Random } from 'meteor/random'
 import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload, faSort, faSortUp, faSortDown } from '@fortawesome/fontawesome-free-solid'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+
+function filterSourceLayers (select: ConfigManifestEntrySourceLayers<true | false>, layers: Array<{name: string, value: string, type: SourceLayerType}>) {
+	if (select.filters && select.filters.sourceLayerTypes) {
+		const sourceLayerTypes = select.filters.sourceLayerTypes
+		return _.filter(layers, layer => {
+			return sourceLayerTypes.includes(layer.type)
+		})
+	} else {
+		return layers
+	}
+}
+
+function filterLayerMappings (select: ConfigManifestEntryLayerMappings<true | false>, mappings: {[key: string]: MappingsExt}) {
+	if (select.filters && select.filters.deviceTypes) {
+		const deviceTypes = select.filters.deviceTypes
+		return _.mapObject(mappings, studioMappings => {
+			return Object.keys(_.pick(studioMappings, mapping => {
+				return deviceTypes.includes(mapping.device)
+			}))
+		})
+	} else {
+		return _.mapObject(mappings, studioMappings => {
+			return Object.keys(studioMappings)
+		})
+	}
+}
 
 function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2, TObj>, object: TObj, item: BasicConfigManifestEntry, attribute: string) {
 	switch (item.type) {
@@ -61,6 +88,36 @@ function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2,
 				options={item2.options || []}
 				collection={collection}
 				className='input text-input input-l' />
+		case ConfigManifestEntryType.SELECT:
+			const selectFromOptions = item as ConfigManifestEntrySelectFromOptions<true | false>
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type={selectFromOptions.multiple ? 'multiselect' : 'dropdown'}
+				options={ selectFromOptions.options }
+				collection={collection}
+				className='input text-input dropdown input-l' />
+		case ConfigManifestEntryType.SOURCE_LAYERS:
+			const selectSourceLayer = item as ConfigManifestEntrySourceLayers<true | false>
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
+				options={filterSourceLayers(selectSourceLayer, object['sourceLayersFlat'])}
+				collection={collection}
+				className='input text-input dropdown input-l' />
+		case ConfigManifestEntryType.LAYER_MAPPINGS:
+			const selectLayerMappings = item as ConfigManifestEntryLayerMappings <true | false>
+			return <EditAttribute
+				modifiedClassName='bghl'
+				attribute={attribute}
+				obj={object}
+				type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
+				options={filterLayerMappings(selectLayerMappings, object['layerMappingsFlat'])}
+				collection={collection}
+				className='input text-input dropdown input-l' />
 		default:
 			return null
 	}
@@ -449,7 +506,17 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 			case ConfigManifestEntryType.BOOLEAN:
 				return value ? t('true') : t('false')
 			case ConfigManifestEntryType.TABLE:
-				return t('{{count}} rows', {count: ((rawValue as any[] || []).length)})
+				return t('{{count}} rows', { count: ((rawValue as any[] || []).length) })
+			case ConfigManifestEntryType.SELECT:
+			case ConfigManifestEntryType.LAYER_MAPPINGS:
+			case ConfigManifestEntryType.SOURCE_LAYERS:
+				return _.isArray(value) ?
+				<React.Fragment>
+					<ul className='table-values-list'>
+						{_.map(value as string[] || [], val => <li key={val}>{val}</li>)}
+					</ul>
+				</React.Fragment> :
+				value.toString()
 			default:
 				return value.toString()
 		}
@@ -458,16 +525,26 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
 		const baseAttribute = `config.${valIndex}.value`
 		const { t, collection, object } = this.props
-		if (item.type === ConfigManifestEntryType.TABLE) {
-			const item2 = item as ConfigManifestEntryTable
-			return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
-		} else {
-			return (
-				<label className='field'>
-					{t('Value')}
-					{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
-				</label>
-			)
+		switch (item.type) {
+			case ConfigManifestEntryType.TABLE:
+				const item2 = item as ConfigManifestEntryTable
+				return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+			case ConfigManifestEntryType.SELECT:
+			case ConfigManifestEntryType.LAYER_MAPPINGS:
+			case ConfigManifestEntryType.SOURCE_LAYERS:
+				return (
+					<div className='field'>
+						{t('Value')}
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+					</div>
+				)
+			default:
+				return (
+					<label className='field'>
+						{t('Value')}
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+					</label>
+				)
 		}
 	}
 
