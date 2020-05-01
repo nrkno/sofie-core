@@ -495,7 +495,10 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 				</div>
 				{
 					getAllowDeveloper() ?
-					<ManualPlayout></ManualPlayout> : null
+						<>
+							<ManualPlayout></ManualPlayout>
+						</> :
+						null
 				}
 			</div>
 		</React.Fragment>

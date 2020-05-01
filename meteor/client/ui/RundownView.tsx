@@ -64,6 +64,7 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry';
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -105,6 +106,10 @@ class KeyboardFocusMarker extends React.Component<IKeyboardFocusMarkerProps, IKe
 			this.setState({
 				inFocus: focusNow
 			})
+
+			if (focusNow === false) {
+				window.dispatchEvent(new Event('blur'))
+			}
 		}
 	}
 
@@ -332,6 +337,8 @@ class extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 interface HotkeyDefinition {
 	key: string
 	label: string
+	up?: (e: any) => void
+	down?: (e: any) => void
 }
 
 interface IRundownHeaderProps {
@@ -461,8 +468,6 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 
 		let preventDefault = (e: Event) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
 			const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
@@ -1276,8 +1281,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		let preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		_.each(this.bindKeys, (k) => {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
@@ -1363,23 +1366,28 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		const { t } = this.props
 		let preventDefault = (e) => {
 			e.preventDefault()
-			e.stopImmediatePropagation()
-			e.stopPropagation()
 		}
 		const noOp = (e) => {
 			preventDefault(e)
 		}
 
+		const HOTKEY_GROUP = 'RuntimeArguments'
+
 		this.usedArgumentKeys.forEach((k) => {
 			if (k.up) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, HOTKEY_GROUP, 'keyup')
+				mousetrapHelper.unbind(k.key, HOTKEY_GROUP, 'keydown')
 			}
 			if (k.down) {
-				mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
+				mousetrapHelper.unbind(k.key, HOTKEY_GROUP, 'keydown')
 			}
 		})
+
 		this.usedArgumentKeys = []
+
+		RegisteredHotkeys.remove({
+			tag: HOTKEY_GROUP
+		})
 
 		if (this.props.showStyleBase) {
 			_.each(this.props.showStyleBase.runtimeArguments, (i) => {
@@ -1392,13 +1400,24 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					}
 				}
 				_.each(combos, (combo: string) => {
-					mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-					mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
+					mousetrapHelper.bind(combo, handler, 'keyup', HOTKEY_GROUP)
+					mousetrapHelper.bind(combo, noOp, 'keydown', HOTKEY_GROUP)
 					this.usedArgumentKeys.push({
 						up: handler,
 						key: combo,
 						label: i.label || ''
 					})
+
+					registerHotkey(
+						combo,
+						i.label || '',
+						HotkeyAssignmentType.RUNTIME_ARGUMENT,
+						undefined,
+						false,
+						handler,
+						undefined,
+						HOTKEY_GROUP
+					)
 				})
 			})
 		}
@@ -1715,6 +1734,27 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		this.state.usedHotkeys = this.state.usedHotkeys.concat(hotkeys) // we concat directly to the state object member, because we need to
 		this.setState({
 			usedHotkeys: this.state.usedHotkeys
+		})
+
+		const HOTKEY_TAG = 'RundownView'
+
+		RegisteredHotkeys.remove({
+			tag: HOTKEY_TAG
+		})
+
+		function noop() { }
+
+		this.state.usedHotkeys.forEach((hotkey) => {
+			registerHotkey(
+				hotkey.key,
+				hotkey.label,
+				HotkeyAssignmentType.SYSTEM,
+				undefined,
+				false,
+				hotkey.up || hotkey.down || noop,
+				undefined,
+				HOTKEY_TAG
+			)
 		})
 	}
 
