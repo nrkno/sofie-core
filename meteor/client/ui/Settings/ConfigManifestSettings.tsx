@@ -315,7 +315,12 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 					<table className='table'>
 						<thead>
 							<tr>
-								{ _.map(configEntry.columns, (col, i) => <th key={col.id}>
+								{ _.map(configEntry.columns.sort((a, b) => {
+									if (a.rank > b.rank) return 1
+									if (a.rank < b.rank) return -1
+
+									return 0
+								}), (col, i) => <th key={col.id}>
 									<span title={col.description}>{ col.name} </span>
 									{(col.type === ConfigManifestEntryType.STRING || col.type === ConfigManifestEntryType.NUMBER) &&
 										<button className={ClassNames('action-btn', {
