@@ -1,0 +1,59 @@
+.multiview-panel {
+	position: absolute;
+	text-align: center;
+	user-select: none;
+	margin: 0.625rem;
+
+	.multiview-panel__image-container {
+		max-height: 100%;
+		position: relative;
+		padding-top: 56.25%;
+		border: 3px solid #252627;
+
+		> .multiview-panel__button {
+			position: absolute;
+			width: auto;
+			bottom: 0;
+			top: 0;
+			left: 0;
+			right: 0;
+			z-index: 3;
+			background: transparent;
+
+			.multiview-panel__label {
+				position: absolute;
+				width: auto;
+				bottom: 7%;
+				max-width: calc(100% - 8px);
+				z-index: 2;
+				background: #202020;
+				transform: translateX(-50%);
+				left: 50%;
+				padding: 5px 10px;
+				font-size: 1em;
+				font-weight: 400;
+
+				&.multiview-panel__label--large {
+					width: 100%;
+					text-align: center;
+					padding: 6px 10px;
+					top: 100%;
+					font-size: 1.2em;
+					text-align: center;
+					text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+					padding: 4px 10px;
+					background: transparent;
+				}
+			}
+	
+		}
+
+		&.on-air {
+			border: 3px solid var(--general-live-color);
+		}
+
+		&.next {
+			border: 3px solid var(--general-next-color);
+		}
+	}
+}

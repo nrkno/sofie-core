@@ -186,6 +186,7 @@ export function setNextPart (
 	currentPart: DBPart | null,
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined,
+	skipRunResetPart?: boolean
 	) {
 	let ps: Array<Promise<any>> = []
 	const movingToNewSegment = (
@@ -203,7 +204,9 @@ export function setNextPart (
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
 
-		ps.push(resetPart(nextPart, rundown))
+		if (!skipRunResetPart) {
+			ps.push(resetPart(nextPart, rundown))
+		}
 
 		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
 			$set: {

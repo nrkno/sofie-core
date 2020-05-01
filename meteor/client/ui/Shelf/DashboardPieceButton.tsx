@@ -16,6 +16,8 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
+import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 
 export interface IAdLibListItem {
 	_id: string,
@@ -26,19 +28,22 @@ export interface IAdLibListItem {
 	invalid?: boolean
 }
 
-interface IDashboardButtonProps {
+export interface IDashboardButtonProps {
 	item: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, alwaysQueue: boolean,) => void
 	rundown: Rundown
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
+	isNext?: boolean
 	widthScale?: number
 	heightScale?: number
+	displayStyle?: PieceDisplayStyle
+	isSelected?: boolean
 }
-const DEFAULT_BUTTON_WIDTH = 6.40625
-const DEFAULT_BUTTON_HEIGHT = 5.625
+export const DEFAULT_BUTTON_WIDTH = 6.40625
+export const DEFAULT_BUTTON_HEIGHT = 5.625
 
 interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
@@ -130,17 +135,22 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		}
 	}
 
-	renderSplits () {
+	renderSplits (renderThumbnail: boolean = false) {
 		const splitAdLib = this.props.item as AdLibPieceUi
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
-			return (
-				<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
-			)
+			return <React.Fragment>
+				{renderThumbnail ?
+					<DashboardPieceButtonSplitPreview piece={this.props.item as any as AdLibPieceUi} /> :
+					<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
+				}
+			</React.Fragment>
 		}
 	}
 
 	render () {
+		const isOfftubeList = this.props.displayStyle === PieceDisplayStyle.OFFTUBE_LIST
+		const hasMediaInfo = this.props.layer.type === SourceLayerType.VT && this.props.metadata && this.props.metadata.mediainfo
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
 				'invalid': this.props.item.invalid,
@@ -149,27 +159,29 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 				'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
-				'live': this.props.isOnAir
+				'live': this.props.isOnAir,
+				'list': isOfftubeList,
+				'selected': this.props.isSelected || this.props.isNext
 			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
-					width: this.props.widthScale ?
+					width: isOfftubeList ? 'calc(100% - 8px)' : (this.props.widthScale ?
 						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
-						undefined,
-					height: this.props.heightScale ?
+						undefined),
+					height: !isOfftubeList && this.props.heightScale ?
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
-				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
+				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e, isOfftubeList)}
 				data-obj-id={this.props.item._id}
 				>
 				{
-					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
+					([SourceLayerType.VT, SourceLayerType.LIVE_SPEAK, SourceLayerType.TRANSITION].includes(this.props.layer.type)) ?
 						this.renderVTLiveSpeak() :
 					(this.props.layer.type === SourceLayerType.SPLITS) ?
-						this.renderSplits() :
+						this.renderSplits(isOfftubeList) :
 						null
 				}
-				<span className='dashboard-panel__panel__button__label'>{this.props.item.name}</span>
+				<span className='dashboard-panel__panel__button__label'>{isOfftubeList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.item.name}</span>
 			</div>
 		)
 	}

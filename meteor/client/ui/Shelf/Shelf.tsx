@@ -17,7 +17,7 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, RundownLayoutFilter, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -26,6 +26,9 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
+import { MultiViewPanel } from './MultiViewPanel'
+import { DashboardActionButton } from './DashboardActionButton'
+import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel';
 import { Settings } from '../../../lib/Settings';
 
@@ -63,6 +66,7 @@ interface IState {
 	overrideHeight: number | undefined
 	moving: boolean
 	selectedTab: string | undefined
+	shouldQueue: boolean
 }
 
 const CLOSE_MARGIN = 45
@@ -100,7 +104,8 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined)
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined),
+			shouldQueue: false
 		}
 
 		const { t } = props
@@ -414,6 +419,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		</React.Fragment>
 	}
 
+	onChangeQueueAdLib = (shouldQueue: boolean, e: any) => {
+		this.setState({
+			shouldQueue
+		})
+	}
+
 	renderDashboardLayout (rundownLayout: DashboardLayout) {
 		const { t } = this.props
 		return <div className='dashboard'>
@@ -441,6 +452,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								rundown={this.props.rundown}
 								showStyleBase={this.props.showStyleBase}
 								studioMode={this.props.studioMode}
+								shouldQueue={this.state.shouldQueue}
 								/> :
 					RundownLayoutsAPI.isExternalFrame(panel) ?
 						<ExternalFramePanel
@@ -450,8 +462,24 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							visible={true}
 							rundown={this.props.rundown}
 							/> :
+					RundownLayoutsAPI.isMultiView(panel) ?
+						<MultiViewPanel
+							key={panel._id}
+							includeGlobalAdLibs={true}
+							panel={panel}
+							filter={RundownLayoutsAPI.multiViewToFilter(panel)}
+							layout={rundownLayout}
+							adlibRank={panel.adlibRank}
+							visible={true}
+							{...this.props}
+							/> :
 						undefined
 			)}
+			{rundownLayout.actionButtons &&
+				<DashboardActionButtonGroup
+					rundown={this.props.rundown}
+					buttons={rundownLayout.actionButtons}
+					studioMode={this.props.studioMode} />}
 		</div>
 	}
 

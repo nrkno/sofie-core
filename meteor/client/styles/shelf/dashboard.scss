@@ -27,6 +27,42 @@ $dashboard-button-height: 5.625em;
 	margin: 0.625rem;
 	user-select: none;
 
+	&.dashboard-panel--actions {
+		background-color: none !important;
+		background: none !important;
+		border-color: transparent;
+		box-shadow: none;
+		pointer-events: none;
+		margin-top: 0.5555555555555555555em;
+		z-index: 10;
+
+		> .dashboard-panel__panel {
+			max-height: none;
+			overflow: visible;
+			background-color: none !important;
+			background: none !important;
+			border: none !important;
+
+			> .dashboard-panel__panel__button {
+				pointer-events: visible;
+			}
+
+			> .dashboard-panel__panel__button--standalone {
+				&.type--take {
+					background-color: $general-live-color;
+				}
+
+				&.active {
+					background-color: #761912;
+				}
+
+				&.active.rehearsal {
+					background-color: #CBCCCD;
+				}
+			}
+		}
+	}
+
 	.dashboard-panel__header {
 		margin: 0 0 0.625rem;
 		padding: 0;
@@ -100,7 +136,7 @@ $dashboard-button-height: 5.625em;
 	.dashboard-panel__panel {
 		font-size: 0.8em;
 		margin: -4px;
-		overflow: overlay;
+		overflow: auto;
 		max-height: calc(100% - 12px);
 		
 		&.dashboard-panel__panel--horizontal {
@@ -285,6 +321,86 @@ $dashboard-button-height: 5.625em;
 			left: 0;
 			height: 100%;
 			width: 100%;
+		}
+
+		&.list {
+			height: 2.4em;
+			align-items: center;
+			font-size: 16px;
+			border: 2px solid transparent;
+
+			> .dashboard-panel__panel__button__sub-label {
+				font-size: 22px;
+				top: auto;
+			}
+
+			&.vt, &.live-speak, &.transition, &.splits {
+				> .dashboard-panel__panel__button__label {
+					left: 75px;
+				}
+			} 
+
+			> .dashboard-panel__panel__button__thumbnail {
+				height: 100%;
+				right: auto;
+			}
+
+			> .video-preview {
+				position: relative;
+				overflow: hidden;
+				background: #000;
+				height: 100%;
+				width: 67px;
+	
+				> .background {
+					position: absolute;
+					top: 0;
+					bottom: 0;
+					left: 0;
+					right: 0;
+				}
+	
+				> .box {
+					position: absolute;
+					transform: translate(-50%, -50%);
+				}
+	
+				& > * {
+					@include item-type-colors();
+				}
+			}
+
+			&.selected {
+				border-color: var(--general-next-color);
+			}
+		}
+	}
+
+	&.dashboard-panel--take {
+		display: flex;
+		flex-direction: column;
+
+		> .dashboard-panel__panel {
+			flex: 1;
+			
+		}
+
+		> .dashboard-panel__buttons {
+			display: flex;
+			margin-top: 0.625rem;
+			
+			> .dashboard-panel__panel__button {
+				flex: 1;
+				background: var(--general-live-color);
+				height: 3em;
+				align-items: center;
+
+				> .dashboard-panel__panel__button__label {
+					width: 100%;
+					text-align: center;
+					font-size: 1.4em;
+				}
+			}
 		}
 	}
 }

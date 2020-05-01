@@ -26,12 +26,14 @@ export enum RundownLayoutType {
  */
 export enum PieceDisplayStyle {
 	LIST = 'list',
-	BUTTONS = 'buttons'
+	BUTTONS = 'buttons',
+	OFFTUBE_LIST = 'offtube_list'
 }
 
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
-	EXTERNAL_FRAME = 'external_frame'
+	EXTERNAL_FRAME = 'external_frame',
+	MULTIVIEW = 'multiview'
 }
 
 export interface RundownLayoutElementBase {
@@ -45,6 +47,20 @@ export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.EXTERNAL_FRAME
 	url: string
 	scale: number
+}
+
+export enum RundownLayoutMultiViewRole {
+	QUEUE = 'queue',
+	TAKE = 'take',
+	PROGRAM = 'program'
+}
+
+export interface RundownLayoutMultiView extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.MULTIVIEW
+	windowNumber: number
+	tags: string[] | undefined
+	role: RundownLayoutMultiViewRole
+	adlibRank: number
 }
 
 /**
@@ -82,6 +98,13 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 	height: number
 }
 
+export interface DashboardLayoutMultiView extends RundownLayoutMultiView {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	x: number
 	y: number
@@ -97,6 +120,7 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	overflowHorizontally?: boolean
 	showAsTimeline?: boolean
 	hide?: boolean
+	displayTakeButtons?: boolean
 }
 
 export interface RundownLayoutBase {
@@ -125,23 +149,26 @@ export enum ActionButtonType {
 	ACTIVATE_REHEARSAL = 'activate_rehearsal',
 	DEACTIVATE = 'deactivate',
 	RESET_RUNDOWN = 'reset_rundown',
-	QUEUE_ADLIB = 'queue_adlib' // The idea for it is that you would be able to press and hold this button
+	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 								// and then click on whatever adlib you would like
+	KLAR_ON_AIR = 'klar_on_air'
 }
 
 export interface DashboardLayoutActionButton {
+	_id: string
 	type: ActionButtonType
 	x: number
 	y: number
 	width: number
 	height: number
+	label: string
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
 	// TODO: Interface to be defined later
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
-	actionButtons: DashboardLayoutActionButton[]
+	actionButtons?: DashboardLayoutActionButton[]
 }
 
 export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>

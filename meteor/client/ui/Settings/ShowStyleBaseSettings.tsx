@@ -188,7 +188,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<RundownLayoutEditor showStyleBase={showStyleBase} />
+						<RundownLayoutEditor showStyleBase={showStyleBase} studios={this.props.compatibleStudios} />
 					</div>
 				</div>
 				<div className='row'>

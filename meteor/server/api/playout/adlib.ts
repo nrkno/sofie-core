@@ -20,6 +20,7 @@ import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
 import { ServerPlayoutAPI } from './playout' // TODO - this should not be calling back like this
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow (rundownId: string, partId: string, pieceId: string) {
@@ -192,15 +193,35 @@ export namespace ServerPlayoutAdLibAPI {
 		Pieces.insert(newPiece)
 
 		if (queue) {
-			// keep infinite pieces
-			// TODO - what does this actually do? It looks like a bad attempt to efficiently update infinites, but that it will cause problems
-			Pieces.find({ rundownId: rundown._id, partId: orgPartId }).forEach(piece => {
-				// console.log(piece.name + ' has life span of ' + piece.infiniteMode)
-				if (piece.infiniteMode && piece.infiniteMode >= PieceLifespan.Infinite) {
-					let newPiece = convertAdLibToPiece(piece, part!, true, 0)
-					Pieces.insert(newPiece)
-				}
-			})
+			// Remove pieces that are in the same exclusivity group / source layer, if parts have been merged
+			if (adLibPiece.canCombineQueue && part.canCombineQueue) {
+				const showStyle = ShowStyleBases.findOne({ _id: rundown.showStyleBaseId })
+				if (!showStyle) throw new Meteor.Error(`Could not find showstyle base with Id "${rundown.showStyleBaseId}"`)
+
+				const adlibPieceSourceLayer = showStyle.sourceLayers.find((layer) => layer._id === adLibPiece.sourceLayerId)
+				if (!adlibPieceSourceLayer) throw new Meteor.Error(`Could not find source layer "${adLibPiece.sourceLayerId}" for piece with Id "${adLibPiece._id}"`)
+
+				const pieces = Pieces.find({
+					_id: { $ne: newPiece._id },
+					partId
+				})
+
+				pieces.forEach(piece => {
+					const sourceLayer = showStyle.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
+					if (!sourceLayer) throw new Meteor.Error(`Could not find source layer "${piece.sourceLayerId}" for piece with Id "${piece._id}"`)
+
+					if (
+						adLibPiece.sourceLayerId === piece.sourceLayerId ||
+						(
+							sourceLayer.exclusiveGroup &&
+							adlibPieceSourceLayer.exclusiveGroup &&
+							sourceLayer.exclusiveGroup === adlibPieceSourceLayer.exclusiveGroup
+						)
+					) {
+						Pieces.remove({ _id: piece._id })
+					}
+				})
+			}
 
 			// Copy across adlib-preroll and other properties needed on the part
 			if (newPiece.adlibPreroll !== undefined) {
@@ -211,17 +232,47 @@ export namespace ServerPlayoutAdLibAPI {
 				})
 			}
 
-			ServerPlayoutAPI.setNextPartInner(rundown, partId)
-		} else {
-			updateSourceLayerInfinitesAfterPart(rundown)
-			cropInfinitesOnLayer(rundown, part, newPiece)
-			stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
-			updateTimeline(rundown.studioId)
+			if (newPiece.adlibAutoNext !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						autoNext: newPiece.adlibAutoNext
+					}
+				})
+			}
+
+			if (newPiece.adlibAutoNextOverlap !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						autoNextOverlap: newPiece.adlibAutoNextOverlap
+					}
+				})
+			}
+
+			if (newPiece.adlibDisableOutTransition !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						disableOutTransition: newPiece.adlibDisableOutTransition
+					}
+				})
+			}
+
+			if (adLibPiece.expectedDuration !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						expectedDuration: adLibPiece.expectedDuration
+					}
+				})
+			}
+
+			ServerPlayoutAPI.setNextPartInner(rundown, partId, undefined, undefined, true)
 		}
+
+		updateSourceLayerInfinitesAfterPart(rundown)
+		cropInfinitesOnLayer(rundown, part, newPiece)
+		stopInfinitesRunningOnLayer(rundown, part, newPiece.sourceLayerId)
+		updateTimeline(rundown.studioId)
 	}
 	function adlibQueueInsertPart (rundown: Rundown, partId: string, adLibPiece: AdLibPiece) {
-		logger.info('adlibQueueInsertPart')
-
 		const part = Parts.findOne(partId)
 		if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
 
@@ -236,26 +287,32 @@ export namespace ServerPlayoutAdLibAPI {
 		}, {
 			sort: { _rank: -1, _id: -1 }
 		})
-		if (alreadyQueuedPart) {
+		if (alreadyQueuedPart && (!adLibPiece.canCombineQueue || !alreadyQueuedPart.canCombineQueue)) {
 			if (rundown.currentPartId !== alreadyQueuedPart._id) {
 				Parts.remove(alreadyQueuedPart._id)
 				afterRemoveParts(rundown, [alreadyQueuedPart], true)
 			}
 		}
 
-		const newPartId = Random.id()
-		Parts.insert({
-			_id: newPartId,
-			_rank: 99999, // something high, so it will be placed last
-			externalId: '',
-			segmentId: part.segmentId,
-			rundownId: rundown._id,
-			title: adLibPiece.name,
-			dynamicallyInserted: true,
-			afterPart: afterPartId,
-			typeVariant: 'adlib',
-			expectedDuration: adLibPiece.expectedDuration
-		})
+		let newPartId = Random.id()
+
+		if (alreadyQueuedPart && adLibPiece.canCombineQueue && alreadyQueuedPart.canCombineQueue) {
+			newPartId = alreadyQueuedPart._id
+		} else {
+			Parts.insert({
+				_id: newPartId,
+				_rank: 99999, // something high, so it will be placed last
+				externalId: '',
+				segmentId: part.segmentId,
+				rundownId: rundown._id,
+				title: adLibPiece.name,
+				dynamicallyInserted: true,
+				afterPart: afterPartId,
+				typeVariant: 'adlib',
+				expectedDuration: adLibPiece.expectedDuration,
+				canCombineQueue: adLibPiece.canCombineQueue
+			})
+		}
 
 		updatePartRanks(rundown._id) // place in order
 
