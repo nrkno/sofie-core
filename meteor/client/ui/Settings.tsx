@@ -33,6 +33,7 @@ import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { MeteorCall } from '../../lib/api/methods'
+import { getUser, User } from '../../lib/collections/Users'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -41,6 +42,7 @@ class WelcomeToSettings extends React.Component {
 }
 
 interface ISettingsMenuProps {
+	user: User
 	match?: any
 }
 interface ISettingsMenuState {
@@ -51,9 +53,9 @@ interface ISettingsMenuTrackedProps {
 	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
 }
-const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >(() => {
+const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >((props: ISettingsMenuProps) => {
 	// TODO: add organizationId:
-	meteorSubscribe(PubSub.studios, {})
+	meteorSubscribe(PubSub.studios, {organizationId: props.user.organizationId})
 	meteorSubscribe(PubSub.showStyleBases, {})
 	meteorSubscribe(PubSub.showStyleVariants, {})
 	meteorSubscribe(PubSub.blueprints, {})
@@ -368,11 +370,12 @@ interface ISettingsProps {
 	match?: any
 }
 class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
+	private user = getUser() as User
+	
 	componentWillMount () {
 		// Subscribe to data:
-		// TODO: add organizationId:
 		this.subscribe(PubSub.peripheralDevices, {})
-		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.studios, {organizationId: this.user.organizationId})
 		this.subscribe(PubSub.showStyleBases, {})
 		this.subscribe(PubSub.showStyleVariants, {})
 		this.subscribe(PubSub.blueprints, {})
@@ -389,7 +392,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 					<div className='row'>
 						<div className='col c12 rm-c3 settings-menu'>
 							<ErrorBoundary>
-								<SettingsMenu match={this.props.match} />
+								<SettingsMenu match={this.props.match} user={this.user}/>
 							</ErrorBoundary>
 						</div>
 						<div className='col c12 rm-c9 settings-dialog'>

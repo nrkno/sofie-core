@@ -13,12 +13,11 @@ import { logNotAllowed } from '../../server/security/lib/lib'
 
 export function removeUser (context: MethodContext) {
 	triggerWriteAccess()
-	const cred = resolveCredentials(context)
-	if (!cred.user) throw new Meteor.Error(403, `Not logged in`)
-	const access = SystemReadAccess.currentUser(cred.user._id, context)
-	if (!access) return !logNotAllowed('Current user', 'Invalid user id or permissions')
-	Meteor.users.remove(cred.user._id)
-	return false
+	if (!context.userId) throw new Meteor.Error(403, `Not logged in`)
+	const access = SystemReadAccess.currentUser(context.userId, context)
+	if (!access) return logNotAllowed('Current user', 'Invalid user id or permissions')
+	Meteor.users.remove(context.userId)
+	return true
 }
 
 class ServerUserAPI extends MethodContextAPI implements NewUserAPI {

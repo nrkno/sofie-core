@@ -22,7 +22,8 @@ export function insertOrganization (context: MethodContext, name: string) {
 		created: getCurrentTime(),
 		modified: getCurrentTime()
 	}))
-	return id;
+	Meteor.users.update(userId, {$set: {organizationId: id}})
+	return id
 }
 
 export function removeOrganization (context: MethodContext) {

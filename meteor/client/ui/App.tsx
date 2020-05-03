@@ -158,7 +158,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 	}
 
 	render () {
-		console.log(Settings)
 		return (
 			<Router>
 				<div className='container-fluid'>
@@ -178,13 +177,13 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Switch>
 							{Settings.enableUserAccounts ?
 								[
-									<Route exact path='/' component={(props) => <LoginPage updateLoggedInStatus={this.updateLoggedInStatus} {...props}/>} />,
-									<Route exact path='/login' component={() => <Redirect to='/'/>}/>,
-									<Route exact path='/signup' component={SignupPage} />,
-									<Route exact path='/reset' component={RequestResetPage} />,
-									<Route exact path='/reset/:token' component={ResetPage} />,
-									<ProtectedRoute exact path='/account' component={AccountPage} />,
-									<ProtectedRoute exact path='/lobby' component={RundownList} />
+									<Route key='0' exact path='/' component={(props) => <LoginPage updateLoggedInStatus={this.updateLoggedInStatus} {...props}/>} />,
+									<Route key='1' exact path='/login' component={() => <Redirect to='/'/>}/>,
+									<Route key='2' exact path='/signup' component={SignupPage} />,
+									<Route key='3' exact path='/reset' component={RequestResetPage} />,
+									<Route key='4' exact path='/reset/:token' component={ResetPage} />,
+									<ProtectedRoute key='5' exact path='/account' component={AccountPage} />,
+									<ProtectedRoute key='6' exact path='/lobby' component={RundownList} />
 								]:
 								<Route exact path='/' component={RundownList} />
 							}

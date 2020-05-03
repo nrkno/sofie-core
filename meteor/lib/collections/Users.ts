@@ -59,5 +59,6 @@ Meteor.startup(() => {
 
 /** Returns the currently logged in user, or null if not logged in */
 export function getUser (): DBUser | null {
-	return Meteor.user() as any // as any because the Meteor typings are wrong
+	const user = Meteor.user() as any
+	return user ? Users.findOne({_id: user._id}) as DBUser : null
 }

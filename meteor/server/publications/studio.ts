@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { meteorPublish } from './lib'
+import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { Studios, DBStudio } from '../../lib/collections/Studios'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -14,15 +14,15 @@ import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 
-meteorPublish(PubSub.studios, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+meteorPublish(PubSub.studios, function (selector0, token) {
+	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	const modifier: FindOptions<DBStudio> = {
 		fields: {}
 	}
 	if (
 		NoSecurityReadAccess.any() ||
-		(selector._id && StudioReadAccess.studio(selector, { userId: this.userId, token })) ||
-		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, { userId: this.userId, token }))
+		(selector._id && StudioReadAccess.studio(selector, cred)) ||
+		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred))
 	) {
 		return Studios.find(selector, modifier)
 	}

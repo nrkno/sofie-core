@@ -28,6 +28,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
+import { getUser, User } from '../../lib/collections/Users'
 
 const PackageInfo = require('../../package.json')
 
@@ -246,7 +247,7 @@ export const RundownList = translateWithTracker(() => {
 })(
 class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
 	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-
+	private user = getUser() as User
 	constructor (props) {
 		super(props)
 
@@ -279,8 +280,8 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		const { t } = this.props
 
 		// Subscribe to data:
-		this.subscribe(PubSub.rundownPlaylists, {})
-		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.rundownPlaylists, {organizationId: this.user.organizationId})
+		this.subscribe(PubSub.studios, {organizationId: this.user.organizationId})
 
 		this.autorun(() => {
 			const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleBaseId))
