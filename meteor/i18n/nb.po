@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-04-29T07:38:09.372Z\n"
-"PO-Revision-Date: 2020-04-29 10:08+0200\n"
+"POT-Creation-Date: 2020-05-04T10:33:44.457Z\n"
+"PO-Revision-Date: 2020-05-04 12:54+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -64,26 +64,20 @@ msgstr "OK"
 msgid "Cancel"
 msgstr "Avbryt"
 
-#, fuzzy
-#| msgid "Remove this mapping?"
 msgid "Remove in-trimming"
-msgstr "Fjern denne mappingen?"
+msgstr "Nullstill innpunkt"
 
 msgid "In"
 msgstr "Inn"
 
-#, fuzzy
-#| msgid "Remove this mapping?"
 msgid "Remove all trimming"
-msgstr "Fjern denne mappingen?"
+msgstr "Nullstill inn-/utpunkt"
 
 msgid "Duration"
 msgstr "Varighet"
 
-#, fuzzy
-#| msgid "Remove this mapping?"
 msgid "Remove out-trimming"
-msgstr "Fjern denne mappingen?"
+msgstr "Nullstill utpunkt"
 
 msgid "Out"
 msgstr "Ut"
@@ -91,30 +85,20 @@ msgstr "Ut"
 msgid "Sofie Automation Server"
 msgstr "Sofie"
 
-#, fuzzy
-#| msgid "Connecting to the"
 msgid "Connecting to the {{platformName}}"
-msgstr "Kobler til"
+msgstr "Kobler til {{platformName}}"
 
-#, fuzzy
-#| msgid "Cannot connect to the Sofie Automation Server"
 msgid "Cannot connect to the {{platformName}}: {{reason}}"
-msgstr "Kan ikke koble til Sofie-serveren"
+msgstr "Kan ikke koble til {{platformName}}: {{reason}}"
 
-#, fuzzy
-#| msgid "Reconnecting to the"
 msgid "Reconnecting to the {{platformName}}"
-msgstr "Kobler til"
+msgstr "Kobler til {{platformName}}"
 
-#, fuzzy
-#| msgid "Your machine is offline and cannot connect to the"
 msgid "Your machine is offline and cannot connect to the {{platformName}}."
-msgstr "Din maskin er frakoblet og kan ikke koble til"
+msgstr "Din maskin er frakoblet og kan ikke koble til {{platformName}}."
 
-#, fuzzy
-#| msgid "Connected to the"
 msgid "Connected to the {{platformName}}."
-msgstr "Tilkoblet til"
+msgstr "Tilkoblet til {{platformName}}."
 
 msgid "Reconnect now"
 msgstr "Koble til nå"
@@ -181,10 +165,10 @@ msgstr "Synkroniser kjøreplanen med ENPS på nytt?"
 msgid "Re-Sync"
 msgstr "Synkroniser"
 
-#, fuzzy
-#| msgid "Are you sure you want to delete recording \"{{name}}\"?"
 msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
-msgstr "Er du sikker på at du vil slette opptaket \"{{name}}\"?"
+msgstr ""
+"Er du sikker på at du vil synkronisere alle kjøreplanene i listen "
+"\"{{name}}\" på nytt?"
 
 msgid "This rundown is currently active"
 msgstr "Denne kjøreplanen er allerede aktiv"
@@ -673,13 +657,11 @@ msgstr "Spill av herfra"
 msgid "Set segment as <strong>Next</strong>"
 msgstr "Sett denne tittelen som <strong>Neste</strong>"
 
-#, fuzzy
 msgid "Queue segment"
-msgstr "Segmenter i kø"
+msgstr ""
 
-#, fuzzy
 msgid "Clear queued segment"
-msgstr "Tøm segmentkøen"
+msgstr ""
 
 msgid "On Air"
 msgstr "On Air"
@@ -892,22 +874,18 @@ msgstr "Blueprintversjon"
 msgid "Upload Blueprints"
 msgstr "Last opp blueprints"
 
-#, fuzzy
 msgid "Spreadsheet credentials succesfully uploaded."
 msgstr "Opplasting av Spreadsheet Credentials var vellykket."
 
-#, fuzzy
 msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
 msgstr "Opplasting av Spreadsheet Credentials feilet: {{errorMessage}}"
 
-#, fuzzy
 msgid "Application credentials"
-msgstr "Brukernavn/passord"
+msgstr "Brukernavn/passord (Application Credentials)"
 
 msgid "Access token"
 msgstr "Tilgangskode (Access Token)"
 
-#, fuzzy
 msgid ""
 "Click on the link below and accept the permissions request. Paste the "
 "received URL below."
@@ -960,15 +938,11 @@ msgstr "Kø"
 msgid "Hosts"
 msgstr "Verter"
 
-#, fuzzy
-#| msgid "Message Queue"
 msgid "iNews Queues"
-msgstr "Meldingskø"
+msgstr "iNews-kø"
 
-#, fuzzy
-#| msgid "User ID"
 msgid "User"
-msgstr "Bruker-ID"
+msgstr "Brukernavn"
 
 msgid "Password"
 msgstr "Passord"
@@ -988,7 +962,6 @@ msgstr "Tillat lesing"
 msgid "Allow Write"
 msgstr "Tillat skriving/lagring"
 
-#, fuzzy
 msgid "Base Path"
 msgstr "Rotsti"
 
@@ -1004,7 +977,6 @@ msgstr "Brukernavn"
 msgid "Don't Scan Entire Storage"
 msgstr "Ikke scan hele lagringsområdet"
 
-#, fuzzy
 msgid "Base path is a network share"
 msgstr "Rotsti er til en nettverksressurs"
 
@@ -1185,10 +1157,8 @@ msgstr "(Valgfri) REST-port"
 msgid "(Optional) Websocket port"
 msgstr "(Valgfri) Websocket-port"
 
-#, fuzzy
-#| msgid "Show End"
 msgid "Show ID"
-msgstr "Sendeslutt"
+msgstr ""
 
 msgid "Profile"
 msgstr "Profil"
@@ -1197,10 +1167,10 @@ msgid "(Optional) Playlist id"
 msgstr "(Valgfri) Spilleliste-id"
 
 msgid "Preload all elements"
-msgstr "Last alle elementer på forhånd"
+msgstr "Last inn alle elementer på forhånd"
 
 msgid "Automatically load internal elements when added"
-msgstr ""
+msgstr "Last automatisk inn interne elementer når de legges til"
 
 msgid "Clear-All template name"
 msgstr ""
@@ -1232,7 +1202,6 @@ msgstr ""
 msgid "Connect some devices to the playout gateway"
 msgstr "Koble til en eller flere enheter til playout gatewayen"
 
-#, fuzzy
 msgid ""
 "Go to the url below and click on the \"Enable the Drive API\" button. Then "
 "click on \"Download Client configuration\", save the credentials.json file "
@@ -1482,10 +1451,10 @@ msgid "Register Shortcuts for this Panel"
 msgstr "Legg til snarveier for dette panelet"
 
 msgid "Hide Panel from view"
-msgstr ""
+msgstr "Skjul dette panelet ifra visningen"
 
 msgid "Show panel as a timeline"
-msgstr "Vis panel som tidslinje"
+msgstr "Vis panel som en tidslinje"
 
 msgid "Overflow horizontally"
 msgstr ""
@@ -2194,10 +2163,10 @@ msgid ""
 msgstr "Er du sikker på at du vil starte Sofie Core: {{name}} på nytt?"
 
 msgid "Could not generate restart token!"
-msgstr "Kunne ikke generere restart token!"
+msgstr "Kunne ikke generere Restart Token!"
 
 msgid "Could not generate restart core: {{err}}"
-msgstr "Kunne ikke generere restart core: {{err}}"
+msgstr ""
 
 msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr "Sofie Core restartes om {{time}}s..."
@@ -2233,7 +2202,7 @@ msgid "Enable hints by adding this to the URL:"
 msgstr "Aktiver hint ved å legge dette til på url-en:"
 
 msgid "More documentation available at:"
-msgstr "Mer dokumentasjon er tilgjengelig på"
+msgstr "Mer dokumentasjon er tilgjengelig på:"
 
 msgid "Recordings"
 msgstr "Opptak"
