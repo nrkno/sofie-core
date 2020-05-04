@@ -60,6 +60,7 @@ export interface RundownLayoutMultiView extends RundownLayoutElementBase {
 	tags: string[] | undefined
 	role: RundownLayoutMultiViewRole
 	adlibRank: number
+	thumbnailSourceLayerIds: string[] | undefined
 }
 
 /**

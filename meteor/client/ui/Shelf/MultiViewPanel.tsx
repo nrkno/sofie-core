@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 import { RundownLayoutBase, RundownLayoutMultiView, DashboardLayoutMultiView, RundownLayoutMultiViewRole, RundownLayoutElementType, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
@@ -15,8 +16,12 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { getNextPart } from '../../../server/api/playout/lib'
 import { getCurrentTime } from '../../../lib/lib'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan, GraphicsContent, SourceLayerType, VTContent, LiveSpeakContent, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { invalidateAt } from '../../lib/invalidatingTime'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { PubSub } from '../../../lib/api/pubsub'
 
 interface IState {
 }
@@ -37,14 +42,30 @@ interface IMultiViewPanelTrackedProps {
 	nextPieces: {
 		[key: string]: Piece[]
 	}
+	metadata: MediaObject | null
+	thumbnailPiece: Piece
+	layer?: ISourceLayer
 }
 
 export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IMultiViewPanelProps & IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>, IState> {
+	private objId: string
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
-
 	}
+
+	componentDidMount () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
+	}
+
+	componentDidUpdate () {
+		Meteor.defer(() => {
+			this.updateMediaObjectSubscription()
+		})
+	}
+
 
 	isAdLibOnAir (adLib: AdLibPieceUi) {
 		if (this.props.unfinishedPieces[adLib._id] && this.props.unfinishedPieces[adLib._id].length > 0) {
@@ -117,6 +138,57 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
+	getPreviewUrl = (): string | undefined => {
+		const { metadata } = this.props
+		const mediaPreviewUrl = this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''
+		if (mediaPreviewUrl && metadata) {
+			if (metadata && metadata.previewPath && mediaPreviewUrl) {
+				return mediaPreviewUrl + 'media/thumbnail/' + encodeURIComponent(metadata.mediaId)
+			}
+		}
+		return undefined
+	}
+
+	renderPreview () {
+		if (this.props.metadata) {
+			const previewUrl = this.getPreviewUrl()
+			if (previewUrl) {
+				return <img src={previewUrl} className='multiview-panel__image' />
+			}
+		}
+	}
+
+	updateMediaObjectSubscription () {
+		if (this.props.thumbnailPiece) {
+			const piece = this.props.thumbnailPiece as any as AdLibPieceUi
+			let objId: string | undefined = undefined
+
+			if (piece.content && this.props.layer) {
+				switch (this.props.layer.type) {
+					case SourceLayerType.VT:
+						objId = (piece.content as VTContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.LIVE_SPEAK:
+						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.GRAPHICS:
+						if (piece.content.fileName) {
+							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
+						}
+						break
+				}
+			}
+
+			if (objId && objId !== this.objId) {
+				this.objId = objId
+				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+					mediaId: this.objId
+				})
+			}
+		}
+	}
+
+
 	render () {
 		const isTake = this.props.panel.role === RundownLayoutMultiViewRole.TAKE
 		const isProgram = this.props.panel.role === RundownLayoutMultiViewRole.PROGRAM
@@ -141,10 +213,11 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 				<div className='multiview-panel__button'
 					onClick={(e) => this.onAction(e, piece)}
 				>
+					{this.renderPreview()}
 					{
-					<span className={classNames('multiview-panel__label',{
-						'multiview-panel__label--large': isLarge
-					})}>{this.props.panel.name}</span>
+						<span className={classNames('multiview-panel__label',{
+							'multiview-panel__label--large': isLarge
+						})}>{this.props.panel.name}</span>
 					}
 				</div>
 			</div>
@@ -175,10 +248,11 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 	if (currentPartId) {
 		prospectivePieces = Pieces.find({
 			rundownId: rundownId,
+			partId: currentPartId,
 			// dynamicallyInserted: true,
-			startedPlayback: {
-				$exists: true
-			},
+			// startedPlayback: {
+			// 	$exists: true
+			// },
 			$and: [
 				{
 					$or: [{
@@ -220,7 +294,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((piece) => {
 			if (piece.definitelyEnded) return false
-			if (piece.startedPlayback === undefined && piece.continuesRefId === undefined) return false
+			// if (piece.startedPlayback === undefined && piece.continuesRefId === undefined) return false
 			if (piece.stoppedPlayback) return false
 
 			let duration: number | undefined =
@@ -257,11 +331,24 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 }
 
 
-export const MultiViewPanel = translateWithTracker<Translated<IAdLibPanelProps & IMultiViewPanelProps>, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+export const MultiViewPanel = translateWithTracker<Translated<IAdLibPanelProps & IMultiViewPanelProps>, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps & IMultiViewPanelProps>) => {
+	const studio = props.rundown.getStudio()
+	const unfinishedPieces = getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)
+	const nextPieces = getNextPiecesReactive(props.rundown._id, props.rundown.nextPartId)
+	const thumbnailPiece = props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
+	? _.find([..._.flatten(_.values(nextPieces)), ..._.flatten(_.values(unfinishedPieces))], piece => {
+		return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
+	}) : undefined
+	const layer = thumbnailPiece && props.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id)
+	const { metadata } = thumbnailPiece ?
+	checkPieceContentStatus(thumbnailPiece, props.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id), studio.settings) : { metadata: null }
 	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.rundown.getStudio(),
-		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId),
-		nextPieces: getNextPiecesReactive(props.rundown._id, props.rundown.nextPartId)
+		studio: studio,
+		unfinishedPieces,
+		nextPieces,
+		metadata,
+		thumbnailPiece,
+		layer
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)

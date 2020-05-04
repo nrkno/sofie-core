@@ -9,7 +9,7 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
-import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent, GraphicsContent } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -79,6 +79,11 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 						break
 					case SourceLayerType.LIVE_SPEAK:
 						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.GRAPHICS:
+						if (piece.content.fileName) {
+							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
+						}
 						break
 				}
 			}

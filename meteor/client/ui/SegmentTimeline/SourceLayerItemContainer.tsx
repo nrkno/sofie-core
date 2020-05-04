@@ -4,7 +4,7 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime } from '../../../lib/lib'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId, GraphicsContent } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
@@ -68,6 +68,11 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 						break
 					case SourceLayerType.LIVE_SPEAK:
 						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.GRAPHICS:
+						if (piece.content.fileName) {
+							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
+						}
 						break
 				}
 			}
