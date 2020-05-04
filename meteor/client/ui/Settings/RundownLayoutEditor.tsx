@@ -18,6 +18,7 @@ import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
+import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 // import { Link } from 'react-router-dom'
@@ -1053,6 +1054,57 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											type='dropdown'
 											collection={RundownLayouts}
 											className='input text-input input-l'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Expose layout as a standalone page')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'exposeAsStandalone'}
+											obj={item}
+											options={RundownLayoutType}
+											type='checkbox'
+											collection={RundownLayouts}
+											className='mod mas'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Expose as a layout for the shelf')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'exposeAsShelf'}
+											obj={item}
+											options={RundownLayoutType}
+											type='checkbox'
+											collection={RundownLayouts}
+											className='mod mas'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Icon')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'icon'}
+											obj={item}
+											type='iconpicker'
+											collection={RundownLayouts}
+											className='input text-input input-s'></EditAttribute>
+									</label>
+								</div>
+								<div className='mod mvs mhs'>
+									<label className='field'>
+										{t('Icon color')}
+										<EditAttribute
+											modifiedClassName='bghl'
+											attribute={'iconColor'}
+											obj={item}
+											options={defaultColorPickerPalette}
+											type='colorpicker'
+											collection={RundownLayouts}
+											className='input text-input input-s'></EditAttribute>
 									</label>
 								</div>
 							</div>

@@ -28,20 +28,30 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
+import { SplitDropdown } from '../lib/splitDropdown'
+import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
+import { UIStateStorage } from '../lib/UIStateStorage'
+import * as ClassNames from 'classnames'
 
 const PackageInfo = require('../../package.json')
 
 interface IRundownListItemProps {
 	key: string,
 	rundown: RundownUI
+	rundownLayouts: Array<RundownLayoutBase>
 }
 
-interface IRundownListItemStats {
+interface IRundownListItemState {
+	selectedView: string
 }
 
-export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemStats> {
+export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemState> {
 	constructor (props) {
 		super(props)
+
+		this.state = {
+			selectedView: UIStateStorage.getItemString(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', 'default')
+		}
 	}
 
 	getRundownLink (rundownId) {
@@ -55,6 +65,14 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 	getshowStyleBaseLink (showStyleBaseId) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(showStyleBaseId))
+	}
+	getShelfLink (rundownId, layoutId) {
+		// double encoding so that "/" are handled correctly
+		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId)) + '/shelf/?layout=' + encodeURIComponent(encodeURIComponent(layoutId))
+	}
+	getRundownWithLayoutLink (rundownId, layoutId) {
+		// double encoding so that "/" are handled correctly
+		return '/rundown/' + encodeURIComponent(encodeURIComponent(rundownId)) + '?layout=' + encodeURIComponent(encodeURIComponent(layoutId))
 	}
 
 	confirmDelete (rundown: Rundown) {
@@ -88,6 +106,46 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				t('Please note: This action is irreversible!')
 			)
 		})
+	}
+
+	saveViewChoice (key: string) {
+		UIStateStorage.setItem(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', key)
+	}
+
+	renderLinkItem (layout: RundownLayoutBase, link: string, key: string) {
+		return (
+			<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
+				<div className='action-btn expco-item'>
+					<div className={ClassNames('action-btn layout-icon', { small: !layout.icon })} style={{ color: layout.iconColor || 'transparent' }}>
+						<FontAwesomeIcon icon={layout.icon || 'circle'} />
+					</div>
+					{layout.name}
+				</div>
+			</Link>
+		)
+	}
+
+	renderViewLinks () {
+		const { t } = this.props
+		const standaloneLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsStandalone).map(layout => {
+			return this.renderLinkItem(layout, this.getShelfLink(this.props.rundown._id, layout._id), `standalone${layout._id}`)
+		})
+		const shelfLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsShelf).map(layout => {
+			return this.renderLinkItem(layout, this.getRundownWithLayoutLink(this.props.rundown._id, layout._id), `shelf${layout._id}`)
+		})
+		const allElements = [
+			...standaloneLayouts,
+			<div className='expco-header' key={'header2'}>{t('Timeline views')}</div>,
+			...shelfLayouts,
+			<Link to={this.getRundownLink(this.props.rundown._id)} onClick={() => this.saveViewChoice('default')} key={'default'}>
+				<div className='action-btn expco-item'>{t('Default')}</div>
+			</Link>
+		]
+		return (
+			<React.Fragment>
+				<SplitDropdown selectedKey={this.state.selectedView} elements={allElements}/>
+			</React.Fragment>
+		)
 	}
 
 	render () {
@@ -142,6 +200,9 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					<td className='rundown-list-item__air-status'>
 						{this.props.rundown.airStatus}
 					</td>
+					<td className='rundown-list-item__views'>
+						{this.renderViewLinks()}
+					</td>
 					<td className='rundown-list-item__actions'>
 						{
 							(this.props.rundown.unsynced || getAllowConfigure() || getAllowService()) ?
@@ -189,6 +250,7 @@ enum ToolTipStep {
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
 	rundowns: Array<RundownUI>
+	rundownLayouts: Array<RundownLayoutBase>
 }
 
 interface IRundownsListState {
@@ -203,6 +265,9 @@ export const RundownList = translateWithTracker(() => {
 	const studios = Studios.find().fetch()
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
+	const rundownLayouts = RundownLayouts.find({
+		$or: [{ exposeAsStandalone: true }, { exposeAsShelf: true }]
+	}).fetch()
 
 	return {
 		coreSystem: getCoreSystem(),
@@ -217,7 +282,8 @@ export const RundownList = translateWithTracker(() => {
 				showStyleBaseName: showStyleBase && showStyleBase.name || 'N/A',
 				showStyleVariantName: showStyleVariant && showStyleVariant.name || 'N/A'
 			}
-		})
+		}),
+		rundownLayouts
 	}
 })(
 class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
@@ -267,6 +333,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 
 		this.subscribe(PubSub.rundowns, {})
 		this.subscribe(PubSub.studios, {})
+		this.subscribe(PubSub.rundownLayouts, {})
 
 		this.autorun(() => {
 			const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleBaseId))
@@ -336,7 +403,7 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 
 		return list.length > 0 ?
 			list.map((rundown) => (
-				<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} />
+				<RundownListItem key={rundown._id} rundown={rundown} t={this.props.t} rundownLayouts={this.props.rundownLayouts} />
 			)) :
 			<tr>
 				<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>
@@ -426,6 +493,9 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 									</th>
 									<th className='c1'>
 										{t('Air Status')}
+									</th>
+									<th className='c1'>
+										{t('Views')}
 									</th>
 									<th className='c1'>
 										&nbsp;
