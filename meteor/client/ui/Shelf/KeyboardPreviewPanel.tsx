@@ -6,9 +6,15 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { KeyboardPreview } from './KeyboardPreview'
 import { Settings } from '../../../lib/Settings'
 import { KeyboardLayouts } from '../../../lib/keyboardLayout'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { dashboardElementPosition } from './DashboardPanel'
+import * as _ from 'underscore'
+import { RundownLayoutBase, DashboardLayoutMultiView, RundownLayoutKeyboardPreview, DashboardLayoutKeyboardPreview } from '../../../lib/collections/RundownLayouts'
 
 interface IProps {
 	visible?: boolean
+	layout?: RundownLayoutBase
+	panel?: RundownLayoutKeyboardPreview
 	showStyleBase: ShowStyleBase
 }
 
@@ -22,7 +28,19 @@ export const KeyboardPreviewPanel = translate()(class KeyboardPreviewPanel exten
 	render () {
 		if (this.props.visible) {
 			return (
-				<div className='adlib-panel super-dark adlib-panel--keyboard-preview'>
+				<div
+					className='adlib-panel super-dark adlib-panel--keyboard-preview'
+					style={
+						_.extend(
+							this.props.layout && RundownLayoutsAPI.isDashboardLayout(this.props.layout) ?
+								dashboardElementPosition(this.props.panel as DashboardLayoutKeyboardPreview) :
+								{},
+							{
+								'visibility': this.props.visible ? 'visible' : 'hidden'
+							}
+						)
+					}
+				>
 					<KeyboardPreview
 						physicalLayout={KeyboardLayouts.nameToPhysicalLayout(Settings.keyboardMapLayout)}
 						showStyleBase={this.props.showStyleBase}

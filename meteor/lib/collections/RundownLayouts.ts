@@ -33,7 +33,8 @@ export enum PieceDisplayStyle {
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
-	MULTIVIEW = 'multiview'
+	MULTIVIEW = 'multiview',
+	KEYBOARD_PREVIEW = 'keyboard_preview'
 }
 
 export interface RundownLayoutElementBase {
@@ -91,6 +92,10 @@ export interface RundownLayoutFilter extends RundownLayoutFilterBase {
 	default: boolean
 }
 
+export interface RundownLayoutKeyboardPreview extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.KEYBOARD_PREVIEW
+}
+
 export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame {
 	x: number
 	y: number
@@ -121,6 +126,13 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	showAsTimeline?: boolean
 	hide?: boolean
 	displayTakeButtons?: boolean
+}
+
+export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPreview {
+	x: number
+	y: number
+	width: number
+	height: number
 }
 
 export interface RundownLayoutBase {
