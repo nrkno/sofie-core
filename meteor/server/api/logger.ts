@@ -5,8 +5,8 @@ import * as _ from 'underscore'
 Meteor.methods({
 	'logger': (type: string, ...args: any[]) => {
 		// @ts-ignore
-		let l: any = logger[type] || logger.log
-		l(...args)
+		let loggerFunction: any = logger[type] || logger.log
+		loggerFunction(...args)
 	}
 })
 
