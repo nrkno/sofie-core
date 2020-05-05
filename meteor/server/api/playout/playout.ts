@@ -23,9 +23,8 @@ import { getCurrentTime,
 	protectString,
 	isStringOrProtectedString,
 	getRandomId,
-	tic,
-	toc
-} from '../../../lib/lib'
+	toc,
+	tic} from '../../../lib/lib'
 import { Timeline, TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import { Segments, Segment, SegmentId } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -292,7 +291,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
 			tic('take')
 			const cache = waitForPromise(initCacheForRundownPlaylist(playlist, undefined, true))
-			toc('take', 'after cache')
+			toc('take', 'cache')
 			playlist = cache.RundownPlaylists.findOne(playlist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
@@ -387,10 +386,8 @@ export namespace ServerPlayoutAPI {
 				}
 
 				updateTimeline(cache, playlist.studioId)
-				toc('take', 'after updateTimeline')
 
 				waitForPromise(cache.saveAllToDatabase())
-				toc('take', 'after saveAllToDatabase')
 
 				return ClientAPI.responseSuccess(undefined)
 			}
@@ -406,10 +403,8 @@ export namespace ServerPlayoutAPI {
 
 			// beforeTake(rundown, previousPart || null, takePart)
 			beforeTake(cache, partsInOrder, previousPartInstance || null, takePartInstance)
-			toc('take', 'after beforeTake')
 
 			const { blueprint } = waitForPromise(pBlueprint)
-			toc('take', 'after blueprint')
 			if (blueprint.onPreTake) {
 				try {
 					waitForPromise(
@@ -419,7 +414,6 @@ export namespace ServerPlayoutAPI {
 				} catch (e) {
 					logger.error(e)
 				}
-				toc('take', 'after onPreTake')
 			}
 			// TODO - the state could change after this sampling point. This should be handled properly
 			let previousPartEndState: PartEndState | undefined = undefined
@@ -499,11 +493,8 @@ export namespace ServerPlayoutAPI {
 			}
 			playlist = _.extend(playlist, m) as RundownPlaylist
 
-			toc('take', 'after updates0')
-
 			// Once everything is synced, we can choose the next part
 			libsetNextPart(cache, playlist, nextPart ? nextPart.part : null)
-			toc('take', 'after libsetNextPart')
 
 			// update playoutData
 			// const newSelectedPartInstances = playlist.getSelectedPartInstances()
@@ -585,9 +576,7 @@ export namespace ServerPlayoutAPI {
 
 				})
 			}
-			toc('take', 'before afterTake')
 			afterTake(cache, playlist, takePartInstance, timeOffset) // todo
-			toc('take', 'after afterTake')
 
 			// Last:
 			const takeDoneTime = getCurrentTime()
@@ -621,9 +610,9 @@ export namespace ServerPlayoutAPI {
 					}
 				}
 			})
-			toc('take', 'before saveAllToDatabase')
+			toc('take', 'before save')
 			waitForPromise(cache.saveAllToDatabase())
-			toc('take', 'after saveAllToDatabase')
+			toc('take', 'after save')
 
 			return ClientAPI.responseSuccess(undefined)
 		})
@@ -1600,15 +1589,13 @@ function afterTake (
 	updateTimeline(cache, playlist.studioId, forceNowTime)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
-	cache.defer(() => {
-		Meteor.setTimeout(() => {
-			if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
-				const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
-				if (!currentRundown) throw new Meteor.Error(404, `Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`)
-				IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
-			}
-		}, 40)
-	})
+	Meteor.setTimeout(() => { // todo
+		if (takePartInstance.part.shouldNotifyCurrentPlayingPart) {
+			const currentRundown = Rundowns.findOne(takePartInstance.rundownId)
+			if (!currentRundown) throw new Meteor.Error(404, `Rundown "${takePartInstance.rundownId}" of partInstance "${takePartInstance._id}" not found`)
+			IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
+		}
+	}, 40)
 }
 
 function setRundownStartedPlayback (

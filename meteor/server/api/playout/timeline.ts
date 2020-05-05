@@ -50,9 +50,7 @@ import {
 	protectString,
 	unprotectString,
 	unprotectObjectArray,
-	unprotectObject,
-	tic,
-	toc
+	unprotectObject
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Rundowns, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -91,7 +89,6 @@ export function updateTimeline (cache: CacheForRundownPlaylist, studioId: Studio
 
 	// if (playoutData0 === undefined) {
 	// 	// When activeRundownData0 is not provided:
-	tic('updateTimeline')
 
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
@@ -123,19 +120,13 @@ export function updateTimeline (cache: CacheForRundownPlaylist, studioId: Studio
 		})
 	}
 
-	toc('updateTimeline', 'after setup')
-
 	applyTimelineObjs(getTimelineRundown(cache, studio))
-	toc('updateTimeline', 'after getTimelineRundown')
 	applyTimelineObjs(getTimelineRecording(cache, studio))
-	toc('updateTimeline', 'after getTimelineRecording')
 
 	processTimelineObjects(studio, timelineObjs)
-	toc('updateTimeline', 'after processTimelineObjects')
 
 	if (forceNowToTime) { // used when autoNexting
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
-		toc('updateTimeline', 'after setNowToTimeInObjects')
 	}
 
 	let savedTimelineObjs: TimelineObjGeneric[] = []
@@ -159,10 +150,8 @@ export function updateTimeline (cache: CacheForRundownPlaylist, studioId: Studio
 			savedTimelineObjs.push(o)
 		}
 	})
-	toc('updateTimeline', 'after saveIntoCache')
 
 	afterUpdateTimeline(cache, studio, savedTimelineObjs)
-	toc('updateTimeline', 'after afterUpdateTimeline')
 
 	logger.debug('updateTimeline done!')
 }
@@ -225,7 +214,6 @@ export function getActiveRundownPlaylist (cache: CacheForStudio, studioId: Studi
 function getTimelineRundown (cache: CacheForRundownPlaylist, studio: Studio): TimelineObjRundown[] {
 
 	try {
-		tic('timelineRundown')
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
 
 		const playlist = getActiveRundownPlaylist(cache, studio._id) // todo: is this correct?
@@ -239,7 +227,6 @@ function getTimelineRundown (cache: CacheForRundownPlaylist, studio: Studio): Ti
 				currentPartInstance,
 				nextPartInstance
 			} = getSelectedPartInstancesFromCache(cache, playlist))
-			toc('timelineRundown', 'after getSelectedPartInstancesFromCache')
 
 			const partForRundown = currentPartInstance || nextPartInstance
 
@@ -259,13 +246,12 @@ function getTimelineRundown (cache: CacheForRundownPlaylist, studio: Studio): Ti
 
 			timelineObjs = timelineObjs.concat(buildTimelineObjsForRundown(cache, baselineItems, playlist))
 
-			toc('timelineRundown', 'after buildTimelineObjsForRundown')
+
 			// next (on pvw (or on pgm if first))
 			timelineObjs = timelineObjs.concat(getLookeaheadObjects(cache, studio, playlist))
-			toc('timelineRundown', 'after getLookeaheadObjects')
+
 
 			const showStyleBlueprint0 = waitForPromise(pshowStyleBlueprint)
-			toc('timelineRundown', 'after blueprint')
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
 
 
@@ -274,7 +260,6 @@ function getTimelineRundown (cache: CacheForRundownPlaylist, studio: Studio): Ti
 				const context = new PartEventContext(activeRundown, studio, currentPart)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
 				const tlGenRes = waitForPromise(showStyleBlueprintManifest.onTimelineGenerate(context, timelineObjs, playlist.previousPersistentState, currentPart.part.previousPartEndState, unprotectObjectArray(resolvedPieces.pieces)))
-				toc('timelineRundown', 'after onTimelineGenerate')
 				timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
 					return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
 						...object,
