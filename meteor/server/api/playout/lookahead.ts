@@ -106,7 +106,7 @@ export interface LookaheadResult {
 	future: Array<LookaheadObjectEntry>
 }
 
-export function findLookaheadForlayer (
+function findLookaheadForlayer (
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
 	layer: string,

@@ -732,6 +732,10 @@ export function escapeHtml (text: string): string {
 	return outText
 }
 const ticCache = {}
+/**
+ * Performance debugging. tic() starts a timer, toc() traces the time since tic()
+ * @param name
+ */
 export function tic (name: string = 'default') {
 	ticCache[name] = Date.now()
 }
