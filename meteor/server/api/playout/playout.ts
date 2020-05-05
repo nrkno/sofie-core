@@ -22,9 +22,8 @@ import { getCurrentTime,
 	unprotectObjectArray,
 	protectString,
 	isStringOrProtectedString,
-	getRandomId,
-	toc,
-	tic} from '../../../lib/lib'
+	getRandomId
+} from '../../../lib/lib'
 import { Timeline, TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import { Segments, Segment, SegmentId } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
@@ -289,9 +288,8 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
 			if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
 			if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
-			tic('take')
 			const cache = waitForPromise(initCacheForRundownPlaylist(playlist, undefined, true))
-			toc('take', 'cache')
+
 			playlist = cache.RundownPlaylists.findOne(playlist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
@@ -610,9 +608,7 @@ export namespace ServerPlayoutAPI {
 					}
 				}
 			})
-			toc('take', 'before save')
 			waitForPromise(cache.saveAllToDatabase())
-			toc('take', 'after save')
 
 			return ClientAPI.responseSuccess(undefined)
 		})
