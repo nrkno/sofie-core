@@ -13,7 +13,7 @@ import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise, tic, toc } from '../lib/lib'
+import { protectString, waitForPromiseAll, waitForPromise, makePromise } from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { MongoSelector } from '../lib/typings/meteor'
@@ -102,20 +102,12 @@ function emptyCacheForStudio (studioId: StudioId): CacheForStudio {
 	return new CacheForStudio(studioId)
 }
 async function fillCacheForStudioWithData (cache: CacheForStudio, studioId: StudioId, initializeImmediately: boolean) {
-	tic('dbStudio')
-	const thenToc = (name) => {
-		return (result) => {
-			toc('dbStudio', name)
-			return result
-		}
-	}
-
 	await Promise.all([
-		makePromise(() => cache.RundownPlaylists.prepareInit({ studioId: studioId }, initializeImmediately)).then(thenToc('RundownPlaylists')),
-		makePromise(() => cache.Studios.prepareInit({ _id: studioId }, initializeImmediately)).then(thenToc('Studios')),
-		makePromise(() => cache.Timeline.prepareInit({ studioId: studioId }, initializeImmediately)).then(thenToc('Timeline')),
-		makePromise(() => cache.RecordedFiles.prepareInit({ studioId: studioId }, initializeImmediately)).then(thenToc('RecordedFiles')),
-		makePromise(() => cache.PeripheralDevices.prepareInit({ studioId: studioId }, initializeImmediately)).then(thenToc('PeripheralDevices')),
+		makePromise(() => cache.RundownPlaylists.prepareInit({ studioId: studioId }, initializeImmediately)),
+		makePromise(() => cache.Studios.prepareInit({ _id: studioId }, initializeImmediately)),
+		makePromise(() => cache.Timeline.prepareInit({ studioId: studioId }, initializeImmediately)),
+		makePromise(() => cache.RecordedFiles.prepareInit({ studioId: studioId }, initializeImmediately)),
+		makePromise(() => cache.PeripheralDevices.prepareInit({ studioId: studioId }, initializeImmediately)),
 	])
 
 	return cache
@@ -175,19 +167,12 @@ async function fillCacheForRundownPlaylistWithData (cache: CacheForRundownPlayli
 
 	const rundownsInPlaylist = cache.Rundowns.findFetch()
 	const rundownIds = rundownsInPlaylist.map(r => r._id)
-	tic('dbPlaylist')
-	const thenToc = (name) => {
-		return (result) => {
-			toc('dbPlaylist', name)
-			return result
-		}
-	}
 
-	ps.push(makePromise(() => cache.Segments.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)).then(thenToc('Segments')))
-	ps.push(makePromise(() => cache.Parts.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)).then(thenToc('Parts')))
-	ps.push(makePromise(() => cache.Pieces.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)).then(thenToc('Pieces')))
+	ps.push(makePromise(() => cache.Segments.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
+	ps.push(makePromise(() => cache.Parts.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
+	ps.push(makePromise(() => cache.Pieces.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
 
-	ps.push(makePromise(() => cache.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)).then(thenToc('PartInstances')))
+	ps.push(makePromise(() => cache.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
 
 	ps.push(makePromise(() => cache.PieceInstances.prepareInit(async () => {
 
@@ -201,19 +186,19 @@ async function fillCacheForRundownPlaylistWithData (cache: CacheForRundownPlayli
 			rundownId: { $in: rundownIds },
 			partInstanceId: { $in: selectedPartInstanceIds }
 		})
-	}, initializeImmediately)).then(thenToc('Parts')))
+	}, initializeImmediately)))
 
 	ps.push(makePromise(() => cache.RundownBaselineObjs.prepareInit({
 		rundownId: { $in: rundownIds },
-	}, initializeImmediately)).then(thenToc('RundownBaselineObjs')))
+	}, initializeImmediately)))
 
 	ps.push(makePromise(() => cache.AdLibPieces.prepareInit({
 		rundownId: { $in: rundownIds },
-	}, false)).then(thenToc('AdLibPieces')))
+	}, false)))
 
 	ps.push(makePromise(() => cache.RundownBaselineAdLibPieces.prepareInit({
 		rundownId: { $in: rundownIds },
-	}, false)).then(thenToc('RundownBaselineAdLibPieces')))
+	}, false)))
 
 	await Promise.all(ps)
 }
