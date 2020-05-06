@@ -185,12 +185,8 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 	}
 
 	async fillWithDataFromDatabase (selector: MongoSelector<DBInterface>): Promise<number> {
-		// @ts-ignore temporary hack
-		this._collection._tmpDenyAccess = false
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
-		// @ts-ignore temporary hack
-		this._collection._tmpDenyAccess = true // disallow reads & writes
 		this._innerfillWithDataFromArray(docs)
 		return docs.length
 	}

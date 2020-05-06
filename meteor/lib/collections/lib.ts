@@ -74,11 +74,10 @@ export function createMongoCollection<T> (
 	const overrideMethod = <C>(collection: C, key: keyof C) => {
 		const originalFcn: any = collection[key]
 
-		// @ts-ignore temporary hack
-		if (collection._tmpDenyAccess) throw new Meteor.Error(500, `Internal Error: Access to "${name}.${key}" is denied`)
 
 		// @ts-ignore
 		collection[key] = (...args) => {
+
 			try {
 				return originalFcn.call(collection, ...args)
 			} catch (e) {
@@ -89,8 +88,6 @@ export function createMongoCollection<T> (
 
 	const collection: TransformedCollection<T, any> = new Mongo.Collection<T>(name, options) as any
 
-	// @ts-ignore temporary hack
-	collection._tmpDenyAccess = false
 	// @ts-ignore temp hack too
 	collection.name = name
 
