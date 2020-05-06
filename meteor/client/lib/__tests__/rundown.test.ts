@@ -27,8 +27,7 @@ describe('client/lib/rundown', () => {
 		const resolvedSegment = RundownUtils.getResolvedSegment(
 			showStyleBase,
 			playlist,
-			segment,
-			true
+			segment
 		)
 		expect(resolvedSegment).toBeTruthy()
 		expect(resolvedSegment.parts).toHaveLength(2)

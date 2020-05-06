@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
 import { mockupCollection } from '../../../../__mocks__/helpers/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundown, setupMockPeripheralDevice, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
@@ -29,7 +29,7 @@ describe('Playout Actions', () => {
 		return PeripheralDeviceCommands.remove({ deviceId: playoutDevice._id })
 	}
 
-	beforeEach(() => {
+	beforeEachInFiber(() => {
 		env = setupDefaultStudioEnvironment()
 
 		playoutDevice = setupMockPeripheralDevice(

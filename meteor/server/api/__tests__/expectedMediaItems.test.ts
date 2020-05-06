@@ -1,6 +1,6 @@
 import { Random } from 'meteor/random'
 import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
-import { literal, protectString, getRandomId } from '../../../lib/lib'
+import { literal, protectString, getRandomId, waitForPromise } from '../../../lib/lib'
 import { setLoggerLevel } from '../logger'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
@@ -14,6 +14,8 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { wrapWithCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
+import { removeRundownFromCache } from '../playout/lib'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -198,7 +200,9 @@ describe('Expected Media Items', () => {
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
-			updateExpectedMediaItemsOnRundown(rdId0)
+			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
+			updateExpectedMediaItemsOnRundown(cache, rdId0)
+			waitForPromise(cache.saveAllToDatabase())
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
@@ -212,10 +216,11 @@ describe('Expected Media Items', () => {
 				fail()
 				return
 			}
-			rd.remove()
+			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
+			removeRundownFromCache(cache, rd)
+			updateExpectedMediaItemsOnRundown(cache, rdId0)
 
-			updateExpectedMediaItemsOnRundown(rdId0)
-
+			waitForPromise(cache.saveAllToDatabase())
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
 				studioId: env.studio._id
@@ -230,7 +235,9 @@ describe('Expected Media Items', () => {
 			expect(Parts.findOne(protectString(rdId1 + '_' + mockPart0))).toBeTruthy()
 			expect(Pieces.find({ partId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
 
-			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart0))
+			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
+			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))
+			waitForPromise(cache.saveAllToDatabase())
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId1,
@@ -243,7 +250,9 @@ describe('Expected Media Items', () => {
 				_id: protectString(rdId1 + '_' + mockPart0)
 			})
 
-			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart0))
+			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
+			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))
+			waitForPromise(cache.saveAllToDatabase())
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId1,
@@ -257,23 +266,27 @@ describe('Expected Media Items', () => {
 				fail()
 				return
 			}
+			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rd._id))
 
-			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart1))
+			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart1))
 
+			waitForPromise(cache.saveAllToDatabase())
 			let items = ExpectedMediaItems.find({
 				rundownId: rdId1,
 				studioId: env.studio._id
 			}).fetch()
 			expect(items).toHaveLength(2)
 
-			Rundowns.remove(rd._id)
-			updateExpectedMediaItemsOnPart(rdId1, protectString(rdId1 + '_' + mockPart1))
+			cache.Rundowns.remove(rd._id)
+			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart1))
 
+			waitForPromise(cache.saveAllToDatabase())
 			items = ExpectedMediaItems.find({
 				rundownId: rdId1,
 				studioId: env.studio._id
 			}).fetch()
 			expect(items).toHaveLength(0)
+
 		})
 	})
 
