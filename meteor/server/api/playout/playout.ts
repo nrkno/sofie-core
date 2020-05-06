@@ -131,7 +131,8 @@ export namespace ServerPlayoutAPI {
 			if (playlist.active && !playlist.rehearsal) throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
 
 			libResetRundownPlaylist(playlist)
-			prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
+			// Hack: Temporarily disabled for r20
+			// prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
 
 			return libActivateRundownPlaylist(playlist, !!rehearsal) // Activate rundown
 		})
@@ -167,7 +168,8 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(playlist)
-			prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
+			// Hack: Temporarily disabled for r20
+			// prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
 
 			return libActivateRundownPlaylist(playlist, rehearsal)
 		})
@@ -181,7 +183,8 @@ export namespace ServerPlayoutAPI {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 
-			prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
+			// Hack: Temporarily disabled for r20
+			// prepareStudioForBroadcast(playlist.getStudio(), true, playlist)
 
 			return libActivateRundownPlaylist(playlist, rehearsal)
 		})
