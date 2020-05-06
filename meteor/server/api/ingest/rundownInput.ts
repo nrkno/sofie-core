@@ -446,7 +446,6 @@ function updateRundownFromIngestData (
 		waitForPromise(cache.saveAllToDatabase())
 		return false
 	}
-
 	const allChanges = sumChanges(
 		rundownChanges,
 		playlistChanges,

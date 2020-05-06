@@ -19,11 +19,11 @@ import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { MongoSelector } from '../lib/typings/meteor'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
 
-type DeferredFunction = () => void
+type DeferredFunction<Cache> = (cache: Cache) => void
 
 /** This cache contains data relevant in a studio */
 export class Cache {
-	private _deferredFunctions: (DeferredFunction)[] = []
+	private _deferredFunctions: (DeferredFunction<Cache>)[] = []
 	private _activeTimeout: number | null = null
 
 	constructor () {
@@ -62,7 +62,7 @@ export class Cache {
 
 		// shouldn't the deferred functions be executed after updating the db?
 		_.each(this._deferredFunctions, (fcn) => {
-			fcn()
+			fcn(this)
 		})
 		await Promise.all(
 			_.map(_.values(this), async (db) => {
@@ -73,7 +73,7 @@ export class Cache {
 		)
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
-	defer (fcn: DeferredFunction): void {
+	defer (fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
 	}
 }
@@ -96,6 +96,9 @@ export class CacheForStudio extends Cache {
 		this.Timeline = new DbCacheCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
 		this.RecordedFiles = new DbCacheCollection<RecordedFile, RecordedFile>(RecordedFiles)
 		this.PeripheralDevices = new DbCacheCollection<PeripheralDevice, PeripheralDevice>(PeripheralDevices)
+	}
+	defer (fcn: DeferredFunction<CacheForStudio>) {
+		return super.defer(fcn)
 	}
 }
 function emptyCacheForStudio (studioId: StudioId): CacheForStudio {
@@ -156,6 +159,9 @@ export class CacheForRundownPlaylist extends CacheForStudio {
 
 		this.AdLibPieces = new DbCacheCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
 		this.RundownBaselineAdLibPieces = new DbCacheCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces)
+	}
+	defer (fcn: DeferredFunction<CacheForRundownPlaylist>) {
+		return super.defer(fcn)
 	}
 }
 function emptyCacheForRundownPlaylist (studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {

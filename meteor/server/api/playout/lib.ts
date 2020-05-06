@@ -887,9 +887,9 @@ export function removeRundownFromCache (cache: CacheForRundownPlaylist, rundown:
 	cache.Rundowns.remove(rundown._id)
 	if (rundown.playlistId) {
 		// Check if any other members of the playlist are left
-		if (Rundowns.find({
+		if (cache.Rundowns.findFetch({
 			playlistId: rundown.playlistId
-		}).count() === 0) {
+		}).length === 0) {
 			cache.RundownPlaylists.remove(rundown.playlistId)
 		}
 	}

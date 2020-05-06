@@ -206,6 +206,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		})
 	}
 	async updateDatabaseWithData () {
+
 		const changes: {
 			insert: number,
 			update: number,
@@ -228,6 +229,9 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 				ps.push(asyncCollectionUpdate(this._collection, _id, doc.document))
 				changes.update++
 			}
+			delete doc.inserted
+			delete doc.updated
+			delete doc.removed
 		})
 		await Promise.all(ps)
 
@@ -316,7 +320,7 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 	const newObjIds: {[identifier: string]: true} = {}
 	_.each(newData, (o) => {
 		if (newObjIds[o[identifier] as any]) {
-			throw new Meteor.Error(500, `prepareSaveIntoCache into collection "${(collection as any).name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
+			throw new Meteor.Error(500, `prepareSaveIntoCache into collection "${collection.name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
 		}
 		newObjIds[o[identifier] as any] = true
 	})

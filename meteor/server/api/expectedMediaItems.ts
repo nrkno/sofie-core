@@ -114,18 +114,17 @@ export const updateExpectedMediaItemsOnPart: (cache: CacheForRundownPlaylist, ru
 		return
 	}
 
-	const eMIs: ExpectedMediaItem[] = []
+	cache.defer((cache) => {
+		const eMIs: ExpectedMediaItem[] = []
 
-	const pieces = cache.Pieces.findFetch({
-		rundownId: rundown._id,
-		partId: part._id
-	})
-
-	cache.defer(() => {
-		const adlibs = AdLibPieces.find({
+		const pieces = cache.Pieces.findFetch({
 			rundownId: rundown._id,
 			partId: part._id
-		}).fetch()
+		})
+		const adlibs = cache.AdLibPieces.findFetch({
+			rundownId: rundown._id,
+			partId: part._id
+		})
 
 		function iterateOnPieceLike (piece: PieceGeneric, pieceType: string) {
 			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
