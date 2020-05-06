@@ -301,7 +301,7 @@ describe('Playout API', () => {
 		{
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
 			Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, instances[0]._id, globalAdLibs[0]._id)
-			const pieces0 = PieceInstances.find({ partInstanceId: instances[0]._id })
+			const pieces0 = PieceInstances.find({ partInstanceId: instances[0]._id }).fetch()
 			expect(pieces0).toMatchSnapshot()
 		}
 
@@ -310,7 +310,7 @@ describe('Playout API', () => {
 		{
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
 			Meteor.call(PlayoutAPI.methods.segmentAdLibPieceStart, playlistId0, instances[0]._id, adLibs[0]._id)
-			const pieces1 = PieceInstances.find({ partInstanceId: instances[0]._id })
+			const pieces1 = PieceInstances.find({ partInstanceId: instances[0]._id }).fetch()
 			expect(pieces1).toMatchSnapshot()
 		}
 	})
