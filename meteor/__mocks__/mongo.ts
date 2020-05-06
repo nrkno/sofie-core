@@ -29,14 +29,18 @@ export namespace MongoMock {
 	export interface MongoCollection<T extends CollectionObject> {
 	}
 	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
-		private localName: string
+		public _name: string
 		private _options: any = {}
 		private _isMock: true = true // used in test to check that it's a mock
 		private observers: ObserverEntry[] = []
 
-		constructor (localName: string, options: any) {
-			this.localName = localName
+		private _transform?: (o: T) => T
+
+		constructor (name: string, options: any) {
 			this._options = options || {}
+			this._name = name
+			this._transform = this._options.transform
+
 		}
 		find (query: any, options?: FindOptions) {
 			if (_.isString(query)) query = { _id: query }
@@ -64,8 +68,8 @@ export namespace MongoMock {
 				},
 				fetch: () => {
 					const transform = (
-						this._options.transform ?
-						this._options.transform :
+						this._transform ?
+						this._transform :
 						(doc) => doc
 					)
 					return _.map(docs, (doc) => {
@@ -214,8 +218,8 @@ export namespace MongoMock {
 		// 	// todo
 		// }
 		private get documents (): MockCollection<T> {
-			if (!mockCollections[this.localName]) mockCollections[this.localName] = {}
-			return mockCollections[this.localName]
+			if (!mockCollections[this._name]) mockCollections[this._name] = {}
+			return mockCollections[this._name]
 		}
 	}
 	// Mock functions:
@@ -223,8 +227,7 @@ export namespace MongoMock {
 		const collectionName: string = (
 			_.isString(collection) ?
 			collection :
-			// @ts-ignore
-			collection.localName
+			(collection as MongoMock.Collection<any>)._name
 		)
 		data = data || {}
 		if (_.isArray(data)) {
