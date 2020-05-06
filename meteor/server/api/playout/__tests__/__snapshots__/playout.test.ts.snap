@@ -3,6 +3,21 @@
 exports[`Playout API Basic rundown control 1`] = `
 Array [
   Object {
+    "_id": "mockStudio4_statObj",
+    "content": Object {
+      "deviceType": 0,
+      "objCount": 3,
+      "type": "nothing",
+    },
+    "enable": Object {
+      "start": 0,
+    },
+    "id": "statObj",
+    "layer": "__stat",
+    "objectType": "stat",
+    "studioId": "mockStudio4",
+  },
+  Object {
     "_id": "mockStudio4_playlist_randomId10002_status",
     "classes": Array [
       "rundown_active",
@@ -56,21 +71,6 @@ Array [
     "inGroup": "part_group_randomId10002_part0_0_randomId10007",
     "layer": "group_first_object",
     "objectType": "rundown",
-    "studioId": "mockStudio4",
-  },
-  Object {
-    "_id": "mockStudio4_statObj",
-    "content": Object {
-      "deviceType": 0,
-      "objCount": 3,
-      "type": "nothing",
-    },
-    "enable": Object {
-      "start": 0,
-    },
-    "id": "statObj",
-    "layer": "__stat",
-    "objectType": "stat",
     "studioId": "mockStudio4",
   },
 ]
