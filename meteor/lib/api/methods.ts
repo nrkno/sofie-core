@@ -41,22 +41,22 @@ interface IMeteorCall {
 	rundownNotifications: RundownNotificationsAPI
 }
 export const MeteorCall: IMeteorCall = {
-	blueprint:				makeMethods(BlueprintAPIMethods),
-	client:					makeMethods(ClientAPIMethods),
-	externalMessages:		makeMethods(ExternalMessageQueueAPIMethods),
-	manualPlayout:			makeMethods(ManualPlayoutAPIMethods),
-	migration:				makeMethods(MigrationAPIMethods),
-	peripheralDevice:		makeMethods(PeripheralDeviceAPIMethods),
-	playout:				makeMethods(PlayoutAPIMethods),
-	rundown:				makeMethods(RundownAPIMethods),
-	rundownLayout:			makeMethods(RundownLayoutsAPIMethods),
-	snapshot:				makeMethods(SnapshotAPIMethods),
-	showstyles:				makeMethods(ShowStylesAPIMethods),
-	studio:					makeMethods(StudiosAPIMethods),
-	systemStatus:			makeMethods(SystemStatusAPIMethods),
-	testTools:				makeMethods(TestToolsAPIMethods),
-	userAction:				makeMethods(UserActionAPIMethods),
-	rundownNotifications:	makeMethods(RundownNotificationsAPIMethods),
+	blueprint: makeMethods(BlueprintAPIMethods),
+	client: makeMethods(ClientAPIMethods),
+	externalMessages: makeMethods(ExternalMessageQueueAPIMethods),
+	manualPlayout: makeMethods(ManualPlayoutAPIMethods),
+	migration: makeMethods(MigrationAPIMethods),
+	peripheralDevice: makeMethods(PeripheralDeviceAPIMethods),
+	playout: makeMethods(PlayoutAPIMethods),
+	rundown: makeMethods(RundownAPIMethods),
+	rundownLayout: makeMethods(RundownLayoutsAPIMethods),
+	snapshot: makeMethods(SnapshotAPIMethods),
+	showstyles: makeMethods(ShowStylesAPIMethods),
+	studio: makeMethods(StudiosAPIMethods),
+	systemStatus: makeMethods(SystemStatusAPIMethods),
+	testTools: makeMethods(TestToolsAPIMethods),
+	userAction: makeMethods(UserActionAPIMethods),
+	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
 }
 function makeMethods(methods: object): any {
 	const o = {}
