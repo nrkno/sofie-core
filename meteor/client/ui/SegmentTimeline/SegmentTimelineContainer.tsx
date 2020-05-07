@@ -99,7 +99,6 @@ interface ITrackedProps {
 	hasGuestItems: boolean,
 	hasAlreadyPlayed: boolean,
 	autoNextPart: boolean
-	followingPart: PartUi | undefined
 	lastValidPartIndex: number | undefined
 }
 export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
@@ -123,7 +122,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			hasGuestItems: false,
 			hasAlreadyPlayed: false,
 			autoNextPart: false,
-			followingPart: undefined,
 			lastValidPartIndex: undefined
 		}
 	}
@@ -157,7 +155,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		hasRemoteItems: o.hasRemoteItems,
 		hasGuestItems: o.hasGuestItems,
 		autoNextPart: o.autoNextPart,
-		followingPart: o.followingPart,
 		lastValidPartIndex
 	}
 }, (data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
@@ -193,7 +190,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				(data.parts && (
 					data.parts.find(i => (i.instance._id === props.playlist.currentPartInstanceId) || (i.instance._id === nextProps.playlist.currentPartInstanceId)) ||
 					data.parts.find(i => (i.instance._id === props.playlist.nextPartInstanceId) || (i.instance._id === nextProps.playlist.nextPartInstanceId))
-					)
+				)
 				)
 			)
 		) ||
@@ -231,7 +228,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	playbackSimulationPercentage: number = 0
 
 
-	constructor (props: IProps & ITrackedProps) {
+	constructor(props: IProps & ITrackedProps) {
 		super(props)
 
 		this.state = {
@@ -258,11 +255,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.isVisible = false
 	}
 
-	shouldComponentUpdate (nextProps: IProps & ITrackedProps, nextState: IState) {
+	shouldComponentUpdate(nextProps: IProps & ITrackedProps, nextState: IState) {
 		return (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
 	}
 
-	componentWillMount () {
+	componentWillMount() {
 		this.subscribe(PubSub.segments, {
 			_id: this.props.segmentId
 		})
@@ -299,7 +296,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		SpeechSynthesiser.init()
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
 		if (this.isLiveSegment === true) {
 			this.onFollowLiveLine(true, {})
@@ -320,7 +317,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		})
 	}
 
-	componentDidUpdate (prevProps: IProps & ITrackedProps) {
+	componentDidUpdate(prevProps: IProps & ITrackedProps) {
 		if (this.rundownCurrentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
 			this.playbackSimulationPercentage = 0
 		}
@@ -416,7 +413,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		}
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this._cleanUp()
 		if (this.intersectionObserver && this.props.isLiveSegment && this.props.followLiveSegments) {
 			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
@@ -570,7 +567,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
 	}
 
-	render () {
+	render() {
 		return this.props.segmentui && (
 			<SegmentTimeline
 				id={this.props.id}
@@ -605,7 +602,6 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				onShowEntireSegment={this.onShowEntireSegment}
 				onZoomChange={this.onZoomChange}
 				onScroll={this.onScroll}
-				followingPart={this.props.followingPart}
 				isLastSegment={this.props.isLastSegment}
 				lastValidPartIndex={this.props.lastValidPartIndex}
 				onHeaderNoteClick={this.props.onHeaderNoteClick} />

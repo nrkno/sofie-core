@@ -31,7 +31,6 @@ describe('client/lib/rundown', () => {
 		)
 		expect(resolvedSegment).toBeTruthy()
 		expect(resolvedSegment.parts).toHaveLength(2)
-		const followingPart = nextSegment.getParts()[0]
 		expect(resolvedSegment).toMatchObject({
 			// segmentExtended: SegmentExtended,
 			// parts: Array<PartExtended>,
@@ -42,14 +41,7 @@ describe('client/lib/rundown', () => {
 			hasRemoteItems: false,
 			hasGuestItems: false,
 			hasAlreadyPlayed: false,
-			autoNextPart: false,
-			followingPart: {
-				instance: {
-					rundownId: followingPart.rundownId,
-					segmentId: followingPart.segmentId,
-					part: followingPart
-				}
-			}
+			autoNextPart: false
 		})
 		expect(resolvedSegment).toMatchSnapshot()
 	})
