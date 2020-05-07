@@ -15,14 +15,12 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceId } from '../../../lib/collections/Pieces'
+import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 
-export interface IAdLibListItem {
-	_id: PieceId
-	name: string
-	status?: RundownAPI.PieceStatusCode
+export interface IAdLibListItem extends PieceGeneric {
+	status: RundownAPI.PieceStatusCode
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
@@ -34,7 +32,7 @@ interface IListViewItemProps {
 	selected: boolean
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
-	onSelectAdLib: (aSLine: IAdLibListItem) => void
+	onSelectAdLib: (aSLine: PieceGeneric) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	playlist: RundownPlaylist
 }

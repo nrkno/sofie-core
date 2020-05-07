@@ -786,7 +786,7 @@ class ServerUserActionAPI implements NewUserActionAPI {
 		return makePromise(() => bucketsRemoveBucketAdLib(id))
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		return makePromise(() => )
+		return makePromise(() => bucketsModifyBucketAdLib(id, bucketAdlib))
 	}
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {

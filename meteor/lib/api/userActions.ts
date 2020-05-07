@@ -1,5 +1,5 @@
+import { Omit } from '../lib'
 import { ClientAPI } from '../api/client'
-import { MeteorCall } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartId } from '../collections/Parts'
 import { RundownId } from '../collections/Rundowns'

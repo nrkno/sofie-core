@@ -64,16 +64,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 						/> :
 						undefined
 			)}
-		{buckets &&
-			buckets.map(bucket =>
-				<BucketPanel
-					key={unprotectString(bucket._id)}
-					playlist={props.playlist}
-					showStyleBase={props.showStyleBase}
-					shouldQueue={props.shouldQueue}
-					bucket={bucket}
-				/>
-			)}
 		{rundownLayout.actionButtons &&
 			<DashboardActionButtonGroup
 				playlist={props.playlist}

@@ -19,7 +19,6 @@ export interface BucketAdLib extends IBlueprintAdLibPiece {
 	 */
 	studioId: StudioId
 	showStyleVariantId: ShowStyleVariantId
-
 	importVersions: RundownImportVersions // TODO - is this good?
 }
 

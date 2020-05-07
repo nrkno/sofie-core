@@ -3,9 +3,9 @@ import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Segment } from '../../../lib/collections/Segments'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
@@ -22,7 +22,7 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -34,11 +34,11 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { invalidateAt } from '../../lib/invalidatingTime'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 interface IState {
 	outputLayers: {
@@ -355,13 +355,13 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 				if (!adlibPiece.isGlobal) {
-					doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
+					doUserAction(t, e, UserAction.START_ADLIB, (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
 						this.props.playlist._id,
 						currentPartInstanceId,
 						adlibPiece._id, queue || false
 					))
 				} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-					doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
 						this.props.playlist._id,
 						currentPartInstanceId,
 						adlibPiece._id, queue || false
@@ -380,7 +380,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, '', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
+			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
 		}
 	}
 
@@ -390,7 +390,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const playlistId = this.props.playlist._id
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Stopping SourceLayer', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e,
+			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) => MeteorCall.userAction.sourceLayerOnPartStop(e,
 				playlistId,
 				currentPartInstanceId,
 				_.map(sourceLayers, sl => sl._id)
@@ -536,10 +536,11 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 }
 
 export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return Object.assign({}, fetchAndFilter(props), {
+	return {
+		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
 		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
-	})
+	}
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
 })(DashboardPanelInner)

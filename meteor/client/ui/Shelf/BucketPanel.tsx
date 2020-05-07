@@ -29,7 +29,7 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
@@ -85,7 +85,6 @@ const bucketSource = {
 			props.moveBucket(droppedId, originalIndex)
 		} else {
 			const { index: newIndex } = monitor.getDropResult()
-
 			props.onBucketReorder(droppedId, newIndex, originalIndex)
 		}
 	}
@@ -101,27 +100,23 @@ const bucketTarget = {
 			const { id: draggedId, size: draggedSize } = monitor.getItem()
 			const overId = props.bucket._id
 			let farEnough = true
-
 			let rect = {
 				width: 0,
 				height: 0,
 				left: 0,
 				top: 0
 			}
-
 			if (draggedId !== overId) {
 				if (component && component.decoratedRef && component.decoratedRef.current &&
 					component.decoratedRef.current._panel) {
 					rect = (component.decoratedRef.current._panel as HTMLDivElement).getBoundingClientRect()
 				}
-
 				const draggedPosition = monitor.getClientOffset()
 				if (draggedPosition) {
 					if (rect.width - (draggedPosition.x - rect.left) >= draggedSize.width) {
 						farEnough = false
 					}
 				}
-
 				if (farEnough) {
 					const { index: overIndex } = props.findBucket(overId)
 					props.moveBucket(draggedId, overIndex)
@@ -319,11 +314,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	}
 
 	componentWillUnmount() {
+		this._cleanUp()
+
 		window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
 		window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 	}
 
-	isAdLibOnAir(adLib: BucketAdLib) {
+	isAdLibOnAir(adLib: IAdLibListItem) {
 		if (this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)] && this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)].length > 0) {
 			return true
 		}
@@ -345,16 +342,15 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 		// console.log(sourceLayer)
 		const { t } = this.props
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-			const { t } = this.props
+		if (this.props.playlist._id && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Stop Global Adlib', (e) =>
-				MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, [sourceLayer._id])
-			)
+			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) => MeteorCall.userAction.sourceLayerOnPartStop(e,
+				this.props.playlist._id, currentPartInstanceId, [sourceLayer._id]
+			))
 		}
 	}
 
-	onToggleAdLib = (piece: BucketAdLib, queue: boolean, e: any) => {
+	onToggleAdLib = (piece: IAdLibListItem, queue: boolean, e: any) => {
 		const { t } = this.props
 
 		queue = queue || this.props.shouldQueue
@@ -385,9 +381,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				doUserAction(t, e, 'Start Bucket AdLib', (e) =>
-					MeteorCall.userAction.bucketAdlibStart(e, this.props.playlist._id, currentPartInstanceId, piece._id, queue || false)
-				)
+
+				doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) => MeteorCall.buckets.bucketAdlibStart(
+					this.props.playlist._id, currentPartInstanceId, piece._id
+				))
 			} else {
 				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
 					this.onClearAllSourceLayer(sourceLayer, e)
@@ -491,10 +488,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					newRank = (this.props.adLibPieces[newIndex]._rank + this.props.adLibPieces[newIndex + 1]._rank) / 2
 				}
 
-				doUserAction(t, { type: 'drop' }, 'Modify bucket Adlib', (e) =>
-					MeteorCall.userAction.bucketsModifyBucketAdLib(e, draggedId, partial<BucketAdLib>({
+				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) => MeteorCall.buckets.modifyBucketAdLib(
+					draggedId, partial<BucketAdLib>({
 						_rank: newRank
-					})))
+					})
+				))
 			}
 		}
 	}
@@ -505,10 +503,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			const draggedB = this.props.adLibPieces.find(b => b._id === draggedId)
 
 			if (draggedB) {
-				doUserAction(t, { type: 'drop' }, 'Modify bucket Adlib', (e) =>
-					MeteorCall.userAction.bucketsModifyBucketAdLib(e, draggedB._id, partial<BucketAdLib>({
+				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET_ADLIB, (e) => MeteorCall.buckets.modifyBucketAdLib(
+					draggedB._id, partial<BucketAdLib>({
 						bucketId
-					})))
+					})
+				))
 			}
 		}
 	}
@@ -566,13 +565,13 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 										key={unprotectString(adlib._id)}
 										holdToDisplay={contextMenuHoldToDisplayTime()}>
 										<BucketPieceButton
-											adLibListItem={adlib}
+											adLibListItem={adlib as any as IAdLibListItem}
 											bucketId={adlib.bucketId}
 											layer={this.state.sourceLayers[adlib.sourceLayerId]}
 											outputLayer={this.state.outputLayers[adlib.outputLayerId]}
 											onToggleAdLib={this.onToggleAdLib}
 											playlist={this.props.playlist}
-											isOnAir={this.isAdLibOnAir(adlib)}
+											isOnAir={this.isAdLibOnAir(adlib as any as IAdLibListItem)}
 											mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 											widthScale={1}
 											heightScale={1}
@@ -587,7 +586,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 									</ContextMenuTrigger>
 								})}
 						</div>
-					</div >
+					</div>
 				))
 			)
 		}
@@ -595,4 +594,3 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	}
 
 })))
-

@@ -5,7 +5,7 @@ import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { ClientAPI } from '../../../lib/api/client'
 
 import { translate } from 'react-i18next'
@@ -231,7 +231,7 @@ export const RundownViewBuckets = translate()(
 
 			if (e.persist) e.persist()
 
-			doUserAction(t, e, 'New Bucket', (e) => MeteorCall.userAction.bucketsCreateNewBucket(e, t('New Bucket'), this.props.playlist.studioId, null), (_err, res) => {
+			doUserAction(t, e, UserAction.CREATE_BUCKET, (e) => MeteorCall.userAction.bucketsCreateNewBucket(e, t('New Bucket'), this.props.playlist.studioId, null), (_err, res) => {
 				if (ClientAPI.isClientResponseSuccess(res)) {
 					this.setState({
 						editedNameId: (res.result as Bucket)._id
@@ -250,7 +250,7 @@ export const RundownViewBuckets = translate()(
 				message: t('Are you sure you want to delete this AdLib?'),
 				title: bucketAdLib.name,
 				onAccept: () => {
-					doUserAction(t, e, UserActionAPIMethods.bucketsRemoveBucketAdLib, (e) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id))
+					doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id))
 				}
 			}))
 		}
@@ -264,7 +264,7 @@ export const RundownViewBuckets = translate()(
 				message: t('Are you sure you want to delete this Bucket?'),
 				title: bucket.name,
 				onAccept: () => {
-					doUserAction(t, e, UserActionAPIMethods.bucketsRemoveBucket, (e) => MeteorCall.userAction.bucketsRemoveBucket(e, bucket._id))
+					doUserAction(t, e, UserAction.REMOVE_BUCKET, (e) => MeteorCall.userAction.bucketsRemoveBucket(e, bucket._id))
 				}
 			}))
 		}
@@ -284,7 +284,7 @@ export const RundownViewBuckets = translate()(
 				message: t('Are you sure you want to empty (remove all adlibs inside) this Bucket?'),
 				title: bucket.name,
 				onAccept: () => {
-					doUserAction(t, e, UserActionAPIMethods.bucketsEmptyBucket, (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
+					doUserAction(t, e, UserAction.EMPTY_BUCKET, (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
 				}
 			}))
 		}
@@ -298,7 +298,7 @@ export const RundownViewBuckets = translate()(
 
 			if (e.persist) e.persist()
 
-			doUserAction(t, e, 'Modify Bucket', (e) => MeteorCall.userAction.bucketsModifyBucket(e, bucket._id, partial<Bucket>({
+			doUserAction(t, e, UserAction.MODIFY_BUCKET, (e) => MeteorCall.userAction.bucketsModifyBucket(e, bucket._id, partial<Bucket>({
 				name: newName
 			})))
 		}
@@ -337,7 +337,7 @@ export const RundownViewBuckets = translate()(
 				const draggedB = this.props.buckets.find(b => b._id === draggedId)
 
 				if (draggedB) {
-					var newRank = draggedB._rank
+					let newRank = draggedB._rank
 
 					// Dragged over into first place
 					if (newIndex === 0) {
@@ -353,7 +353,7 @@ export const RundownViewBuckets = translate()(
 						newRank = (this.props.buckets[newIndex]._rank + this.props.buckets[newIndex + 1]._rank) / 2
 					}
 
-					doUserAction(t, { type: 'drop' }, 'Modify Bucket', (e) => MeteorCall.userAction.bucketsModifyBucket(e, draggedB._id, partial<Bucket>({
+					doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) => MeteorCall.userAction.bucketsModifyBucket(e, draggedB._id, partial<Bucket>({
 						_rank: newRank
 					})))
 				}

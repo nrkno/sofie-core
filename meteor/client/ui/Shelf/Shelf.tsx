@@ -11,7 +11,8 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
@@ -41,10 +42,8 @@ export enum ShelfTabs {
 }
 export interface IShelfProps {
 	isExpanded: boolean
-	// segments: Array<SegmentUi>
-	// liveSegment?: SegmentUi
-	playlist: RundownPlaylist
 	buckets?: Array<Bucket>
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{

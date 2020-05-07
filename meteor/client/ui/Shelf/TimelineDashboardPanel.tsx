@@ -91,20 +91,20 @@ export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPane
 						})}>
 							{filteredRudownBaselineAdLibs.length > 0 &&
 								<div className='dashboard-panel__panel__group'>
-									{filteredRudownBaselineAdLibs.map((item: AdLibPieceUi) => {
+									{filteredRudownBaselineAdLibs.map((adLibListItem: AdLibPieceUi) => {
 										return <DashboardPieceButton
-											key={unprotectString(item._id)}
-											adLibListItem={item}
-											layer={this.state.sourceLayers[item.sourceLayerId]}
-											outputLayer={this.state.outputLayers[item.outputLayerId]}
+											key={unprotectString(adLibListItem._id)}
+											adLibListItem={adLibListItem}
+											layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
+											outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
 											onToggleAdLib={this.onToggleAdLib}
 											playlist={this.props.playlist}
-											isOnAir={this.isAdLibOnAir(item)}
+											isOnAir={this.isAdLibOnAir(adLibListItem)}
 											mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 											widthScale={filter.buttonWidthScale}
 											heightScale={filter.buttonHeightScale}
 										>
-											{item.name}
+											{adLibListItem.name}
 										</DashboardPieceButton>
 									})}
 								</div>
@@ -113,7 +113,6 @@ export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPane
 								const filteredPieces = seg.pieces ?
 									seg.pieces.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter)) :
 									[]
-
 								return filteredPieces.length > 0 || seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId) ?
 									<div key={unprotectString(seg._id)}
 										id={'dashboard-panel__panel__group__' + seg._id}
@@ -124,20 +123,20 @@ export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPane
 										{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) &&
 											<div className='dashboard-panel__panel__group__liveline' ref={this.setRef}></div>
 										}
-										{filteredPieces.map((item: AdLibPieceUi) => {
+										{filteredPieces.map((adLibListItem: AdLibPieceUi) => {
 											return <DashboardPieceButton
-												key={unprotectString(item._id)}
-												adLibListItem={item}
-												layer={this.state.sourceLayers[item.sourceLayerId]}
-												outputLayer={this.state.outputLayers[item.outputLayerId]}
+												key={unprotectString(adLibListItem._id)}
+												adLibListItem={adLibListItem}
+												layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
+												outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
 												onToggleAdLib={this.onToggleAdLib}
 												playlist={this.props.playlist}
-												isOnAir={this.isAdLibOnAir(item)}
+												isOnAir={this.isAdLibOnAir(adLibListItem)}
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
 											>
-												{item.name}
+												{adLibListItem.name}
 											</DashboardPieceButton>
 										})}
 									</div> :

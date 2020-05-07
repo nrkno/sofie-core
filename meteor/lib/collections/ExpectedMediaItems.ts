@@ -45,7 +45,6 @@ export interface ExpectedMediaItemRundown extends ExpectedMediaItemBase {
 
 	/** The part id that is the source of this Media Item */
 	partId: PartId
-
 }
 
 export interface ExpectedMediaItemBucket extends ExpectedMediaItemBase {

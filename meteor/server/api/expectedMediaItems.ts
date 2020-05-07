@@ -9,8 +9,8 @@ import { saveIntoDb, getCurrentTime, getHash, protectString } from '../../lib/li
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
-import { StudioId } from '../../lib/collections/Studios'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { StudioId } from '../../lib/collections/Studios'
 import { BucketId } from '../../lib/collections/Buckets'
 
 export enum PieceType {

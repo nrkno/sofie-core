@@ -23,13 +23,14 @@ import {
 } from '../../lib/data/mos/plugin-support'
 import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
 import { IMOSItem } from 'mos-connection'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets, BucketId } from '../../../lib/collections/Buckets'
+import { Buckets, Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 
 const PackageInfo = require('../../../package.json')
 
@@ -211,10 +212,9 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 		if (!targetRundown) {
 			throw new Meteor.Error('Target rundown could not be found!')
-			return
 		}
 
-		doUserAction(t, e, 'Importing bucket Ad-Lib', (e) =>
+		doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
 			MeteorCall.userAction.bucketAdlibImport(e,
 				playlist.studioId,
 				targetRundown!.showStyleVariantId,

@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { Piece, InternalIBlueprintPieceGeneric } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { extendMandadory, getHash, protectString, unprotectString, Omit } from '../../../lib/lib'
+import { extendMandadory, getHash, protectString, unprotectString, Omit, ProtectedStringProperties } from '../../../lib/lib'
 import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
@@ -18,11 +18,11 @@ import {
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { BlueprintId } from '../../../lib/collections/Blueprints'
-import { PartId } from '../../../lib/collections/Parts'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { ShowStyleContext } from './context'
 import { RundownImportVersions } from '../../../lib/collections/Rundowns'
+import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { PartId } from '../../../lib/collections/Parts'
 import { BucketId } from '../../../lib/collections/Buckets'
 
 export function postProcessPieces(innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
@@ -148,8 +148,6 @@ export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig:
 		bucketId,
 		importVersions,
 		_rank: rank || itemOrig._rank
-		// status: RundownAPI.PieceStatusCode.UNKNOWN,
-		// disabled: false
 	}
 
 	if (!piece.externalId) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ' + partId + '! ("${innerContext.unhashId(unprotectString(piece._id))}")`)

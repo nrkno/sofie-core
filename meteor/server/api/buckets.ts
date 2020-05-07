@@ -38,7 +38,6 @@ export namespace BucketsAPI {
 			bucketId: id
 		})
 	}
-
 	export function createNewBucket(name: string, studioId: StudioId, userId: string | null) {
 		const heaviestBucket = Buckets.find({
 			studioId

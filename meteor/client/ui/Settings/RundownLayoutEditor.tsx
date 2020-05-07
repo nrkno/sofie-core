@@ -588,11 +588,65 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.hide`}
 								obj={item}
-								type='checkbox'
+								type='float'
 								collection={RundownLayouts}
-								className='mod mas' />
+								className='input text-input input-l' />
 						</label>
 					</div>
+				</React.Fragment>
+			}
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Display Rank')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.rank`}
+						obj={item}
+						type='float'
+						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Enable search toolbar')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.enableSearch`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Only Display AdLibs from Current Segment')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.currentSegment`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Include Global AdLibs')}
+				</label>
+				<EditAttribute
+					modifiedClassName='bghl'
+					attribute={`filters.${index}.rundownBaseline`}
+					obj={item}
+					options={rundownBaselineOptions}
+					type='dropdown'
+					label={t('Filter Disabled')}
+					collection={RundownLayouts}
+					className='input text-input input-l dropdown' />
+			</div>
+			{isDashboardLayout &&
+				<React.Fragment>
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('Show panel as a timeline')}
@@ -824,42 +878,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.x`}
-								obj={item}
-								type='int'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Y')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.y`}
-								obj={item}
-								type='int'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Width')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.width`}
-								obj={item}
-								type='int'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Height')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.height`}
 								obj={item}
 								type='int'
 								collection={RundownLayouts}

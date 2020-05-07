@@ -3,7 +3,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { MomentFromNow } from '../../lib/Moment'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { UserActionsLogItem, UserActionsLog } from '../../../lib/collections/UserActionsLog'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import * as moment from 'moment'
@@ -150,16 +150,17 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 				break
 		}
 
-		doUserAction(t, e, `Method ${method}`, () => CallUserActionAPIMethod(method, args))
+		doUserAction(t, e, UserAction.USER_LOG_PLAYER_METHOD, () => CallUserActionAPIMethod(method, args))
 	}
 
 	renderButtons (msg: UserActionsLogItem) {
+		const { t } = this.props
 		return <p>
 			<button className='action-btn mod mhm' onClick={() => this.startExecution(msg)}>
-				Play from here
+				{t('Play from here')}
 			</button>
 			<button className='action-btn mod mhm' onClick={(e) => this.executeSingle(e, msg)}>
-				Exectute Single
+				{t('Exectute Single')}
 			</button>
 		</p>
 	}
@@ -170,13 +171,13 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 		const { nextAction } = this.state
 		if (!nextAction) {
 			return <React.Fragment>
-				<p>Status: Pending</p>
+				<p>{t('Status')}: {t('Pending')}</p>
 			</React.Fragment>
 		} else {
 			return <React.Fragment>
-				<p>Status: Active</p>
-				<p>Next Action: {`${nextAction.message.method} ${nextAction.message.args}`}</p>
-				<p>Run in: <MomentFromNow>{nextAction.targetTime}</MomentFromNow></p>
+				<p>{t('Status')}: {t('Active')}</p>
+				<p>{t('Next Action')}: {`${nextAction.message.method} ${nextAction.message.args}`}</p>
+				<p>{t('Run in')}: <MomentFromNow>{nextAction.targetTime}</MomentFromNow></p>
 				<p><button onClick={() => this.stopExecution()}>{t('Stop')}</button></p>
 			</React.Fragment>
 		}
@@ -264,7 +265,7 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 					<h1>{t('User Log Player')}</h1>
 				</header>
 				<div className='mod mvl'>
-					<strong>Rundown</strong>
+					<strong>{t('Rundown')}</strong>
 					<ul>
 						{
 							_.map(this.props.rundownPlaylists, (name, id) => {

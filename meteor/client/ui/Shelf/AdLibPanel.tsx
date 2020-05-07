@@ -22,13 +22,14 @@ import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer, IBlueprintAdLibPiece, IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { RundownLayoutFilter, RundownLayoutFilterBase, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal, extendMandadory, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { Piece, PieceGeneric } from '../../../lib/collections/Pieces'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -829,15 +830,15 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (!adlibPiece.isGlobal) {
-				doUserAction(t, e, 'Start Global Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
+				doUserAction(t, e, UserAction.START_ADLIB, (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
 					this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false
 				))
 			} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-				doUserAction(t, e, 'Start Global Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
+				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
 					this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false
 				))
 			} else if (adlibPiece.isSticky) {
-				doUserAction(t, e, 'Start Sticky Piece', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e,
+				doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e,
 					this.props.playlist._id, adlibPiece.sourceLayerId
 				))
 			}
@@ -849,8 +850,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Clearing SourceLayer', () => MeteorCall.userAction.sourceLayerOnPartStop(e,
-				this.props.playlist._id, currentPartInstanceId, _.map(sourceLayers, sl => sl._id)
+			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) => MeteorCall.userAction.sourceLayerOnPartStop(e,
+				this.props.playlist._id, currentPartInstanceId, sourceLayers.map(i => i._id)
 			))
 		}
 	}

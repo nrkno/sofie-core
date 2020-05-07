@@ -61,15 +61,17 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 			const piece = this.props.piece
 			let objId: string | undefined = undefined
 
-			if (piece.instance.piece.content) {
-				switch (this.props.piece.sourceLayer.type) {
-					case SourceLayerType.VT:
-						objId = (piece.instance.piece.content as VTContent).fileName.toUpperCase()
-						break
-					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
-						break
-				}
+			switch (this.props.piece.sourceLayer.type) {
+				case SourceLayerType.VT:
+					objId = piece.instance.piece.content ?
+						(piece.instance.piece.content as VTContent).fileName.toUpperCase() :
+						undefined
+					break
+				case SourceLayerType.LIVE_SPEAK:
+					objId = piece.instance.piece.content ?
+						(piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase() :
+						undefined
+					break
 			}
 
 			if (objId && objId !== this.objId) {

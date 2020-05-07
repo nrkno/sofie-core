@@ -24,16 +24,17 @@ import { literal, normalizeArray, unprotectString, protectString } from '../../.
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { IOutputLayer, ISourceLayer, IBlueprintAdLibPieceDB, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { ShelfInspector } from './Inspector/ShelfInspector'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
-import { ShelfInspector } from './Inspector/ShelfInspector'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -112,7 +113,10 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<Tr
 							name: t('Last {{layerName}}', { layerName: (layer.abbreviation || layer.name) }),
 							status: RundownAPI.PieceStatusCode.UNKNOWN,
 							layer: layer,
-							isSticky: true
+							isSticky: true,
+							sourceLayerId: layer._id,
+							externalId: '',
+							outputLayerId: ''
 						})))
 						.map((item) => {
 							if (!item.isHidden) {
@@ -252,7 +256,6 @@ interface IProps {
 }
 
 interface IState {
-	selectedPiece: AdLibPiece | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	followLive: boolean
 	filter: string | undefined
@@ -330,7 +333,6 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		this.state = {
 			selectedSegment: undefined,
-			selectedPiece: undefined,
 			filter: undefined,
 			followLive: true
 		}
@@ -446,7 +448,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.currentRundown && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, 'Start playing Sticky Piece', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
+			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId))
 		}
 	}
 
@@ -475,7 +477,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 			const { t } = this.props
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Start Global Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e, this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false))
+			doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) => MeteorCall.userAction.baselineAdLibPieceStart(e, this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false))
 		}
 	}
 
@@ -485,7 +487,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const { t } = this.props
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			doUserAction(t, e, 'Stop Global Adlib', (e) => MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, _.map(sourceLayers, sl => sl._id)))
+			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) => MeteorCall.userAction.sourceLayerOnPartStop(e, this.props.playlist._id, currentPartInstanceId, sourceLayers.map(sl => sl._id)))
 		}
 	}
 

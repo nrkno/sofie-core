@@ -1,15 +1,19 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IngestRundown, IngestSegment, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { ShowStyleVariantId } from './ShowStyleVariants'
+import { StudioId } from './Studios'
+
+export type BucketIngestCacheObjId = ProtectedString<'BucketIngestCacheObjId'>
 
 export interface BucketIngestCacheObj {
-	_id: string
+	_id: BucketIngestCacheObjId
 	modified: number
 
-	showStyleVariantId: string
-	studioId: string
+	showStyleVariantId: ShowStyleVariantId
+	studioId: StudioId
 
 	data: IngestAdlib
 }
