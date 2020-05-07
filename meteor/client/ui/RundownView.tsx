@@ -1248,7 +1248,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						_id: playlist.studioId
 					})
 					this.subscribe(PubSub.buckets, {
-
+						studioId: playlist.studioId
 					})
 				}
 			})
