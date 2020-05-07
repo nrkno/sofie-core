@@ -1062,7 +1062,7 @@ interface ITrackedProps {
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
-	buckets?: Array<Bucket>
+	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
 }
@@ -1109,7 +1109,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			sort: {
 				'_rank': 1
 			}
-		}).fetch(),
+		}).fetch() || [],
 		casparCGPlayoutDevices: (studio && PeripheralDevices.find({
 			parentDeviceId: {
 				$in: PeripheralDevices.find({
@@ -1998,6 +1998,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								<ErrorBoundary>
 									<Shelf
 										ref={this.setInspectorShelf}
+										buckets={this.props.buckets}
 										isExpanded={this.state.isInspectorShelfExpanded}
 										onChangeExpanded={this.onShelfChangeExpanded}
 										hotkeys={this.state.usedHotkeys}
@@ -2036,6 +2037,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					return <ErrorBoundary>
 						<Shelf
 							ref={this.setInspectorShelf}
+							buckets={this.props.buckets}
 							isExpanded={this.state.isInspectorShelfExpanded}
 							onChangeExpanded={this.onShelfChangeExpanded}
 							hotkeys={this.state.usedHotkeys}

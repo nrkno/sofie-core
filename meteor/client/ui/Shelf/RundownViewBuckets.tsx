@@ -422,29 +422,29 @@ export const RundownViewBuckets = translate()(
 							<div className='rundown-view__shelf__contents__pane__handle'>
 								<FontAwesomeIcon icon={faBars} />
 							</div>
-							<ContextMenuTrigger id='bucket-context-menu' collect={() => new Promise((resolve) => {
-								this.setState({
-									contextBucket: bucket,
-									contextBucketAdLib: undefined
-								}, resolve)
-							})}
-								holdToDisplay={contextMenuHoldToDisplayTime()}>
-								{this.state.panelWidths[index] > 0 &&
-									<BucketPanel
-										playlist={playlist}
-										showStyleBase={showStyleBase}
-										shouldQueue={shouldQueue}
-										bucket={bucket}
-										editableName={this.state.editedNameId === bucket._id}
-										onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
-										moveBucket={this.moveBucket}
-										findBucket={this.findBucket}
-										onBucketReorder={this.onBucketReorder}
-										onAdLibContext={this.onAdLibContext}
-									/>
-								}
-							</ContextMenuTrigger>
 						</div>
+						<ContextMenuTrigger id='bucket-context-menu' collect={() => new Promise((resolve) => {
+							this.setState({
+								contextBucket: bucket,
+								contextBucketAdLib: undefined
+							}, resolve)
+						})}
+							holdToDisplay={contextMenuHoldToDisplayTime()}>
+							{this.state.panelWidths[index] > 0 &&
+								<BucketPanel
+									playlist={playlist}
+									showStyleBase={showStyleBase}
+									shouldQueue={shouldQueue}
+									bucket={bucket}
+									editableName={this.state.editedNameId === bucket._id}
+									onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
+									moveBucket={this.moveBucket}
+									findBucket={this.findBucket}
+									onBucketReorder={this.onBucketReorder}
+									onAdLibContext={this.onAdLibContext}
+								/>
+							}
+						</ContextMenuTrigger>
 					</div>
 				)}
 			</>

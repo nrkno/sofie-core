@@ -42,7 +42,7 @@ export enum ShelfTabs {
 }
 export interface IShelfProps {
 	isExpanded: boolean
-	buckets?: Array<Bucket>
+	buckets: Array<Bucket>
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean

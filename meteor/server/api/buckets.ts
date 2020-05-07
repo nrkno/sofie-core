@@ -16,6 +16,11 @@ const DEFAULT_BUCKET_WIDTH = undefined
 
 export namespace BucketsAPI {
 	export function removeBucketAdLib(id: PieceId) {
+		const adlib = BucketAdLibs.findOne(id)
+		if (!adlib) throw new Meteor.Error(404, `Bucket Ad-Lib not found: ${id}`)
+
+		if (!BucketSecurity.allowWriteAccess(adlib.bucketId)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
+
 		BucketAdLibs.remove({
 			_id: id
 		})
@@ -25,12 +30,22 @@ export namespace BucketsAPI {
 	}
 
 	export function modifyBucket(id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
+		const oldBucket = Buckets.findOne(id)
+		if (!oldBucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
+
+		if (!BucketSecurity.allowWriteAccess(id)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${bucket.bucketId}`)
+
 		Buckets.update(id, {
 			$set: _.omit(bucket, ['_id'])
 		})
 	}
 
 	export function emptyBucket(id: BucketId) {
+		const bucket = Buckets.findOne(id)
+		if (!bucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
+
+		if (!BucketSecurity.allowWriteAccess(id)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${id}`)
+
 		BucketAdLibs.remove({
 			bucketId: id
 		})
@@ -39,6 +54,9 @@ export namespace BucketsAPI {
 		})
 	}
 	export function createNewBucket(name: string, studioId: StudioId, userId: string | null) {
+		const studio = Studios.findOne(studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio not found: ${studioId}`)
+
 		const heaviestBucket = Buckets.find({
 			studioId
 		}, {
@@ -105,6 +123,11 @@ export namespace BucketsAPI {
 	}
 
 	export function removeBucket(id: BucketId) {
+		const bucket = Buckets.findOne(id)
+		if (!bucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
+
+		if (!BucketSecurity.allowWriteAccess(id)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${id}`)
+
 		Buckets.remove(id)
 		BucketAdLibs.remove({
 			bucketId: id

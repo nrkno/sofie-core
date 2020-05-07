@@ -538,26 +538,39 @@ export function bucketsRemoveBucket(id: BucketId) {
 	)
 }
 export function bucketsModifyBucket(id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
+	check(id, String)
+	check(bucket, Object)
+
 	return ClientAPI.responseSuccess(
 		BucketsAPI.modifyBucket(id, bucket)
 	)
 }
 export function bucketsEmptyBucket(id: BucketId) {
+	check(id, String)
+
 	return ClientAPI.responseSuccess(
 		BucketsAPI.emptyBucket(id)
 	)
 }
 export function bucketsCreateNewBucket(name: string, studioId: StudioId, userId: string | null) {
+	check(name, String)
+	check(studioId, String)
+
 	return ClientAPI.responseSuccess(
 		BucketsAPI.createNewBucket(name, studioId, userId)
 	)
 }
 export function bucketsRemoveBucketAdLib(id: PieceId) {
+	check(id, String)
+
 	return ClientAPI.responseSuccess(
 		BucketsAPI.removeBucketAdLib(id)
 	)
 }
 export function bucketsModifyBucketAdLib(id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
+	check(id, String)
+	check(adlib, Object)
+
 	return ClientAPI.responseSuccess(
 		BucketsAPI.modifyBucketAdLib(id, adlib)
 	)
