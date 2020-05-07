@@ -10,7 +10,7 @@ const commonConfig = {
 	],
 	globals: {
 		'ts-jest': {
-			tsConfig: 'tsconfig.test.json',
+			tsConfig: 'tsconfig.json',
 			diagnostics: {
 				ignoreCodes: [
 					'TS151001'
