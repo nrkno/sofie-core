@@ -7,7 +7,6 @@ import {
 import { ClientAPI } from '../../lib/api/client'
 import { Meteor } from 'meteor/meteor'
 import { eventContextForLog } from './clientAPI'
-import { UserActionAPIMethods } from '../../lib/api/userActions'
 
 export enum UserAction {
 	SAVE_EVALUATION,

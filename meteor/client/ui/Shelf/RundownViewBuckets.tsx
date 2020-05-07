@@ -25,7 +25,6 @@ import { DropTarget } from 'react-dnd'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
@@ -371,7 +370,7 @@ export const RundownViewBuckets = translate()(
 			const { playlist, showStyleBase, shouldQueue, t } = this.props
 			const { localBuckets: buckets } = this.state
 			return <>
-				< Escape to='document' >
+				<Escape to='document'>
 					<ContextMenu id='bucket-context-menu' onHide={this.clearContextBucket}>
 						{!this.state.contextBucketAdLib && this.state.contextBucket &&
 							<div className='react-contextmenu-label'>
@@ -409,7 +408,7 @@ export const RundownViewBuckets = translate()(
 							{t('Create new Bucket')}
 						</MenuItem>
 					</ContextMenu>
-				</Escape >
+				</Escape>
 				{buckets && buckets.map((bucket, index) =>
 					<div className='rundown-view__shelf__contents__pane'
 						key={unprotectString(bucket._id)}
