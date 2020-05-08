@@ -543,6 +543,14 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 				</label>
 			</div>
 			<div className='mod mvs mhs'>
+				<label className='field' title={t('List of commands to send to Viz Engines in order to clear their output. One command per line.')}>
+					<span>{t('Clear-All commands')}</span>
+					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.clearAllCommands'} obj={this.props.device} type='multiline' collection={PeripheralDevices} className='input text-input input-l nw medium'
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join('\n')}
+						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split('\n').map(i => i.trimStart())}></EditAttribute>
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
 				<label className='field'>
 					{t('Clear-All on make-ready (activate rundown)')}
 					<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.clearAllOnMakeReady'} obj={this.props.device} type='checkbox' collection={PeripheralDevices} className='input'></EditAttribute>

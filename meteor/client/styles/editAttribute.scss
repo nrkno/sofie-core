@@ -3,7 +3,14 @@
     select,
     input,
     textarea
-     {
+    {
         color: #000;
     }
+}
+
+textarea {
+	&.medium {
+		height: 6em;
+		vertical-align: middle;
+	}
 }
