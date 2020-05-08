@@ -40,9 +40,8 @@ export class Segment implements DBSegment {
 	public metaData?: { [key: string]: any }
 	public status?: string
 	public expanded?: boolean
-	public notes?: Array<PartNote>
+	public notes?: Array<SegmentNote>
 	public isHidden?: boolean
-	public identifier?: string
 	public unsynced?: boolean
 	public unsyncedTime?: Time
 
