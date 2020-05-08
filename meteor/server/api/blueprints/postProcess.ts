@@ -24,7 +24,7 @@ import { PartId } from '../../../lib/collections/Parts'
 import { AdLibAction } from '../../../lib/collections/AdLibActions';
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions';
 
-export function postProcessPieces (innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
+export function postProcessPieces(innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -61,7 +61,7 @@ export function postProcessPieces (innerContext: RundownContext, pieces: IBluepr
 	})
 }
 
-export function postProcessAdLibPieces (innerContext: RundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: BlueprintId, partId?: PartId): AdLibPiece[] {
+export function postProcessAdLibPieces(innerContext: RundownContext, adLibPieces: IBlueprintAdLibPiece[], blueprintId: BlueprintId, partId?: PartId): AdLibPiece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -100,21 +100,24 @@ export function postProcessAdLibPieces (innerContext: RundownContext, adLibPiece
 export function postProcessGlobalAdLibActions(innerContext: RundownContext, adlibActions: IBlueprintActionManifest[], blueprintId: BlueprintId): RundownBaselineAdLibAction[] {
 	return _.map(adlibActions, (action, i) => literal<RundownBaselineAdLibAction>({
 		...action,
+		actionId: protectString(action.actionId),
 		_id: protectString(getHash(`${blueprintId}_global_adlib_action_${i}`)),
-		rundownId: protectString(innerContext.rundownId)
+		rundownId: protectString(innerContext.rundownId),
+		partId: undefined
 	}))
 }
 
 export function postProcessAdLibActions(innerContext: RundownContext, adlibActions: IBlueprintActionManifest[], blueprintId: BlueprintId, partId: PartId): AdLibAction[] {
 	return _.map(adlibActions, (action, i) => literal<AdLibAction>({
 		...action,
+		actionId: protectString(action.actionId),
 		_id: protectString(getHash(`${blueprintId}_${partId}_adlib_action_${i}`)),
 		rundownId: protectString(innerContext.rundownId),
 		partId: partId
 	}))
 }
 
-export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(objs), (baseObj, i) => {
 		const obj = convertTimelineObject(baseObj)
@@ -128,7 +131,7 @@ export function postProcessStudioBaselineObjects (studio: Studio, objs: TSR.TSRT
 	})
 }
 
-function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObjRundown {
+function convertTimelineObject(o: TimelineObjectCoreExt): TimelineObjRundown {
 	return {
 		...o,
 		id: o.id,
@@ -138,7 +141,7 @@ function convertTimelineObject (o: TimelineObjectCoreExt): TimelineObjRundown {
 	}
 }
 
-export function postProcessRundownBaselineItems (innerContext: RundownContext, baselineItems: TSR.Timeline.TimelineObject[]): TimelineObjGeneric[] {
+export function postProcessRundownBaselineItems(innerContext: RundownContext, baselineItems: TSR.Timeline.TimelineObject[]): TimelineObjGeneric[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return _.map(_.compact(baselineItems), (o: TimelineObjGeneric, i): TimelineObjGeneric => {
 		const obj: TimelineObjGeneric = convertTimelineObject(o)
