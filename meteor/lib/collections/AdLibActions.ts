@@ -10,7 +10,7 @@ import { RundownId } from './Rundowns';
 /** A string, identifying an AdLibActionId */
 export type AdLibActionId = ProtectedString<'AdLibActionId'>
 
-export interface AdLibActionCommon extends IBlueprintActionManifest {
+export interface AdLibActionCommon extends ProtectedStringProperties<IBlueprintActionManifest, 'actionId' | 'partId'> {
 	rundownId: RundownId
 }
 
