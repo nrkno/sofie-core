@@ -33,7 +33,7 @@ export namespace BucketsAPI {
 		const oldBucket = Buckets.findOne(id)
 		if (!oldBucket) throw new Meteor.Error(404, `Bucket not found: ${id}`)
 
-		if (!BucketSecurity.allowWriteAccess(id)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${bucket.bucketId}`)
+		if (!BucketSecurity.allowWriteAccess(id)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${id}`)
 
 		Buckets.update(id, {
 			$set: _.omit(bucket, ['_id'])
