@@ -9,7 +9,7 @@ import { KeyboardLayouts } from '../../../lib/keyboardLayout'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import * as _ from 'underscore'
-import { RundownLayoutBase, DashboardLayoutMultiView, RundownLayoutKeyboardPreview, DashboardLayoutKeyboardPreview } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayoutKeyboardPreview, DashboardLayoutKeyboardPreview } from '../../../lib/collections/RundownLayouts'
 
 interface IProps {
 	visible?: boolean
@@ -21,11 +21,11 @@ interface IProps {
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
 export const KeyboardPreviewPanel = translate()(class KeyboardPreviewPanel extends React.Component<Translated<IProps>> {
-	constructor (props: Translated<IProps>) {
+	constructor(props: Translated<IProps>) {
 		super(props)
 	}
 
-	render () {
+	render() {
 		if (this.props.visible) {
 			return (
 				<div

@@ -70,10 +70,11 @@ interface DashboardPositionableElement {
 	y: number
 	width: number
 	height: number
+	scale?: number
 }
 const HOTKEY_GROUP = 'DashboardPanel'
 
-export function dashboardElementPosition (el: DashboardPositionableElement): React.CSSProperties {
+export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
 	return {
 		width: el.width >= 0 ?
 			`calc((${el.width} * var(--dashboard-button-grid-width)) + var(--dashboard-panel-margin-width))` :
@@ -100,14 +101,15 @@ export function dashboardElementPosition (el: DashboardPositionableElement): Rea
 			`calc(${-1 * el.y - 1} * var(--dashboard-button-grid-height))` :
 			el.height < 0 ?
 				`calc(${-1 * el.height - 1} * var(--dashboard-button-grid-height))` :
-				undefined
+				undefined,
+		'--dashboard-panel-scale': el.scale || undefined
 	}
 }
 
 export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
 
 		this.state = {
@@ -117,7 +119,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	static getDerivedStateFromProps (props: IAdLibPanelProps, state) {
+	static getDerivedStateFromProps(props: IAdLibPanelProps, state) {
 		let tOLayers: {
 			[key: string]: IOutputLayer
 		} = {}
@@ -142,7 +144,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.subscribe(PubSub.segments, {
 			rundownId: this.props.rundown._id
 		})
@@ -168,7 +170,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
+	componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 		this.usedHotkeys.length = 0
@@ -176,7 +178,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this._cleanUp()
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
@@ -184,21 +186,21 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		this.usedHotkeys.length = 0
 	}
 
-	isAdLibOnAir (adLib: AdLibPieceUi) {
+	isAdLibOnAir(adLib: AdLibPieceUi) {
 		if (this.props.unfinishedPieces[adLib._id] && this.props.unfinishedPieces[adLib._id].length > 0) {
 			return true
 		}
 		return false
 	}
 
-	isAdLibNext (adLib: AdLibPieceUi) {
+	isAdLibNext(adLib: AdLibPieceUi) {
 		if (this.props.nextPieces[adLib._id] && this.props.nextPieces[adLib._id].length > 0) {
 			return true
 		}
 		return false
 	}
 
-	refreshKeyboardHotkeys () {
+	refreshKeyboardHotkeys() {
 		if (!this.props.studioMode) return
 		if (!this.props.registerHotkeys) return
 
@@ -255,7 +257,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 
 		if (this.props.sourceLayerLookup) {
-			const clearKeyboardHotkeySourceLayers: {[hotkey: string]: ISourceLayer[]} = {}
+			const clearKeyboardHotkeySourceLayers: { [hotkey: string]: ISourceLayer[] } = {}
 
 			_.each(this.props.sourceLayerLookup, (sourceLayer) => {
 				if (sourceLayer.clearKeyboardHotkey) {
@@ -393,7 +395,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		})
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
@@ -411,7 +413,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
 						</h4>
-						{ filter.enableSearch &&
+						{filter.enableSearch &&
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
 						}
@@ -423,21 +425,21 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 								.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter))
 								.map((item: AdLibPieceUi) => {
 									return <DashboardPieceButton
-												key={item._id}
-												item={item}
-												layer={this.state.sourceLayers[item.sourceLayerId]}
-												outputLayer={this.state.outputLayers[item.outputLayerId]}
-												onToggleAdLib={usesTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
-												rundown={this.props.rundown}
-												isOnAir={this.isAdLibOnAir(item)}
-												isNext={this.isAdLibNext(item)}
-												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
-												widthScale={filter.buttonWidthScale}
-												heightScale={filter.buttonHeightScale}
-												displayStyle={filter.displayStyle}
-												isSelected={this.state.selectedAdLib && item._id === this.state.selectedAdLib._id}
-											>
-												{item.name}
+										key={item._id}
+										item={item}
+										layer={this.state.sourceLayers[item.sourceLayerId]}
+										outputLayer={this.state.outputLayers[item.outputLayerId]}
+										onToggleAdLib={usesTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
+										rundown={this.props.rundown}
+										isOnAir={this.isAdLibOnAir(item)}
+										isNext={this.isAdLibNext(item)}
+										mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+										widthScale={filter.buttonWidthScale}
+										heightScale={filter.buttonHeightScale}
+										displayStyle={filter.displayStyle}
+										isSelected={this.state.selectedAdLib && item._id === this.state.selectedAdLib._id}
+									>
+										{item.name}
 									</DashboardPieceButton>
 								})}
 						</div>
@@ -463,7 +465,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 	}
 }
 
-export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: string | null) {
+export function getUnfinishedPiecesReactive(rundownId: string, currentPartId: string | null) {
 	let prospectivePieces: Piece[] = []
 	const now = getCurrentTime()
 	if (currentPartId) {
@@ -520,13 +522,13 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 			let duration: number | undefined =
 				(piece.playoutDuration) ?
 					piece.playoutDuration :
-				(piece.userDuration && typeof piece.userDuration.duration === 'number') ?
-					piece.userDuration.duration :
-				(piece.userDuration && typeof piece.userDuration.end === 'string') ?
-					0 : // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
-				(typeof piece.enable.duration === 'number') ?
-					piece.enable.duration :
-					undefined
+					(piece.userDuration && typeof piece.userDuration.duration === 'number') ?
+						piece.userDuration.duration :
+						(piece.userDuration && typeof piece.userDuration.end === 'string') ?
+							0 : // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
+							(typeof piece.enable.duration === 'number') ?
+								piece.enable.duration :
+								undefined
 
 			if (duration !== undefined) {
 				const end = ((piece.startedPlayback || 0) + duration)

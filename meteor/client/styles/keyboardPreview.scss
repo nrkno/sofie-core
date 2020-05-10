@@ -117,3 +117,18 @@
 		left: 52em;
 	}
 }
+
+.dashboard > .adlib-panel--keyboard-preview {
+	--dashboard-panel-scale: 1;
+
+	> .keyboard-preview {
+		--keyboard-preview-height: calc(100vw / 23 * var(--dashboard-panel-scale));
+	
+		.keyboard-preview__key-row .keyboard-preview__key > .keyboard-preview__key__function-label {
+			font-size: calc(var(--dashboard-panel-scale) * 16px);
+		}
+		.keyboard-preview__key-row .keyboard-preview__key > .keyboard-preview__key__label {
+			font-size: calc(var(--dashboard-panel-scale) * 16px);
+		}
+	}
+}
