@@ -1,47 +1,16 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { Link } from 'react-router-dom'
-import { RouteComponentProps } from 'react-router';
-const Tooltip = require('rc-tooltip')
-import timer from 'react-timer-hoc'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import Moment from 'react-moment'
-import { RundownUtils } from '../lib/rundown'
-import { getCurrentTime, literal, unprotectString } from '../../lib/lib'
-import { MomentFromNow } from '../lib/Moment'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { ManualPlayout } from './manualPlayout'
-import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
-import { doUserAction } from '../lib/userAction'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
-import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
-import { Studios, StudioId } from '../../lib/collections/Studios'
-import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { PubSub } from '../../lib/api/pubsub'
-import { ReactNotification } from '../lib/notifications/ReactNotification'
-import { Spinner } from '../lib/Spinner'
-import { MeteorCall } from '../../lib/api/methods'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { getUser } from '../../lib/collections/Users'
 
-const PackageInfo = require('../../package.json')
 
-
-enum ToolTipStep {
-	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
-	TOOLTIP_RUN_MIGRATIONS = 'TOOLTIP_RUN_MIGRATIONS',
-	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS'
-}
 
 interface IResetPageProps extends RouteComponentProps<{token: string}> {
-	coreSystem: ICoreSystem
+
 }
 
 interface IResetPageState {
@@ -71,22 +40,39 @@ class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState>
 			subsReady: false,
 			password: ''
 		}
+		this.handleChange = this.handleChange.bind(this)
+		this.validateChange = this.validateChange.bind(this)
+		this.handleReset = this.handleReset.bind(this)
 	}
 
-	private validateChange (e: React.ChangeEvent<HTMLInputElement>) {
-		const val = e.target.value
-		const token = this.props.match.params.token
+	private handleChange (e: React.ChangeEvent<HTMLInputElement>) {
+		this.setState({...this.state, [e.currentTarget.name] : e.currentTarget.value})
+	}
+
+	private validateChange (): boolean {
 		const errors: string[] = []
 		const { t } = this.props
 
-		if(val.length < 5) errors.push(t('Password must be'))
+		if(this.state.password.length < 5) 
+			errors.push(t('Password must be atleast 5 characters long'))
 		/** Add more password rules */
-
 		if(errors.length) {
-			/** @TODO display errors to user in UI */
-		} else {
-			/** Accounts.resetPassword(token, this.state.password) */
-		}
+			NotificationCenter.push(new Notification(
+				undefined,
+				NoticeLevel.WARNING,
+				<React.Fragment>
+					{errors.map(e => <span>{e}</span>)}
+				</React.Fragment>,
+				'Reset Password Page'
+			))
+			return false
+		} 
+		return true
+	}
+
+	private handleReset () {
+		if(!this.validateChange()) return
+		const token = this.props.match.params.token
 	}
 
 	render() {
@@ -96,12 +82,14 @@ class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState>
 				<div className="reset-password container">
 					<p>{t('Enter your new password')}</p>
 					<input 
-						type="text" 
+						type='password' 
+						name='password'
 						value={this.state.password} 
-						onChange={this.validateChange} 
+						onChange={this.handleChange}
+						onBlur={this.validateChange} 
 						placeholder={t('Password')}
 					/>
-					<button>{t('Set new password')}</button>
+					<button onClick={this.handleReset}>{t('Set new password')}</button>
 				</div>
 			</React.Fragment>
 		)

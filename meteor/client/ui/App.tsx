@@ -43,14 +43,10 @@ import { SignupPage } from './SignupPage'
 import { RequestResetPage } from './RequestResetPage'
 import { ResetPage } from './ResetPage'
 import { AccountPage } from './AccountPage';
-
-interface IAppState {
-	allowStudio: boolean
-	allowConfigure: boolean
-	allowTesting: boolean
-	allowDeveloper: boolean
-	allowService: boolean
-}
+import { getUserId, UserId } from '../../lib/collections/Users'
+import { PubSub } from '../../lib/api/pubsub'
+import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 const NullComponent = () => null
 
@@ -59,33 +55,26 @@ const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
 const WINDOW_START_HOUR = 3
 const WINDOW_END_HOUR = 5
 
-const authenticate = {
-	auth: false,
-	login: function() {
-		this.auth = true
-	},
-	logout: function() {
-		this.auth = false
-	}
-}
 
-const ProtectedRoute = ({component: Component, ...args}: any) => {
-	if(!Settings.enableUserAccounts) {
-		return <Route {...args} render={Component}/>
-	} else {
-		return <Route {...args} render={(props) => (
-			authenticate.auth 
-				? <Component {...props} />
-				: <Redirect to='/' />
-		)}/>
-	}
-	
+
+interface iAppProps extends InjectedI18nProps {
+	userId: UserId | null
+}
+interface IAppState {
+	allowStudio: boolean
+	allowConfigure: boolean
+	allowTesting: boolean
+	allowDeveloper: boolean
+	allowService: boolean
+	subscriptionsReady: boolean
 }
 
 // App component - represents the whole app
-class App extends React.Component<InjectedI18nProps, IAppState> {
+export const App = translateWithTracker(() => {
+	const userId = getUserId() // just for reactivity
+	return { userId }
+})(class App extends MeteorReactComponent<Translated<iAppProps>, IAppState> {
 	private lastStart = 0
-	
 
 	constructor (props) {
 		super(props)
@@ -117,11 +106,24 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 			allowConfigure: getAllowConfigure(),
 			allowTesting: getAllowTesting(),
 			allowDeveloper: getAllowDeveloper(),
-			allowService: getAllowService()
+			allowService: getAllowService(),
+			subscriptionsReady: false
 		}
 
 		this.lastStart = Date.now()
-		this.updateLoggedInStatus = this.updateLoggedInStatus.bind(this)
+		this.protectedRoute = this.protectedRoute.bind(this)
+	}
+	private protectedRoute ({component: Component, ...args}: any) {
+		if(!Settings.enableUserAccounts) {
+			return <Route {...args} render={Component}/>
+		} else {
+			return <Route {...args} render={(props) => (
+				this.props.userId
+					? <Component {...props} />
+					: <Redirect to='/' />
+			)}/>
+		}
+		
 	}
 	cronJob = () => {
 		const now = new Date()
@@ -139,13 +141,18 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		}
 	}
 
-	updateLoggedInStatus (status: boolean) {
-		status ? authenticate.login() : authenticate.logout()
-	}
-
 
 	componentDidMount () {
 		const { i18n } = this.props
+
+		// Global subscription of the currently logged in user:
+		this.subscribe(PubSub.loggedInUser, {})
+		this.autorun(() => {
+			// Set state just to force a re-render of the whole app when the user-data has arrived:
+			this.setState({
+				subscriptionsReady: this.subscriptionsReady() // reactive
+			})
+		})
 
 		m.locale(i18n.language)
 		document.documentElement.lang = i18n.language
@@ -169,7 +176,13 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRundown' component={NullComponent} />
 							<Route path='/prompter/:studioId' component={NullComponent} />
-							<Route path='/' render={(props) => <Header {...props} allowConfigure={this.state.allowConfigure} allowTesting={this.state.allowTesting} allowDeveloper={this.state.allowDeveloper} />} />
+							<Route path='/' render={(props) => <Header 
+								{...props}
+								userId={this.props.userId}
+								allowConfigure={this.state.allowConfigure} 
+								allowTesting={this.state.allowTesting} 
+								allowDeveloper={this.state.allowDeveloper} 
+							/>} />
 						</Switch>
 					</ErrorBoundary>
 					{/* Main app switch */}
@@ -177,23 +190,23 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 						<Switch>
 							{Settings.enableUserAccounts ?
 								[
-									<Route key='0' exact path='/' component={(props) => <LoginPage updateLoggedInStatus={this.updateLoggedInStatus} {...props}/>} />,
+									<Route key='0' exact path='/' component={(props) => <LoginPage {...props}/>} />,
 									<Route key='1' exact path='/login' component={() => <Redirect to='/'/>}/>,
 									<Route key='2' exact path='/signup' component={SignupPage} />,
 									<Route key='3' exact path='/reset' component={RequestResetPage} />,
 									<Route key='4' exact path='/reset/:token' component={ResetPage} />,
-									<ProtectedRoute key='5' exact path='/account' component={AccountPage} />,
-									<ProtectedRoute key='6' exact path='/lobby' component={RundownList} />
-								]:
+									<this.protectedRoute key='5' exact path='/account' component={AccountPage} />,
+									<this.protectedRoute key='6' exact path='/lobby' component={RundownList} />
+								] :
 								<Route exact path='/' component={RundownList} />
 							}
-							<ProtectedRoute path='/rundowns' component={RundownList} />
-							<ProtectedRoute path='/rundown/:playlistId' component={RundownView} />
-							<ProtectedRoute path='/activeRundown/:studioId' component={ActiveRundownView} />
-							<ProtectedRoute path='/prompter/:studioId' component={PrompterView} />
-							<ProtectedRoute path='/countdowns/:studioId/presenter' component={ClockView} />
-							<ProtectedRoute path='/status' component={Status} />
-							<ProtectedRoute path='/settings' component={SettingsComponent} />
+							<this.protectedRoute path='/rundowns' component={RundownList} />
+							<this.protectedRoute path='/rundown/:playlistId' component={RundownView} />
+							<this.protectedRoute path='/activeRundown/:studioId' component={ActiveRundownView} />
+							<this.protectedRoute path='/prompter/:studioId' component={PrompterView} />
+							<this.protectedRoute path='/countdowns/:studioId/presenter' component={ClockView} />
+							<this.protectedRoute path='/status' component={Status} />
+							<this.protectedRoute path='/settings' component={SettingsComponent} />
 							<Route path='/testTools' component={TestTools} />
 						</Switch>
 					</ErrorBoundary>
@@ -214,6 +227,6 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 			</Router>
 		)
 	}
-}
+})
 
-export default translate()(App)
+export default App

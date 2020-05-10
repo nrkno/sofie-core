@@ -42,7 +42,7 @@ class WelcomeToSettings extends React.Component {
 }
 
 interface ISettingsMenuProps {
-	user: User
+	user: User | null
 	match?: any
 }
 interface ISettingsMenuState {
@@ -55,7 +55,9 @@ interface ISettingsMenuTrackedProps {
 }
 const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps >((props: ISettingsMenuProps) => {
 	// TODO: add organizationId:
-	meteorSubscribe(PubSub.studios, {organizationId: props.user.organizationId})
+	
+
+	meteorSubscribe(PubSub.studios, {})
 	meteorSubscribe(PubSub.showStyleBases, {})
 	meteorSubscribe(PubSub.showStyleVariants, {})
 	meteorSubscribe(PubSub.blueprints, {})
@@ -370,12 +372,17 @@ interface ISettingsProps {
 	match?: any
 }
 class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
-	private user = getUser() as User
+	private user: User | null
+	constructor (props: ISettingsProps) {
+		super(props)
+		this.user = getUser()
+		console.log(this.user)
+	}
 	
 	componentWillMount () {
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})
-		this.subscribe(PubSub.studios, {organizationId: this.user.organizationId})
+		this.subscribe(PubSub.studios, {})
 		this.subscribe(PubSub.showStyleBases, {})
 		this.subscribe(PubSub.showStyleVariants, {})
 		this.subscribe(PubSub.blueprints, {})

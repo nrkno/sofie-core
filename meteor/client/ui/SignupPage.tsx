@@ -2,57 +2,17 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { Link } from 'react-router-dom'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { RouteComponentProps } from 'react-router'
-const Tooltip = require('rc-tooltip')
-import timer from 'react-timer-hoc'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import Moment from 'react-moment'
-import { RundownUtils } from '../lib/rundown'
-import { getCurrentTime, literal, unprotectString } from '../../lib/lib'
-import { MomentFromNow } from '../lib/Moment'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { ManualPlayout } from './manualPlayout'
-import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
-import { doUserAction } from '../lib/userAction'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
-import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
-import { Studios, StudioId } from '../../lib/collections/Studios'
-import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { PubSub } from '../../lib/api/pubsub'
-import { ReactNotification } from '../lib/notifications/ReactNotification'
-import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
 import { getUser } from '../../lib/collections/Users'
 
-const PackageInfo = require('../../package.json')
 
-const validEmailRegex = new RegExp("/[^@]+@[^\.]+\..+/g")
-
-interface RundownPlaylistUi extends RundownPlaylist {
-	rundownStatus: string
-	rundownAirStatus: string
-	unsyncedRundowns: Rundown[]
-	studioName: string
-	showStyles: Array<{ id: ShowStyleBaseId, baseName?: string, variantName?: string }>
-}
-
-enum ToolTipStep {
-	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
-	TOOLTIP_RUN_MIGRATIONS = 'TOOLTIP_RUN_MIGRATIONS',
-	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS'
-}
 
 interface ISignupPageProps extends RouteComponentProps {
-	coreSystem: ICoreSystem
-	rundownPlaylists: Array<RundownPlaylistUi>
+
 }
 
 interface ISignupPageState {
@@ -60,64 +20,182 @@ interface ISignupPageState {
 	subsReady: boolean
 	email: string
 	password: string
+	name: string
 	organization: string
+	applications: string[]
+	broadcastMediums: string[]
 }
 
 export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
-
 	const user = getUser()
-	if (user) {
-		// If user is logged in, forward to lobby:
-		// https://reacttraining.com/react-router/web/api/Redirect
-		props.history.push('/lobby')
-	}
-
-	return {
-		
-	}
+	if (user) props.history.push('/lobby')
+	return {  }
 })(
 class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
+	private applications: string[] = [
+		'Doing TV shows from a studio',
+		'Doing streaming on the web from a studio',
+		'Doing OB productions',
+		'Installers / Integrators'
+	]
+	private broadcastMediums: string[] = ['News', 'Sports', 'E-Sports', 'Entertainment']
+
 	constructor (props) {
 		super(props)
 
 		this.state = {
 			subsReady: false,
-			email: 'chrisryanouellette@gmail.com',
-			password: '123123',
-			organization: 'New Org!'
+			email: '',
+			password: '',
+			name: '',
+			organization: '',
+			applications: [],
+			broadcastMediums: []
+		}
+
+		this.handleChange = this.handleChange.bind(this)
+	}
+
+	private handleChange (e: React.ChangeEvent<HTMLInputElement>) {
+		if(Array.isArray(this.state[e.currentTarget.name])) {
+			const item = this.state[e.currentTarget.name]
+			if(e.currentTarget.type === 'checkbox') {
+				if(e.currentTarget.checked) {
+					item.push(e.currentTarget.value)
+				} else {
+					const found = item.findIndex(i => i === e.currentTarget.value)
+					item.splice(found, 1)
+				}
+			} else {
+				const found = item.findIndex(i => !this[e.currentTarget.name].includes(i))
+				found !== -1 
+					? item.splice(found, 1, e.currentTarget.value) 
+					: item.push(e.currentTarget.value)
+			}
+			this.setState({...this.state, [e.currentTarget.name]: item.filter(i => i.length)})
+		} else {
+			this.setState({...this.state, [e.currentTarget.name]: e.currentTarget.value})
 		}
 	}
 
+	private handleError (msg: string, lvl: NoticeLevel) {
+		NotificationCenter.push(new Notification(undefined, lvl, msg, 'Signup Page'))
+	}
+
 	private createAccount() {
-		
 		try {
 			if(!this.state.email.length) throw new Error('Please enter an email address')
 			// if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
 			if(!this.state.password.length) throw new Error('Please enter an password')
+			if(!this.state.name.length) throw new Error('Please enter your full name')
+			if(!this.state.organization.length) throw new Error('Please enter an orgainzation name')
+			if(!this.state.applications.length) throw new Error('Please tell us what you mainly do')
+			if(!this.state.broadcastMediums.length) throw new Error('Please select a broadcast medium')
 		} catch (error) {
-			/** @TODO Display error to user in UI */
-			console.error(error)
+			this.handleError(error.message, NoticeLevel.WARNING)
+			console.warn(error)
 			return;
 		}
 
-		const userId = Accounts.createUser({
+		Accounts.createUser({
 			email: this.state.email, 
-			password: this.state.password
+			password: this.state.password,
+			profile: {name: this.state.name} 
 		}, (error) => {
-			if(error) {
-				console.error(error);
-			}
-			console.log(userId)
-			MeteorCall.organization.insertOrganization(this.state.organization)
-			.then(id => console.log('NEW ORG:' + id))
-			.catch(console.error)
+			if(error) this.handleError('Error creating new user', NoticeLevel.NOTIFICATION)
+			MeteorCall.organization.insertOrganization({
+				name: this.state.organization,
+				applications: this.state.applications,
+				broadcastMediums: this.state.broadcastMediums
+			}).catch(console.error)
 		})
 	}
 	render() {
 		const { t } = this.props
 		return (
 			<React.Fragment>
-				<button onClick={() => this.createAccount()} >Sign Up</button>
+				<div className="sofie-logo"></div>
+				<h1>{t('Sofie - TV Automation System')}</h1>
+				<p>{t('Service provided by SuperFly.tv')}</p>
+				<div className='signup'>
+					<p>{t('Your Account')}</p>
+					<input 
+						type='email' 
+						name='email' 
+						value={this.state.email} 
+						onChange={this.handleChange}
+						placeholder='Email Address'
+					/>
+					<input 
+						type='password' 
+						name='password' 
+						value={this.state.password} 
+						onChange={this.handleChange}
+						placeholder='Password'
+					/>
+					<p>{t('About You')}</p>
+					<input 
+						type='text' 
+						name='name' 
+						value={this.state.name} 
+						onChange={this.handleChange}
+						placeholder='Full Name'
+					/>
+					<p>{t('About Your Organization')}</p>
+					<input 
+						type='text' 
+						name='organization' 
+						value={this.state.organization} 
+						onChange={this.handleChange}
+						placeholder='Company / Organization name'
+					/>
+					<p>{t('We are mainly')}</p>
+					<ul>
+						{this.applications.map((a, i) => (
+							<li key={i}>
+								<input 
+									id={`applications-${i}`} 
+									type='checkbox' 
+									name='applications' 
+									checked={this.state.applications.includes(a)}
+									value={a}
+									onChange={this.handleChange}
+								/>
+								<label htmlFor={`applications-${i}`}>{a}</label>
+							</li>
+						))}
+						<li><input 
+							type='text' 
+							name='applications' 
+							placeholder='Other' 
+							onChange={this.handleChange} 
+						/></li>
+					</ul>
+					<p>{t('Areas')}</p>
+					<ul>
+						{this.broadcastMediums.map((a, i) => (
+							<li key={i}>
+								<input 
+									id={`mediums-${i}`} 
+									type='checkbox' 
+									name='broadcastMediums' 
+									checked={this.state.broadcastMediums.includes(a)}
+									value={a}
+									onChange={this.handleChange}
+								/>
+								<label htmlFor={`mediums-${i}`}>{a}</label>
+							</li>
+						))}
+						<li><input 
+							type='text' 
+							name='broadcastMediums' 
+							placeholder='Other' 
+							onChange={this.handleChange} 
+						/></li>
+					</ul>
+				</div>
+				<button onClick={() => this.createAccount()}>{t('Sign Up')}</button>
+				<button onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
 			</React.Fragment>
 		)
 	}

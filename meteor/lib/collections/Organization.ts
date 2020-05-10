@@ -14,7 +14,8 @@ export interface DBOrganization {
 	name: string
 
 	admins: UserAdmin[]
-
+	applications: string[]
+	broadcastMediums: string[]
 	notes?: string
 
 	created: number
@@ -25,6 +26,12 @@ export interface UserAdmin {
 	// permissions: // add later
 }
 export type Organization = DBOrganization // to be replaced by a class some time later?
+
+export interface NewOrganization {
+	name: string
+	applications: string[]
+	broadcastMediums: string[]
+}
 
 export const Organizations: TransformedCollection<Organization, DBOrganization>
 	= createMongoCollection<DBOrganization>('organizations')

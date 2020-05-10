@@ -247,7 +247,6 @@ export const RundownList = translateWithTracker(() => {
 })(
 class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
 	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-	private user = getUser() as User
 	constructor (props) {
 		super(props)
 
@@ -280,14 +279,13 @@ class extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsList
 		const { t } = this.props
 
 		// Subscribe to data:
-		this.subscribe(PubSub.rundownPlaylists, {organizationId: this.user.organizationId})
-		this.subscribe(PubSub.studios, {organizationId: this.user.organizationId})
+		this.subscribe(PubSub.rundownPlaylists, {})
+		this.subscribe(PubSub.studios, {})
 
 		this.autorun(() => {
 			const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleBaseId))
 			const showStyleVariantIds = _.uniq(_.map(Rundowns.find().fetch(), rundown => rundown.showStyleVariantId))
 			const playlistIds = _.uniq(RundownPlaylists.find().fetch().map(i => i._id))
-
 			this.subscribe(PubSub.showStyleBases, {
 				_id: { $in: showStyleBaseIds }
 			})

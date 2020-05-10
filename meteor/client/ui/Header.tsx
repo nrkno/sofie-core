@@ -1,17 +1,19 @@
 import * as React from 'react'
 import { InjectedTranslateProps } from 'react-i18next'
-
-import { NavLink } from 'react-router-dom'
+import { Meteor } from 'meteor/meteor'
+import { NavLink, Link } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter } from '../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
+import { UserId } from '../../lib/collections/Users'
 
 interface IPropsHeader {
+	userId: UserId | null
 	allowConfigure?: boolean
 	allowTesting?: boolean
 	allowDeveloper?: boolean
@@ -34,6 +36,16 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 			showNotifications: false,
 			showSupportPanel: false
 		}
+	}
+
+	private handleLogout (e: React.MouseEvent<HTMLAnchorElement>) {
+		e.preventDefault()
+		Meteor.logout(() => NotificationCenter.push(new Notification(
+			undefined, 
+			NoticeLevel.NOTIFICATION,
+			'Successfully logged out',
+			'Page Header'
+		)))
 	}
 
 	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -88,10 +100,12 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 				<div className='gutter frow va-middle ha-between phm'>
 					<div className='fcol'>
 						<div className='frow'>
-							<div className='badge'>
-								<div className='media-elem mrs sofie-logo' />
-								<div className='bd mls'><span className='logo-text'>Sofie {this.props.name ? ' - ' + this.props.name : null}</span></div>
-							</div>
+							<Link className='badge' to="/">
+								<div>
+									<div className='media-elem mrs sofie-logo' />
+									<div className='bd mls'><span className='logo-text'>Sofie {this.props.name ? ' - ' + this.props.name : null}</span></div>
+								</div>
+							</Link>
 						</div>
 					</div>
 					<div className='fcol'>
@@ -102,7 +116,8 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 								{ this.props.allowTesting && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 								{ this.props.allowConfigure && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }
-								<NavLink to='/account' activeClassName='active'>{t('Account')}</NavLink>
+								{ this.props.userId && <NavLink to='/account' activeClassName='active'>{t('Account')}</NavLink>}
+								{ this.props.userId && <NavLink to='/' activeClassName='active' onClick={this.handleLogout}>{t('Logout')}</NavLink> }
 							</nav>
 						</div>
 					</div>
