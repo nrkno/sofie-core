@@ -29,8 +29,8 @@ import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { MultiViewPanel } from './MultiViewPanel'
 import { DashboardActionButton } from './DashboardActionButton'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
-import { KeyboardPreviewPanel } from './KeyboardPreviewPanel';
-import { Settings } from '../../../lib/Settings';
+import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
+import { Settings } from '../../../lib/Settings'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -473,6 +473,14 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							visible={true}
 							{...this.props}
 							/> :
+					RundownLayoutsAPI.isKeyboardMap(panel) ?
+						<KeyboardPreviewPanel
+							key={panel._id}
+							layout={rundownLayout}
+							panel={panel}
+							showStyleBase={this.props.showStyleBase}
+							visible={true}
+						/> :
 						undefined
 			)}
 			{rundownLayout.actionButtons &&

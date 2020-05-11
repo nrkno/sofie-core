@@ -1,4 +1,4 @@
-import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutElementBase, RundownLayoutFilter, RundownLayoutElementType, RundownLayoutFilterBase, RundownLayoutExternalFrame, RundownLayoutMultiView, PieceDisplayStyle } from '../collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutElementBase, RundownLayoutFilter, RundownLayoutElementType, RundownLayoutFilterBase, RundownLayoutExternalFrame, RundownLayoutMultiView, PieceDisplayStyle, RundownLayoutKeyboardPreview } from '../collections/RundownLayouts'
 import * as _ from 'underscore'
 
 export namespace RundownLayoutsAPI {
@@ -25,6 +25,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isMultiView (element: RundownLayoutElementBase): element is RundownLayoutMultiView {
 		return element.type === RundownLayoutElementType.MULTIVIEW
+	}
+
+	export function isKeyboardMap (element: RundownLayoutElementBase): element is RundownLayoutKeyboardPreview {
+		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
 	}
 
 	export function multiViewToFilter (element: RundownLayoutMultiView): RundownLayoutFilterBase {
