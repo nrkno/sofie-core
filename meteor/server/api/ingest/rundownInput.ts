@@ -75,6 +75,7 @@ import { PartInstances, PartInstance } from '../../../lib/collections/PartInstan
 import { PieceInstances, wrapPieceToInstance, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
+import { reportRundownDataHasChanged } from '../asRunLog'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -522,6 +523,8 @@ function updateRundownFromIngestData (
 	const didChange = anythingChanged(allChanges)
 	if (didChange) {
 		afterIngestChangedData(cache, dbRundown, _.map(segments, s => s._id))
+
+		reportRundownDataHasChanged(cache, dbPlaylist, dbRundown)
 	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)

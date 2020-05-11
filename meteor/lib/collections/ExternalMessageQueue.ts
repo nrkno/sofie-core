@@ -38,6 +38,8 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 
 	/** Type of message */
 	type: IBlueprintExternalMessageQueueType
+	/** If true, the message won't be sent automatically (set in blueprints) */
+	queueForLater?: boolean
 	/** Receiver details */
 	receiver: any
 	/** Messate details */
