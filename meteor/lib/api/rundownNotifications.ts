@@ -1,5 +1,5 @@
 import { RundownId } from '../collections/Rundowns'
-import { PartNote } from './notes'
+import { PartNote, SegmentNote, RundownNote } from './notes'
 import { PieceId } from '../collections/Pieces'
 import { RundownAPI } from './rundown'
 import { PartId } from '../collections/Parts'
@@ -22,11 +22,11 @@ export enum RundownNotificationsAPIMethods {
 	'getMediaObjectIssues' = 'rundownNotifications.getMediaObjectIssues'
 }
 
-export type RankedPartNote = PartNote & {
+export type RankedNote = (PartNote | SegmentNote | RundownNote) & {
 	rank: number
 }
 
 export interface RundownNotificationsAPI {
-	getSegmentPartNotes (rRundownIds: RundownId[]): Promise<RankedPartNote[]>
-	getMediaObjectIssues (rundownIds: RundownId[]): Promise<IMediaObjectIssue[]>
+	getSegmentPartNotes(rRundownIds: RundownId[]): Promise<RankedNote[]>
+	getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]>
 }

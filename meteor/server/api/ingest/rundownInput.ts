@@ -290,7 +290,6 @@ function updateRundownFromIngestData (
 		message: note.message,
 		origin: {
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
-			rundownId: rundownId,
 		}
 	}))
 
@@ -940,8 +939,6 @@ function generateSegmentContents (
 		message: note.message,
 		origin: {
 			name: '', // TODO
-			rundownId,
-			segmentId
 		}
 	}))
 
@@ -969,12 +966,8 @@ function generateSegmentContents (
 			message: note.message,
 			origin: {
 				name: '', // TODO
-				rundownId,
-				segmentId,
-				partId
 			}
 		}))
-		_.each(notes, note => note.origin.partId = partId)
 
 		const existingPart = _.find(existingParts, p => p._id === partId)
 		const part = literal<DBPart>({
