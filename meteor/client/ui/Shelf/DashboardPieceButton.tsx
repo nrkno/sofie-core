@@ -32,7 +32,7 @@ export interface IDashboardButtonProps {
 	item: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any, alwaysQueue: boolean,) => void
+	onToggleAdLib: (context: any, aSLine: IAdLibListItem, queue: boolean, alwaysQueue: boolean,) => void
 	rundown: Rundown
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
@@ -84,19 +84,19 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 			let objId: string | undefined = undefined
 
 			if (piece.content) {
+				let fileName: string | undefined
 				switch (this.props.layer.type) {
 					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName.toUpperCase()
+						fileName = (piece.content as VTContent).fileName
 						break
 					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						fileName = (piece.content as LiveSpeakContent).fileName
 						break
 					case SourceLayerType.TRANSITION:
-						if (piece.content.fileName) {
-							objId = (piece.content as VTContent).fileName.toUpperCase()
-						}
+						fileName = (piece.content as VTContent).fileName
 						break
 				}
+				objId = fileName ? fileName.toUpperCase() : undefined
 			}
 
 			if (objId && objId !== this.objId) {
@@ -171,7 +171,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
-				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e, isOfftubeList)}
+				onClick={(e) => this.props.onToggleAdLib(e, this.props.item, e.shiftKey, isOfftubeList)}
 				data-obj-id={this.props.item._id}
 				>
 				{
