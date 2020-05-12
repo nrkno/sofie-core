@@ -88,6 +88,8 @@ export enum GenericFuncionalKeyLabels {
 	ArrowRight = '⯈'
 }
 
+const _modifierKeys = ['ShiftLeft', 'ShiftRight', 'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight']
+
 const COMBINATOR_RE = /\s*\+\s*/
 
 function normalizeModifier (key: string) {
@@ -254,6 +256,15 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		})
 	}
 
+	toggleModifierOnTouch = (modifier: string) => {
+		const keyDown = {}
+		keyDown[modifier] = !this.state.keyDown[modifier]
+
+		this.setState({
+			keyDown: Object.assign({}, this.state.keyDown, keyDown)
+		})
+	}
+
 	componentDidMount() {
 		if (navigator.keyboard) {
 			navigator.keyboard.getLayoutMap().then(layout => this.setState({ layout }))
@@ -290,6 +301,8 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 						'keyboard-preview__blank-space--spring': (key.width < 0)
 					})} style={{fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}></div>
 				} else {
+					let modifierKey: string | undefined
+
 					let allFuncs: IBaseHotkeyAssignment[] | undefined = this.props.hotkeys[modifiers] && this.props.hotkeys[modifiers].filter(hotkey =>
 						hotkey.finalKey === key.code.toLowerCase() ||
 							(this.state.layout ?
@@ -304,6 +317,10 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 
 					if (_isMacLike && thisKeyLabel === '❖') {
 						thisKeyLabel = '\u2318'
+					}
+
+					if (_modifierKeys.includes(key.code)) {
+						modifierKey = key.code
 					}
 
 					const thisCombo = (modifiers ?
@@ -329,8 +346,8 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								'keyboard-preview__key--down': this.state.keyDown[key.code] === true
 							}
 						)}
-						style={{fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}
-						onClick={(e) => func && this.onKeyClick(e, allFuncs || [])}
+						style={{ fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}
+						onClick={(e) => func ? this.onKeyClick(e, allFuncs || []) : modifierKey && this.toggleModifierOnTouch(modifierKey) }
 					>
 							<div className='keyboard-preview__key__label'>
 								{ thisKeyLabel }
