@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-03-23T12:03:30.423Z\n"
-"PO-Revision-Date: 2020-03-23 13:19+0100\n"
+"POT-Creation-Date: 2020-05-12T09:19:37.326Z\n"
+"PO-Revision-Date: 2020-05-12 11:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -64,38 +64,46 @@ msgstr "OK"
 msgid "Cancel"
 msgstr "Avbryt"
 
+msgid "Remove in-trimming"
+msgstr "Nullstill innpunkt"
+
 msgid "In"
 msgstr "Inn"
+
+msgid "Remove all trimming"
+msgstr "Nullstill inn- og utpunkt"
 
 msgid "Duration"
 msgstr "Lengde"
 
+msgid "Remove out-trimming"
+msgstr "Nullstill utpunkt"
+
 msgid "Out"
 msgstr "Ut"
-
-msgid "Connecting to the"
-msgstr "Koplar til"
 
 msgid "Sofie Automation Server"
 msgstr "Sofie"
 
-msgid "Cannot connect to the"
-msgstr "Kan ikkje kople til"
+msgid "Connecting to the {{platformName}}"
+msgstr "Koplar til {{platformName}}"
 
-msgid "Sofie Automation Server:"
-msgstr "Sofie:"
+msgid "Cannot connect to the {{platformName}}: {{reason}}"
+msgstr "Kan ikkje kople til Sofie-serveren: {{reason}}"
 
-msgid "Reconnecting to the"
-msgstr "Koplar til"
+msgid "Reconnecting to the {{platformName}}"
+msgstr "Koplar til {{platformName}} på nytt"
 
-msgid "Your machine is offline and cannot connect to the"
+#, fuzzy
+#| msgid "Your machine is offline and cannot connect to the"
+msgid "Your machine is offline and cannot connect to the {{platformName}}."
 msgstr "Maskina di er fråkopla og kan ikkje kople til"
 
-msgid "Connected to the"
-msgstr "Kopla til"
+msgid "Connected to the {{platformName}}."
+msgstr "Kopla til {{platfromName}}."
 
 msgid "Reconnect now"
-msgstr "Kopla til nå"
+msgstr "Kople til på nytt"
 
 msgid "Could not get system status. Please consult system administrator."
 msgstr "Kan ikkje innhente status for systemet. Kontakt systemadministrator."
@@ -159,15 +167,14 @@ msgstr "Synkroniser køyreplanen med ENPS på nytt?"
 msgid "Re-Sync"
 msgstr "Synkroniser"
 
-#, fuzzy
-#| msgid "Are you sure you want to delete recording \"{{name}}\"?"
 msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
-msgstr "Er  du sikker på at du vil slette opptaket \"{{name}}\"?"
+msgstr ""
+"Er du sikker på at du vil synkronisere alle køyreplanane i køyreplanlista "
+"\"{{name}}\" om att?"
 
 msgid "This rundown is currently active"
 msgstr "Denne køyreplanen er allereie aktiv"
 
-#, fuzzy
 msgid "Multiple ({{count}})"
 msgstr "Fleire ({{count}})"
 
@@ -405,6 +412,11 @@ msgstr "Gå til On Air-posisjon"
 msgid "Rewind segments to start"
 msgstr "Sett segmenta tilbake til start"
 
+#, fuzzy
+#| msgid "Until next segment"
+msgid "Show entire current segment"
+msgstr "Til neste segment"
+
 msgid "Cancel currently pressed hotkey"
 msgstr "Avbryt den trykte tasten"
 
@@ -552,6 +564,19 @@ msgstr ""
 msgid "Unable to check the system configuration for changes"
 msgstr "Kan ikkje kontrollere endringar i systemoppsettet"
 
+msgid "The Studio configuration is missing some required fields:"
+msgstr "Studiooppsettet manglar obligatoriske felt:"
+
+msgid "The Show Style configuration \"{{name}}\" could not be validated"
+msgstr "Showstyleoppsettet \"{{name}}\" kunne ikkje validerast"
+
+msgid ""
+"The ShowStyle \"{{name}}\" configuration is missing some required fields:"
+msgstr "Showstyleoppsettet \"{{name}}\" manglar obligatoriske felt:"
+
+msgid "Unable to validate the system configuration"
+msgstr "Systemoppsettet kunne ikkje validerast"
+
 msgid "Device {{deviceName}} is disconnected"
 msgstr "{{deviceName}} er fråkoplet"
 
@@ -632,6 +657,12 @@ msgstr "Spel av frå her"
 
 msgid "Set segment as <strong>Next</strong>"
 msgstr "Sett denne tittelen som <strong>neste</strong>"
+
+msgid "Queue segment"
+msgstr "Sett segment i kø"
+
+msgid "Clear queued segment"
+msgstr "Fjern segment ifrå kø"
 
 msgid "On Air"
 msgstr "On Air"
@@ -844,17 +875,14 @@ msgstr "Blueprintversjon"
 msgid "Upload Blueprints"
 msgstr "Last opp blueprints"
 
-#, fuzzy
 msgid "Spreadsheet credentials succesfully uploaded."
 msgstr "Opplasting av Spreadsheet Credentials var vellukka."
 
-#, fuzzy
 msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
 msgstr "Opplasting av Spreadsheet Credentials feila: {{errorMessage}}"
 
-#, fuzzy
 msgid "Application credentials"
-msgstr "Brukarnamn/passord"
+msgstr "Brukarnamn/passord (Application Credentials)"
 
 msgid "Access token"
 msgstr "Tilgongskode (Access Token)"
@@ -867,7 +895,6 @@ msgstr ""
 "Klikk på lenka under og godta permissions-førespurnaden. Lim deretter inn "
 "adressa (url-en) du får oppgitt i feltet under."
 
-#, fuzzy
 msgid "Waiting for gateway to generate URL..."
 msgstr "Ventar på at Gateway genererar url..."
 
@@ -904,6 +931,27 @@ msgstr "Fjern denne kommandoen?"
 msgid "Are you sure you want to remove this command?"
 msgstr "Er du sikker på at du vil fjerne denne kommandoen?"
 
+msgid "Host"
+msgstr "Vert"
+
+msgid "Queue"
+msgstr "Kø"
+
+msgid "Hosts"
+msgstr "Vertar"
+
+msgid "iNews Queues"
+msgstr "iNews-køar"
+
+msgid "User"
+msgstr "Brukar"
+
+msgid "Password"
+msgstr "Passord"
+
+msgid "Debug logging"
+msgstr "Logging for feilsøking"
+
 msgid "Storage ID"
 msgstr "Lager-id"
 
@@ -916,7 +964,6 @@ msgstr "Tillat lesing"
 msgid "Allow Write"
 msgstr "Tillat skriving/lagring"
 
-#, fuzzy
 msgid "Base Path"
 msgstr "Rotsti"
 
@@ -929,13 +976,9 @@ msgstr "Stasjonsbokstav"
 msgid "Username"
 msgstr "Brukarnamn"
 
-msgid "Password"
-msgstr "Passord"
-
 msgid "Don't Scan Entire Storage"
 msgstr "Ikkje scan heile lagringsområdet"
 
-#, fuzzy
 msgid "Base path is a network share"
 msgstr "Rotsti er ein nettverksressurs"
 
@@ -1059,9 +1102,6 @@ msgstr "Deaktiver"
 msgid "Thread Usage"
 msgstr "Trådar i bruk"
 
-msgid "Host"
-msgstr "Vert"
-
 msgid "Port"
 msgstr "Port"
 
@@ -1113,6 +1153,44 @@ msgstr "ISA-adresse (url)"
 msgid "Zone ID"
 msgstr "Sone-id"
 
+msgid "(Optional) REST port"
+msgstr "(Valfri) REST-port"
+
+msgid "(Optional) Websocket port"
+msgstr "(Valfri) Websocket-port"
+
+#, fuzzy
+#| msgid "Show End"
+msgid "Show ID"
+msgstr "Sendeslutt"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "(Optional) Playlist id"
+msgstr "(Valfri) Spilleliste-id"
+
+msgid "Preload all elements"
+msgstr ""
+
+msgid "Automatically load internal elements when added"
+msgstr ""
+
+msgid "Clear-All template name"
+msgstr ""
+
+msgid "Clear-All on make-ready (activate rundown)"
+msgstr ""
+
+msgid "Dont deactivate on stand-down (deactivate rundown)"
+msgstr ""
+
+msgid "Only preload elements in active Rundown"
+msgstr ""
+
+msgid "On preload-All elements, also initialize the rundown playlist again"
+msgstr ""
+
 msgid "Activate Multi-Threading"
 msgstr "Bruk fleire trådar"
 
@@ -1144,9 +1222,6 @@ msgstr "Mappenamn på Drive"
 msgid "Provide the name of the folder to download rundowns from"
 msgstr "Oppgje namnet på mappa køyreplanar skal lastas ned frå"
 
-msgid "Debug logging"
-msgstr "Logging for feilsøking"
-
 msgid "Row"
 msgstr "Rad"
 
@@ -1165,8 +1240,8 @@ msgstr "true"
 msgid "false"
 msgstr "false"
 
-msgid "rows"
-msgstr "rader"
+msgid "{{count}} rows"
+msgstr "{{count}} rader"
 
 msgid "Value"
 msgstr "Verdi"
@@ -1343,12 +1418,6 @@ msgstr "Høgde"
 msgid "Only Match Global AdLibs"
 msgstr "Inkluder bare hurtigtastar"
 
-msgid "Tabs"
-msgstr "Faner"
-
-msgid "Panels"
-msgstr "Paneler"
-
 msgid "Name"
 msgstr "Namn"
 
@@ -1385,11 +1454,27 @@ msgstr "Filter deaktivert"
 msgid "Label contains"
 msgstr "Etikett inneheld"
 
+msgid "Register Shortcuts for this Panel"
+msgstr "Legg til snarvegar for dette panelet"
+
+#, fuzzy
+msgid "Hide Panel from view"
+msgstr "Skjul dette panelet"
+
+msgid "Show panel as a timeline"
+msgstr ""
+
+msgid "Overflow horizontally"
+msgstr ""
+
 msgid "Tags must contain"
 msgstr "Tagger må innehalde"
 
-msgid "Register Shortcuts for this Panel"
-msgstr "Legg til snarvegar for dette panelet"
+msgid "Tabs"
+msgstr "Faner"
+
+msgid "Panels"
+msgstr "Paneler"
 
 msgid "Default Layout"
 msgstr "Standardlayout"
@@ -1540,18 +1625,23 @@ msgstr "Fjern funksjonstast"
 msgid "Assign Hotkeys to Global AdLibs"
 msgstr "Tildel kommandoar til hurtigtastar"
 
-msgid "Items on this layer are sticky"
+#, fuzzy
+msgid "Pieces on this layer are sticky"
+msgstr "Manuelle element på dette laget kan leggast på preview"
+
+msgid "Only Pieces present in rundown are sticky"
 msgstr ""
 
-msgid "Activate Sticky Item Shortcut"
+msgid "Activate Sticky Piece Shortcut"
 msgstr ""
-
-msgid "Allow disabling of elements"
-msgstr "Tillat deaktivering av element"
 
 #, fuzzy
-msgid "Adlibs on this layer can be queued"
-msgstr "Manuelle element på dette laget kan leggast på preview"
+#| msgid "Allow disabling of elements"
+msgid "Allow disabling of Pieces"
+msgstr "Tillat deaktivering av element"
+
+msgid "AdLibs on this layer can be queued"
+msgstr "Manuelle element på dette laget kan setjas i kø"
 
 msgid "Exclusivity group"
 msgstr ""
@@ -1580,6 +1670,12 @@ msgstr "Kanalnavn"
 
 msgid "Is PGM Output"
 msgstr "Ligg på program"
+
+msgid "Is collapsed by default"
+msgstr ""
+
+msgid "Is flattened"
+msgstr ""
 
 msgid "Output channels are required for your studio to work"
 msgstr "Utgangskanalar er naudsynte for at studioet ditt skal fungere"
@@ -1700,6 +1796,12 @@ msgstr "CasparCG-lag"
 msgid "The layer in a channel to use"
 msgstr "Laget i ein kanal som skal nyttast"
 
+msgid "Preview when not on air"
+msgstr ""
+
+msgid "Whether to load to first frame"
+msgstr ""
+
 msgid "Mapping type"
 msgstr "Mappingtype"
 
@@ -1770,6 +1872,12 @@ msgstr "Eining-id (korresponderer med enhets-id under enhetsinnstillinger)"
 
 msgid "Lookahead Mode"
 msgstr "Lookahead-modus"
+
+msgid "Lookahead Target Objects (Default = 1)"
+msgstr ""
+
+msgid "Lookahead Maximum Search Distance (Default = unlimited/-1"
+msgstr ""
 
 msgid "Layer Mappings"
 msgstr "Lagmapping"
@@ -2060,10 +2168,10 @@ msgid ""
 msgstr "Er du sikker på at du vil starte Sofie Core: {{name}} om att?"
 
 msgid "Could not generate restart token!"
-msgstr ""
+msgstr "Kunne ikkje generere Restart Token!"
 
 msgid "Could not generate restart core: {{err}}"
-msgstr ""
+msgstr "Kunne ikkje generere Restart Core: {{err}}"
 
 msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr "Sofie Core starter om att om {{time}}s..."
@@ -2099,7 +2207,7 @@ msgid "Enable hints by adding this to the URL:"
 msgstr "Aktiver hint ved å legge dette til på url-en:"
 
 msgid "More documentation available at:"
-msgstr "Meir dokumentasjon er tilgjengeleg på"
+msgstr "Meir dokumentasjon er tilgjengeleg på:"
 
 msgid "Recordings"
 msgstr "Opptak"
@@ -2182,6 +2290,15 @@ msgstr "Klipp sluttar {{frames}} {{type}} frame°°°°°°"
 msgctxt "°°°°°°plural"
 msgid "{{frames}} {{type}} frame detected in clip.°°°°°°"
 msgstr "{{frames}} {{type}} frame oppdaga i klipp.°°°°°°"
+
+#~ msgid "Cannot connect to the"
+#~ msgstr "Kan ikkje kople til"
+
+#~ msgid "Sofie Automation Server:"
+#~ msgstr "Sofie:"
+
+#~ msgid "rows"
+#~ msgstr "rader"
 
 #~ msgid "Delete this Item?"
 #~ msgstr "Slett dette elementet?"
@@ -2394,9 +2511,6 @@ msgstr "{{frames}} {{type}} frame oppdaga i klipp.°°°°°°"
 
 #~ msgid "Connecting to Sofie Automation Server..."
 #~ msgstr "Kobler til Sofie-serveren..."
-
-#~ msgid "Cannot connect to the Sofie Automation Server"
-#~ msgstr "Kan ikke koble til Sofie-serveren"
 
 #~ msgid "Connected to Sofie Automation Server."
 #~ msgstr "Koblet til Sofie-serveren."

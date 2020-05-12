@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-03-23T12:03:30.423Z\n"
-"PO-Revision-Date: 2020-03-23T12:03:30.423Z\n"
+"POT-Creation-Date: 2020-05-12T09:19:37.326Z\n"
+"PO-Revision-Date: 2020-05-12T09:19:37.326Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -58,34 +58,40 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+msgid "Remove in-trimming"
+msgstr ""
+
 msgid "In"
+msgstr ""
+
+msgid "Remove all trimming"
 msgstr ""
 
 msgid "Duration"
 msgstr ""
 
-msgid "Out"
+msgid "Remove out-trimming"
 msgstr ""
 
-msgid "Connecting to the"
+msgid "Out"
 msgstr ""
 
 msgid "Sofie Automation Server"
 msgstr ""
 
-msgid "Cannot connect to the"
+msgid "Connecting to the {{platformName}}"
 msgstr ""
 
-msgid "Sofie Automation Server:"
+msgid "Cannot connect to the {{platformName}}: {{reason}}"
 msgstr ""
 
-msgid "Reconnecting to the"
+msgid "Reconnecting to the {{platformName}}"
 msgstr ""
 
-msgid "Your machine is offline and cannot connect to the"
+msgid "Your machine is offline and cannot connect to the {{platformName}}."
 msgstr ""
 
-msgid "Connected to the"
+msgid "Connected to the {{platformName}}."
 msgstr ""
 
 msgid "Reconnect now"
@@ -383,6 +389,9 @@ msgstr ""
 msgid "Rewind segments to start"
 msgstr ""
 
+msgid "Show entire current segment"
+msgstr ""
+
 msgid "Cancel currently pressed hotkey"
 msgstr ""
 
@@ -508,6 +517,18 @@ msgstr ""
 msgid "Unable to check the system configuration for changes"
 msgstr ""
 
+msgid "The Studio configuration is missing some required fields:"
+msgstr ""
+
+msgid "The Show Style configuration \"{{name}}\" could not be validated"
+msgstr ""
+
+msgid "The ShowStyle \"{{name}}\" configuration is missing some required fields:"
+msgstr ""
+
+msgid "Unable to validate the system configuration"
+msgstr ""
+
 msgid "Device {{deviceName}} is disconnected"
 msgstr ""
 
@@ -587,6 +608,12 @@ msgid "Play from Here"
 msgstr ""
 
 msgid "Set segment as <strong>Next</strong>"
+msgstr ""
+
+msgid "Queue segment"
+msgstr ""
+
+msgid "Clear queued segment"
 msgstr ""
 
 msgid "On Air"
@@ -849,6 +876,27 @@ msgstr ""
 msgid "Are you sure you want to remove this command?"
 msgstr ""
 
+msgid "Host"
+msgstr ""
+
+msgid "Queue"
+msgstr ""
+
+msgid "Hosts"
+msgstr ""
+
+msgid "iNews Queues"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Debug logging"
+msgstr ""
+
 msgid "Storage ID"
 msgstr ""
 
@@ -871,9 +919,6 @@ msgid "Mapped Networked Drive"
 msgstr ""
 
 msgid "Username"
-msgstr ""
-
-msgid "Password"
 msgstr ""
 
 msgid "Don't Scan Entire Storage"
@@ -1002,9 +1047,6 @@ msgstr ""
 msgid "Thread Usage"
 msgstr ""
 
-msgid "Host"
-msgstr ""
-
 msgid "Port"
 msgstr ""
 
@@ -1056,6 +1098,42 @@ msgstr ""
 msgid "Zone ID"
 msgstr ""
 
+msgid "(Optional) REST port"
+msgstr ""
+
+msgid "(Optional) Websocket port"
+msgstr ""
+
+msgid "Show ID"
+msgstr ""
+
+msgid "Profile"
+msgstr ""
+
+msgid "(Optional) Playlist id"
+msgstr ""
+
+msgid "Preload all elements"
+msgstr ""
+
+msgid "Automatically load internal elements when added"
+msgstr ""
+
+msgid "Clear-All template name"
+msgstr ""
+
+msgid "Clear-All on make-ready (activate rundown)"
+msgstr ""
+
+msgid "Dont deactivate on stand-down (deactivate rundown)"
+msgstr ""
+
+msgid "Only preload elements in active Rundown"
+msgstr ""
+
+msgid "On preload-All elements, also initialize the rundown playlist again"
+msgstr ""
+
 msgid "Activate Multi-Threading"
 msgstr ""
 
@@ -1083,9 +1161,6 @@ msgstr ""
 msgid "Provide the name of the folder to download rundowns from"
 msgstr ""
 
-msgid "Debug logging"
-msgstr ""
-
 msgid "Row"
 msgstr ""
 
@@ -1104,7 +1179,7 @@ msgstr ""
 msgid "false"
 msgstr ""
 
-msgid "rows"
+msgid "{{count}} rows"
 msgstr ""
 
 msgid "Value"
@@ -1268,12 +1343,6 @@ msgstr ""
 msgid "Only Match Global AdLibs"
 msgstr ""
 
-msgid "Tabs"
-msgstr ""
-
-msgid "Panels"
-msgstr ""
-
 msgid "Name"
 msgstr ""
 
@@ -1310,10 +1379,25 @@ msgstr ""
 msgid "Label contains"
 msgstr ""
 
+msgid "Register Shortcuts for this Panel"
+msgstr ""
+
+msgid "Hide Panel from view"
+msgstr ""
+
+msgid "Show panel as a timeline"
+msgstr ""
+
+msgid "Overflow horizontally"
+msgstr ""
+
 msgid "Tags must contain"
 msgstr ""
 
-msgid "Register Shortcuts for this Panel"
+msgid "Tabs"
+msgstr ""
+
+msgid "Panels"
 msgstr ""
 
 msgid "Default Layout"
@@ -1461,16 +1545,19 @@ msgstr ""
 msgid "Assign Hotkeys to Global AdLibs"
 msgstr ""
 
-msgid "Items on this layer are sticky"
+msgid "Pieces on this layer are sticky"
 msgstr ""
 
-msgid "Activate Sticky Item Shortcut"
+msgid "Only Pieces present in rundown are sticky"
 msgstr ""
 
-msgid "Allow disabling of elements"
+msgid "Activate Sticky Piece Shortcut"
 msgstr ""
 
-msgid "Adlibs on this layer can be queued"
+msgid "Allow disabling of Pieces"
+msgstr ""
+
+msgid "AdLibs on this layer can be queued"
 msgstr ""
 
 msgid "Exclusivity group"
@@ -1497,6 +1584,12 @@ msgid "Channel Name"
 msgstr ""
 
 msgid "Is PGM Output"
+msgstr ""
+
+msgid "Is collapsed by default"
+msgstr ""
+
+msgid "Is flattened"
 msgstr ""
 
 msgid "Output channels are required for your studio to work"
@@ -1611,6 +1704,12 @@ msgstr ""
 msgid "The layer in a channel to use"
 msgstr ""
 
+msgid "Preview when not on air"
+msgstr ""
+
+msgid "Whether to load to first frame"
+msgstr ""
+
 msgid "Mapping type"
 msgstr ""
 
@@ -1677,6 +1776,12 @@ msgid ""
 msgstr ""
 
 msgid "Lookahead Mode"
+msgstr ""
+
+msgid "Lookahead Target Objects (Default = 1)"
+msgstr ""
+
+msgid "Lookahead Maximum Search Distance (Default = unlimited/-1"
 msgstr ""
 
 msgid "Layer Mappings"
