@@ -118,9 +118,6 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 	}
 
 	render () {
-		const isTake = this.props.panel.role === RundownLayoutMultiViewRole.TAKE
-		const isProgram = this.props.panel.role === RundownLayoutMultiViewRole.PROGRAM
-		const isLarge = isProgram || isTake
 		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs ?
 		this.props.rundownBaselineAdLibs.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces))).filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[this.props.adlibRank ? this.props.adlibRank : 0] : undefined
 		return <div className='multiview-panel'
@@ -143,7 +140,7 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 				>
 					{
 					<span className={classNames('multiview-panel__label',{
-						'multiview-panel__label--large': isLarge
+						'multiview-panel__label--large': this.props.panel.labelBelowPanel
 					})}>{this.props.panel.name}</span>
 					}
 				</div>

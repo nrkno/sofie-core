@@ -903,6 +903,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Place label below panel')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.labelBelowPanel`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas' />
+				</label>
+			</div>
 			{isDashboardLayout &&
 				<React.Fragment>
 					<div className='mod mvs mhs'>
