@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-05-04T10:33:44.457Z\n"
-"PO-Revision-Date: 2020-05-07 12:39+0200\n"
+"POT-Creation-Date: 2020-05-12T09:19:37.326Z\n"
+"PO-Revision-Date: 2020-05-12 11:51+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nn\n"
@@ -71,7 +71,7 @@ msgid "In"
 msgstr "Inn"
 
 msgid "Remove all trimming"
-msgstr "Nullstill inn-/utpunkt"
+msgstr "Nullstill inn- og utpunkt"
 
 msgid "Duration"
 msgstr "Lengde"
@@ -89,19 +89,21 @@ msgid "Connecting to the {{platformName}}"
 msgstr "Koplar til {{platformName}}"
 
 msgid "Cannot connect to the {{platformName}}: {{reason}}"
-msgstr "Kan ikke koble til {{platformName}}: {{reason}}"
+msgstr "Kan ikkje kople til Sofie-serveren: {{reason}}"
 
 msgid "Reconnecting to the {{platformName}}"
-msgstr "Koplar til {{platformName}}"
+msgstr "Koplar til {{platformName}} på nytt"
 
+#, fuzzy
+#| msgid "Your machine is offline and cannot connect to the"
 msgid "Your machine is offline and cannot connect to the {{platformName}}."
-msgstr "Maskina di er fråkopla og kan ikkje kople til {{platformName}}."
+msgstr "Maskina di er fråkopla og kan ikkje kople til"
 
 msgid "Connected to the {{platformName}}."
-msgstr "Kopla til {{platformName}}."
+msgstr "Kopla til {{platfromName}}."
 
 msgid "Reconnect now"
-msgstr "Kopla til nå"
+msgstr "Kople til på nytt"
 
 msgid "Could not get system status. Please consult system administrator."
 msgstr "Kan ikkje innhente status for systemet. Kontakt systemadministrator."
@@ -167,13 +169,12 @@ msgstr "Synkroniser"
 
 msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
 msgstr ""
-"Er du sikker på at du vil synkronisere alle køyreplanane i lista "
-"\"{{name}}\" på nytt?"
+"Er du sikker på at du vil synkronisere alle køyreplanane i køyreplanlista "
+"\"{{name}}\" om att?"
 
 msgid "This rundown is currently active"
 msgstr "Denne køyreplanen er allereie aktiv"
 
-#, fuzzy
 msgid "Multiple ({{count}})"
 msgstr "Fleire ({{count}})"
 
@@ -564,18 +565,17 @@ msgid "Unable to check the system configuration for changes"
 msgstr "Kan ikkje kontrollere endringar i systemoppsettet"
 
 msgid "The Studio configuration is missing some required fields:"
-msgstr "Studiokonfigurasjonen manglar nokre obligatoriske felt:"
+msgstr "Studiooppsettet manglar obligatoriske felt:"
 
 msgid "The Show Style configuration \"{{name}}\" could not be validated"
-msgstr "Showstylekonfigurasjonen \"{{name}}\" kunne ikkje validerast"
+msgstr "Showstyleoppsettet \"{{name}}\" kunne ikkje validerast"
 
 msgid ""
 "The ShowStyle \"{{name}}\" configuration is missing some required fields:"
-msgstr ""
-"Showstylekonfigurasjonen \"{{name}}\" manglar nokre obligatoriske felt:"
+msgstr "Showstyleoppsettet \"{{name}}\" manglar obligatoriske felt:"
 
 msgid "Unable to validate the system configuration"
-msgstr "Kan ikkje validere endringar i systemoppsettet"
+msgstr "Systemoppsettet kunne ikkje validerast"
 
 msgid "Device {{deviceName}} is disconnected"
 msgstr "{{deviceName}} er fråkoplet"
@@ -659,10 +659,10 @@ msgid "Set segment as <strong>Next</strong>"
 msgstr "Sett denne tittelen som <strong>neste</strong>"
 
 msgid "Queue segment"
-msgstr "Sett denne tittelen i kø"
+msgstr "Sett segment i kø"
 
 msgid "Clear queued segment"
-msgstr "Fjern denne tittelen ifrå kø"
+msgstr "Fjern segment ifrå kø"
 
 msgid "On Air"
 msgstr "On Air"
@@ -887,6 +887,7 @@ msgstr "Brukarnamn/passord (Application Credentials)"
 msgid "Access token"
 msgstr "Tilgongskode (Access Token)"
 
+#, fuzzy
 msgid ""
 "Click on the link below and accept the permissions request. Paste the "
 "received URL below."
@@ -940,10 +941,10 @@ msgid "Hosts"
 msgstr "Vertar"
 
 msgid "iNews Queues"
-msgstr "iNews-kø"
+msgstr "iNews-køar"
 
 msgid "User"
-msgstr "Brukarnamn"
+msgstr "Brukar"
 
 msgid "Password"
 msgstr "Passord"
@@ -1158,8 +1159,10 @@ msgstr "(Valfri) REST-port"
 msgid "(Optional) Websocket port"
 msgstr "(Valfri) Websocket-port"
 
+#, fuzzy
+#| msgid "Show End"
 msgid "Show ID"
-msgstr ""
+msgstr "Sendeslutt"
 
 msgid "Profile"
 msgstr "Profil"
@@ -1168,10 +1171,10 @@ msgid "(Optional) Playlist id"
 msgstr "(Valfri) Spilleliste-id"
 
 msgid "Preload all elements"
-msgstr "Last inn alle element på førehand"
+msgstr ""
 
 msgid "Automatically load internal elements when added"
-msgstr "Last automatisk inn interne element når dei vert lagd til"
+msgstr ""
 
 msgid "Clear-All template name"
 msgstr ""
@@ -1203,6 +1206,7 @@ msgstr ""
 msgid "Connect some devices to the playout gateway"
 msgstr "Kople til ein eller fleire einingar til playout gatewayen"
 
+#, fuzzy
 msgid ""
 "Go to the url below and click on the \"Enable the Drive API\" button. Then "
 "click on \"Download Client configuration\", save the credentials.json file "
@@ -1453,11 +1457,12 @@ msgstr "Etikett inneheld"
 msgid "Register Shortcuts for this Panel"
 msgstr "Legg til snarvegar for dette panelet"
 
+#, fuzzy
 msgid "Hide Panel from view"
-msgstr "Skjul dette panelet ifrå visninga"
+msgstr "Skjul dette panelet"
 
 msgid "Show panel as a timeline"
-msgstr "Vis panel som ei tidslinje"
+msgstr ""
 
 msgid "Overflow horizontally"
 msgstr ""
@@ -1635,9 +1640,8 @@ msgstr ""
 msgid "Allow disabling of Pieces"
 msgstr "Tillat deaktivering av element"
 
-#, fuzzy
 msgid "AdLibs on this layer can be queued"
-msgstr "Manuelle element på dette laget kan leggast på preview"
+msgstr "Manuelle element på dette laget kan setjas i kø"
 
 msgid "Exclusivity group"
 msgstr ""
@@ -2167,7 +2171,7 @@ msgid "Could not generate restart token!"
 msgstr "Kunne ikkje generere Restart Token!"
 
 msgid "Could not generate restart core: {{err}}"
-msgstr "Kunne ikkje generere restart av core: {{err}}"
+msgstr "Kunne ikkje generere Restart Core: {{err}}"
 
 msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr "Sofie Core starter om att om {{time}}s..."
