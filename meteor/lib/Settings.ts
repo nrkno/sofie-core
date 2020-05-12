@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
-	allowUnsyncedSegments: true
+	allowUnsyncedSegments: false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
