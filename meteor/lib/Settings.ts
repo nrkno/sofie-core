@@ -8,6 +8,7 @@ export interface ISettings {
 	autoExpandCurrentNextSegment: boolean,
 	autoRewindLeavingSegment: boolean,
 	defaultTimeScale: number
+	defaultDisplayDuration: number
 	/** Wether to enable unsyncing of segements in case a data-update is rejected. Default functionality is to just unsync the whole rundown */
 	allowUnsyncedSegments: boolean
 	// Allow grabbing the entire timeline
@@ -28,6 +29,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	'autoExpandCurrentNextSegment': false,
 	'autoRewindLeavingSegment': false,
 	'defaultTimeScale': 1,
+	'defaultDisplayDuration': 3000,
 	'allowUnsyncedSegments': true,
 	'allowGrabbingTimeline': true,
 	'allowUnsafeResets': false,

@@ -13,8 +13,7 @@ import { Part, Parts } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
-
-export const DEFAULT_DISPLAY_DURATION = 3000
+import { Settings } from './Settings'
 
 export interface SegmentExtended extends Segment {
 	/** Output layers available in the installation used by this segment */
@@ -328,8 +327,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				}
 			})
 
-			// use the expectedDuration and fallback to the DEFAULT_DISPLAY_DURATION for the part
-			partE.renderedDuration = partE.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
+			// use the expectedDuration and fallback to the default display duration for the part
+			partE.renderedDuration = partE.expectedDuration || Settings.defaultDisplayDuration // furthestDuration
 
 			// displayDuration groups are sets of Parts that share their expectedDurations.
 			// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.

@@ -35,7 +35,6 @@ import { RundownUtils } from '../lib/rundown'
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
-import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
@@ -64,7 +63,7 @@ import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
-import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry';
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -861,7 +860,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 		// 		yes: 'OK'
 		// 	})
 		// } else {
-			doReset()
+		doReset()
 		// }
 	}
 
@@ -1126,7 +1125,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownLayoutId: String(params['layout'])
 	}
 })(class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		private readonly LIVELINE_HISTORY_SIZE = 100
+	private readonly LIVELINE_HISTORY_SIZE = 100
 
 	private bindKeys: Array<{
 		key: string,
@@ -1615,7 +1614,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		const { t } = this.props
 		if (this.state.studioMode && this.props.rundown) {
 			doUserAction(t, undefined, UserActionAPI.methods.resyncSegment, [this.props.rundown._id, segmentId], (err, response) => {
-				
+
 			})
 		}
 	}
@@ -1742,7 +1741,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			tag: HOTKEY_TAG
 		})
 
-		function noop() { }
+		function noop () { }
 
 		this.state.usedHotkeys.forEach((hotkey) => {
 			registerHotkey(
@@ -1881,7 +1880,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				return (
 					<RundownTimingProvider
 						rundown={this.props.rundown}
-						defaultDuration={DEFAULT_DISPLAY_DURATION}>
+						defaultDuration={Settings.defaultDisplayDuration}>
 						<div className={ClassNames('rundown-view', {
 							'notification-center-open': this.state.isNotificationsCenterOpen,
 							'rundown-view--studio-mode': this.state.studioMode
