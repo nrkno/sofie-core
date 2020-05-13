@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-05-12T09:19:37.326Z\n"
-"PO-Revision-Date: 2020-05-12 11:51+0200\n"
+"POT-Creation-Date: 2020-05-13T13:21:24.033Z\n"
+"PO-Revision-Date: 2020-05-13 15:31+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -54,6 +54,25 @@ msgstr "Noe gikk galt, men det påvirket ikke sendingen"
 
 msgid "Something went wrong, and it affected the output"
 msgstr "Noe gikk galt, og det påvirket sendingen"
+
+msgid ""
+"Trimming this clip has timed out. It's possible that the story is currently "
+"locked for writing in {{nrcsName}} and will eventually be updated. Make sure "
+"that the story is not being edited by other users."
+msgstr ""
+
+msgid "Trimming this clip has failed due to an error: {{error}}."
+msgstr ""
+
+#, fuzzy
+#| msgid "Blueprints updated successfully."
+msgid "Trimmed succesfully."
+msgstr "Blueprints ble oppdatert."
+
+msgid ""
+"Trimming this clip is taking longer than expected. It's possible that the "
+"story is locked for writing in {{nrcsName}}."
+msgstr ""
 
 msgid "Trim \"{{name}}\""
 msgstr "Trim \"{{name}}\""
@@ -646,7 +665,7 @@ msgid "File name"
 msgstr "Filnavn"
 
 msgid "Set this part as <strong>Next</strong>"
-msgstr "Sett dette punktet som <strong>neste</strong>"
+msgstr "Sett dette punktet som <strong>neste</strong>: Starter på neste Take"
 
 msgid "Set <strong>Next</strong> Here"
 msgstr "Sett <strong>Neste</strong> her"
@@ -655,13 +674,13 @@ msgid "Play from Here"
 msgstr "Spill av herfra"
 
 msgid "Set segment as <strong>Next</strong>"
-msgstr "Sett denne tittelen som <strong>Neste</strong>"
+msgstr "Sett denne tittelen som <strong>Neste</strong>: Starter på neste Take"
 
 msgid "Queue segment"
-msgstr "Sett segment i kø"
+msgstr "Sett tittel i kø: Starter når aktiv tittel er ferdig"
 
 msgid "Clear queued segment"
-msgstr "Fjern segment ifra kø"
+msgstr "Fjern tittel fra kø"
 
 msgid "On Air"
 msgstr "On Air"
