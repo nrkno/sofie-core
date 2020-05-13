@@ -304,9 +304,9 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 					let modifierKey: string | undefined
 
 					let allFuncs: IBaseHotkeyAssignment[] | undefined = this.props.hotkeys[modifiers] && this.props.hotkeys[modifiers].filter(hotkey =>
-						hotkey.finalKey === key.code.toLowerCase() ||
+						hotkey.finalKey.toLowerCase() === key.code.toLowerCase() ||
 							(this.state.layout ?
-								hotkey.finalKey === (this.state.layout.get(key.code) || '').toLowerCase() :
+								hotkey.finalKey.toLowerCase() === (this.state.layout.get(key.code) || '').toLowerCase() :
 								false)
 					)
 					let func: IBaseHotkeyAssignment | undefined = allFuncs && allFuncs[0]
@@ -352,7 +352,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 							<div className='keyboard-preview__key__label'>
 								{ thisKeyLabel }
 							</div>
-							{func && <div className='keyboard-preview__key__function-label'>
+							{(func || customLabel) && <div className='keyboard-preview__key__function-label'>
 								{ customLabel || allFuncs.map(func => func.label).join(', ') }
 							</div>}
 						</div>
