@@ -63,7 +63,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		compatibleStudios: compatibleStudios
 	}
 })(class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	constructor (props: Translated<IProps & ITrackedProps>) {
+	constructor(props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
 			uploadFileKey: Date.now(),
@@ -71,7 +71,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 	}
 
-	onUploadFile (e) {
+	onUploadFile(e) {
 		const file = e.target.files[0]
 		if (!file) {
 			return
@@ -90,7 +90,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		reader.readAsText(file)
 	}
 
-	getOptionBlueprints () {
+	getOptionBlueprints() {
 		return _.map(Blueprints.find({ blueprintType: BlueprintManifestType.SHOWSTYLE }).fetch(), (blueprint) => {
 			return {
 				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
@@ -99,7 +99,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 
-	renderEditForm (showStyleBase: ShowStyleBase) {
+	renderEditForm(showStyleBase: ShowStyleBase) {
 		const { t } = this.props
 
 		return (
@@ -109,10 +109,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						{t('Show Style Base Name')}
 						{
 							!(this.props.showStyleBase && this.props.showStyleBase.name) ?
-							<div className='error-notice inline'>
-								<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No name set')}
-							</div> :
-							null
+								<div className='error-notice inline'>
+									<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No name set')}
+								</div> :
+								null
 						}
 						<div className='mdi'>
 							<EditAttribute
@@ -129,10 +129,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						{t('Blueprint')}
 						{
 							!(this.props.showStyleBase && this.props.showStyleBase.blueprintId) ?
-							<div className='error-notice inline'>
-								{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div> :
-							null
+								<div className='error-notice inline'>
+									{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+								</div> :
+								null
 						}
 						<div className='mdi'>
 							<EditAttribute
@@ -172,7 +172,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<HotkeyLegendSettings showStyleBase={showStyleBase}/>
+						<HotkeyLegendSettings showStyleBase={showStyleBase} />
 					</div>
 				</div>
 				<div className='row'>
@@ -193,7 +193,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							object={showStyleBase}
 							collection={ShowStyleBases}
 							configPath={'config'}
-							/>
+						/>
 					</div>
 				</div>
 				<div className='row'>
@@ -208,7 +208,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		)
 	}
 
-	render () {
+	render() {
 
 		if (this.props.showStyleBase) {
 			return this.renderEditForm(this.props.showStyleBase)
@@ -226,7 +226,7 @@ interface IStudioRuntimeArgumentsSettingsState {
 }
 
 const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsSettings extends React.Component<Translated<IStudioRuntimeArgumentsSettingsProps>, IStudioRuntimeArgumentsSettingsState> {
-	constructor (props: Translated<IStudioRuntimeArgumentsSettingsProps>) {
+	constructor(props: Translated<IStudioRuntimeArgumentsSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -298,7 +298,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 			</React.Fragment>
 		})
 	}
-	renderItems () {
+	renderItems() {
 		const { t } = this.props
 		return (
 			(this.props.showStyleBase.runtimeArguments || []).map((item, index) => {
@@ -378,7 +378,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<div>
@@ -406,7 +406,7 @@ interface IStudioSourcesSettingsState {
 }
 
 const SourceLayerSettings = translate()(class SourceLayerSettings extends React.Component<Translated<IStudioSourcesSettingsProps>, IStudioSourcesSettingsState> {
-	constructor (props: Translated<IStudioSourcesSettingsProps>) {
+	constructor(props: Translated<IStudioSourcesSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -439,7 +439,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		}
 	}
 
-	sourceLayerString (type: SourceLayerType) {
+	sourceLayerString(type: SourceLayerType) {
 		const { t } = this.props
 		switch (type) {
 			case SourceLayerType.CAMERA:
@@ -514,17 +514,17 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 				this.onDeleteSource(item)
 			},
 			message: <React.Fragment>
-				<p>{t('Are you sure you want to delete source layer "{{sourceLayerId}}"?',{ sourceLayerId: item && item.name })}</p>
+				<p>{t('Are you sure you want to delete source layer "{{sourceLayerId}}"?', { sourceLayerId: item && item.name })}</p>
 				<p>{t('Please note: This action is irreversible!')}</p>
 			</React.Fragment>
 		})
 	}
-	renderInputSources () {
+	renderInputSources() {
 		const { t } = this.props
 
 		return (
 			_.map(this.props.showStyleBase.sourceLayers, (item, index) => {
-				let newItem = _.clone(item) as (ISourceLayer & {index: number})
+				let newItem = _.clone(item) as (ISourceLayer & { index: number })
 				newItem.index = index
 				return newItem
 			}).sort((a, b) => {
@@ -779,7 +779,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<div>
@@ -793,10 +793,10 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 				</h2>
 				{
 					(!this.props.showStyleBase || !this.props.showStyleBase.sourceLayers || !this.props.showStyleBase.sourceLayers.length) ?
-					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No source layers set')}
-					</div> :
-					null
+						<div className='error-notice'>
+							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No source layers set')}
+						</div> :
+						null
 				}
 				<table className='expando settings-studio-source-table'>
 					<tbody>
@@ -821,7 +821,7 @@ interface IOutputSettingsState {
 }
 
 const OutputSettings = translate()(class OutputSettings extends React.Component<Translated<IOutputSettingsProps>, IOutputSettingsState> {
-	constructor (props: Translated<IOutputSettingsProps>) {
+	constructor(props: Translated<IOutputSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -829,7 +829,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		}
 	}
 
-	isPGMChannelSet () {
+	isPGMChannelSet() {
 		if (!this.props.showStyleBase.outputLayers) return false
 		return this.props.showStyleBase.outputLayers.filter(layer => layer.isPGM).length > 0
 	}
@@ -869,7 +869,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 				this.onDeleteOutput(output)
 			},
 			message: <React.Fragment>
-				<p>{t('Are you sure you want to delete source layer "{{outputId}}"?',{ outputId: output && output.name })}</p>
+				<p>{t('Are you sure you want to delete source layer "{{outputId}}"?', { outputId: output && output.name })}</p>
 				<p>{t('Please note: This action is irreversible!')}</p>
 			</React.Fragment>
 		})
@@ -903,7 +903,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 		}
 	}
 
-	renderOutputs () {
+	renderOutputs() {
 		const { t } = this.props
 		return (
 			_.map(this.props.showStyleBase.outputLayers, (item, index) => {
@@ -944,13 +944,13 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 									<div className='mod mvs mhs'>
 										<label className='field'>
 											{t('Channel Name')}
-												<EditAttribute
-													modifiedClassName='bghl'
-													attribute={'outputLayers.' + item.index + '.name'}
-													obj={this.props.showStyleBase}
-													type='text'
-													collection={ShowStyleBases}
-													className='input text-input input-l'></EditAttribute>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + item.index + '.name'}
+												obj={this.props.showStyleBase}
+												type='text'
+												collection={ShowStyleBases}
+												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -997,14 +997,14 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 								</div>
 							</td>
 						</tr>
-					:
+						:
 						null
 				]
 			})
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<div>
@@ -1018,17 +1018,17 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 				</h2>
 				{
 					(!this.props.showStyleBase || !this.props.showStyleBase.outputLayers || !this.props.showStyleBase.outputLayers.length) ?
-					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
-					</div> :
-					null
+						<div className='error-notice'>
+							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
+						</div> :
+						null
 				}
 				{
 					!this.isPGMChannelSet() ?
-					<div className='error-notice'>
-						<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No PGM output')}
-					</div> :
-					null
+						<div className='error-notice'>
+							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No PGM output')}
+						</div> :
+						null
 				}
 				<table className='expando settings-studio-output-table'>
 					<tbody>
@@ -1053,7 +1053,7 @@ interface IHotkeyLegendSettingsState {
 }
 
 const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends React.Component<Translated<IHotkeyLegendSettingsProps>, IHotkeyLegendSettingsState> {
-	constructor (props: Translated<IHotkeyLegendSettingsProps>) {
+	constructor(props: Translated<IHotkeyLegendSettingsProps>) {
 		super(props)
 
 		this.state = {
@@ -1111,7 +1111,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 		})
 	}
 
-	renderItems () {
+	renderItems() {
 		const { t } = this.props
 		return (
 			(this.props.showStyleBase.hotkeyLegend || []).map((item, index) => {
@@ -1142,7 +1142,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 					</tr>
 					{this.isItemEdited(item) &&
 						<tr className='expando-details hl'>
-							<td colSpan={4}>
+							<td colSpan={5}>
 								<div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
@@ -1219,7 +1219,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<div>
@@ -1246,7 +1246,7 @@ interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
 }
 const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings extends React.Component<Translated<IShowStyleVariantsProps>, IShowStyleVariantsSettingsState> {
-	constructor (props: Translated<IShowStyleVariantsProps>) {
+	constructor(props: Translated<IShowStyleVariantsProps>) {
 		super(props)
 
 		this.state = {
@@ -1293,7 +1293,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		})
 	}
 
-	renderShowStyleVariants () {
+	renderShowStyleVariants() {
 		const { t } = this.props
 
 		return (
@@ -1355,7 +1355,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<div>
