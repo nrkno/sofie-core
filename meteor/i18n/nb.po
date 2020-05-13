@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"POT-Creation-Date: 2020-05-13T13:21:24.033Z\n"
-"PO-Revision-Date: 2020-05-13 15:31+0200\n"
+"POT-Creation-Date: 2020-05-13T13:47:33.705Z\n"
+"PO-Revision-Date: 2020-05-13 16:08+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -60,19 +60,22 @@ msgid ""
 "locked for writing in {{nrcsName}} and will eventually be updated. Make sure "
 "that the story is not being edited by other users."
 msgstr ""
+"Endring av inn-/utpunkt for dette klippet tar lang tid. Det er mulig manuset "
+"i er låst i {{nrcsName}} og at inn-/utpunkt endres om litt. Forsikre deg om "
+"at manuset ikke blir redigert av andre brukere."
 
 msgid "Trimming this clip has failed due to an error: {{error}}."
-msgstr ""
+msgstr "Endring av inn-/utpunkt for dette klippet feilet: {{error}}."
 
-#, fuzzy
-#| msgid "Blueprints updated successfully."
 msgid "Trimmed succesfully."
-msgstr "Blueprints ble oppdatert."
+msgstr "Endring av inn-/utpunkt var vellykket."
 
 msgid ""
 "Trimming this clip is taking longer than expected. It's possible that the "
 "story is locked for writing in {{nrcsName}}."
 msgstr ""
+"Endring av inn-/utpunkt for dette klippet tek meir tid enn forventa. Det er "
+"mogleg manuset er låst for redigering i {{nrcsName}}."
 
 msgid "Trim \"{{name}}\""
 msgstr "Trim \"{{name}}\""
@@ -503,8 +506,6 @@ msgstr ""
 "Kjøreplan {{rundownName}} i listen {{playlistName}} finnes ikke. Hva vil du "
 "gjøre?"
 
-#, fuzzy
-#| msgid "Mark rundown as unsynced"
 msgid "Mark the rundown as unsynced"
 msgstr "Marker kjøreplan som usynkronisert"
 
@@ -674,7 +675,7 @@ msgid "Play from Here"
 msgstr "Spill av herfra"
 
 msgid "Set segment as <strong>Next</strong>"
-msgstr "Sett denne tittelen som <strong>Neste</strong>: Starter på neste Take"
+msgstr "Sett tittel som <strong>Neste</strong>: Starter på neste Take"
 
 msgid "Queue segment"
 msgstr "Sett tittel i kø: Starter når aktiv tittel er ferdig"
@@ -1178,9 +1179,8 @@ msgid "(Optional) Websocket port"
 msgstr "(Valgfri) Websocket-port"
 
 #, fuzzy
-#| msgid "Show End"
 msgid "Show ID"
-msgstr "Sendeslutt"
+msgstr "Show-id"
 
 msgid "Profile"
 msgstr "Profil"
@@ -1411,10 +1411,8 @@ msgstr "Slett layout?"
 msgid "Are you sure you want to delete the shelf layout \"{{name}}\"?"
 msgstr "Er du sikker på at du vil slette layouten \"{{name}}\"?"
 
-#, fuzzy
-#| msgid "Action"
 msgid "Action Buttons"
-msgstr "Handling"
+msgstr "Handlingsknapper"
 
 msgid "Label"
 msgstr "Etikett"
@@ -1478,7 +1476,7 @@ msgid "Hide Panel from view"
 msgstr "Skjul dette panelet"
 
 msgid "Show panel as a timeline"
-msgstr ""
+msgstr "Vis panel som en tidslinje"
 
 msgid "Overflow horizontally"
 msgstr ""
