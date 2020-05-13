@@ -376,11 +376,11 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 						this.props.rundown._id, this.props.rundown.currentPartId, piece._id, queue || alwaysQueue || false
 					])
 				} else if (piece.isSticky) {
-					this.onToggleSticky(piece.sourceLayerId, e)
+					this.onToggleSticky(e, piece.sourceLayerId)
 				}
 			} else {
 				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
-					this.onClearAllSourceLayers([sourceLayer], e)
+					this.onClearAllSourceLayers(e, [sourceLayer])
 				}
 			}
 		}
@@ -425,7 +425,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 							this.props.rundown._id, this.props.rundown.currentPartId, piece._id, false
 						])
 					} else if (piece.isSticky) {
-						this.onToggleSticky(piece.sourceLayerId, e)
+						this.onToggleSticky(e, piece.sourceLayerId)
 					}
 				}
 			}
