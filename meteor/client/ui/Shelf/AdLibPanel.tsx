@@ -30,7 +30,7 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { Random } from 'meteor/random'
 import { literal, extendMandadory } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry';
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<SegmentUi>
@@ -538,10 +538,6 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 				}))
 			)
 
-		if (props.filter.rundownBaseline === 'only') {
-			uiSegments.length = 0
-		}
-
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			rundownBaselineAdLibs = rundownBaselineAdLibs.concat(props.showStyleBase.sourceLayers.
 				filter(i => !!i.clearKeyboardHotkey).
@@ -567,7 +563,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	}
 
 	return {
-		uiSegments,
+		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs
@@ -630,13 +626,13 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 			this.usedHotkeys.length = 0
-	
+
 			if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
 				this.setState({
 					selectedSegment: this.props.liveSegment
 				})
 			}
-	
+
 			this.refreshKeyboardHotkeys()
 		}
 	}
