@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-05-12T09:19:37.326Z\n"
-"PO-Revision-Date: 2020-05-12T09:19:37.326Z\n"
+"POT-Creation-Date: 2020-05-13T13:47:33.705Z\n"
+"PO-Revision-Date: 2020-05-13T13:47:33.705Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -47,6 +47,23 @@ msgid "Something went wrong, but it didn't affect the output"
 msgstr ""
 
 msgid "Something went wrong, and it affected the output"
+msgstr ""
+
+msgid ""
+"Trimming this clip has timed out. It's possible that the story is currently "
+"locked for writing in {{nrcsName}} and will eventually be updated. Make "
+"sure that the story is not being edited by other users."
+msgstr ""
+
+msgid "Trimming this clip has failed due to an error: {{error}}."
+msgstr ""
+
+msgid "Trimmed succesfully."
+msgstr ""
+
+msgid ""
+"Trimming this clip is taking longer than expected. It's possible that the "
+"story is locked for writing in {{nrcsName}}."
 msgstr ""
 
 msgid "Trim \"{{name}}\""
