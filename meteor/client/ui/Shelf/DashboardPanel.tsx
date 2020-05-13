@@ -433,18 +433,16 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 	}
 
 	onOut = (e: any, outButton?: boolean) => {
-		const { t } = this.props
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			let sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
 			if (sourceLayer && (sourceLayer.clearKeyboardHotkey || outButton)) {
-				console.log(`Clearing: ${sourceLayer.name}`)
-				this.onClearAllSourceLayers([sourceLayer], e)
+				this.onClearAllSourceLayers(e, [sourceLayer])
 			}
 		}
 	}
 
-	onSelectAdLib = (piece: AdLibPieceUi) => {
+	onSelectAdLib = (_e: any, piece: AdLibPieceUi) => {
 		this.setState({
 			selectedAdLib: piece
 		})
