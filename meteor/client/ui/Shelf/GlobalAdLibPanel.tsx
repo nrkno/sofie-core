@@ -29,7 +29,6 @@ import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integ
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { ShelfInspector } from './Inspector/ShelfInspector'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -173,7 +172,6 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<Tr
 				<table className='adlib-panel__list-view__list__table' ref={this.setTableRef}>
 					{this.renderGlobalAdLibs()}
 				</table>
-				<ShelfInspector selected={this.props.selectedPiece} />
 			</div>
 		)
 	}

@@ -1,6 +1,6 @@
 .shelf-inspector {
 	overflow-y: auto;
-	overflow-x: none;
+	overflow-x: hidden;
 
 	> dl {
 		margin: 0 0.5em;
@@ -14,4 +14,10 @@
 			margin: 0 0 0 1em;
 		}
 	}
+}
+
+.rundown-view__shelf .rundown-view__shelf__contents > .rundown-view__shelf__contents__pane.shelf-inspector {
+	flex: 0.3 1;
+	min-width: 200px;
+	max-width: 400px;
 }

@@ -45,7 +45,7 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 		}
 
 		return (
-			<div className='shelf-inspector'>
+			<div className='shelf-inspector__content'>
 				<h2>{actualPiece.name}</h2>
 				<button className='btn btn-primary' disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>Edit</button>
 				<Modal {...modalProps}>

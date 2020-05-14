@@ -309,7 +309,6 @@ const AdLibListView = translate()(class extends React.Component<
 					{this.renderRundownAdLibs()}
 					{this.renderSegments()}
 				</table>
-				<ShelfInspector selected={selected} />
 			</div>
 		)
 	}

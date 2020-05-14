@@ -63,6 +63,7 @@ $inspector-shelf-tabs-height: 2.3em;
 			position: relative;
 			flex: 0 1;
 			margin-left: 10px;
+			min-width: 0;
 
 			> .rundown-view__shelf__contents__pane__divider {
 				position: absolute;

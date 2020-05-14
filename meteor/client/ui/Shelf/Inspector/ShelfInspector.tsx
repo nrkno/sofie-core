@@ -21,7 +21,7 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 		const content = selected && renderItem(selected)
 
 		return (
-			<div className='shelf-inspector'>
+			<div className='rundown-view__shelf__contents__pane shelf-inspector'>
 				{content}
 			</div>
 		)
