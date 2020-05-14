@@ -120,6 +120,8 @@ export namespace IngestActions {
 					resetRundown(cache, rundown)
 				}
 
+				waitForPromise(cache.saveAllToDatabase())
+
 				handleUpdatedRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
 			})
 

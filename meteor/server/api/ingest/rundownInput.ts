@@ -57,7 +57,7 @@ import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPie
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData } from './ingestCache'
+import { saveRundownCache, saveSegmentCache, loadCachedIngestSegment, loadCachedRundownData, LocalIngestRundown, LocalIngestSegment, makeNewIngestSegment, makeNewIngestPart, makeNewIngestRundown, updateIngestRundownWithData, isLocalIngestRundown } from './ingestCache'
 import { getRundownId, getSegmentId, getPartId, getStudioFromDevice, getRundown, canBeUpdated, getRundownPlaylist } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
@@ -233,7 +233,12 @@ export function handleRemovedRundown (peripheralDevice: PeripheralDevice, rundow
 		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingestRundown: IngestRundown, dataSource: string) {
+/** Handle an updated (or inserted) Rundown */
+export function handleUpdatedRundown (
+	peripheralDevice: PeripheralDevice,
+	ingestRundown: IngestRundown,
+	dataSource: string
+) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 	if (peripheralDevice && peripheralDevice.studioId !== studio._id) {
@@ -243,9 +248,17 @@ export function handleUpdatedRundown (peripheralDevice: PeripheralDevice, ingest
 	// Lock behind a playlist if it exists
 	const existingRundown = Rundowns.findOne(rundownId)
 	const playlistId = existingRundown ? existingRundown.playlistId : protectString('newPlaylist')
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => handleUpdatedRundownInner(studio, rundownId, ingestRundown, dataSource, peripheralDevice))
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () =>
+		handleUpdatedRundownInner(studio, rundownId, makeNewIngestRundown(ingestRundown), dataSource, peripheralDevice)
+	)
 }
-export function handleUpdatedRundownInner (studio: Studio, rundownId: RundownId, ingestRundown: IngestRundown, dataSource?: string, peripheralDevice?: PeripheralDevice) {
+export function handleUpdatedRundownInner (
+	studio: Studio,
+	rundownId: RundownId,
+	ingestRundown: IngestRundown | LocalIngestRundown,
+	dataSource?: string,
+	peripheralDevice?: PeripheralDevice
+) {
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	if (!canBeUpdated(existingDbRundown)) return
 
@@ -255,12 +268,19 @@ export function updateRundownAndSaveCache (
 	studio: Studio,
 	rundownId: RundownId,
 	existingDbRundown: Rundown | undefined,
-	ingestRundown: IngestRundown,
+	ingestRundown: IngestRundown | LocalIngestRundown,
 	dataSource?: string,
-	peripheralDevice?: PeripheralDevice) {
+	peripheralDevice?: PeripheralDevice
+) {
 	logger.info((existingDbRundown ? 'Updating' : 'Adding') + ' rundown ' + rundownId)
 
-	saveRundownCache(rundownId, ingestRundown)
+	const newIngestRundown = (
+		isLocalIngestRundown(ingestRundown) ?
+		ingestRundown :
+		makeNewIngestRundown(ingestRundown)
+	)
+
+	saveRundownCache(rundownId, newIngestRundown)
 
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
@@ -667,7 +687,7 @@ function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundownExtern
 		if (!canBeUpdated(rundown, segmentId)) return
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 		cache.defer(() => { // can we do this?
-			saveSegmentCache(rundown._id, segmentId, ingestSegment)
+			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
 		})
 		const updatedSegmentId = updateSegmentFromIngestData(cache, studio, playlist, rundown, ingestSegment)
 		if (updatedSegmentId) {
@@ -857,6 +877,7 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 				// Blueprints will handle the deletion of the Part
 				const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
 				ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== partExternalId)
+				ingestSegment.modified = getCurrentTime()
 
 				cache.defer(() => {
 					saveSegmentCache(rundown._id, segmentId, ingestSegment)
@@ -871,7 +892,12 @@ export function handleRemovedPart (peripheralDevice: PeripheralDevice, rundownEx
 		}
 	})
 }
-export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownExternalId: string, segmentExternalId: string, ingestPart: IngestPart) {
+export function handleUpdatedPart (
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	segmentExternalId: string,
+	ingestPart: IngestPart
+) {
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
@@ -886,7 +912,14 @@ export function handleUpdatedPart (peripheralDevice: PeripheralDevice, rundownEx
 		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function handleUpdatedPartInner (cache: CacheForRundownPlaylist, studio: Studio, playlist: RundownPlaylist, rundown: Rundown, segmentExternalId: string, ingestPart: IngestPart) {
+export function handleUpdatedPartInner (
+	cache: CacheForRundownPlaylist,
+	studio: Studio,
+	playlist: RundownPlaylist,
+	rundown: Rundown,
+	segmentExternalId: string,
+	ingestPart: IngestPart
+) {
 	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
@@ -905,9 +938,10 @@ export function handleUpdatedPartInner (cache: CacheForRundownPlaylist, studio: 
 	} else {
 
 		// Blueprints will handle the creation of the Part
-		const ingestSegment: IngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
+		const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(rundown._id, rundown.externalId, segmentId, segmentExternalId)
 		ingestSegment.parts = ingestSegment.parts.filter(p => p.externalId !== ingestPart.externalId)
-		ingestSegment.parts.push(ingestPart)
+		ingestSegment.parts.push(makeNewIngestPart(ingestPart))
+		ingestSegment.modified = getCurrentTime()
 
 		cache.defer(() => {
 			saveSegmentCache(rundown._id, segmentId, ingestSegment)
