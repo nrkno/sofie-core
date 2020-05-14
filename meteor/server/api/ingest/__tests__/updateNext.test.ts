@@ -61,28 +61,32 @@ function createMockRO () {
 			_rank: 1,
 			externalId: 's1',
 			rundownId: rundownId,
-			name: 'Segment1'
+			name: 'Segment1',
+			externalModified: 1
 		}),
 		literal<DBSegment>({
 			_id: protectString('mock_segment2'),
 			_rank: 2,
 			externalId: 's2',
 			rundownId: rundownId,
-			name: 'Segment2'
+			name: 'Segment2',
+			externalModified: 1
 		}),
 		literal<DBSegment>({
 			_id: protectString('mock_segment3'),
 			_rank: 3,
 			externalId: 's3',
 			rundownId: rundownId,
-			name: 'Segment3'
+			name: 'Segment3',
+			externalModified: 1
 		}),
 		literal<DBSegment>({
 			_id: protectString('mock_segment4'),
 			_rank: 4,
 			externalId: 's4',
 			rundownId: rundownId,
-			name: 'Segment4'
+			name: 'Segment4',
+			externalModified: 1
 		})
 	])
 

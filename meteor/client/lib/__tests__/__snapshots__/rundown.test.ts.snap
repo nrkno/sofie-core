@@ -548,6 +548,7 @@ Object {
     "_id": "randomId9011_segment0",
     "_rank": 0,
     "externalId": "MOCK_SEGMENT_0",
+    "externalModified": 1,
     "name": "Segment 0",
     "outputLayers": Object {
       "pgm": Object {
