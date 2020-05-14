@@ -4,8 +4,9 @@ import {
 	Route, Switch
 } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { Studios, Studio } from '../../lib/collections/Studios'
+import { Studios, Studio, StudioId } from '../../lib/collections/Studios'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
@@ -16,15 +17,15 @@ import { PubSub } from '../../lib/api/pubsub'
 interface IProps {
 	match: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 		}
 		path: string
 	}
 }
 interface ITrackedProps {
-	rundown?: Rundown
+	playlist?: RundownPlaylist
 	studio?: Studio
-	studioId?: string
+	studioId?: StudioId
 	// isReady: boolean
 }
 interface IState {
@@ -37,14 +38,13 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	if (studioId) {
 		studio = Studios.findOne(studioId)
 	}
-	const rundown = Rundowns.findOne(_.extend({
-		active: true
-	}, {
+	const playlist = RundownPlaylists.findOne({
+		active: true,
 		studioId: studioId
-	}))
+	})
 
 	return {
-		rundown,
+		playlist,
 		studio,
 		studioId
 	}
@@ -58,17 +58,25 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 
 	componentWillMount () {
-		this.subscribe(PubSub.rundowns, _.extend({
+		this.subscribe(PubSub.rundownPlaylists, _.extend({
 			active: true
 		}, this.props.studioId ? {
 			studioId: this.props.studioId
 		} : {}))
+
 		if (this.props.studioId) {
 			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId
 			})
 		}
+
 		this.autorun(() => {
+			if (this.props.playlist) {
+				this.subscribe(PubSub.rundowns, {
+					playlistId: this.props.playlist._id
+				})
+			}
+
 			let subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
 				this.setState({
@@ -121,13 +129,13 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 				</div >
 			)
 		} else {
-			if (this.props.rundown) {
+			if (this.props.playlist) {
 				return <Switch>
 							<Route path={this.props.match.path} exact>
-								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} />
+								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} />
 							</Route>
 							<Route path={`${this.props.match.path}/shelf`}>
-								<RundownView rundownId={this.props.rundown._id} inActiveRundownView={true} onlyShelf={true} />
+								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} onlyShelf={true} />
 							</Route>
 						</Switch>
 			} else if (this.props.studio) {

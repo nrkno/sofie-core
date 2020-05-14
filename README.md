@@ -43,9 +43,10 @@ When running meteor it is possible to provide it with [additional settings](http
 
 | Setting         | Use                     | Default value |
 | --------------- | ----------------------- | ------------- |
-| frameRate       | Frames per second base for displaying timecodes in the UI | 25 |
-| 
-
+| `frameRate`       | Frames per second base for displaying timecodes in the UI | 25 |
+| `defaultToCollapsedSegments` | All segments be collapsed by default | `false` |
+| `autoRewindLeavingSegment` | Should the segment in the Rundown view automatically rewind after it stops being live? | `false` |
+| `autoExpandCurrentNextSegment` | Should the Current and Next segments be automatically made expanded (uncollapsed) | `false` |
 
 ## Additional views
 
@@ -109,7 +110,8 @@ The prompter can be controlled by different types of controllers. Which mode is 
 |  Default                  | Controlled by both mouse and keyboard                                                           |
 | `?mode=mouse`             | Controlled by mouse only                                                                        |
 | `?mode=keyboard`          | Controlled by keyboard only                                                                     |
-| `?mode=shuttlekeyboard`   | Controlled by a Contour-ShuttleXpress or X-keys, configured as keyboard-inputs (see below)       |
+| `?mode=shuttlekeyboard`   | Controlled by a Contour-ShuttleXpress or X-keys, configured as keyboard-inputs (see below)      |
+| `?mode=joycon`   			| Controlled by a Nintendo Joy-con controller over the HTML5 Gamepad API					      |
 
 ### Customize looks
 
@@ -161,6 +163,9 @@ Config-files to be used in respective config software:
 * [Contour ShuttleXpress](resources/prompter_layout_shuttlexpress.pref)
 * [X-keys](resources/prompter_layout_xkeys.mw3)
 
+### Control using Nintendo Joy-con controlelr
+
+This mode is intended to be used when having a Nintendo Joy-con. This wireless handheld controller works over Bluetooth and with the native HTML5 Gamepad API in the client.
 
 # For developers
 

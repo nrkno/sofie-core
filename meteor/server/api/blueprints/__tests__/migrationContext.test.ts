@@ -1,18 +1,15 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { literal } from '../../../../lib/lib'
-import { LookaheadMode, BlueprintMapping, IConfigItem, ShowStyleVariantPart, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { literal, getRandomId, protectString } from '../../../../lib/lib'
+import { LookaheadMode, BlueprintMapping, IConfigItem, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-
-// require('../api.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint migrationContext', () => {
 
@@ -412,7 +409,7 @@ describe('Test blueprint migrationContext', () => {
 		describe('devices', () => {
 			function createPlayoutDevice (studio: Studio) {
 				return PeripheralDevices.insert({
-					_id: Random.id(),
+					_id: getRandomId(),
 					name: 'Fake parent device',
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -692,7 +689,7 @@ describe('Test blueprint migrationContext', () => {
 			const showStyle = getShowStyle(ctx)
 
 			const rawVariant = literal<ShowStyleVariant>({
-				_id: ctx.getVariantId(id),
+				_id: protectString(ctx.getVariantId(id)),
 				name: 'test',
 				showStyleBaseId: showStyle._id,
 				config: config || [],
@@ -803,12 +800,12 @@ describe('Test blueprint migrationContext', () => {
 				expect(variantId).toEqual(ctx.getVariantId('variant2'))
 
 				initialVariants.push(literal<ShowStyleVariant>({
-					_id: variantId,
+					_id: protectString(variantId),
 					showStyleBaseId: getShowStyle(ctx)._id,
 					name: 'test2',
 					config: [],
 					_rundownVersionHash: '',
-				}))
+				}) as any as IBlueprintShowStyleVariant)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
 
@@ -1459,7 +1456,7 @@ describe('Test blueprint migrationContext', () => {
 		})
 		describe('variant-config', () => {
 			function getAllVariantConfigFromDb (ctx: MigrationContextShowStyle, variantId: string): IConfigItem[] {
-				const variant = ShowStyleVariants.findOne(ctx.getVariantId(variantId)) as ShowStyleVariant
+				const variant = ShowStyleVariants.findOne(protectString(ctx.getVariantId(variantId))) as ShowStyleVariant
 				expect(variant).toBeTruthy()
 				return variant.config
 			}

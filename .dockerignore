@@ -1,0 +1,3 @@
+meteor/.meteor/local
+meteor/node_modules
+.git

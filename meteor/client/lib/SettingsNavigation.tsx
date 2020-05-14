@@ -4,12 +4,10 @@ import { Redirect } from 'react-router'
 import { withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
 import { translate } from 'react-i18next'
-import { callMethod } from './clientAPI'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { BlueprintAPI } from '../../lib/api/blueprint'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStylesAPI } from '../../lib/api/showStyles'
 import { Studios } from '../../lib/collections/Studios'
+import { MeteorCall } from '../../lib/api/methods'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType
@@ -89,25 +87,24 @@ function wrapSettingsNavigation (newClass) {
 	})(newClass)
 }
 
-const Blueprint = wrapSettingsNavigation(translate()(class extends SettingsNavigationBase {
+const Blueprint = wrapSettingsNavigation(translate()(class Blueprint extends SettingsNavigationBase {
 	constructor (props) {
 		super(props)
 	}
 
 	onBlueprintAdd () {
-		let before = Blueprints.find({}).fetch()
-		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
-		setTimeout(() => {
-			let after = Blueprints.find({}).fetch()
-			let newBlueprint = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.props.obj['blueprintId'] = newBlueprint
-			if (this.props.obj) {
-				let m = {}
-				m['blueprintId'] = newBlueprint
-				Studios.update(this.props.obj['_id'], { $set: m })
-			}
-			this.redirectUser('/settings/blueprint/' + newBlueprint)
-		}, 1000)
+		MeteorCall.blueprint.insertBlueprint()
+			.then(blueprintId => {
+				this.props.obj['blueprintId'] = blueprintId
+				if (this.props.obj) {
+					let m = {}
+					m['blueprintId'] = blueprintId
+					Studios.update(this.props.obj['_id'], { $set: m })
+				}
+				console.log(this.props.obj)
+				this.redirectUser('/settings/blueprint/' + blueprintId)
+			})
+			.catch(console.error)
 	}
 
 	renderButton () {
@@ -115,7 +112,7 @@ const Blueprint = wrapSettingsNavigation(translate()(class extends SettingsNavig
 			if (this.props.obj[this.props.attribute]) {
 				return (
 					<button className='btn btn-primary btn-add-new'
-						onClick={(e) => { this.redirectUser('/settings/blueprint/' + (this.props.attribute ? this.props.obj[this.props.attribute] : '')) }}>
+						onClick={() => { this.redirectUser('/settings/blueprint/' + (this.props.attribute ? this.props.obj[this.props.attribute] : '')) }}>
 						Edit Blueprint
 					</button>
 				)
@@ -123,26 +120,16 @@ const Blueprint = wrapSettingsNavigation(translate()(class extends SettingsNavig
 		}
 
 		return (
-			<button className='btn btn-primary btn-add-new' onClick={(e) => { this.onBlueprintAdd() }}>
+			<button className='btn btn-primary btn-add-new' onClick={() => { this.onBlueprintAdd() }}>
 				New Blueprint
 			</button>
 		)
 	}
 }))
 
-const ShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavigationBase {
+const ShowStyle = wrapSettingsNavigation(translate()(class ShowStyle extends SettingsNavigationBase {
 	constructor (props) {
 		super(props)
-	}
-
-	onShowStyleAdd () {
-		let before = ShowStyleBases.find({}).fetch()
-		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
-		setTimeout(() => {
-			let after = ShowStyleBases.find({}).fetch()
-			let newShowStyle = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.redirectUser('/settings/showStyleBase/' + newShowStyle)
-		}, 1000)
 	}
 
 	renderButton () {
@@ -150,7 +137,7 @@ const ShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavig
 			return (
 				<button key={'button-navigate-' + this.props.obj[this.props.attribute]}
 					className='btn btn-primary btn-add-new'
-					onClick={(e) => { this.redirectUser('/settings/showStyleBase/' + (this.props.attribute ? this.props.obj['_id'] : '')) }}>
+					onClick={() => { this.redirectUser('/settings/showStyleBase/' + (this.props.attribute ? this.props.obj['_id'] : '')) }}>
 					Edit {this.props.obj[this.props.attribute]}
 				</button>
 			)
@@ -159,24 +146,22 @@ const ShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavig
 	}
 }))
 
-const NewShowStyle = wrapSettingsNavigation(translate()(class extends SettingsNavigationBase {
+const NewShowStyle = wrapSettingsNavigation(translate()(class NewShowStyle extends SettingsNavigationBase {
 	constructor (props) {
 		super(props)
 	}
 
 	onShowStyleAdd () {
-		let before = ShowStyleBases.find({}).fetch()
-		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
-		setTimeout(() => {
-			let after = ShowStyleBases.find({}).fetch()
-			let newShowStyle = _.difference(after.map(a => a._id), before.map(b => b._id))[0]
-			this.redirectUser('/settings/showStyleBase/' + newShowStyle)
-		}, 1000)
+		MeteorCall.showstyles.insertShowStyleBase()
+		.then(showStyleBaseId => {
+			this.redirectUser('/settings/showStyleBase/' + showStyleBaseId)
+		})
+		.catch(console.error)
 	}
 
 	renderButton () {
 		return (
-			<button className='btn btn-primary btn-add-new' onClick={(e) => { this.onShowStyleAdd() }}>
+			<button className='btn btn-primary btn-add-new' onClick={() => { this.onShowStyleAdd() }}>
 				New Show Style
 			</button>
 		)

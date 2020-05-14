@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
-import { Rundowns } from './Rundowns'
+import { Rundowns, Rundown, RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
 import { AdLibPieces } from './AdLibPieces'
-import { Segments } from './Segments'
-import { applyClassToDocument, Time, registerCollection, normalizeArray } from '../lib'
+import { Segments, SegmentId } from './Segments'
+import { applyClassToDocument, Time, registerCollection, normalizeArray, ProtectedString, ProtectedStringProperties } from '../lib'
 import { RundownAPI } from '../api/rundown'
 import { checkPieceContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
@@ -17,14 +17,21 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, NoteType } from '../api/notes'
 import { createMongoCollection } from './lib'
+import { Studio } from './Studios'
+import { ShowStyleBase } from './ShowStyleBases'
+
+/** A string, identifying a Part */
+export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart extends IBlueprintPartDB {
+export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+	_id: PartId
 	/** Position inside the segment */
 	_rank: number
 
 	/** The rundown this line belongs to */
-	rundownId: string
+	rundownId: RundownId
+	segmentId: SegmentId
 
 	status?: string
 
@@ -37,6 +44,11 @@ export interface DBPart extends IBlueprintPartDB {
 	 * This is set from a callback from the playout gateway
 	 */
 	stoppedPlayback?: boolean
+	/** Whether this part was taken (the most recent time it was played).
+	 * This is reset each time setAsNext is used.
+	 * This is set immediately by core
+	 */
+	taken?: boolean
 
 	/** The time the system played back this part, null if not yet finished playing, in milliseconds.
 	 * This is set when Take:ing the next part
@@ -48,7 +60,7 @@ export interface DBPart extends IBlueprintPartDB {
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
 	/** if the part is inserted after another (for adlibbing) */
-	afterPart?: string
+	afterPart?: PartId
 	/** if the part was dunamically inserted (adlib) */
 	dynamicallyInserted?: boolean
 
@@ -88,25 +100,27 @@ export class Part implements DBPart {
 	public displayDuration?: number
 	public invalid?: boolean
 	public invalidReason?: {
-        title: string
-        description?: string
-        color?: string
-    }
+		title: string
+		description?: string
+		color?: string
+	}
 	public floated?: boolean
+	public gap?: boolean
 	// From IBlueprintPartDB:
-	public _id: string
-	public segmentId: string
+	public _id: PartId
+	public segmentId: SegmentId
 	public timings?: PartTimings
 	// From DBPart:
 	public _rank: number
-	public rundownId: string
+	public rundownId: RundownId
 	public status?: string
 	public startedPlayback?: boolean
+	public taken?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number
 	public previousPartEndState?: PartEndState
 	public notes?: Array<PartNote>
-	public afterPart?: string
+	public afterPart?: PartId
 	public dynamicallyInserted?: boolean
 	public runtimeArguments?: BlueprintRuntimeArguments
 	public dirty?: boolean
@@ -152,32 +166,8 @@ export class Part implements DBPart {
 			}, options)
 		).fetch()
 	}
-	getTimings () {
-		// return a chronological list of timing events
-		let events: Array<{time: Time, type: string, elapsed: Time}> = []
-		_.each(['take', 'takeDone', 'startedPlayback', 'takeOut', 'stoppedPlayback', 'next'], (key) => {
-			if (this.timings) {
-				_.each(this.timings[key], (t: Time) => {
-					events.push({
-						time: t,
-						type: key,
-						elapsed: 0
-					})
-				})
-			}
-		})
-		let prevEv: any = null
-		return _.map(
-			_.sortBy(events, e => e.time),
-			(ev) => {
-				if (prevEv) {
-					ev.elapsed = ev.time - prevEv.time
-				}
-				prevEv = ev
-				return ev
-			}
-		)
-
+	getAllAdLibPieces () {
+		return this.getAdLibPieces()
 	}
 	getInvalidReasonNotes (): Array<PartNote> {
 		return this.invalidReason ? [
@@ -186,45 +176,34 @@ export class Part implements DBPart {
 				message: this.invalidReason.title + (this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
 				origin: {
 					name: this.title,
-					partId: this._id,
-					segmentId: this.segmentId,
-					rundownId: this.rundownId
 				}
 			}
 		] : []
 	}
-	getNotes (runtimeNotes?: boolean): Array<PartNote> {
+	getMinimumReactiveNotes (studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
 		let notes: Array<PartNote> = []
 		notes = notes.concat(this.notes || [])
 
-		if (runtimeNotes) {
-			const pieces = this.getPieces()
-			const rundown = this.getRundown()
-			const studio = rundown && rundown.getStudio()
-			const showStyleBase = rundown && rundown.getShowStyleBase()
-			const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-			_.each(pieces, (piece) => {
-				// TODO: check statuses (like media availability) here
+		const pieces = this.getPieces()
+		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+		_.each(pieces, (piece) => {
+			// TODO: check statuses (like media availability) here
 
-				if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
-					const part = partLookup[piece.sourceLayerId]
-					const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
-					if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
-						notes.push({
-							type: NoteType.WARNING,
-							origin: {
-								name: 'Media Check',
-								rundownId: this.rundownId,
-								segmentId: this.segmentId,
-								partId: this._id,
-								pieceId: piece._id
-							},
-							message: st.message || ''
-						})
-					}
+			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
+				const part = partLookup[piece.sourceLayerId]
+				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
+				if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
+					notes.push({
+						type: NoteType.WARNING,
+						origin: {
+							name: 'Media Check',
+							pieceId: piece._id
+						},
+						message: st.message || ''
+					})
 				}
-			})
-		}
+			}
+		})
 		return notes
 	}
 	getLastTake () {
@@ -248,6 +227,13 @@ export class Part implements DBPart {
 
 		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
+	isPlayable () {
+		return isPartPlayable(this)
+	}
+}
+
+export function isPartPlayable (part: DBPart) {
+	return !part.invalid && !part.floated
 }
 
 export const Parts: TransformedCollection<Part, DBPart>

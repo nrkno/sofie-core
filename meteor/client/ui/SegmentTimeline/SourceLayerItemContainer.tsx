@@ -2,8 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
-import { getCurrentTime } from '../../../lib/lib'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { getCurrentTime, unprotectObject } from '../../../lib/lib'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
@@ -29,7 +29,7 @@ interface IPropsHeader {
 	partStartsAt: number
 	partDuration: number
 	piece: PieceUi
-	rundown: Rundown
+	playlist: RundownPlaylist
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -47,14 +47,14 @@ interface IPropsHeader {
 	scrollWidth: number
 }
 /** This is a container component that allows ractivity with the Timeline collection */
-export const SourceLayerItemContainer = class extends MeteorReactComponent<IPropsHeader> {
+export const SourceLayerItemContainer = class SourceLayerItemContainer extends MeteorReactComponent<IPropsHeader> {
 	private mediaObjectSub: Meteor.SubscriptionHandle
 	private statusComp: Tracker.Computation
 	private objId: string
-	private overrides: any
+	private overrides: Partial<IPropsHeader>
 	private destroyed: boolean
 
-	updateMediaObjectSubscription () {
+	updateMediaObjectSubscription() {
 		if (this.destroyed) return
 
 		if (this.props.piece && this.props.piece.sourceLayer) {
@@ -63,17 +63,21 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 			switch (this.props.piece.sourceLayer.type) {
 				case SourceLayerType.VT:
-					objId = (piece.content as VTContent).fileName.toUpperCase()
+					objId = piece.instance.piece.content ?
+						(piece.instance.piece.content as VTContent).fileName.toUpperCase() :
+						undefined
 					break
 				case SourceLayerType.LIVE_SPEAK:
-					objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+					objId = piece.instance.piece.content ?
+						(piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase() :
+						undefined
 					break
 			}
 
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}
@@ -82,13 +86,13 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 		}
 	}
 
-	shouldDataTrackerUpdate (prevProps: IPropsHeader): boolean {
+	shouldDataTrackerUpdate(prevProps: IPropsHeader): boolean {
 		if (this.props.piece !== prevProps.piece) return true
 		if (this.props.isLiveLine !== prevProps.isLiveLine) return true
 		return false
 	}
 
-	updateDataTracker () {
+	updateDataTracker() {
 		if (this.destroyed) return
 
 		this.statusComp = this.autorun(() => {
@@ -101,17 +105,27 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			if (props.isLiveLine) {
 				// Check in Timeline collection for any changes to the related object
 				// TODO - this query appears to be unable to load any data
-				let timelineObj = Timeline.findOne({ id: getPieceGroupId(props.piece) })
+				let timelineObj = Timeline.findOne({ id: getPieceGroupId(unprotectObject(props.piece.instance.piece)) })
 
 				if (timelineObj) {
-					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
+					// Deep clone the required bits
+					const origPiece = (overrides.piece || props.piece) as PieceUi
+					const pieceCopy = {
+						...(overrides.piece || props.piece),
+						instance: {
+							...origPiece.instance,
+							piece: {
+								...origPiece.instance.piece,
+								enable: timelineObj.enable
+							}
+						}
+					}
 
-					pieceCopy.enable = timelineObj.enable
 					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
 						pieceCopy.renderedInPoint = timelineObj.enable.start
 					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
-						if (props.part && props.part.startedPlayback && props.part.getLastStartedPlayback()) {
-							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.getLastStartedPlayback() || 0)
+						if (props.part && props.part.instance.part.startedPlayback && props.part.instance.part.getLastStartedPlayback()) {
+							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.instance.part.getLastStartedPlayback() || 0)
 						} else {
 							pieceCopy.renderedInPoint = 0
 						}
@@ -122,8 +136,8 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 					if (typeof timelineObj.enable.duration === 'number' && !pieceCopy.cropped) {
 						pieceCopy.renderedDuration = (
 							timelineObj.enable.duration !== 0 ?
-							timelineObj.enable.duration :
-							(props.partDuration - (pieceCopy.renderedInPoint || 0))
+								timelineObj.enable.duration :
+								(props.partDuration - (pieceCopy.renderedInPoint || 0))
 						) || null
 					}
 					// console.log(segmentCopy.renderedDuration)
@@ -135,31 +149,48 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 			// Check item status
 			if (props.piece.sourceLayer) {
 
-				const { metadata, status } = checkPieceContentStatus(props.piece, props.piece.sourceLayer, props.rundown.getStudio().settings)
-				if (status !== props.piece.status || metadata) {
-					let pieceCopy = (_.clone(overrides.piece || props.piece) as PieceUi)
+				const { metadata, status, contentDuration } = checkPieceContentStatus(props.piece.instance.piece, props.piece.sourceLayer, props.playlist.getStudio().settings)
+				if (status !== props.piece.instance.piece.status || metadata) {
+					// Deep clone the required bits
+					const origPiece = (overrides.piece || props.piece) as PieceUi
+					const pieceCopy: PieceUi = {
+						...(overrides.piece || props.piece),
+						instance: {
+							...origPiece.instance,
+							piece: {
+								...origPiece.instance.piece,
+								status: status
+							}
+						},
+						contentMetaData: metadata
+					}
 
-					pieceCopy.status = status
-					pieceCopy.contentMetaData = metadata
+					if (
+						pieceCopy.instance.piece.content &&
+						pieceCopy.instance.piece.content.sourceDuration === undefined &&
+						contentDuration !== undefined
+					) {
+						pieceCopy.instance.piece.content.sourceDuration = contentDuration
+					}
 
 					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
 				}
 			} else {
-				console.error(`Piece "${props.piece._id}" has no sourceLayer:`, props.piece)
+				console.error(`Piece "${props.piece.instance.piece._id}" has no sourceLayer:`, props.piece)
 			}
 
 			this.forceUpdate()
 		})
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 			this.updateDataTracker()
 		})
 	}
 
-	componentDidUpdate (prevProps: IPropsHeader) {
+	componentDidUpdate(prevProps: IPropsHeader) {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 		})
@@ -169,12 +200,12 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 		}
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this.destroyed = true
 		super.componentWillUnmount()
 	}
 
-	render () {
+	render() {
 		return (
 			<SourceLayerItem {...this.props} {...this.overrides} />
 		)

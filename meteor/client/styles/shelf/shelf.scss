@@ -15,7 +15,7 @@ $inspector-shelf-tabs-height: 2.3em;
 	box-shadow: 0 0 20px #000;
 	
 	&.full-viewport {
-		display: absolute;
+		position: absolute;
 		top: 0;
 		left: 0;
 		right: 0;
@@ -34,7 +34,8 @@ $inspector-shelf-tabs-height: 2.3em;
 		clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		-webkit-clip-path: polygon(-20% -20%, 120% -20%, 120% 50%, -20% 50%);
 		box-shadow: 0 0 20px #000;
-		cursor: -webkit-grab;
+		cursor: grab;
+		touch-action: none;
 
 		text-align: center;
 		padding-top: 0.5em;
@@ -44,6 +45,65 @@ $inspector-shelf-tabs-height: 2.3em;
 		&:hover {
 			transition: 0.2s color;
 			color: #777;
+		}
+	}
+
+	&.moving {
+		.rundown-view__shelf__handle {
+			cursor: grabbing;
+		}
+	}
+
+	.rundown-view__shelf__contents {
+		flex: 1 1;
+		display: flex;
+
+		
+		> .rundown-view__shelf__contents__pane {
+			position: relative;
+			flex: 0 1;
+			margin-left: 10px;
+
+			> .rundown-view__shelf__contents__pane__divider {
+				position: absolute;
+				top: 0;
+				left: -10px;
+				width: 10px;
+				bottom: 0;
+				user-select: none;
+				touch-action: none;
+				cursor: ew-resize;
+				overflow: hidden;
+
+				> .rundown-view__shelf__contents__pane__handle {
+					position: absolute;
+					top: 50%;
+					left: 0.4em;
+					transform: translate(-50%, -50%) rotate(90deg);
+					color: #777;
+					font-size: 0.7em;
+				}
+
+				&:hover {
+					background: rgba(255, 255, 255, 0.2);
+
+					> .rundown-view__shelf__contents__pane__handle {
+						color: #fff;
+					}
+				}
+			}
+
+			&.fill {
+				flex: 1 1;
+				margin-left: 0;
+			}
+
+			> div.react-contextmenu-wrapper > .dashboard-panel__panel--bucket, > .dashboard-panel__panel--bucket {
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+			}
 		}
 	}
 
@@ -101,6 +161,8 @@ $inspector-shelf-tabs-height: 2.3em;
 	.rundown-view__shelf__panel {
 		flex: 1 1;
 		position: relative;
+		width: 100%;
+		height: 100%;
 
 		& > * {
 			position: absolute;

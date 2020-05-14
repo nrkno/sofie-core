@@ -3,6 +3,7 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
+import { getHash } from '../../../lib/lib'
 
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
@@ -36,6 +37,63 @@ export namespace ReactiveDataHelper {
 			}
 		}
 	}
+}
+
+const isolatedAutorunsMem: {
+	[key: string]: {
+		dependancy: Tracker.Dependency
+		value: any
+	}
+} = {}
+
+export function memoizedIsolatedAutorun<T> (fnc: (...params) => T, functionName: string, ...params): T {
+	function hashFncAndParams (fName: string, p: any): string {
+		return fName + '_' + getHash(JSON.stringify(p))
+	}
+
+	let result: T
+	const fId = hashFncAndParams(functionName, params)
+	const parentComputation = Tracker.currentComputation
+	if (isolatedAutorunsMem[fId] === undefined) {
+		// console.log(`${fId}: Tracker.nonreactive`)
+		const dep = new Tracker.Dependency()
+		dep.depend()
+		const computation = Tracker.nonreactive(() => {
+			const computation = Tracker.autorun(() => {
+				result = fnc(...params)
+
+				if (!Tracker.currentComputation.firstRun) {
+					if (!_.isEqual(isolatedAutorunsMem[fId].value, result)) {
+						// console.log(`${fId}: Tracker.autorun, dependancy changed.`)
+						dep.changed()
+					}
+				}
+
+				isolatedAutorunsMem[fId] = {
+					dependancy: dep,
+					value: result
+				}
+				// console.log(`${fId}: Tracker.autorun`, params, result)
+			})
+			computation.onStop(() => {
+				// console.log(`${fId}: Tracker.autorun stopped`)
+				delete isolatedAutorunsMem[fId]
+			})
+			return computation
+		})
+		let gc = setInterval(() => {
+			if (!dep.hasDependents()) {
+				clearInterval(gc)
+				computation.stop()
+			}
+		}, 5000)
+	} else {
+		result = isolatedAutorunsMem[fId].value
+		isolatedAutorunsMem[fId].dependancy.depend()
+		// console.log(`${fId}: Using memoized value`, result)
+	}
+	// console.log(`${fId}: Returning value`, result!)
+	return result!
 }
 
 export abstract class WithManagedTracker {

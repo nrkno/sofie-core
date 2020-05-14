@@ -4,6 +4,7 @@ import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 
 import {
@@ -14,9 +15,10 @@ import {
 } from './SegmentTimelineContainer'
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { unprotectString } from '../../../lib/lib'
 
 interface IProps {
-	rundown: Rundown
+	playlist: RundownPlaylist
 	part?: PartUi
 	outputGroups?: {
 		[key: string]: IOutputLayerUi
@@ -30,7 +32,7 @@ interface IProps {
 	isCollapsed?: boolean
 }
 
-export const SegmentNextPreview = translate()(class extends React.Component<Translated<IProps>> {
+export const SegmentNextPreview = translate()(class SegmentNextPreview extends React.Component<Translated<IProps>> {
 	renderSourceLayers (outputLayer: IOutputLayerUi, layers: ISourceLayerUi[] | undefined) {
 		if (layers) {
 			return layers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank).map((layer, id) => {
@@ -39,7 +41,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 						{layer.followingItems && layer.followingItems
 							.filter((piece) => {
 								// filter only pieces belonging to this part
-								return this.props.part && ((piece.partId === this.props.part._id) ?
+								return this.props.part && ((piece.instance.partInstanceId === this.props.part.instance._id) ?
 									// filter only pieces, that have not yet been linked to parent items
 									((piece as PieceUi).linked !== true) ?
 										true :
@@ -49,7 +51,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 							})
 							.map((piece) => {
 								return this.props.part && (
-									<SourceLayerItemContainer key={piece._id}
+									<SourceLayerItemContainer key={unprotectString(piece.instance._id)}
 										{...this.props}
 										// The following code is fine, just withTracker HOC messing with available props
 										isLiveLine={false}
@@ -58,7 +60,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 										followLiveLine={false}
 										liveLineHistorySize={0}
 										livePosition={0}
-										rundown={this.props.rundown}
+										playlist={this.props.playlist}
 										piece={piece}
 										layer={layer}
 										outputLayer={outputLayer}
@@ -106,7 +108,7 @@ export const SegmentNextPreview = translate()(class extends React.Component<Tran
 	}
 	renderPart () {
 		return (
-			<div className='segment-timeline__part' data-obj-id={this.props.part ? this.props.part._id : '(NONE)'}>
+			<div className='segment-timeline__part' data-obj-id={this.props.part ? this.props.part.instance._id : '(NONE)'}>
 				{this.renderOutputGroups()}
 			</div>
 		)

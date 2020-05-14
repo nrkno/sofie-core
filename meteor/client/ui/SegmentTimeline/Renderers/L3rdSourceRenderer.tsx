@@ -18,7 +18,7 @@ interface IProps extends ICustomLayerItemProps {
 }
 interface IState {
 }
-export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export const L3rdSourceRenderer = translate()(class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 	leftLabel: HTMLElement
 	rightLabel: HTMLElement
 
@@ -46,7 +46,7 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		if (this.props.piece.name !== prevProps.piece.name) {
+		if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
@@ -54,7 +54,8 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 	render () {
 		const { t } = this.props
 
-		const noraContent = this.props.piece.content as NoraContent
+		const innerPiece = this.props.piece.instance.piece
+		const noraContent = innerPiece.content as NoraContent | undefined
 
 		let properties: Array<KeyValue> = []
 		if (noraContent && noraContent.payload && noraContent.payload.content) {
@@ -100,14 +101,14 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 		return <React.Fragment>
 					<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 						<span className='segment-timeline__piece__label'>
-							{this.props.piece.name}
+							{innerPiece.name}
 						</span>
 					</span>
 					<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
 						{this.renderInfiniteIcon()}
 						{this.renderOverflowTimeLabel()}
 					</span>
-					<FloatingInspector key={this.props.piece._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+					<FloatingInspector key={this.props.piece.instance._id + '-inspector'} shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
 						{ noraContent && noraContent.payload && noraContent.previewRenderer ?
 						<NoraPreviewController noraContent={noraContent} style={this.getFloatingInspectorStyle()} />
 						 :
@@ -127,13 +128,13 @@ export const L3rdSourceRenderer = translate()(class extends CustomLayerItemRende
 										<td className='mini-inspector__row--timing'></td>
 										<td className='mini-inspector__row--timing'>
 											<span className='mini-inspector__in-point'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedInPoint || 0)}</span>
-											{this.props.piece.infiniteMode ?
+											{innerPiece.infiniteMode ?
 												(
-													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextPart && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
-													(this.props.piece.infiniteMode === PieceLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
-													(this.props.piece.infiniteMode === PieceLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
+													(innerPiece.infiniteMode === PieceLifespan.OutOnNextPart && <span className='mini-inspector__duration'>{t('Until next take')}</span>) ||
+													(innerPiece.infiniteMode === PieceLifespan.OutOnNextSegment && <span className='mini-inspector__duration'>{t('Until next segment')}</span>) ||
+													(innerPiece.infiniteMode === PieceLifespan.Infinite && <span className='mini-inspector__duration'>{t('Infinite')}</span>)
 												)
-												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedDuration || (_.isNumber(this.props.piece.enable.duration) ? parseFloat(this.props.piece.enable.duration as any as string) : 0))}</span>
+												: <span className='mini-inspector__duration'>{RundownUtils.formatTimeToShortTime(this.props.piece.renderedDuration || (_.isNumber(innerPiece.enable.duration) ? parseFloat(innerPiece.enable.duration as any as string) : 0))}</span>
 											}
 											{changed && <span className='mini-inspector__changed'><Moment date={changed} calendar={true} /></span>}
 										</td>

@@ -14,9 +14,6 @@ export namespace mousetrapHelper {
 	const _boundHotkeys: {
 		[key: string]: IWrappedCallback[]
 	} = {}
-	const _callbackTags: {
-		[key: string]: (e: Event) => void
-	} = {}
 
 	function handleKey (keys: string, e: ExtendedKeyboardEvent) {
 		if (_boundHotkeys[keys] === undefined) {
@@ -50,15 +47,9 @@ export namespace mousetrapHelper {
 		_boundHotkeys[index].push({
 			isGlobal: true,
 			allowInModal: !!allowInModal,
-			original: callback
+			original: callback,
+			tag
 		})
-
-		if (tag) {
-			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Globalbind: Callback with tag "${tag}" already exists for ${index}!`)
-			}
-			_callbackTags[index + '_' + tag] = callback
-		}
 	}
 
 	export function bind (keys: string, callback: (e: Event) => void, action?: string, tag?: string, allowInModal?: boolean) {
@@ -75,15 +66,9 @@ export namespace mousetrapHelper {
 		_boundHotkeys[index].push({
 			isGlobal: false,
 			allowInModal: !!allowInModal,
-			original: callback
+			original: callback,
+			tag
 		})
-
-		if (tag) {
-			if (_callbackTags[index + '_' + tag]) {
-				throw new Error(`Bind: Callback with tag "${tag}" already exists for ${index}!`)
-			}
-			_callbackTags[index + '_' + tag] = callback
-		}
 	}
 
 	export function unbindAll (keys: string[], action?: string, tag?: string) {
@@ -107,25 +92,17 @@ export namespace mousetrapHelper {
 		let tag = typeof callbackOrTag === 'string' ? callbackOrTag : undefined
 		let callback = typeof callbackOrTag === 'function' ? callbackOrTag : undefined
 
-		if (tag) {
-			callback = _callbackTags[index + '_' + tag]
-			if (callback === undefined) {
-				throw new Error(`No callback found for ${tag} and keys ${keys}`)
-			}
+		if (!callback && !tag) {
+			throw new Error(`Need to provide either a callback or a tag`)
 		}
 
-		if (!callback) throw new Error(`Callback could not be located`)
-
 		if (_boundHotkeys[index] === undefined) return
-		const callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback)
-		if (callbackIndex >= 0) {
-			_boundHotkeys[index].splice(callbackIndex, 1)
-			if (tag) {
-				// cleanup callback tags to avoid memory leaks
-				delete _callbackTags[index + '_' + tag]
+		let callbackIndex = 0
+		while (callbackIndex >= 0) {
+			callbackIndex = _boundHotkeys[index].findIndex((i) => i.original === callback || i.tag === tag)
+			if (callbackIndex >= 0) {
+				_boundHotkeys[index].splice(callbackIndex, 1)
 			}
-		} else {
-			console.log('Callback not found in list for ', index)
 		}
 		if (_boundHotkeys[index].length === 0) {
 			delete _boundHotkeys[index]
@@ -153,8 +130,11 @@ export namespace mousetrapHelper {
 // Add mousetrap keycodes for special keys
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
-	222: '\\', // on ANSI-based keyboards, this is the key with single quote
-	223: '|', // this key is not present on ANSI-based keyboards
+
+	// TODO: These keys have temporarly been prefixed by 9x so that thye don't actually register as hotkeys,
+	// but can still be used, as they will generally map onto .which === 220
+	90220: '\\', // on ANSI-based keyboards, this is the key with single quote
+	91220: '|', // this key is not present on ANSI-based keyboards
 
 	96: 'num0',
 	97: 'num1',
@@ -170,5 +150,7 @@ mousetrap.addKeycodes({
 	107: 'numAdd',
 	109: 'numSub',
 	110: 'numDot',
-	111: 'numDiv'
+	111: 'numDiv',
+	187: 'add',
+	188: 'comma'
 })

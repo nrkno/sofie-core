@@ -4,6 +4,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import * as _ from 'underscore'
+import { protectString } from '../../lib/lib'
 
 
 // 1.5.0 (Release 17)
@@ -67,7 +68,7 @@ addMigrationSteps('1.5.0', [
 				blueprintId: { $exists: false }
 			}, {
 				$set: {
-					blueprintId: ''
+					blueprintId: protectString('')
 				}
 			})
 		}

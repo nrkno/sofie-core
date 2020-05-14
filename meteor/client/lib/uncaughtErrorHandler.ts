@@ -3,6 +3,7 @@ import { Tracker } from 'meteor/tracker'
 import { Time } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime } from '../../lib/lib'
 import { ClientAPI } from '../../lib/api/client'
+import { MeteorCall } from '../../lib/api/methods'
 
 interface LoggedError {
 	location: string
@@ -20,17 +21,17 @@ try {
 }
 
 function sendErrorToCore (errorLog: LoggedError) {
-	Meteor.call(ClientAPI.methods.clientErrorReport, errorLog.added, errorLog.content, errorLog.location, (err: any, response: any) => {
-		if (err || ClientAPI.isClientResponseError(response)) {
-			// fail silently, so that we don't erase useful logs with multiple 'failed to send' messages
-			return
-		}
+	MeteorCall.client.clientErrorReport(errorLog.added, errorLog.content, errorLog.location)
+	.then(() => {
 
 		const sentIdx = errorCache.indexOf(errorLog)
 		if (sentIdx >= 0) {
 			errorCache.splice(sentIdx, 1)
 		}
 		localStorage.setItem('errorCache', JSON.stringify(errorCache))
+	}).catch(() => {
+		// fail silently, so that we don't erase useful logs with multiple 'failed to send' messages
+		return
 	})
 }
 

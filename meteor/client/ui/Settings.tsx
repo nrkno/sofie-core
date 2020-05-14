@@ -1,11 +1,9 @@
-import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
-import { Random } from 'meteor/random'
-import { literal } from '../../lib/lib'
-import { ModalDialog, doModalDialog, ModalDialogQueueItem } from '../lib/ModalDialog'
+import { unprotectString } from '../../lib/lib'
+import { doModalDialog } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	Route,
@@ -32,14 +30,9 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
-import { ShowStylesAPI } from '../../lib/api/showStyles'
-import { callMethod } from '../lib/clientAPI'
-import { BlueprintAPI } from '../../lib/api/blueprint'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
-// import { getAllowDeveloper } from '../lib/localStorage'
-import * as i18next from 'i18next'
-import { StudiosAPI } from '../../lib/api/studios'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { MeteorCall } from '../../lib/api/methods'
 
 class WelcomeToSettings extends React.Component {
 	render () {
@@ -158,14 +151,13 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 	}
 	onAddStudio () {
-		callMethod('Menu', StudiosAPI.methods.insertStudio)
+		MeteorCall.studio.insertStudio().catch(console.error)
 	}
 	onAddShowStyleBase () {
-		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleBase)
+		MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
 	}
 	onAddBlueprint () {
-		let t = this.props.t
-		callMethod('Menu', BlueprintAPI.methods.insertBlueprint)
+		MeteorCall.blueprint.insertBlueprint().catch(console.error)
 	}
 
 	onDeleteStudio (studio: Studio) {
@@ -179,7 +171,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<p>{t('Please note: This action is irreversible!')}</p>
 			</React.Fragment>,
 			onAccept: () => {
-				callMethod('ModalDialog', StudiosAPI.methods.removeStudio, studio._id)
+				MeteorCall.studio.removeStudio(studio._id)
 			}
 		})
 	}
@@ -194,7 +186,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<p>{t('Please note: This action is irreversible!')}</p>
 			</React.Fragment>,
 			onAccept: () => {
-				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleBase, item._id)
+				MeteorCall.showstyles.removeShowStyleBase(item._id)
 			}
 		})
 	}
@@ -209,7 +201,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<p>{t('Please note: This action is irreversible!')}</p>
 			</React.Fragment>,
 			onAccept: () => {
-				callMethod('ModalDialog', BlueprintAPI.methods.removeBlueprint, blueprint._id)
+				MeteorCall.blueprint.removeBlueprint(blueprint._id)
 			}
 		})
 	}
@@ -224,7 +216,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<p>{t('Please note: This action is irreversible!')}</p>
 			</React.Fragment>,
 			onAccept: () => {
-				callMethod('ModalDialog', 'temporaryRemovePeripheralDevice', device._id)
+				MeteorCall.peripheralDevice.removePeripheralDevice(device._id).catch(console.error)
 			}
 		})
 	}
@@ -234,7 +226,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		return (
 			<div className='tight-xs htight-xs text-s'>
 				<h2 className='mhs'>
-					<button className='action-btn right' onClick={(e) => this.onAddStudio()}>
+					<button className='action-btn right' onClick={() => this.onAddStudio()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 					{t('Studios')}
@@ -243,7 +235,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				{
 					this.props.studios.map((studio) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={studio._id} to={'/settings/studio/' + studio._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(studio._id)} to={'/settings/studio/' + studio._id}>
 								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteStudio(studio) }}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
@@ -263,7 +255,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					})
 				}
 				<h2 className='mhs'>
-					<button className='action-btn right' onClick={(e) => this.onAddShowStyleBase()}>
+					<button className='action-btn right' onClick={() => this.onAddShowStyleBase()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 					{t('Show Styles')}
@@ -272,7 +264,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				{
 					this.props.showStyleBases.map((showStyleBase) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={showStyleBase._id} to={'/settings/showStyleBase/' + showStyleBase._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(showStyleBase._id)} to={'/settings/showStyleBase/' + showStyleBase._id}>
 								<div className='selectable clickable'>
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteShowStyleBase(showStyleBase) }}>
 										<FontAwesomeIcon icon={faTrash} />
@@ -297,7 +289,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					})
 				}
 				<h2 className='mhs'>
-					<button className='action-btn right' onClick={(e) => this.onAddBlueprint()}>
+					<button className='action-btn right' onClick={() => this.onAddBlueprint()}>
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 					{t('Blueprints')}
@@ -306,7 +298,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				{
 					this.props.blueprints.map((blueprint) => {
 						return (
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={blueprint._id} to={'/settings/blueprint/' + blueprint._id}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(blueprint._id)} to={'/settings/blueprint/' + blueprint._id}>
 								<div className='selectable clickable'>
 									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
 										<FontAwesomeIcon icon={faTrash} />
@@ -334,25 +326,25 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 					.filter((device) => {
 						return device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 					})
-					.map((item) => {
+					.map((device) => {
 						return [
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={item._id} to={'/settings/peripheralDevice/' + item._id}>
-								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteDevice(item) }}>
+							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(device._id)} to={'/settings/peripheralDevice/' + device._id}>
+								<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteDevice(device) }}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 								{
-									this.peripheralDeviceHasError(item) ?
+									this.peripheralDeviceHasError(device) ?
 									<button className='action-btn right error-notice'>
 										<FontAwesomeIcon icon={faExclamationTriangle} />
 									</button> :
 									null
 								}
-								<h3>{item.name}</h3>
+								<h3>{device.name}</h3>
 								<p>
-									{item.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(item.status.statusCode)}
+									{device.connected ? t('Connected') : t('Disconnected')}, {t('Status')}: {this.statusCodeString(device.status.statusCode)}
 								</p>
 							</NavLink>,
-							<hr className='vsubtle man' key={item._id + '-hr'} />
+							<hr className='vsubtle man' key={device._id + '-hr'} />
 						]
 					})
 				}

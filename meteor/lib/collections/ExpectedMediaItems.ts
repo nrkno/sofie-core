@@ -1,10 +1,18 @@
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time } from '../lib'
+import { registerCollection, Time, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
+import { RundownId } from './Rundowns'
+import { PartId } from './Parts'
+import { StudioId } from './Studios'
+import { BucketId } from './Buckets'
+import { PieceId } from './Pieces'
 
-export interface ExpectedMediaItem {
-	_id: string
+/** A string, identifying a ExpectedMediaItem */
+export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>
+
+export interface ExpectedMediaItemBase {
+	_id: ExpectedMediaItemId
 
 	/** Source label that can be used to identify the EMI */
 	label?: string
@@ -15,14 +23,8 @@ export interface ExpectedMediaItem {
 	/** Global path to the media object */
 	url: string
 
-	/** The rundown id that is the source of this MediaItem */
-	rundownId: string
-
-	/** The part id that is the source of this Media Item */
-	partId: string
-
 	/** The studio installation this ExpectedMediaItem was generated in */
-	studioId: string
+	studioId: StudioId
 
 	/** True if the media item has been marked as possibly unavailable */
 	disabled: boolean
@@ -36,6 +38,24 @@ export interface ExpectedMediaItem {
 	/** Time to wait before removing file */
 	lingerTime?: number
 }
+
+export interface ExpectedMediaItemRundown extends ExpectedMediaItemBase {
+	/** The rundown id that is the source of this MediaItem */
+	rundownId: RundownId
+
+	/** The part id that is the source of this Media Item */
+	partId: PartId
+}
+
+export interface ExpectedMediaItemBucket extends ExpectedMediaItemBase {
+	/** The bucket id that is the source of this Media Item */
+	bucketId: BucketId
+
+	/** The bucked adLib piece that is the source of this Media Item */
+	bucketAdLibPieceId: PieceId
+}
+
+export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucket
 
 export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem>
 	= createMongoCollection<ExpectedMediaItem>('expectedMediaItems')

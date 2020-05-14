@@ -1,12 +1,16 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time } from '../lib'
+import { registerCollection, Time, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
+import { StudioId } from './Studios'
+
+/** A string, identifying a RecordedFile */
+export type RecordedFileId = ProtectedString<'RecordedFileId'>
 
 export interface RecordedFile {
-	_id: string
+	_id: RecordedFileId
 	/** Id of the studio this file originates from */
-	studioId: string
+	studioId: StudioId
 	modified: Time
 	name: string
 	path: string

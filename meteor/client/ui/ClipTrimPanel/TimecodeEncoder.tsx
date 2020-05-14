@@ -10,6 +10,7 @@ export interface IProps {
 	value?: number
 	fps: number
 	onChange?: (value: number) => void
+	invalid?: boolean
 }
 
 interface IState {
@@ -122,7 +123,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 	render () {
 		return (
 			<div className={ClassNames('timecode-encoder', {
-				error: this.state.hasError
+				error: (this.state.hasError || this.props.invalid)
 			})}>
 				<div className='timecode-encoder__top-buttons'>
 					<button onClick={() => this.add('01:00:00:00')}><FontAwesomeIcon icon={faCaretUp} /></button>

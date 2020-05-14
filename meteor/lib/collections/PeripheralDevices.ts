@@ -1,5 +1,5 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, ProtectedString } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 
@@ -7,11 +7,16 @@ import { MediaManagerDeviceSettings } from './PeripheralDeviceSettings/mediaMana
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { MosDeviceSettings } from './PeripheralDeviceSettings/mosDevice'
 import { SpreadsheetDeviceSettings, SpreadsheetDeviceSecretSettings } from './PeripheralDeviceSettings/spreadsheet'
+import { INewsDeviceSettings } from './PeripheralDeviceSettings/iNews'
 import { createMongoCollection } from './lib'
 import { DeviceConfigManifest } from '../api/deviceConfig'
+import { StudioId } from './Studios'
+
+/** A string, identifying a PeripheralDevice */
+export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
 
 export interface PeripheralDevice {
-	_id: string
+	_id: PeripheralDeviceId
 
 	name: string
 
@@ -20,8 +25,8 @@ export interface PeripheralDevice {
 	subType: PeripheralDeviceAPI.DeviceSubType
 
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioId?: string
-	parentDeviceId?: string
+	studioId?: StudioId
+	parentDeviceId?: PeripheralDeviceId
 	/** Versions reported from the device */
 	versions?: {
 		[libraryName: string]: string
@@ -41,7 +46,7 @@ export interface PeripheralDevice {
 
 	token: string
 
-	settings?: MosDeviceSettings | PlayoutDeviceSettings | MediaManagerDeviceSettings | SpreadsheetDeviceSettings
+	settings?: MosDeviceSettings | PlayoutDeviceSettings | MediaManagerDeviceSettings | SpreadsheetDeviceSettings | INewsDeviceSettings
 
 	secretSettings?: any | SpreadsheetDeviceSecretSettings
 
@@ -81,6 +86,12 @@ export interface SpreadsheetDevice extends PeripheralDevice {
 	secretSettings?: SpreadsheetDeviceSecretSettings
 	accessTokenUrl?: string
 }
+export interface INewsDevice extends PeripheralDevice {
+	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
+	type: PeripheralDeviceAPI.DeviceType.INEWS,
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+	settings?: INewsDeviceSettings
+}
 
 export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
 	= createMongoCollection<PeripheralDevice>('peripheralDevices')
@@ -93,7 +104,7 @@ Meteor.startup(() => {
 	}
 })
 
-export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): string | undefined {
+export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): StudioId | undefined {
 	if (peripheralDevice.studioId) {
 		return peripheralDevice.studioId
 	}

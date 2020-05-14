@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
@@ -7,8 +7,9 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segments } from '../../../../lib/collections/Segments'
 import { Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 
-require('../api.ts') // include in order to create the Meteor methods needed
+require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../debug.ts') // include in order to create the Meteor methods needed
 
 describe('Test ingest actions for rundowns and segments', () => {
@@ -45,10 +46,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 			]
 		}
 
-		Meteor.call(PeripheralDeviceAPI.methods.dataRundownCreate, device._id, device.token, rundownData)
+		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
+			externalId: rundownData.externalId
+		})
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toMatchObject({
 			externalId: rundownData.externalId
 		})
 
@@ -63,7 +68,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Segments.remove({ rundownId: rundown._id })
 		Parts.remove({ rundownId: rundown._id })
 
-		Meteor.call('debug_rundownRunBlueprints', rundown._id, false)
+		Meteor.call('debug_playlistRunBlueprints', playlist._id, false)
 
 		// Ensure they were recreated
 		expect(Segments.find({ rundownId: rundown._id }).count()).not.toEqual(0)

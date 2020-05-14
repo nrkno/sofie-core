@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2019-12-16T15:02:27.601Z\n"
-"PO-Revision-Date: 2019-12-16T15:02:27.601Z\n"
+"POT-Creation-Date: 2020-05-13T13:47:33.705Z\n"
+"PO-Revision-Date: 2020-05-13T13:47:33.705Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -49,6 +49,23 @@ msgstr ""
 msgid "Something went wrong, and it affected the output"
 msgstr ""
 
+msgid ""
+"Trimming this clip has timed out. It's possible that the story is currently "
+"locked for writing in {{nrcsName}} and will eventually be updated. Make "
+"sure that the story is not being edited by other users."
+msgstr ""
+
+msgid "Trimming this clip has failed due to an error: {{error}}."
+msgstr ""
+
+msgid "Trimmed succesfully."
+msgstr ""
+
+msgid ""
+"Trimming this clip is taking longer than expected. It's possible that the "
+"story is locked for writing in {{nrcsName}}."
+msgstr ""
+
 msgid "Trim \"{{name}}\""
 msgstr ""
 
@@ -58,34 +75,40 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
+msgid "Remove in-trimming"
+msgstr ""
+
 msgid "In"
+msgstr ""
+
+msgid "Remove all trimming"
 msgstr ""
 
 msgid "Duration"
 msgstr ""
 
-msgid "Out"
+msgid "Remove out-trimming"
 msgstr ""
 
-msgid "Connecting to the"
+msgid "Out"
 msgstr ""
 
 msgid "Sofie Automation Server"
 msgstr ""
 
-msgid "Cannot connect to the"
+msgid "Connecting to the {{platformName}}"
 msgstr ""
 
-msgid "Sofie Automation Server:"
+msgid "Cannot connect to the {{platformName}}: {{reason}}"
 msgstr ""
 
-msgid "Reconnecting to the"
+msgid "Reconnecting to the {{platformName}}"
 msgstr ""
 
-msgid "Your machine is offline and cannot connect to the"
+msgid "Your machine is offline and cannot connect to the {{platformName}}."
 msgstr ""
 
-msgid "Connected to the"
+msgid "Connected to the {{platformName}}."
 msgstr ""
 
 msgid "Reconnect now"
@@ -133,31 +156,34 @@ msgstr ""
 msgid "End of script"
 msgstr ""
 
-msgid "Delete this Item?"
+msgid "Delete this RundownPlaylist?"
 msgstr ""
 
 msgid "Delete"
 msgstr ""
 
-msgid "Are you sure you want to delete the \"{{name}}\" rundown?"
+msgid "Are you sure you want to delete the \"{{name}}\" RundownPlaylist?"
 msgstr ""
 
 msgid "Please note: This action is irreversible!"
 msgstr ""
 
-msgid "Re-Sync this rundown?"
+msgid "Re-Sync this rundownPlaylist?"
 msgstr ""
 
 msgid "Re-Sync"
 msgstr ""
 
-msgid "Are you sure you want to re-sync the \"{{name}}\" rundown with MOS script?"
+msgid "Are you sure you want to re-sync all rundowns in playlist \"{{name}}\"?"
 msgstr ""
 
 msgid "This rundown is currently active"
 msgstr ""
 
-msgid "Re-sync with MOS"
+msgid "Multiple ({{count}})"
+msgstr ""
+
+msgid "Re-sync all rundowns in playlist"
 msgstr ""
 
 msgid "Enable configuration mode by adding ?configure=1 to the address bar."
@@ -380,6 +406,9 @@ msgstr ""
 msgid "Rewind segments to start"
 msgstr ""
 
+msgid "Show entire current segment"
+msgstr ""
+
 msgid "Cancel currently pressed hotkey"
 msgstr ""
 
@@ -406,10 +435,10 @@ msgstr ""
 msgid "Do you want to restart CasparCG Server \"{{device}}\"?"
 msgstr ""
 
-msgid "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
+msgid "CasparCG on device \"{{deviceName}}\" restarting..."
 msgstr ""
 
-msgid "CasparCG on device \"{{deviceName}}\" restarting..."
+msgid "Failed to restart CasparCG on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Show Hotkeys"
@@ -436,18 +465,28 @@ msgstr ""
 msgid "Unknown error"
 msgstr ""
 
-msgid "Rundown {{rundownName}} is missing, what do you want to do?"
+msgid ""
+"Rundown {{rundownName}} in Playlist {{playlistName}} is missing, what do "
+"you want to do?"
 msgstr ""
 
-msgid "Mark rundown as unsynced"
+msgid "Mark the rundown as unsynced"
 msgstr ""
 
-msgid "Remove rundown"
+msgid "Remove just the rundown"
 msgstr ""
 
 msgid ""
-"Do you really want to remove the rundown \"{{rundownName}}\"? This cannot "
-"be undone!"
+"Do you really want to remove just the rundown \"{{rundownName}}\" in the "
+"playlist {{playlistName}}? This cannot be undone!"
+msgstr ""
+
+msgid "Remove rundown playlist"
+msgstr ""
+
+msgid ""
+"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
+"cannot be undone!"
 msgstr ""
 
 msgid ""
@@ -455,7 +494,10 @@ msgid ""
 "come through."
 msgstr ""
 
-msgid "Re-Sync Rundown"
+msgid "Re-sync"
+msgstr ""
+
+msgid "Re-sync Rundown"
 msgstr ""
 
 msgid ""
@@ -484,12 +526,24 @@ msgstr ""
 msgid "External message queue has unsent messages."
 msgstr ""
 
-msgid "Unable to check the system configuration for changes"
-msgstr ""
-
 msgid ""
 "The system configuration has been changed since importing this rundown. It "
 "might not run correctly"
+msgstr ""
+
+msgid "Unable to check the system configuration for changes"
+msgstr ""
+
+msgid "The Studio configuration is missing some required fields:"
+msgstr ""
+
+msgid "The Show Style configuration \"{{name}}\" could not be validated"
+msgstr ""
+
+msgid "The ShowStyle \"{{name}}\" configuration is missing some required fields:"
+msgstr ""
+
+msgid "Unable to validate the system configuration"
 msgstr ""
 
 msgid "Device {{deviceName}} is disconnected"
@@ -571,6 +625,12 @@ msgid "Play from Here"
 msgstr ""
 
 msgid "Set segment as <strong>Next</strong>"
+msgstr ""
+
+msgid "Queue segment"
+msgstr ""
+
+msgid "Clear queued segment"
 msgstr ""
 
 msgid "On Air"
@@ -721,6 +781,17 @@ msgstr ""
 msgid "Blueprints updated successfully."
 msgstr ""
 
+msgid "Replace Blueprints?"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid ""
+"Are you sure you want to replace the blueprints with the file "
+"\"{{fileName}}\"?"
+msgstr ""
+
 msgid "Failed to update blueprints: {{errorMessage}}"
 msgstr ""
 
@@ -760,10 +831,51 @@ msgstr ""
 msgid "Last modified"
 msgstr ""
 
+msgid "Blueprint Id"
+msgstr ""
+
 msgid "Blueprint Version"
 msgstr ""
 
 msgid "Upload Blueprints"
+msgstr ""
+
+msgid "Spreadsheet credentials succesfully uploaded."
+msgstr ""
+
+msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
+msgstr ""
+
+msgid "Application credentials"
+msgstr ""
+
+msgid "Access token"
+msgstr ""
+
+msgid ""
+"Click on the link below and accept the permissions request. Paste the "
+"received URL below."
+msgstr ""
+
+msgid "Waiting for gateway to generate URL..."
+msgstr ""
+
+msgid "Device ID"
+msgstr ""
+
+msgid "Device Type"
+msgstr ""
+
+msgid "Remove this item?"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Are you sure you want to remove {{type}} \"{{deviceId}}\"?"
+msgstr ""
+
+msgid "Attached Subdevices"
 msgstr ""
 
 msgid "URL"
@@ -778,10 +890,28 @@ msgstr ""
 msgid "Remove this command?"
 msgstr ""
 
-msgid "Remove"
+msgid "Are you sure you want to remove this command?"
 msgstr ""
 
-msgid "Are you sure you want to remove this command?"
+msgid "Host"
+msgstr ""
+
+msgid "Queue"
+msgstr ""
+
+msgid "Hosts"
+msgstr ""
+
+msgid "iNews Queues"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Debug logging"
 msgstr ""
 
 msgid "Storage ID"
@@ -806,9 +936,6 @@ msgid "Mapped Networked Drive"
 msgstr ""
 
 msgid "Username"
-msgstr ""
-
-msgid "Password"
 msgstr ""
 
 msgid "Don't Scan Entire Storage"
@@ -901,22 +1028,22 @@ msgstr ""
 msgid "Monitors"
 msgstr ""
 
-msgid "Attached Subdevices"
-msgstr ""
-
-msgid "Device ID"
-msgstr ""
-
 msgid "Primary ID (Newsroom System MOS ID)"
 msgstr ""
 
 msgid "Primary Host (IP or Hostname)"
 msgstr ""
 
+msgid "Primary: dont use MOS query-port"
+msgstr ""
+
 msgid "Secondary ID (Newsroom System MOS ID)"
 msgstr ""
 
 msgid "Secondary Host (IP Address or Hostname)"
+msgstr ""
+
+msgid "Secondary: dont use MOS query-port"
 msgstr ""
 
 msgid "MOS ID of Gateway (Sofie MOS ID)"
@@ -934,13 +1061,7 @@ msgstr ""
 msgid "Disable"
 msgstr ""
 
-msgid "Device Type"
-msgstr ""
-
 msgid "Thread Usage"
-msgstr ""
-
-msgid "Host"
 msgstr ""
 
 msgid "Port"
@@ -994,6 +1115,42 @@ msgstr ""
 msgid "Zone ID"
 msgstr ""
 
+msgid "(Optional) REST port"
+msgstr ""
+
+msgid "(Optional) Websocket port"
+msgstr ""
+
+msgid "Show ID"
+msgstr ""
+
+msgid "Profile"
+msgstr ""
+
+msgid "(Optional) Playlist id"
+msgstr ""
+
+msgid "Preload all elements"
+msgstr ""
+
+msgid "Automatically load internal elements when added"
+msgstr ""
+
+msgid "Clear-All template name"
+msgstr ""
+
+msgid "Clear-All on make-ready (activate rundown)"
+msgstr ""
+
+msgid "Dont deactivate on stand-down (deactivate rundown)"
+msgstr ""
+
+msgid "Only preload elements in active Rundown"
+msgstr ""
+
+msgid "On preload-All elements, also initialize the rundown playlist again"
+msgstr ""
+
 msgid "Activate Multi-Threading"
 msgstr ""
 
@@ -1009,39 +1166,16 @@ msgstr ""
 msgid "Connect some devices to the playout gateway"
 msgstr ""
 
-msgid "Spreadsheet credentials succesfully uploaded."
-msgstr ""
-
-msgid "Failed to upload spreadsheet credentials: {{errorMessage}}"
-msgstr ""
-
-msgid "Application credentials"
-msgstr ""
-
 msgid ""
 "Go to the url below and click on the \"Enable the Drive API\" button. Then "
 "click on \"Download Client configuration\", save the credentials.json file "
 "and upload it here."
 msgstr ""
 
-msgid "Access token"
-msgstr ""
-
-msgid ""
-"Click on the link below and accept the permissions request. Paste the "
-"received URL below."
-msgstr ""
-
-msgid "Waiting for gateway to generate URL..."
-msgstr ""
-
 msgid "Drive folder name"
 msgstr ""
 
 msgid "Provide the name of the folder to download rundowns from"
-msgstr ""
-
-msgid "Debug logging"
 msgstr ""
 
 msgid "Row"
@@ -1062,7 +1196,7 @@ msgstr ""
 msgid "false"
 msgstr ""
 
-msgid "rows"
+msgid "{{count}} rows"
 msgstr ""
 
 msgid "Value"
@@ -1113,12 +1247,6 @@ msgstr ""
 msgid ""
 "Are you sure you want to reset the database version?\n"
 "Only do this if you plan on running the migration right after."
-msgstr ""
-
-msgid "Set Database Version"
-msgstr ""
-
-msgid "Are you sure you want to set the database version to"
 msgstr ""
 
 msgid "Version for {{name}}: From {{fromVersion}} to {{toVersion}}"
@@ -1193,6 +1321,9 @@ msgstr ""
 msgid "New Layout"
 msgstr ""
 
+msgid "Button"
+msgstr ""
+
 msgid "New Tab"
 msgstr ""
 
@@ -1208,16 +1339,10 @@ msgstr ""
 msgid "Are you sure you want to delete the shelf layout \"{{name}}\"?"
 msgstr ""
 
-msgid "Only Match Global AdLibs"
+msgid "Action Buttons"
 msgstr ""
 
-msgid "Tabs"
-msgstr ""
-
-msgid "Panels"
-msgstr ""
-
-msgid "Name"
+msgid "Label"
 msgstr ""
 
 msgid "X"
@@ -1230,6 +1355,12 @@ msgid "Width"
 msgstr ""
 
 msgid "Height"
+msgstr ""
+
+msgid "Only Match Global AdLibs"
+msgstr ""
+
+msgid "Name"
 msgstr ""
 
 msgid "Button width scale factor"
@@ -1268,7 +1399,34 @@ msgstr ""
 msgid "Register Shortcuts for this Panel"
 msgstr ""
 
+msgid "Hide Panel from view"
+msgstr ""
+
+msgid "Show panel as a timeline"
+msgstr ""
+
+msgid "Overflow horizontally"
+msgstr ""
+
+msgid "Tags must contain"
+msgstr ""
+
+msgid "Tabs"
+msgstr ""
+
+msgid "Panels"
+msgstr ""
+
 msgid "Default Layout"
+msgstr ""
+
+msgid "Add tab"
+msgstr ""
+
+msgid "Add panel"
+msgstr ""
+
+msgid "Add button"
 msgstr ""
 
 msgid "Upload Layout?"
@@ -1383,12 +1541,6 @@ msgstr ""
 msgid "Source Type"
 msgstr ""
 
-msgid "Is unlimited"
-msgstr ""
-
-msgid "Is on clean PGM"
-msgstr ""
-
 msgid "Is a Live Remote Input"
 msgstr ""
 
@@ -1410,16 +1562,19 @@ msgstr ""
 msgid "Assign Hotkeys to Global AdLibs"
 msgstr ""
 
-msgid "Items on this layer are sticky"
+msgid "Pieces on this layer are sticky"
 msgstr ""
 
-msgid "Activate Sticky Item Shortcut"
+msgid "Only Pieces present in rundown are sticky"
 msgstr ""
 
-msgid "Allow disabling of elements"
+msgid "Activate Sticky Piece Shortcut"
 msgstr ""
 
-msgid "Adlibs on this layer can be queued"
+msgid "Allow disabling of Pieces"
+msgstr ""
+
+msgid "AdLibs on this layer can be queued"
 msgstr ""
 
 msgid "Exclusivity group"
@@ -1446,6 +1601,12 @@ msgid "Channel Name"
 msgstr ""
 
 msgid "Is PGM Output"
+msgstr ""
+
+msgid "Is collapsed by default"
+msgstr ""
+
+msgid "Is flattened"
 msgstr ""
 
 msgid "Output channels are required for your studio to work"
@@ -1560,6 +1721,12 @@ msgstr ""
 msgid "The layer in a channel to use"
 msgstr ""
 
+msgid "Preview when not on air"
+msgstr ""
+
+msgid "Whether to load to first frame"
+msgstr ""
+
 msgid "Mapping type"
 msgstr ""
 
@@ -1626,6 +1793,12 @@ msgid ""
 msgstr ""
 
 msgid "Lookahead Mode"
+msgstr ""
+
+msgid "Lookahead Target Objects (Default = 1)"
+msgstr ""
+
+msgid "Lookahead Maximum Search Distance (Default = unlimited/-1"
 msgstr ""
 
 msgid "Layer Mappings"
@@ -1868,10 +2041,10 @@ msgstr ""
 msgid "Do you want to restart Quantel Gateway?"
 msgstr ""
 
-msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
+msgid "Quantel Gateway restarting..."
 msgstr ""
 
-msgid "Quantel Gateway restarting..."
+msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
 msgstr ""
 
 msgid "Format HyperDeck disks"
@@ -1882,10 +2055,10 @@ msgid ""
 "cannot be undone."
 msgstr ""
 
-msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
+msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
 msgstr ""
 
-msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
+msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Last seen"
@@ -1897,18 +2070,6 @@ msgstr ""
 msgid "Are you sure you want to delete this device: \"{{deviceId}}\"?"
 msgstr ""
 
-msgid "Restart this device?"
-msgstr ""
-
-msgid "Could not generate restart token!"
-msgstr ""
-
-msgid "Could not generate restart core: {{err}}"
-msgstr ""
-
-msgid "Sofie Automation Server Core will restart in {{time}}s..."
-msgstr ""
-
 msgid "Sofie Automation Server Core: {{name}}"
 msgstr ""
 
@@ -1918,6 +2079,15 @@ msgstr ""
 msgid ""
 "Are you sure you want to restart this Sofie Automation Server Core: "
 "{{name}}?"
+msgstr ""
+
+msgid "Could not generate restart token!"
+msgstr ""
+
+msgid "Could not generate restart core: {{err}}"
+msgstr ""
+
+msgid "Sofie Automation Server Core will restart in {{time}}s..."
 msgstr ""
 
 msgid "Not Connected"
@@ -1942,6 +2112,15 @@ msgid "Parameters"
 msgstr ""
 
 msgid "User Activity Log"
+msgstr ""
+
+msgid "Disable hints by adding this to the URL:"
+msgstr ""
+
+msgid "Enable hints by adding this to the URL:"
+msgstr ""
+
+msgid "More documentation available at:"
 msgstr ""
 
 msgid "Recordings"
@@ -2008,6 +2187,10 @@ msgid "Clip is being ingested"
 msgstr ""
 
 msgid "{{displayName}}: {{messages}}"
+msgstr ""
+
+msgctxt "°°°°°°plural"
+msgid "Multiple ({{count}})°°°°°°"
 msgstr ""
 
 msgctxt "°°°°°°plural"

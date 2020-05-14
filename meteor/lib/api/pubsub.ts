@@ -5,6 +5,7 @@ export enum PubSub {
 	blueprints = 'blueprints',
 	coreSystem = 'coreSystem',
 	evaluations = 'evaluations',
+	expectedPlayoutItems = 'expectedPlayoutItems',
 	expectedMediaItems = 'expectedMediaItems',
 	externalMessageQueue = 'externalMessageQueue',
 	mediaObjects = 'mediaObjects',
@@ -15,11 +16,15 @@ export enum PubSub {
 	recordedFiles = 'recordedFiles',
 	rundownBaselineAdLibPieces = 'rundownBaselineAdLibPieces',
 	ingestDataCache = 'ingestDataCache',
+	rundownPlaylists = 'rundownPlaylists',
 	rundowns = 'rundowns',
 	adLibPieces = 'adLibPieces',
 	pieces = 'pieces',
 	piecesSimple = 'piecesSimple',
+	pieceInstances = 'pieceInstances',
+	pieceInstancesSimple = 'pieceInstancesSimple',
 	parts = 'parts',
+	partInstances = 'partInstances',
 	segments = 'segments',
 	showStyleBases = 'showStyleBases',
 	showStyleVariants = 'showStyleVariants',
@@ -30,7 +35,9 @@ export enum PubSub {
 	userActionsLog = 'userActionsLog',
 	mediaWorkFlows = 'mediaWorkFlows',
 	mediaWorkFlowSteps = 'mediaWorkFlowSteps',
-	rundownLayouts = 'rundownLayouts'
+	rundownLayouts = 'rundownLayouts',
+	buckets = 'buckets',
+	bucketAdLibPieces = 'bucketAdLibPieces'
 }
 
 export function meteorSubscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

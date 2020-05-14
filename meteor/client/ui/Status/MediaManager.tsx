@@ -7,17 +7,17 @@ import * as ClassNames from 'classnames'
 import { MomentFromNow } from '../../lib/Moment'
 import ReactCircularProgressbar from 'react-circular-progressbar'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlow, MediaWorkFlows, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import * as i18next from 'react-i18next'
-import { extendMandadory } from '../../../lib/lib'
+import { extendMandadory, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
-import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { MeteorCall } from '../../../lib/api/methods'
 const Tooltip = require('rc-tooltip')
 
 interface IMediaManagerStatusProps {
@@ -34,7 +34,7 @@ interface IMediaManagerStatusTrackedProps {
 
 interface IMediaManagerStatusState {
 	expanded: {
-		[key: string]: boolean
+		[mediaWorkFlowId: string]: boolean
 	}
 }
 
@@ -75,7 +75,7 @@ namespace MediaManagerAPI {
 interface IItemProps {
 	item: MediaWorkFlowUi
 	expanded: _.Dictionary<boolean>
-	toggleExpanded: (id: string) => void
+	toggleExpanded: (id: MediaWorkFlowId) => void
 	actionRestart: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
 	actionAbort: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
 	actionPrioritize: (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => void
@@ -163,13 +163,13 @@ function workStepStatusLabel (t: TFunc, step: MediaWorkFlowStep): string {
 }
 
 const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslateProps> = (props: IItemProps & i18next.InjectedTranslateProps) => {
-	const i = props.item
+	const mediaWorkflow = props.item
 	const t = props.t
 
-	const expanded = props.expanded[i._id] === true
-	const finishedOK = i.success && i.finished
-	const finishedError = !i.success && i.finished
-	const criticalSteps = i.steps.filter(j => j.criticalStep)
+	const expanded = props.expanded[unprotectString(mediaWorkflow._id)] === true
+	const finishedOK = mediaWorkflow.success && mediaWorkflow.finished
+	const finishedError = !mediaWorkflow.success && mediaWorkflow.finished
+	const criticalSteps = mediaWorkflow.steps.filter(j => j.criticalStep)
 	const keyFinishedOK = (
 		criticalSteps.length === 0 ?
 		false :
@@ -177,9 +177,9 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 			return memo && item.status === MediaManagerAPI.WorkStepStatus.DONE
 		}, true)
 	)
-	const currentTask = i.steps.sort((a, b) => b.priority - a.priority).find(i => ((i.status === MediaManagerAPI.WorkStepStatus.WORKING) || (i.status === MediaManagerAPI.WorkStepStatus.ERROR)))
+	const currentTask = mediaWorkflow.steps.sort((a, b) => b.priority - a.priority).find(i => ((i.status === MediaManagerAPI.WorkStepStatus.WORKING) || (i.status === MediaManagerAPI.WorkStepStatus.ERROR)))
 	const progress = (
-		i.steps.map(i => {
+		mediaWorkflow.steps.map(i => {
 			switch (i.status) {
 				case MediaManagerAPI.WorkStepStatus.DONE:
 					return 1
@@ -189,7 +189,7 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 					return 0
 			}
 		}).reduce((memo, i) => memo + i, 0)
-	) / i.steps.length
+	) / mediaWorkflow.steps.length
 
 	return <div className={ClassNames('workflow mbs', {
 		'expanded': expanded,
@@ -227,19 +227,19 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 				</VelocityReact.VelocityComponent>
 			</div>
 			<div className='workflow__header__summary'>
-				{(i.comment && i.name !== i.comment) ?
+				{(mediaWorkflow.comment && mediaWorkflow.name !== mediaWorkflow.comment) ?
 					<div className='workflow__header__name'>
-						<span className='workflow__header__name__name'>{i.name || 'Unnamed Workflow'}</span>
-						<span className='workflow__header__name__comment'>{i.comment}</span>
+						<span className='workflow__header__name__name'>{mediaWorkflow.name || 'Unnamed Workflow'}</span>
+						<span className='workflow__header__name__comment'>{mediaWorkflow.comment}</span>
 					</div>
-					: <div className='workflow__header__name'>{i.name || 'Unnamed Workflow'}</div>
+					: <div className='workflow__header__name'>{mediaWorkflow.name || 'Unnamed Workflow'}</div>
 				}
-				<div className='workflow__header__created'><MomentFromNow>{i.created}</MomentFromNow></div>
-				<div className='workflow__header__expand' onClick={() => props.toggleExpanded(i._id)}>
+				<div className='workflow__header__created'><MomentFromNow>{mediaWorkflow.created}</MomentFromNow></div>
+				<div className='workflow__header__expand' onClick={() => props.toggleExpanded(mediaWorkflow._id)}>
 					{expanded ? t('Collapse') : t('Details')}
 					{expanded ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
 				</div>
-				<div className='workflow__header__status'>{workFlowStatusLabel(t, i.success, i.finished, keyFinishedOK, currentTask)}</div>
+				<div className='workflow__header__status'>{workFlowStatusLabel(t, mediaWorkflow.success, mediaWorkflow.finished, keyFinishedOK, currentTask)}</div>
 				<div className='workflow__header__current-task workflow__step'>
 					{currentTask && <React.Fragment>
 						<div className='workflow__step__action pts'>{actionLabel(t, currentTask.action)}</div>
@@ -249,19 +249,19 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 			</div>
 			<div className='workflow__header__actions'>
 				<Tooltip overlay={t('Restart')} placement='top'>
-					<button className='action-btn' onClick={(e) => props.actionRestart(e, i)}>
+					<button className='action-btn' onClick={(e) => props.actionRestart(e, mediaWorkflow)}>
 						<FontAwesomeIcon icon={faRedo} />
 					</button>
 				</Tooltip>
 				<Tooltip overlay={t('Abort')} placement='top'>
-					<button className='action-btn' disabled={i.finished} onClick={(e) => props.actionAbort(e, i)}>
+					<button className='action-btn' disabled={mediaWorkflow.finished} onClick={(e) => props.actionAbort(e, mediaWorkflow)}>
 						<FontAwesomeIcon icon={faStopCircle} />
 					</button>
 				</Tooltip>
 				<Tooltip overlay={t('Prioritize')} placement='top'>
 					<button className={ClassNames('action-btn', {
-						'prioritized': i.priority > 1
-					})} disabled={i.finished} onClick={(e) => props.actionPrioritize(e, i)}>
+						'prioritized': mediaWorkflow.priority > 1
+					})} disabled={mediaWorkflow.finished} onClick={(e) => props.actionPrioritize(e, mediaWorkflow)}>
 						<FontAwesomeIcon icon={faFlag} />
 					</button>
 				</Tooltip>
@@ -273,22 +273,22 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 			animation: 'slideUp', easing: 'ease-in', duration: 150, overflow: 'hidden'
 		}}>
 			{expanded && <div>
-				{i.steps.sort((a, b) => b.priority - a.priority).map(j =>
+				{mediaWorkflow.steps.sort((a, b) => b.priority - a.priority).map(step =>
 					<div className={ClassNames('workflow__step', {
-						'ok': j.status === MediaManagerAPI.WorkStepStatus.DONE,
-						'error': j.status === MediaManagerAPI.WorkStepStatus.ERROR,
-						'working': j.status === MediaManagerAPI.WorkStepStatus.WORKING
-					})} key={j._id}>
-						<div className='workflow__step__action pas'>{actionLabel(t, j.action)}</div>
-						<div className='workflow__step__status pas'>{workStepStatusLabel(t, j)}</div>
+						'ok': step.status === MediaManagerAPI.WorkStepStatus.DONE,
+						'error': step.status === MediaManagerAPI.WorkStepStatus.ERROR,
+						'working': step.status === MediaManagerAPI.WorkStepStatus.WORKING
+					})} key={unprotectString(step._id)}>
+						<div className='workflow__step__action pas'>{actionLabel(t, step.action)}</div>
+						<div className='workflow__step__status pas'>{workStepStatusLabel(t, step)}</div>
 						<div className='workflow__step__progress progress-bar'>
 							<div className='pb-indicator' style={{
-								'width': ((j.progress || 0) * 100) + '%'
+								'width': ((step.progress || 0) * 100) + '%'
 							}} />
 						</div>
-						{j.messages && j.messages.length > 0 && (
+						{step.messages && step.messages.length > 0 && (
 							<ul className='workflow__step__messages pas man'>
-								{j.messages.map((k, key) => <li key={key}>{k}</li>)}
+								{step.messages.map((k, key) => <li key={key}>{k}</li>)}
 							</ul>
 						)}
 					</div>
@@ -324,26 +324,26 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		this.subscribe(PubSub.mediaWorkFlowSteps, {})
 	}
 
-	toggleExpanded = (id: string) => {
-		this.state.expanded[id] = !this.state.expanded[id]
+	toggleExpanded = (workFlowId: MediaWorkFlowId) => {
+		this.state.expanded[unprotectString(workFlowId)] = !this.state.expanded[unprotectString(workFlowId)]
 		this.setState({
 			expanded: this.state.expanded
 		})
 	}
 	actionRestart = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaRestartWorkflow, [workflow._id])
+		doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaRestartWorkflow(e, workflow._id))
 	}
 	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortWorkflow, [workflow._id])
+		doUserAction(this.props.t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaAbortWorkflow(e, workflow._id))
 	}
 	actionPrioritize = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaPrioritizeWorkflow, [workflow._id])
+		doUserAction(this.props.t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaPrioritizeWorkflow(e, workflow._id))
 	}
 	actionRestartAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaRestartAllWorkflows, [])
+		doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaRestartAllWorkflows(e, ))
 	}
 	actionAbortAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, UserActionAPI.methods.mediaAbortAllWorkflows, [])
+		doUserAction(this.props.t, event, UserAction.ABORT_ALL_MEDIA_WORKFLOWS, (e) => MeteorCall.userAction.mediaAbortAllWorkflows(e, ))
 	}
 
 	renderWorkFlows () {
@@ -351,11 +351,11 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 
 		return this.props.workFlows
 		.sort((a, b) => b.created - a.created)
-		.sort((a, b) => b.priority - a.priority).map(i => {
+		.sort((a, b) => b.priority - a.priority).map(mediaWorkflow => {
 			return <MediaManagerWorkFlowItem
 				expanded={this.state.expanded}
-				item={i}
-				key={i._id}
+				item={mediaWorkflow}
+				key={unprotectString(mediaWorkflow._id)}
 				t={t}
 				toggleExpanded={this.toggleExpanded}
 				actionRestart={this.actionRestart}

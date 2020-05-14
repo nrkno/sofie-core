@@ -7,7 +7,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases, HotkeyDefinition } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, HotkeyDefinition, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { doModalDialog } from '../../lib/ModalDialog'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
@@ -15,26 +15,25 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
-import { literal } from '../../../lib/lib'
+import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { callMethod } from '../../lib/clientAPI'
-import { ShowStylesAPI } from '../../../lib/api/showStyles'
-import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
+import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IProps {
 	match: {
 		params: {
-			showStyleBaseId: string
+			showStyleBaseId: ShowStyleBaseId
 		}
 	}
 }
@@ -48,6 +47,7 @@ interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
+	blueprintConfigManifest: ConfigManifestEntry[]
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let showStyleBase = ShowStyleBases.findOne(props.match.params.showStyleBaseId)
@@ -56,12 +56,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			$in: [showStyleBase._id]
 		}
 	}).fetch() : []
+	const blueprint = showStyleBase ? Blueprints.findOne({
+		_id: showStyleBase.blueprintId,
+		blueprintType: BlueprintManifestType.SHOWSTYLE
+	}) : undefined
+
 	return {
 		showStyleBase: showStyleBase,
 		showStyleVariants: showStyleBase ? ShowStyleVariants.find({
 			showStyleBaseId: showStyleBase._id
 		}).fetch() : [],
-		compatibleStudios: compatibleStudios
+		compatibleStudios: compatibleStudios,
+		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : []
 	}
 })(class ShowStyleBaseSettings extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	constructor (props: Translated<IProps & ITrackedProps>) {
@@ -157,7 +163,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<p className='mod mhn mvs'>
 						{this.props.compatibleStudios.length > 0 ?
 							this.props.compatibleStudios.map(i =>
-								<span key={i._id} className='pill'>
+								<span key={unprotectString(i._id)} className='pill'>
 									<Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link>
 								</span>) :
 							t('This Show Style is not compatible with any Studio')}
@@ -183,14 +189,14 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<RundownLayoutEditor showStyleBase={showStyleBase} />
+						<RundownLayoutEditor showStyleBase={showStyleBase} studios={this.props.compatibleStudios} />
 					</div>
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
 							t={this.props.t}
-							manifest={collectConfigs(showStyleBase)}
+							manifest={this.props.blueprintConfigManifest}
 							object={showStyleBase}
 							collection={ShowStyleBases}
 							configPath={'config'}
@@ -201,6 +207,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<div className='col c12 r1-c12'>
 						<ShowStyleVariantsSettings
 							showStyleVariants={this.props.showStyleVariants}
+							blueprintConfigManifest={this.props.blueprintConfigManifest}
 							showStyleBase={showStyleBase}
 						/>
 					</div>
@@ -317,10 +324,10 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 							{item.value}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+							<button className='action-btn' onClick={() => this.confirmDelete(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -367,7 +374,7 @@ const StudioRuntimeArgumentsSettings = translate()(class StudioRuntimeArgumentsS
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -530,7 +537,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 				return newItem
 			}).sort((a, b) => {
 				return a._rank - b._rank
-			}).map((item, index) => {
+			}).map((item) => {
 				return <React.Fragment key={item._id}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(item)
@@ -545,10 +552,10 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 							{this.sourceLayerString(Number.parseInt(item.type.toString(), 10) as SourceLayerType)}
 						</td>
 						<td className='settings-studio-source-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+							<button className='action-btn' onClick={() => this.confirmDelete(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -714,12 +721,24 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												type='checkbox'
 												collection={ShowStyleBases}
 												className=''></EditAttribute>
-											{t('Items on this layer are sticky')}
+											{t('Pieces on this layer are sticky')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
 										<label className='field'>
-											{t('Activate Sticky Item Shortcut')}
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'sourceLayers.' + item.index + '.stickyOriginalOnly'}
+												obj={this.props.showStyleBase}
+												type='checkbox'
+												collection={ShowStyleBases}
+												className=''></EditAttribute>
+											{t('Only Pieces present in rundown are sticky')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											{t('Activate Sticky Piece Shortcut')}
 											<EditAttribute
 												modifiedClassName='bghl'
 												attribute={'sourceLayers.' + item.index + '.activateStickyKeyboardHotkey'}
@@ -739,7 +758,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												collection={ShowStyleBases}
 												className=''
 											/>
-											{t('Allow disabling of elements')}
+											{t('Allow disabling of Pieces')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -751,7 +770,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 												type='checkbox'
 												collection={ShowStyleBases}
 												className=''></EditAttribute>
-											{t('Adlibs on this layer can be queued')}
+											{t('AdLibs on this layer can be queued')}
 										</label>
 									</div>
 									<div className='mod mvs mhs'>
@@ -768,7 +787,7 @@ const SourceLayerSettings = translate()(class SourceLayerSettings extends React.
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -913,7 +932,7 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 				return newItem
 			}).sort((a, b) => {
 				return a._rank - b._rank
-			}).map((item, index) => {
+			}).map((item) => {
 				return [
 					<tr key={item._id} className={ClassNames({
 						'hl': this.isItemEdited(item)
@@ -930,10 +949,10 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 							})}>PGM</div>
 						</td>
 						<td className='settings-studio-output-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+							<button className='action-btn' onClick={() => this.confirmDelete(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -990,9 +1009,33 @@ const OutputSettings = translate()(class OutputSettings extends React.Component<
 												className='input text-input input-l'></EditAttribute>
 										</label>
 									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + item.index + '.isDefaultCollapsed'}
+												obj={this.props.showStyleBase}
+												type='checkbox'
+												collection={ShowStyleBases}
+												className=''></EditAttribute>
+											{t('Is collapsed by default')}
+										</label>
+									</div>
+									<div className='mod mvs mhs'>
+										<label className='field'>
+											<EditAttribute
+												modifiedClassName='bghl'
+												attribute={'outputLayers.' + item.index + '.isFlattened'}
+												obj={this.props.showStyleBase}
+												type='checkbox'
+												collection={ShowStyleBases}
+												className=''></EditAttribute>
+											{t('Is flattened')}
+										</label>
+									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -1127,10 +1170,10 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 							{item.label}
 						</td>
 						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(item)}>
+							<button className='action-btn' onClick={() => this.editItem(item)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.onDeleteHotkeyLegend && this.onDeleteHotkeyLegend(item)}>
+							<button className='action-btn' onClick={() => this.onDeleteHotkeyLegend && this.onDeleteHotkeyLegend(item)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -1165,7 +1208,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(item)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
@@ -1199,9 +1242,10 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
+	blueprintConfigManifest: ConfigManifestEntry[]
 }
 interface IShowStyleVariantsSettingsState {
-	editedMappings: Array<string>
+	editedMappings: ProtectedString<any>[]
 }
 const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings extends React.Component<Translated<IShowStyleVariantsProps>, IShowStyleVariantsSettingsState> {
 	constructor (props: Translated<IShowStyleVariantsProps>) {
@@ -1211,10 +1255,10 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			editedMappings: []
 		}
 	}
-	isItemEdited = (layerId: string) => {
+	isItemEdited = (layerId: ProtectedString<any>) => {
 		return this.state.editedMappings.indexOf(layerId) >= 0
 	}
-	finishEditItem = (layerId: string) => {
+	finishEditItem = (layerId: ProtectedString<any>) => {
 		let index = this.state.editedMappings.indexOf(layerId)
 		if (index >= 0) {
 			this.state.editedMappings.splice(index, 1)
@@ -1223,7 +1267,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			})
 		}
 	}
-	editItem = (layerId: string) => {
+	editItem = (layerId: ProtectedString<any>) => {
 		if (this.state.editedMappings.indexOf(layerId) < 0) {
 			this.state.editedMappings.push(layerId)
 			this.setState({
@@ -1234,7 +1278,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		}
 	}
 	onAddShowStyleVariant = () => {
-		callMethod('Menu', ShowStylesAPI.methods.insertShowStyleVariant, this.props.showStyleBase._id)
+		MeteorCall.showstyles.insertShowStyleVariant(this.props.showStyleBase._id).catch(console.error)
 	}
 	confirmRemove = (showStyleVariant: ShowStyleVariant) => {
 		const { t } = this.props
@@ -1243,7 +1287,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 			no: t('Cancel'),
 			yes: t('Remove'),
 			onAccept: () => {
-				callMethod('ModalDialog', ShowStylesAPI.methods.removeShowStyleVariant, showStyleVariant._id)
+				MeteorCall.showstyles.removeShowStyleVariant(showStyleVariant._id).catch(console.error)
 			},
 			message: <React.Fragment>
 				<p>{t('Are you sure you want to remove the variant "{{showStyleVariantId}}"?', { showStyleVariantId: showStyleVariant.name })}</p>
@@ -1255,8 +1299,8 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 		const { t } = this.props
 
 		return (
-			this.props.showStyleVariants.map((showStyleVariant, index) => {
-				return <React.Fragment key={showStyleVariant._id}>
+			this.props.showStyleVariants.map((showStyleVariant) => {
+				return <React.Fragment key={unprotectString(showStyleVariant._id)}>
 					<tr className={ClassNames({
 						'hl': this.isItemEdited(showStyleVariant._id)
 					})}>
@@ -1264,10 +1308,10 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 							{showStyleVariant.name || t('Unnamed variant')}
 						</th>
 						<td className='settings-studio-showStyleVariant__actions table-item-actions c3'>
-							<button className='action-btn' onClick={(e) => this.editItem(showStyleVariant._id)}>
+							<button className='action-btn' onClick={() => this.editItem(showStyleVariant._id)}>
 								<FontAwesomeIcon icon={faPencilAlt} />
 							</button>
-							<button className='action-btn' onClick={(e) => this.confirmRemove(showStyleVariant)}>
+							<button className='action-btn' onClick={() => this.confirmRemove(showStyleVariant)}>
 								<FontAwesomeIcon icon={faTrash} />
 							</button>
 						</td>
@@ -1293,7 +1337,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 									<div className='col c12 r1-c12 phs'>
 										<ConfigManifestSettings
 											t={this.props.t}
-											manifest={collectConfigs(showStyleVariant)}
+											manifest={this.props.blueprintConfigManifest}
 											collection={ShowStyleVariants}
 											configPath={'config'}
 											object={showStyleVariant}
@@ -1301,7 +1345,7 @@ const ShowStyleVariantsSettings = translate()(class ShowStyleVariantsSettings ex
 									</div>
 								</div>
 								<div className='mod alright'>
-									<button className='btn btn-primary' onClick={(e) => this.finishEditItem(showStyleVariant._id)}>
+									<button className='btn btn-primary' onClick={() => this.finishEditItem(showStyleVariant._id)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>

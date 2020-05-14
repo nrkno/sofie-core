@@ -2,7 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevice,
-	PeripheralDevices} from '../../../lib/collections/PeripheralDevices'
+	PeripheralDevices,
+	PeripheralDeviceId} from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -13,6 +14,7 @@ import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
 import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
 import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
+import { INewsSettingsComponent } from './components/INewsSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
@@ -23,7 +25,7 @@ import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsCompon
 interface IDeviceSettingsProps {
 	match: {
 		params: {
-			deviceId: string
+			deviceId: PeripheralDeviceId
 		}
 	}
 }
@@ -73,6 +75,10 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 					/>
 				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
 					return <SpreadsheetSettingsComponent
+						device={this.props.device}
+					/>
+				case PeripheralDeviceAPI.DeviceType.INEWS:
+					return <INewsSettingsComponent
 						device={this.props.device}
 					/>
 			}

@@ -5,6 +5,11 @@
 		border: none;
 		pointer-events: auto;
 
+		.big {
+			max-width: 500px;
+			width: 100%;
+		}
+
 		p, center, .table {
 			font-weight: 300;
 		}

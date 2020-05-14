@@ -5,6 +5,7 @@ import { translate } from 'react-i18next'
 
 import { statusCodeToString } from './Status/SystemStatus'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { MeteorCall } from '../../lib/api/methods'
 
 const PackageInfo = require('../../package.json')
 
@@ -24,16 +25,14 @@ export default translate()(class Dashboard extends React.Component<Translated<IP
 	componentDidMount () {
 		const { t } = this.props
 
-		Meteor.call('systemStatus.getSystemStatus', (err: any, res: any) => {
-			if (err) {
-				// console.error(err)
-				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'Dashboard'))
-				return
-			}
-
+		MeteorCall.systemStatus.getSystemStatus().then((status) => {
 			this.setState({
-				systemStatus: res.statusCode
+				systemStatus: status._status
 			})
+		}).catch(() => {
+			// console.error(err)
+			NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'Dashboard'))
+			return
 		})
 	}
 
@@ -46,7 +45,7 @@ export default translate()(class Dashboard extends React.Component<Translated<IP
 					<h1>{t('Welcome to the Sofie Automation system')}</h1>
 				</div>
 				<div className='mtl gutter version-info'>
-					<p>{t('Sofie Automation version')}: {PackageInfo.version || 'UNSTABLE'}, {t('Sofie status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
+					<p>{t('Sofie Automation version')}: {PackageInfo.versionExtended || PackageInfo.version || 'UNSTABLE'}, {t('Sofie status')}: {statusCodeToString(t, this.state.systemStatus || 0)}</p>
 				</div>
 			</div>
 		)

@@ -3,85 +3,128 @@ import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
-import { Part } from '../collections/Parts'
+import { Part, PartId } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
+import { normalizeArray, protectString, unprotectString, getRandomId } from '../lib'
+import { SegmentId } from '../collections/Segments'
+import { PieceId } from '../collections/Pieces'
 
-export enum PrompterMethods {
-	getPrompterData = 'PrompterMethods.getPrompterData'
+// export interface NewPrompterAPI {
+// 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
+// }
+// export enum PrompterAPIMethods {
+// 	'getPrompterData' = 'PrompterMethods.getPrompterData'
+// }
+
+export interface PrompterDataSegment {
+	id: SegmentId
+	title: string | undefined
+	parts: PrompterDataPart[]
 }
-
-export interface PrompterDataLine {
-	id: string
+export interface PrompterDataPart {
+	id: PartId
+	title: string | undefined
+	pieces: PrompterDataPiece[]
+}
+export interface PrompterDataPiece {
+	id: PieceId
 	text: string
-	segmentId: string
-	partId: string
 }
 export interface PrompterData {
-	lines: Array<PrompterDataLine>
+	title: string
+	currentPartId: PartId | null
+	nextPartId: PartId | null
+	segments: Array<PrompterDataSegment>
 }
 
 export namespace PrompterAPI {
+	// TODO: discuss: move this implementation to server-side?
+	export function getPrompterData (playlistId: RundownPlaylistId): PrompterData {
 
-	export function getPrompterData (rundownId: string): PrompterData {
+		check(playlistId, String)
 
-		check(rundownId, String)
+		const playlist = RundownPlaylists.findOne(playlistId)
+		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 
-		let rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
-		let parts = rundown.getParts({
-			floated: {
-				$ne: true
-			}
-		})
+		const { parts, segments } = playlist.getSegmentsAndPartsSync()
+		// let parts = playlist.getAllOrderedParts().filter(p => !p.floated)
+		const segmentsMap = normalizeArray(segments, '_id')
+		const groupedParts = _.groupBy(parts, p => p.segmentId)
 
 		let data: PrompterData = {
-			lines: []
+			title: playlist.name,
+			currentPartId: currentPartInstance ? currentPartInstance.part._id : null,
+			nextPartId: nextPartInstance ? nextPartInstance.part._id : null,
+			segments: []
 		}
 
-		const piecesIncluded: string[] = []
+		const piecesIncluded: PieceId[] = []
 
-		_.each(parts, (part: Part) => {
-			let hasSentInThisLine = false
-
-			_.each(part.getAllPieces(), (piece) => {
-
-				if (
-					piece.content
-				) {
-					const content = piece.content as ScriptContent
-					if (content.fullScript) {
-						if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
-							return // piece already included in prompter script
-						}
-						piecesIncluded.push(piece.continuesRefId || piece._id)
-						data.lines.push({
-							id: piece._id,
-							text: content.fullScript,
-							segmentId: part.segmentId,
-							partId: part._id
-						})
-						hasSentInThisLine = true
-					}
-
-				}
-			})
-			if (!hasSentInThisLine) {
-				// insert an empty line
-				data.lines.push({
-					id: Random.id(),
-					text: '',
-					segmentId: part.segmentId,
-					partId: part._id
-				})
+		_.each(groupedParts, (parts, segmentId) => {
+			const segment = segmentsMap[segmentId]
+			if (segment && segment.isHidden) {
+				// Skip if is hidden
+				return
 			}
+
+			const segmentData: PrompterDataSegment = {
+				id: protectString(segmentId),
+				title: segment ? segment.name : undefined,
+				parts: []
+			}
+
+			_.each(parts, part => {
+				let title: string | undefined = part ? part.title : undefined
+				if (part && part.typeVariant && part.typeVariant.toString && part.typeVariant.toString().toLowerCase().trim() === 'full') {
+					title = 'FULL'
+				}
+				if (title) {
+					title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
+				}
+
+				const partData: PrompterDataPart = {
+					id: part._id,
+					title: title,
+					pieces: []
+				}
+
+				_.each(part.getAllPieces(), (piece) => {
+					if (
+						piece.content
+					) {
+						const content = piece.content as ScriptContent
+						if (content.fullScript) {
+							if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
+								return // piece already included in prompter script
+							}
+							piecesIncluded.push(piece.continuesRefId || piece._id)
+							partData.pieces.push({
+								id: piece._id,
+								text: content.fullScript
+							})
+						}
+
+					}
+				})
+				if (partData.pieces.length === 0) {
+					// insert an empty line
+					partData.pieces.push({
+						id: getRandomId(),
+						text: ''
+					})
+				}
+
+				segmentData.parts.push(partData)
+			})
+
+			data.segments.push(segmentData)
 		})
 		return data
 	}
 }
-let methods: any = {}
-methods[PrompterMethods.getPrompterData] = PrompterAPI.getPrompterData
-Meteor.methods(methods)
 
 if (Meteor.isClient) {
 	// @ts-ignore

@@ -20,11 +20,13 @@ import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
-import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
-import { getElementDocumentOffset, Position } from '../../utils/positions'
+import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
+import { unprotectString } from '../../../lib/lib'
+import { MeteorCall } from '../../../lib/api/methods'
+import { Rundowns } from '../../../lib/collections/Rundowns'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -55,8 +57,8 @@ export interface ISourceLayerItemProps {
 }
 interface ISourceLayerItemState {
 	showMiniInspector: boolean
-	elementPosition: Position
-	cursorPosition: Position
+	elementPosition: OffsetPosition
+	cursorPosition: OffsetPosition
 	scrollLeftOffset: number
 	cursorTimePosition: number
 	elementWidth: number
@@ -64,7 +66,7 @@ interface ISourceLayerItemState {
 	leftAnchoredWidth: number
 	rightAnchoredWidth: number
 }
-export const SourceLayerItem = translate()(class extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
+export const SourceLayerItem = translate()(class SourceLayerItem extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
 	private _forceSizingRecheck: boolean
 	private _placeHolderElement: boolean
 
@@ -104,10 +106,11 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			const maxLabelWidth = this.props.piece.maxLabelWidth
 
 			if (this.props.part && this.props.partStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
-				let piece = this.props.piece
+				const piece = this.props.piece
+				const innerPiece = piece.instance.piece
 
-				let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
+				let inTransitionDuration = innerPiece.transitions && innerPiece.transitions.inTransition ? innerPiece.transitions.inTransition.duration || 0 : 0
+				let outTransitionDuration = innerPiece.transitions && innerPiece.transitions.outTransition ? innerPiece.transitions.outTransition.duration || 0 : 0
 
 				const inPoint = piece.renderedInPoint || 0
 				const duration = (Number.isFinite(piece.renderedDuration || 0)) ?
@@ -116,7 +119,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 				const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
 
-				const nextIsTouching = !!(this.props.piece.cropped || (this.props.piece.enable.end && _.isString(this.props.piece.enable.end)))
+				const nextIsTouching = !!(piece.cropped || (innerPiece.enable.end && _.isString(innerPiece.enable.end)))
 
 				if (this.props.followLiveLine && this.props.isLiveLine) {
 					const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
@@ -185,13 +188,14 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			return {}
 		} else {
 			if (this.props.part && this.props.partStartsAt !== undefined) { //  && this.props.piece.renderedInPoint !== undefined && this.props.piece.renderedDuration !== undefined
-				let piece = this.props.piece
+				const piece = this.props.piece
+				const innerPiece = piece.instance.piece
 
 				// let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-				let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
+				let outTransitionDuration = innerPiece.transitions && innerPiece.transitions.outTransition ? innerPiece.transitions.outTransition.duration || 0 : 0
 
 				const inPoint = piece.renderedInPoint || 0
-				const duration = (piece.infiniteMode || piece.renderedDuration === 0) ? (this.props.partDuration - inPoint) : Math.min((piece.renderedDuration || 0), this.props.partDuration - inPoint)
+				const duration = (innerPiece.infiniteMode || piece.renderedDuration === 0) ? (this.props.partDuration - inPoint) : Math.min((piece.renderedDuration || 0), this.props.partDuration - inPoint)
 				const outPoint = inPoint + duration
 
 				// const widthConstrictedMode = this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth)
@@ -211,16 +215,17 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	}
 
 	getItemDuration = (): number => {
-		let piece = this.props.piece
+		const piece = this.props.piece
+		const innerPiece = piece.instance.piece
 
-		const expectedDurationNumber = (typeof piece.enable.duration === 'number' ? piece.enable.duration || 0 : 0)
-		const userDurationNumber = (piece.userDuration && typeof piece.userDuration.duration === 'number' ? piece.userDuration.duration || 0 : 0)
-		let itemDuration = Math.min(piece.playoutDuration || userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
+		const expectedDurationNumber = (typeof innerPiece.enable.duration === 'number' ? innerPiece.enable.duration || 0 : 0)
+		const userDurationNumber = (innerPiece.userDuration && typeof innerPiece.userDuration.duration === 'number' ? innerPiece.userDuration.duration || 0 : 0)
+		let itemDuration = Math.min(innerPiece.playoutDuration || userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0, this.props.partDuration - (piece.renderedInPoint || 0))
 
 		if ((
-			(piece.infiniteMode !== undefined && piece.infiniteMode !== PieceLifespan.Normal) ||
-			(piece.enable.start !== undefined && piece.enable.end === undefined && piece.enable.duration === undefined)
-		) && !piece.cropped && !piece.playoutDuration && !piece.userDuration) {
+			(innerPiece.infiniteMode !== undefined && innerPiece.infiniteMode !== PieceLifespan.Normal) ||
+			(innerPiece.enable.start !== undefined && innerPiece.enable.end === undefined && innerPiece.enable.duration === undefined)
+		) && !piece.cropped && !innerPiece.playoutDuration && !innerPiece.userDuration) {
 			itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 			// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 		}
@@ -229,10 +234,11 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 	}
 
 	getItemStyle (): { [key: string]: string } {
-		let piece = this.props.piece
+		const piece = this.props.piece
+		const innerPiece = piece.instance.piece
 
-		let inTransitionDuration = piece.transitions && piece.transitions.inTransition ? piece.transitions.inTransition.duration || 0 : 0
-		let outTransitionDuration = piece.transitions && piece.transitions.outTransition ? piece.transitions.outTransition.duration || 0 : 0
+		let inTransitionDuration = innerPiece.transitions && innerPiece.transitions.inTransition ? innerPiece.transitions.inTransition.duration || 0 : 0
+		let outTransitionDuration = innerPiece.transitions && innerPiece.transitions.outTransition ? innerPiece.transitions.outTransition.duration || 0 : 0
 
 		// If this is a live line, take duration verbatim from SegmentLayerItemContainer with a fallback on expectedDuration.
 		// If not, as-run part "duration" limits renderdDuration which takes priority over MOS-import
@@ -302,13 +308,16 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 			// acceptOnly?: boolean
 			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
 				console.log('accept', inputResult)
-				doUserAction(this.props.t, e, UserActionAPI.methods.setInOutPoints, [
-					this.props.part.rundownId,
-					this.props.part._id,
-					this.props.piece._id,
+				const rundown = Rundowns.findOne(this.props.part.instance.rundownId)
+				if (!rundown) throw Error(`Rundown ${this.props.part.instance.rundownId} not found (in/out)`)
+
+				doUserAction(this.props.t, e, UserAction.SET_IN_OUT_POINTS, (e) => MeteorCall.userAction.setInOutPoints(e,
+					rundown.playlistId,
+					this.props.part.instance.part._id,
+					this.props.piece.instance.piece._id,
 					inputResult.inPoint,
 					inputResult.outPoint
-				])
+				))
 			},
 			inputs: {
 				inPoint: {
@@ -394,7 +403,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 		switch (this.props.layer.type) {
 			case SourceLayerType.SCRIPT:
 				// case SourceLayerType.MIC:
-				return <MicSourceRenderer key={this.props.piece._id}
+				return <MicSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -402,7 +411,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			case SourceLayerType.VT:
-				return <VTSourceRenderer key={this.props.piece._id}
+				return <VTSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -411,7 +420,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{...this.props} {...this.state} />
 			case SourceLayerType.GRAPHICS:
 			case SourceLayerType.LOWER_THIRD:
-				return <L3rdSourceRenderer key={this.props.piece._id}
+				return <L3rdSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -419,7 +428,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			case SourceLayerType.SPLITS:
-				return <SplitsSourceRenderer key={this.props.piece._id}
+				return <SplitsSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -428,7 +437,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{...this.props} {...this.state} />
 			case SourceLayerType.LIVE_SPEAK:
 				// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
-				return <STKSourceRenderer key={this.props.piece._id}
+				return <STKSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					// @ts-ignore: intrinsics get lost because of the complicated class structure, this is fine
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
@@ -438,7 +447,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{...this.props} {...this.state} />
 
 			case SourceLayerType.TRANSITION:
-				return <TransitionSourceRenderer key={this.props.piece._id}
+				return <TransitionSourceRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -446,7 +455,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					setAnchoredElsWidths={this.setAnchoredElsWidths}
 					{...this.props} {...this.state} />
 			default:
-				return <DefaultLayerItemRenderer key={this.props.piece._id}
+				return <DefaultLayerItemRenderer key={unprotectString(this.props.piece.instance._id)}
 					typeClass={typeClass}
 					getItemDuration={this.getItemDuration}
 					getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
@@ -471,22 +480,25 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 			const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
 
+			const piece = this.props.piece
+			const innerPiece = piece.instance.piece
+
 			return (
 				<div className={ClassNames('segment-timeline__piece', typeClass, {
-					'with-in-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0,
-					'with-out-transition': !this.props.relative && this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0,
+					'with-in-transition': !this.props.relative && innerPiece.transitions && innerPiece.transitions.inTransition && (innerPiece.transitions.inTransition.duration || 0) > 0,
+					'with-out-transition': !this.props.relative && innerPiece.transitions && innerPiece.transitions.outTransition && (innerPiece.transitions.outTransition.duration || 0) > 0,
 
 					'hide-overflow-labels': this.state.leftAnchoredWidth > 0 && this.state.rightAnchoredWidth > 0 && ((this.state.leftAnchoredWidth + this.state.rightAnchoredWidth) > this.state.elementWidth),
 
-					'infinite': (this.props.piece.playoutDuration === undefined && this.props.piece.userDuration === undefined && this.props.piece.infiniteMode) as boolean, // 0 is a special value
-					'next-is-touching': !!(this.props.piece.cropped || (this.props.piece.enable.end && _.isString(this.props.piece.enable.end))),
+					'infinite': (innerPiece.playoutDuration === undefined && innerPiece.userDuration === undefined && innerPiece.infiniteMode) as boolean, // 0 is a special value
+					'next-is-touching': !!(this.props.piece.cropped || (innerPiece.enable.end && _.isString(innerPiece.enable.end))),
 
-					'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
-					'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-					'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
-					'disabled': this.props.piece.disabled
+					'source-missing': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
+					'source-broken': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+					'unknown-state': innerPiece.status === RundownAPI.PieceStatusCode.UNKNOWN,
+					'disabled': innerPiece.disabled
 				})}
-					data-obj-id={this.props.piece._id}
+					data-obj-id={piece.instance._id}
 					ref={this.setRef}
 					onClick={this.itemClick}
 					onDoubleClick={this.itemDblClick}
@@ -499,29 +511,29 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 					{
 						DEBUG_MODE && (
 							<div className='segment-timeline__debug-info'>
-								{this.props.piece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {this.props.piece.renderedDuration ? RundownUtils.formatTimeToTimecode(this.props.piece.renderedDuration).substr(-5) : 'X'} / {typeof this.props.piece.enable.duration === 'number' ? RundownUtils.formatTimeToTimecode(this.props.piece.enable.duration).substr(-5) : ''}
+								{innerPiece.enable.start} / {RundownUtils.formatTimeToTimecode(this.props.partDuration).substr(-5)} / {piece.renderedDuration ? RundownUtils.formatTimeToTimecode(piece.renderedDuration).substr(-5) : 'X'} / {typeof innerPiece.enable.duration === 'number' ? RundownUtils.formatTimeToTimecode(innerPiece.enable.duration).substr(-5) : ''}
 							</div>
 						)
 					}
 					{
-						this.props.piece.transitions && this.props.piece.transitions.inTransition && (this.props.piece.transitions.inTransition.duration || 0) > 0 ? (
+						innerPiece.transitions && innerPiece.transitions.inTransition && (innerPiece.transitions.inTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__piece__transition', 'in', {
-								'mix': this.props.piece.transitions.inTransition.type === PieceTransitionType.MIX,
-								'wipe': this.props.piece.transitions.inTransition.type === PieceTransitionType.WIPE
+								'mix': innerPiece.transitions.inTransition.type === PieceTransitionType.MIX,
+								'wipe': innerPiece.transitions.inTransition.type === PieceTransitionType.WIPE
 							})}
 								style={{
-									'width': ((this.props.piece.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px'
+									'width': ((innerPiece.transitions.inTransition.duration || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}
 					{
-						this.props.piece.transitions && this.props.piece.transitions.outTransition && (this.props.piece.transitions.outTransition.duration || 0) > 0 ? (
+						innerPiece.transitions && innerPiece.transitions.outTransition && (innerPiece.transitions.outTransition.duration || 0) > 0 ? (
 							<div className={ClassNames('segment-timeline__piece__transition', 'out', {
-								'mix': this.props.piece.transitions.outTransition.type === PieceTransitionType.MIX,
-								'wipe': this.props.piece.transitions.outTransition.type === PieceTransitionType.WIPE
+								'mix': innerPiece.transitions.outTransition.type === PieceTransitionType.MIX,
+								'wipe': innerPiece.transitions.outTransition.type === PieceTransitionType.WIPE
 							})}
 								style={{
-									'width': ((this.props.piece.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px'
+									'width': ((innerPiece.transitions.outTransition.duration || 0) * this.props.timeScale).toString() + 'px'
 								}} />
 						) : null
 					}
@@ -534,7 +546,7 @@ export const SourceLayerItem = translate()(class extends React.Component<ISource
 
 			return (
 				<div className='segment-timeline__piece'
-					data-obj-id={this.props.piece._id}
+					data-obj-id={this.props.piece.instance._id}
 					ref={this.setRef}
 					style={this.getItemStyle()}>
 				</div>

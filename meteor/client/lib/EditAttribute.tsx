@@ -7,6 +7,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
+import { TransformedCollection } from '../../lib/typings/meteor'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -56,7 +57,7 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 interface IEditAttributeBaseProps {
 	updateOnKey?: boolean,
 	attribute?: string,
-	collection?: Mongo.Collection<any>,
+	collection?: TransformedCollection<any, any>,
 	myObject?: any,
 	obj?: any
 	options?: any
@@ -195,7 +196,7 @@ function wrapEditAttribute (newClass) {
 	})(newClass)
 }
 
-const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeText = wrapEditAttribute(class EditAttributeText extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 
@@ -229,7 +230,7 @@ const EditAttributeText = wrapEditAttribute(class extends EditAttributeBase {
 		)
 	}
 })
-const EditAttributeMultilineText = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeMultilineText = wrapEditAttribute(class EditAttributeMultilineText extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 
@@ -253,6 +254,7 @@ const EditAttributeMultilineText = wrapEditAttribute(class extends EditAttribute
 		return (
 			<textarea
 				className={'form-control' + ' ' + (this.state.valueError ? 'error ' : '') + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttribute() || ''}
 				onChange={this.handleChange}
@@ -262,7 +264,7 @@ const EditAttributeMultilineText = wrapEditAttribute(class extends EditAttribute
 		)
 	}
 })
-const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeInt = wrapEditAttribute(class EditAttributeInt extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 
@@ -291,6 +293,7 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 			<input type='number'
 				step='1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttributeNumber()}
 				onChange={this.handleChange}
@@ -299,7 +302,7 @@ const EditAttributeInt = wrapEditAttribute(class extends EditAttributeBase {
 		)
 	}
 })
-const EditAttributeFloat = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeFloat = wrapEditAttribute(class EditAttributeFloat extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 
@@ -328,6 +331,7 @@ const EditAttributeFloat = wrapEditAttribute(class extends EditAttributeBase {
 			<input type='number'
 				step='0.1'
 				className={'form-control' + ' ' + (this.props.className || '') + ' ' + (this.state.editing ? (this.props.modifiedClassName || '') : '')}
+				placeholder={this.props.label}
 
 				value={this.getEditAttributeNumber()}
 				onChange={this.handleChange}
@@ -336,7 +340,7 @@ const EditAttributeFloat = wrapEditAttribute(class extends EditAttributeBase {
 		)
 	}
 })
-const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeCheckbox = wrapEditAttribute(class EditAttributeCheckbox extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 
@@ -367,7 +371,7 @@ const EditAttributeCheckbox = wrapEditAttribute(class extends EditAttributeBase 
 	}
 })
 
-const EditAttributeSwitch = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeSwitch = wrapEditAttribute(class EditAttributeSwitch extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 	}
@@ -392,7 +396,7 @@ const EditAttributeSwitch = wrapEditAttribute(class extends EditAttributeBase {
 		)
 	}
 })
-const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeDropdown = wrapEditAttribute(class EditAttributeDropdown extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 
@@ -492,7 +496,7 @@ const EditAttributeDropdown = wrapEditAttribute(class extends EditAttributeBase 
 		)
 	}
 })
-const EditAttributeMultiSelect = wrapEditAttribute(class extends EditAttributeBase {
+const EditAttributeMultiSelect = wrapEditAttribute(class EditAttributeMultiSelect extends EditAttributeBase {
 	constructor (props) {
 		super(props)
 

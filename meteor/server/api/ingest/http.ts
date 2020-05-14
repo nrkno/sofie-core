@@ -1,19 +1,15 @@
-import { Picker } from 'meteor/meteorhacks:picker'
-import * as bodyParser from 'body-parser'
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
 import { updateRundownAndSaveCache } from './rundownInput'
-import { Studios } from '../../../lib/collections/Studios'
+import { Studios, StudioId } from '../../../lib/collections/Studios'
 import { check } from 'meteor/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId } from './lib'
+import { protectString } from '../../../lib/lib'
+import { PickerPOST } from '../http'
 
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
-postRoute.middleware(bodyParser.json({
-	limit: '15mb' // Arbitrary limit
-}))
-postRoute.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
+PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	check(params.studioId, String)
 	response.setHeader('Content-Type', 'text/plain')
 
@@ -24,7 +20,7 @@ postRoute.route('/ingest/:studioId', (params, req: IncomingMessage, response: Se
 			ingestRundown = JSON.parse(ingestRundown)
 		}
 
-		ingestMOSRundown(params.studioId, ingestRundown)
+		ingestMOSRundown(protectString<StudioId>(params.studioId), ingestRundown)
 
 		response.statusCode = 200
 		response.end(content)
@@ -38,7 +34,7 @@ postRoute.route('/ingest/:studioId', (params, req: IncomingMessage, response: Se
 		}
 	}
 })
-export function ingestMOSRundown (studioId: string, ingestRundown: any) {
+export function ingestMOSRundown (studioId: StudioId, ingestRundown: any) {
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 

@@ -8,7 +8,6 @@ import {
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
-	MigrationMethods,
 	RunMigrationResult,
 	MigrationChunk,
 	MigrationStepType,
@@ -35,16 +34,16 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest
 } from 'tv-automation-sofie-blueprints-integration'
-import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios } from '../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints/migrationContext'
-import { getHash } from '../../lib/lib'
+import { getHash, unprotectString, protectString } from '../../lib/lib'
 import * as semver from 'semver'
 import { evalBlueprints } from '../api/blueprints/cache'
+import { SnapshotId } from '../../lib/collections/Snapshots'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)
@@ -65,8 +64,10 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 1.4.0: Release 16  (2019-01-02)
  * 1.5.0: Release 17  (TBD)
  * 1.6.0: Release 18  (TBD)
+ * 1.7.0: Release 19  (TBD)
+ * 1.8.0: Release 20  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.5.0'
+export const CURRENT_SYSTEM_VERSION = '1.8.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -200,7 +201,7 @@ export function prepareMigration (returnAllChunks?: boolean): PreparedMigration 
 						sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
 						blueprintId: 			blueprint._id,
 						sourceId: 				showStyleBase._id,
-						_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
+						_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)] || '0.0.0'),
 						_targetVersion: 		parseVersion(bp.blueprintVersion),
 						_steps:					[]
 					}
@@ -234,7 +235,7 @@ export function prepareMigration (returnAllChunks?: boolean): PreparedMigration 
 						sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
 						blueprintId: 			blueprint._id,
 						sourceId: 				studio._id,
-						_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
+						_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[unprotectString(studio._id)] || '0.0.0'),
 						_targetVersion: 		parseVersion(bp.blueprintVersion),
 						_steps:					[]
 					}
@@ -495,7 +496,7 @@ export function runMigration (
 	})
 
 	let warningMessages: Array<string> = []
-	let snapshotId: string = ''
+	let snapshotId: SnapshotId = protectString('')
 	if (isFirstOfPartialMigrations) { // First, take a system snapshot:
 		let system = getCoreSystem()
 		if (system && system.storePath) {
@@ -627,11 +628,11 @@ function completeMigration (chunks: Array<MigrationChunk>) {
 
 			let m: any = {}
 			if (chunk.sourceType === MigrationStepType.STUDIO) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.studio[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.studio[unprotectString(chunk.sourceId)]}" to "${chunk._targetVersion}".`)
 				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion
 
 			} else if (chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.showStyle[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.showStyle[unprotectString(chunk.sourceId)]}" to "${chunk._targetVersion}".`)
 				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion
 
 			} else throw new Meteor.Error(500, `Bad chunk.sourcetype: "${chunk.sourceType}"`)

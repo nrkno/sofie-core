@@ -2,20 +2,22 @@ import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
+import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 
 export namespace RundownUtils {
-	function padZerundown (input: number, places?: number): string {
+	function padZerundown(input: number, places?: number): string {
 		places = places || 2
 		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
 	}
 
-	export function getSegmentDuration (parts: Array<PartUi>) {
+	export function getSegmentDuration(parts: Array<PartUi>, display?: boolean) {
 		return parts.reduce((memo, part) => {
-			return memo + (part.duration || part.expectedDuration || part.renderedDuration || 0)
+			return memo + (part.instance.part.duration || part.instance.part.expectedDuration || part.renderedDuration || (display ? DEFAULT_DISPLAY_DURATION : 0))
 		}, 0)
 	}
 
-	export function formatTimeToTimecode (milliseconds: number, showPlus?: boolean, enDashAsMinus?: boolean, hideFrames?: boolean): string {
+	export function formatTimeToTimecode(milliseconds: number, showPlus?: boolean, enDashAsMinus?: boolean, hideFrames?: boolean): string {
 		let sign = ''
 		if (milliseconds < 0) {
 			milliseconds = milliseconds * -1
@@ -28,11 +30,11 @@ export namespace RundownUtils {
 		return sign + (hideFrames ? timeCodeString.substr(0, timeCodeString.length - 3) : timeCodeString)
 	}
 
-	export function formatTimeToShortTime (milliseconds: number): string {
+	export function formatTimeToShortTime(milliseconds: number): string {
 		return formatDiffToTimecode(Math.max(milliseconds, 0), false)
 	}
 
-	export function formatDiffToTimecode (milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean, useSmartHours?: boolean, minusPrefix?: string, floorTime?: boolean, hardFloor?: boolean): string {
+	export function formatDiffToTimecode(milliseconds: number, showPlus?: boolean, showHours?: boolean, enDashAsMinus?: boolean, useSmartFloor?: boolean, useSmartHours?: boolean, minusPrefix?: string, floorTime?: boolean, hardFloor?: boolean): string {
 
 		let isNegative = milliseconds < 0
 		if (isNegative) {
@@ -99,7 +101,7 @@ export namespace RundownUtils {
 		return (isNegative ? (minusPrefix !== undefined ? minusPrefix : (enDashAsMinus ? '\u2013' : '-')) : (showPlus && milliseconds > 0 ? '+' : '')) + ((showHours || (useSmartHours && hours > 0)) ? padZerundown(hours) + ':' : '') + padZerundown(minutes) + ':' + padZerundown(secondsRest)
 	}
 
-	export function isInsideViewport (
+	export function isInsideViewport(
 		scrollLeft: number,
 		scrollWidth: number,
 		part: PartUi,
@@ -112,31 +114,45 @@ export namespace RundownUtils {
 			(piece !== undefined ? (piece.renderedInPoint || 0) : 0)) {
 			return false
 		} else if (scrollLeft > (partStartsAt || part.startsAt || 0) +
-					(piece !== undefined ?
-						(piece.renderedInPoint || 0) + (piece.renderedDuration || (
-							(part.duration !== undefined ?
-								(part.duration + (part.getLastPlayOffset() || 0)) :
-								(partDuration || part.renderedDuration || part.expectedDuration || 0)
-									- (piece.renderedInPoint || 0))
-							)
-						) :
-						(part.duration !== undefined ?
-							(part.duration + (part.getLastPlayOffset() || 0)) :
-							(partDuration || part.renderedDuration || 0)
-						)
-					)
-				) {
+			(piece !== undefined ?
+				(piece.renderedInPoint || 0) + (piece.renderedDuration || (
+					(part.instance.part.duration !== undefined ?
+						(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
+						(partDuration || part.renderedDuration || part.instance.part.expectedDuration || 0)
+						- (piece.renderedInPoint || 0))
+				)
+				) :
+				(part.instance.part.duration !== undefined ?
+					(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
+					(partDuration || part.renderedDuration || 0)
+				)
+			)
+		) {
 			return false
 		}
 		return true
 	}
 
-	export function getSourceLayerClassName (partType: SourceLayerType): string {
+	export function getSourceLayerClassName(partType: SourceLayerType): string {
 		// CAMERA_MOVEMENT -> "camera-movement"
 		return (
 			((SourceLayerType[partType] || 'unknown-sourceLayer-' + partType) + '')
-			.toLowerCase()
-			.replace(/_/g,'-')
+				.toLowerCase()
+				.replace(/_/g, '-')
 		)
+	}
+
+	export function isPieceInstance(piece: PieceUi | AdLibPieceUi): piece is PieceUi {
+		if (piece['instance'] && piece['name'] === undefined) {
+			return true
+		}
+		return false
+	}
+
+	export function isAdLibPiece(piece: PieceUi | AdLibPieceUi): piece is AdLibPieceUi {
+		if (piece['instance'] || piece['name'] === undefined) {
+			return false
+		}
+		return true
 	}
 }

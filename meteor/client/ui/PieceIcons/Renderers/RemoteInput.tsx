@@ -2,7 +2,7 @@ import * as React from 'react'
 
 // @todo: use colours from the scss
 // @todo: use dynamic data
-export default class RemoteInputIcon extends React.Component<{ inputIndex?: number, abbreviation?: string }> {
+export default class RemoteInputIcon extends React.Component<{ inputIndex?: string, abbreviation?: string }> {
 	render () {
 		return (
 			<svg className='piece_icon' version='1.1' viewBox='0 0 126.5 89' xmlns='http://www.w3.org/2000/svg'>

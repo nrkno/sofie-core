@@ -1,15 +1,14 @@
 // @todo: these typings are duplicates from the integration
 
+
 export interface DeviceConfigManifest {
 	deviceConfig: ConfigManifestEntry[]
 	deviceOAuthFlow?: DeviceOAuthFlow
-	// subdeviceSummaryStringFormat: string // TODO - verify format
-	// subDeviceConfig?: SubDeviceConfigManifest
 }
 
 export interface SubDeviceConfigManifest {
 	defaultType: string
-	config: { [type: string]: SubDeviceConfigManifestEntry[] }
+	config: { [type: string]: SubDeviceConfigManifestEntry[] | ConfigManifestEntry[] }
 }
 
 export interface DeviceOAuthFlow {
@@ -17,7 +16,6 @@ export interface DeviceOAuthFlow {
 	credentialsURL: string
 }
 
-// TODO - what about mappings from playout?
 
 export enum ConfigManifestEntryType {
 	LABEL = 'label',
@@ -27,17 +25,22 @@ export enum ConfigManifestEntryType {
 	NUMBER = 'float',
 	FLOAT = 'float',
 	INT = 'int',
-	CREDENTIALS = 'credentials', // TODO - parent only
-	TABLE = 'table', // TODO - write this for HTTPSEND
-	OBJECT =  'object',
+	TABLE = 'table',
+	OBJECT = 'object',
 	ENUM = 'enum' // @todo: implement
 }
 
-export type ConfigManifestEntry = ConfigManifestEntryBase | TableConfigManifestEntry
+export type ConfigManifestEntry = ConfigManifestEntryBase | TableConfigManifestEntry | ConfigManifestEnumEntry | SubDeviceConfigManifestEntry
 export interface ConfigManifestEntryBase {
 	id: string
 	name: string
 	type: ConfigManifestEntryType
+	values?: any // for enum
+	placeholder?: string
+}
+export interface ConfigManifestEnumEntry extends ConfigManifestEntryBase {
+	type: ConfigManifestEntryType.ENUM
+	values: any // for enum
 }
 export interface SubDeviceConfigManifestEntry extends ConfigManifestEntryBase {
 	columnName?: string

@@ -1,3 +1,8 @@
+import { getCurrentTime, protectString, getRandomId } from '../../lib/lib'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { makePlaylistFromRundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
+import { Random } from 'meteor/random'
 import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 
 /*
@@ -22,4 +27,9 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [ // <--- To be set to an absolute ver
 	// 		//
 	// 	}
 	// },
+	//
+	//
+	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
+	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
+	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
 ])

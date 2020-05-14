@@ -6,8 +6,8 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { translate } from 'react-i18next'
-import { literal } from '../../../../lib/lib'
-import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { literal, unprotectString } from '../../../../lib/lib'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MediaManagerDeviceSettings, StorageType, StorageSettings, MediaFlow, MediaFlowType, MonitorSettings, MonitorSettingsType } from '../../../../lib/collections/PeripheralDeviceSettings/mediaManager'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog, doModalDialog } from '../../../lib/ModalDialog'
@@ -40,8 +40,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			editedMonitors: []
 		}
 	}
-	isStorageItemEdited = (deviceId: string) => {
-		return this.state.editedStorages.indexOf(deviceId) >= 0
+	isStorageItemEdited = (storageKey: string) => {
+		return this.state.editedStorages.indexOf(storageKey) >= 0
 	}
 	isFlowItemEdited = (flowId: string) => {
 		return this.state.editedFlows.indexOf(flowId) >= 0
@@ -49,8 +49,8 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 	isMonitorItemEdited = (monitorId: string) => {
 		return this.state.editedMonitors.indexOf(monitorId) >= 0
 	}
-	finishEditStorageItem = (deviceId: string) => {
-		let index = this.state.editedStorages.indexOf(deviceId)
+	finishEditStorageItem = (storageKey: string) => {
+		let index = this.state.editedStorages.indexOf(storageKey)
 		if (index >= 0) {
 			this.state.editedStorages.splice(index, 1)
 			this.setState({
@@ -76,14 +76,14 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			})
 		}
 	}
-	editStorageItem = (deviceId: string) => {
-		if (this.state.editedStorages.indexOf(deviceId) < 0) {
-			this.state.editedStorages.push(deviceId)
+	editStorageItem = (storageKey: string) => {
+		if (this.state.editedStorages.indexOf(storageKey) < 0) {
+			this.state.editedStorages.push(storageKey)
 			this.setState({
 				editedStorages: this.state.editedStorages
 			})
 		} else {
-			this.finishEditStorageItem(deviceId)
+			this.finishEditStorageItem(storageKey)
 		}
 	}
 	editFlowItem = (flowId: string) => {
@@ -132,10 +132,10 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			deleteConfirmFlowId: undefined
 		})
 	}
-	confirmRemoveStorage = (deviceId: string) => {
+	confirmRemoveStorage = (storageKey: string) => {
 		this.setState({
 			showDeleteStorageConfirm: true,
-			deleteConfirmStorageId: deviceId
+			deleteConfirmStorageId: storageKey
 		})
 	}
 	confirmRemoveFlow = (flowId: string) => {
@@ -144,11 +144,11 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			deleteConfirmFlowId: flowId
 		})
 	}
-	removeStorage = (deviceId: string) => {
+	removeStorage = (storageKey: string) => {
 		PeripheralDevices.update(this.props.device._id, {
 			$pull: {
 				'settings.storages': {
-					id: deviceId
+					id: storageKey
 				}
 			}
 		})
@@ -669,7 +669,7 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 			{subDevices &&
 				(<React.Fragment>
 					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
-					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
+					{subDevices.map((device) => <DeviceItem key={unprotectString(device._id)} device={device} showRemoveButtons={true} />)}
 				</React.Fragment>)}
 
 		</div>)

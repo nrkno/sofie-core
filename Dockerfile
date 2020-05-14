@@ -1,12 +1,14 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
 FROM node:8.11.4
-RUN curl https://install.meteor.com/ | sh
+RUN curl "https://install.meteor.com/?release=1.6.1.4" | sh
 COPY meteor /opt/core/meteor
 WORKDIR /opt/core/meteor
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
 ENV NODE_ENV_TMP $NODE_ENV
 ENV NODE_ENV anythingButProduction
+# Force meteor to setup the runtime
+RUN meteor --version --allow-superuser
 RUN meteor npm install
 # Restore the NODE_ENV variable:
 ENV NODE_ENV $NODE_ENV_TMP
@@ -17,5 +19,6 @@ RUN npm install
 # DEPLOY IMAGE
 FROM node:8.11.4-slim
 COPY --from=0 /opt/bundle /opt/core
+COPY docker-entrypoint.sh /opt
 WORKDIR /opt/core/
-CMD ["node", "main.js"]
+CMD ["/opt/docker-entrypoint.sh"]
