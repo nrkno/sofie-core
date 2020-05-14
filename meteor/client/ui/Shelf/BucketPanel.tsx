@@ -39,7 +39,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi, matchFilter, AdLibPanelToolbar } from './AdLibPanel'
 import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { IDashboardPanelProps, getUnfinishedPieceInstancesReactive, DashboardPanelInner, IDashboardPanelTrackedProps, dashboardElementPosition } from './DashboardPanel'
+import { getUnfinishedPieceInstancesReactive, DashboardPanelInner, dashboardElementPosition } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
@@ -382,8 +382,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
-				doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) => MeteorCall.buckets.bucketAdlibStart(
-					this.props.playlist._id, currentPartInstanceId, piece._id
+				doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) => MeteorCall.userAction.bucketAdlibStart(
+					e, this.props.playlist._id, currentPartInstanceId, piece._id
 				))
 			} else {
 				if (sourceLayer && sourceLayer.clearKeyboardHotkey) {
@@ -488,7 +488,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					newRank = (this.props.adLibPieces[newIndex]._rank + this.props.adLibPieces[newIndex + 1]._rank) / 2
 				}
 
-				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) => MeteorCall.buckets.modifyBucketAdLib(
+				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) => MeteorCall.userAction.bucketsModifyBucketAdLib(e,
 					draggedId, partial<BucketAdLib>({
 						_rank: newRank
 					})
@@ -503,7 +503,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			const draggedB = this.props.adLibPieces.find(b => b._id === draggedId)
 
 			if (draggedB) {
-				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET_ADLIB, (e) => MeteorCall.buckets.modifyBucketAdLib(
+				doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET_ADLIB, (e) => MeteorCall.userAction.bucketsModifyBucketAdLib(e,
 					draggedB._id, partial<BucketAdLib>({
 						bucketId
 					})
