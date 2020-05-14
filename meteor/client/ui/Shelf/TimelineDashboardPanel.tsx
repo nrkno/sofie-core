@@ -35,7 +35,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { DashboardPanel, DashboardPanelInner, dashboardElementPosition, getUnfinishedPiecesReactive } from './DashboardPanel';
+import { DashboardPanel, DashboardPanelInner, dashboardElementPosition, getUnfinishedPiecesReactive, IDashboardPanelProps } from './DashboardPanel'
 
 interface IState {
 	outputLayers: {
@@ -47,9 +47,6 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-interface IDashboardPanelProps {
-}
-
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieces: {
@@ -57,7 +54,7 @@ interface IDashboardPanelTrackedProps {
 	}
 }
 
-export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
 	return Object.assign({}, fetchAndFilter(props), {
 		studio: props.rundown.getStudio(),
 		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId)

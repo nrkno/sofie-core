@@ -442,6 +442,8 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								rundown={this.props.rundown}
 								showStyleBase={this.props.showStyleBase}
 								studioMode={this.props.studioMode}
+								shouldQueue={this.state.shouldQueue}
+								hotkeyGroup={panel.name.replace(/ /g, '_')}
 								/> :
 							<DashboardPanel
 								key={panel._id}
@@ -453,6 +455,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								showStyleBase={this.props.showStyleBase}
 								studioMode={this.props.studioMode}
 								shouldQueue={this.state.shouldQueue}
+								hotkeyGroup={panel.name.replace(/ /g, '_')}
 								/> :
 					RundownLayoutsAPI.isExternalFrame(panel) ?
 						<ExternalFramePanel
