@@ -1,23 +1,31 @@
 import * as React from 'react'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
+import { IAdLibListItem } from '../../AdLibListItem'
+import { AdLibPieceUi } from '../../AdLibPanel'
 
-export default function DefaultItemRenderer(props: { piece: PieceUi }): JSX.Element {
-	const { externalId, name, partId, sourceLayerId, outputLayerId, metaData } = props.piece.instance.piece
+export default function DefaultItemRenderer(props: { piece: PieceUi | AdLibPieceUi }): JSX.Element {
+	console.log(props.piece)
+	let piece
+	if (props.piece && (props.piece as PieceUi).instance) {
+		piece = (props.piece as PieceUi).instance.piece
+	} else {
+		piece = props.piece as AdLibPieceUi
+	}
 
 	return (
 		<dl>
 			<dd>name</dd>
-			<dt>{name}</dt>
+			<dt>{piece.name}</dt>
 			<dd>externalId</dd>
-			<dt>{externalId}</dt>
+			<dt>{piece.externalId}</dt>
 			<dd>partId</dd>
-			<dt>{partId}</dt>
+			<dt>{piece.partId}</dt>
 			<dd>sourceLayerId</dd>
-			<dt>{sourceLayerId}</dt>
+			<dt>{piece.sourceLayerId}</dt>
 			<dd>outputLayerId</dd>
-			<dt>{outputLayerId}</dt>
+			<dt>{piece.outputLayerId}</dt>
 			<dd>metaData</dd>
-			<dt>{JSON.stringify(metaData || {})}</dt>
+			<dt>{JSON.stringify(piece.metaData || {})}</dt>
 		</dl>
 	)
 }

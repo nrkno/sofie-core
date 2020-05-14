@@ -451,7 +451,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 	}
 
 	onSelectAdLib = (piece: AdLibPieceUi) => {
-		// console.log(aSLine)
+		console.log(piece)
 		this.props.onSelectPiece && this.props.onSelectPiece(piece)
 	}
 

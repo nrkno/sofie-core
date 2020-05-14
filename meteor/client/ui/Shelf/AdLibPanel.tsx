@@ -689,7 +689,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 						}))
 					)
 
-				const golobalAdLibActions = memoizedIsolatedAutorun((rundownIds, partIds) =>
+				const globalAdLibActions = memoizedIsolatedAutorun((rundownIds, partIds) =>
 					AdLibActions.find({
 						rundownId: {
 							$in: rundownIds,
@@ -729,7 +729,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 						})
 					, 'adLibActions', rundownIds, partIds)
 
-				rundownBaselineAdLibs = rundownBaselineAdLibs.concat(golobalAdLibActions)
+				rundownBaselineAdLibs = rundownBaselineAdLibs.concat(globalAdLibActions)
 
 				return rundownBaselineAdLibs
 			}, 'rundownBaselineAdLibs', currentRundown._id, sourceLayerLookup, props.showStyleBase.sourceLayers, sourceHotKeyUse)
