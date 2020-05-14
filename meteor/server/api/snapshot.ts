@@ -65,6 +65,7 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collectio
 import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
 import { PickerPOST, PickerGET } from './http'
+import { getPartId, getSegmentId } from './ingest/lib'
 
 interface DeprecatedRundownSnapshot { // Old, from the times before rundownPlaylists
 	version: string
@@ -538,6 +539,10 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 		}
 	})
 
+	const getNewRundownId = (oldRundownId: RundownId) => {
+		return rundownIdMap[unprotectString(oldRundownId)]
+	}
+
 	// List any ids that need updating on other documents
 	const rundownIdMap: { [key: string]: RundownId } = {}
 	_.each(snapshot.rundowns, rd => {
@@ -547,7 +552,7 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 	const partIdMap: { [key: string]: PartId } = {}
 	_.each(snapshot.parts, part => {
 		const oldId = part._id
-		partIdMap[unprotectString(oldId)] = part._id = getRandomId()
+		partIdMap[unprotectString(oldId)] = part._id = getPartId(getNewRundownId(part.rundownId), part.externalId)
 	})
 	const partInstanceIdMap: { [key: string]: PartInstanceId } = {}
 	_.each(snapshot.partInstances, partInstance => {
@@ -558,7 +563,7 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 	const segmentIdMap: { [key: string]: SegmentId } = {}
 	_.each(snapshot.segments, segment => {
 		const oldId = segment._id
-		segmentIdMap[unprotectString(oldId)] = segment._id = getRandomId()
+		segmentIdMap[unprotectString(oldId)] = segment._id = getSegmentId(getNewRundownId(segment.rundownId), segment.externalId)
 	})
 	const pieceIdMap: { [key: string]: PieceId } = {}
 	_.each(snapshot.pieces, piece => {

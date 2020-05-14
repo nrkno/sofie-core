@@ -139,8 +139,12 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
 
+			loop: playlistInfo.playlist.loop,
+
+			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
+
 			modified: getCurrentTime(),
-			
+
 			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
 		}
 

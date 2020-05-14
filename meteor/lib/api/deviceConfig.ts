@@ -4,8 +4,6 @@
 export interface DeviceConfigManifest {
 	deviceConfig: ConfigManifestEntry[]
 	deviceOAuthFlow?: DeviceOAuthFlow
-	// subdeviceSummaryStringFormat: string // TODO - verify format
-	// subDeviceConfig?: SubDeviceConfigManifest
 }
 
 export interface SubDeviceConfigManifest {
@@ -18,7 +16,6 @@ export interface DeviceOAuthFlow {
 	credentialsURL: string
 }
 
-// TODO - what about mappings from playout?
 
 export enum ConfigManifestEntryType {
 	LABEL = 'label',
@@ -28,8 +25,7 @@ export enum ConfigManifestEntryType {
 	NUMBER = 'float',
 	FLOAT = 'float',
 	INT = 'int',
-	CREDENTIALS = 'credentials', // TODO - parent only
-	TABLE = 'table', // TODO - write this for HTTPSEND
+	TABLE = 'table',
 	OBJECT = 'object',
 	ENUM = 'enum' // @todo: implement
 }

@@ -21,7 +21,7 @@ import {
 	OnGenerateTimelineObj,
 	TSR
 } from 'tv-automation-sofie-blueprints-integration'
-import { transformTimeline } from '../../../lib/timeline'
+import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
@@ -179,10 +179,8 @@ export function createPieceGroup(
 	})
 }
 
-function resolvePieceTimeline(objs: TimelineObjGeneric[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
-	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
-		time: baseTime
-	})
+function resolvePieceTimeline (objs: TimelineContentObject[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
+	const tlResolved = Resolver.resolveTimeline(objs, { time: baseTime })
 	const resolvedPieces: Array<ResolvedPieceInstance> = []
 
 	let unresolvedIds: string[] = []
@@ -264,7 +262,7 @@ export function getResolvedPieces(partInstance: PartInstance): ResolvedPieceInst
 		}
 	})
 
-	const resolvedPieces = resolvePieceTimeline(objs, 0, pieceInststanceMap, `PartInstance #${partInstance._id}`)
+	const resolvedPieces = resolvePieceTimeline(transformTimeline(objs), 0, pieceInststanceMap, `PartInstance #${partInstance._id}`)
 
 	// crop infinite pieces
 	resolvedPieces.forEach((pieceInstance, index, source) => {
@@ -294,15 +292,29 @@ export function getResolvedPiecesFromFullTimeline(playoutData: RundownPlaylistPl
 		pieceInstances.push(...playoutData.selectedInstancePieces.filter(p => p.partInstanceId === playoutData.rundownPlaylist.nextPartInstanceId))
 	}
 
-	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
-
-	objs.forEach(o => {
-		if (o.enable.start === 'now') {
-			o.enable.start = now
+	const replaceNows = (obj: TimelineContentObject, parentAbsoluteStart: number) => {
+		let absoluteStart = parentAbsoluteStart
+		if (obj.enable.start === 'now') {
+			// Start is always relative to parent start, so we need to factor that when flattening the 'now
+			obj.enable.start = Math.max(0, now - parentAbsoluteStart)
+			absoluteStart = now
+		} else if (typeof obj.enable.start === 'number') {
+			absoluteStart += obj.enable.start
+		} else {
+			// We can't resolve this here, so lets hope there are no 'now' inside and end
+			return
 		}
-	})
 
-	const resolvedPieces = resolvePieceTimeline(objs, now, pieceInststanceMap, 'timeline')
+		// Ensure any children have their 'now's updated
+		if (obj.isGroup && obj.children && obj.children.length) {
+			obj.children.forEach(ch => replaceNows(ch, absoluteStart))
+		}
+	}
+	const transformedObjs = transformTimeline(objs)
+	transformedObjs.forEach(o => replaceNows(o, 0))
+
+	const pieceInstanceMap = normalizeArray(pieceInstances, '_id')
+	const resolvedPieces = resolvePieceTimeline(transformedObjs, now, pieceInstanceMap, 'timeline')
 
 	// crop infinite pieces
 	resolvedPieces.forEach((instance, index, source) => {
