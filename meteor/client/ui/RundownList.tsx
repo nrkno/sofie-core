@@ -224,7 +224,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				</tr>
 				{this.props.rundown.startedPlayback !== undefined && this.props.rundown.expectedDuration !== undefined && this.props.rundown.active &&
 					<tr className='hl expando-addon'>
-						<td colSpan={8}>
+						<td colSpan={10}>
 							<ActiveProgressBar
 								rundown={this.props.rundown}
 							/>
