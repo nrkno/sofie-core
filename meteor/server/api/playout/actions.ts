@@ -108,7 +108,7 @@ export function deactivateRundownPlaylistInner(cache: CacheForRundownPlaylist, r
 			if (rundown) {
 				IngestActions.notifyCurrentPlayingPart(rundown, null)
 			} else {
-				logger.error(`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${previousPartInstance._id}"`)
+				logger.error(`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`)
 			}
 		}, 40)
 	} else {

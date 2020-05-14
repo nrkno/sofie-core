@@ -187,12 +187,12 @@ export namespace ServerPeripheralDeviceAPI {
 				logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
 				const id = getTimelineId(studioId, o.id)
-				const obj = Timeline.findOne({
+				const obj = cache.Timeline.findOne({
 					_id: id,
 					studioId: studioId
 				})
 				if (obj) {
-					Timeline.update({
+					cache.Timeline.update({
 						_id: id,
 						studioId: studioId
 					}, {$set: {
