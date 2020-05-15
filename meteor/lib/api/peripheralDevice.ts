@@ -264,9 +264,7 @@ export interface PiecePlaybackStartedResult {
 }
 export type PiecePlaybackStoppedResult = PiecePlaybackStartedResult
 
-
-
-export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result) => void, functionName: string, ...args: any[]) {
+export function executeFunctionWithCustomTimeout (deviceId: PeripheralDeviceId, cb: (err, result) => void, timeoutTime: number, functionName: string, ...args: any[]) {
 
 	let commandId: PeripheralDeviceCommandId = getRandomId()
 	PeripheralDeviceCommands.insert({
@@ -281,7 +279,6 @@ export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result)
 	if (Meteor.isClient) {
 		subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
 	}
-	const timeoutTime = 3000
 	// logger.debug('command created: ' + functionName)
 	const cursor = PeripheralDeviceCommands.find({
 		_id: commandId
@@ -299,7 +296,7 @@ export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result)
 				// logger.debug('got reply ' + commandId)
 
 				// Cleanup before the callback to ensure it doesnt get a timeout during the callback
-				observer.stop()
+				if (observer) observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 				if (timeoutCheck) {
@@ -315,7 +312,7 @@ export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result)
 				}
 			} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) { // timeout
 				cb('Timeout when executing the function "' + cmd.functionName + '" on device "' + cmd.deviceId + '" ', null)
-				observer.stop()
+				if (observer) observer.stop()
 				PeripheralDeviceCommands.remove(cmd._id)
 				if (subscription) subscription.stop()
 			}
@@ -329,6 +326,11 @@ export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result)
 		changed: checkReply,
 	})
 	timeoutCheck = Meteor.setTimeout(checkReply, timeoutTime)
+}
+
+export function executeFunction (deviceId: PeripheralDeviceId, cb: (err, result) => void, functionName: string, ...args: any[]) {
+	const timeoutTime = 3000
+	return executeFunctionWithCustomTimeout(deviceId, cb, timeoutTime, functionName, ...args)
 }
 
 }

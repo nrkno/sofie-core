@@ -41,7 +41,9 @@ export interface ISourceLayerItemState {
 }
 
 export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IState extends ISourceLayerItemState> extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	getItemLabelOffsetLeft (): { [key: string]: string } {
+	overflowsTime: boolean
+
+	getItemLabelOffsetLeft(): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
 		} else {
@@ -49,7 +51,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getItemLabelOffsetRight (): { [key: string]: string } {
+	getItemLabelOffsetRight(): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetRight && typeof this.props.getItemLabelOffsetRight === 'function') {
 			return this.props.getItemLabelOffsetRight()
 		} else {
@@ -57,7 +59,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getFloatingInspectorStyle (): {
+	getFloatingInspectorStyle(): {
 		[key: string]: string
 	} {
 		return {
@@ -66,36 +68,46 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		}
 	}
 
-	getItemDuration (): number {
+	getItemDuration(): number {
 		if (typeof this.props.getItemDuration === 'function') {
 			return this.props.getItemDuration()
 		}
 		return this.props.partDuration
 	}
 
-	setAnchoredElsWidths (leftAnchoredWidth: number, rightAnchoredWidth: number): void {
+	setAnchoredElsWidths(leftAnchoredWidth: number, rightAnchoredWidth: number): void {
 		if (this.props.setAnchoredElsWidths && typeof this.props.setAnchoredElsWidths === 'function') {
 			return this.props.setAnchoredElsWidths(leftAnchoredWidth, rightAnchoredWidth)
 		}
 	}
 
-	renderOverflowTimeLabel () {
+	doesOverflowTime(): number | false {
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
 		const vtContent = innerPiece.content as VTContent | undefined
 		if (!innerPiece.playoutDuration && vtContent && vtContent.sourceDuration && ((uiPiece.renderedInPoint || 0) + vtContent.sourceDuration) > (this.props.partDuration || 0)) {
 			let time = (uiPiece.renderedInPoint || 0) + vtContent.sourceDuration - ((this.props.partDuration || 0) as number)
+
 			// only display differences greater than 1 second
-			return (time > 0) ? (
-				<div className='segment-timeline__piece__label label-overflow-time'>
-					{RundownUtils.formatDiffToTimecode(time, true, false, true)}
-				</div>
-			) : null
+			return time > 0 ? time : false
 		}
+		return false
 	}
 
-	renderInfiniteItemContentEnded () {
+	renderOverflowTimeLabel() {
+		const overflowTime = this.doesOverflowTime()
+		if (overflowTime !== false) {
+			return (
+				<div className='segment-timeline__piece__label label-overflow-time'>
+					{RundownUtils.formatDiffToTimecode(overflowTime, true, false, true)}
+				</div>
+			)
+		}
+		return null
+	}
+
+	renderInfiniteItemContentEnded() {
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
@@ -107,7 +119,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 		return null
 	}
 
-	renderInfiniteIcon () {
+	renderInfiniteIcon() {
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
@@ -121,7 +133,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 			: null
 	}
 
-	renderContentTrimmed () {
+	renderContentTrimmed() {
 		const innerPiece = this.props.piece.instance.piece
 		const vtContent = innerPiece.content as VTContent | undefined
 		const duration = this.props.partDuration
@@ -138,7 +150,7 @@ export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IStat
 			: null
 	}
 
-	render () {
+	render() {
 		return this.props.children
 	}
 }

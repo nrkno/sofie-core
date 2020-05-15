@@ -18,7 +18,7 @@ import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/Rund
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
-export function activateRundownPlaylist (
+export function activateRundownPlaylist(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist,
 	rehearsal: boolean
@@ -42,7 +42,7 @@ export function activateRundownPlaylist (
 		throw new Meteor.Error(
 			409,
 			'Only one rundown can be active at the same time. Active rundown playlists: ' +
-				_.map(anyOtherActiveRundowns, playlist => playlist._id),
+			_.map(anyOtherActiveRundowns, playlist => playlist._id),
 			JSON.stringify(_.map(anyOtherActiveRundowns, playlist => playlist._id)))
 	}
 
@@ -72,11 +72,11 @@ export function activateRundownPlaylist (
 		const { blueprint } = getBlueprintOfRundown(rundown)
 		if (blueprint.onRundownActivate) {
 			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, undefined, studio)))
-			.catch(logger.error)
+				.catch(logger.error)
 		}
 	})
 }
-export function deactivateRundownPlaylist (cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): void {
+export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): void {
 
 	const rundown = deactivateRundownPlaylistInner(cache, rundownPlaylist)
 
@@ -88,27 +88,27 @@ export function deactivateRundownPlaylist (cache: CacheForRundownPlaylist, rundo
 			const { blueprint } = getBlueprintOfRundown(rundown)
 			if (blueprint.onRundownDeActivate) {
 				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, undefined)))
-				.catch(logger.error)
+					.catch(logger.error)
 			}
 		}
 	})
 }
-export function deactivateRundownPlaylistInner (cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): Rundown | undefined {
+export function deactivateRundownPlaylistInner(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): Rundown | undefined {
 	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
 
-	const { previousPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
 
 	let rundown: Rundown | undefined
-	if (previousPartInstance) {
+	if (currentPartInstance) {
 
 		// defer so that an error won't prevent deactivate
 		Meteor.setTimeout(() => {
-			rundown = Rundowns.findOne(previousPartInstance.rundownId)
+			rundown = Rundowns.findOne(currentPartInstance.rundownId)
 
 			if (rundown) {
 				IngestActions.notifyCurrentPlayingPart(rundown, null)
 			} else {
-				logger.error(`Could not find owner Rundown "${previousPartInstance.rundownId}" of PartInstance "${previousPartInstance._id}"`)
+				logger.error(`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`)
 			}
 		}, 40)
 	} else {
@@ -117,7 +117,7 @@ export function deactivateRundownPlaylistInner (cache: CacheForRundownPlaylist, 
 		}
 	}
 
-	if (previousPartInstance) onPartHasStoppedPlaying(cache, previousPartInstance, getCurrentTime())
+	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
 
 	cache.RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
@@ -131,15 +131,15 @@ export function deactivateRundownPlaylistInner (cache: CacheForRundownPlaylist, 
 	// rundownPlaylist.previousPartInstanceId = null
 	setNextPart(cache, rundownPlaylist, null)
 
-	if (previousPartInstance) {
-		cache.PartInstances.update(previousPartInstance._id, {
+	if (currentPartInstance) {
+		cache.PartInstances.update(currentPartInstance._id, {
 			$push: {
 				'part.timings.takeOut': getCurrentTime()
 			}
 		})
 
 		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(previousPartInstance.part._id, {
+		cache.Parts.update(currentPartInstance.part._id, {
 			$push: {
 				'timings.takeOut': getCurrentTime()
 			}
@@ -152,7 +152,7 @@ export function deactivateRundownPlaylistInner (cache: CacheForRundownPlaylist, 
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function prepareStudioForBroadcast (
+export function prepareStudioForBroadcast(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
 	okToDestoryStuff: boolean,
@@ -180,7 +180,7 @@ export function prepareStudioForBroadcast (
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function standDownStudio (
+export function standDownStudio(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
 	okToDestoryStuff: boolean

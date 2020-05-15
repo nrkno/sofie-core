@@ -19,18 +19,21 @@ import {
 	protectString,
 	unprotectString,
 	makePromise,
-	Omit
+	Omit,
+	waitForPromiseObj,
+	asyncCollectionFindFetch,
+	normalizeArray
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewRundownAPI, RundownAPIMethods } from '../../lib/api/rundown'
+import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
-import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId, createShowStyleCompound } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { IngestRundown, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultOrderedRundowns, ConfigManifestEntry, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
@@ -45,8 +48,9 @@ import { CacheForRundownPlaylist, initCacheForRundownPlaylist, initCacheForRundo
 import { saveIntoCache } from '../DatabaseCache'
 import { removeRundownFromCache, removeRundownPlaylistFromCache, getRundownsSegmentsAndPartsFromCache } from './playout/lib'
 import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions';
+import { findMissingConfigs } from './blueprints/config'
 
-export function selectShowStyleVariant (studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
+export function selectShowStyleVariant(studio: Studio, ingestRundown: IngestRundown): { variant: ShowStyleVariant, base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
@@ -103,7 +107,7 @@ export interface RundownPlaylistAndOrder {
 	order: BlueprintResultOrderedRundowns
 }
 
-export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRundown, peripheralDevice: PeripheralDevice | undefined): RundownPlaylistAndOrder {
+export function produceRundownPlaylistInfo(studio: Studio, currentRundown: DBRundown, peripheralDevice: PeripheralDevice | undefined): RundownPlaylistAndOrder {
 
 	const studioBlueprint = loadStudioBlueprints(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
@@ -125,10 +129,10 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
 		const playlist: DBRundownPlaylist = {
-			created:				getCurrentTime(),
-			currentPartInstanceId:	null,
-			nextPartInstanceId:		null,
-			previousPartInstanceId:	null,
+			created: getCurrentTime(),
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null,
 
 			...existingPlaylist,
 
@@ -138,6 +142,10 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 			name: playlistInfo.playlist.name,
 			expectedStart: playlistInfo.playlist.expectedStart,
 			expectedDuration: playlistInfo.playlist.expectedDuration,
+
+			loop: playlistInfo.playlist.loop,
+
+			outOfOrderTiming: playlistInfo.playlist.outOfOrderTiming,
 
 			modified: getCurrentTime(),
 
@@ -168,10 +176,10 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
 		const playlist: DBRundownPlaylist = {
-			created:				getCurrentTime(),
-			currentPartInstanceId:	null,
-			nextPartInstanceId:		null,
-			previousPartInstanceId:	null,
+			created: getCurrentTime(),
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null,
 
 			...existingPlaylist,
 
@@ -199,7 +207,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
  * @param rundownId The Rundown id to remove from
  * @param segmentIds The Segment ids to be removed
  */
-export function removeSegments (cache: CacheForRundownPlaylist , rundownId: RundownId, segmentIds: SegmentId[]): number {
+export function removeSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]): number {
 	logger.debug('removeSegments', rundownId, segmentIds)
 
 	const count = cache.Segments.remove({
@@ -217,13 +225,13 @@ export function removeSegments (cache: CacheForRundownPlaylist , rundownId: Rund
  * @param rundownId Id of the Rundown
  * @param segmentIds Id of the Segments
  */
-export function afterRemoveSegments (cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]) {
+export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]) {
 	// Remove the parts:
 	saveIntoCache(cache.Parts, {
 		rundownId: rundownId,
 		segmentId: { $in: segmentIds }
-	},[],{
-		afterRemoveAll (parts) {
+	}, [], {
+		afterRemoveAll(parts) {
 			afterRemoveParts(cache, rundownId, parts)
 		}
 	})
@@ -237,13 +245,13 @@ export function afterRemoveSegments (cache: CacheForRundownPlaylist, rundownId: 
  * @param rundownId Id of the Rundown
  * @param removedParts The parts that have been removed
  */
-export function afterRemoveParts (cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
+export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
 	saveIntoCache(cache.Parts, {
 		rundownId: rundownId,
 		dynamicallyInserted: true,
 		afterPart: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
-		afterRemoveAll (parts) {
+		afterRemoveAll(parts) {
 			// Do the same for any affected dynamicallyInserted Parts
 			afterRemoveParts(cache, rundownId, parts)
 		}
@@ -256,7 +264,7 @@ export function afterRemoveParts (cache: CacheForRundownPlaylist, rundownId: Run
 		rundownId: rundownId,
 		partId: { $in: _.map(removedParts, p => p._id) }
 	}, [], {
-		afterRemoveAll (pieces) {
+		afterRemoveAll(pieces) {
 			afterRemovePieces(cache, rundownId, pieces)
 		}
 	})
@@ -271,7 +279,7 @@ export function afterRemoveParts (cache: CacheForRundownPlaylist, rundownId: Run
 }
 
 
-export function afterRemovePartsAuxiliary (cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
+export function afterRemovePartsAuxiliary(cache: CacheForRundownPlaylist, rundownId: RundownId, removedParts: DBPart[]) {
 	cache.defer(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
@@ -282,7 +290,7 @@ export function afterRemovePartsAuxiliary (cache: CacheForRundownPlaylist, rundo
 			rundownId: rundownId,
 			partId: { $in: _.map(removedParts, p => p._id) }
 		}, [], {
-			afterRemoveAll (pieces) {
+			afterRemoveAll(pieces) {
 				afterRemovePieces(cache, rundownId, pieces)
 			}
 		})
@@ -300,7 +308,7 @@ export function afterRemovePartsAuxiliary (cache: CacheForRundownPlaylist, rundo
  * @param rundownId Id of the Rundown
  * @param removedPieces The pieces that have been removed
  */
-export function afterRemovePieces (cache: CacheForRundownPlaylist, rundownId: RundownId, removedPieces: Array<Piece | AdLibPiece>) {
+export function afterRemovePieces(cache: CacheForRundownPlaylist, rundownId: RundownId, removedPieces: Array<Piece | AdLibPiece>) {
 	cache.defer(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
@@ -314,7 +322,7 @@ export function afterRemovePieces (cache: CacheForRundownPlaylist, rundownId: Ru
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
  * @param rundownId
  */
-export function updatePartRanks (cache: CacheForRundownPlaylist, rundown: Rundown): Array<Part> {
+export function updatePartRanks(cache: CacheForRundownPlaylist, rundown: Rundown): Array<Part> {
 	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point, or do we not care about their rank?
 
 	const { segments, parts: orgParts } = getRundownsSegmentsAndPartsFromCache(cache, [rundown])
@@ -322,7 +330,7 @@ export function updatePartRanks (cache: CacheForRundownPlaylist, rundown: Rundow
 	logger.debug(`updatePartRanks (${orgParts.length} parts, ${segments.length} segments)`)
 
 	const parts: Array<Part> = []
-	const partsToPutAfter: {[partId: string]: Array<Part>} = {}
+	const partsToPutAfter: { [partId: string]: Array<Part> } = {}
 
 	_.each(orgParts, (part) => {
 		const afterPart: string | undefined = unprotectString(part.afterPart)
@@ -409,7 +417,7 @@ export function updatePartRanks (cache: CacheForRundownPlaylist, rundown: Rundow
 }
 
 export namespace ServerRundownAPI {
-	export function removeRundownPlaylist (playlistId: RundownPlaylistId) {
+	export function removeRundownPlaylist(playlistId: RundownPlaylistId) {
 		const playlist = RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
@@ -417,14 +425,14 @@ export namespace ServerRundownAPI {
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
-	export function removeRundown (rundownId: RundownId) {
+	export function removeRundown(rundownId: RundownId) {
 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
 		const result = removeRundownInner(cache, rundownId)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
 
-	export function unsyncRundown (rundownId: RundownId): void {
+	export function unsyncRundown(rundownId: RundownId): void {
 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
 		const result = unsyncRundownInner(cache, rundownId)
 		waitForPromise(cache.saveAllToDatabase())
@@ -432,18 +440,18 @@ export namespace ServerRundownAPI {
 	}
 
 	/** Remove a RundownPlaylist and all its contents */
-	export function removeRundownPlaylistInner (cache: CacheForRundownPlaylist, playlistId: RundownPlaylistId) {
+	export function removeRundownPlaylistInner(cache: CacheForRundownPlaylist, playlistId: RundownPlaylistId) {
 		check(playlistId, String)
 		logger.info('removeRundownPlaylist ' + playlistId)
 
 		const playlist = cache.RundownPlaylists.findOne(playlistId)
 		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-		if (playlist.active) throw new Meteor.Error(400,`Not allowed to remove an active RundownPlaylist "${playlistId}".`)
+		if (playlist.active) throw new Meteor.Error(400, `Not allowed to remove an active RundownPlaylist "${playlistId}".`)
 
 		removeRundownPlaylistFromCache(cache, playlist)
 	}
 	/** Remove an individual rundown */
-	export function removeRundownInner (cache: CacheForRundownPlaylist, rundownId: RundownId) {
+	export function removeRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId) {
 		check(rundownId, String)
 		logger.info('removeRundown ' + rundownId)
 
@@ -454,7 +462,7 @@ export namespace ServerRundownAPI {
 			if (playlist && playlist.active && playlist.currentPartInstanceId) {
 				const partInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
 				if (partInstance && partInstance.rundownId === rundown._id) {
-					throw new Meteor.Error(400,`Not allowed to remove an active Rundown "${rundownId}". (active part: "${partInstance._id}" in playlist "${playlist._id}")`)
+					throw new Meteor.Error(400, `Not allowed to remove an active Rundown "${rundownId}". (active part: "${partInstance._id}" in playlist "${playlist._id}")`)
 				}
 			}
 		}
@@ -462,7 +470,7 @@ export namespace ServerRundownAPI {
 		removeRundownFromCache(cache, rundown)
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist (playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {
+	export function resyncRundownPlaylist(playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {
 		check(playlistId, String)
 		logger.info('resyncRundownPlaylist ' + playlistId)
 
@@ -480,7 +488,7 @@ export namespace ServerRundownAPI {
 		return response
 	}
 
-	export function resyncRundown (rundownId: RundownId): ReloadRundownResponse {
+	export function resyncRundown(rundownId: RundownId): ReloadRundownResponse {
 		check(rundownId, String)
 		logger.info('resyncRundown ' + rundownId)
 
@@ -496,7 +504,7 @@ export namespace ServerRundownAPI {
 
 		return IngestActions.reloadRundown(rundown)
 	}
-	export function unsyncRundownInner (cache: CacheForRundownPlaylist, rundownId: RundownId): void {
+	export function unsyncRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
 
@@ -504,17 +512,19 @@ export namespace ServerRundownAPI {
 		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
 		if (!rundown.unsynced) {
-			cache.Rundowns.update(rundown._id, {$set: {
-				unsynced: true,
-				unsyncedTime: getCurrentTime()
-			}})
+			cache.Rundowns.update(rundown._id, {
+				$set: {
+					unsynced: true,
+					unsyncedTime: getCurrentTime()
+				}
+			})
 		} else {
 			logger.info(`Rundown "${rundownId}" was already unsynced`)
 		}
 	}
 }
 export namespace ClientRundownAPI {
-	export function rundownPlaylistNeedsResync (playlistId: RundownPlaylistId): string[] {
+	export function rundownPlaylistNeedsResync(playlistId: RundownPlaylistId): string[] {
 		check(playlistId, String)
 		// logger.info('rundownPlaylistNeedsResync ' + playlistId)
 
@@ -546,25 +556,99 @@ export namespace ClientRundownAPI {
 
 		return _.compact(errors)
 	}
+	// Validate the blueprint config used for this rundown, to ensure that all the required fields are specified
+	export function rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId): RundownPlaylistValidateBlueprintConfigResult {
+		check(playlistId, String)
+
+		const rundownPlaylist = RundownPlaylists.findOne(playlistId)
+		if (!rundownPlaylist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+
+		const studio = rundownPlaylist.getStudio()
+		const studioBlueprint = Blueprints.findOne(studio.blueprintId)
+		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
+
+		const rundowns = rundownPlaylist.getRundowns()
+		const uniqueShowStyleCompounds = _.uniq(rundowns, undefined, rundown => `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`)
+
+		// Load all variants/compounds
+		const { showStyleBases, showStyleVariants } = waitForPromiseObj({
+			showStyleBases: asyncCollectionFindFetch(ShowStyleBases, { _id: { $in: uniqueShowStyleCompounds.map(r => r.showStyleBaseId) } }),
+			showStyleVariants: asyncCollectionFindFetch(ShowStyleVariants, { _id: { $in: uniqueShowStyleCompounds.map(r => r.showStyleVariantId) } })
+		})
+		const showStyleBlueprints = Blueprints.find({ _id: { $in: _.uniq(_.compact(showStyleBases.map(c => c.blueprintId))) } }).fetch()
+
+		const showStyleBasesMap = normalizeArray(showStyleBases, '_id')
+		const showStyleVariantsMap = normalizeArray(showStyleVariants, '_id')
+		const showStyleBlueprintsMap = normalizeArray(showStyleBlueprints, '_id')
+
+		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] = uniqueShowStyleCompounds.map(rundown => {
+			const showStyleBase = showStyleBasesMap[unprotectString(rundown.showStyleBaseId)]
+			const showStyleVariant = showStyleVariantsMap[unprotectString(rundown.showStyleVariantId)]
+			const id = `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
+			if (!showStyleBase || !showStyleVariant) {
+				return {
+					id: id,
+					name: `${showStyleBase ? showStyleBase.name : rundown.showStyleBaseId}-${rundown.showStyleVariantId}`,
+					checkFailed: true,
+					fields: []
+				}
+			}
+
+			const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+			if (!compound) {
+				return {
+					id: id,
+					name: `${showStyleBase ? showStyleBase.name : rundown.showStyleBaseId}-${rundown.showStyleVariantId}`,
+					checkFailed: true,
+					fields: []
+				}
+			}
+
+			const blueprint = showStyleBlueprintsMap[unprotectString(compound.blueprintId)]
+			if (!blueprint) {
+				return {
+					id: id,
+					name: compound.name,
+					checkFailed: true,
+					fields: []
+				}
+			} else {
+				return {
+					id: id,
+					name: compound.name,
+					checkFailed: false,
+					fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.config)
+				}
+			}
+		})
+
+		return {
+			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.config),
+			showStyles: showStyleWarnings
+		}
+	}
 }
 
 class ServerRundownAPIClass implements NewRundownAPI {
-	removeRundownPlaylist (playlistId: RundownPlaylistId) {
+	removeRundownPlaylist(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(playlistId))
 	}
-	resyncRundownPlaylist (playlistId: RundownPlaylistId) {
+	resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(playlistId))
 	}
-	rundownPlaylistNeedsResync (playlistId: RundownPlaylistId) {
+	rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(playlistId))
 	}
-	removeRundown (rundownId: RundownId) {
+	rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
+		return makePromise(() => ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(playlistId))
+	}
+	removeRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.removeRundown(rundownId))
 	}
-	resyncRundown (rundownId: RundownId) {
+	resyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(rundownId))
 	}
-	unsyncRundown (rundownId: RundownId) {
+	unsyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.unsyncRundown(rundownId))
 	}
 }
