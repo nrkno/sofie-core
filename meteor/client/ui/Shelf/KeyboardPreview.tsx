@@ -330,9 +330,12 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 					let customLabel: string | undefined = undefined
 					let customSourceLayer: SourceLayerType | undefined = undefined
 
-					if (this.props.customLabels[thisCombo]) {
-						customLabel = this.props.customLabels[thisCombo].label
-						customSourceLayer = this.props.customLabels[thisCombo].sourceLayerType
+					if (this.props.customLabels[thisCombo.toLowerCase()]) {
+						customLabel = this.props.customLabels[thisCombo.toLowerCase()].label
+						customSourceLayer = this.props.customLabels[thisCombo.toLowerCase()].sourceLayerType
+					} else if (this.props.customLabels[thisCombo.toUpperCase()]) {
+						customLabel = this.props.customLabels[thisCombo.toUpperCase()].label
+						customSourceLayer = this.props.customLabels[thisCombo.toUpperCase()].sourceLayerType
 					}
 
 					return <div
