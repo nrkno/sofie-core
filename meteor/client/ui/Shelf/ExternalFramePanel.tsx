@@ -212,7 +212,7 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 
 			targetRundown = Rundowns.findOne(currentPart.rundownId)
 		} else {
-			targetRundown = playlist.getRundowns[0]
+			targetRundown = playlist.getRundowns()[0]
 		}
 
 		if (!targetRundown) {
