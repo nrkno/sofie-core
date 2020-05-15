@@ -35,7 +35,7 @@ import { PartInstance, PartInstances } from '../../../lib/collections/PartInstan
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibActionCommon } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 
 interface IListViewPropsHeader {
@@ -388,9 +388,11 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isGlobal?: boolean
 	isHidden?: boolean
 	isSticky?: boolean
+	isAction?: boolean
 	isFunction?: boolean
 	isClearSourceLayer?: boolean
 	userData?: any
+	adlibAction?: AdLibActionCommon
 }
 
 export interface AdlibSegmentUi extends DBSegment {
@@ -689,7 +691,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 						}))
 					)
 
-				const globalAdLibActions = memoizedIsolatedAutorun((rundownIds, partIds) =>
+				const globalAdLibActions = memoizedIsolatedAutorun((rundownIds) =>
 					AdLibActions.find({
 						rundownId: {
 							$in: rundownIds,
@@ -935,11 +937,11 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-			if (adlibPiece.isFunction) {
+			if (adlibPiece.isAction) {
 				doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) => MeteorCall.userAction.executeAction(e,
 					this.props.playlist._id, unprotectString(adlibPiece._id), adlibPiece.userData
 				))
-			} else if (!adlibPiece.isGlobal && !adlibPiece.isFunction) {
+			} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
 				doUserAction(t, e, UserAction.START_ADLIB, (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
 					this.props.playlist._id, currentPartInstanceId, adlibPiece._id, queue || false
 				))
