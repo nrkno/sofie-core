@@ -12,7 +12,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { literal, protectString } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
@@ -198,20 +198,25 @@ export const ExternalFramePanel = translate()(class ExternalFramePanel extends R
 		}
 
 		let targetRundown: Rundown | undefined
-		let currentPart
+		let currentPart: PartInstance | undefined
 		if (playlist.currentPartInstanceId || playlist.nextPartInstanceId) {
 			if (playlist.currentPartInstanceId !== null) {
 				currentPart = PartInstances.findOne(playlist.currentPartInstanceId)
 			} else if (playlist.nextPartInstanceId !== null) {
 				currentPart = PartInstances.findOne(playlist.nextPartInstanceId)
 			}
-			targetRundown = Rundowns.findOne(currentPart)
+
+			if (!currentPart) {
+				throw new Meteor.Error(`Selected part could not be found: "${playlist.currentPartInstanceId || playlist.nextPartInstanceId}"`)
+			}
+
+			targetRundown = Rundowns.findOne(currentPart.rundownId)
 		} else {
 			targetRundown = playlist.getRundowns[0]
 		}
 
 		if (!targetRundown) {
-			throw new Meteor.Error('Target rundown could not be found!')
+			throw new Meteor.Error('Target rundown could not be determined!')
 		}
 
 		doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e) =>
