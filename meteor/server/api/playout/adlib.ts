@@ -408,9 +408,8 @@ export namespace ServerPlayoutAdLibAPI {
 				throw new Meteor.Error(403, `Buckete AdLib-pieces can not be used in combination with hold!`)
 			}
 
-			if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
-
 			const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
+			if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
 
 			const currentPartInstance = cache.PartInstances.findOne(rundownPlaylist.currentPartInstanceId)
 			if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
@@ -424,6 +423,8 @@ export namespace ServerPlayoutAdLibAPI {
 
 			const newPieceInstance = convertAdLibToPieceInstance(bucketAdlib, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
+
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 }
