@@ -517,17 +517,6 @@ export function setNextPart (
 					isScratch: 1
 				}
 			})
-
-			// Remove any instances which havent been taken
-			const instancesIdsToRemove = nonTakenPartInstances.map(p => p._id).filter(id => id !== newInstanceId)
-			cache.PartInstances.remove({
-				rundownId: { $in: rundownIds },
-				_id: { $in: instancesIdsToRemove }
-			})
-			cache.PieceInstances.remove({
-				rundownId: { $in: rundownIds },
-				partInstanceId: { $in: instancesIdsToRemove }
-			})
 		}
 
 		// reset any previous instances of this part
@@ -559,20 +548,10 @@ export function setNextPart (
 				nextTimeOffset: nextTimeOffset || null
 			})
 		})
+		rundownPlaylist.nextPartInstanceId = newInstanceId
 
 	} else {
 		// Set to null
-
-		// Remove any instances which havent been taken
-		const instancesIdsToRemove = nonTakenPartInstances.map(p => p._id)
-		cache.PartInstances.remove({
-			rundownId: { $in: rundownIds },
-			_id: { $in: instancesIdsToRemove }
-		})
-		cache.PieceInstances.remove({
-			rundownId: { $in: rundownIds },
-			partInstanceId: { $in: instancesIdsToRemove }
-		})
 
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
 			$set: literal<Partial<RundownPlaylist>>({
@@ -582,6 +561,17 @@ export function setNextPart (
 			})
 		})
 	}
+
+	// Remove any instances which havent been taken
+	const instancesIdsToRemove = nonTakenPartInstances.map(p => p._id).filter(id => id !== rundownPlaylist.nextPartInstanceId && id !== rundownPlaylist.currentPartInstanceId)
+	cache.PartInstances.remove({
+		rundownId: { $in: rundownIds },
+		_id: { $in: instancesIdsToRemove }
+	})
+	cache.PieceInstances.remove({
+		rundownId: { $in: rundownIds },
+		partInstanceId: { $in: instancesIdsToRemove }
+	})
 
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
 		cache.RundownPlaylists.update(rundownPlaylist._id, {

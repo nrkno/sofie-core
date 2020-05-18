@@ -443,7 +443,7 @@ function buildTimelineObjsForRundown(cache: CacheForRundownPlaylist, baselineIte
 
 	if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.currentPartInstanceId}" not found!`)
 
-	if (!previousPartInstance) logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
+	if (!previousPartInstance && activePlaylist.previousPartInstanceId) logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
 
 	if (baselineItems) {
 		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
