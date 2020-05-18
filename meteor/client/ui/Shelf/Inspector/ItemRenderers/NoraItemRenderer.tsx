@@ -5,8 +5,9 @@ import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
+import { translate, InjectedTranslateProps } from 'react-i18next'
 
-export { NoraItemRenderer, isNoraItem }
+export { isNoraItem }
 
 interface INoraSuperRendererProps {
 	piece: AdLibPieceUi | PieceUi
@@ -16,8 +17,8 @@ interface INoraSuperRendererState {
 	editMode: boolean
 }
 
-class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSuperRendererState> {
-	constructor(props: INoraSuperRendererProps) {
+export default translate()(class NoraItemRenderer extends React.Component<INoraSuperRendererProps & InjectedTranslateProps, INoraSuperRendererState> {
+	constructor(props: INoraSuperRendererProps & InjectedTranslateProps) {
 		super(props)
 
 		this.state = {
@@ -30,7 +31,7 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 	}
 
 	render() {
-		const { piece } = this.props
+		const { piece, t } = this.props
 
 		const actualPiece = RundownUtils.isAdLibPiece(piece) ?
 			piece :
@@ -47,14 +48,14 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 		return (
 			<div className='shelf-inspector__content'>
 				<h2>{actualPiece.name}</h2>
-				<button className='btn btn-primary' disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>Edit</button>
+				<button className='btn btn-primary' disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>{t('Edit')}</button>
 				<Modal {...modalProps}>
 					<NoraItemEditor piece={actualPiece} />
 				</Modal>
 			</div>
 		)
 	}
-}
+})
 
 function isNoraItem(item: AdLibPieceUi | PieceUi): boolean {
 	const content = RundownUtils.isAdLibPiece(item) ?
