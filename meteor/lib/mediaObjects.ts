@@ -2,13 +2,13 @@ import * as _ from 'underscore'
 import {
 	VTContent,
 	SourceLayerType,
-	ISourceLayer
+	ISourceLayer,
+	IBlueprintPieceGeneric
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings } from './collections/Studios'
-import { InternalIBlueprintPieceGeneric } from './collections/Pieces'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -97,7 +97,7 @@ export function getAcceptedFormats (settings: IStudioSettings | undefined): Arra
 		}))
 }
 
-export function getMediaObjectMediaId (piece: InternalIBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
@@ -109,7 +109,7 @@ export function getMediaObjectMediaId (piece: InternalIBlueprintPieceGeneric, so
 	return undefined
 }
 
-export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, sourceLayer: ISourceLayer | undefined, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
+export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer | undefined, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null

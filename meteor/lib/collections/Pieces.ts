@@ -15,10 +15,9 @@ import { RundownId } from './Rundowns'
 
 /** A string, identifying a Piece */
 export type PieceId = ProtectedString<'PieceId'>
-export type InternalIBlueprintPieceGeneric = ProtectedStringProperties<IBlueprintPieceGeneric, 'partId'>
 
 /** A Single item in a Part: script, VT, cameras */
-export interface PieceGeneric extends InternalIBlueprintPieceGeneric {
+export interface PieceGeneric extends IBlueprintPieceGeneric {
 	// ------------------------------------------------------------------
 	_id: PieceId
 	/** ID of the source object in MOS */

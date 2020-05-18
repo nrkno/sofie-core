@@ -8,7 +8,7 @@ import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
 import { BucketId } from './Buckets'
 
-export interface AdLibPiece extends PieceGeneric, Omit<IBlueprintAdLibPiece, 'partId'> {
+export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 
