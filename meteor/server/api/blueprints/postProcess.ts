@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { Piece, InternalIBlueprintPieceGeneric } from '../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { extendMandadory, getHash, protectString, unprotectString, Omit, literal } from '../../../lib/lib'
