@@ -99,12 +99,18 @@ export function ensureCollectionProperty<T = any> (
 		dependOnResultFrom: dependOnResultFrom
 	}
 }
+function getMinVersion (versionStr: string | undefined): string {
+	return (semver.minVersion(versionStr || '0.0.0') || { version: '0.0.0' }).version
+}
 
-export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string): MigrationStepBase {
+
+export function setExpectedVersion (id: string, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string): MigrationStepBase {
 	return {
 		id: id,
 		canBeRunAutomatically: true,
 		validate: () => {
+			const minVersion = getMinVersion(versionStr)
+
 			let devices = PeripheralDevices.find({
 				type: deviceType,
 				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
@@ -114,11 +120,12 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 				let device = devices[i]
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
+				const expectedVersion = device.expectedVersions[libraryName] || '0.0.0'
+				const minExpectedVersion = getMinVersion(expectedVersion)
 
 				if (expectedVersion) {
 					try {
-						if (semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
+						if (semver.lt(minExpectedVersion, minVersion)) {
 							return `Expected version ${libraryName}: ${expectedVersion} should be at least ${versionStr}`
 						}
 					} catch (e) {
@@ -130,12 +137,15 @@ export function setExpectedVersion (id, deviceType: PeripheralDeviceAPI.DeviceTy
 		},
 		migrate: () => {
 			let devices = PeripheralDevices.find({ type: deviceType }).fetch()
+			const minVersion = getMinVersion(versionStr)
 
 			_.each(devices, (device) => {
 				if (!device.expectedVersions) device.expectedVersions = {}
 
-				let expectedVersion = semver.clean(device.expectedVersions[libraryName] || '0.0.0')
-				if (!expectedVersion || semver.lt(expectedVersion, semver.clean(versionStr) || '0.0.0')) {
+				const expectedVersion = device.expectedVersions[libraryName] || '0.0.0'
+				const minExpectedVersion = getMinVersion(expectedVersion)
+
+				if (!expectedVersion || semver.lt(minExpectedVersion, minVersion)) {
 					let m = {}
 					m['expectedVersions.' + libraryName] = versionStr
 					logger.info(`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`)

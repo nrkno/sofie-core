@@ -297,9 +297,9 @@ function getTimelineRundown (studio: Studio, playoutData: RundownPlaylistPlayout
 						objectType: TimelineObjType.RUNDOWN,
 						enable: { start: 0 },
 						layer: id,
-						metadata: {
+						metaData: {
 							versions: {
-								core: PackageInfo.version,
+								core: PackageInfo.versionExtended || PackageInfo.version,
 								blueprintId: studio.blueprintId,
 								blueprintVersion: blueprint.blueprintVersion,
 								studio: studio._rundownVersionHash,
@@ -503,6 +503,15 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 		}
 		currentPartGroup = createPartGroup(currentPartInstance, currentPartEnable)
 
+		const nextPartInfinites: { [infiniteId: string]: PieceInstance | undefined } = {}
+		if (currentPartInstance.part.autoNext && nextPartInstance) {
+			nextPartInstance.getAllPieceInstances().forEach(piece => {
+				if (piece.piece.infiniteId) {
+					nextPartInfinites[unprotectString(piece.piece.infiniteId)] = piece
+				}
+			})
+		}
+
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
 			const infiniteGroup = createPartGroup(currentPartInstance, {
@@ -536,6 +545,14 @@ function buildTimelineObjsForRundown (playoutData: RundownPlaylistPlayoutData, b
 							infiniteGroup.enable.duration = offsetTimelineEnableExpression(piece.piece.userDuration.duration, previousPartsDuration)
 						}
 					}
+				}
+
+				// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
+				const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) => enable.duration !== undefined || enable.end !== undefined
+				const infiniteInNextPart = nextPartInfinites[unprotectString(piece.piece.infiniteId)]
+				if (infiniteInNextPart && !hasDurationOrEnd(infiniteGroup.enable) && hasDurationOrEnd(infiniteInNextPart.piece.enable)) {
+					infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
+					infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
 				}
 			}
 
@@ -722,17 +739,6 @@ function transformPartIntoTimeline (
 					pieceInstance.piece.enable.start = `#${getPieceGroupId(unprotectObject(transition.piece))}.start ${transitionContentsDelayStr}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 					pieceInstance.piece.enable.start = Math.max(0, transitionPieceDelay)
-				}
-			}
-
-			if (pieceInstance.piece.infiniteId && pieceInstance.piece.infiniteId === pieceInstance.piece._id) {
-				if (
-					pieceInstance.piece.enable.start &&
-					isNumber(pieceInstance.piece.enable.start) &&
-					pieceInstance.piece.enable.start > 0 &&
-					pieceInstance.piece.startedPlayback
-				) {
-					pieceInstance.piece.enable.start = 0
 				}
 			}
 

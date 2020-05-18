@@ -285,7 +285,6 @@ function updateRundownFromIngestData (
 		message: note.message,
 		origin: {
 			name: `${showStyle.base.name}-${showStyle.variant.name}`,
-			rundownId: rundownId,
 		}
 	}))
 
@@ -307,7 +306,7 @@ function updateRundownFromIngestData (
 				showStyleBase: showStyle.base._rundownVersionHash,
 				showStyleVariant: showStyle.variant._rundownVersionHash,
 				blueprint: showStyleBlueprintDb.blueprintVersion,
-				core: PackageInfo.version,
+				core: PackageInfo.versionExtended || PackageInfo.version,
 			},
 
 			// omit the below fields:
@@ -347,7 +346,6 @@ function updateRundownFromIngestData (
 
 	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
 
-	// TODO-ASAP - wont this wipe out any existing playlist data?
 	const playlistChanges = saveIntoDb(RundownPlaylists, {
 		_id: rundownPlaylistInfo.rundownPlaylist._id
 	}, [rundownPlaylistInfo.rundownPlaylist], {
@@ -452,36 +450,7 @@ function updateRundownFromIngestData (
 			rundownId: dbRundown._id
 		}, adlibItems),
 
-		// Update Segments:
-		savePreparedChanges(prepareSaveSegments, Segments, {
-			afterInsert (segment) {
-				logger.info('inserted segment ' + segment._id)
-			},
-			afterUpdate (segment) {
-				logger.info('updated segment ' + segment._id)
-			},
-			afterRemove (segment) {
-				logger.info('removed segment ' + segment._id)
-			},
-			afterRemoveAll (segments) {
-				afterRemoveSegments(rundownId, _.map(segments, s => s._id))
-			}
-		}),
-
-		savePreparedChanges<Part, DBPart>(prepareSaveParts, Parts, {
-			afterInsert (part) {
-				logger.debug('inserted part ' + part._id)
-			},
-			afterUpdate (part) {
-				logger.debug('updated part ' + part._id)
-			},
-			afterRemove (part) {
-				logger.debug('deleted part ' + part._id)
-			},
-			afterRemoveAll (parts) {
-				afterRemoveParts(rundownId, parts)
-			}
-		}),
+		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
 
 		savePreparedChanges<Piece, Piece>(prepareSavePieces, Pieces, {
 			afterInsert (piece) {
@@ -506,6 +475,36 @@ function updateRundownFromIngestData (
 			},
 			afterRemove (adLibPiece) {
 				logger.debug('deleted piece ' + adLibPiece._id)
+			}
+		}),
+		savePreparedChanges<Part, DBPart>(prepareSaveParts, Parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
+			afterRemoveAll (parts) {
+				afterRemoveParts(rundownId, parts)
+			}
+		}),
+
+		// Update Segments:
+		savePreparedChanges(prepareSaveSegments, Segments, {
+			afterInsert (segment) {
+				logger.info('inserted segment ' + segment._id)
+			},
+			afterUpdate (segment) {
+				logger.info('updated segment ' + segment._id)
+			},
+			afterRemove (segment) {
+				logger.info('removed segment ' + segment._id)
+			},
+			afterRemoveAll (segments) {
+				afterRemoveSegments(rundownId, _.map(segments, s => s._id))
 			}
 		})
 	)
@@ -719,30 +718,15 @@ function updateSegmentFromIngestData (
 
 	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(context, blueprintId, ingestSegment, existingSegment, existingParts, res)
 
-	waitForPromise(Promise.all([
-
-		// Update segment info:
-		asyncCollectionUpsert(Segments, {
-			_id: segmentId,
-			rundownId: rundown._id
-		}, newSegment),
-
-		// Move over parts from other segments:
-		asyncCollectionUpdate(Parts, {
-			rundownId: rundown._id,
-			segmentId: { $ne: segmentId },
-			dynamicallyInserted: { $ne: true },
-			_id: { $in: _.pluck(parts, '_id') }
-		}, { $set: {
-			segmentId: segmentId
-		}}, {
-			multi: true
-		})
-	]))
-
 	const prepareSaveParts = prepareSaveIntoDb<Part, DBPart>(Parts, {
 		rundownId: rundown._id,
-		segmentId: segmentId,
+		$or: [{
+			// The parts in this Segment:
+			segmentId: segmentId,
+		}, {
+			// Move over parts from other segments
+			_id: { $in: _.pluck(parts, '_id') }
+		}],
 		dynamicallyInserted: { $ne: true } // do not affect dynamically inserted parts (such as adLib parts)
 	}, parts)
 	const prepareSavePieces = prepareSaveIntoDb<Piece, Piece>(Pieces, {
@@ -761,21 +745,15 @@ function updateSegmentFromIngestData (
 		return null
 	}
 
+	// Update segment info:
+	const p = asyncCollectionUpsert(Segments, {
+		_id: segmentId,
+		rundownId: rundown._id
+	}, newSegment)
+	
 	const changes = sumChanges(
-		savePreparedChanges<Part, DBPart>(prepareSaveParts, Parts, {
-			afterInsert (part) {
-				logger.debug('inserted part ' + part._id)
-			},
-			afterUpdate (part) {
-				logger.debug('updated part ' + part._id)
-			},
-			afterRemove (part) {
-				logger.debug('deleted part ' + part._id)
-			},
-			afterRemoveAll (parts) {
-				afterRemoveParts(rundown._id, parts)
-			}
-		}),
+		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
+
 		savePreparedChanges<Piece, Piece>(prepareSavePieces, Pieces, {
 			afterInsert (piece) {
 				logger.debug('inserted piece ' + piece._id)
@@ -799,8 +777,23 @@ function updateSegmentFromIngestData (
 			afterRemove (adLibPiece) {
 				logger.debug('deleted adLibPiece ' + adLibPiece._id)
 			}
+		}),
+		savePreparedChanges<Part, DBPart>(prepareSaveParts, Parts, {
+			afterInsert (part) {
+				logger.debug('inserted part ' + part._id)
+			},
+			afterUpdate (part) {
+				logger.debug('updated part ' + part._id)
+			},
+			afterRemove (part) {
+				logger.debug('deleted part ' + part._id)
+			},
+			afterRemoveAll (parts) {
+				afterRemoveParts(rundown._id, parts)
+			}
 		})
 	)
+	waitForPromise(p)
 
 	syncChangesToSelectedPartInstances(rundown.getRundownPlaylist(), parts, segmentPieces)
 
@@ -924,8 +917,6 @@ function generateSegmentContents (
 		message: note.message,
 		origin: {
 			name: '', // TODO
-			rundownId,
-			segmentId
 		}
 	}))
 
@@ -953,12 +944,8 @@ function generateSegmentContents (
 			message: note.message,
 			origin: {
 				name: '', // TODO
-				rundownId,
-				segmentId,
-				partId
 			}
 		}))
-		_.each(notes, note => note.origin.partId = partId)
 
 		const existingPart = _.find(existingParts, p => p._id === partId)
 		const part = literal<DBPart>({

@@ -66,7 +66,7 @@ function findPieceInstanceToShow (props: IPropsHeader, supportedLayers: Set<Sour
 export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT ])
 	return findPieceInstanceToShow(props, supportedLayers)
-})(class extends MeteorReactComponent<INamePropsHeader & { sourceLayer: ISourceLayer, pieceInstance: PieceInstance }> {
+})(class PieceNameContainer extends MeteorReactComponent<INamePropsHeader & { sourceLayer: ISourceLayer, pieceInstance: PieceInstance }> {
 	componentWillMount () {
 		this.subscribe(PubSub.pieceInstancesSimple, {
 			rundownId: { $in: this.props.rundownIds }
@@ -92,7 +92,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	const supportedLayers = new Set([ SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.REMOTE, SourceLayerType.SPLITS, SourceLayerType.VT, SourceLayerType.CAMERA ])
 	return findPieceInstanceToShow(props, supportedLayers)
-})(class extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, pieceInstance: PieceInstance }> {
+})(class PieceIconContainer extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, pieceInstance: PieceInstance }> {
 	componentWillMount () {
 		this.subscribe(PubSub.pieceInstancesSimple, {
 			rundownId: { $in: this.props.rundownIds }

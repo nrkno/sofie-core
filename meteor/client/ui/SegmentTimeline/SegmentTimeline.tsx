@@ -101,7 +101,7 @@ interface IZoomStateHeader {
 	totalSegmentDuration: number
 }
 
-const SegmentTimelineZoom = class extends React.Component<IProps & IZoomPropsHeader, IZoomStateHeader> {
+const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<IProps & IZoomPropsHeader, IZoomStateHeader> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}

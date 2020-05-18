@@ -223,7 +223,7 @@ interface IState {
 	dismissed: boolean
 }
 
-export const ConnectionStatusNotification = translate()(class extends React.Component<Translated<IProps>, IState> {
+export const ConnectionStatusNotification = translate()(class ConnectionStatusNotification extends React.Component<Translated<IProps>, IState> {
 	private notifier: ConnectionStatusNotifier
 
 	constructor (props: Translated<IProps>) {

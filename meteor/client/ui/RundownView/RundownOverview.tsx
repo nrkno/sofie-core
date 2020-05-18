@@ -24,7 +24,7 @@ interface ISegmentPropsHeader {
 	segment: SegmentUi
 	playlist: RundownPlaylist
 	totalDuration: number
-	segmentLiveDurations: TimeMap
+	partLiveDurations: TimeMap
 	segmentStartsAt?: TimeMap
 }
 
@@ -74,7 +74,7 @@ const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
 }
 
 const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
-	const segmentDuration = props.segmentLiveDurations ? props.segment.items.map((i) => props.segmentLiveDurations[unprotectString(i.instance.part._id)]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
+	const segmentDuration = props.partLiveDurations ? props.segment.items.map((i) => props.partLiveDurations[unprotectString(i.instance.part._id)]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
 
 	return props.segment.items && (
 		<div className={ClassNames('rundown__overview__segment', {
@@ -88,7 +88,7 @@ const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHea
 					<PartOverview part={item}
 						key={unprotectString(item.instance._id)}
 						totalDuration={props.totalDuration}
-						segmentLiveDurations={props.segmentLiveDurations}
+						segmentLiveDurations={props.partLiveDurations}
 						segmentStartsAt={props.segmentStartsAt}
 						isLive={props.playlist.currentPartInstanceId === item.instance._id}
 						isNext={props.playlist.nextPartInstanceId === item.instance._id}
@@ -171,9 +171,10 @@ withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverv
 		playlist
 	}
 })(
-class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
+class RundownOverview extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
 	render () {
 		if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
+			const playlist = this.props.playlist
 			return (<ErrorBoundary>
 				<div className='rundown__overview'>
 				{
@@ -181,9 +182,9 @@ class extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOver
 						return <SegmentOverview
 							segment={item}
 							key={unprotectString(item._id)}
-							totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.playlist!.expectedDuration || 1)}
-							segmentLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
-							playlist={this.props.playlist!}
+							totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asDisplayedRundownDuration) || 1, playlist.expectedDuration || 1)}
+							partLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
+							playlist={playlist}
 							segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.partStartsAt) || {}}
 							/>
 					})

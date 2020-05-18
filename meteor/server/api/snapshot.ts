@@ -1,7 +1,5 @@
 import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
-// @ts-ignore Meteor package not recognized by Typescript
-import { Picker } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import * as bodyParser from 'body-parser'
@@ -74,6 +72,9 @@ import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
+import { PickerPOST, PickerGET } from './http'
+import { getPartId, getSegmentId } from './ingest/lib'
+
 
 interface DeprecatedRundownSnapshot { // Old, from the times before rundownPlaylists
 	version: string
@@ -475,7 +476,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 
 	// Then, continue as if it's a normal snapshot:
 
-	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot`)
+	if (!snapshot.snapshot) throw new Meteor.Error(500, `Restore input data is not a snapshot (${_.keys(snapshot)})`)
 
 	if (snapshot.snapshot.type === SnapshotType.RUNDOWN) { // A snapshot of a rundown (to be deprecated)
 		if ((snapshot as RundownPlaylistSnapshot).playlistId) { // temporary check, from snapshots where the type was rundown, but it actually was a rundownPlaylist
@@ -566,6 +567,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 			rd.unsyncedTime = getCurrentTime()
 		}
 
+		rd.playlistId = playlistId
 		rd.restoredFromSnapshotId = rd._id
 		rd.peripheralDeviceId = snapshot.playlist.peripheralDeviceId
 		rd.studioId = snapshot.playlist.studioId
@@ -580,6 +582,10 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 		}
 	})
 
+	const getNewRundownId = (oldRundownId: RundownId) => {
+		return rundownIdMap[unprotectString(oldRundownId)]
+	}
+
 	// List any ids that need updating on other documents
 	const rundownIdMap: { [key: string]: RundownId } = {}
 	_.each(snapshot.rundowns, rd => {
@@ -589,7 +595,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	const partIdMap: { [key: string]: PartId } = {}
 	_.each(snapshot.parts, part => {
 		const oldId = part._id
-		partIdMap[unprotectString(oldId)] = part._id = getRandomId()
+		partIdMap[unprotectString(oldId)] = part._id = getPartId(getNewRundownId(part.rundownId), part.externalId)
 	})
 	const partInstanceIdMap: { [key: string]: PartInstanceId } = {}
 	_.each(snapshot.partInstances, partInstance => {
@@ -600,7 +606,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	const segmentIdMap: { [key: string]: SegmentId } = {}
 	_.each(snapshot.segments, segment => {
 		const oldId = segment._id
-		segmentIdMap[unprotectString(oldId)] = segment._id = getRandomId()
+		segmentIdMap[unprotectString(oldId)] = segment._id = getSegmentId(getNewRundownId(segment.rundownId), segment.externalId)
 	})
 	const pieceIdMap: { [key: string]: PieceId } = {}
 	_.each(snapshot.pieces, piece => {
@@ -690,7 +696,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(MediaObjects, { _id: { $in: _.map(snapshot.mediaObjects, mediaObject => mediaObject._id) } }, snapshot.mediaObjects)
 	saveIntoDb(ExpectedMediaItems, { partId: { $in: protectStringArray(_.keys(partIdMap)) } }, updateItemIds(snapshot.expectedMediaItems, true))
-	saveIntoDb(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.expectedPlayoutItems, true))
+	saveIntoDb(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.expectedPlayoutItems || [], true))
 
 	logger.info(`Restore done`)
 }
@@ -777,69 +783,46 @@ export function removeSnapshot (context: MethodContext, snapshotId: SnapshotId) 
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
-	Picker.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, () => {
 			check(params.studioId, Match.Optional(String))
-			return createSystemSnapshot(protectString(params.studioId), null)
+
+			const cred0: Credentials = { token: params.token }
+			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+
+			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
 	})
-	Picker.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, () => {
 			check(params.playlistId, String)
-			return createRundownPlaylistSnapshot(protectString(params.playlistId), null)
+
+			const cred0: Credentials = { token: params.token }
+			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
+			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
+			StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
+
+			return createRundownPlaylistSnapshot(playlist._id, organizationId)
 		})
 	})
-	Picker.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, () => {
 			check(params.studioId, String)
-			return createDebugSnapshot(protectString(params.studioId), null)
+
+			const cred0: Credentials = { token: params.token }
+			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+
+			return createDebugSnapshot(protectString(params.studioId), organizationId)
 		})
 	})
 }
-Picker.route('/snapshot/:token/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
-	return handleResponse(response, () => {
-		check(params.studioId, Match.Optional(String))
-
-		const cred0: Credentials = { token: params.token }
-		const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-		StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
-
-		return createSystemSnapshot(protectString(params.studioId), organizationId)
-	})
-})
-Picker.route('/snapshot/:token/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
-	return handleResponse(response, () => {
-		check(params.playlistId, String)
-
-		const cred0: Credentials = { token: params.token }
-		const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-		const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
-		StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
-
-		return createRundownPlaylistSnapshot(playlist._id, organizationId)
-	})
-})
-Picker.route('/snapshot/:token/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
-	return handleResponse(response, () => {
-		check(params.studioId, String)
-
-		const cred0: Credentials = { token: params.token }
-		const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-		StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
-
-		return createDebugSnapshot(protectString(params.studioId), organizationId)
-	})
-})
-const postRoute = Picker.filter((req) => req.method === 'POST')
-postRoute.middleware(bodyParser.json({
-	limit: '15mb' // Arbitrary limit
-}))
-postRoute.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse) => {
-	response.setHeader('Content-Type', 'text/plain')
-
-	let content = ''
+PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse) => {
+	let content = 'ok'
 	try {
+		response.setHeader('Content-Type', 'text/plain')
 		let snapshot = (req as any).body
 		if (typeof snapshot !== 'object') { // sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
 			snapshot = JSON.parse(snapshot)
@@ -863,7 +846,7 @@ if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
 	// Retrieve snapshot:
-	Picker.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, () => {
 			check(params.snapshotId, String)
 			return retreiveSnapshot(protectString(params.snapshotId), {})
@@ -871,7 +854,7 @@ if (!Settings.enableUserAccounts) {
 	})
 }
 // Retrieve snapshot:
-Picker.route('/snapshot/:token/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
+PickerGET.route('/snapshot/:token/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.snapshotId, String)
 		return retreiveSnapshot(protectString(params.snapshotId), { token: params.token })

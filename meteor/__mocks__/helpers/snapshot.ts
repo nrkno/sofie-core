@@ -51,12 +51,12 @@ export function fixSnapshot (
 
 			}
 			if (
-				o.metadata &&
-				o.metadata.versions &&
-				o.metadata.versions.core
+				o.metaData &&
+				o.metaData.versions &&
+				o.metaData.versions.core
 			) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
-				o.metadata.versions.core = '0.0.0-test'
+				o.metaData.versions.core = '0.0.0-test'
 			}
 		} else if (isPlaylist(o)) {
 			delete o['created']

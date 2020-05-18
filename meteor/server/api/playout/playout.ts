@@ -1039,7 +1039,7 @@ export namespace ServerPlayoutAPI {
 							libSetNextPart(playlist, nextPart ? nextPart.part : null)
 						}
 
-						// TODO-ASAP - should this even change the next?
+						// TODO - should this even change the next?
 						logger.error(`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`)
 					}
 
@@ -1282,10 +1282,11 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metadata && timelineObj.metadata.pieceId) {
-			logger.debug('Update PieceInstance: ', timelineObj.metadata.pieceId, (new Date(time)).toTimeString())
+		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metaData && timelineObj.metaData.pieceId) {
+			logger.debug('Update PieceInstance: ', timelineObj.metaData.pieceId, (new Date(time)).toTimeString())
+
 			PieceInstances.update({
-				_id: timelineObj.metadata.pieceId,
+				_id: timelineObj.metaData.pieceId,
 				rundownId: { $in: activeRundownIds }
 			}, {
 				$set: {
@@ -1294,7 +1295,7 @@ export namespace ServerPlayoutAPI {
 			})
 
 			const pieceInstance = PieceInstances.findOne({
-				_id: timelineObj.metadata.pieceId,
+				_id: timelineObj.metaData.pieceId,
 				rundownId: { $in: activeRundownIds }
 			})
 			if (pieceInstance) {
@@ -1347,9 +1348,9 @@ export namespace ServerPlayoutAPI {
 			const markerObject = Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'
 
-			const versionsContent = (markerObject.metadata || {}).versions || {}
+			const versionsContent = (markerObject.metaData || {}).versions || {}
 
-			if (versionsContent.core !== PackageInfo.version) return 'coreVersion'
+			if (versionsContent.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
 
 			if (versionsContent.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 

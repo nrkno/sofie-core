@@ -37,6 +37,7 @@ export interface SnapshotItem extends SnapshotBase {
 
 	studioId?: StudioId
 	rundownId?: RundownId
+	playlistId?: RundownPlaylistId
 }
 
 export interface DeprecatedSnapshotRundown extends SnapshotBase { // From the times before rundownPlaylists

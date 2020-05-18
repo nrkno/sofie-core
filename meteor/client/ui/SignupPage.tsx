@@ -157,7 +157,7 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 									id={`applications-${i}`} 
 									type='checkbox' 
 									name='applications' 
-									checked={this.state.applications.includes(a)}
+									checked={this.state.applications.indexOf(a) === -1}
 									value={a}
 									onChange={this.handleChange}
 								/>
@@ -179,7 +179,7 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 									id={`mediums-${i}`} 
 									type='checkbox' 
 									name='broadcastMediums' 
-									checked={this.state.broadcastMediums.includes(a)}
+									checked={this.state.broadcastMediums.indexOf(a) === -1}
 									value={a}
 									onChange={this.handleChange}
 								/>

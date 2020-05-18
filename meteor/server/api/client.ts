@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -25,7 +25,7 @@ export namespace ServerClientAPI {
 		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${methodContext.connection ? methodContext.connection.clientAddress : 'N/A'}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
 	}
 
-	export function runInUserLog<Result> (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => Result): Result {
+	export function runInUserLog<Result> (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => Result | Promise<Result>): Result {
 		let startTime = Date.now()
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
@@ -33,7 +33,7 @@ export namespace ServerClientAPI {
 		if (!methodContext.connection) {
 			// Called internally from server-side.
 			// Just run and return right away:
-			return fcn()
+			return waitForPromise(Promise.resolve(fcn()))
 		}
 
 		let actionId: UserActionsLogItemId = getRandomId()
@@ -52,6 +52,10 @@ export namespace ServerClientAPI {
 		}))
 		try {
 			let result = fcn()
+
+			if (isPromise(result)) {
+				result = waitForPromise(result) as Result
+			}
 
 			// check the nature of the result
 			if (

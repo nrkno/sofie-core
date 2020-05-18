@@ -57,7 +57,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		status,
 		metadata
 	}
-})(class extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
+})(class DashboardPieceButton extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
 	private objId: string
 
 	constructor (props: IDashboardButtonProps) {

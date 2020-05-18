@@ -137,7 +137,7 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 					} else if (!versionStr) {
 						statusCode = StatusCode.BAD
 						messages.push(`${libraryName}: Expected version ${expectedVersionStr}, got undefined`)
-					} else if (semver.satisfies(version, expectedVersion)) {
+					} else if (!semver.satisfies(version, expectedVersion)) {
 						statusCode = StatusCode.BAD
 
 						let message = `Version for ${libraryName}: "${versionStr}" does not satisy expected version "${expectedVersionStr}"`
@@ -309,7 +309,7 @@ function collectMesages (statusObj: StatusResponse): Array<string> {
 	}
 	return allMessages
 }
-function status2ExternalStatus (statusCode: StatusCode): ExternalStatus {
+export function status2ExternalStatus (statusCode: StatusCode): ExternalStatus {
 	if (statusCode === StatusCode.GOOD) {
 		return 'OK'
 	} else if (
