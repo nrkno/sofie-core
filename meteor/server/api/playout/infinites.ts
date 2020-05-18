@@ -30,8 +30,6 @@ import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
-// export const updateSourceLayerInfinitesAfterPart: (rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean) => void
-// = syncFunctionIgnore(updateSourceLayerInfinitesAfterPartInner)
 export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlaylist, rundown: Rundown, previousPart?: Part, runUntilEnd?: boolean): void {
 	let activeInfinitePieces: { [layer: string]: Piece } = {}
 	let activeInfiniteItemsSegmentId: { [layer: string]: SegmentId } = {}
@@ -136,7 +134,7 @@ export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlayl
 		let oldInfiniteContinuation: PieceId[] = []
 		let newInfiniteContinations: Piece[] = []
 		for (let k in activeInfinitePieces) {
-			let newPiece: Piece = activeInfinitePieces[k]
+			let newPiece: Piece = _.clone(activeInfinitePieces[k])
 
 			let existingPiece: PieceResolved | undefined = undefined
 			let allowInsert: boolean = true
@@ -277,7 +275,7 @@ export function updateSourceLayerInfinitesAfterPart (cache: CacheForRundownPlayl
 	}
 }
 
-export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (cache: CacheForRundownPlaylist, rundown: Rundown, partInstance: PartInstance, newPieceInstance: PieceInstance) {
+export function cropInfinitesOnLayer (cache: CacheForRundownPlaylist, rundown: Rundown, partInstance: PartInstance, newPieceInstance: PieceInstance) {
 	const showStyleBase = rundown.getShowStyleBase()
 	const exclusiveGroup = _.find(showStyleBase.sourceLayers, sl => sl._id === newPieceInstance.piece.sourceLayerId)
 	const newItemExclusivityGroup = exclusiveGroup ? exclusiveGroup.exclusiveGroup : undefined
@@ -306,9 +304,9 @@ export const cropInfinitesOnLayer = syncFunction(function cropInfinitesOnLayer (
 			}})
 		}
 	}
-})
+}
 
-export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRunningOnLayer (cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, rundown: Rundown, partInstance: PartInstance, sourceLayer: string) {
+export function stopInfinitesRunningOnLayer (cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, rundown: Rundown, partInstance: PartInstance, sourceLayer: string) {
 	// TODO-PartInstance - pending new data flow for this whole function
 
 
@@ -337,4 +335,4 @@ export const stopInfinitesRunningOnLayer = syncFunction(function stopInfinitesRu
 
 	// ensure adlib is extended correctly if infinite
 	updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
-})
+}
