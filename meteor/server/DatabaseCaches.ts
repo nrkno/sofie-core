@@ -220,7 +220,7 @@ async function fillCacheForRundownPlaylistWithData (cache: CacheForRundownPlayli
 
 	await Promise.all(ps)
 }
-export async function initCacheForRundownPlaylist (playlist: RundownPlaylist, extendFromCache?: CacheForStudio, initializeImmediately: boolean = true) {
+export async function initCacheForRundownPlaylist (playlist: RundownPlaylist, extendFromCache?: CacheForStudio, initializeImmediately: boolean = true): Promise<CacheForRundownPlaylist> {
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(playlist.studioId, initializeImmediately)
 	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(playlist.studioId, playlist._id)
 	if (extendFromCache) {
@@ -230,7 +230,7 @@ export async function initCacheForRundownPlaylist (playlist: RundownPlaylist, ex
 	return cache
 }
 /** Cache for playout, but there is no playlist playing */
-export async function initCacheForNoRundownPlaylist (studioId: StudioId, extendFromCache?: CacheForStudio, initializeImmediately: boolean = true) {
+export async function initCacheForNoRundownPlaylist (studioId: StudioId, extendFromCache?: CacheForStudio, initializeImmediately: boolean = true): Promise<CacheForRundownPlaylist> {
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(studioId, initializeImmediately)
 	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''))
 	if (extendFromCache) {
