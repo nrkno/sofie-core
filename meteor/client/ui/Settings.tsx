@@ -22,6 +22,7 @@ import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import SnapshotsView from './Settings/SnapshotsView'
 import BlueprintSettings from './Settings/BlueprintSettings'
 import SystemMessages from './Settings/SystemMessages'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
@@ -42,7 +43,7 @@ class WelcomeToSettings extends React.Component {
 }
 
 interface ISettingsMenuProps {
-	user: User | null
+	userAccounts: boolean
 	match?: any
 }
 interface ISettingsMenuState {
@@ -162,7 +163,11 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
 	}
 	onAddBlueprint () {
-		MeteorCall.blueprint.insertBlueprint().catch(console.error)
+		MeteorCall.blueprint.insertBlueprint().catch((error) => {
+			NotificationCenter.push((new Notification(
+				undefined, NoticeLevel.WARNING, error.reason, 'Create New Blueprint'
+			)))
+		})
 	}
 
 	onDeleteStudio (studio: Studio) {
@@ -227,7 +232,6 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 	}
 	render () {
 		const { t } = this.props
-
 		return (
 			<div className='tight-xs htight-xs text-s'>
 				<h2 className='mhs'>
@@ -293,37 +297,39 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						]
 					})
 				}
-				<h2 className='mhs'>
-					<button className='action-btn right' onClick={() => this.onAddBlueprint()}>
-						<FontAwesomeIcon icon={faPlus} />
-					</button>
-					{t('Blueprints')}
-				</h2>
-				<hr className='vsubtle man' />
-				{
-					this.props.blueprints.map((blueprint) => {
-						return (
-							<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(blueprint._id)} to={'/settings/blueprint/' + blueprint._id}>
-								<div className='selectable clickable'>
-									<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-									{
-										this.blueprintHasError(blueprint) ?
-										<button className='action-btn right error-notice'>
-											<FontAwesomeIcon icon={faExclamationTriangle} />
-										</button> :
-										null
-									}
-									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
-									<p>{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}</p>
-									<p>{t('Version')} {blueprint.blueprintVersion}</p>
-								</div>
-								<hr className='vsubtle man' />
-							</NavLink>
-						)
-					})
-				}
+				{!this.props.userAccounts && <React.Fragment>
+					<h2 className='mhs'>
+						<button className='action-btn right' onClick={() => this.onAddBlueprint()}>
+							<FontAwesomeIcon icon={faPlus} />
+						</button>
+						{t('Blueprints')}
+					</h2>
+					<hr className='vsubtle man' />
+					{
+						this.props.blueprints.map((blueprint) => {
+							return (
+								<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' key={unprotectString(blueprint._id)} to={'/settings/blueprint/' + blueprint._id}>
+									<div className='selectable clickable'>
+										<button className='action-btn right' onClick={(e) => { e.preventDefault(); e.stopPropagation(); this.onDeleteBlueprint(blueprint) }}>
+											<FontAwesomeIcon icon={faTrash} />
+										</button>
+										{
+											this.blueprintHasError(blueprint) ?
+											<button className='action-btn right error-notice'>
+												<FontAwesomeIcon icon={faExclamationTriangle} />
+											</button> :
+											null
+										}
+										<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
+										<p>{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}</p>
+										<p>{t('Version')} {blueprint.blueprintVersion}</p>
+									</div>
+									<hr className='vsubtle man' />
+								</NavLink>
+							)
+						})
+					}
+				</React.Fragment>}
 				<h2 className='mhs'>{t('Devices')}</h2>
 				<hr className='vsubtle man' />
 				{
@@ -358,17 +364,20 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/messages'>
 					<h3>{t('System Messages')}</h3>
 				</NavLink>
-				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/migration'>
-					<h3>{t('Upgrade Database')}</h3>
-				</NavLink>
-				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/snapshots'>
-					<h3>{t('Manage Snapshots')}</h3>
-				</NavLink>
+				{!this.props.userAccounts && <React.Fragment>
+					<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/migration'>
+						<h3>{t('Upgrade Database')}</h3>
+					</NavLink>
+					<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/snapshots'>
+						<h3>{t('Manage Snapshots')}</h3>
+					</NavLink>
+				</React.Fragment>}
 			</div>
 		)
 	}
 })
 interface ISettingsProps {
+	userAccounts: boolean
 	match?: any
 }
 class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
@@ -376,7 +385,6 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	constructor (props: ISettingsProps) {
 		super(props)
 		this.user = getUser()
-		console.log(this.user)
 	}
 	
 	componentWillMount () {
@@ -399,7 +407,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 					<div className='row'>
 						<div className='col c12 rm-c3 settings-menu'>
 							<ErrorBoundary>
-								<SettingsMenu match={this.props.match} user={this.user}/>
+								<SettingsMenu match={this.props.match} userAccounts={this.props.userAccounts}/>
 							</ErrorBoundary>
 						</div>
 						<div className='col c12 rm-c9 settings-dialog'>

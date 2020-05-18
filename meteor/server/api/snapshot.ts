@@ -218,10 +218,13 @@ function createRundownPlaylistSnapshot (playlistId: RundownPlaylistId, organizat
  * @param studioId (Optional) Only generate for a certain studio
  */
 function createSystemSnapshot (studioId: StudioId | null, organizationId: OrganizationId | null): SystemSnapshot {
+	/** @todo Add check for superadmin once roles are active */
+	if(Settings.enableUserAccounts) throw new Meteor.Error(401, 'Only Super Admins can upload blueprints')
+	
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
-	const coreSystem 		= getCoreSystem()
+	const coreSystem = getCoreSystem()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 
 	if (Settings.enableUserAccounts && !organizationId) throw new Meteor.Error(500, 'Not able to create a systemSnaphost without studioId')
