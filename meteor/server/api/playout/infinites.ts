@@ -306,33 +306,33 @@ export function cropInfinitesOnLayer (cache: CacheForRundownPlaylist, rundown: R
 	}
 }
 
-export function stopInfinitesRunningOnLayer (cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, rundown: Rundown, partInstance: PartInstance, sourceLayer: string) {
-	// TODO-PartInstance - pending new data flow for this whole function
+// export function stopInfinitesRunningOnLayer (cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, rundown: Rundown, partInstance: PartInstance, sourceLayer: string) {
+// 	// TODO-PartInstance - pending new data flow for this whole function
 
 
-	// Cleanup any future parts
-	const remainingParts = getPartsAfter(partInstance.part, cache.Parts.findFetch({ rundownId: rundown._id }))
-	const affectedPartIds: PartId[] = []
-	for (let part of remainingParts) {
-		let continuations = cache.Pieces.findFetch(i => i.partId === part._id && i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
-		if (continuations.length === 0) {
-			// We can stop searching once a part doesnt include it
-			break
-		}
+// 	// Cleanup any future parts
+// 	const remainingParts = getPartsAfter(partInstance.part, cache.Parts.findFetch({ rundownId: rundown._id }))
+// 	const affectedPartIds: PartId[] = []
+// 	for (let part of remainingParts) {
+// 		let continuations = cache.Pieces.findFetch(i => i.partId === part._id && i.infiniteMode && i.infiniteId && i.infiniteId !== i._id && i.sourceLayerId === sourceLayer)
+// 		if (continuations.length === 0) {
+// 			// We can stop searching once a part doesnt include it
+// 			break
+// 		}
 
-		affectedPartIds.push(part._id)
-		cache.Pieces.remove({ _id: { $in: continuations.map(p => p._id) } })
-	}
+// 		affectedPartIds.push(part._id)
+// 		cache.Pieces.remove({ _id: { $in: continuations.map(p => p._id) } })
+// 	}
 
-	// Also update the nextPartInstance
-	const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
-	if (nextPartInstance && affectedPartIds.indexOf(nextPartInstance.part._id) !== -1) {
-		const toRemove = getAllPieceInstancesFromCache(cache, nextPartInstance)
-			.filter(p => p.piece.infiniteMode && p.piece.infiniteId && p.piece.infiniteId !== p.piece._id && p.piece.sourceLayerId === sourceLayer)
+// 	// Also update the nextPartInstance
+// 	const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+// 	if (nextPartInstance && affectedPartIds.indexOf(nextPartInstance.part._id) !== -1) {
+// 		const toRemove = getAllPieceInstancesFromCache(cache, nextPartInstance)
+// 			.filter(p => p.piece.infiniteMode && p.piece.infiniteId && p.piece.infiniteId !== p.piece._id && p.piece.sourceLayerId === sourceLayer)
 
-		cache.PieceInstances.remove({ _id: { $in: toRemove.map(p => p._id) } })
-	}
+// 		cache.PieceInstances.remove({ _id: { $in: toRemove.map(p => p._id) } })
+// 	}
 
-	// ensure adlib is extended correctly if infinite
-	updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
-}
+// 	// ensure adlib is extended correctly if infinite
+// 	updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
+// }

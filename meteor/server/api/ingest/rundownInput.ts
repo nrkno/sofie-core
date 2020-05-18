@@ -1028,7 +1028,7 @@ function generateSegmentContents (
 		}
 
 		// Update pieces
-		segmentPieces.push(...postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id))
+		segmentPieces.push(...postProcessPieces(context, blueprintPart.pieces, blueprintId, rundownId, part._id))
 		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})

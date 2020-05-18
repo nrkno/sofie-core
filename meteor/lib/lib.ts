@@ -1289,6 +1289,9 @@ export function unprotectString (protectedStr: ProtectedString<any> | undefined)
 export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined {
 	return protectedStr as any as string
 }
+export function unprotectStringArray (protectedStrs: Array<ProtectedString<any>>): string[] {
+	return protectedStrs as any as string[]
+}
 export function isProtectedString (str: any): str is ProtectedString<any> {
 	return typeof str === 'string'
 }
@@ -1319,32 +1322,7 @@ export function isStringOrProtectedString<T extends ProtectedString<any>> (val: 
 export function isPromise<T extends any> (val: any): val is Promise<T> {
 	return (_.isObject(val)) && (typeof val.then === 'function') && (typeof val.catch === 'function')
 }
-// const aaa: ProtectedString<'aaaa'> = protectString('asdf')
 
-// interface Test {
-// 	a: string
-// 	b: string
-// 	c: string
-// 	d: number
-// }
-// type A = ProtectedStringProperties<Test, 'a' | 'b'>
-// const a: A = {
-// 	a : protectString('123'),
-// 	b : protectString('123'),
-// 	c: '123',
-// 	d: 123
-// }
-
-// a.a = '123' // should be wrong
-// a.b = '123' // should be wrong
-// a.c = '123' // should be ok
-// a.d = 123 // should be ok
-
-// const b = unprotectObject(a)
-
-
-// b.a = '123' // should be ok
-// b.b = '123' // should be ok
-// b.c = '123' // should be ok
-// a.d = 123 // should be ok
-// a.d = '123' // not ok
+export function assertNever(_never: never): void {
+	// Do nothing. This is a type guard
+}

@@ -17,14 +17,16 @@ import {
 	RundownContext,
 	TSR,
 	IBlueprintActionManifest,
+	ShowStyleContext,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PartId } from '../../../lib/collections/Parts'
 import { AdLibAction } from '../../../lib/collections/AdLibActions';
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions';
+import { RundownId } from '../../../lib/collections/Rundowns';
 
-export function postProcessPieces(innerContext: RundownContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, partId: PartId): Piece[] {
+export function postProcessPieces(innerContext: ShowStyleContext, pieces: IBlueprintPiece[], blueprintId: BlueprintId, rundownId: RundownId, partId: PartId, allowNowForPiece?: boolean): Piece[] {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -33,14 +35,14 @@ export function postProcessPieces(innerContext: RundownContext, pieces: IBluepri
 			...itemOrig as Omit<IBlueprintPiece, '_id' | 'continuesRefId'>,
 			_id: protectString(itemOrig._id),
 			continuesRefId: protectString(itemOrig.continuesRefId),
-			rundownId: protectString(innerContext.rundown._id),
+			rundownId: rundownId,
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN
 		}
 
 		if (!piece._id) piece._id = protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`))
 		if (!piece.externalId && !piece.isTransition) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
-		if (piece.enable.start === 'now')  throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
+		if (!allowNowForPiece && piece.enable.start === 'now')  throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
 
 		if (partsUniqueIds[unprotectString(piece._id)]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
 		partsUniqueIds[unprotectString(piece._id)] = true
