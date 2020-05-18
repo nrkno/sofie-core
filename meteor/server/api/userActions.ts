@@ -341,6 +341,20 @@ export function pieceSetInOutPoints(rundownPlaylistId: RundownPlaylistId, partId
 		.then(() => ClientAPI.responseSuccess(undefined))
 		.catch((error) => ClientAPI.responseError(error))
 }
+export function executeAction(rundownPlaylistId: RundownPlaylistId, actionId: string, userData: any) {
+	check(rundownPlaylistId, String)
+	check(actionId, String)
+	check(userData, Match.Any)
+
+	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
+	if (!playlist.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before executing an action!`)
+	if (!playlist.currentPartInstanceId) return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
+
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAPI.executeAction(rundownPlaylistId, actionId, userData)
+	)
+}
 export function segmentAdLibPieceStart(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
@@ -715,8 +729,7 @@ class ServerUserActionAPI implements NewUserActionAPI {
 		return pieceSetInOutPoints(rundownPlaylistId, partId, pieceId, inPoint, duration)
 	}
 	executeAction(_userEvent: string, rundownPlaylistId: RundownPlaylistId, actionId: string, userData: ActionUserData) {
-		// TODO - implement
-		return makePromise(() => noop())
+		return makePromise(() => executeAction(rundownPlaylistId, actionId, userData))
 	}
 	segmentAdLibPieceStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean) {
 		return makePromise(() => segmentAdLibPieceStart(rundownPlaylistId, partInstanceId, adlibPieceId, queue))
