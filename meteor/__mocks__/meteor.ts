@@ -1,6 +1,15 @@
 import * as _ from 'underscore'
 import { Fiber, runInFiber } from './Fibers'
 
+let controllableDefer: boolean = false
+
+export function useControllableDefer () {
+	controllableDefer = true
+}
+export function useNextTickDefer () {
+	controllableDefer = false
+}
+
 namespace Meteor {
 	export interface Settings {
 		public: {
@@ -182,7 +191,7 @@ export namespace MeteorMock {
 		$.clearInterval(timer)
 	}
 	export function defer (fcn: Function) {
-		return $.orgSetTimeout(() => {
+		return (controllableDefer ? $.setTimeout : $.orgSetTimeout)(() => {
 			runInFiber(fcn).catch(console.error)
 		}, 0)
 	}

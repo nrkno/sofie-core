@@ -85,17 +85,28 @@ export namespace MOSDeviceActions {
 
 			const story = mosPayload.Body.filter(item => item.Type === 'storyItem' && item.Content.ID === piece.externalId)[0].Content
 			const timeBase = story.TimeBase || 1
-			story.EditorialStart = inPoint * timeBase
-			story.EditorialDuration = duration * timeBase
-			story.TimeBase = timeBase
+			const modifiedFields = {
+				EditorialStart: inPoint * timeBase as number | undefined,
+				EditorialDuration: duration * timeBase,
+				TimeBase: timeBase
+			}
+			Object.assign(story, modifiedFields)
+
+			// ENPS will doesn't send a 0-length EditorialStart, instead it just ommits it from the object
+			if (modifiedFields.EditorialStart === 0) {
+				modifiedFields.EditorialStart = undefined
+			}
 
 			const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
-			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err?: any) => {
+			PeripheralDeviceAPI.executeFunctionWithCustomTimeout(peripheralDevice._id, (err: any, response: any) => {
+				// console.debug(`Received response from device: ${JSON.stringify(err)}, ${JSON.stringify(response)}`)
 				if (err) reject(err)
+				else if (response && response.mos && response.mos.roAck && response.mos.roAck.roStatus !== "OK") reject(response)
 				else resolve()
-			}, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story)
+			// we need a very long timeout to make sure we receive notification from the device
+			}, 120 * 1000, 'replaceStoryItem', mosPayload.RunningOrderId, mosPayload.ID, story, modifiedFields)
 		})
 	}
 }

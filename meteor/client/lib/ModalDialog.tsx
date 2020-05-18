@@ -25,6 +25,7 @@ interface IModalDialogAttributes {
 	inputs?: {[attribute: string]: ModalInput}
 	warning?: boolean
 	actions?: ModalAction[]
+	className?: string
 }
 interface ModalInput {
 	type: EditAttributeType
@@ -138,7 +139,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 										translateY: [0, 100],
 										opacity: [1, 0]
 									}, easing: 'spring', duration: 250 }} runOnMount={true}>
-										<dialog open={true} className='border-box overlay-m'>
+										<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''}>
 											<div className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}>
 												<div className='flex-col c12'>
 													<h2>

@@ -217,11 +217,13 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			remove: 0
 		}
 		const ps: Promise<any>[] = []
+		const removedDocs: ProtectedString<any>[] = []
 		_.each(this.documents, (doc, id) => {
 			const _id = protectString(id)
 			if (doc.removed) {
 				ps.push(asyncCollectionRemove(this._collection, _id))
 				changes.remove++
+				removedDocs.push(_id)
 			} else if (doc.inserted) {
 				ps.push(asyncCollectionUpsert(this._collection, doc.document._id, doc.document))
 				changes.insert++
@@ -231,7 +233,10 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			}
 			delete doc.inserted
 			delete doc.updated
-			delete doc.removed
+			// Note: we don't delete doc.removed, because that breaks this._collection[x].document
+		})
+		_.each(removedDocs, _id => {
+			delete this._collection[unprotectString(_id)]
 		})
 		await Promise.all(ps)
 

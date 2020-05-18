@@ -92,7 +92,7 @@ class SourceLayerBase<T extends ISourceLayerPropsBase> extends React.PureCompone
 }
 
 class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
-	renderInside () {
+	renderInside() {
 		if (this.props.layer.pieces !== undefined) {
 			return _.chain(this.props.layer.pieces.filter((piece) => {
 				// filter only pieces belonging to this part
@@ -102,36 +102,36 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 					(piece.instance.piece.virtual !== true)
 					: false
 			}))
-			.sortBy((it) => it.renderedInPoint)
-			.sortBy((it) => it.instance.piece.infiniteMode)
-			.sortBy((it) => it.cropped)
-			.map((piece) => {
-				return (
-					<SourceLayerItemContainer key={piece.instance._id}
-						{...this.props}
-						// The following code is fine, just withTracker HOC messing with available props
-						onClick={this.props.onPieceClick}
-						onDoubleClick={this.props.onPieceDoubleClick}
-						mediaPreviewUrl={this.props.mediaPreviewUrl}
-						piece={piece}
-						layer={this.props.layer}
-						outputLayer={this.props.outputLayer}
-						part={this.props.part}
-						partStartsAt={this.props.startsAt}
-						partDuration={this.props.duration}
-						timeScale={this.props.timeScale}
-						relative={this.props.relative}
-						autoNextPart={this.props.autoNextPart}
-						liveLinePadding={this.props.liveLinePadding}
-						scrollLeft={this.props.scrollLeft}
-						scrollWidth={this.props.scrollWidth}
+				.sortBy((it) => it.renderedInPoint)
+				.sortBy((it) => it.instance.piece.infiniteMode)
+				.sortBy((it) => it.cropped)
+				.map((piece) => {
+					return (
+						<SourceLayerItemContainer key={piece.instance._id}
+							{...this.props}
+							// The following code is fine, just withTracker HOC messing with available props
+							onClick={this.props.onPieceClick}
+							onDoubleClick={this.props.onPieceDoubleClick}
+							mediaPreviewUrl={this.props.mediaPreviewUrl}
+							piece={piece}
+							layer={this.props.layer}
+							outputLayer={this.props.outputLayer}
+							part={this.props.part}
+							partStartsAt={this.props.startsAt}
+							partDuration={this.props.duration}
+							timeScale={this.props.timeScale}
+							relative={this.props.relative}
+							autoNextPart={this.props.autoNextPart}
+							liveLinePadding={this.props.liveLinePadding}
+							scrollLeft={this.props.scrollLeft}
+							scrollWidth={this.props.scrollWidth}
 						/>
-				)
-			}).value()
+					)
+				}).value()
 		}
 	}
 
-	render () {
+	render() {
 		return (
 			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
 				className: 'segment-timeline__layer',
@@ -148,7 +148,7 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
 }
 class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> {
-	renderInside () {
+	renderInside() {
 		return this.props.layers.map((layer) => {
 			if (layer.pieces !== undefined) {
 				return _.chain(layer.pieces.filter((piece) => {
@@ -159,37 +159,37 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 						(piece.instance.piece.virtual !== true)
 						: false
 				}))
-				.sortBy((it) => it.renderedInPoint)
-				.sortBy((it) => it.instance.piece.infiniteMode)
-				.sortBy((it) => it.cropped)
-				.map((piece) => {
-					return (
-						<SourceLayerItemContainer key={piece.instance._id}
-							{...this.props}
-							// The following code is fine, just withTracker HOC messing with available props
-							onClick={this.props.onPieceClick}
-							onDoubleClick={this.props.onPieceDoubleClick}
-							mediaPreviewUrl={this.props.mediaPreviewUrl}
-							piece={piece}
-							layer={layer}
-							outputLayer={this.props.outputLayer}
-							part={this.props.part}
-							partStartsAt={this.props.startsAt}
-							partDuration={this.props.duration}
-							timeScale={this.props.timeScale}
-							relative={this.props.relative}
-							autoNextPart={this.props.autoNextPart}
-							liveLinePadding={this.props.liveLinePadding}
-							scrollLeft={this.props.scrollLeft}
-							scrollWidth={this.props.scrollWidth}
+					.sortBy((it) => it.renderedInPoint)
+					.sortBy((it) => it.instance.piece.infiniteMode)
+					.sortBy((it) => it.cropped)
+					.map((piece) => {
+						return (
+							<SourceLayerItemContainer key={piece.instance._id}
+								{...this.props}
+								// The following code is fine, just withTracker HOC messing with available props
+								onClick={this.props.onPieceClick}
+								onDoubleClick={this.props.onPieceDoubleClick}
+								mediaPreviewUrl={this.props.mediaPreviewUrl}
+								piece={piece}
+								layer={layer}
+								outputLayer={this.props.outputLayer}
+								part={this.props.part}
+								partStartsAt={this.props.startsAt}
+								partDuration={this.props.duration}
+								timeScale={this.props.timeScale}
+								relative={this.props.relative}
+								autoNextPart={this.props.autoNextPart}
+								liveLinePadding={this.props.liveLinePadding}
+								scrollLeft={this.props.scrollLeft}
+								scrollWidth={this.props.scrollWidth}
 							/>
-					)
-				}).value()
+						)
+					}).value()
 			}
 		})
 	}
 
-	render () {
+	render() {
 		return (
 			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
 				className: 'segment-timeline__layer segment-timeline__layer--flattened',
@@ -232,7 +232,7 @@ interface IOutputGroupProps {
 class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
 
-	renderInside (isOutputGroupCollapsed) {
+	renderInside(isOutputGroupCollapsed) {
 		if (this.props.layer.sourceLayers !== undefined) {
 			if (!this.props.layer.isFlattened) {
 				return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
@@ -253,26 +253,26 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 					})
 			} else {
 				return <FlattenedSourceLayers key={this.props.layer._id + '_flattened'}
-							{...this.props}
-							layers={this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)}
-							playlist={this.props.playlist}
-							outputLayer={this.props.layer}
-							outputGroupCollapsed={isOutputGroupCollapsed}
-							segment={this.props.segment}
-							part={this.props.part}
-							startsAt={this.props.startsAt}
-							duration={this.props.duration}
-							timeScale={this.props.timeScale}
-							autoNextPart={this.props.autoNextPart}
-							liveLinePadding={this.props.liveLinePadding} />
+					{...this.props}
+					layers={this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)}
+					playlist={this.props.playlist}
+					outputLayer={this.props.layer}
+					outputGroupCollapsed={isOutputGroupCollapsed}
+					segment={this.props.segment}
+					part={this.props.part}
+					startsAt={this.props.startsAt}
+					duration={this.props.duration}
+					timeScale={this.props.timeScale}
+					autoNextPart={this.props.autoNextPart}
+					liveLinePadding={this.props.liveLinePadding} />
 			}
 		}
 	}
 
-	render () {
+	render() {
 		const isCollapsed = (this.props.collapsedOutputs[this.props.layer._id] !== undefined) ?
-								(this.props.collapsedOutputs[this.props.layer._id] === true) :
-								(this.props.layer.isDefaultCollapsed)
+			(this.props.collapsedOutputs[this.props.layer._id] === true) :
+			(this.props.layer.isDefaultCollapsed)
 		return (
 			<div className={ClassNames('segment-timeline__output-group', {
 				'collapsable': this.props.layer.sourceLayers && this.props.layer.sourceLayers.length > 1 && !this.props.layer.isFlattened,
@@ -361,7 +361,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 })(class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	private delayedInstanceUpdate: NodeJS.Timer | undefined
 
-	constructor (props: Translated<WithTiming<IProps>>) {
+	constructor(props: Translated<WithTiming<IProps>>) {
 		super(props)
 
 		const partInstance = this.props.part.instance
@@ -377,11 +377,11 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			isInsideViewport: false,
 			liveDuration: isLive ?
 				Math.max(
-				(
-					(startedPlayback && props.timingDurations.partDurations &&
-						(SegmentTimelinePart0.getCurrentLiveLinePosition(props.part, props.timingDurations.currentTime || getCurrentTime()) +
-							SegmentTimelinePart0.getLiveLineTimePadding(props.timeScale))
-					) || 0),
+					(
+						(startedPlayback && props.timingDurations.partDurations &&
+							(SegmentTimelinePart0.getCurrentLiveLinePosition(props.part, props.timingDurations.currentTime || getCurrentTime()) +
+								SegmentTimelinePart0.getLiveLineTimePadding(props.timeScale))
+						) || 0),
 					props.timingDurations.partDurations ?
 						(partInstance.part.displayDuration || props.timingDurations.partDurations[unprotectString(partInstance.part._id)]) :
 						0
@@ -390,7 +390,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
+	static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
 		const isLive = (nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id)
 		const isNext = (nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id)
 
@@ -409,7 +409,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							(nextProps.relative ?
 								SegmentTimelinePart0.getCurrentLiveLinePosition(nextProps.part, nextProps.timingDurations.currentTime || getCurrentTime()) :
 								SegmentTimelinePart0.getCurrentLiveLinePosition(nextProps.part, nextProps.timingDurations.currentTime || getCurrentTime()) +
-									SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))
+								SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))
 						) || 0),
 					nextProps.timingDurations.partDurations ?
 						(nextPartInner.displayDuration || nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]) :
@@ -439,11 +439,11 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		return partial
 	}
 
-	static getLiveLineTimePadding (timeScale): number {
+	static getLiveLineTimePadding(timeScale): number {
 		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
-	static getCurrentLiveLinePosition (part: PartUi, currentTime: number): number {
+	static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
 		if (part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback()) {
 			if (part.instance.part.duration) {
 				return part.instance.part.duration
@@ -455,14 +455,14 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	queueDelayedUpdate () {
+	queueDelayedUpdate() {
 		this.delayedInstanceUpdate = setTimeout(() => {
 			this.delayedInstanceUpdate = undefined
 			this.forceUpdate()
 		}, 5000)
 	}
 
-	shouldComponentUpdate (nextProps: WithTiming<IProps>, nextState: IState) {
+	shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
 		if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
 		if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
 			if (
@@ -484,7 +484,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	getLayerStyle () {
+	getLayerStyle() {
 		// this.props.part.expectedDuration ||
 		if (this.props.relative) {
 			return {
@@ -501,7 +501,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
-	static getPartDuration (props: WithTiming<IProps>, liveDuration: number): number {
+	static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 		// const part = this.props.part
 		const innerPart = props.part.instance.part
 
@@ -517,7 +517,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 			this.props.part.renderedDuration || 0, this.state.liveDuration, 0) */
 	}
 
-	static getPartStartsAt (props: WithTiming<IProps>): number {
+	static getPartStartsAt(props: WithTiming<IProps>): number {
 		return Math.max(0, (props.firstPartInSegment &&
 			props.timingDurations.partDisplayStartsAt &&
 			(
@@ -527,7 +527,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		) || 0)
 	}
 
-	renderTimelineOutputGroups (part: PartUi) {
+	renderTimelineOutputGroups(part: PartUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
 				return (layer.used) ? true : false
@@ -570,15 +570,15 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 	getFutureShadeStyle = () => {
 		return {
 			'width': (Math.min(
-						Math.max(
-							0,
-							(this.props.livePosition || 0) + SegmentTimelinePart0.getLiveLineTimePadding(this.props.timeScale) - (this.props.part.instance.part.expectedDuration || this.props.part.renderedDuration || 0)),
+				Math.max(
+					0,
+					(this.props.livePosition || 0) + SegmentTimelinePart0.getLiveLineTimePadding(this.props.timeScale) - (this.props.part.instance.part.expectedDuration || this.props.part.renderedDuration || 0)),
 				SegmentTimelinePart0.getLiveLineTimePadding(this.props.timeScale)
-					) * this.props.timeScale) + 'px'
+			) * this.props.timeScale) + 'px'
 		}
 	}
 
-	static convertHexToRgba (hexColor: string): { red: number, green: number, blue: number } | undefined {
+	static convertHexToRgba(hexColor: string): { red: number, green: number, blue: number } | undefined {
 		if (hexColor.substr(0, 1) !== '#') return
 		if (hexColor.length !== 7) return
 
@@ -589,7 +589,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		return { red, green, blue }
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 
 		const innerPart = this.props.part.instance.part

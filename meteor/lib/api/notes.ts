@@ -12,7 +12,8 @@ export interface INoteBase {
 	message: string
 }
 
-export interface GenericNote extends INoteBase {
+export interface TrackedNote extends GenericNote {
+	rank: number
 	origin: {
 		name: string,
 		rundownId?: RundownId,
@@ -21,28 +22,26 @@ export interface GenericNote extends INoteBase {
 		pieceId?: PieceId
 	}
 }
+
+export interface GenericNote extends INoteBase {
+	origin: {
+		name: string,
+	}
+}
 export interface RundownNote extends INoteBase {
 	origin: {
 		name: string,
-		rundownId: RundownId,
 	}
 }
 export interface SegmentNote extends RundownNote {
 	origin: {
 		name: string,
-		rundownId: RundownId,
-		segmentId: SegmentId,
-		// partId: PartId,
-		// pieceId?: PieceId
 	}
 }
 
 export interface PartNote extends SegmentNote {
 	origin: {
 		name: string,
-		rundownId: RundownId,
-		segmentId: SegmentId,
-		partId: PartId,
 		pieceId?: PieceId
 	}
 }
