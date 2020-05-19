@@ -73,7 +73,6 @@ export function allowAccessToOrganization (cred0: Credentials | ResolvedCredenti
 export function allowAccessToShowStyleBase (cred0: Credentials | ResolvedCredentials, showStyleBaseId: MongoQueryKey<ShowStyleBaseId>): Access<ShowStyleBase | null> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!showStyleBaseId) return noAccess('showStyleBaseId not set')
-	if (!isProtectedString(showStyleBaseId)) return noAccess('showStyleBaseId is not a string')
 	const cred = resolveCredentials(cred0)
 
 	const showStyleBases = ShowStyleBases.find({

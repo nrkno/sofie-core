@@ -9,9 +9,6 @@ import { NotificationCenter, Notification, NoticeLevel, NotificationAction } fro
 import { MeteorCall } from '../../lib/api/methods'
 import { getUser, User } from '../../lib/collections/Users'
 
-
-
-
 interface IAccountPageProps extends RouteComponentProps {
 	coreSystem: ICoreSystem
 }
@@ -21,37 +18,41 @@ interface IAccountPageState {
 }
 
 export const AccountPage = translateWithTracker(() => {
-	return {  }
+	return {}
 })(
 class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageState> {
 	constructor (props) {
 		super(props)
-		this.state = {user: undefined}
+		this.state = { user: undefined }
 	}
 
 	private handleRemoveUser () {
 		MeteorCall.user.removeUser().then((error) => {
-			if(error) {
-				NotificationCenter.push(new Notification(
-					undefined,
-					NoticeLevel.CRITICAL,
-					'Error deleting account',
-					'Account Page'
-				))
-				return 
-			} 
+			if (error) {
+				throw error
+			}
 			this.props.history.push('/')
+		}).catch(error => {
+			console.log(error)
+			NotificationCenter.push(new Notification(
+				undefined,
+				NoticeLevel.CRITICAL,
+				'Error deleting account',
+				'Account Page'
+			))
 		})
 	}
 
 	componentDidUpdate () {
-		if(this.state.user === undefined && getUser() !== undefined)
-			this.setState({user: getUser() as User})
+		if (this.state.user === undefined && getUser() !== undefined) {
+			this.setState({ user: getUser() as User })
+		}
 	}
 
 	componentDidMount () {
-		if(this.state.user === undefined && getUser() !== undefined)
-			this.setState({user: getUser() as User})
+		if (this.state.user === undefined && getUser() !== undefined) {
+			this.setState({ user: getUser() as User })
+		}
 	}
 
 	render () {
@@ -69,5 +70,4 @@ class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageSt
 			</React.Fragment>
 		)
 	}
-}
-)
+})

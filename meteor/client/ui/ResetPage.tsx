@@ -6,9 +6,6 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { StatusResponse } from '../../lib/api/systemStatus'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { getUser } from '../../lib/collections/Users'
-
-
-
 interface IResetPageProps extends RouteComponentProps<{token: string}> {
 
 }
@@ -28,9 +25,7 @@ export const ResetPage = translateWithTracker((props: IResetPageProps) => {
 		props.history.push('/lobby')
 	}
 
-	return {
-		
-	}
+	return {}
 })(
 class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState> {
 	constructor (props) {
@@ -46,17 +41,18 @@ class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState>
 	}
 
 	private handleChange (e: React.ChangeEvent<HTMLInputElement>) {
-		this.setState({...this.state, [e.currentTarget.name] : e.currentTarget.value})
+		this.setState({ ...this.state, [e.currentTarget.name] : e.currentTarget.value })
 	}
 
 	private validateChange (): boolean {
 		const errors: string[] = []
 		const { t } = this.props
 
-		if(this.state.password.length < 5) 
+		if (this.state.password.length < 5) {
 			errors.push(t('Password must be atleast 5 characters long'))
+		}
 		/** Add more password rules */
-		if(errors.length) {
+		if (errors.length) {
 			NotificationCenter.push(new Notification(
 				undefined,
 				NoticeLevel.WARNING,
@@ -66,32 +62,42 @@ class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState>
 				'Reset Password Page'
 			))
 			return false
-		} 
+		}
 		return true
 	}
 
 	private handleReset () {
-		if(!this.validateChange()) return
+		if (!this.validateChange()) return
 		const token = this.props.match.params.token
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 		return (
-			<React.Fragment>
-				<div className="reset-password container">
-					<p>{t('Enter your new password')}</p>
-					<input 
-						type='password' 
-						name='password'
-						value={this.state.password} 
-						onChange={this.handleChange}
-						onBlur={this.validateChange} 
-						placeholder={t('Password')}
-					/>
-					<button onClick={this.handleReset}>{t('Set new password')}</button>
+			<div className='center-page'>
+				<div className='mtl gutter flex-col page'>
+					<header className='mvs alc header'>
+						<div className='badge'>
+							<div className='sofie-logo'></div>
+						</div>
+						<h1>{t('Sofie - TV Automation System')}</h1>
+					</header>
+					<div className='container'>
+						<p>{t('Enter your new password')}</p>
+						<input
+							className='mdinput mas'
+							type='password'
+							name='password'
+							value={this.state.password}
+							onChange={this.handleChange}
+							onBlur={this.validateChange}
+							placeholder={t('Password')}
+						/>
+						<button className='btn btn-primary' onClick={this.handleReset}>{t('Set new password')}</button>
+						<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
+					</div>
 				</div>
-			</React.Fragment>
+			</div>
 		)
 	}
 })

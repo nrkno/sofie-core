@@ -23,7 +23,7 @@ interface ILoginPageState {
 export const LoginPage = translateWithTracker((props: ILoginPageProps) => {
 	const user = getUser()
 	if (user) props.history.push('/lobby')
-	return {  }
+	return {}
 })(
 class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState> {
 	// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
@@ -42,18 +42,18 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 	}
 
 	private handleChange (e: React.ChangeEvent<HTMLInputElement>) {
-		if(this.state[e.currentTarget.name] === undefined) return
-		return this.setState({...this.state, [e.currentTarget.name]: e.currentTarget.value})
+		if (this.state[e.currentTarget.name] === undefined) return
+		return this.setState({ ...this.state, [e.currentTarget.name]: e.currentTarget.value })
 	}
 
-	private attempLogin(): void {
+	private attempLogin (): void {
 		try {
-			if(!this.state.email.length) throw new Error('Please enter an email address')
-			if(!this.state.password.length) throw new Error('Please enter an password')
+			if (!this.state.email.length) throw new Error('Please enter an email address')
+			if (!this.state.password.length) throw new Error('Please enter an password')
 		} catch (error) {
 			NotificationCenter.push(new Notification(
-				undefined, 
-				NoticeLevel.NOTIFICATION, 
+				undefined,
+				NoticeLevel.NOTIFICATION,
 				error.message,
 				'Login Page'
 			))
@@ -64,10 +64,10 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 	}
 
 	private handleLoginAttempt (error: Error) {
-		if(error) {
+		if (error) {
 			NotificationCenter.push(new Notification(
-				undefined, 
-				NoticeLevel.NOTIFICATION, 
+				undefined,
+				NoticeLevel.NOTIFICATION,
 				'Incorrect email or password',
 				'Login Page'
 			))
@@ -78,34 +78,41 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 		const { t } = this.props
 
 		return (
-			<React.Fragment>
-				<div className="sofie-logo"></div>
-				<h1>{t('Sofie - TV Automation System')}</h1>
-				<p>{t('Service provided by SuperFly.tv')}</p>
-				<div className="login">
-					<div className="container">
-						<input 
-							type="text" 
-							value={this.state.email} 
-							onChange={this.handleChange} 
+			<div className='center-page'>
+				<div className='mtl gutter flex-col page'>
+					<header className='mvs alc header'>
+						<div className='badge'>
+							<div className='sofie-logo'></div>
+						</div>
+						<h1>{t('Sofie - TV Automation System')}</h1>
+					</header>
+					<div className='container'>
+						<input
+							className='mdinput mas'
+							type='text'
+							value={this.state.email}
+							onChange={this.handleChange}
 							placeholder={t('Email Address')}
-							name="email"
+							name='email'
 						/>
-						<input 
-							type="password" 
-							value={this.state.password} 
-							onChange={this.handleChange} 
+						<input
+							className='mdinput mas'
+							type='password'
+							value={this.state.password}
+							onChange={this.handleChange}
 							placeholder={t('Password')}
-							name="password"
+							name='password'
 						/>
-						<button onClick={() => this.attempLogin()}>Sign In</button>
-						<Link className="float-left" to="/reset">{t('Lost password?')}</Link>
+						<button onClick={() => this.attempLogin()} className='btn btn-primary'>Sign In</button>
+						<Link className='selectable right mas' to='/reset' >{t('Lost password?')}</Link>
 					</div>
-					<div className="container">
-						<Link to="/signup"><button>{t('Create new account')}</button></Link>
+					<div className='mas'>
+						<Link className='selectable' to='/signup'>
+							<button className='btn'>{t('Create new account')}</button>
+						</Link>
 					</div>
 				</div>
-			</React.Fragment>
+			</div>
 		)
 	}
 }

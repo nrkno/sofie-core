@@ -24,9 +24,7 @@ export const RequestResetPage = translateWithTracker((props: IRequestResetPagePr
 		props.history.push('/lobby')
 	}
 
-	return {
-		
-	}
+	return {}
 })(
 class extends MeteorReactComponent<Translated<IRequestResetPageProps>, IRequestResetPageState> {
 	constructor (props) {
@@ -39,11 +37,11 @@ class extends MeteorReactComponent<Translated<IRequestResetPageProps>, IRequestR
 	}
 
 	private validateEmail (e: React.FocusEvent<HTMLInputElement>) {
-		// if(!this.state.email) 
+		// if(!this.state.email)
 	}
 
 	private resetPassword (e: React.MouseEvent<HTMLButtonElement>): void {
-		if(!this.state.email) {
+		if (!this.state.email) {
 			NotificationCenter.push(new Notification(
 				undefined,
 				NoticeLevel.NOTIFICATION,
@@ -56,25 +54,36 @@ class extends MeteorReactComponent<Translated<IRequestResetPageProps>, IRequestR
 			 * Accounts.sendResetPasswordEmail(userid, *optional email*)
 			 */
 		}
-		
 	}
- 
 
-	render() {
+
+	render () {
 		const { t } = this.props
 		return (
-			<div className="reset-password container">
-				<p>Lost password?</p>
-				<input 
-					type="text" 
-					value={this.state.email} 
-					onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-						this.setState({...this.state, email: e.target.value})} 
-					onBlur={this.validateEmail}
-					placeholder={t('Email Address')}
-					name="email"
-				/>
-				<button onClick={this.resetPassword}>{t('Send reset email')}</button>
+			<div className='center-page'>
+				<div className='mtl gutter flex-col page'>
+					<header className='mvs alc header'>
+						<div className='badge'>
+							<div className='sofie-logo'></div>
+						</div>
+						<h1>{t('Sofie - TV Automation System')}</h1>
+					</header>
+					<div className='container'>
+						<p>Lost password?</p>
+						<input
+							className='mdinput mas'
+							type='text'
+							value={this.state.email}
+							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+								this.setState({ ...this.state, email: e.target.value })}
+							onBlur={this.validateEmail}
+							placeholder={t('Email Address')}
+							name='email'
+						/>
+						<button className='btn btn-primary' onClick={this.resetPassword}>{t('Send reset email')}</button>
+						<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
+					</div>
+				</div>
 			</div>
 		)
 	}
