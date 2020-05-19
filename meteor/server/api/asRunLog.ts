@@ -95,7 +95,22 @@ function handleEvent (event: AsRunLogEvent): void {
 }
 
 // Convenience functions:
+export function reportRundownDataChanged (
+	cache: CacheForRundownPlaylist,
+	rundown: Rundown,
+	timestamp: Time
+) {
+	const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist) throw new Meteor.Error(500, `Playlist "${rundown.playlistId}" not found`)
 
+	let event = pushAsRunLog({
+		studioId:			rundown.studioId,
+		rundownId:			rundown._id,
+		content:			IBlueprintAsRunLogEventContent.DATACHANGED,
+		content2: 			'rundown'
+	}, !!playlist.rehearsal, timestamp)
+	if (event) handleEvent(event)
+}
 export function reportRundownHasStarted (
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,

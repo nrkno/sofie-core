@@ -249,6 +249,15 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 					}
 					ID: {msg._id}<br/>
 					Created: <MomentFromNow unit='seconds'>{msg.created}</MomentFromNow>
+					{
+						msg.queueForLater ?
+						<div>
+							<b>
+								Queued for later due to: {msg.queueForLaterReason || 'Unknown reason'}
+							</b>
+						</div>
+						: null
+					}
 				</td>
 				<td className='c7 small'>
 					<div>

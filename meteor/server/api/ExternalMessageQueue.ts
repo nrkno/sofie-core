@@ -17,7 +17,8 @@ import {
 	getCurrentTime,
 	removeNullyProperties,
 	getRandomId,
-	makePromise
+	makePromise,
+	protectString
 } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
@@ -28,7 +29,9 @@ import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
 
 export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
-	_.each(messages, (message) => {
+	const playlist = rundown.getRundownPlaylist()
+
+	_.each(messages, (message: IBlueprintExternalMessageQueueObj) => {
 
 		// check the output:
 		if (!message) 			throw new Meteor.Error('Falsy result!')
@@ -39,26 +42,28 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 		// Save the output into the message queue, for later processing:
 		let now = getCurrentTime()
 		let message2: ExternalMessageQueueObj = {
-			_id: getRandomId(),
-			type: message.type,
-			receiver: message.receiver,
-			message: message.message,
-			retryUntil: message.retryUntil,
-			studioId: rundown.studioId,
-			rundownId: rundown._id,
-			created: now,
-			tryCount: 0,
-			expires: now + 35 * 24 * 3600 * 1000, // 35 days
-			manualRetry: false,
+			...message,
+			_id: protectString(message._id) || getRandomId(),
+
+			studioId:		rundown.studioId,
+			rundownId:		rundown._id,
+
+			created:		now,
+			tryCount:		0,
+			expires:		now + 35 * 24 * 3600 * 1000, // 35 days
+			manualRetry:	false,
 		}
 
 		message2 = removeNullyProperties(message2)
-
-		const playlist = rundown.getRundownPlaylist()
 		if (!playlist.rehearsal) { // Don't save the message when running rehearsals
-			ExternalMessageQueue.insert(message2)
 
+			ExternalMessageQueue.upsert({
+				_id: protectString(message._id)
+			}, {
+				$set: message2
+			})
 			triggerdoMessageQueue() // trigger processing of the queue
+
 		}
 	})
 }
@@ -91,10 +96,11 @@ function doMessageQueue () {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find({
 			expires: { $gt: now },
-		  lastTry: { $not: { $gt: now - tryInterval } },
+			lastTry: { $not: { $gt: now - tryInterval } },
 			sent: { $not: { $gt: 0 } },
 			hold: { $not: { $eq: true } },
 			errorFatal: { $not: { $eq: true } },
+			queueForLater: { $ne: true }
 		}, {
 			sort: {
 				lastTry: 1

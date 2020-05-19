@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString } from '../lib'
+import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintExternalMessageQueueObj, IBlueprintExternalMessageQueueType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
@@ -9,7 +9,7 @@ import { RundownId } from './Rundowns'
 /** A string, identifying a ExternalMessageQueueObj */
 export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>
 
-export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
+export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlueprintExternalMessageQueueObj, '_id'> {
 	_id: ExternalMessageQueueObjId
 	/** Id of the studio this message originates from */
 	studioId: StudioId
