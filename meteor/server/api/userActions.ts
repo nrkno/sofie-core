@@ -30,7 +30,7 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { areThereActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -204,7 +204,7 @@ export function prepareForBroadcast (context: MethodContext, rundownPlaylistId: 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
 	if (playlist.active) return ClientAPI.responseError('Rundown Playlist is active, please deactivate before preparing it for broadcast')
-	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}
@@ -231,7 +231,7 @@ export function resetAndActivate (context: MethodContext, rundownPlaylistId: Run
 	if (playlist.active && !playlist.rehearsal) {
 		return ClientAPI.responseError('RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.')
 	}
-	const anyOtherActiveRundownPlaylists = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
+	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
 	if (anyOtherActiveRundownPlaylists.length) {
 		return ClientAPI.responseError(409, 'Only one rundownPlaylist can be active at the same time. Currently active rundownPlaylists: ' + _.map(anyOtherActiveRundownPlaylists, p => p.name).join(', '), anyOtherActiveRundownPlaylists)
 	}
@@ -253,9 +253,10 @@ export function forceResetAndActivate (context: MethodContext, rundownPlaylistId
 export function activate (context: MethodContext, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
 	check(rehearsal, Boolean)
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
-	const anyOtherActiveRundowns = areThereActiveRundownPlaylistsInStudio(playlist.studioId, playlist._id)
+	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(409, 'Only one rundown can be active at the same time. Currently active rundowns: ' + _.map(anyOtherActiveRundowns, p => p.name).join(', '), anyOtherActiveRundowns)
 	}

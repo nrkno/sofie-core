@@ -10,7 +10,8 @@ import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
-
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { touchRundownPlaylistsInCache } from '../playout/lib'
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice (deviceId: PeripheralDeviceId, token: string | undefined, context: MethodContext): PeripheralDevice {
 	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)

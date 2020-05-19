@@ -12,6 +12,7 @@ meteorPublish(PubSub.rundownPlaylists, function (selector0, token) {
 	const modifier = {
 		fields: {}
 	}
+	console.log('Rundown view')
 	if (
 		NoSecurityReadAccess.any() ||
 		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||

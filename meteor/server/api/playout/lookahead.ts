@@ -7,14 +7,15 @@ import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import { orderPieces } from './pieces'
 import { literal, clone, unprotectString, protectString } from '../../../lib/lib'
-import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
-import { selectNextPart } from './lib'
+import { selectNextPart, getSelectedPartInstancesFromCache } from './lib'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
-export function getLookeaheadObjects (playoutData: RundownPlaylistPlayoutData, studio: Studio): Array<TimelineObjGeneric> {
+export function getLookeaheadObjects (cache: CacheForRundownPlaylist, studio: Studio, playlist: RundownPlaylist): Array<TimelineObjGeneric> {
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	const mutateAndPushObject = (rawObj: TimelineObjRundown, i: string, enable: TimelineObjRundown['enable'], mapping: MappingExt, priority: number) => {
 		const obj: TimelineObjGeneric = clone(rawObj)
@@ -47,7 +48,7 @@ export function getLookeaheadObjects (playoutData: RundownPlaylistPlayoutData, s
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadMaxSearchDistance = mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0 ? mapping.lookaheadMaxSearchDistance : undefined
-		const lookaheadObjs = findLookaheadForlayer(playoutData, layerId, mapping.lookahead, lookaheadTargetObjects, lookaheadMaxSearchDistance)
+		const lookaheadObjs = findLookaheadForlayer(cache, playlist, layerId, mapping.lookahead, lookaheadTargetObjects, lookaheadMaxSearchDistance)
 
 		// Add the objects that have some timing info
 		_.each(lookaheadObjs.timed, (entry, i) => {
@@ -105,8 +106,9 @@ export interface LookaheadResult {
 	future: Array<LookaheadObjectEntry>
 }
 
-export function findLookaheadForlayer (
-	playoutData: RundownPlaylistPlayoutData,
+function findLookaheadForlayer (
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadTargetObjects: number,
@@ -122,7 +124,7 @@ export function findLookaheadForlayer (
 	}
 
 	function getPartInstancePieces (partInstanceId: PartInstanceId) {
-		return _.filter(playoutData.selectedInstancePieces, (pieceInstance: PieceInstance) => {
+		return cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
 			return !!(
 				pieceInstance.partInstanceId === partInstanceId &&
 				pieceInstance.piece.content &&
@@ -132,24 +134,30 @@ export function findLookaheadForlayer (
 		})
 	}
 
+	const {
+		currentPartInstance,
+		nextPartInstance,
+		previousPartInstance
+	} = getSelectedPartInstancesFromCache(cache, playlist)
+
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartAndPieces | undefined
-	if (playoutData.previousPartInstance) {
-		const previousPieces = getPartInstancePieces(playoutData.previousPartInstance._id)
+	if (previousPartInstance) {
+		const previousPieces = getPartInstancePieces(previousPartInstance._id)
 		previousPartInfo = {
-			part: playoutData.previousPartInstance.part,
+			part: previousPartInstance.part,
 			pieces: previousPieces.map(p => p.piece)
 		}
 	}
 
 	// Get the PieceInstances which are on the timeline
 	const partInstancesOnTimeline = _.compact([
-		playoutData.currentPartInstance,
-		playoutData.currentPartInstance && playoutData.currentPartInstance.part.autoNext ? playoutData.nextPartInstance : undefined
+		currentPartInstance,
+		currentPartInstance && currentPartInstance.part.autoNext ? nextPartInstance : undefined
 	])
 	// Generate timed objects for parts on the timeline
 	_.each(partInstancesOnTimeline, partInstance => {
-		const pieces = _.filter(playoutData.selectedInstancePieces, (pieceInstance: PieceInstance) => {
+		const pieces = cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
 			return !!(
 				pieceInstance.partInstanceId === partInstance._id &&
 				pieceInstance.piece.content &&
@@ -162,13 +170,13 @@ export function findLookaheadForlayer (
 			pieces: pieces.map(p => p.piece)
 		}
 
-		findObjectsForPart(playoutData, layer, previousPartInfo, partInfo, partInstance._id)
+		findObjectsForPart(cache, playlist, layer, previousPartInfo, partInfo, partInstance._id)
 			.forEach(o => res.timed.push({ obj: o, partId: partInstance.part._id }))
 		previousPartInfo = partInfo
 	})
 
 	// find all pieces that touch the layer
-	const piecesUsingLayer = _.filter(playoutData.pieces, (piece: Piece) => {
+	const piecesUsingLayer = cache.Pieces.findFetch((piece: Piece) => {
 		return !!(
 			piece.content &&
 			piece.content.timelineObjects &&
@@ -180,9 +188,9 @@ export function findLookaheadForlayer (
 	}
 
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPart = selectNextPart(playoutData.rundownPlaylist, _.last(partInstancesOnTimeline) || playoutData.previousPartInstance || null, playoutData.parts)
+	const nextPart = selectNextPart(playlist, _.last(partInstancesOnTimeline) || previousPartInstance || null, cache.Parts.findFetch())
 	const lastPartIndex = nextPart && lookaheadMaxSearchDistance !== undefined ? nextPart.index + lookaheadMaxSearchDistance : undefined
-	const futureParts = nextPart ? playoutData.parts.slice(nextPart.index, lastPartIndex) : []
+	const futureParts = nextPart ? cache.Parts.findFetch(undefined, { skip: nextPart.index, limit: lastPartIndex ? (lastPartIndex - nextPart.index) : undefined }) : []
 	if (futureParts.length === 0) {
 		return res
 	}
@@ -207,7 +215,7 @@ export function findLookaheadForlayer (
 		const pieces = piecesUsingLayerByPart[unprotectString(part._id)] || []
 		if (pieces.length > 0 && part.isPlayable()) {
 			const partInfo = { part, pieces }
-			findObjectsForPart(playoutData, layer, previousPartInfo, partInfo, null)
+			findObjectsForPart(cache, playlist, layer, previousPartInfo, partInfo, null)
 				.forEach(o => res.future.push({ obj: o, partId: part._id }))
 			previousPartInfo = partInfo
 		}
@@ -217,14 +225,15 @@ export function findLookaheadForlayer (
 }
 
 function findObjectsForPart (
-	playoutData: RundownPlaylistPlayoutData,
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
 	layer: string,
 	previousPartInfo: PartAndPieces | undefined,
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null,
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
-	const activePlaylist = playoutData.rundownPlaylist
-	const activeRundown = playoutData.rundownsMap[unprotectString(partInfo.part.rundownId)]
+	const activePlaylist = playlist
+	const activeRundown = cache.Rundowns.findOne(partInfo.part.rundownId)
 
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {
@@ -261,7 +270,7 @@ function findObjectsForPart (
 		// Only one, just return it
 		return allObjs
 	} else { // They need to be ordered
-		const orderedItems = orderPieces(playoutData.pieces.filter(p => p.partId === partInfo.part._id), partInfo.part._id, partInfo.part.getLastStartedPlayback())
+		const orderedItems = orderPieces(cache.Pieces.findFetch({ partId: partInfo.part._id }), partInfo.part._id, partInfo.part.getLastStartedPlayback())
 
 		let allowTransition = false
 		let classesFromPreviousPart: string[] = []

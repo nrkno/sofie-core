@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
-import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
 import { Segments as _Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
 import { Parts as _Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
@@ -116,6 +116,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const roData = mockRO.roCreate()
 		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
 		expect(rundown).toBeTruthy()
+		expect(RundownPlaylists.findOne(rundown.playlistId)).toBeTruthy()
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoDelete(device._id, device.token, roData.ID))
 
@@ -326,7 +327,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(playlist, [newPartData.ID.toString()], false)
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(expect.anything(), playlist, [newPartData.ID.toString()], false)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -360,7 +361,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(playlist, [newPartData.ID.toString()], false)
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(expect.anything(), playlist, [newPartData.ID.toString()], false)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -471,7 +472,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(playlist, [newPartData.ID.toString()], true)
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(expect.anything(), playlist, [newPartData.ID.toString()], true)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -529,7 +530,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		expect(Parts.find({ externalId: { $in: partExternalIds } }).count()).toEqual(0)
 
-		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(playlist)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -646,7 +647,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1))
 
-		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(playlist)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -681,7 +682,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1))
 
-		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(playlist)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -759,7 +760,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1))
 
-		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(playlist)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -796,7 +797,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1))
 
-		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(playlist)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		// Don't care about the result here, just making sure there isnt an exception while updating the db
 
@@ -825,7 +826,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, [new MOS.MosString128(story0)]))
 
-		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(playlist)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const { segments, parts } = waitForPromise(playlist.getSegmentsAndParts())
 		const partMap = mockRO.segmentIdMap()
@@ -862,7 +863,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
 
-		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(playlist)
+		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
 		const { segments, parts } = waitForPromise(playlist.getSegmentsAndParts())
 		const partMap = mockRO.segmentIdMap()

@@ -104,7 +104,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		})
 	}
 
-	private checkInOutPoints<T extends StateChange>(change: T): T {
+	private checkInOutPoints<T extends StateChange> (change: T): T {
 		if (change.inPoint !== undefined && change.duration !== undefined) {
 			if (change.duration < this.state.minDuration) {
 				if (change.inPoint + this.state.minDuration > this.state.maxDuration) {

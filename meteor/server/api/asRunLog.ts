@@ -34,6 +34,7 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
+import { CacheForRundownPlaylist } from '../DatabaseCaches'
 
 const EVENT_WAIT_TIME = 500
 
@@ -96,39 +97,31 @@ function handleEvent (event: AsRunLogEvent): void {
 // Convenience functions:
 
 export function reportRundownHasStarted (
-	playlistOrId: RundownPlaylist | RundownPlaylistId,
-	rundownOrId: Rundown | RundownId,
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	rundown: Rundown,
 	timestamp?: Time
 ) {
 	// Called when the first part in rundown starts playing
 
-	const rundown = (
-		isProtectedString(rundownOrId) ?
-		Rundowns.findOne(rundownOrId) :
-		rundownOrId
-	)
-	const playlist = (
-		isProtectedString(playlistOrId) ?
-		RundownPlaylists.findOne(playlistOrId) :
-		playlistOrId
-	)
-	if (rundown && playlist) {
-		Rundowns.update(rundown._id, {
+	if (!rundown) {
+		logger.error(`rundown argument missing in reportRundownHasStarted`)
+	} else if (!playlist) {
+		logger.error(`playlist argument missing in reportRundownHasStarted`)
+	} else {
+		cache.Rundowns.update(rundown._id, {
 			$set: {
 				startedPlayback: timestamp
 			}
 		})
 
 		if (!playlist.startedPlayback) {
-			RundownPlaylists.update(playlist._id, {
+			cache.RundownPlaylists.update(playlist._id, {
 				$set: {
 					startedPlayback: timestamp
 				}
 			})
 		}
-
-		// also update local object:
-		rundown.startedPlayback = timestamp
 
 		const event = pushAsRunLog({
 			studioId: rundown.studioId,
@@ -137,59 +130,47 @@ export function reportRundownHasStarted (
 			content2: 'rundown'
 		}, !!playlist.rehearsal, timestamp)
 		if (event) handleEvent(event)
-	} else if (playlist) {
-		logger.error(`rundown not found in reportRundownHasStarted "${rundownOrId}"`)
-	} else {
-		logger.error(`playlist not found in reportRundownHasStarted "${playlistOrId}"`)
 	}
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
 // }
-export function reportPartHasStarted (partInstanceOrId: PartInstance | PartInstanceId , timestamp: Time) {
-
-	let partInstance = (
-		isProtectedString(partInstanceOrId) ?
-		PartInstances.findOne(partInstanceOrId) :
-		partInstanceOrId
-	)
+export function reportPartHasStarted (
+	cache: CacheForRundownPlaylist,
+	partInstance: PartInstance,
+	timestamp: Time
+) {
 	if (partInstance) {
-		let rundown: Rundown | undefined
 
-		let r = waitForPromiseAll<any>([
-			asyncCollectionUpdate(PartInstances, partInstance._id, {
-				$set: {
-					'part.startedPlayback': true,
-					'part.stoppedPlayback': false,
-					isTaken: true
-				},
-				$push: {
-					'part.timings.startedPlayback': timestamp
-				}
-			}),
-			asyncCollectionFindOne(Rundowns, partInstance.rundownId),
+		cache.PartInstances.update(partInstance._id, {
+			$set: {
+				'part.startedPlayback': true,
+				'part.stoppedPlayback': false,
+				isTaken: true
+			},
+			$push: {
+				'part.timings.startedPlayback': timestamp
+			}
+		})
+		const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 
-			// TODO-PartInstance - pending new data flow
-			asyncCollectionUpdate(Parts, partInstance.part._id, {
-				$set: {
-					startedPlayback: true,
-					stoppedPlayback: false,
-				},
-				$push: {
-					'timings.startedPlayback': timestamp
-				}
-			})
-		])
-		rundown = r[1]
-		// also update local object:
-		partInstance.part.startedPlayback = true
-		partInstance.part.stoppedPlayback = false
-		pushOntoPath(partInstance.part, 'timings.startedPlayback', timestamp)
+		// TODO-PartInstance - pending new data flow
+		cache.Parts.update(partInstance.part._id, {
+			$set: {
+				startedPlayback: true,
+				stoppedPlayback: false,
+			},
+			$push: {
+				'timings.startedPlayback': timestamp
+			}
+		})
 
 		if (rundown) {
-			const playlist = rundown.getRundownPlaylist()
+			const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
+			if (!playlist) throw new Meteor.Error(500, `Playlist "${rundown.playlistId}" not found`)
+
 			let event = pushAsRunLog({
 				studioId:			rundown.studioId,
-				rundownId:		rundown._id,
+				rundownId:			rundown._id,
 				segmentId:			partInstance.segmentId,
 				partInstanceId:		partInstance._id,
 				content:			IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
@@ -199,7 +180,7 @@ export function reportPartHasStarted (partInstanceOrId: PartInstance | PartInsta
 		} else {
 			logger.error(`Rundown "${partInstance.rundownId}" not found in reportPartHasStarted "${partInstance._id}"`)
 		}
-	} else logger.error(`PartInstance not found in reportPartHasStarted "${partInstanceOrId}"`)
+	}
 }
 export function reportPartHasStopped (partInstanceOrId: PartInstance | PartInstanceId , timestamp: Time) {
 

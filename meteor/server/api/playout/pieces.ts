@@ -24,12 +24,13 @@ import {
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
-import { prefixAllObjectIds } from './lib'
+import { prefixAllObjectIds, getAllPiecesFromCache, getSelectedPartInstancesFromCache } from './lib'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
-import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
 import { PieceInstance, ResolvedPieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -116,8 +117,8 @@ export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: numb
  * Returns a list of the pieces in a Part, ordered in the order they will be played
  * @param part
  */
-export function getOrderedPiece (part: Part): Array<PieceResolved> {
-	const pieces = part.getAllPieces()
+export function getOrderedPiece (cache: CacheForRundownPlaylist, part: Part): Array<PieceResolved> {
+	const pieces = getAllPiecesFromCache(cache, part)
 	const partStarted = part.getLastStartedPlayback()
 
 	return orderPieces(pieces, part._id, partStarted)
@@ -246,8 +247,8 @@ function resolvePieceTimeline (objs: TimelineContentObject[], baseTime: number, 
 	return resolvedPieces
 }
 
-export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceInstance[] {
-	const pieceInstances = partInstance.getAllPieceInstances()
+export function getResolvedPieces (cache: CacheForRundownPlaylist, partInstance: PartInstance): ResolvedPieceInstance[] {
+	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
@@ -279,16 +280,21 @@ export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceIns
 
 	return resolvedPieces
 }
-export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
+export function getResolvedPiecesFromFullTimeline (cache: CacheForRundownPlaylist, playlist: RundownPlaylist, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
 	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId))))
 
 	const now = getCurrentTime()
 
-	const partInstanceIds = _.compact([playoutData.rundownPlaylist.previousPartInstanceId, playoutData.rundownPlaylist.currentPartInstanceId])
-	const pieceInstances: PieceInstance[] = playoutData.selectedInstancePieces.filter(p => partInstanceIds.indexOf(p.partInstanceId) !== -1)
+	const partInstanceIds = _.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId])
+	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch(p => partInstanceIds.indexOf(p.partInstanceId) !== -1)
 
-	if (playoutData.currentPartInstance && playoutData.currentPartInstance.part.autoNext && playoutData.rundownPlaylist.nextPartInstanceId) {
-		pieceInstances.push(...playoutData.selectedInstancePieces.filter(p => p.partInstanceId === playoutData.rundownPlaylist.nextPartInstanceId))
+	const {
+		currentPartInstance,
+		nextPartInstance
+	} = getSelectedPartInstancesFromCache(cache, playlist) // todo: should these be passed as a parameter from getTimelineRundown?
+
+	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
+		pieceInstances.push(...cache.PieceInstances.findFetch(p => p.partInstanceId === playlist.nextPartInstanceId))
 	}
 
 	const replaceNows = (obj: TimelineContentObject, parentAbsoluteStart: number) => {

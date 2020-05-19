@@ -1,7 +1,7 @@
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
+import { Rundowns, RundownId, Rundown, DBRundown } from '../../../lib/collections/Rundowns'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
@@ -12,6 +12,7 @@ import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { FindOptions } from '../../../lib/typings/meteor'
 
 export namespace reactiveData {
 	// export function getRRundownId (rundownId: RundownId): ReactiveVar<RundownId | undefined> {
@@ -28,14 +29,14 @@ export namespace reactiveData {
 	// 	return rVar
 	// }
 
-	export function getRRundowns (playlistId: RundownPlaylistId | undefined): ReactiveVar<Rundown[]> {
+	export function getRRundowns (playlistId: RundownPlaylistId | undefined, options?: FindOptions<DBRundown>): ReactiveVar<Rundown[]> {
 		const rVar = new ReactiveVar<Rundown[]>([])
 
 		Tracker.autorun(() => {
 			if (playlistId) {
 				const rundowns = Rundowns.find({
 					playlistId: playlistId
-				}).fetch()
+				}, options).fetch()
 				rVar.set(rundowns)
 			} else {
 				rVar.set([])
@@ -84,7 +85,7 @@ export namespace reactiveData {
 
 	// export function getRPieces (rundownIds: RundownId[]): ReactiveVar<Piece[]>
 	// export function getRPieces (rundownId: RundownId): ReactiveVar<Piece[]>
-	export function getRPieces (playlistId: RundownPlaylistId): ReactiveVar<Piece[]> {
+	export function getRPieces (playlistId: RundownPlaylistId, options?: FindOptions<Piece>): ReactiveVar<Piece[]> {
 		const rVar = new ReactiveVar<Piece[]>([])
 
 		const rRundowns = getRRundowns(playlistId)
@@ -92,7 +93,7 @@ export namespace reactiveData {
 			const rundownIds = rRundowns.get().map(r => r._id)
 			const slis = Pieces.find({
 				rundownId: { $in: rundownIds }
-			}).fetch()
+			}, options).fetch()
 			rVar.set(slis)
 		})
 		return rVar
@@ -117,17 +118,17 @@ export namespace reactiveData {
 	// 	return rVar
 	// }
 
-	export function getRPeripheralDevices (studioId: StudioId): ReactiveVar<PeripheralDevice[]> {
+	export function getRPeripheralDevices (studioId: StudioId, options?: FindOptions<PeripheralDevice>): ReactiveVar<PeripheralDevice[]> {
 		const rVar = new ReactiveVar<PeripheralDevice[]>([])
 
 		Tracker.autorun(() => {
 			const allDevices: PeripheralDevice[] = []
 			const peripheralDevices = PeripheralDevices.find({
 				studioId: studioId
-			}).fetch()
+			}, options).fetch()
 			allDevices.splice(allDevices.length, 0, ...peripheralDevices)
 			peripheralDevices.forEach((i) => {
-				const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }).fetch()
+				const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }, options).fetch()
 				allDevices.splice(allDevices.length, 0, ...subDevices)
 			})
 			rVar.set(allDevices)
@@ -150,8 +151,8 @@ export namespace reactiveData {
 				tryCount: { $not: { $lt: 1 } }
 			}, {
 				limit: 10
-			}).fetch()
-			rVar.set(unsentMessages.length)
+			}).count()
+			rVar.set(unsentMessages)
 		})
 
 		return rVar

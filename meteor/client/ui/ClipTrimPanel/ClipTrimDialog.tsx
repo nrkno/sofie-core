@@ -8,9 +8,9 @@ import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction } from '../../lib/userAction'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications';
-import { protectString } from '../../../lib/lib';
-import { ClientAPI } from '../../../lib/api/client';
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { protectString } from '../../../lib/lib'
+import { ClientAPI } from '../../../lib/api/client'
 
 export interface IProps {
 	playlistId: RundownPlaylistId

@@ -7,14 +7,15 @@ import { Part } from '../../../lib/collections/Parts'
 import { check } from '../../../lib/check'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
-import { resetRundown } from '../playout/lib'
+import { resetRundown, removeRundownFromCache } from '../playout/lib'
 import { handleUpdatedRundown, RundownSyncFunctionPriority, rundownPlaylistSyncFunction, handleUpdatedRundownInner } from './rundownInput'
 import { logger } from '../../logging'
-import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ReloadRundownResponse } from '../../../lib/api/userActions'
 import { INewsDeviceActions } from './iNewsDevice/actions'
+import { waitForPromise } from '../../../lib/lib'
+import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -94,31 +95,35 @@ export namespace IngestActions {
 
 		logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
 
-		const studio = Studios.findOne(rundownPlaylist.studioId)
+		const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
+
+		const studio = cache.Studios.findOne(rundownPlaylist.studioId)
 		if (!studio) {
 			throw new Meteor.Error(404,`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`)
 		}
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
-			rundownPlaylist.getRundowns().forEach(rundown => {
+			cache.Rundowns.findFetch({ playlistId: rundownPlaylist._id }).forEach(rundown => {
 				if (rundown.studioId !== studio._id) {
 					logger.warning(`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`)
 				}
-				const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+				const peripheralDevice = cache.PeripheralDevices.findOne(rundown.peripheralDeviceId)
 				if (!peripheralDevice) {
 					logger.info(`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`)
 				}
 
 				const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 				if (purgeExisting) {
-					rundown.remove()
+					removeRundownFromCache(cache, rundown)
 				} else {
 					// Reset the rundown (remove adlibs, etc):
-					resetRundown(rundown)
+					resetRundown(cache, rundown)
 				}
 
 				handleUpdatedRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
 			})
+
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 }

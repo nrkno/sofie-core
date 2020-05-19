@@ -6,13 +6,14 @@ import { Timeline, TimelineObjGeneric, getTimelineId, TimelineObjType } from '..
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { afterUpdateTimeline } from './playout/timeline'
 import { check } from '../../lib/check'
-import { makePromise } from '../../lib/lib'
+import { makePromise, waitForPromise } from '../../lib/lib'
 import { ServerClientAPI } from './client'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
 import { StudioContentWriteAccess } from '../security/studio'
+import { CacheForStudio, initCacheForNoRundownPlaylist } from '../DatabaseCaches'
 
-function insertTimelineObject (context: MethodContext, studioId: StudioId, timelineObjectOrg: TimelineObjectCoreExt) {
+function insertTimelineObject (context: MethodContext, cache: CacheForStudio, studioId: StudioId, timelineObjectOrg: TimelineObjectCoreExt) {
 	check(studioId, String)
 
 	StudioContentWriteAccess.timeline(context, studioId)
@@ -27,14 +28,14 @@ function insertTimelineObject (context: MethodContext, studioId: StudioId, timel
 
 	let studio = Studios.findOne(studioId)
 
-	Timeline.upsert(timelineObject._id, timelineObject)
+	cache.Timeline.upsert(timelineObject._id, timelineObject)
 
 	if (studio) {
-		afterUpdateTimeline(studio)
+		afterUpdateTimeline(cache, studio)
 	}
 
 }
-function removeTimelineObject (context: MethodContext, studioId: StudioId, id: string) {
+function removeTimelineObject (context: MethodContext, cache: CacheForStudio, studioId: StudioId, id: string) {
 	check(studioId, String)
 	check(id, String)
 
@@ -43,19 +44,27 @@ function removeTimelineObject (context: MethodContext, studioId: StudioId, id: s
 	let studio = Studios.findOne(studioId)
 
 	if (studio) {
-		Timeline.remove(getTimelineId(studio._id, id))
+		cache.Timeline.remove(getTimelineId(studio._id, id))
 
-		afterUpdateTimeline(studio)
+		afterUpdateTimeline(cache, studio)
 	}
 
 }
 
 class ServerManualPlayoutAPI extends MethodContextAPI implements NewManualPlayoutAPI {
 	insertTimelineObject (studioId: StudioId, timelineObject: TimelineObjectCoreExt) {
-		return makePromise(() => insertTimelineObject(this, studioId, timelineObject))
+		return makePromise(() => {
+			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			insertTimelineObject(this, cache, studioId, timelineObject)
+			waitForPromise(cache.saveAllToDatabase())
+		})
 	}
 	removeTimelineObject (studioId: StudioId, id: string) {
-		return makePromise(() => removeTimelineObject(this, studioId, id))
+		return makePromise(() => {
+			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			removeTimelineObject(this, cache, studioId, id)
+			waitForPromise(cache.saveAllToDatabase())
+		})
 	}
 }
 registerClassToMeteorMethods(ManualPlayoutAPIMethods, ServerManualPlayoutAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {

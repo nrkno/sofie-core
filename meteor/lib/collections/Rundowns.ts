@@ -229,7 +229,7 @@ export class Rundown implements DBRundown {
 		}
 		return this.getAllPartInstances(newSelector, options)
 	}
-	remove () {
+	removeTOBEREMOVED () {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		Rundowns.remove(this._id)
 		if (this.playlistId) {

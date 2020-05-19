@@ -14,100 +14,14 @@ import { RundownUtils } from '../../lib/rundown'
 import { PartExtended } from '../../../lib/Rundown'
 import { Part } from '../../../lib/collections/Parts'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
+import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
 }
 
-interface ISegmentPropsHeader {
-	segment: SegmentUi
-	playlist: RundownPlaylist
-	totalDuration: number
-	partLiveDurations: TimeMap
-	segmentStartsAt?: TimeMap
-}
-
-interface IPartPropsHeader {
-	part: PartUi
-	totalDuration: number
-	segmentLiveDurations?: TimeMap
-	segmentStartsAt?: TimeMap
-	isLive: boolean
-	isNext: boolean
-	segmentDuration: number | undefined
-}
-
 interface TimeMap {
 	[key: string]: number
-}
-
-const PartOverview: React.SFC<IPartPropsHeader> = (props: IPartPropsHeader) => {
-	const innerPart = props.part.instance.part
-	return (
-		<ErrorBoundary>
-			<div className={ClassNames('rundown__overview__segment__part', {
-				'live': props.isLive,
-				'next': props.isNext,
-
-				'has-played': (innerPart.startedPlayback && (innerPart.getLastStartedPlayback() || 0) > 0 && (innerPart.duration || 0) > 0)
-			})}
-				style={{
-					'width': (((Math.max(props.segmentLiveDurations && props.segmentLiveDurations[unprotectString(innerPart._id)] || 0, innerPart.duration || innerPart.expectedDuration || 0)) / (props.segmentDuration || 0)) * 100) + '%'
-				}}
-			>
-				{ props.isNext &&
-					<div className='rundown__overview__segment__part__next-line'>
-					</div>
-				}
-				{ props.isLive &&
-					<div className='rundown__overview__segment__part__live-line'
-						style={{
-							'left': (((getCurrentTime() - (innerPart.getLastStartedPlayback() || 0)) /
-								(Math.max(props.segmentLiveDurations && props.segmentLiveDurations[unprotectString(innerPart._id)] || 0, innerPart.duration || innerPart.expectedDuration || 0))) * 100) + '%'
-						}}>
-					</div>
-				}
-			</div>
-		</ErrorBoundary>
-	)
-}
-
-const SegmentOverview: React.SFC<ISegmentPropsHeader> = (props: ISegmentPropsHeader) => {
-	const segmentDuration = props.partLiveDurations ? props.segment.items.map((i) => props.partLiveDurations[unprotectString(i.instance.part._id)]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
-
-	return props.segment.items && (
-		<div className={ClassNames('rundown__overview__segment', {
-			'next': props.segment.items.find((i) => i.instance._id === props.playlist.nextPartInstanceId) ? true : false,
-			'live': props.segment.items.find((i) => i.instance._id === props.playlist.currentPartInstanceId) ? true : false
-		})} style={{
-			'width': ((segmentDuration || 0) / props.totalDuration * 100) + '%'
-		}}>
-			{ props.segment.items.map((item, index) => {
-				return (
-					<PartOverview part={item}
-						key={unprotectString(item.instance._id)}
-						totalDuration={props.totalDuration}
-						segmentLiveDurations={props.partLiveDurations}
-						segmentStartsAt={props.segmentStartsAt}
-						isLive={props.playlist.currentPartInstanceId === item.instance._id}
-						isNext={props.playlist.nextPartInstanceId === item.instance._id}
-						segmentDuration={segmentDuration}
-						 />
-				)
-			}) }
-			{ props.segment.name &&
-				<div className='rundown__overview__segment__part__label' style={{
-					'maxWidth': '100%'
-				}}>
-					{props.segment.name}
-					{segmentDuration && _.isNumber(segmentDuration) &&
-						<span className='rundown__overview__segment__part__label__duration'>{RundownUtils.formatDiffToTimecode(segmentDuration, false, false, false, false, true)}</span>
-					}
-				</div>
-			}
-		</div>
-	) || null
 }
 
 interface RundownOverviewProps {
@@ -121,77 +35,165 @@ interface RundownOverviewTrackedProps {
 	segments: Array<SegmentUi>
 }
 
-export const RundownOverview = withTiming<RundownOverviewProps, RundownOverviewState>()(
-withTracker<WithTiming<RundownOverviewProps>, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
+export const RundownOverview =
+	withTracker<RundownOverviewProps, RundownOverviewState, RundownOverviewTrackedProps>((props: RundownOverviewProps) => {
 
-	let playlist: RundownPlaylist | undefined
-	if (props.rundownPlaylistId) playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
-	let segments: Array<SegmentUi> = []
-	if (playlist) {
-		const segmentMap = new Map<SegmentId, SegmentUi>()
-		segments = playlist.getSegments({
-			isHidden: {
-				$ne: true
-			}
-		}).map((segment) => {
-			const segmentUi = literal<SegmentUi>({
-				...segment,
-				items: []
-			})
-			segmentMap.set(segment._id, segmentUi)
-			return segmentUi
-		})
-
-		const partInstancesMap = playlist.getActivePartInstancesMap()
-		playlist.getUnorderedParts({
-			segmentId: {
-				$in: Array.from(segmentMap.keys())
-			}
-		}).map((part) => {
-			const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
-			const partUi = literal<PartUi>({
-				partId: part._id,
-				instance,
-				pieces: [],
-				renderedDuration: 0,
-				startsAt: 0,
-				willProbablyAutoNext: false
-			})
-			const segment = segmentMap.get(part.segmentId)
-			if (segment) segment.items.push(partUi)
-		})
-
-		segmentMap.forEach(segment => {
-			// Sort parts by rank
-			segment.items = _.sortBy(segment.items, p => p.instance.part._rank)
-		})
-	}
-	return {
-		segments,
-		playlist
-	}
-})(
-class RundownOverview extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
-	render () {
-		if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
-			const playlist = this.props.playlist
-			return (<ErrorBoundary>
-				<div className='rundown__overview'>
-				{
-					this.props.segments.map((item) => {
-						return <SegmentOverview
-							segment={item}
-							key={unprotectString(item._id)}
-							totalDuration={Math.max((this.props.timingDurations && this.props.timingDurations.asDisplayedRundownDuration) || 1, playlist.expectedDuration || 1)}
-							partLiveDurations={(this.props.timingDurations && this.props.timingDurations.partDurations) || {}}
-							playlist={playlist}
-							segmentStartsAt={(this.props.timingDurations && this.props.timingDurations.partStartsAt) || {}}
-							/>
-					})
+		let playlist: RundownPlaylist | undefined
+		if (props.rundownPlaylistId) playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
+		let segments: Array<SegmentUi> = []
+		if (playlist) {
+			const segmentMap = new Map<SegmentId, SegmentUi>()
+			segments = playlist.getSegments({
+				isHidden: {
+					$ne: true
 				}
-				</div>
-			</ErrorBoundary>)
+			}, {
+				fields: {
+					rundownId: 1,
+					name: 1
+				}
+			}).map((segment) => {
+				const segmentUi = literal<SegmentUi>({
+					...segment,
+					items: []
+				})
+				segmentMap.set(segment._id, segmentUi)
+				return segmentUi
+			})
+
+			const partInstancesMap = playlist.getActivePartInstancesMap()
+			playlist.getUnorderedParts({
+				segmentId: {
+					$in: Array.from(segmentMap.keys())
+				}
+			}, {
+				fields: {
+					_rank: 1,
+					// TODO: fix
+					name: 1,
+					rundownId: 1,
+					segmentId: 1,
+					duration: 1,
+					expectedDuration: 1,
+					timings: 1,
+					startedPlayback: 1,
+					stoppedPlayback: 1,
+					taken: 1
+				}
+			}).map((part) => {
+				const instance = findPartInstanceOrWrapToTemporary(partInstancesMap, part)
+				const partUi = literal<PartUi>({
+					partId: part._id,
+					instance,
+					pieces: [],
+					renderedDuration: 0,
+					startsAt: 0,
+					willProbablyAutoNext: false
+				})
+				const segment = segmentMap.get(part.segmentId)
+				if (segment) segment.items.push(partUi)
+			})
+
+			segmentMap.forEach(segment => {
+				// Sort parts by rank
+				segment.items = _.sortBy(segment.items, p => p.instance.part._rank)
+			})
 		}
-		return null
-	}
-}))
+		return {
+			segments,
+			playlist
+		}
+	})(
+		withTiming<RundownOverviewProps & RundownOverviewTrackedProps, RundownOverviewState>()(
+			class RundownOverview extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
+				renderPart(part: PartUi, timingDurations: TimeMap, segmentDuration: number, totalDuration: number, isLive: boolean, isNext: boolean) {
+					const innerPart = part.instance.part
+
+					return (
+						<div
+							key={unprotectString(part.instance._id)}
+							className={ClassNames('rundown__overview__segment__part', {
+								'live': isLive,
+								'next': isNext,
+
+								'has-played': (innerPart.startedPlayback && (innerPart.getLastStartedPlayback() || 0) > 0 && (innerPart.duration || 0) > 0)
+							})}
+							style={{
+								'width': (((Math.max(timingDurations && timingDurations[unprotectString(innerPart._id)] || 0, innerPart.duration || innerPart.expectedDuration || 0)) / (segmentDuration || 0)) * 100) + '%'
+							}}
+						>
+							{isNext &&
+								<div className='rundown__overview__segment__part__next-line'>
+								</div>
+							}
+							{isLive &&
+								<div className='rundown__overview__segment__part__live-line'
+									style={{
+										'left': (((getCurrentTime() - (innerPart.getLastStartedPlayback() || 0)) /
+											(Math.max(timingDurations && timingDurations[unprotectString(innerPart._id)] || 0, innerPart.duration || innerPart.expectedDuration || 0))) * 100) + '%'
+									}}>
+								</div>
+							}
+						</div>
+					)
+				}
+
+				renderSegment(playlist: RundownPlaylist, segment: SegmentUi, timingDurations: TimeMap, totalDuration: number) {
+					const segmentDuration = timingDurations ? segment.items.map((i) => timingDurations[unprotectString(i.instance.part._id)]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
+
+					return segment.items && (
+						<div
+							key={unprotectString(segment._id)}
+							className={ClassNames('rundown__overview__segment', {
+								'next': segment.items.find((i) => i.instance._id === playlist.nextPartInstanceId) ? true : false,
+								'live': segment.items.find((i) => i.instance._id === playlist.currentPartInstanceId) ? true : false
+							})} style={{
+								'width': ((segmentDuration || 0) / totalDuration * 100) + '%'
+							}}>
+							{segment.items.map((item) => {
+								return this.renderPart(
+									item,
+									timingDurations,
+									segmentDuration || 0,
+									totalDuration,
+									playlist.currentPartInstanceId === item.instance._id,
+									playlist.nextPartInstanceId === item.instance._id
+								)
+							})}
+							{segment.name &&
+								<div className='rundown__overview__segment__part__label' style={{
+									'maxWidth': '100%'
+								}}>
+									{segment.name}
+									{segmentDuration && _.isNumber(segmentDuration) &&
+										<span className='rundown__overview__segment__part__label__duration'>{RundownUtils.formatDiffToTimecode(segmentDuration, false, false, false, false, true)}</span>
+									}
+								</div>
+							}
+						</div>
+					) || null
+				}
+
+				render() {
+					if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
+						const playlist = this.props.playlist
+						return (<ErrorBoundary>
+							<div className='rundown__overview'>
+								{
+									this.props.segments.map((item) => {
+										return this.renderSegment(
+											this.props.playlist!,
+											item,
+											(this.props.timingDurations && this.props.timingDurations.partDurations) || {},
+											Math.max((this.props.timingDurations && this.props.timingDurations.asPlayedRundownDuration) || 1, this.props.playlist!.expectedDuration || 1)
+										)
+									})
+								}
+							</div>
+						</ErrorBoundary>)
+					}
+					return null
+				}
+			}
+		)
+	)
