@@ -101,7 +101,7 @@ export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLaye
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
-		case SourceLayerType.TRANSITION:
+		// case SourceLayerType.TRANSITION:
 			if (piece.content && piece.content.fileName) {
 				return (piece.content as VTContent).fileName.toUpperCase()
 			}
@@ -122,7 +122,7 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 		switch (sourceLayer.type) {
 			case SourceLayerType.VT:
 			case SourceLayerType.LIVE_SPEAK:
-			case SourceLayerType.TRANSITION:
+			// case SourceLayerType.TRANSITION:
 				const fileName = getMediaObjectMediaId(piece, sourceLayer)
 				const displayName = piece.name
 				const messages: Array<string> = []
