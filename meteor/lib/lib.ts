@@ -993,8 +993,8 @@ export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
 				const order = options!.sort![key]
 
 				// Get the values, and handle asc vs desc
-				const val1 = order > 0 ? a[key] : b[key]
-				const val2 = order > 0 ? b[key] : a[key]
+				const val1 = objectPath.get(order > 0 ? a : b, key)
+				const val2 = objectPath.get(order > 0 ? b : a, key)
 
 				if (_.isEqual(val1, val2)) {
 					return doSort(a, b, i + 1)
@@ -1027,6 +1027,8 @@ export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
 			if (includeKeys.length !== 0 && excludeKeys.length !== 0) {
 				throw new Meteor.Error(`options.fields cannot contain both include and exclude rules`)
 			}
+
+			// TODO - does this need to use objectPath in some way?
 
 			if (includeKeys.length !== 0) {
 				if (idVal !== 0) includeKeys.push('_id')
