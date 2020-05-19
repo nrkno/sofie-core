@@ -54,6 +54,14 @@ import { StudioContext, NotesContext, ShowStyleContext } from './context';
 import { setNextPart, getRundownIDsFromCache } from '../../playout/lib';
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib';
 
+export enum ActionPartChange {
+	NONE = 0,
+	/** Inserted/updated a piece which can be simply pruned */
+	SAFE_CHANGE = 1,
+	/** Inserted/updated a piece which requires a blueprint call to reset */
+	MARK_DIRTY = 2,
+}
+
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext {
 	private readonly cache: CacheForRundownPlaylist
@@ -62,8 +70,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 	private queuedPartInstance: PartInstance | undefined
 
-	public currentPartChanged: boolean = false
-	public nextPartChanged: boolean = false
+	public currentPartState: ActionPartChange = ActionPartChange.NONE
+	public nextPartState: ActionPartChange = ActionPartChange.NONE
 
 	constructor(cache: CacheForRundownPlaylist, notesContext: NotesContext, rundownPlaylist: RundownPlaylist, rundown: Rundown) {
 		super(cache.Studios.findOne(rundownPlaylist.studioId)!, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext) // TODO - better loading of studio
@@ -171,9 +179,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		ServerPlayoutAdLibAPI.innerStartAdLibPiece(this.cache, this.rundownPlaylist, rundown, partInstance, newPieceInstance)
 		
 		if (part === 'current') {
-			this.currentPartChanged = true
+			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)
 		} else {
-			this.nextPartChanged = true
+			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
 		return unprotectString(newPieceInstance._id)
@@ -210,8 +218,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PieceInstance could not be found')
 		}
 
-		const updatesCurrentPart = pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId
-		const updatesNextPart = pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId
+		const changeLevel = pieceInstance.piece.dynamicallyInserted ? ActionPartChange.SAFE_CHANGE : ActionPartChange.MARK_DIRTY
+		const updatesCurrentPart: ActionPartChange = pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId ? changeLevel : ActionPartChange.NONE
+		const updatesNextPart: ActionPartChange = pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId ? changeLevel : ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
@@ -232,8 +241,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		this.cache.PieceInstances.update(pieceInstance._id, update)
 
-		this.nextPartChanged = this.nextPartChanged || updatesNextPart
-		this.currentPartChanged = this.currentPartChanged || updatesCurrentPart
+		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
+		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
 
 		return _.clone(unprotectObject(this.cache.PieceInstances.findOne(pieceInstance._id)!))
 	}
@@ -241,6 +250,13 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		const currentPartInstance = this.rundownPlaylist.currentPartInstanceId ? this.cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId) : undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
+		}
+
+		if (this.nextPartState !== ActionPartChange.NONE) {
+			// Ensure we dont insert a piece into a part before replacing it with a queued part, as this will cause some data integrity issues
+			// This could be changed if we have a way to abort the pending changes in the nextPart.
+			// TODO-PartInstances - perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
+			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
 		const newPartInstance = new PartInstance({
@@ -269,7 +285,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartQueuedAdLib(this.cache, this.rundownPlaylist, this.rundown, currentPartInstance, newPartInstance, newPieceInstances)
 
-		this.nextPartChanged = true
+		this.nextPartState = ActionPartChange.SAFE_CHANGE
 	}
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
 		if (sourceLayerIds.length == 0) {
@@ -298,7 +314,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(this.cache, partInstance, filter, timeOffset)
 
 		if (stoppedIds.length > 0) {
-			this.currentPartChanged = true
+			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
 		return unprotectStringArray(stoppedIds)

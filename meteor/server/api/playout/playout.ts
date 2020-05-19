@@ -49,7 +49,7 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistPlayoutData, RundownP
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { NotesContext } from '../blueprints/context/context'
-import { ActionExecutionContext } from '../blueprints/context/adlibActions'
+import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
@@ -1275,14 +1275,16 @@ export namespace ServerPlayoutAPI {
 
 	export function executeActionInner(rundownPlaylistId: RundownPlaylistId, func: (context: ActionExecutionContext, cache: CacheForRundownPlaylist, rundown: Rundown, currentPartInstance: PartInstance) => void) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+			if (!tmpPlaylist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
+			if (!tmpPlaylist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
+
+			const cache = waitForPromise(initCacheForRundownPlaylist(tmpPlaylist))
+			const playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			if (!playlist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
 
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
-			const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+			const currentPartInstance = playlist.currentPartInstanceId ? cache.PartInstances.findOne(playlist.currentPartInstanceId) : undefined
 			if (!currentPartInstance) throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
 
 			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
@@ -1297,12 +1299,44 @@ export namespace ServerPlayoutAPI {
 
 			// TODO - other side effects and bits to save/do
 
-			if (context.currentPartChanged || context.nextPartChanged) {
+			// Mark the parts as dirty if needed, so that they get a reimport on reset to undo any changes
+			if (context.currentPartState === ActionPartChange.MARK_DIRTY) {
+				cache.PartInstances.update(currentPartInstance._id, {
+					$set: {
+						'part.dirty': true
+					}
+				})
+				// TODO-PartInstance - pending new data flow
+				cache.Parts.update(currentPartInstance.part._id, {
+					$set: {
+						dirty: true
+					}
+				})
+			}
+			if (context.nextPartState === ActionPartChange.MARK_DIRTY) {
+				if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, `Cannot mark non-existant partInstance as dirty`)
+				const nextPartInstance = cache.PartInstances.findOne(playlist.nextPartInstanceId)
+				if (!nextPartInstance) throw new Meteor.Error(500, `Cannot mark non-existant partInstance as dirty`)
+				
+				cache.PartInstances.update(nextPartInstance._id, {
+					$set: {
+						'part.dirty': true
+					}
+				})
+				// TODO-PartInstance - pending new data flow
+				cache.Parts.update(nextPartInstance.part._id, {
+					$set: {
+						dirty: true
+					}
+				})
+			}
+
+			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
 				// TODO - some of these could possibly be run more intelligently
 				updateSourceLayerInfinitesAfterPart(cache, rundown, currentPartInstance.part)
 			}
 
-			if (context.currentPartChanged || context.nextPartChanged) {
+			if (context.currentPartState || context.nextPartState) {
 				updateTimeline(cache, playlist.studioId)
 			}
 
