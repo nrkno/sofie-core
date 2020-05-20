@@ -23,7 +23,6 @@ export namespace RundownReadAccess {
 	}
 	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
 	export function rundownContent (selector: MongoQuery<RundownContent>, cred: Credentials): boolean {
-		triggerWriteAccess() // Johan, should this be here because of getSegmentPartNotes being a meteor method?
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.rundownId) throw new Meteor.Error(400, 'selector must contain rundownId')
