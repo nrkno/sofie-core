@@ -25,7 +25,8 @@ import {
 	IBlueprintPieceInstance,
 	IBlueprintPartDB,
 	IBlueprintRundownDB,
-	IBlueprintAsRunLogEvent
+	IBlueprintAsRunLogEvent,
+	IBlueprintExternalMessageQueueObj
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig } from './config'
@@ -39,6 +40,7 @@ import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/Run
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { PieceInstances, unprotectPieceInstance } from '../../../lib/collections/PieceInstances'
 import { InternalIBlueprintPartInstance, PartInstanceId, unprotectPartInstance, PartInstance } from '../../../lib/collections/PartInstances'
+import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 
 /** Common */
 
@@ -304,6 +306,20 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 			}
 		}).fetch())
 	}
+	/** Get all unsent and queued messages in the rundown */
+	getAllQueuedMessages (): Readonly<IBlueprintExternalMessageQueueObj[]> {
+		return unprotectObjectArray(
+			ExternalMessageQueue.find({
+				rundownId: this._rundown._id,
+				queueForLater: true
+			}, {
+				sort: {
+					timestamp: 1
+				}
+			}).fetch()
+		)
+	}
+
 	/** Get all segments in this rundown */
 	getSegments (): Array<IBlueprintSegmentDB> {
 		return unprotectObjectArray(this._rundown.getSegments())
