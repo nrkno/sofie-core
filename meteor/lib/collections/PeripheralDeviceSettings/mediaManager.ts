@@ -172,7 +172,7 @@ export interface FileShareStorage extends StorageSettings {
 		onlySelectedFiles?: boolean
 	}
 }
-export type MonitorSettings = MonitorSettingsNull | MonitorSettingsWatcher | MonitorSettingsQuantel
+export type MonitorSettings = MonitorSettingsNull | MonitorSettingsWatcher | MonitorSettingsMediaScanner | MonitorSettingsQuantel
 export interface MonitorSettingsBase {
 	type: MonitorSettingsType
 
@@ -185,6 +185,7 @@ export interface MonitorSettingsBase {
 export enum MonitorSettingsType {
 	NULL = '',
 	WATCHER = 'watcher',
+	MEDIA_SCANNER = 'mediascanner',
 	QUANTEL = 'quantel'
 }
 export interface WatchOptions { // See https://www.npmjs.com/package/chokidar#api
@@ -210,6 +211,16 @@ export interface WatchOptions { // See https://www.npmjs.com/package/chokidar#ap
 export interface MonitorSettingsNull extends MonitorSettingsBase {
 	type: MonitorSettingsType.NULL
 }
+/**
+ * @deprecated Use [MonitorSettingsWatcher]
+ */
+export interface MonitorSettingsMediaScanner extends MonitorSettingsBase {
+	type: MonitorSettingsType.MEDIA_SCANNER
+	/** Host of the media-scanner PouchDB server */
+	host: string
+	port: number
+}
+
 export interface MonitorSettingsWatcher extends MonitorSettingsBase {
 	type: MonitorSettingsType.WATCHER
 
