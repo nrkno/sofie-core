@@ -1,4 +1,16 @@
-import { RundownLayoutBase, RundownLayout, DashboardLayout, RundownLayoutType, RundownLayoutElementBase, RundownLayoutFilter, RundownLayoutElementType, RundownLayoutFilterBase, RundownLayoutExternalFrame, RundownLayoutMultiView, PieceDisplayStyle, RundownLayoutKeyboardPreview } from '../collections/RundownLayouts'
+import {
+	RundownLayoutBase,
+	RundownLayout,
+	DashboardLayout,
+	RundownLayoutType,
+	RundownLayoutElementBase,
+	RundownLayoutFilterBase,
+	RundownLayoutElementType,
+	RundownLayoutExternalFrame,
+	RundownLayoutAdLibRegion,
+	PieceDisplayStyle,
+	RundownLayoutKeyboardPreview,
+} from '../collections/RundownLayouts'
 import * as _ from 'underscore'
 
 export namespace RundownLayoutsAPI {
@@ -23,15 +35,15 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.EXTERNAL_FRAME
 	}
 
-	export function isMultiView (element: RundownLayoutElementBase): element is RundownLayoutMultiView {
-		return element.type === RundownLayoutElementType.MULTIVIEW
+	export function isAdLibRegion (element: RundownLayoutElementBase): element is RundownLayoutAdLibRegion {
+		return element.type === RundownLayoutElementType.ADLIB_REGION
 	}
 
 	export function isKeyboardMap (element: RundownLayoutElementBase): element is RundownLayoutKeyboardPreview {
 		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
 	}
 
-	export function multiViewToFilter (element: RundownLayoutMultiView): RundownLayoutFilterBase {
+	export function adLibRegionToFilter (element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
 		return {
 			...(_.pick(element, '_id', 'name', 'rank', 'tags')),
 			rundownBaseline: true,

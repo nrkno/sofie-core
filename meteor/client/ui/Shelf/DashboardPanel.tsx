@@ -36,8 +36,8 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { invalidateAt } from '../../lib/invalidatingTime'
-import { getNextPiecesReactive } from './MultiViewPanel'
 import { registerHotkey, HotkeyAssignmentType, RegisteredHotkeys } from '../../lib/hotkeyRegistry'
+import { getNextPiecesReactive } from './AdLibRegionPanel'
 
 interface IState {
 	outputLayers: {

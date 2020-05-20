@@ -7,7 +7,24 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/fontawesome-free-solid'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { RundownLayouts, RundownLayout, RundownLayoutType, RundownLayoutBase, RundownLayoutFilter, PieceDisplayStyle, RundownLayoutFilterBase, RundownLayoutElementType, RundownLayoutElementBase, RundownLayoutExternalFrame, RundownLayoutMultiView, RundownLayoutMultiViewRole, DashboardLayout, ActionButtonType, DashboardLayoutActionButton, RundownLayoutKeyboardPreview } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayouts,
+	RundownLayout,
+	RundownLayoutType,
+	RundownLayoutBase,
+	RundownLayoutFilter,
+	PieceDisplayStyle,
+	RundownLayoutFilterBase,
+	DashboardLayout,
+	ActionButtonType,
+	DashboardLayoutActionButton,
+	RundownLayoutElementType,
+	RundownLayoutElementBase,
+	RundownLayoutExternalFrame,
+	RundownLayoutAdLibRegion,
+	RundownLayoutAdLibRegionRole,
+	RundownLayoutKeyboardPreview
+} from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -793,7 +810,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		</React.Fragment>
 	}
 
-	renderMultiView (item: RundownLayoutBase, tab: RundownLayoutMultiView, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
+	renderAdLibRegion (item: RundownLayoutBase, tab: RundownLayoutAdLibRegion, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -817,7 +834,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						obj={item}
 						type='dropdown'
 						collection={RundownLayouts}
-						options={RundownLayoutMultiViewRole}
+						options={RundownLayoutAdLibRegionRole}
 						className='input text-input input-l' />
 				</label>
 			</div>
@@ -1093,8 +1110,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						this.renderFilter(item, tab, index, isRundownLayout, isDashboardLayout) :
 					 RundownLayoutsAPI.isExternalFrame(tab) ?
 						this.renderFrame(item, tab, index, isRundownLayout, isDashboardLayout) :
-					 RundownLayoutsAPI.isMultiView(tab) ?
-						 this.renderMultiView(item, tab, index, isRundownLayout, isDashboardLayout) :
+					 RundownLayoutsAPI.isAdLibRegion(tab) ?
+					 	this.renderAdLibRegion(item, tab, index, isRundownLayout, isDashboardLayout) :
 					 RundownLayoutsAPI.isKeyboardMap(tab) ?
 					 	 this.renderKeyboardLayout(item, tab, index, isRundownLayout, isDashboardLayout) :
 						undefined}

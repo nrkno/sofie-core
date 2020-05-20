@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { RundownLayoutBase, RundownLayoutMultiView, DashboardLayoutMultiView, RundownLayoutMultiViewRole, RundownLayoutElementType, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutBase, RundownLayoutElementType, PieceDisplayStyle, RundownLayoutAdLibRegion, RundownLayoutAdLibRegionRole, DashboardLayoutAdLibRegion } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -21,15 +21,15 @@ import { invalidateAt } from '../../lib/invalidatingTime'
 interface IState {
 }
 
-interface IMultiViewPanelProps {
+interface IAdLibRegionPanelProps {
 	layout: RundownLayoutBase
-	panel: RundownLayoutMultiView
+	panel: RundownLayoutAdLibRegion
 	visible: boolean
 	rundown: Rundown
 	adlibRank?: number
 }
 
-interface IMultiViewPanelTrackedProps {
+interface IAdLibRegionPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieces: {
 		[key: string]: Piece[]
@@ -39,7 +39,7 @@ interface IMultiViewPanelTrackedProps {
 	}
 }
 
-export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IMultiViewPanelProps & IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>, IState> {
+export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>, IState> {
 
 	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
@@ -106,44 +106,44 @@ export class MultiViewPanelInner extends MeteorReactComponent<Translated<IAdLibP
 
 	onAction = (e: any, piece?: AdLibPieceUi) => {
 		switch (this.props.panel.role) {
-			case RundownLayoutMultiViewRole.QUEUE:
+			case RundownLayoutAdLibRegionRole.QUEUE:
 				this.toggleAdLib(e, piece, true)
 				break
-			case RundownLayoutMultiViewRole.TAKE:
+			case RundownLayoutAdLibRegionRole.TAKE:
 				this.take(e)
 				break
-			case RundownLayoutMultiViewRole.PROGRAM:
+			case RundownLayoutAdLibRegionRole.PROGRAM:
 				break
 		}
 	}
 
 	render () {
-		const isTake = this.props.panel.role === RundownLayoutMultiViewRole.TAKE
-		const isProgram = this.props.panel.role === RundownLayoutMultiViewRole.PROGRAM
+		const isTake = this.props.panel.role === RundownLayoutAdLibRegionRole.TAKE
+		const isProgram = this.props.panel.role === RundownLayoutAdLibRegionRole.PROGRAM
 		const isLarge = isProgram || isTake
 		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs ?
 		this.props.rundownBaselineAdLibs.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces))).filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[this.props.adlibRank ? this.props.adlibRank : 0] : undefined
-		return <div className='multiview-panel'
+		return <div className='adlib-region-panel'
 			style={
 				_.extend(
 					RundownLayoutsAPI.isDashboardLayout(this.props.layout) ?
-						dashboardElementPosition(this.props.panel as DashboardLayoutMultiView) :
+						dashboardElementPosition(this.props.panel as DashboardLayoutAdLibRegion) :
 						{},
 					{
 						'visibility': this.props.visible ? 'visible' : 'hidden'
 					}
 				)
 			}>
-			<div className={classNames('multiview-panel__image-container', {
+			<div className={classNames('adlib-region-panel__image-container', {
 				'next': piece && this.isAdLibNext(piece),
 				'on-air': piece && this.isAdLibOnAir(piece)
 			})} >
-				<div className='multiview-panel__button'
+				<div className='adlib-region-panel__button'
 					onClick={(e) => this.onAction(e, piece)}
 				>
 					{
-					<span className={classNames('multiview-panel__label',{
-						'multiview-panel__label--large': isLarge
+					<span className={classNames('adlib-region-panel__label',{
+						'adlib-region-panel__label--large': isLarge
 					})}>{this.props.panel.name}</span>
 					}
 				</div>
@@ -257,7 +257,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 }
 
 
-export const MultiViewPanel = translateWithTracker<Translated<IAdLibPanelProps & IMultiViewPanelProps>, IState, IAdLibPanelTrackedProps & IMultiViewPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+export const AdLibRegionPanel = translateWithTracker<Translated<IAdLibPanelProps & IAdLibRegionPanelProps>, IState, IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return Object.assign({}, fetchAndFilter(props), {
 		studio: props.rundown.getStudio(),
 		unfinishedPieces: getUnfinishedPiecesReactive(props.rundown._id, props.rundown.currentPartId),
@@ -265,4 +265,4 @@ export const MultiViewPanel = translateWithTracker<Translated<IAdLibPanelProps &
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
-})(MultiViewPanelInner)
+})(AdLibRegionPanelInner)

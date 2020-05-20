@@ -33,7 +33,7 @@ export enum PieceDisplayStyle {
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
-	MULTIVIEW = 'multiview',
+	ADLIB_REGION = 'adlib_region',
 	KEYBOARD_PREVIEW = 'keyboard_preview'
 }
 
@@ -50,17 +50,17 @@ export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	scale: number
 }
 
-export enum RundownLayoutMultiViewRole {
+export enum RundownLayoutAdLibRegionRole {
 	QUEUE = 'queue',
 	TAKE = 'take',
 	PROGRAM = 'program'
 }
 
-export interface RundownLayoutMultiView extends RundownLayoutElementBase {
-	type: RundownLayoutElementType.MULTIVIEW
+export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.ADLIB_REGION
 	windowNumber: number
 	tags: string[] | undefined
-	role: RundownLayoutMultiViewRole
+	role: RundownLayoutAdLibRegionRole
 	adlibRank: number
 }
 
@@ -103,7 +103,7 @@ export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame
 	height: number
 }
 
-export interface DashboardLayoutMultiView extends RundownLayoutMultiView {
+export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	x: number
 	y: number
 	width: number

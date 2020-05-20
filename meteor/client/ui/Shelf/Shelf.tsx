@@ -26,11 +26,11 @@ import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
-import { MultiViewPanel } from './MultiViewPanel'
 import { DashboardActionButton } from './DashboardActionButton'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 import { Settings } from '../../../lib/Settings'
+import { AdLibRegionPanel } from './AdLibRegionPanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -465,12 +465,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							visible={true}
 							rundown={this.props.rundown}
 							/> :
-					RundownLayoutsAPI.isMultiView(panel) ?
-						<MultiViewPanel
+					RundownLayoutsAPI.isAdLibRegion(panel) ?
+						<AdLibRegionPanel
 							key={panel._id}
 							includeGlobalAdLibs={true}
 							panel={panel}
-							filter={RundownLayoutsAPI.multiViewToFilter(panel)}
+							filter={RundownLayoutsAPI.adLibRegionToFilter(panel)}
 							layout={rundownLayout}
 							adlibRank={panel.adlibRank}
 							visible={true}

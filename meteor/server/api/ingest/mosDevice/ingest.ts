@@ -518,7 +518,7 @@ function diffAndApplyChanges (
 	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
 		getSegmentId(rundown._id, segmentExternalId)
 	)
-	removeSegments(rundown._id, removedSegmentIds)
+	removeSegments(rundown, removedSegmentIds)
 
 	// Create/Update segments
 	updateSegmentsFromIngestData(
