@@ -35,7 +35,7 @@ import { PartInstance, PartInstances } from '../../../lib/collections/PartInstan
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibActions, AdLibActionCommon } from '../../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibActionCommon, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 
 interface IListViewPropsHeader {
@@ -392,7 +392,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isFunction?: boolean
 	isClearSourceLayer?: boolean
 	userData?: any
-	adlibAction?: AdLibActionCommon
+	adlibAction?: AdLibAction
 }
 
 export interface AdlibSegmentUi extends DBSegment {
