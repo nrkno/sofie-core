@@ -224,7 +224,7 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
 			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
 
-			const lastPieceInstance = innerFindLastPieceOnLayer(cache, playlist, sourceLayer._id, sourceLayer.stickyOriginalOnly || false)
+			const lastPieceInstance = innerFindLastPieceOnLayer(cache, playlist, sourceLayer._id, sourceLayer.stickyOriginalOnly || false, false)
 
 			if (lastPieceInstance) {
 				const lastPiece = convertPieceToAdLibPiece(lastPieceInstance.piece)
@@ -235,7 +235,7 @@ export namespace ServerPlayoutAdLibAPI {
 		})
 	}
 
-	export function innerFindLastPieceOnLayer(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, sourceLayerId: string, originalOnly: boolean) {
+	export function innerFindLastPieceOnLayer(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, sourceLayerId: string, originalOnly: boolean, excludeCurrentPart: boolean) {
 		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 
 		const query = {
@@ -244,6 +244,10 @@ export namespace ServerPlayoutAdLibAPI {
 			'piece.startedPlayback': {
 				$exists: true
 			}
+		}
+
+		if (excludeCurrentPart && rundownPlaylist.currentPartInstanceId ) {
+			query['partInstanceId'] = { $ne: rundownPlaylist.currentPartInstanceId }
 		}
 
 		if (originalOnly) {
