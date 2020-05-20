@@ -46,7 +46,7 @@ jobs:
           no_output_timeout: 60m
   publish-tag:
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: circleci/buildpack-deps:buster
     steps:
       - setup_remote_docker:
           # docker_layer_caching: true
@@ -78,7 +78,7 @@ jobs:
              fi
   publish-branch:
     docker:
-      - image: circleci/buildpack-deps:stretch
+      - image: circleci/buildpack-deps:buster
     steps:
       - setup_remote_docker:
           # docker_layer_caching: true
