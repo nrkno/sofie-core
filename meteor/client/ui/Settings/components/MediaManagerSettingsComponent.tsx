@@ -571,7 +571,6 @@ export const MediaManagerSettingsComponent = translate()(class MediaManagerSetti
 		})
 	}
 
-  // TODO - confirm these now come from manager manifest
 	render () {
 		const { t, subDevices } = this.props
 		let settings = this.props.device.settings as MediaManagerDeviceSettings

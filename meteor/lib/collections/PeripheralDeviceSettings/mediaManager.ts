@@ -14,6 +14,14 @@ export interface MediaManagerDeviceSettings {
 	/** Cron job time - how often to check the file system for consistency - do a poll of the filesystem to check that the files are where they are supposed to be, clean out expired files */
 	cronJobTime?: number
 
+	/** WorkFlow cleanup time */
+	workFlowLingerTime?: number
+
+	/** When to warn that the Queue is too long */
+	warningWFQueueLength?: number
+	/** When to warn that a worker is working too long */
+	warningTaskWorkingTime?: number
+
 	/** Connection details for media access via HTTP server */
 	httpPort?: number
 	/** Connection details for media access via HTTPS server */
@@ -112,6 +120,7 @@ export interface MediaFlow {
 export enum StorageType {
 	LOCAL_FOLDER = 'local_folder',
 	FILE_SHARE = 'file_share',
+	QUANTEL_HTTP = 'quantel_http',
 	UNKNOWN = 'unknown'
 	// FTP = 'ftp',
 	// AWS_S3 = 'aws_s3'
@@ -127,6 +136,17 @@ export interface StorageSettings {
 		/** Only subscribed files can be listened to for changes */
 		onlySelectedFiles?: boolean
 		[key: string]: any
+	}
+}
+export interface QuantelHTTPStorage extends StorageSettings {
+	type: StorageType.QUANTEL_HTTP
+	options: {
+		transformerUrl: string
+		gatewayUrl: string
+		ISAUrl: string
+		zoneId: string | undefined
+		serverId: number
+		onlySelectedFiles: true
 	}
 }
 export interface LocalFolderStorage extends StorageSettings {
@@ -193,12 +213,8 @@ export interface MonitorSettingsNull extends MonitorSettingsBase {
 export interface MonitorSettingsWatcher extends MonitorSettingsBase {
 	type: MonitorSettingsType.WATCHER
 
-	/** Paths that media manager should watch to check for content */
-	paths: string | Array<string>
 	/** See https://www.npmjs.com/package/chokidar#api */
 	scanner: WatchOptions
-	/** CasparCG (shared) media path */
-	casparMediaPath: string
 	/** Maximum number of times to try and scan a file. */
 	retryLimit: number
 }
