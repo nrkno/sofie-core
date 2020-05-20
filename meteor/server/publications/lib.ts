@@ -2,6 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { PubSub } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
+import { Mongocursor } from '../../lib/typings/meteor'
+import { ProtectedString } from '../../lib/lib'
 
 export const MeteorPublicationSignatures: {[key: string]: string[]} = {}
 export const MeteorPublications: {[key: string]: Function} = {}
@@ -11,7 +13,7 @@ export const MeteorPublications: {[key: string]: Function} = {}
  * @param name
  * @param callback
  */
-export function meteorPublish<T> (name: PubSub, callback: (...args: any[]) => Mongo.Cursor<T> | null) {
+export function meteorPublish<T extends { _id: ProtectedString<any> }> (name: PubSub, callback: (...args: any[]) => Mongocursor<T> | null) {
 
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature

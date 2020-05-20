@@ -1,11 +1,14 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 
+/** A string, identifying a UserActionsLogItem */
+export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>
+
 export interface UserActionsLogItem {
-	_id: string,
-	userId: string,
+	_id: UserActionsLogItemId
+	userId?: string,
 	clientAddress: string,
 	timestamp: Time,
 	method: string,

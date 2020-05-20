@@ -84,27 +84,27 @@ export const mockRO = {
 				'ro1;s1;p2',
 				'ro1;s1;p3',
 			],
-			'segment': 'MCxHIjO7_t3PRHpLiX0vbzwx4gg_',
+			'segmentId': 'MCxHIjO7_t3PRHpLiX0vbzwx4gg_',
 		},
 		{
 			'parts': [
 				'ro1;s2;p1',
 				'ro1;s2;p2',
 			],
-			'segment': 'Qz1OqWVatX_W4Sp5C0m8VhTTfME_',
+			'segmentId': 'Qz1OqWVatX_W4Sp5C0m8VhTTfME_',
 		},
 		{
 			'parts': [
 				'ro1;s3;p1',
 				'ro1;s3;p2',
 			],
-			'segment': '8GUNgE7zUulco2K3yuhJ1Fyceeo_',
+			'segmentId': '8GUNgE7zUulco2K3yuhJ1Fyceeo_',
 		},
 		{
 			'parts': [
 				'ro1;s4;p1',
 			],
-			'segment': 'XF9ZBDI5IouvkmTbounEfoJ6ijY_',
+			'segmentId': 'XF9ZBDI5IouvkmTbounEfoJ6ijY_',
 		},
 	],
 	newItem: (id: string, slug: string) => literal<MOS.IMOSStory>({

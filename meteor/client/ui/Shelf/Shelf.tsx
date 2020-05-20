@@ -13,19 +13,22 @@ import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout, RundownLayoutBase, RundownLayoutType, DashboardLayout, DashboardLayoutFilter, DashboardLayoutActionButton, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { OverflowingContainer } from './OverflowingContainer'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DashboardPanel } from './DashboardPanel'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { DashboardActionButton } from './DashboardActionButton';
-import { DashboardActionButtonGroup } from './DashboardActionButtonGroup';
+import { DashboardActionButton } from './DashboardActionButton'
+import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
+import { ExternalFramePanel } from './ExternalFramePanel'
+import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -35,9 +38,9 @@ export enum ShelfTabs {
 }
 export interface ShelfProps {
 	isExpanded: boolean
-	segments: Array<SegmentUi>
-	liveSegment?: SegmentUi
-	rundown: Rundown
+	// segments: Array<SegmentUi>
+	// liveSegment?: SegmentUi
+	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	studioMode: boolean
 	hotkeys: Array<{
@@ -98,7 +101,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			moving: false,
 			shelfHeight: localStorage.getItem('rundownView.shelf.shelfHeight') || '50vh',
 			overrideHeight: undefined,
-			selectedTab: UIStateStorage.getItem(`rundownView.${props.rundown._id}`, 'shelfTab', undefined) as (string | undefined),
+			selectedTab: UIStateStorage.getItem(`rundownView.${props.playlist._id}`, 'shelfTab', undefined) as (string | undefined),
 			shouldQueue: false
 		}
 
@@ -173,7 +176,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 
 	restoreDefaultTab () {
 		if (this.state.selectedTab === undefined && this.props.rundownLayout && RundownLayoutsAPI.isRundownLayout(this.props.rundownLayout)) {
-			const defaultTab = this.props.rundownLayout.filters.find(i => i.default)
+			const defaultTab = this.props.rundownLayout.filters.find(i => (i as RundownLayoutFilter).default)
 			if (defaultTab) {
 				this.setState({
 					selectedTab: `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${defaultTab._id}`
@@ -326,7 +329,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		if (handlePosition) {
 			this._mouseOffset.x = (handlePosition.left - window.scrollX) - this._mouseStart.x
 			this._mouseOffset.y = (handlePosition.top - window.scrollY) - this._mouseStart.y
-			debugger
 		}
 
 		this._mouseDown = Date.now()
@@ -341,7 +343,7 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 			selectedTab: tab
 		})
 
-		UIStateStorage.setItem(`rundownView.${this.props.rundown._id}`, 'shelfTab', tab)
+		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
 	renderRundownLayout (rundownLayout?: RundownLayout) {
@@ -370,21 +372,39 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 				})} onClick={(e) => this.switchTab(ShelfTabs.SYSTEM_HOTKEYS)} tabIndex={0}>{t('Shortcuts')}</div>
 			</div>
 			<div className='rundown-view__shelf__panel super-dark'>
-				<AdLibPanel
-					visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
-					registerHotkeys={true}
-					{...this.props}></AdLibPanel>
-				{rundownLayout && rundownLayout.filters.map(panel =>
+				<ErrorBoundary>
 					<AdLibPanel
-						key={panel._id}
-						visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
-						includeGlobalAdLibs={true}
-						filter={panel}
-						{...this.props}
-						/>
-				)}
-				<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
-				<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+						visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.ADLIB}
+						registerHotkeys={true}
+						{...this.props}></AdLibPanel>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					{rundownLayout && rundownLayout.filters.map(panel =>
+						RundownLayoutsAPI.isFilter(panel) ? <AdLibPanel
+							key={panel._id}
+							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
+							includeGlobalAdLibs={true}
+							filter={panel}
+							{...this.props}
+							/> :
+					RundownLayoutsAPI.isExternalFrame(panel) ?
+						<ExternalFramePanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
+							playlist={this.props.playlist}
+							{...this.props}
+							/> :
+						undefined
+					)}
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<GlobalAdLibPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.GLOBAL_ADLIB} {...this.props}></GlobalAdLibPanel>
+				</ErrorBoundary>
+				<ErrorBoundary>
+					<HotkeyHelpPanel visible={(this.state.selectedTab || DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS} {...this.props}></HotkeyHelpPanel>
+				</ErrorBoundary>
 			</div>
 		</React.Fragment>
 	}
@@ -400,22 +420,46 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 		return <div className='dashboard'>
 			{rundownLayout.filters
 				.sort((a, b) => a.rank - b.rank)
-				.map((panel: DashboardLayoutFilter) =>
-					<DashboardPanel
-						key={panel._id}
-						includeGlobalAdLibs={true}
-						filter={panel}
-						visible={true}
-						registerHotkeys={panel.assignHotKeys}
-						rundown={this.props.rundown}
-						showStyleBase={this.props.showStyleBase}
-						studioMode={this.props.studioMode}
-						shouldQueue={this.state.shouldQueue}
-						/>
+				.map((panel) =>
+					RundownLayoutsAPI.isFilter(panel) ?
+						(panel as DashboardLayoutFilter).showAsTimeline ?
+							<TimelineDashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={!(panel as DashboardLayoutFilter).hide}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								playlist={this.props.playlist}
+								showStyleBase={this.props.showStyleBase}
+								studioMode={this.props.studioMode}
+								{...this.props}
+								/> :
+							<DashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={!(panel as DashboardLayoutFilter).hide}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								playlist={this.props.playlist}
+								showStyleBase={this.props.showStyleBase}
+								studioMode={this.props.studioMode}
+								shouldQueue={this.state.shouldQueue}
+								{...this.props}
+								/> :
+					RundownLayoutsAPI.isExternalFrame(panel) ?
+						<ExternalFramePanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							visible={true}
+							playlist={this.props.playlist}
+							{...this.props}
+							/> :
+						undefined
 			)}
 			{rundownLayout.actionButtons &&
 				<DashboardActionButtonGroup
-					rundown={this.props.rundown}
+					playlist={this.props.playlist}
 					buttons={rundownLayout.actionButtons}
 					studioMode={this.props.studioMode} />}
 		</div>

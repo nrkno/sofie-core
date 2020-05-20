@@ -1,22 +1,25 @@
 import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
-import { Pieces, Piece } from './collections/Pieces'
+import { Pieces, Piece, PieceId } from './collections/Pieces'
 import {
 	PieceLifespan,
 	getPieceGroupId,
 	IOutputLayer,
 	ISourceLayer
 } from 'tv-automation-sofie-blueprints-integration'
-import { normalizeArray, extendMandadory, literal } from './lib'
-import { Segment } from './collections/Segments'
-import { Part, Parts } from './collections/Parts'
+import { normalizeArray, literal, waitForPromise, fetchNext, last, unprotectObject } from './lib'
+import { Segment, DBSegment } from './collections/Segments'
+import { Part, Parts, DBPart, PartId } from './collections/Parts'
 import { Rundown } from './collections/Rundowns'
+import { RundownPlaylist } from './collections/RundownPlaylists'
 import { ShowStyleBase } from './collections/ShowStyleBases'
 import { interpretExpression } from 'superfly-timeline/dist/resolver/expression'
+import { PartInstance, findPartInstanceOrWrapToTemporary } from './collections/PartInstances'
+import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
 
 export const DEFAULT_DISPLAY_DURATION = 3000
 
-export interface SegmentExtended extends Segment {
+export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
 	outputLayers: {
 		[key: string]: IOutputLayerExtended
@@ -27,7 +30,9 @@ export interface SegmentExtended extends Segment {
 	}
 }
 
-export interface PartExtended extends Part {
+export interface PartExtended {
+	partId: PartId
+	instance: PartInstance
 	/** Pieces belonging to this part */
 	pieces: Array<PieceExtended>
 	renderedDuration: number
@@ -49,7 +54,9 @@ export interface ISourceLayerExtended extends ISourceLayer {
 interface IPieceExtendedDictionary {
 	[key: string]: PieceExtended
 }
-export interface PieceExtended extends Piece {
+export interface PieceExtended {
+	instance: PieceInstance
+
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended
 	/** Output layer that this part uses */
@@ -68,6 +75,16 @@ export interface PieceExtended extends Piece {
 	maxLabelWidth?: number
 }
 
+function getPieceInstancesForPartInstance (partInstance: PartInstance) {
+	if (partInstance.isTemporary || partInstance.isScratch) {
+		return Pieces.find({
+			partId: partInstance.part._id
+		}).map(p => wrapPieceToTemporaryInstance(p, partInstance._id))
+	} else {
+		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
+	}
+}
+
 /**
  * This function allows to see what the output of the playback will look like.
  * It simulates the operations done by the playout operations in core and playout-gateway
@@ -78,11 +95,16 @@ export interface PieceExtended extends Piece {
  *
  * @export
  * @param {ShowStyleBase} showStyleBase
- * @param {Rundown} rundown
+ * @param {RundownPlaylist} playlist
  * @param {Segment} segment
  * @param {boolean} [checkFollowingSegment]
  */
-export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundown, segment: Segment, checkFollowingSegment?: boolean): {
+export function getResolvedSegment (
+	showStyleBase: ShowStyleBase,
+	playlist: RundownPlaylist,
+	segment: DBSegment,
+	checkFollowingSegment?: boolean
+): {
 	/** A Segment with some additional information */
 	segmentExtended: SegmentExtended,
 	/** Parts in the segment, with additional information on the Part and the Pieces */
@@ -93,6 +115,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 	isNextSegment: boolean,
 	/** The part that is currently on air, if the Segment is on air */
 	currentLivePart: PartExtended | undefined,
+	/** The part that is currently set as next, if the Segment is next */
+	currentNextPart: PartExtended | undefined,
 	/** A flag if any of the Parts have a Piece on a Layer with the 'Remote' flag on */
 	hasRemoteItems: boolean,
 	/** A flag if any of the Parts have a Piece on a Layer with the 'Guest' flag on */
@@ -107,6 +131,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 	let isLiveSegment = false
 	let isNextSegment = false
 	let currentLivePart: PartExtended | undefined = undefined
+	let currentNextPart: PartExtended | undefined = undefined
 	// let nextPart: PartExtended | undefined = undefined
 	let hasAlreadyPlayed = false
 	let hasRemoteItems = false
@@ -115,43 +140,44 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 	let autoNextPart = false
 
-	let segmentExtended = _.clone(segment) as SegmentExtended
-	/** Create maps for outputLayers and sourceLayers */
-	segmentExtended.outputLayers = {}
-	segmentExtended.sourceLayers = {}
+	let segmentExtended = literal<SegmentExtended>({
+		...segment,
+		/** Create maps for outputLayers and sourceLayers */
+		outputLayers: {},
+		sourceLayers: {}
+	})
 
 	// fetch all the parts for the segment
 	let partsE: Array<PartExtended> = []
-	const parts = segment.getParts()
 
-	if (parts.length > 0) {
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+	const segmentsAndParts = playlist.getSegmentsAndPartsSync()
+	const activePartInstancesMap = playlist.getActivePartInstancesMap()
+
+	const partsInSegment = _.filter(segmentsAndParts.parts, p => p.segmentId === segment._id)
+
+	if (partsInSegment.length > 0) {
 		if (checkFollowingSegment) {
-			let followingParts = Parts.find({
-				rundownId: segment.rundownId,
-				_rank: {
-					$gt: parts[parts.length - 1]._rank
-				}
-			}, { sort: { _rank: 1 }, limit: 1 }).fetch()
-			if (followingParts.length > 0) {
-				let firstFollowingPart = followingParts[0]
+			let tmpFollowingPart = fetchNext(segmentsAndParts.parts, last(partsInSegment))
 
-				let pieces = Pieces.find({
-					partId: firstFollowingPart._id
-				}).fetch()
+			if (tmpFollowingPart) {
+				const tmpFollowingPartInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, tmpFollowingPart)
+				const pieces = getPieceInstancesForPartInstance(tmpFollowingPartInstance)
 
-				followingPart = extendMandadory<Part, PartExtended>(firstFollowingPart, {
-					pieces: _.map(pieces, (piece) => {
-						return extendMandadory<Piece, PieceExtended>(piece, {
-							// sourceLayer: ISourceLayerExtended,
-							// outputLayer: IOutputLayerExtended,
-							renderedInPoint: null,
-							renderedDuration: null,
-							// cropped: false,
-							// continuedByRef: PieceExtended,
-							// continuesRef: PieceExtended,
-							// maxLabelWidth: 0
-						})
-					}),
+				followingPart = literal<PartExtended>({
+					partId: tmpFollowingPart._id,
+					instance: tmpFollowingPartInstance,
+					pieces: _.map(pieces, (piece) => literal<PieceExtended>({
+						instance: piece,
+						// sourceLayer: ISourceLayerExtended,
+						// outputLayer: IOutputLayerExtended,
+						renderedInPoint: null,
+						renderedDuration: null,
+						// cropped: false,
+						// continuedByRef: PieceExtended,
+						// continuesRef: PieceExtended,
+						// maxLabelWidth: 0
+					})),
 					renderedDuration: 0, // ?
 					startsAt: 0, // ?
 					willProbablyAutoNext: false // ?
@@ -162,26 +188,18 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 		// pieces present on those layers inside and also figure out which layers are used when inside the rundown
 		const outputLayers = normalizeArray<IOutputLayerExtended>(
-			showStyleBase.outputLayers.map((layer) => {
-				return extendMandadory<IOutputLayer, IOutputLayerExtended>(
-					_.clone(layer),
-					{
-						sourceLayers: [],
-						used: false
-					}
-				)
-			}),
+			showStyleBase.outputLayers.map((layer) => literal<IOutputLayerExtended>({
+				...layer,
+				sourceLayers: [],
+				used: false
+			})),
 			'_id')
 		const sourceLayers = normalizeArray<ISourceLayerExtended>(
-			showStyleBase.sourceLayers.map((layer) => {
-				return extendMandadory<ISourceLayer, ISourceLayerExtended>(
-					_.clone(layer),
-					{
-						followingItems: [],
-						pieces: []
-					}
-				)
-			}),
+			showStyleBase.sourceLayers.map((layer) => literal<ISourceLayerExtended>({
+				...layer,
+				followingItems: [],
+				pieces: []
+			})),
 			'_id')
 
 		// the SuperTimeline has an issue with resolving pieces that start at the 0 absolute time point
@@ -189,84 +207,80 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		const TIMELINE_TEMP_OFFSET = 1
 
 		// create a lookup map to match original pieces to their resolved counterparts
-		let piecesLookup = new Map<string, PieceExtended>()
+		let piecesLookup = new Map<PieceId, PieceExtended>()
 		// a buffer to store durations for the displayDuration groups
 		const displayDurationGroups: _.Dictionary<number> = {}
 
 		let startsAt = 0
-		let previousPart: PartExtended
+		let previousPart: PartExtended | undefined
 		// fetch all the pieces for the parts
-		partsE = _.map(parts, (part, itIndex) => {
+		partsE = _.map(partsInSegment, (part, itIndex) => {
+			const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
 			let partTimeline: SuperTimeline.TimelineObject[] = []
 
 			// extend objects to match the Extended interface
-			let partE: PartExtended = extendMandadory(part, {
-				pieces: _.map(Pieces.find({ partId: part._id }).fetch(), (piece) => {
-					return extendMandadory<Piece, PieceExtended>(piece, {
-						renderedDuration: 0,
-						renderedInPoint: 0
-					})
-				}),
+			let partE = literal<PartExtended>({
+				partId: part._id,
+				instance: partInstance,
+				pieces: _.map(getPieceInstancesForPartInstance(partInstance), (piece) => literal<PieceExtended>({
+					instance: piece,
+					renderedDuration: 0,
+					renderedInPoint: 0
+				})),
 				renderedDuration: 0,
 				startsAt: 0,
-				willProbablyAutoNext: (
-						(previousPart || {}).autoNext || false
+				willProbablyAutoNext: !!(previousPart && (
+						previousPart.instance.part.autoNext
 					) && (
-						(previousPart || {}).expectedDuration !== 0
-					)
+						previousPart.instance.part.expectedDuration !== 0
+					))
 			})
 
 			// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
-			if (rundown.currentPartId === partE._id) {
+			if (currentPartInstance && currentPartInstance._id === partE.instance._id) {
 				isLiveSegment = true
 				currentLivePart = partE
 			}
-			if (rundown.nextPartId === partE._id) {
+			if (nextPartInstance && nextPartInstance._id === partE.instance._id) {
 				isNextSegment = true
+				currentNextPart = partE
 			}
 			autoNextPart = !!(
 				currentLivePart &&
-				currentLivePart.autoNext &&
-				(
-					(
-						currentLivePart &&
-						currentLivePart.expectedDuration !== undefined
-					) ?
-					currentLivePart.expectedDuration !== 0 :
-					false
-				)
+				currentLivePart.instance.part.autoNext &&
+				currentLivePart.instance.part.expectedDuration
 			)
-			if (partE.startedPlayback !== undefined) {
+			if (partE.instance.part.startedPlayback !== undefined) {
 				hasAlreadyPlayed = true
 			}
 
 			// insert items into the timeline for resolution
 			_.each<PieceExtended>(partE.pieces, (piece) => {
 				partTimeline.push({
-					id: getPieceGroupId(piece),
-					enable: calculatePieceTimelineEnable(piece, TIMELINE_TEMP_OFFSET),
-					layer: piece.outputLayerId,
+					id: getPieceGroupId(unprotectObject(piece.instance.piece)),
+					enable: calculatePieceTimelineEnable(piece.instance.piece, TIMELINE_TEMP_OFFSET),
+					layer: piece.instance.piece.outputLayerId,
 					content: {
-						id: piece._id
+						id: piece.instance.piece._id
 					}
 				})
 				// find the target output layer
-				let outputLayer = outputLayers[piece.outputLayerId] as IOutputLayerExtended | undefined
+				let outputLayer = outputLayers[piece.instance.piece.outputLayerId] as IOutputLayerExtended | undefined
 				piece.outputLayer = outputLayer
 
-				if (!piece.virtual && outputLayer) {
+				if (!piece.instance.piece.virtual && outputLayer) {
 					// mark the output layer as used within this segment
-					if (sourceLayers[piece.sourceLayerId] && !sourceLayers[piece.sourceLayerId].isHidden) {
+					if (sourceLayers[piece.instance.piece.sourceLayerId] && !sourceLayers[piece.instance.piece.sourceLayerId].isHidden) {
 						outputLayer.used = true
 					}
 					// attach the sourceLayer to the output, if it hasn't been already
 					// find matching layer in the output
 					let sourceLayer = outputLayer.sourceLayers.find((el) => {
-						return el._id === piece.sourceLayerId
+						return el._id === piece.instance.piece.sourceLayerId
 					})
 					// if the source has not yet been used on this output
 					if (!sourceLayer) {
-						sourceLayer = sourceLayers[piece.sourceLayerId]
+						sourceLayer = sourceLayers[piece.instance.piece.sourceLayerId]
 						if (sourceLayer) {
 							sourceLayer = _.clone(sourceLayer)
 							let part = sourceLayer
@@ -292,9 +306,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				}
 
 				// add the piece to the map to make future searches quicker
-				piecesLookup.set(piece._id, piece)
-				const continues = piece.continuesRefId && piecesLookup.get(piece.continuesRefId)
-				if (piece.continuesRefId && continues) {
+				piecesLookup.set(piece.instance.piece._id, piece)
+				const continues = piece.instance.piece.continuesRefId && piecesLookup.get(piece.instance.piece.continuesRefId)
+				if (piece.instance.piece.continuesRefId && continues) {
 					continues.continuedByRef = piece
 					piece.continuesRef = continues
 				}
@@ -329,7 +343,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			})
 
 			// use the expectedDuration and fallback to the DEFAULT_DISPLAY_DURATION for the part
-			partE.renderedDuration = partE.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
+			partE.renderedDuration = partE.instance.part.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
 
 			// displayDuration groups are sets of Parts that share their expectedDurations.
 			// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.
@@ -337,15 +351,15 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			// If a member has a displayDuration == 0, it will use up whatever is available in the pool.
 			// displayDurationGroups is specifically designed for a situation where the Rundown has a lead-in piece to camera
 			// and then has a B-Roll to be played out over a VO from the host.
-			if (partE.displayDurationGroup && (
+			if (partE.instance.part.displayDurationGroup && (
 				// either this is not the first element of the displayDurationGroup
-				(displayDurationGroups[partE.displayDurationGroup] !== undefined) ||
+				(displayDurationGroups[partE.instance.part.displayDurationGroup] !== undefined) ||
 				// or there is a following member of this displayDurationGroup
-				(parts[itIndex + 1] && parts[itIndex + 1].displayDurationGroup === partE.displayDurationGroup)
+				(partsInSegment[itIndex + 1] && partsInSegment[itIndex + 1].displayDurationGroup === partE.instance.part.displayDurationGroup)
 			)) {
-				displayDurationGroups[partE.displayDurationGroup] = (displayDurationGroups[partE.displayDurationGroup] || 0) + (partE.expectedDuration || 0)
-				partE.renderedDuration = partE.duration || Math.min(partE.displayDuration || 0, partE.expectedDuration || 0) || displayDurationGroups[partE.displayDurationGroup]
-				displayDurationGroups[partE.displayDurationGroup] = Math.max(0, displayDurationGroups[partE.displayDurationGroup] - (partE.duration || partE.renderedDuration))
+				displayDurationGroups[partE.instance.part.displayDurationGroup] = (displayDurationGroups[partE.instance.part.displayDurationGroup] || 0) + (partE.instance.part.expectedDuration || 0)
+				partE.renderedDuration = partE.instance.part.duration || Math.min(partE.instance.part.displayDuration || 0, partE.instance.part.expectedDuration || 0) || displayDurationGroups[partE.instance.part.displayDurationGroup]
+				displayDurationGroups[partE.instance.part.displayDurationGroup] = Math.max(0, displayDurationGroups[partE.instance.part.displayDurationGroup] - (partE.instance.part.duration || partE.renderedDuration))
 			}
 
 			// push the startsAt value, to figure out when each of the parts starts, relative to the beginning of the segment
@@ -358,9 +372,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 
 		// resolve the duration of a Piece to be used for display
 		const resolveDuration = (item: PieceExtended): number => {
-			const expectedDurationNumber = (typeof item.enable.duration === 'number' ? item.enable.duration || 0 : 0)
-			const userDurationNumber = (item.userDuration && typeof item.userDuration.duration === 'number' ? item.userDuration.duration || 0 : 0)
-			return (item.playoutDuration || userDurationNumber || item.renderedDuration || expectedDurationNumber)
+			const expectedDurationNumber = (typeof item.instance.piece.enable.duration === 'number' ? item.instance.piece.enable.duration || 0 : 0)
+			const userDurationNumber = (item.instance.piece.userDuration && typeof item.instance.piece.userDuration.duration === 'number' ? item.instance.piece.userDuration.duration || 0 : 0)
+			return (item.instance.piece.playoutDuration || userDurationNumber || item.renderedDuration || expectedDurationNumber)
 		}
 
 		_.each<PartExtended>(partsE, (part) => {
@@ -373,7 +387,9 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 				})
 
 				const itemsByLayer = _.groupBy(part.pieces, (item) => {
-					return item.outputLayerId + '_' + item.sourceLayerId
+					return item.outputLayer && item.sourceLayer && item.outputLayer.isFlattened ?
+						item.instance.piece.outputLayerId + '_' + item.sourceLayer.exclusiveGroup :
+						item.instance.piece.outputLayerId + '_' + item.instance.piece.sourceLayerId
 				})
 				// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 				// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
@@ -382,15 +398,15 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 					for (let i = 1; i < sortedItems.length; i++) {
 						const currentItem = sortedItems[i]
 						const previousItem = sortedItems[i - 1]
-						if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null && previousItem.renderedDuration !== null && currentItem.renderedDuration !== null &&
+						if (previousItem.renderedInPoint !== null && currentItem.renderedInPoint !== null &&
 							previousItem.renderedInPoint !== undefined && currentItem.renderedInPoint !== undefined && previousItem.renderedDuration !== undefined && currentItem.renderedDuration !== undefined) {
-							if ((previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint) ||
-							 (previousItem.infiniteMode)
+							if ((previousItem.instance.piece.infiniteMode) ||
+								(previousItem.renderedDuration !== null && (previousItem.renderedInPoint + previousItem.renderedDuration > currentItem.renderedInPoint))
 								) {
 								previousItem.renderedDuration = currentItem.renderedInPoint - previousItem.renderedInPoint
 								previousItem.cropped = true
-								if (previousItem.infiniteMode) {
-									previousItem.infiniteMode = PieceLifespan.Normal
+								if (previousItem.instance.piece.infiniteMode) {
+									previousItem.instance.piece.infiniteMode = PieceLifespan.Normal
 								}
 							}
 
@@ -408,18 +424,18 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 			_.each<PieceExtended>(followingPart.pieces, (piece) => {
 				// match outputs in following part, but do not mark as used
 				// we only care about outputs used in this segment
-				let outputLayer = outputLayers[piece.outputLayerId] as IOutputLayerExtended | undefined
+				let outputLayer = outputLayers[piece.instance.piece.outputLayerId] as IOutputLayerExtended | undefined
 				piece.outputLayer = outputLayer
 
 				// find matching layer in the outputs
 				let sourceLayer = outputLayer && outputLayer.sourceLayers && outputLayer.sourceLayers.find((el) => {
-					return el._id === piece.sourceLayerId
+					return el._id === piece.instance.piece.sourceLayerId
 				})
 
 				// if layer not found in output, add it to output
 				if (sourceLayer === undefined) {
 					if (outputLayer) {
-						sourceLayer = sourceLayers[piece.sourceLayerId]
+						sourceLayer = sourceLayers[piece.instance.piece.sourceLayerId]
 						if (sourceLayer) {
 							// create a copy of the source layer to be attached inside the output.
 							sourceLayer = _.clone(sourceLayer)
@@ -443,9 +459,8 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		segmentExtended.outputLayers = outputLayers
 		segmentExtended.sourceLayers = sourceLayers
 
-		if (isNextSegment && !isLiveSegment && !autoNextPart && rundown.currentPartId) {
-			const currentOtherPart = Parts.findOne(rundown.currentPartId)
-			if (currentOtherPart && currentOtherPart.expectedDuration && currentOtherPart.autoNext) {
+		if (isNextSegment && !isLiveSegment && !autoNextPart && currentPartInstance) {
+			if (currentPartInstance && currentPartInstance.part.expectedDuration && currentPartInstance.part.autoNext) {
 				autoNextPart = true
 			}
 		}
@@ -455,6 +470,7 @@ export function getResolvedSegment (showStyleBase: ShowStyleBase, rundown: Rundo
 		parts: partsE,
 		isLiveSegment,
 		currentLivePart,
+		currentNextPart,
 		isNextSegment,
 		hasAlreadyPlayed,
 		hasGuestItems,

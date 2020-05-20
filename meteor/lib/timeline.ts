@@ -2,7 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
-import { clone } from './lib'
+import { clone, unprotectString } from './lib'
+import { logger } from './logging'
 
 // This is a collection of functions that match what the playout-gateway / TSR does
 // playout-gateway:
@@ -10,82 +11,53 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 
 	let transformObject = (obj: TimelineObjGeneric | TimelineObjGroup): TimelineContentObject => {
 		if (!obj.id) throw new Meteor.Error(500, `Timeline object missing id attribute (_id: "${obj._id}") `)
-		let transformedObj: TimelineContentObject = clone(
-			_.omit(
-				{
-					...obj,
-					rundownId: obj.rundownId
-				}, ['_id', 'deviceId', 'studioId']
-			)
-	   )
+
+		let transformedObj: TimelineContentObject = clone(_.omit(obj, ['_id', 'studioId']))
+		transformedObj.id = obj.id || unprotectString(obj._id)
 
 		if (!transformedObj.content) transformedObj.content = {}
-
-		if (obj['partId']) {
-			// Will cause a callback to be called, when the object starts to play:
-			transformedObj.content.callBack = 'partPlaybackStarted'
-			transformedObj.content.callBackData = {
-				rundownId: obj.rundownId,
-				partId: obj['partId']
-			}
-			transformedObj.content.callBackStopped = 'partPlaybackStopped'
-	   }
-		if (obj['pieceId']) {
-			// Will cause a callback to be called, when the object starts to play:
-			transformedObj.content.callBack = 'piecePlaybackStarted'
-			transformedObj.content.callBackData = {
-				rundownId: obj.rundownId,
-				pieceId: obj['pieceId']
-			}
-			transformedObj.content.callBackStopped = 'piecePlaybackStopped'
+		if (transformedObj.isGroup) {
+			if (!transformedObj.content.objects) transformedObj.content.objects = []
 		}
 
-	   return transformedObj
+		return transformedObj
 	}
 
-	let groupObjects: {[id: string]: TimelineContentObject} = {}
+	// First, transform and convert timeline to a key-value store, for fast referencing:
+	let objects: {[id: string]: TimelineContentObject} = {}
+	_.each(timeline, (obj: TimelineObjGeneric) => {
+		let transformedObj = transformObject(obj)
+		objects[transformedObj.id] = transformedObj
+	})
+
+	// Go through all objects:
 	let transformedTimeline: Array<TimelineContentObject> = []
-	let doTransform = (objs: Array<TimelineObjGeneric | TimelineObjGroup>) => {
-		let objsLeft: Array<TimelineObjGeneric | TimelineObjGroup> = []
-		let changedSomething: boolean = false
-		_.each(objs, (obj: TimelineObjGeneric | TimelineObjGroup) => {
-
-			let transformedObj = transformObject(obj)
-
-			if (obj.isGroup) {
-				groupObjects[transformedObj.id] = transformedObj
-				changedSomething = true
-				if (!obj['children']) obj['children'] = []
-			}
-			if (obj.inGroup) {
-				let groupObj = groupObjects[obj.inGroup]
-				if (groupObj) {
-					// Add object into group:
-					if (!groupObj.children) groupObj.children = []
-
-					groupObj.children.push(transformedObj)
-					changedSomething = true
-
-				} else {
-					// referenced group not found, try again later:
-					objsLeft.push(obj)
+	_.each(objects, (obj: TimelineContentObject) => {
+		if (obj.inGroup) {
+			let groupObj = objects[obj.inGroup]
+			if (groupObj) {
+				// Add object into group:
+				if (!groupObj.children) groupObj.children = []
+				if (groupObj.children) {
+					delete obj.inGroup
+					groupObj.children.push(obj)
 				}
 			} else {
-				// Add object to timeline
-				transformedTimeline.push(transformedObj)
-				changedSomething = true
+				// referenced group not found
+				logger.warn('Referenced group "' + obj.inGroup + '" not found! Referenced by "' + obj.id + '"')
+				transformedTimeline.push(obj)
 			}
-		})
-		// Iterate again?
-		if (objsLeft.length && changedSomething) {
-			doTransform(objsLeft)
+		} else {
+			// Add object to timeline
+			delete obj.inGroup
+			transformedTimeline.push(obj)
 		}
-	}
-	doTransform(timeline)
+	})
 	return transformedTimeline
 
 }
 
 // TSR: ---------
 export interface TimelineContentObject extends TimelineObject {
+	inGroup?: string
 }

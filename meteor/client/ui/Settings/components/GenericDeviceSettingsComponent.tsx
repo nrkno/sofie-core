@@ -8,7 +8,7 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { translate } from 'react-i18next'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDeviceSettings/mosDevice'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
@@ -19,11 +19,13 @@ import { IPlayoutDeviceSettingsComponentProps } from './IHttpSendDeviceSettingsC
 import { ConfigManifestEntry, ConfigManifestEntryType, TableConfigManifestEntry, SubDeviceConfigManifestEntry } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
+import { unprotectString, protectString } from '../../../../lib/lib'
 
+type EditId = PeripheralDeviceId | string
 interface IGenericDeviceSettingsComponentState {
 	deleteConfirmItemPath: string | undefined
 	showDeleteConfirm: boolean
-	editedObjects: Array<string>
+	editedObjects: EditId[]
 }
 export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IGenericDeviceSettingsComponentState> {
 	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
@@ -35,11 +37,11 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		}
 	}
 
-	isItemEdited = (path: string) => {
+	isItemEdited = (path: EditId) => {
 		return this.state.editedObjects.indexOf(path) >= 0
 	}
 
-	finishEditItem = (path: string) => {
+	finishEditItem = (path: EditId) => {
 		let index = this.state.editedObjects.indexOf(path)
 		if (index >= 0) {
 			this.state.editedObjects.splice(index, 1)
@@ -49,7 +51,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		}
 	}
 
-	editItem = (deviceId: string) => {
+	editItem = (deviceId: EditId) => {
 		if (this.state.editedObjects.indexOf(deviceId) < 0) {
 			this.state.editedObjects.push(deviceId)
 			this.setState({
@@ -58,7 +60,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		} else {
 			this.finishEditItem(deviceId)
 		}
-	} 
+	}
 
 	handleConfirmRemoveCancel = (e) => {
 		this.setState({
@@ -180,7 +182,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		this.editItem((edit.props.attribute || 'settings.devices') + '.' + newObjId)
 	}
 
-	renderDeviceSummary (configManifest: TableConfigManifestEntry, deviceId: string, obj: any, isEdited: (deviceId: string) => boolean) {
+	renderDeviceSummary (configManifest: TableConfigManifestEntry, deviceId: PeripheralDeviceId, obj: any, isEdited: (editId: EditId) => boolean) {
 		const els: Array<JSX.Element> = []
 		const configSummaryFields = this.getConfigSummaryFields(configManifest)
 
@@ -191,7 +193,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 
 		_.each(configSummaryFields, (config, field) => {
 			// @ts-ignore underscore typings are incorrect
-			const fn  = _.property(field.split('.'))
+			const fn = _.property(field.split('.'))
 			let val = fn(obj)
 
 			if (field === (configManifest.typeField || 'type') && configManifest.deviceTypesMapping) {
@@ -238,7 +240,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			const propNames = config.map(o => (o as SubDeviceConfigManifestEntry).columnName)
 				.map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='action'>&nbsp;</th>)
-	
+
 			return (<React.Fragment>
 				<thead>
 					<tr className='hl'>
@@ -246,8 +248,8 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 					</tr>
 				</thead>
 				<tbody>
-					{_.map(devices, (device: any, deviceId: string) => {
-						return <React.Fragment key={deviceId}>
+					{_.map(devices, (device: any, deviceId: PeripheralDeviceId) => {
+						return <React.Fragment key={unprotectString(deviceId)}>
 							{this.renderDeviceSummary(configManifest, deviceId, device, this.isItemEdited)}
 							{this.isItemEdited('settings.' + configManifest.id + '.' + deviceId) &&
 								<tr className='expando-details hl' key={deviceId + '-details'}>
@@ -288,13 +290,13 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 					</tr>
 				</thead>
 				<tbody>
-					{_.map(devices, (device: any, deviceId: string) => {
-						const configFieldKey = //configManifest.deviceTypesMapping ?
+					{_.map(devices, (device: any, deviceId: PeripheralDeviceId) => {
+						const configFieldKey = // configManifest.deviceTypesMapping ?
 							// configManifest.deviceTypesMapping[device[configManifest.typeField || 'type']] :
 							device[configManifest.typeField || 'type']
 						const configField = configManifest.config[configFieldKey]
-						
-						return <React.Fragment key={deviceId}>
+
+						return <React.Fragment key={unprotectString(deviceId)}>
 							{this.renderDeviceSummary(configManifest, deviceId, device, this.isItemEdited)}
 							{this.isItemEdited('settings.' + configManifest.id + '.' + deviceId) &&
 								<tr className='expando-details hl' key={deviceId + '-details'}>
@@ -376,13 +378,13 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 		return fieldNames
 	}
 
-	renderConfigTableSummary (configManifest: TableConfigManifestEntry, obj: any, path: string, isEdited: (deviceId: string) => boolean) {
+	renderConfigTableSummary (configManifest: TableConfigManifestEntry, obj: any, path: string, isEdited: (editId: EditId) => boolean) {
 		const els: Array<JSX.Element> = []
 		const configSummaryFields = this.getConfigSummaryFields(configManifest)
 
 		_.each(configSummaryFields, (_config, field) => {
 			// @ts-ignore underscore typings are incorrect
-			const fn  = _.property(field.split('.'))
+			const fn = _.property(field.split('.'))
 			const val = fn(obj)
 
 
@@ -411,10 +413,10 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 
 	/**
 	 * @todo add handler for new entry
-	 * 
-	 * @param configField 
-	 * @param obj 
-	 * @param prefix 
+	 *
+	 * @param configField
+	 * @param obj
+	 * @param prefix
 	 */
 	renderConfigTable (configField: TableConfigManifestEntry, obj: object, prefix: string) {
 		const { t } = this.props
@@ -428,7 +430,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			const propNames = config.map(o => (o as SubDeviceConfigManifestEntry).columnName)
 				.map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='actions'>&nbsp;</th>)
-	
+
 			return (<React.Fragment key={configField.id}>
 				<h2 className='mhn'>{t(configField.name)}</h2>
 				<table className='expando settings-config-table table'>
@@ -439,7 +441,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 					</thead>
 					<tbody>
 						{_.map(tableContent, (tableEntry: any, i) => {
-						return <React.Fragment key={i}>
+							return <React.Fragment key={i}>
 							{this.renderConfigTableSummary(configField, tableEntry, prefix + '' + i, this.isItemEdited)}
 							{this.isItemEdited(prefix + '' + i) &&
 								<tr className='expando-details hl' key={tableEntry.id + '-details'}>
@@ -456,10 +458,11 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 										</div>
 									</td>
 								</tr>}
-							</React.Fragment>})}
+							</React.Fragment>
+						})}
 					</tbody>
 				</table>
-	
+
 				<div className='mod mhs'>
 					<button className='btn btn-primary' onClick={(e) => this.addNewItem(configField, prefix + ((tableContent || []).length || 0))}>
 						<FontAwesomeIcon icon={faPlus} />
@@ -486,7 +489,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 					<tbody>
 						{_.map(tableContent, (tableEntry: any, i) => {
 							const tableConfigField = configField.config[configField.deviceTypesMapping ? configField.deviceTypesMapping[tableEntry[configField.typeField || 'type']] : tableEntry[configField.typeField || 'type']]
-							
+
 							return <React.Fragment key={i}>
 								{this.renderConfigTableSummary(configField, tableEntry, prefix + '' + i, this.isItemEdited)}
 								{this.isItemEdited(prefix + '' + i) &&
@@ -552,7 +555,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 
 			<ModalDialog title={t('Remove this item?')} acceptText={t('Remove')} secondaryText={t('Cancel')} show={this.state.showDeleteConfirm} onAccept={(e) => this.handleConfirmRemoveAccept(e)} onSecondary={(e) => this.handleConfirmRemoveCancel(e)}>
 				<p>{t('Are you sure you want to remove {{type}} "{{deviceId}}"?',
-					{ 
+					{
 						deviceId: (this.state.deleteConfirmItemPath && this.state.deleteConfirmItemPath.split('.').pop()),
 						type: (
 							this.state.deleteConfirmItemPath &&
@@ -565,7 +568,7 @@ export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSet
 			{(subDevices && subDevices.length > 0) &&
 				(<React.Fragment>
 					<h2 className='mhn'>{t('Attached Subdevices')}</h2>
-					{subDevices.map((item) => <DeviceItem key={item._id} device={item} showRemoveButtons={true} />)}
+					{subDevices.map((device) => <DeviceItem key={unprotectString(device._id)} device={device} showRemoveButtons={true} />)}
 				</React.Fragment>)}
 		</div>)
 	}

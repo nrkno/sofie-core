@@ -1,6 +1,9 @@
 @import "../colorScheme";
 @import "../itemTypeColors";
 
+$dashboard-button-width: 6.40625em;
+$dashboard-button-height: 5.625em;
+
 .dashboard {
 	position: absolute;
 	top: 2px;
@@ -130,7 +133,74 @@
 		font-size: 0.8em;
 		margin: -4px;
 		overflow: overlay;
-    	max-height: calc(100% - 12px);
+		max-height: calc(100% - 12px);
+
+		&.dashboard-panel__panel--horizontal {
+			white-space: nowrap;
+			overflow: auto;
+		}
+	}
+
+	.dashboard-panel__panel__group {
+		display: contents;
+
+		.dashboard-panel__panel__group__liveline {
+			display: inline-block;
+			position: relative;
+			margin-right: -2px;
+			width: 2px;
+			height: 6em;
+			margin-bottom: -1em;
+			z-index: 2;
+			transform: translate(calc(-1 * #{$dashboard-button-width}), 0);
+
+			&::after {
+				content: ' ';
+				display: block;
+				position: absolute;
+				background: var(--general-live-color);
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
+			}
+
+			&::before {
+				content: ' ';
+				display: block;
+				position: absolute;
+				top: 0;
+				left: 1px;
+				border-left: 10px solid var(--general-live-color);
+				border-bottom: 10px solid transparent;
+				border-top: 10px solid transparent;
+				border-right: 10px solid transparent;
+				transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
+			}
+		}
+
+		&.next {
+			.dashboard-panel__panel__group__liveline {
+				&::after {
+					background: var(--general-next-color);
+				}
+				&::before {
+					border-left-color: var(--general-next-color);
+				}
+			}
+		}
+
+		&.live {
+			.dashboard-panel__panel__group__liveline {
+				&::after {
+					background: var(--general-live-color);
+				}
+				&::before {
+					border-left-color: var(--general-live-color);
+				}
+			}
+		}
 	}
 
 	.dashboard-panel__panel__button {
@@ -144,8 +214,8 @@
 		white-space: normal;
 		line-break: loose;
 		word-break: break-all;
-		width: 6.40625em;
-		height: 5.625em;
+		width: $dashboard-button-width;
+		height: $dashboard-button-height;
 		border: none;
 		margin: 4px;
 		vertical-align: top;
@@ -207,14 +277,14 @@
 
 		> .dashboard-panel__panel__button__label {
 			position: absolute;
-			
+
 			max-height: calc(100% - 4px);
 
 			left: 4px;
 			max-width: calc(100% - 8px);
 			text-align: left;
 			hyphens: auto;
-			
+
 			vertical-align: top;
 			// -webkit-text-stroke-color: #000;
 			// -webkit-text-stroke-width: 0.02em;
@@ -247,6 +317,14 @@
 			font-size: 8px;
 			text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
 			z-index: 2;
+		}
+
+		> svg {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			width: 100%;
 		}
 	}
 }

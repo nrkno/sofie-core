@@ -11,11 +11,12 @@ import { transformTimeline } from '../../../lib/timeline'
 import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
+import { StudioId } from '../../../lib/collections/Studios'
 
 interface ITimelineViewProps {
 	match?: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }
@@ -50,7 +51,7 @@ const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState
 })
 
 interface ITimelineVisualizerInStudioProps {
-	studioId: string
+	studioId: StudioId
 }
 interface ITimelineVisualizerInStudioState {
 	scriptLoaded?: boolean
@@ -207,7 +208,7 @@ class TimelineVisualizerInStudio extends MeteorReactComponent<Translated<ITimeli
 })
 
 interface ITimelineSimulateProps {
-	studioId: string
+	studioId: StudioId
 }
 interface ITimelineSimulateState {
 	errorMsg?: string
@@ -245,7 +246,7 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 		}
 	}
 })(
-class extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateState> {
+class ComponentTimelineSimulate extends MeteorReactComponent<ITimelineSimulateProps & ITimelineSimulateState> {
 	renderTimelineState (state: TimelineState) {
 		return _.map(_.sortBy(_.values(state.layers), o => o.layer), o => (
 			<tr key={o.layer}>

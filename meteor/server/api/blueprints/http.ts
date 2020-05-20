@@ -3,19 +3,14 @@ import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintManifestSet } from 'tv-automation-sofie-blueprints-integration'
 import { ServerResponse, IncomingMessage } from 'http'
-// @ts-ignore Meteor package not recognized by Typescript
-import { Picker } from 'meteor/meteorhacks:picker'
-import * as bodyParser from 'body-parser'
 import { check, Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { uploadBlueprint } from './api'
+import { protectString } from '../../../lib/lib'
+import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { PickerPOST } from '../http'
 
-const postJsRoute = Picker.filter((req, res) => req.method === 'POST')
-postJsRoute.middleware(bodyParser.text({
-	type: 'text/javascript',
-	limit: '1mb'
-}))
-postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	const blueprintId = params.blueprintId
@@ -39,7 +34,7 @@ postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMess
 
 		if (!_.isString(body) || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		uploadBlueprint(blueprintId, body, blueprintName, force)
+		uploadBlueprint(protectString<BlueprintId>(blueprintId), body, blueprintName, force)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -50,12 +45,7 @@ postJsRoute.route('/blueprints/restore/:blueprintId', (params, req: IncomingMess
 
 	res.end(content)
 })
-const postJsonRoute = Picker.filter((req, res) => req.method === 'POST')
-postJsonRoute.middleware(bodyParser.text({
-	type: 'application/json',
-	limit: '10mb'
-}))
-postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -80,7 +70,7 @@ postJsonRoute.route('/blueprints/restore', (params, req: IncomingMessage, res: S
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {
 			try {
-				uploadBlueprint(id, collection[id], id)
+				uploadBlueprint(protectString<BlueprintId>(id), collection[id], id)
 			} catch (e) {
 				logger.error('Blueprint restore failed: ' + e)
 				errors.push(e)

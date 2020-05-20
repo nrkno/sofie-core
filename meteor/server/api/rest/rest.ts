@@ -1,20 +1,13 @@
 import { ServerResponse, IncomingMessage } from 'http'
-import { Picker, Router, Params } from 'meteor/meteorhacks:picker'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { Router, Params } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../methods'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
+import { UserActionAPIMethods } from '../../../lib/api/userActions'
+import { PickerPOST, PickerGET } from '../http'
 
-
-const POST = Picker.filter((req: IncomingMessage, _res: ServerResponse) => {
-	return req.method === 'POST'
-})
-
-const GET = Picker.filter((req: IncomingMessage, _res: ServerResponse) => {
-	return req.method === 'GET'
-})
 
 const apiVersion = 0
 
@@ -23,9 +16,9 @@ const index: any = []
 Meteor.startup(() => {
 	// Expose all user actions:
 
-	_.each(_.keys(UserActionAPI.methods), (methodName) => {
+	_.each(_.keys(UserActionAPIMethods), (methodName) => {
 
-		const methodValue = UserActionAPI.methods[methodName]
+		const methodValue = UserActionAPIMethods[methodName]
 		const signature = MeteorMethodSignatures[methodValue]
 
 
@@ -74,8 +67,8 @@ function assignRoute (routeType: 'POST' | 'GET', resource: string, indexResource
 
 	const route: Router = (
 		routeType === 'POST' ?
-		POST :
-		GET
+		PickerPOST :
+		PickerGET
 	)
 
 	index.push(routeType + ' ' + indexResource)
@@ -123,12 +116,12 @@ function assignRoute (routeType: 'POST' | 'GET', resource: string, indexResource
 	})
 }
 
-Picker.route('/api', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/api', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.statusCode = 301
 	res.setHeader('Location', '/api/0') // redirect to latest API version
 	res.end()
 })
-Picker.route('/api/0', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/api/0', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'application/json')
 	res.statusCode = 200
 	res.end(JSON.stringify(index, undefined, 2))

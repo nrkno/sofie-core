@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
+import { ShowStyleBaseId } from './ShowStyleBases'
 
 /**
  * The view targeted by this layout:
@@ -29,6 +31,23 @@ export enum PieceDisplayStyle {
 	BUTTONS = 'buttons'
 }
 
+export enum RundownLayoutElementType {
+	FILTER = 'filter',
+	EXTERNAL_FRAME = 'external_frame'
+}
+
+export interface RundownLayoutElementBase {
+	_id: string
+	name: string
+	rank: number
+	type?: RundownLayoutElementType // if not set, the value is RundownLayoutElementType.FILTER
+}
+
+export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.EXTERNAL_FRAME
+	url: string
+}
+
 /**
  * A filter to be applied against the AdLib Pieces. If a member is undefined, the pool is not tested
  * against that filter. A member must match all of the sub-filters to be included in a filter view
@@ -36,10 +55,8 @@ export enum PieceDisplayStyle {
  * @export
  * @interface RundownLayoutFilter
  */
-export interface RundownLayoutFilterBase {
-	_id: string
-	name: string
-	rank: number
+export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.FILTER
 	sourceLayerIds: string[] | undefined
 	sourceLayerTypes: SourceLayerType[] | undefined
 	outputLayerIds: string[] | undefined
@@ -59,6 +76,13 @@ export interface RundownLayoutFilter extends RundownLayoutFilterBase {
 	default: boolean
 }
 
+export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	x: number
 	y: number
@@ -71,21 +95,27 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 
 	includeClearInRundownBaseline: boolean
 	assignHotKeys: boolean
+	overflowHorizontally?: boolean
+	showAsTimeline?: boolean
+	hide?: boolean
 }
 
+/** A string, identifying a RundownLayout */
+export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
+
 export interface RundownLayoutBase {
-	_id: string
-	showStyleBaseId: string
-	blueprintId?: string
+	_id: RundownLayoutId
+	showStyleBaseId: ShowStyleBaseId
+	blueprintId?: BlueprintId
 	userId?: string
 	name: string
 	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
-	filters: RundownLayoutFilterBase[]
+	filters: RundownLayoutElementBase[]
 }
 
 export interface RundownLayout extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_LAYOUT
-	filters: RundownLayoutFilter[]
+	filters: RundownLayoutElementBase[]
 }
 
 export enum ActionButtonType {
@@ -116,7 +146,7 @@ export interface DashboardLayoutActionButton {
 export interface DashboardLayout extends RundownLayoutBase {
 	// TODO: Interface to be defined later
 	type: RundownLayoutType.DASHBOARD_LAYOUT
-	filters: DashboardLayoutFilter[]
+	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
 }
 

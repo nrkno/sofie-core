@@ -1,9 +1,14 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
+import { StudioId } from './Studios'
+
+/** A string, identifying a MediaObj */
+export type MediaObjId = ProtectedString<'MediaObjId'>
 
 export interface MediaObject0 {
+	_id: MediaObjId
 	/** Media object file path relative to playout server */
 	mediaPath: string
 	/** Media object size in bytes */
@@ -31,13 +36,12 @@ export interface MediaObject0 {
 	_attachments: {
 		[key: string]: MediaAttachment // add more here
 	}
-	_id: string
 	_rev: string
 }
 
 export interface MediaObject extends MediaObject0 {
 	/** The studio this Mediaobject resides in */
-	studioId: string
+	studioId: StudioId
 	/** the Id of the MediaObject database this object has been imported from - essentially CasparCG Device Id this file is on */
 	collectionId: string // Note: To be renamed to storageId
 	/** the Id in the MediaObject in the source database */

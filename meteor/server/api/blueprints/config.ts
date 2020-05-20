@@ -1,18 +1,19 @@
 import * as _ from 'underscore'
-import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { ConfigItemValue, ConfigManifestEntry, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
+import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
-import { getShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { getShowStyleCompound, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { protectString } from '../../../lib/lib'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
  * Especially relevant for multi-user.
  */
 export namespace ConfigRef {
-	export function getStudioConfigRef (studioId: string, configKey: string): string {
+	export function getStudioConfigRef (studioId: StudioId, configKey: string): string {
 		return '${studio.' + studioId + '.' + configKey + '}'
 	}
-	export function getShowStyleConfigRef (showStyleVariantId: string, configKey: string): string {
+	export function getShowStyleConfigRef (showStyleVariantId: ShowStyleVariantId, configKey: string): string {
 		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 	}
 	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean): string {
@@ -39,7 +40,7 @@ export namespace ConfigRef {
 				_.isString(m[2]) &&
 				_.isString(m[3])
 			) {
-				const studioId = m[2]
+				const studioId: StudioId = protectString(m[2])
 				const configId = m[3]
 				const studio = Studios.findOne(studioId)
 				if (studio) {
@@ -55,7 +56,7 @@ export namespace ConfigRef {
 				_.isString(m[2]) &&
 				_.isString(m[3])
 			) {
-				const showStyleVariantId = m[2]
+				const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
 				const configId = m[3]
 				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
@@ -82,4 +83,20 @@ export function compileStudioConfig (studio: Studio) {
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
 	return res
+}
+
+export function findMissingConfigs (manifest: ConfigManifestEntry[] | undefined, config: IConfigItem[]) {
+	const missingKeys: string[] = []
+	if (manifest === undefined) {
+		 return missingKeys
+	}
+
+	const configKeys = _.map(config, c => c._id)
+	_.each(manifest, m => {
+		if (m.required && configKeys.indexOf(m.id) === -1) {
+			missingKeys.push(m.name)
+		}
+	})
+
+	return missingKeys
 }

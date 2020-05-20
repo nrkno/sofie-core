@@ -1,8 +1,16 @@
 import * as _ from 'underscore'
 import { Fiber, runInFiber } from './Fibers'
 
-namespace Meteor {
+let controllableDefer: boolean = false
 
+export function useControllableDefer () {
+	controllableDefer = true
+}
+export function useNextTickDefer () {
+	controllableDefer = false
+}
+
+namespace Meteor {
 	export interface Settings {
 		public: {
 			[id: string]: any
@@ -39,12 +47,22 @@ namespace Meteor {
 		stop (): void
 	}
 }
+const orgSetTimeout = setTimeout
+const orgSetInterval = setInterval
+const orgClearTimeout = clearTimeout
+const orgClearInterval = clearInterval
+
 const $ = {
 	Error,
 	get setTimeout (): Function { return setTimeout },
 	get setInterval (): Function { return setInterval },
 	get clearTimeout (): Function { return clearTimeout },
 	get clearInterval (): Function { return clearInterval },
+
+	get orgSetTimeout (): Function { return orgSetTimeout },
+	get orgSetInterval (): Function { return orgSetInterval },
+	get orgClearTimeout (): Function { return orgClearTimeout },
+	get orgClearInterval (): Function { return orgClearInterval },
 }
 
 const mockThis = {
@@ -122,15 +140,24 @@ export namespace MeteorMock {
 		if (lastArg && typeof lastArg === 'function') {
 			const callback = args.pop()
 
-			this.setTimeout(() => {
+			this.defer(() => {
 				try {
-					callback(undefined, fcn.call(mockThis, ...args))
+					const result = fcn.call(mockThis, ...args)
+					Promise.resolve(result)
+					.then(result => {
+						callback(undefined, result)
+					})
+					.catch(e => {
+						callback(e)
+					})
 				} catch (e) {
 					callback(e)
 				}
-			}, 0)
+			})
 		} else {
-			return fcn.call(mockThis, ...args)
+			return waitForPromise(Promise.resolve(
+				fcn.call(mockThis, ...args)
+			))
 		}
 
 	}
@@ -164,7 +191,9 @@ export namespace MeteorMock {
 		$.clearInterval(timer)
 	}
 	export function defer (fcn: Function) {
-		return this.setTimeout(fcn, 0)
+		return (controllableDefer ? $.setTimeout : $.orgSetTimeout)(() => {
+			runInFiber(fcn).catch(console.error)
+		}, 0)
 	}
 
 	export function startup (fcn: Function): void {
@@ -218,6 +247,17 @@ export namespace MeteorMock {
 			fcn()
 		})
 	}
+
+	// locally defined function here, so there are no import to the rest of the code
+	const waitForPromise: <T>(p: Promise<T>) => T = wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+		Promise.resolve(p)
+		.then((result) => {
+			cb(null, result)
+		})
+		.catch((e) => {
+			cb(e)
+		})
+	})
 }
 export function setup () {
 	return {

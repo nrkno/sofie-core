@@ -18,7 +18,7 @@ interface IProps extends ICustomLayerItemProps {
 interface IState {
 }
 
-export const MicSourceRenderer = translate()(class extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export const MicSourceRenderer = translate()(class MicSourceRenderer extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
 
 	itemPosition: number
 	itemWidth: number
@@ -43,7 +43,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 	refreshLine = () => {
 		if (this.itemElement) {
 			this.itemPosition = this.itemElement.offsetLeft
-			const content = this.props.piece.content as ScriptContent
+			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
 			let scriptReadTime = 0
 			if (content && content.sourceDuration) {
 				scriptReadTime = content.sourceDuration * this.props.timeScale
@@ -97,9 +97,9 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		if ((prevProps.partDuration !== this.props.partDuration) ||
 			(prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
 			(prevProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
-			(prevProps.piece.playoutDuration !== this.props.piece.playoutDuration) ||
-			!_.isEqual(prevProps.piece.userDuration, this.props.piece.userDuration) ||
-			!_.isEqual(prevProps.piece.enable, this.props.piece.enable)
+			(prevProps.piece.instance.piece.playoutDuration !== this.props.piece.instance.piece.playoutDuration) ||
+			!_.isEqual(prevProps.piece.instance.piece.userDuration, this.props.piece.instance.piece.userDuration) ||
+			!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable)
 		) {
 			_forceSizingRecheck = true
 		}
@@ -117,8 +117,8 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			}
 		}
 
-		const content = this.props.piece.content as ScriptContent
-		if (content.sourceDuration && content.sourceDuration !== this.readTime) {
+		const content = this.props.piece.instance.piece.content as ScriptContent | undefined
+		if (content && content.sourceDuration && content.sourceDuration !== this.readTime) {
 			_forceSizingRecheck = true
 		}
 
@@ -126,7 +126,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 			this.refreshLine()
 		}
 
-		if (this.props.piece.name !== prevProps.piece.name) {
+		if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
@@ -138,7 +138,7 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 
 	render () {
 		const { t } = this.props
-		let labelItems = (this.props.piece.name || '').split('||')
+		let labelItems = (this.props.piece.instance.piece.name || '').split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 
@@ -147,14 +147,14 @@ export const MicSourceRenderer = translate()(class extends CustomLayerItemRender
 		// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
 		// }
 
-		const content = this.props.piece.content as ScriptContent
-		let startOfScript = content.fullScript || ''
+		const content = this.props.piece.instance.piece.content as ScriptContent | undefined
+		let startOfScript = (content && content.fullScript) || ''
 		let cutLength = startOfScript.length
 		if (startOfScript.length > SCRIPT_PART_LENGTH) {
 			startOfScript = startOfScript.substring(0, startOfScript.substr(0, SCRIPT_PART_LENGTH).lastIndexOf(' '))
 			cutLength = startOfScript.length
 		}
-		let endOfScript = content.fullScript || ''
+		let endOfScript = (content && content.fullScript) || ''
 		if (endOfScript.length > SCRIPT_PART_LENGTH) {
 			endOfScript = endOfScript.substring(endOfScript.indexOf(' ', Math.max(cutLength, endOfScript.length - SCRIPT_PART_LENGTH)), endOfScript.length)
 		}

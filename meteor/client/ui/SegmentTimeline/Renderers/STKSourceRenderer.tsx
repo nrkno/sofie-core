@@ -18,7 +18,7 @@ import * as loopAnimation from './icon-loop.json'
 import { InjectedTranslateProps, translate } from 'react-i18next'
 import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
 
-export const STKSourceRenderer = translate()(class extends VTSourceRendererBase {
+export const STKSourceRenderer = translate()(class STKSourceRenderer extends VTSourceRendererBase {
 	constructor (props) {
 		super(props)
 	}
@@ -26,12 +26,12 @@ export const STKSourceRenderer = translate()(class extends VTSourceRendererBase 
 	render () {
 		const { t } = this.props
 
-		let labelItems = this.props.piece.name.split('||')
+		let labelItems = this.props.piece.instance.piece.name.split('||')
 		this.begin = labelItems[0] || ''
 		this.end = labelItems[1] || ''
 
 		const itemDuration = this.getItemDuration()
-		const content = this.props.piece.content as LiveSpeakContent
+		const content = this.props.piece.instance.piece.content as LiveSpeakContent | undefined
 		const seek = content && content.seek ? content.seek : 0
 
 		const defaultOptions = {
@@ -45,7 +45,7 @@ export const STKSourceRenderer = translate()(class extends VTSourceRendererBase 
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
 
-		const vtContent = this.props.piece.content as VTContent
+		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
 		return <React.Fragment>
 			{this.renderInfiniteItemContentEnded()}
@@ -64,10 +64,10 @@ export const STKSourceRenderer = translate()(class extends VTSourceRendererBase 
 			<span className='segment-timeline__piece__label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				<span className={ClassNames('segment-timeline__piece__label', {
 					'overflow-label': this.end !== ''
-				})} key={this.props.piece._id + '-start'}>
+				})} key={this.props.piece.instance._id + '-start'}>
 					{this.begin}
 				</span>
-				{(this.begin && this.end === '' && this.props.piece.content && this.props.piece.content.loop) &&
+				{(this.begin && this.end === '' && vtContent && vtContent.loop) &&
 					(<div className='segment-timeline__piece__label label-icon label-loop-icon'>
 						<Lottie options={defaultOptions} width={24} height={24} isStopped={!this.props.showMiniInspector} isPaused={false} />
 					</div>)
@@ -75,7 +75,7 @@ export const STKSourceRenderer = translate()(class extends VTSourceRendererBase 
 				{this.renderContentTrimmed()}
 			</span>
 			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				{(this.end && this.props.piece.content && this.props.piece.content.loop) &&
+				{(this.end && vtContent && vtContent.loop) &&
 					(<div className='segment-timeline__piece__label label-icon label-loop-icon'>
 						<Lottie options={defaultOptions} width={24} height={24} isStopped={!this.props.showMiniInspector} isPaused={false} />
 					</div>)
@@ -96,7 +96,7 @@ export const STKSourceRenderer = translate()(class extends VTSourceRendererBase 
 					<div className={'segment-timeline__mini-inspector ' + this.props.typeClass} style={this.getFloatingInspectorStyle()}>
 						<div>
 							<span className='mini-inspector__label'>{t('File Name')}</span>
-							<span className='mini-inspector__value'>{this.props.piece.content && this.props.piece.content.fileName}</span>
+							<span className='mini-inspector__value'>{vtContent && vtContent.fileName}</span>
 						</div>
 					</div>
 				}

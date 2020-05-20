@@ -2,18 +2,21 @@ import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
 
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
-import { Parts } from '../../lib/collections/Parts'
+import { Parts, PartId } from '../../lib/collections/Parts'
+import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
+import { SegmentId } from '../../lib/collections/Segments'
+import { isProtectedString } from '../../lib/lib'
 
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false
 
-export function maintainFocusOnPart (partId: string, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
+export function maintainFocusOnPartInstance (partInstanceId: PartInstanceId, timeWindow: number, forceScroll?: boolean, noAnimation?: boolean) {
 	let startTime = Date.now()
 	const focus = () => {
 		// console.log("focus");
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
-			scrollToPart(partId, forceScroll, noAnimation).then(() => {
+			scrollToPartInstance(partInstanceId, forceScroll, noAnimation).then(() => {
 				_dontClearInterval = false
 			}).catch(() => {
 				_dontClearInterval = false
@@ -38,7 +41,17 @@ function quitFocusOnPart () {
 	}
 }
 
-export function scrollToPart (partId: string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+export function scrollToPartInstance (partInstanceId: PartInstanceId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+	// TODO: do scrolling within segment as well?
+	quitFocusOnPart()
+	const partInstance = PartInstances.findOne(partInstanceId)
+	if (partInstance) {
+		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation)
+	}
+	return Promise.reject('Could not find PartInstance')
+}
+
+export function scrollToPart (partId: PartId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	// TODO: do scrolling within segment as well?
 	quitFocusOnPart()
 	let part = Parts.findOne(partId)
@@ -48,11 +61,12 @@ export function scrollToPart (partId: string, forceScroll?: boolean, noAnimation
 	return Promise.reject('Could not find part')
 }
 
-const HEADER_HEIGHT = 175
+export const HEADER_HEIGHT = 150 // TV2 has: 54
+export const HEADER_MARGIN = 15
 
-export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | string, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | SegmentId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	let elementToScrollTo: HTMLElement | null = (
-		_.isString(elementToScrollToOrSegmentId) ?
+		isProtectedString(elementToScrollToOrSegmentId) ?
 			document.querySelector('#' + SEGMENT_TIMELINE_ELEMENT_ID + elementToScrollToOrSegmentId) :
 			elementToScrollToOrSegmentId
 	)
@@ -68,7 +82,7 @@ export function scrollToSegment (elementToScrollToOrSegmentId: HTMLElement | str
 	// check if the item is in viewport
 	if (forceScroll ||
 		bottom > window.scrollY + window.innerHeight ||
-		top < window.scrollY + HEADER_HEIGHT) {
+		top < window.scrollY + HEADER_HEIGHT + HEADER_MARGIN) {
 
 		return scrollToPosition(top, noAnimation).then(() => true)
 	}
@@ -80,7 +94,7 @@ export function scrollToPosition (scrollPosition: number, noAnimation?: boolean)
 	if (noAnimation) {
 		return new Promise((resolve, reject) => {
 			window.scroll({
-				top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+				top: Math.max(0, scrollPosition - HEADER_HEIGHT - HEADER_MARGIN),
 				left: 0
 			})
 			resolve()
@@ -89,7 +103,7 @@ export function scrollToPosition (scrollPosition: number, noAnimation?: boolean)
 		return new Promise((resolve, reject) => {
 			window.requestIdleCallback(() => {
 				window.scroll({
-					top: Math.max(0, scrollPosition - HEADER_HEIGHT),
+					top: Math.max(0, scrollPosition - HEADER_HEIGHT - HEADER_MARGIN),
 					left: 0,
 					behavior: 'smooth'
 				})

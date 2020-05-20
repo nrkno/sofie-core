@@ -1,7 +1,7 @@
 import { RundownAPI } from '../api/rundown'
 import { TransformedCollection } from '../typings/meteor'
-import { PartTimings } from './Parts'
-import { registerCollection } from '../lib'
+import { PartTimings, PartId } from './Parts'
+import { registerCollection, ProtectedString, ProtectedStringProperties, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceGeneric,
@@ -11,15 +11,22 @@ import {
 	Timeline
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { RundownId } from './Rundowns'
 
-/** A Single item in a "line": script, VT, cameras */
-export interface PieceGeneric extends IBlueprintPieceGeneric {
+/** A string, identifying a Piece */
+export type PieceId = ProtectedString<'PieceId'>
+export type InternalIBlueprintPieceGeneric = ProtectedStringProperties<IBlueprintPieceGeneric, 'partId'>
+
+/** A Single item in a Part: script, VT, cameras */
+export interface PieceGeneric extends InternalIBlueprintPieceGeneric {
 	// ------------------------------------------------------------------
-	_id: string
+	_id: PieceId
 	/** ID of the source object in MOS */
 	externalId: string
 	/** The rundown this piece belongs to */
-	rundownId: string
+	rundownId: RundownId
+	/** The Part this piece belongs to */
+	partId?: PartId
 
 	/** Playback availability status */
 	status: RundownAPI.PieceStatusCode
@@ -30,9 +37,9 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
-	continuesRefId?: string
+	continuesRefId?: PieceId
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
-	adLibSourceId?: string
+	adLibSourceId?: PieceId
 	/** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
 	dynamicallyInserted?: boolean,
 	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
@@ -46,18 +53,20 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	extendOnHold?: boolean
 }
 
-export interface Piece extends PieceGeneric, IBlueprintPieceDB {
+export interface Piece extends PieceGeneric, ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
 	// -----------------------------------------------------------------------
 
-	partId: string
+	partId: PartId
 	/** This is set when an piece's duration needs to be overriden */
 	userDuration?: Pick<Timeline.TimelineEnable, 'duration' | 'end'>
 	/** This is set when the piece is infinite, to deduplicate the contents on the timeline, while allowing out of order */
 	infiniteMode?: PieceLifespan
+	/** [timestamp) After this time, the piece has definitely ended and its content can be omitted from the timeline */
+	definitelyEnded?: number
 	/** This is a backup of the original infiniteMode of the piece, so that the normal field can be modified during playback and restored afterwards */
 	originalInfiniteMode?: PieceLifespan
 	// /** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
-	// infiniteId?: string
+	infiniteId?: PieceId
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece

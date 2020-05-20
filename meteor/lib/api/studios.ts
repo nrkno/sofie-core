@@ -1,10 +1,14 @@
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { StudioId } from '../collections/Studios'
 
-export namespace StudiosAPI {
-		export enum methods {
-		'insertStudio' = 'showstyles.insertStudio',
-		'removeStudio' = 'showstyles.removeStudio',
-	}
+export interface NewStudiosAPI {
+	insertStudio (): Promise<StudioId>
+	removeStudio (studioId: StudioId): Promise<void>
+}
+
+export enum StudiosAPIMethods {
+	'insertStudio' = 'studio.insertStudio',
+	'removeStudio' = 'studio.removeStudio',
 }
 
 export function mappingIsAbstract (mapping: TSR.Mapping): mapping is TSR.MappingAbstract {

@@ -1,13 +1,17 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { TimelineObjGeneric } from './Timeline'
 import { createMongoCollection } from './lib'
+import { RundownId } from './Rundowns'
+
+/** A string, identifying a RundownBaselineObj */
+export type RundownBaselineObjId = ProtectedString<'RundownBaselineObjId'>
 
 export interface RundownBaselineObj {
-	_id: string
+	_id: RundownBaselineObjId
 	/** The rundown this timeline-object belongs to */
-	rundownId: string
+	rundownId: RundownId
 
 	objects: TimelineObjGeneric[]
 }

@@ -56,3 +56,11 @@ export function setHelpMode (helpMode: boolean) {
 export function getHelpMode (): boolean {
 	return localStorage.getItem('helpMode') === '1'
 }
+
+export function setUIZoom (uiZoomLevel: number) {
+	localStorage.setItem('uiZoomLevel', uiZoomLevel + '')
+}
+
+export function getUIZoom (): number {
+	return parseFloat(localStorage.getItem('uiZoomLevel') || '1') || 1
+}

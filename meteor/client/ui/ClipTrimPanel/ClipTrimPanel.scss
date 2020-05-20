@@ -19,6 +19,13 @@
 		margin: 15px 15px;
 
 		.clip-trim-panel__timecode-encoders__input {
+			position: relative;
+
+			> .clip-trim-panel__timecode-encoders__input__reset {
+				position: absolute;
+				right: 0;
+				font-size: 0.8em;
+			}
 			> label {
 				text-transform: uppercase;
 				font-weight: 600;

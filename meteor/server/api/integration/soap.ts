@@ -18,7 +18,6 @@ import { escapeHtml } from '../../../lib/lib'
 
 type ExternalMessageQueueObjSOAP0 = ExternalMessageQueueObjSOAP & ExternalMessageQueueObj
 export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP0 & ExternalMessageQueueObj) {
-
 	logger.info('sendSOAPMessage ' + msg._id)
 	if (!msg.receiver) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))
 	if (!msg.receiver.url) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver.url missing!'))

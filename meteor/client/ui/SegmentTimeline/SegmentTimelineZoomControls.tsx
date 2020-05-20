@@ -1,8 +1,8 @@
-import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as ClassNames from 'classnames'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset } from '../../utils/positions'
+import { onElementResize, offElementResize } from '../../lib/resizeObserver'
 
 interface IPropsHeader {
 	scrollLeft: number
@@ -22,7 +22,7 @@ interface IStateHeader {
 	width: number
 }
 
-export const SegmentTimelineZoomControls = class extends React.Component<IPropsHeader, IStateHeader> {
+export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls extends React.Component<IPropsHeader, IStateHeader> {
 	parentElement: HTMLDivElement
 	selAreaElement: HTMLDivElement
 	offsetX: number
@@ -30,7 +30,8 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	clickOffsetX: number
 	clickOffsetY: number
 
-	_isTouch: boolean = false
+	private _isTouch: boolean = false
+	private resizeObserver: ResizeObserver
 
 	SMALL_WIDTH_BREAKPOINT = 25
 
@@ -77,9 +78,16 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 		}
 	}
 
-	onElementResize = () => {
+	onElementResize = (entries: ResizeObserverEntry[]) => {
+		let width: number
+		if (entries && entries[0] && entries[0].contentBoxSize) {
+			width = entries[0].contentBoxSize!.width
+		} else {
+			width = getElementWidth(this.parentElement)
+		}
+
 		this.setState({
-			width: getElementWidth(this.parentElement) || 1
+			width: width || 1
 		})
 		this.checkSmallMode()
 	}
@@ -244,14 +252,14 @@ export const SegmentTimelineZoomControls = class extends React.Component<IPropsH
 	}
 
 	componentDidMount () {
-		elementResizeEvent(this.parentElement, this.onElementResize)
+		this.resizeObserver = onElementResize(this.parentElement, this.onElementResize)
 		this.setState({
 			width: getElementWidth(this.parentElement) || 1
 		})
 	}
 
 	componentWillUnmount () {
-		elementResizeEvent.unbind(this.parentElement, this.onElementResize)
+		offElementResize(this.resizeObserver, this.parentElement)
 	}
 
 	render () {

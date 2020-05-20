@@ -1,4 +1,3 @@
-import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as _ from 'underscore'
 
@@ -6,6 +5,7 @@ import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
 import { getElementWidth, getElementHeight } from '../../utils/dimensions'
+import { onElementResize, offElementResize } from '../../lib/resizeObserver'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -15,10 +15,17 @@ declare class FontFace {
 	load (): void
 }
 
-const GRID_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
-const TIMELINE_GRID_LABEL_COLOR = 'rgb(175,175,175)'
-const INNER_STEP_GRID_COLOR = 'rgb(112,112,112)'
-const LARGE_STEP_GRID_COLOR = 'rgb(112,112,112)'
+const LABEL_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
+const LABEL_COLOR = 'rgb(175,175,175)'
+const SHORT_LINE_GRID_COLOR = 'rgb(112,112,112)'
+const LONG_LINE_GRID_COLOR = 'rgb(112,112,112)'
+
+const FONT_SIZE = 15
+const LABEL_TOP = 18
+const LONG_LINE_TOP = 25
+const LONG_LINE_HEIGHT = 0
+const SHORT_LINE_TOP = 30
+const SHORT_LINE_HEIGHT = 6
 
 interface ITimelineGridProps {
 	timeScale: number
@@ -39,7 +46,20 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	pixelRatio: number
 	scheduledRepaint?: number | null
 
-	contextResize = _.throttle(() => {
+	private _resizeObserver: ResizeObserver
+
+	fontSize: number = FONT_SIZE
+	labelTop: number = LABEL_TOP
+	longLineTop: number = LONG_LINE_TOP
+	longLineHeight: number = LONG_LINE_HEIGHT
+	shortLineTop: number = SHORT_LINE_TOP
+	shortLineHeight: number = SHORT_LINE_HEIGHT
+
+	labelColor: string = LABEL_COLOR
+	shortLineColor: string = SHORT_LINE_GRID_COLOR
+	longLineColor: string = LONG_LINE_GRID_COLOR
+
+	contextResize = _.throttle((parentElementWidth: number, parentElementHeight: number) => {
 		if (this.ctx) {
 			let devicePixelRatio = window.devicePixelRatio || 1
 
@@ -51,15 +71,15 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 			this.pixelRatio = devicePixelRatio / backingStoreRatio
 
-			this.width = (this.canvasElement.scrollWidth || 0) * this.pixelRatio
-			this.height = (this.canvasElement.scrollHeight || 0) * this.pixelRatio
+			this.width = (parentElementWidth || 0) * this.pixelRatio
+			this.height = (parentElementHeight || 0) * this.pixelRatio
 			this.canvasElement.width = this.width
 			this.canvasElement.height = this.height
 
 			this.repaint()
 		}
 		if (this.props.onResize) {
-			this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
+			this.props.onResize([parentElementWidth || 1, parentElementHeight || 1])
 		}
 	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
 
@@ -69,10 +89,32 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 	setCanvasRef = (element: HTMLCanvasElement) => {
 		this.canvasElement = element
+
+		if (this.canvasElement) {
+			const style = getComputedStyle(this.canvasElement)
+
+			this.fontSize = parseFloat(style.fontSize || FONT_SIZE.toString())
+			this.labelTop = parseFloat(style.getPropertyValue('--timeline-grid-label-top') || LABEL_TOP.toString())
+
+			this.labelColor = style.color || LABEL_COLOR
+			this.longLineColor = style.getPropertyValue('--timeline-grid-long-line-color') || LONG_LINE_GRID_COLOR
+			this.shortLineColor = style.getPropertyValue('--timeline-grid-short-line-color') || SHORT_LINE_GRID_COLOR
+
+			this.longLineTop = parseFloat(style.getPropertyValue('--timeline-grid-long-line-top') || LONG_LINE_TOP.toString())
+			this.longLineHeight = parseFloat(style.getPropertyValue('--timeline-grid-long-line-height') || LONG_LINE_HEIGHT.toString())
+			this.shortLineTop = parseFloat(style.getPropertyValue('--timeline-grid-short-line-top') || SHORT_LINE_TOP.toString())
+			this.shortLineHeight = parseFloat(style.getPropertyValue('--timeline-grid-short-line-height') || SHORT_LINE_HEIGHT.toString())
+		}
 	}
 
-	onCanvasResize = (event: Event) => {
-		this.contextResize()
+	onCanvasResize = (entries: ResizeObserverEntry[]) => {
+		if (entries && entries[0] && entries[0].contentBoxSize && entries[0].contentBoxSize.width !== undefined) {
+			this.contextResize(entries[0].contentBoxSize!.width, entries[0].contentBoxSize!.height)
+		} else if (entries && entries[0] && entries[0].contentRect && entries[0].contentRect.width !== undefined) {
+			this.contextResize(entries[0].contentRect!.width, entries[0].contentRect!.height)
+		} else {
+			this.contextResize(getElementWidth(this.parentElement), getElementHeight(this.parentElement))
+		}
 	}
 
 	ring (value, ringMax) {
@@ -98,7 +140,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			this.ctx.lineCap = 'butt'
 			this.ctx.lineWidth = 1
 			this.ctx.font = (15 * this.pixelRatio).toString() + 'px GridTimecodeFont, Roboto, Arial, sans-serif'
-			this.ctx.fillStyle = TIMELINE_GRID_LABEL_COLOR
+			this.ctx.fillStyle = this.labelColor
 
 			const fps = Settings.frameRate
 
@@ -168,19 +210,30 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				let isLabel = (i % interStep === 0)
 
 				if (isLabel === true) {
-					this.ctx.strokeStyle = LARGE_STEP_GRID_COLOR
 					let t = ((xPosition > breakX) && (this.props.scrollLeft > 0) ? baseN : base) + (this.ring((i - interStep), maxTicks) * (secondsStep / interStep))
 
 					this.ctx.fillText(
 						RundownUtils.formatDiffToTimecode(t * 1000, false, false, true, false, true),
-						xPosition, 18 * this.pixelRatio)
+						xPosition, this.labelTop * this.pixelRatio)
+
+					this.ctx.strokeStyle = this.longLineColor
 				} else {
-					this.ctx.strokeStyle = INNER_STEP_GRID_COLOR
+					this.ctx.strokeStyle = this.shortLineColor
 				}
 
 				this.ctx.beginPath()
-				this.ctx.moveTo(xPosition, isLabel ? (25 * this.pixelRatio) : (30 * this.pixelRatio))
-				this.ctx.lineTo(xPosition, isLabel ? (this.height) : (36 * this.pixelRatio))
+				this.ctx.moveTo(xPosition, isLabel ?
+					(this.longLineTop * this.pixelRatio) :
+					(this.shortLineTop * this.pixelRatio)
+				)
+				this.ctx.lineTo(xPosition, isLabel ?
+					(this.longLineHeight > 0 ?
+						(this.longLineTop + this.longLineHeight) * this.pixelRatio :
+						this.height) :
+					(this.shortLineHeight > 0 ?
+						(this.shortLineTop + this.shortLineHeight) * this.pixelRatio :
+						this.height)
+				)
 				this.ctx.stroke()
 			}
 		}
@@ -200,14 +253,16 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// alpha: false
 		})
 		if (this.ctx) {
-			this.contextResize()
+			const parentWidth = getElementWidth(this.parentElement)
+			const parentHeight = getElementHeight(this.parentElement)
+			this.contextResize(parentWidth, parentHeight)
 
 			// $(window).on('resize', this.onCanvasResize)
-			elementResizeEvent(this.parentElement, this.onCanvasResize)
+			this._resizeObserver = onElementResize(this.parentElement, this.onCanvasResize)
 
 			if (!gridFont && typeof FontFace !== 'undefined') {
 
-				gridFont = new FontFace('GridTimecodeFont', GRID_FONT_URL, {
+				gridFont = new FontFace('GridTimecodeFont', LABEL_FONT_URL, {
 					style: 'normal',
 					weight: 100
 				})
@@ -229,7 +284,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			}
 
 			if (this.props.onResize) {
-				this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
+				this.props.onResize([parentWidth || 1, parentHeight || 1])
 			}
 		}
 	}
@@ -249,6 +304,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		// console.log('Detach resize notifiers')
 
 		// $(window).off('resize', this.onCanvasResize)
-		elementResizeEvent.unbind(this.parentElement, this.onCanvasResize)
+		this._resizeObserver.disconnect()
 	}
 }

@@ -3,13 +3,15 @@ import { getCurrentTime } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import { Studios } from '../../lib/collections/Studios'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
+import { MethodContext } from '../../lib/api/methods'
 
-export function saveEvaluation (evaluation: EvaluationBase): void {
+export function saveEvaluation (methodContext: MethodContext, evaluation: EvaluationBase): void {
 	Evaluations.insert(_.extend(evaluation, {
-		userId: this.userId,
+		userId: methodContext.userId,
 		timestamp: getCurrentTime(),
 	}))
 	logger.info({
@@ -51,15 +53,15 @@ export function saveEvaluation (evaluation: EvaluationBase): void {
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
-				let rundown = Rundowns.findOne(evaluation.rundownId)
+				let playlist = RundownPlaylists.findOne(evaluation.playlistId)
 				let hostUrl = studio.settings.sofieUrl
 
 				slackMessage += (
 					'rundown ' +
 					(
-						hostUrl && rundown ?
-						('*<' + hostUrl + '/rundown/' + rundown._id + '|' + rundown.name + '>*') :
-						(rundown && rundown.name || 'N/A')
+						hostUrl && playlist ?
+						('*<' + hostUrl + '/rundown/' + playlist._id + '|' + playlist.name + '>*') :
+						(playlist && playlist.name || 'N/A')
 					) +
 					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') + '\n' +
 					evaluationMessage + '\n' +

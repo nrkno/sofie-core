@@ -39,7 +39,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		if (this.props.piece.name !== prevProps.piece.name) {
+		if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
@@ -51,7 +51,7 @@ export class DefaultLayerItemRenderer extends CustomLayerItemRenderer<IProps, IS
 				style={this.getItemLabelOffsetLeft()}
 			>
 				<span className='segment-timeline__piece__label'>
-					{this.props.piece.name}
+					{this.props.piece.instance.piece.name}
 				</span>
 			</span>
 			<span className='segment-timeline__piece__label right-side'

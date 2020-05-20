@@ -6,7 +6,7 @@ $output-layer-group-line: 1px solid #5C5C5C;
 $output-layer-group-collapse-animation-duration: 0.3s;
 
 $segment-header-height: 2.3em;
-$segment-header-width: 200px;
+$segment-header-width: 12.5rem;
 $segment-background-color: #000;
 $segment-timeline-background-color: #1F1F1F;
 $segment-next-preview-background-color: #181818;
@@ -21,7 +21,7 @@ $part-start-color: #a5a5a5;
 $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
-$segment-nextline-shade-width: 30px;
+$segment-nextline-shade-width: 1.875rem;
 $segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
 
 $liveline-timecode-color:  #ffff00; //$general-live-color;
@@ -48,8 +48,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		display: block;
 		background: url('/images/collapse-triangle.svg') no-repeat scroll center center;
 		background-size: contain;
-		width: 15px;
-		height: 15px;
+		width: 0.9375rem;
+		height: 0.9375rem;
 		transition: $output-layer-group-collapse-animation-duration transform ease-in-out;
 	}
 }
@@ -73,7 +73,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	background-size: 800px 1px;
 
 	animation-duration: 1s;
-	animation-fill-mode: forwards; 
+	animation-fill-mode: forwards;
 	animation-iteration-count: infinite;
 	animation-name: placeholder-shimmer;
 	animation-timing-function: linear;
@@ -97,12 +97,12 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	100% {
-		background-position: 100vw 0; 
+		background-position: 100vw 0;
 	}
 }
 
 .rundown-view {
-	padding-top: 125px;
+	padding-top: 7.8125rem;
 	padding-bottom: 50vh;
 	padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
@@ -231,13 +231,13 @@ body.no-overflow {
 	.flex-col.col-timing {
 		flex: 1 1;
 	}
-	
+
 	.timing {
 		margin: 0 0;
 		min-width: auto;
 		width: 100%;
 		text-align: center;
-	
+
 		.timing-clock {
 			position: relative;
 			margin-right: 1em;
@@ -288,7 +288,7 @@ body.no-overflow {
 
 				.overtime {
 					color: $general-fast-color;
-					text-shadow: 0px 0px 6px transparentize($general-fast-color, 0.2);
+					text-shadow: 0px 0px 6px $general-fast-color--shadow;
 				}
 			}
 
@@ -337,7 +337,7 @@ body.no-overflow {
 
 				&.light {
 					color: $general-fast-color;
-					text-shadow: 0px 0px 6px transparentize($general-fast-color, 0.2);
+					text-shadow: 0px 0px 6px $general-fast-color--shadow;
 					background: none;
 				}
 			}
@@ -375,12 +375,12 @@ body.no-overflow {
 	@media screen and (max-width: 1024px) {
 		.timing {
 			.timing-clock.plan-end:not(.countdown) {
-				display: none;			
+				display: none;
 			}
-	
+
 			.timing-clock.countdown.plan-end {
 				margin-right: 0;
-			} 
+			}
 		}
 	}
 
@@ -398,7 +398,7 @@ body.no-overflow {
 			.timing-clock.heavy-light {
 				margin-right: 0;
 			}
-	
+
 			.timing-clock.plan-end {
 				display: none;
 			}
@@ -410,7 +410,7 @@ body.no-overflow {
 			.timing-clock.plan-start.countdown {
 				display: none;
 			}
-	
+
 			.timing-clock.time-now {
 				left: 2em;
 				transform: none;
@@ -452,7 +452,7 @@ body.no-overflow {
 	user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
-	
+
 	width: auto;
 	margin: 1.5em;
 	// padding: 0 0 0.15em 0.15em;
@@ -472,7 +472,7 @@ body.no-overflow {
 		margin: 0;
 		padding: 0;
 		overflow: hidden;
-		
+
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / end;
 
@@ -493,7 +493,7 @@ body.no-overflow {
 			-webkit-hyphens: auto;
 			-ms-hyphens: auto;
 		}
-		
+
 		.segment-timeline__title__notes {
 			margin: 0 0 0.5em;
 			padding: 0.5em;
@@ -575,6 +575,23 @@ body.no-overflow {
 			font-weight: 500;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 			background: $segment-title-background-color-next;
+		}
+	}
+
+	&.queued {
+		.segment-timeline__title {
+			position: relative;
+			&::after {
+				content: ' ';
+				position: absolute;
+				top: 0;
+				right: 0;
+				width: 2em;
+				height: 2em;
+				background: $segment-title-background-color-next;
+				clip-path: polygon(0 0, 100% 0, 100% 100%);
+				pointer-events: none;
+			}
 		}
 	}
 
@@ -786,7 +803,7 @@ body.no-overflow {
 				}
 
 				.segment-timeline__part__difference {
-					background: rgba(0, 0, 0, 0.5);	
+					background: rgba(0, 0, 0, 0.5);
 				}
 			}
 		}
@@ -831,7 +848,7 @@ body.no-overflow {
 				top: 0;
 				bottom: 0;
 				width: 250px;
-				cursor: move;		
+				cursor: move;
 				cursor: -webkit-grab;
 				background: none;
 
@@ -884,7 +901,7 @@ body.no-overflow {
 						left: -3px;
 						bottom: 0;
 						width: 10px;
-						cursor: move;				
+						cursor: move;
 						cursor: -webkit-grab;
 						z-index: 20;
 						display: block;
@@ -897,6 +914,12 @@ body.no-overflow {
 				background-image:
 					repeating-linear-gradient(45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 4px, var(--invalid-reason-color-opaque) 4px, var(--invalid-reason-color-opaque) 8px),
 					repeating-linear-gradient(-45deg, var(--invalid-reason-color-transparent) 0%, var(--invalid-reason-color-transparent) 4px, var(--invalid-reason-color-opaque) 4px, var(--invalid-reason-color-opaque) 8px) !important;
+			}
+		}
+		.segment-timeline__part.gap {
+			.segment-timeline__part__invalid-cover {
+				background: #000;
+				z-index: 0;
 			}
 		}
 	}
@@ -928,6 +951,15 @@ body.no-overflow {
 		visibility: visible;
 		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
 					$output-layer-group-collapse-animation-duration visibility 0s;
+
+		color: rgb(175,175,175);
+
+		font-size: 15px;
+		--timeline-grid-label-top: 18px;
+		--timeline-grid-long-line-top: 25px;
+		--timeline-grid-long-line-height: 0;
+		--timeline-grid-short-line-top: 30px;
+		--timeline-grid-short-line-height: 6px;
 	}
 
 	.segment-timeline__timeline-container {
@@ -1039,7 +1071,7 @@ body.no-overflow {
 				min-width: 200%;
 				z-index: 0;
 			}
-			
+
 			&.invalid {
 				background-color: #333;
 			}
@@ -1152,6 +1184,30 @@ body.no-overflow {
 				background-image:
 					repeating-linear-gradient(-45deg, transparent 0%, transparent 8px, darken($part-start-color, 50%) 8px, darken($part-start-color, 50%) 10px);
    				backdrop-filter: saturate(0%) brightness(50%);
+			}
+
+			&.gap {
+				.segment-timeline__part__invalid-cover {
+					z-index: 0;
+					background: #000;
+					background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTA4IDI3IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3R5bGU9ImZpbGwtcnVsZTpldmVub2RkO2NsaXAtcnVsZTpldmVub2RkOyI+PHBhdGggaWQ9IlBhdGgiIGQ9Ik0xMDEuMDYzLDEuNTc3Yy0yMC44MzcsMy42NzUgLTIzLjQwNCwyNC4zNTMgLTQ3Ljk3LDI0LjM1M2MtMjYuODg1LDAgLTI2LjQxOCwtMjQuNjI5IC01My4wOTMsLTI0LjkzbTEwMS4wNjMsMC41NzdjMi4xMTEsLTAuMzcyIDQuNDA5LC0wLjU3NyA2LjkzNywtMC41NzciIHN0eWxlPSJmaWxsOiNkOGQ4ZDg7ZmlsbC1vcGFjaXR5OjA7c3Ryb2tlOiM5Nzk3OTc7c3Ryb2tlLXdpZHRoOjJweDsiLz48L3N2Zz4=);
+					background-repeat: repeat-x;
+    				background-position: right center;
+					background-attachment: local;
+					background-size: 1.8em 1em;
+				}
+
+				.segment-timeline__part__nextline--endline {
+					border-left-style: dotted;
+
+					&::before {
+						display: none;
+					}
+					
+					&::after {
+						display: none;
+					}
+				}
 			}
 
 			&:not(.live) {
@@ -1276,7 +1332,7 @@ body.no-overflow {
 					}
 				}
 			}
-			
+
 			// Group all layers belonging to an output group
 			.segment-timeline__output-group {
 				min-height: $segment-layer-height;
@@ -1284,7 +1340,7 @@ body.no-overflow {
 				transform-style: preserve-3d;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
-						
+
 				// The layer container for all pieces
 				.segment-timeline__layer {
 					min-height: $segment-layer-height;
@@ -1316,7 +1372,7 @@ body.no-overflow {
 							color: $segment-item-disabled-color;
 						}
 						&.next-is-touching {
-							border-right: 1px solid $segment-timeline-background-color; 
+							border-right: 1px solid $segment-timeline-background-color;
 						}
 
 						&.next-is-touching:hover {
@@ -1471,7 +1527,7 @@ body.no-overflow {
 								max-width: calc(100% - 10px);
 								overflow: hidden;
 								text-overflow: clip;
-								
+
 								> * {
 									position: relative;
 								}
@@ -1570,10 +1626,10 @@ body.no-overflow {
 									bottom: 0;
 									right: 0;
 								}
-								
+
 								&.in {
 									clip-path: polygon(100% 100%, 100% 0, 1% 100%);
-									
+
 									&::before {
 										background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
 									}
@@ -1587,7 +1643,7 @@ body.no-overflow {
 								}
 							}
 
-							&.wipe {								
+							&.wipe {
 								&.in {
 									clip-path: polygon(1% 101%, 1% 49%, 100% 49%, 100% 101%);
 								}
@@ -1610,7 +1666,7 @@ body.no-overflow {
 							// min-height: 0 causes the layers to collapse and divide the output-group min-height amongst themselves
 							min-height: 0;
 							border-bottom: 0px solid $segment-layer-separator-color;
-	
+
 							.segment-timeline__piece {
 								.segment-timeline__piece__label {
 									opacity: 0;
@@ -1656,7 +1712,7 @@ body.no-overflow {
 		.segment-timeline__output-layer-control {
 			line-height: $segment-layer-height;
 			min-height: $segment-layer-height;
-			
+
 			// the label with the name for the output layer
 			.segment-timeline__output-layer-control__label {
 				font-weight: 500;
@@ -1678,7 +1734,7 @@ body.no-overflow {
 				min-height: $segment-layer-height;
 				letter-spacing: 0em;
 				color: rgb(207, 207, 207);
-	
+
 				transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
 							$output-layer-group-collapse-animation-duration height ease-in-out,
 							$output-layer-group-collapse-animation-duration line-height ease-in-out,
@@ -1745,7 +1801,7 @@ body.no-overflow {
 		.segment-timeline__duration {
 			@include collapse-triangle-collapsed();
 		}
-		
+
 		.segment-timeline__title { // TODO: This is just temporary, to have some aciton on collapsed
 			text-overflow: ellipsis;
 			overflow: hidden;
@@ -1759,7 +1815,7 @@ body.no-overflow {
 				padding: 0;
 			}
 		}
-		
+
 		.segment-timeline__timeline-background {
 			opacity: 0;
 			margin-bottom: 0;
@@ -1770,7 +1826,7 @@ body.no-overflow {
 		.segment-timeline__timeline-grid {
 			opacity: 0;
 			visibility: hidden;
-			
+
 			transition: $output-layer-group-collapse-animation-duration opacity,
 						0s visibility $output-layer-group-collapse-animation-duration;
 		}
@@ -1811,7 +1867,7 @@ body.no-overflow {
 					transition: $output-layer-group-collapse-animation-duration opacity 0s,
 								0s visibility $output-layer-group-collapse-animation-duration;
 				}
-				
+
 				&::after {
 					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
 								0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
@@ -1871,6 +1927,12 @@ body.no-overflow {
 							min-height: 0.4em;
 							border-bottom: 1px solid $segment-layer-separator-color;
 						}
+					}
+				}
+
+				&.gap {
+					.segment-timeline__part__invalid-cover {
+						background-size: 0.6em 0.2em;
 					}
 				}
 			}
@@ -2155,7 +2217,7 @@ body.no-overflow {
     font-weight: 500;
 	box-shadow: 10px 5px 5px #000;
 	z-index: 100;
-	
+
 	&:hover {
 		opacity: 1;
 	}
@@ -2163,7 +2225,7 @@ body.no-overflow {
 
 .rundown-view--unpublished {
 	margin-top: 0;
-	
+
 	> .rundown-view__label {
 		position: absolute;
 		top: 50%;

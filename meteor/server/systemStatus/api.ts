@@ -1,23 +1,17 @@
-import { Methods, setMeteorMethods } from '../methods'
-import { SystemStatusAPI, StatusResponse } from '../../lib/api/systemStatus'
+import { registerClassToMeteorMethods } from '../methods'
+import { StatusResponse, NewSystemStatusAPI, SystemStatusAPIMethods } from '../../lib/api/systemStatus'
 import { getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'
-import { Picker } from 'meteor/meteorhacks:picker'
-
-let methods: Methods = {}
-
-methods[SystemStatusAPI.getSystemStatus] = () => {
-	return getSystemStatus()
-}
-setMeteorMethods(methods)
+import { protectString, makePromise } from '../../lib/lib'
+import { PickerGET } from '../api/http'
 
 // Server routes:
-Picker.route('/health', (params, req: IncomingMessage, res: ServerResponse, next) => {
+PickerGET.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
 	let status = getSystemStatus()
 	health(status, res)
 })
-Picker.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse, next) => {
-	let status = getSystemStatus(params.studioId)
+PickerGET.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+	let status = getSystemStatus(protectString(params.studioId))
 	health(status, res)
 })
 function health (status: StatusResponse, res: ServerResponse) {
@@ -36,3 +30,10 @@ function health (status: StatusResponse, res: ServerResponse) {
 	content = JSON.stringify(status)
 	res.end(content)
 }
+
+class ServerSystemStatusAPI implements NewSystemStatusAPI {
+	getSystemStatus () {
+		return makePromise(() => getSystemStatus())
+	}
+}
+registerClassToMeteorMethods(SystemStatusAPIMethods, ServerSystemStatusAPI, false)

@@ -9,15 +9,18 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
-import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
+import { PieceId } from '../../../lib/collections/Pieces'
+import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 
 export interface IAdLibListItem {
-	_id: string,
+	_id: PieceId,
 	name: string,
 	status?: RundownAPI.PieceStatusCode
 	hotkey?: string
@@ -27,11 +30,11 @@ export interface IAdLibListItem {
 }
 
 export interface IDashboardButtonProps {
-	item: IAdLibListItem
+	adLibListItem: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
-	rundown: Rundown
+	playlist: RundownPlaylist
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
 	widthScale?: number
@@ -46,15 +49,15 @@ interface IDashboardButtonTrackedProps {
 }
 
 export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
-	const piece = props.item as any as AdLibPieceUi
+	const piece = props.adLibListItem as any as AdLibPieceUi
 
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
+	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 
 	return {
 		status,
 		metadata
 	}
-})(class extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
+})(class DashboardPieceButton extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
 	private objId: string
 
 	constructor (props: IDashboardButtonProps) {
@@ -74,28 +77,30 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	}
 
 	updateMediaObjectSubscription () {
-		if (this.props.item && this.props.layer) {
-			const piece = this.props.item as any as AdLibPieceUi
+		if (this.props.adLibListItem && this.props.layer) {
+			const piece = this.props.adLibListItem as any as AdLibPieceUi
 			let objId: string | undefined = undefined
 
-			switch (this.props.layer.type) {
-				case SourceLayerType.VT:
-					objId = (piece.content as VTContent).fileName.toUpperCase()
-					break
-				case SourceLayerType.LIVE_SPEAK:
-					objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-					break
+			if (piece.content) {
+				switch (this.props.layer.type) {
+					case SourceLayerType.VT:
+						objId = (piece.content as VTContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.LIVE_SPEAK:
+						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+				}
 			}
 
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}
 		} else {
-			console.error('One of the Piece\'s is invalid:', this.props.item)
+			console.error('One of the Piece\'s is invalid:', this.props.adLibListItem)
 		}
 	}
 
@@ -112,22 +117,32 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	renderVTLiveSpeak () {
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
-			const adLib = this.props.item as AdLibPieceUi
+			const adLib = this.props.adLibListItem as AdLibPieceUi
+			const vtContent = adLib.content as VTContent | undefined
 			return <React.Fragment>
 				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
-				{adLib.content && (adLib.content as VTContent) &&
+				{vtContent &&
 					<span className='dashboard-panel__panel__button__sub-label'>
-						{RundownUtils.formatDiffToTimecode((adLib.content as VTContent).sourceDuration, false, undefined, undefined, undefined, true)}
+						{RundownUtils.formatDiffToTimecode(vtContent.sourceDuration || 0, false, undefined, undefined, undefined, true)}
 					</span>}
 			</React.Fragment>
+		}
+	}
+
+	renderSplits () {
+		const splitAdLib = this.props.adLibListItem as AdLibPieceUi
+		if (splitAdLib && splitAdLib.content) {
+			return (
+				<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
+			)
 		}
 	}
 
 	render () {
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
-				'invalid': this.props.item.invalid,
-				'floated': this.props.item.floated,
+				'invalid': this.props.adLibListItem.invalid,
+				'floated': this.props.adLibListItem.floated,
 
 				'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 				'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
@@ -143,15 +158,19 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
-				onClick={(e) => this.props.onToggleAdLib(this.props.item, e.shiftKey, e)}
-				data-obj-id={this.props.item._id}
+				onClick={(e) => this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey, e)}
+				data-obj-id={this.props.adLibListItem._id}
 				>
 				{
-					this.props.layer && (this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK || true) ?
+					!this.props.layer ?
+						null :
+					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
 						this.renderVTLiveSpeak() :
+					(this.props.layer.type === SourceLayerType.SPLITS) ?
+						this.renderSplits() :
 						null
 				}
-				<span className='dashboard-panel__panel__button__label'>{this.props.item.name}</span>
+				<span className='dashboard-panel__panel__button__label'>{this.props.adLibListItem.name}</span>
 			</div>
 		)
 	}

@@ -1,11 +1,12 @@
 import * as _ from 'underscore'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal } from '../../../../lib/lib'
+import { literal, unprotectString } from '../../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 
 import * as api from '../api'
+import { BlueprintId } from '../../../../lib/collections/Blueprints'
 jest.mock('../api.ts')
 
 require('../http.ts') // include in order to create the Meteor methods needed

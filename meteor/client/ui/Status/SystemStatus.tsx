@@ -4,29 +4,29 @@ import {
 	PeripheralDevice,
 	PeripheralDevices
 } from '../../../lib/collections/PeripheralDevices'
-import { Meteor } from 'meteor/meteor'
 import * as i18next from 'react-i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
-import { getCurrentTime, getHash } from '../../../lib/lib'
+import { getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 const Tooltip = require('rc-tooltip')
 import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
 import * as faEye from '@fortawesome/fontawesome-free-solid/faEye'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
-import { ModalDialog, doModalDialog } from '../../lib/ModalDialog'
+import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callMethod, callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { getAllowConfigure, getAllowDeveloper, getHelpMode, getAllowService } from '../../lib/localStorage'
+import { getAllowConfigure, getAllowDeveloper, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import * as ClassNames from 'classnames'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
-import { SystemStatusAPI, StatusResponse } from '../../../lib/api/systemStatus'
+import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction } from '../../lib/userAction'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { MeteorCall } from '../../../lib/api/methods'
+import { RESTART_SALT } from '../../../lib/api/userActions'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -36,8 +36,6 @@ interface IDeviceItemProps {
 	hasChildren?: boolean
 }
 interface IDeviceItemState {
-	showDeleteDeviceConfirm: PeripheralDevice | null
-	showKillDeviceConfirm: PeripheralDevice | null
 }
 
 export function statusCodeToString (t: i18next.TranslationFunction, statusCode: PeripheralDeviceAPI.StatusCode) {
@@ -58,7 +56,7 @@ export function statusCodeToString (t: i18next.TranslationFunction, statusCode: 
 	)
 }
 
-export const DeviceItem = i18next.translate()(class extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = i18next.translate()(class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -88,57 +86,6 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 			}).join('\n')
 		}
 	}
-	onDeleteDevice (device: PeripheralDevice) {
-		this.setState({
-			showDeleteDeviceConfirm: device
-		})
-	}
-	handleConfirmDeleteShowStyleAccept = (e) => {
-		if (this.state.showDeleteDeviceConfirm) {
-			callMethod(e, 'temporaryRemovePeripheralDevice', this.state.showDeleteDeviceConfirm._id)
-			// PeripheralDevices.remove(this.state.showDeleteDeviceConfirm._id)
-		}
-		// ShowStyles.remove(this.state.deleteConfirmItem._id)
-		this.setState({
-			showDeleteDeviceConfirm: null
-		})
-	}
-
-	handleConfirmDeleteShowStyleCancel = (e) => {
-		this.setState({
-			showDeleteDeviceConfirm: null
-		})
-	}
-
-	onKillDevice (device: PeripheralDevice) {
-		this.setState({
-			showKillDeviceConfirm: device
-		})
-	}
-	handleConfirmKillAccept = (e) => {
-		const { t } = this.props
-		if (this.state.showKillDeviceConfirm) {
-			const device = this.state.showKillDeviceConfirm
-			PeripheralDevicesAPI.restartDevice(device, e).then((res) => {
-				// console.log(res)
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
-			}).catch((err) => {
-				// console.error(err)
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
-			})
-		}
-		// ShowStyles.remove(this.state.KillConfirmItem._id)
-		this.setState({
-			showKillDeviceConfirm: null
-		})
-	}
-
-	handleConfirmKillCancel = (e) => {
-		this.setState({
-			showKillDeviceConfirm: null
-		})
-	}
-
 	onToggleIgnore (device: PeripheralDevice) {
 		PeripheralDevices.update(device._id, {
 			$set: {
@@ -146,7 +93,6 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 			}
 		})
 	}
-
 	onRestartCasparCG (device: PeripheralDevice) {
 		const { t } = this.props
 
@@ -155,14 +101,11 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 			message: t('Do you want to restart CasparCG Server?'),
 			onAccept: (event: any) => {
 
-				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG', (err, result) => {
-					if (err) {
-						// console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
-					} else {
-						// console.log(result)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
-					}
+				callPeripheralDeviceFunction(event, device._id, 'restartCasparCG')
+				.then(() => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }), 'SystemStatus'))
+				}).catch((err) => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 				})
 			},
 		})
@@ -176,14 +119,11 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 			message: t('Do you want to restart Quantel Gateway?'),
 			onAccept: (event: any) => {
 
-				callPeripheralDeviceFunction(event, device._id, 'restartQuantel', (err, result) => {
-					if (err) {
-						// console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart Quantel Gateway: {{errorMessage}}', { errorMessage: err + '' }), 'SystemStatus'))
-					} else {
-						// console.log(result)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Quantel Gateway restarting...'), 'SystemStatus'))
-					}
+				callPeripheralDeviceFunction(event, device._id, 'restartQuantel')
+				.then(() => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Quantel Gateway restarting...'), 'SystemStatus'))
+				}).catch((err) => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart Quantel Gateway: {{errorMessage}}', { errorMessage: err + '' }), 'SystemStatus'))
 				})
 			},
 		})
@@ -197,14 +137,11 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 			message: t('Do you want to format the HyperDeck disks? This is a destructive action and cannot be undone.'),
 			onAccept: (event: any) => {
 
-				callPeripheralDeviceFunction(event, device._id, 'formatHyperdeck', (err, result) => {
-					if (err) {
-						// console.error(err)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to format HyperDecks on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
-					} else {
-						// console.log(result)
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Formatting HyperDeck disks on device "{{deviceName}}"...', { deviceName: device.name }), 'SystemStatus'))
-					}
+				callPeripheralDeviceFunction(event, device._id, 'formatHyperdeck')
+				.then(() => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Formatting HyperDeck disks on device "{{deviceName}}"...', { deviceName: device.name }), 'SystemStatus'))
+				}).catch((err) => {
+					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to format HyperDecks on device: "{{deviceName}}": {{errorMessage}}', { deviceName: device.name, errorMessage: err + '' }), 'SystemStatus'))
 				})
 			},
 		})
@@ -214,7 +151,7 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 		const { t } = this.props
 
 		return (
-			<div key={this.props.device._id} className='device-item'>
+			<div key={unprotectString(this.props.device._id)} className='device-item'>
 				<div className='status-container'>
 					<PeripheralDeviceStatus device={this.props.device} />
 
@@ -294,13 +231,6 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 								</button>
 							</React.Fragment> : null
 						)}
-						<ModalDialog key='modal-device' title={t('Delete this item?')} acceptText={t('Delete')}
-							secondaryText={t('Cancel')}
-							show={!!this.state.showDeleteDeviceConfirm}
-							onAccept={(e) => this.handleConfirmDeleteShowStyleAccept(e)}
-							onSecondary={(e) => this.handleConfirmDeleteShowStyleCancel(e)}>
-							<p>{t('Are you sure you want to delete this device: "{{deviceId}}"?', { deviceId: this.state.showDeleteDeviceConfirm && (this.state.showDeleteDeviceConfirm.name || this.state.showDeleteDeviceConfirm._id) })}</p>
-						</ModalDialog>
 						{getAllowDeveloper() && <button key='button-ignore' className={ClassNames('btn btn-secondary', {
 							'warn': this.props.device.ignore
 						})} onClick={
@@ -316,7 +246,14 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 							(e) => {
 								e.preventDefault()
 								e.stopPropagation()
-								this.onDeleteDevice(this.props.device)
+
+								doModalDialog({
+									title: t('Delete'),
+									message: <p>{t('Are you sure you want to delete this device: "{{deviceId}}"?', { deviceId: this.props.device.name || this.props.device._id })}</p>,
+									onAccept: () => {
+										MeteorCall.peripheralDevice.removePeripheralDevice(this.props.device._id).catch(console.error)
+									},
+								})
 							}
 						}>
 							<FontAwesomeIcon icon={faTrash} />
@@ -324,18 +261,23 @@ export const DeviceItem = i18next.translate()(class extends React.Component<Tran
 						{(
 							this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 							? <React.Fragment>
-								<ModalDialog title={t('Restart this device?')} acceptText={t('Restart')}
-									secondaryText={t('Cancel')}
-									show={!!this.state.showKillDeviceConfirm}
-									onAccept={(e) => this.handleConfirmKillAccept(e)}
-									onSecondary={(e) => this.handleConfirmKillCancel(e)}>
-									<p>{t('Are you sure you want to restart this device?')}</p>
-								</ModalDialog>
 								<button className='btn btn-secondary' onClick={
 									(e) => {
 										e.preventDefault()
 										e.stopPropagation()
-										this.onKillDevice(this.props.device)
+
+										doModalDialog({
+											title: t('Delete'),
+											message: <p>{t('Are you sure you want to restart this device?')}</p>,
+											onAccept: () => {
+												const { t } = this.props
+												PeripheralDevicesAPI.restartDevice(this.props.device, e).then(() => {
+													NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Device "{{deviceName}}" restarting...', { deviceName: this.props.device.name }), 'SystemStatus'))
+												}).catch((err) => {
+													NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', { deviceName: this.props.device.name, errorMessage: err + '' }), 'SystemStatus'))
+												})
+											},
+										})
 									}
 								}>
 									{t('Restart')}
@@ -357,65 +299,21 @@ interface ICoreItemProps {
 }
 
 interface ICoreItemState {
-	showKillCoreConfirm: boolean
 }
 
 const PackageInfo = require('../../../package.json')
 
-export const CoreItem = i18next.translate()(class extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
+export const CoreItem = i18next.translate()(class CoreItem extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
 	constructor (props: Translated<ICoreItemProps>) {
 		super(props)
-		this.state = {
-			showKillCoreConfirm: false,
-		}
-	}
-	
-	onKillCore () {
-		this.setState({
-			showKillCoreConfirm: true
-		})
-	}
-	handleConfirmKillAccept = (e) => {
-		const { t } = this.props
-		if (this.state.showKillCoreConfirm) {
-			doUserAction(t, e, UserActionAPI.methods.generateRestartToken, [], (err, res) => {
-				if (err || !res || !res.result) {
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))	
-					return
-				}
-
-				const restartToken = getHash(UserActionAPI.RESTART_SALT + res.result)
-
-				doUserAction(t, {}, UserActionAPI.methods.restartCore, [ restartToken ], (err, res) => {
-					if (err || !res || !res.result) {
-						NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))	
-						return
-					}
-					let time = 'unknown';
-					const match = res.result.match(/([\d\.]+)s/)
-					if (match) {
-						time = match[1] 
-					}
-					NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Sofie Automation Server Core will restart in {{time}}s...', { time }), 'SystemStatus'))
-				})
-			})
-		}
-		this.setState({
-			showKillCoreConfirm: false
-		})
-	}
-
-	handleConfirmKillCancel = (e) => {
-		this.setState({
-			showKillCoreConfirm: false
-		})
+		this.state = {}
 	}
 
 	render () {
 		const { t } = this.props
 
 		return (
-			<div key={this.props.coreSystem._id} className='device-item'>
+			<div key={unprotectString(this.props.coreSystem._id)} className='device-item'>
 				<div className='status-container'>
 					<div className={ClassNames('device-status',
 							this.props.systemStatus && this.props.systemStatus.status && {
@@ -427,13 +325,13 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 						)}>
 						<div className='value'>
 							<span className='pill device-status__label'>
-								<a href="#" title={(this.props.systemStatus && this.props.systemStatus._internal.messages) ? this.props.systemStatus._internal.messages.join('\n') : undefined}>{this.props.systemStatus && this.props.systemStatus.status}</a>
+								<a href='#' title={(this.props.systemStatus && this.props.systemStatus._internal.messages) ? this.props.systemStatus._internal.messages.join('\n') : undefined}>{this.props.systemStatus && this.props.systemStatus.status}</a>
 							</span>
 						</div>
 					</div>
 				</div>
 				<div className='device-item__id'>
-					<div className='value'>{t('Sofie Automation Server Core: {{name}}', {name: this.props.coreSystem.name || 'unnamed'})}</div>
+					<div className='value'>{t('Sofie Automation Server Core: {{name}}', { name: this.props.coreSystem.name || 'unnamed' })}</div>
 				</div>
 				<div className='device-item__version'>
 					<label>{t('Version')}: </label>
@@ -444,18 +342,38 @@ export const CoreItem = i18next.translate()(class extends React.Component<Transl
 
 				{(getAllowConfigure() || getAllowDeveloper()) && <div className='actions-container'>
 					<div className='device-item__actions'>
-						<ModalDialog key='modal-device' title={t('Restart this system?')} acceptText={t('Restart')}
-							secondaryText={t('Cancel')}
-							show={!!this.state.showKillCoreConfirm}
-							onAccept={(e) => this.handleConfirmKillAccept(e)}
-							onSecondary={(e) => this.handleConfirmKillCancel(e)}>
-							<p>{t('Are you sure you want to restart this Sofie Automation Server Core: {{name}}?', {name: this.props.coreSystem.name || 'unnamed'})}</p>
-						</ModalDialog>
 						<button className='btn btn-secondary' onClick={
 							(e) => {
 								e.preventDefault()
 								e.stopPropagation()
-								this.onKillCore()
+
+								doModalDialog({
+									title: t('Restart this system?'),
+									yes: t('Restart'),
+									no: t('Cancel'),
+									message: <p>{t('Are you sure you want to restart this Sofie Automation Server Core: {{name}}?', { name: this.props.coreSystem.name || 'unnamed' })}</p>,
+									onAccept: (e) => {
+										doUserAction(t, e, 'Generate restart token', (e) => MeteorCall.userAction.generateRestartToken(e, ), (err, token) => {
+											if (err || !token) {
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))
+												return
+											}
+											const restartToken = getHash(RESTART_SALT + token)
+											doUserAction(t, {}, '', (e) => MeteorCall.userAction.restartCore(e, restartToken), (err, token) => {
+												if (err || !token) {
+													NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart core: {{err}}', { err }), 'SystemStatus'))
+													return
+												}
+												let time = 'unknown'
+												const match = token.match(/([\d\.]+)s/)
+												if (match) {
+													time = match[1]
+												}
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Sofie Automation Server Core will restart in {{time}}s...', { time }), 'SystemStatus'))
+											})
+										})
+									}
+								})
 							}
 						}>
 							{t('Restart')}
@@ -484,7 +402,7 @@ interface DeviceInHierarchy {
 	children: Array<DeviceInHierarchy>
 }
 
-export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISystemStatusTrackedProps>((props: ISystemStatusProps) => {
+export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISystemStatusTrackedProps>(() => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 
@@ -506,7 +424,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 	componentDidMount () {
 		this.refreshSystemStatus()
-		this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)		
+		this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
 
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})
@@ -519,17 +437,18 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 	refreshSystemStatus = () => {
 		const { t } = this.props
-		Meteor.call(SystemStatusAPI.getSystemStatus, (err: any, systemStatus: StatusResponse) => {
+		MeteorCall.systemStatus.getSystemStatus()
+		.then((systemStatus: StatusResponse) => {
 			if (this.destroyed) return
-			if (err) {
-				// console.error(err)
-				NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
-				return
-			}
 
 			this.setState({
 				systemStatus: systemStatus
 			})
+		}).catch(() => {
+			if (this.destroyed) return
+			// console.error(err)
+			NotificationCenter.push(new Notification('systemStatus_failed', NoticeLevel.CRITICAL, t('Could not get system status. Please consult system administrator.'), 'RundownList'))
+			return
 		})
 	}
 
@@ -543,13 +462,13 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				device: device,
 				children: []
 			}
-			refs[device._id] = d
-			devicesToAdd[device._id] = d
+			refs[unprotectString(device._id)] = d
+			devicesToAdd[unprotectString(device._id)] = d
 		})
 		// Then, map and add devices:
 		_.each(devicesToAdd, (d: DeviceInHierarchy) => {
 			if (d.device.parentDeviceId) {
-				let parent: DeviceInHierarchy = refs[d.device.parentDeviceId]
+				let parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
 				if (parent) {
 					parent.children.push(d)
 				} else {

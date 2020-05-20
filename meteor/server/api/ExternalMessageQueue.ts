@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
 import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import {
 	ExternalMessageQueue,
-	ExternalMessageQueueObj
+	ExternalMessageQueueObj,
+	ExternalMessageQueueObjId
 } from '../../lib/collections/ExternalMessageQueue'
 import {
 	ExternalMessageQueueObjSOAP,
@@ -15,11 +15,13 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import {
 	getCurrentTime,
-	removeNullyProperties
+	removeNullyProperties,
+	getRandomId,
+	makePromise
 } from '../../lib/lib'
-import { setMeteorMethods, Methods } from '../methods'
+import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { ExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
+import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
 import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
@@ -37,7 +39,7 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 		// Save the output into the message queue, for later processing:
 		let now = getCurrentTime()
 		let message2: ExternalMessageQueueObj = {
-			_id: Random.id(),
+			_id: getRandomId(),
 			type: message.type,
 			receiver: message.receiver,
 			message: message.message,
@@ -52,7 +54,8 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 
 		message2 = removeNullyProperties(message2)
 
-		if (!rundown.rehearsal) { // Don't save the message when running rehearsals
+		const playlist = rundown.getRundownPlaylist()
+		if (!playlist.rehearsal) { // Don't save the message when running rehearsals
 			ExternalMessageQueue.insert(message2)
 
 			triggerdoMessageQueue() // trigger processing of the queue
@@ -226,25 +229,24 @@ Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
 })
 
-let methods: Methods = {}
-methods[ExternalMessageQueueAPI.methods.remove] = (id: string) => {
-	check(id, String)
-	ExternalMessageQueue.remove(id)
+function removeExternalMessage (messageId: ExternalMessageQueueObjId): void {
+	check(messageId, String)
+	ExternalMessageQueue.remove(messageId)
 }
-methods[ExternalMessageQueueAPI.methods.toggleHold] = (id: string) => {
-	check(id, String)
-	let m = ExternalMessageQueue.findOne(id)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on toggleHold`)
-	ExternalMessageQueue.update(id, {$set: {
+function toggleHold (messageId: ExternalMessageQueueObjId): void {
+	check(messageId, String)
+	let m = ExternalMessageQueue.findOne(messageId)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on toggleHold`)
+	ExternalMessageQueue.update(messageId, {$set: {
 		hold: !m.hold
 	}})
 }
-methods[ExternalMessageQueueAPI.methods.retry] = (id: string) => {
-	check(id, String)
-	let m = ExternalMessageQueue.findOne(id)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${id}" not found on retry`)
+function retry (messageId: ExternalMessageQueueObjId): void {
+	check(messageId, String)
+	let m = ExternalMessageQueue.findOne(messageId)
+	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on retry`)
 	let tryGap = getCurrentTime() - 1 * 60 * 1000
-	ExternalMessageQueue.update(id, {$set: {
+	ExternalMessageQueue.update(messageId, {$set: {
 		manualRetry: true,
 		hold: false,
 		errorFatal: false,
@@ -252,7 +254,7 @@ methods[ExternalMessageQueueAPI.methods.retry] = (id: string) => {
 	}})
 	triggerdoMessageQueue(1000)
 }
-methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) => {
+function setRunMessageQueue (value: boolean): void {
 	check(value, Boolean)
 	logger.info('setRunMessageQueue: set to ' + value)
 	runMessageQueue = value
@@ -261,4 +263,18 @@ methods[ExternalMessageQueueAPI.methods.setRunMessageQueue] = (value: boolean) =
 	}
 }
 
-setMeteorMethods(methods)
+class ServerExternalMessageQueueAPI implements NewExternalMessageQueueAPI {
+	remove (messageId: ExternalMessageQueueObjId) {
+		return makePromise(() => removeExternalMessage(messageId))
+	}
+	toggleHold (messageId: ExternalMessageQueueObjId) {
+		return makePromise(() => toggleHold(messageId))
+	}
+	retry (messageId: ExternalMessageQueueObjId) {
+		return makePromise(() => retry(messageId))
+	}
+	setRunMessageQueue (value: boolean) {
+		return makePromise(() => setRunMessageQueue(value))
+	}
+}
+registerClassToMeteorMethods(ExternalMessageQueueAPIMethods, ServerExternalMessageQueueAPI, false)

@@ -2,6 +2,7 @@ import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 
 export namespace RundownUtils {
 	function padZerundown (input: number, places?: number): string {
@@ -9,9 +10,9 @@ export namespace RundownUtils {
 		return input < Math.pow(10, places - 1) ? '0'.repeat(places - 1) + input.toString(10) : input.toString(10)
 	}
 
-	export function getSegmentDuration (parts: Array<PartUi>) {
+	export function getSegmentDuration (parts: Array<PartUi>, display?: boolean) {
 		return parts.reduce((memo, part) => {
-			return memo + (part.duration || part.expectedDuration || part.renderedDuration || 0)
+			return memo + (part.instance.part.duration || part.instance.part.expectedDuration || part.renderedDuration || (display ? DEFAULT_DISPLAY_DURATION : 0))
 		}, 0)
 	}
 
@@ -114,14 +115,14 @@ export namespace RundownUtils {
 		} else if (scrollLeft > (partStartsAt || part.startsAt || 0) +
 					(piece !== undefined ?
 						(piece.renderedInPoint || 0) + (piece.renderedDuration || (
-							(part.duration !== undefined ?
-								(part.duration + (part.getLastPlayOffset() || 0)) :
-								(partDuration || part.renderedDuration || part.expectedDuration || 0)
+							(part.instance.part.duration !== undefined ?
+								(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
+								(partDuration || part.renderedDuration || part.instance.part.expectedDuration || 0)
 									- (piece.renderedInPoint || 0))
 							)
 						) :
-						(part.duration !== undefined ?
-							(part.duration + (part.getLastPlayOffset() || 0)) :
+						(part.instance.part.duration !== undefined ?
+							(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
 							(partDuration || part.renderedDuration || 0)
 						)
 					)
