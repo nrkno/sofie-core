@@ -41,7 +41,7 @@ export function postProcessPieces(innerContext: RundownContext, pieces: IBluepri
 
 		if (!piece._id) piece._id = protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`))
 		if (!piece.externalId && !piece.isTransition) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" externalId not set for piece in ${partId}! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
-		if (piece.enable.start === 'now')  throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
+		if (piece.enable.start === 'now') throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" piece cannot have a start of 'now' in ${partId}! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
 
 		if (partsUniqueIds[unprotectString(piece._id)]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
 		partsUniqueIds[unprotectString(piece._id)] = true
@@ -51,7 +51,7 @@ export function postProcessPieces(innerContext: RundownContext, pieces: IBluepri
 				const obj = convertTimelineObject(o)
 
 				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_' + (i++))
-				if (obj.enable.start === 'now')  throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
+				if (obj.enable.start === 'now') throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(unprotectString(piece._id))}")`)
 
 				if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of timelineObjs must be unique! ("${innerContext.unhashId(obj.id)}")`)
 				timelineUniqueIds[obj.id] = true
@@ -88,7 +88,7 @@ export function postProcessAdLibPieces(innerContext: RundownContext, adLibPieces
 				const obj = convertTimelineObject(o)
 
 				if (!obj.id) obj.id = innerContext.getHashId(piece._id + '_adlib_' + (i++))
-				if (obj.enable.start === 'now')  throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(unprotectString(obj._id))}")`)
+				if (obj.enable.start === 'now') throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(unprotectString(obj._id))}")`)
 
 				if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, `Error in blueprint "${blueprintId}" ids of timelineObjs must be unique! ("${innerContext.unhashId(obj.id)}")`)
 				timelineUniqueIds[obj.id] = true
@@ -107,7 +107,7 @@ export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTi
 		const obj = convertTimelineObject(baseObj)
 
 		if (!obj.id) obj.id = getHash('baseline_' + (i++))
-		if (obj.enable.start === 'now')  throw new Meteor.Error(400, `Error in blueprint "${studio.blueprintId}" timelineObjs cannot have a start of 'now'!`)
+		if (obj.enable.start === 'now') throw new Meteor.Error(400, `Error in blueprint "${studio.blueprintId}" timelineObjs cannot have a start of 'now'!`)
 
 		if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, `Error in blueprint "${studio.blueprintId}": ids of timelineObjs must be unique! ("${obj.id}")`)
 		timelineUniqueIds[obj.id] = true
@@ -132,7 +132,7 @@ export function postProcessRundownBaselineItems(innerContext: RundownContext, ba
 		const obj: TimelineObjGeneric = convertTimelineObject(o)
 
 		if (!obj.id) obj.id = innerContext.getHashId('baseline_' + (i++))
-		if (obj.enable.start === 'now')  throw new Meteor.Error(400, `Error in baseline blueprint: timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(unprotectString(obj._id))}")`)
+		if (obj.enable.start === 'now') throw new Meteor.Error(400, `Error in baseline blueprint: timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(unprotectString(obj._id))}")`)
 
 		if (timelineUniqueIds[obj.id]) throw new Meteor.Error(400, `Error in baseline blueprint: ids of timelineObjs must be unique! ("${innerContext.unhashId(obj.id)}")`)
 		timelineUniqueIds[obj.id] = true
@@ -147,7 +147,7 @@ export function postProcessBucketAdLib(innerContext: ShowStyleContext, itemOrig:
 	let timelineUniqueIds: { [id: string]: true } = {}
 	let piece: BucketAdLib = {
 		...itemOrig,
-		_id: protectString(innerContext.getHashId(`${innerContext.showStyleVariantId}_${innerContext.studioId}_bucket_adlib_${itemOrig.externalId}`)),
+		_id: protectString(innerContext.getHashId(`${innerContext.showStyleVariantId}_${innerContext.studioId}_${bucketId}_bucket_adlib_${itemOrig.externalId}`)),
 		studioId: innerContext.studioId,
 		showStyleVariantId: innerContext.showStyleVariantId,
 		bucketId,

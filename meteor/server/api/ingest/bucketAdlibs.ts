@@ -60,7 +60,8 @@ export function updateBucketAdlibFromIngestData(showStyle: ShowStyleCompound, st
 		BucketAdLibs.upsert({
 			externalId: ingestData.externalId,
 			showStyleVariantId: showStyle.showStyleVariantId,
-			studioId: studio._id
+			studioId: studio._id,
+			bucketId
 		}, adlib)
 
 		updateExpectedMediaItemForBucketAdLibPiece(adlib._id, adlib.bucketId)
