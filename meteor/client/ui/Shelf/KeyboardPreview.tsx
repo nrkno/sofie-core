@@ -198,7 +198,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		customLabels: _.object(
 			_.map(
 				customLabels,
-				(value, key) => [ value.platformKey || value.key, value ]
+				(value, key) => [ value.platformKey ? value.platformKey.toUpperCase() : value.key.toUpperCase(), value ]
 			)
 		)
 	}
@@ -330,10 +330,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 					let customLabel: string | undefined = undefined
 					let customSourceLayer: SourceLayerType | undefined = undefined
 
-					if (this.props.customLabels[thisCombo.toLowerCase()]) {
-						customLabel = this.props.customLabels[thisCombo.toLowerCase()].label
-						customSourceLayer = this.props.customLabels[thisCombo.toLowerCase()].sourceLayerType
-					} else if (this.props.customLabels[thisCombo.toUpperCase()]) {
+					if (this.props.customLabels[thisCombo.toUpperCase()]) {
 						customLabel = this.props.customLabels[thisCombo.toUpperCase()].label
 						customSourceLayer = this.props.customLabels[thisCombo.toUpperCase()].sourceLayerType
 					}
