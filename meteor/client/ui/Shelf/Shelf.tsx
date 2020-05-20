@@ -29,7 +29,7 @@ import { DashboardActionButton } from './DashboardActionButton'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
-import { MultiViewPanel } from './MultiViewPanel'
+import { AdLibRegionPanel } from './AdLibRegionPanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -456,12 +456,12 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							playlist={this.props.playlist}
 							{...this.props}
 							/> :
-					RundownLayoutsAPI.isMultiView(panel) ?
-						<MultiViewPanel
+					RundownLayoutsAPI.isAdLibRegion(panel) ?
+						<AdLibRegionPanel
 							key={panel._id}
 							includeGlobalAdLibs={true}
 							panel={panel}
-							filter={RundownLayoutsAPI.multiViewToFilter(panel)}
+							filter={RundownLayoutsAPI.adLibRegionToFilter(panel)}
 							layout={rundownLayout}
 							adlibRank={panel.adlibRank}
 							visible={true}

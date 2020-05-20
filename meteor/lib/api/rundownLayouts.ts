@@ -8,8 +8,8 @@ import {
 	RundownLayoutFilterBase,
 	RundownLayoutElementType,
 	RundownLayoutExternalFrame,
-    RundownLayoutMultiView,
-    PieceDisplayStyle,
+	RundownLayoutAdLibRegion,
+	PieceDisplayStyle,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -41,11 +41,11 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.EXTERNAL_FRAME
 	}
 
-	export function isMultiView (element: RundownLayoutElementBase): element is RundownLayoutMultiView {
-		return element.type === RundownLayoutElementType.MULTIVIEW
+	export function isAdLibRegion (element: RundownLayoutElementBase): element is RundownLayoutAdLibRegion {
+		return element.type === RundownLayoutElementType.ADLIB_REGION
 	}
 
-	export function multiViewToFilter (element: RundownLayoutMultiView): RundownLayoutFilterBase {
+	export function adLibRegionToFilter (element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
 		return {
 			...(_.pick(element, '_id', 'name', 'rank', 'tags')),
 			rundownBaseline: true,

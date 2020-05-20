@@ -39,7 +39,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { invalidateAt } from '../../lib/invalidatingTime'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { getNextPiecesReactive } from './MultiViewPanel'
+import { getNextPiecesReactive } from './AdLibRegionPanel'
 
 interface IState {
 	outputLayers: {

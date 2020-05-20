@@ -21,8 +21,8 @@ import {
 	RundownLayoutElementType,
 	RundownLayoutElementBase,
 	RundownLayoutExternalFrame,
-	RundownLayoutMultiView,
-	RundownLayoutMultiViewRole,
+	RundownLayoutAdLibRegion,
+	RundownLayoutAdLibRegionRole,
 	RundownLayoutId
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -839,7 +839,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		</React.Fragment>
 	}
 
-	renderMultiView (item: RundownLayoutBase, tab: RundownLayoutMultiView, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
+	renderAdLibRegion (item: RundownLayoutBase, tab: RundownLayoutAdLibRegion, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>
@@ -863,7 +863,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						obj={item}
 						type='dropdown'
 						collection={RundownLayouts}
-						options={RundownLayoutMultiViewRole}
+						options={RundownLayoutAdLibRegionRole}
 						className='input text-input input-l' />
 				</label>
 			</div>
@@ -1033,8 +1033,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						this.renderFilter(item, tab, index, isRundownLayout, isDashboardLayout) :
 					 RundownLayoutsAPI.isExternalFrame(tab) ?
 						this.renderFrame(item, tab, index, isRundownLayout, isDashboardLayout) :
-					 RundownLayoutsAPI.isMultiView(tab) ?
-					 	this.renderMultiView(item, tab, index, isRundownLayout, isDashboardLayout) :
+					 RundownLayoutsAPI.isAdLibRegion(tab) ?
+					 	this.renderAdLibRegion(item, tab, index, isRundownLayout, isDashboardLayout) :
 						undefined}
 				</div>
 			))}

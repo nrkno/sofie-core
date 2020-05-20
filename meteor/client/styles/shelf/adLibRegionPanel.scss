@@ -1,16 +1,16 @@
-.multiview-panel {
+.adlib-region-panel {
 	position: absolute;
 	text-align: center;
 	user-select: none;
 	margin: 0.625rem;
 
-	.multiview-panel__image-container {
+	.adlib-region-panel__image-container {
 		max-height: 100%;
 		position: relative;
 		padding-top: 56.25%;
 		border: 3px solid #252627;
 
-		> .multiview-panel__button {
+		> .adlib-region-panel__button {
 			position: absolute;
 			width: auto;
 			bottom: 0;
@@ -20,7 +20,7 @@
 			z-index: 3;
 			background: transparent;
 
-			.multiview-panel__label {
+			.adlib-region-panel__label {
 				position: absolute;
 				width: auto;
 				bottom: 7%;
@@ -33,7 +33,7 @@
 				font-size: 1em;
 				font-weight: 400;
 
-				&.multiview-panel__label--large {
+				&.adlib-region-panel__label--large {
 					width: 100%;
 					text-align: center;
 					padding: 6px 10px;
