@@ -654,6 +654,9 @@ body.no-overflow {
 		margin-right: 0em;
 		letter-spacing: 0px;
 	}
+	.segment-timeline__unsynced {
+		text-transform: uppercase;
+	}
 	.segment-timeline__timeline-zoom-buttons {
 		position: relative;
 		grid-column: segment-group-controls / timeline;
