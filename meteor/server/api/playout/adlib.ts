@@ -208,6 +208,35 @@ export namespace ServerPlayoutAdLibAPI {
 		updateTimeline(cache, rundownPlaylist.studioId)
 	}
 
+	export function innerFindLastPieceOnLayer(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, sourceLayerId: string, originalOnly: boolean, excludeCurrentPart: boolean) {
+		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
+
+		const query = {
+			rundownId: { $in: rundownIds },
+			'piece.sourceLayerId': sourceLayerId,
+			'piece.startedPlayback': {
+				$exists: true
+			}
+		}
+
+		if (excludeCurrentPart && rundownPlaylist.currentPartInstanceId) {
+			query['partInstanceId'] = { $ne: rundownPlaylist.currentPartInstanceId }
+		}
+
+		if (originalOnly) {
+			// Ignore adlibs if using original only
+			query['pieces.dynamicallyInserted'] = {
+				$ne: true
+			}
+		}
+
+		return cache.PieceInstances.findOne(query, {
+			sort: {
+				'piece.startedPlayback': -1
+			}
+		})
+	}
+
 	export function sourceLayerStickyPieceStart(rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -229,10 +258,9 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
 			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
 
-
 			const query = {
 				rundownId: rundown._id,
-				'piece.sourceLayerId': sourceLayerId,
+				'piece.sourceLayerId': sourceLayer._id,
 				'piece.startedPlayback': {
 					$exists: true
 				}
@@ -240,16 +268,19 @@ export namespace ServerPlayoutAdLibAPI {
 
 			if (sourceLayer.stickyOriginalOnly) {
 				// Ignore adlibs if using original only
-				query['pieces.dynamicallyInserted'] = {
-					$ne: true
+				query['pieces.adLibSourceId'] = {
+					$exists: false
 				}
 			}
 
-			// return cache.PieceInstances.findOne(query, {
-			// 	sort: {
-			// 		'piece.startedPlayback': -1
-			// 	}
-			// })
+			const lastPieceInstance = innerFindLastPieceOnLayer(cache, playlist, sourceLayer._id, sourceLayer.stickyOriginalOnly || false, false)
+
+			if (lastPieceInstance) {
+				const lastPiece = convertPieceToAdLibPiece(lastPieceInstance.piece)
+				innerStartOrQueueAdLibPiece(cache, playlist, rundown, false, currentPartInstance, lastPiece)
+			}
+
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 

@@ -1283,6 +1283,9 @@ export namespace ServerPlayoutAPI {
 			const cache = waitForPromise(initCacheForRundownPlaylist(tmpPlaylist))
 			const playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+			
+			const studio = cache.Studios.findOne(playlist.studioId)
+			if (!studio) throw new Meteor.Error(501, `Current Studio "${playlist.studioId}" could not be found`)
 
 			const currentPartInstance = playlist.currentPartInstanceId ? cache.PartInstances.findOne(playlist.currentPartInstanceId) : undefined
 			if (!currentPartInstance) throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
@@ -1291,7 +1294,7 @@ export namespace ServerPlayoutAPI {
 			if (!rundown) throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
 			const notesContext = new NotesContext(`${rundown.name}(${playlist.name})`, `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${currentPartInstance._id}`, true)
-			const context = new ActionExecutionContext(cache, notesContext, playlist, rundown)
+			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 
 			func(context, cache, rundown, currentPartInstance)
 

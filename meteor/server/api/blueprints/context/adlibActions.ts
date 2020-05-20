@@ -70,11 +70,13 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 	private queuedPartInstance: PartInstance | undefined
 
+	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE
+	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the next partInstance */
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 
-	constructor(cache: CacheForRundownPlaylist, notesContext: NotesContext, rundownPlaylist: RundownPlaylist, rundown: Rundown) {
-		super(cache.Studios.findOne(rundownPlaylist.studioId)!, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext) // TODO - better loading of studio
+	constructor(cache: CacheForRundownPlaylist, notesContext: NotesContext, studio: Studio, rundownPlaylist: RundownPlaylist, rundown: Rundown) {
+		super(studio, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
 		this.cache = cache
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
@@ -89,7 +91,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			default:
 				assertNever(part)
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
-				return null
+				throw new Error(`Unknown part "${part}"`)
 		}
 	}
 	
@@ -148,12 +150,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		return resolvedInstances.map(piece => _.clone(unprotectObject(piece)))
 	}
 
-	findLastPieceOnLayer(sourceLayerId: string, originalOnly?: boolean): IBlueprintPieceInstance | undefined {
-		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(this.cache, this.rundownPlaylist, sourceLayerId, originalOnly || false)
+	findLastPieceOnLayer(sourceLayerId: string, excludeCurrentPart?: boolean, originalOnly?: boolean): IBlueprintPieceInstance | undefined {
+		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(this.cache, this.rundownPlaylist, sourceLayerId, originalOnly || false, excludeCurrentPart || false)
 
 		return _.clone(unprotectObject(lastPieceInstance))
 	}
-	insertPiece(part: "current" | "next", rawPiece: IBlueprintPiece): string {
+	insertPiece(part: "current" | "next", rawPiece: IBlueprintPiece): IBlueprintPieceInstance {
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {
 			throw new Error('Cannot insert piece when no active part')
@@ -169,8 +171,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Failed to find rundown of partInstance')
 		}
 
-		// TODO - ensure id does not already exist
+		// Fill in missing id, and ensure it does not already exist
 		if (!rawPiece._id) rawPiece._id = Random.id()
+		if (this.cache.Pieces.findOne(protectString(rawPiece._id))) {
+			// TODO-PartInstances - this will need rethinking after new dataflow
+			throw new Error(`Piece with id "${rawPiece._id}" already exists`)
+		}
 
 		const piece = postProcessPieces(this, [rawPiece], this.getShowStyleBase().blueprintId, partInstance.rundownId, partInstance.part._id, part === 'current')[0]
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
@@ -184,7 +190,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return unprotectString(newPieceInstance._id)
+		return _.clone(unprotectObject(newPieceInstance))
 	}
 	updatePieceInstance(pieceInstanceId: string, piece: Partial<OmitId<IBlueprintPiece>>): IBlueprintPieceInstance {
 		const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
@@ -220,7 +226,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		const changeLevel = pieceInstance.piece.dynamicallyInserted ? ActionPartChange.SAFE_CHANGE : ActionPartChange.MARK_DIRTY
 		const updatesCurrentPart: ActionPartChange = pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId ? changeLevel : ActionPartChange.NONE
-		const updatesNextPart: ActionPartChange = pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId ? changeLevel : ActionPartChange.NONE
+		const updatesNextPart: ActionPartChange = pieceInstance.partInstanceId === this.rundownPlaylist.nextPartInstanceId ? changeLevel : ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
@@ -246,7 +252,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return _.clone(unprotectObject(this.cache.PieceInstances.findOne(pieceInstance._id)!))
 	}
-	queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): void {
+	queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): IBlueprintPartInstance {
 		const currentPartInstance = this.rundownPlaylist.currentPartInstanceId ? this.cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId) : undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
@@ -257,6 +263,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			// This could be changed if we have a way to abort the pending changes in the nextPart.
 			// TODO-PartInstances - perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
 			throw new Error('Cannot queue part when next part has already been modified')
+		}
+
+		// TODO - check if close to autonext
+
+		if (rawPieces.length === 0) {
+			throw new Error('New part must contain at least one piece')
 		}
 
 		const newPartInstance = new PartInstance({
@@ -271,7 +283,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				segmentId: currentPartInstance.segmentId,
 				_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
 				dynamicallyInserted: true,
-				notes: [], // TODO
+				notes: [],
 			})
 		})
 
@@ -285,7 +297,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartQueuedAdLib(this.cache, this.rundownPlaylist, this.rundown, currentPartInstance, newPartInstance, newPieceInstances)
 
+		// TODO - track this replace differently, so we can do a check related to autonext?
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
+
+		return _.clone(unprotectObject(newPartInstance))
 	}
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
 		if (sourceLayerIds.length == 0) {
