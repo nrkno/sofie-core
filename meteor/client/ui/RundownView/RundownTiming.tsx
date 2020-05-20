@@ -10,6 +10,9 @@ import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Settings } from '../../../lib/Settings'
 
+// Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
+const MINIMAL_NONZERO_DURATION = 1
+
 export interface TimeEventArgs {
 	currentTime: number
 }
@@ -318,7 +321,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					this.displayDurationGroups[part.displayDurationGroup] =
 						(this.displayDurationGroups[part.displayDurationGroup] || 0) + (part.expectedDuration || 0)
 					displayDurationFromGroup = part.displayDuration
-						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup], part.gap ? 1 : this.props.defaultDuration || DEFAULT_DURATION)
+						|| Math.max(0, this.displayDurationGroups[part.displayDurationGroup], part.gap ? MINIMAL_NONZERO_DURATION : this.props.defaultDuration || DEFAULT_DURATION)
 					memberOfDisplayDurationGroup = true
 				}
 				if (part.startedPlayback && lastStartedPlayback && !part.duration) {
