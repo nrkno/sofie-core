@@ -42,6 +42,7 @@ $dashboard-button-height: 5.625em;
 			background-color: none !important;
 			background: none !important;
 			border: none !important;
+			height: calc(100% + 8px);
 
 			> .dashboard-panel__panel__button {
 				pointer-events: visible;
@@ -51,6 +52,9 @@ $dashboard-button-height: 5.625em;
 				&.type--take {
 					background-color: $general-live-color;
 				}
+
+				width: calc(100% - 8px);
+				height: calc(100% - 8px);
 			}
 		}
 	}

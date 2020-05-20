@@ -64,10 +64,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 					)
 				}}
 				>
-				<div className='dashboard-panel__panel'
-					style={{
-						height: 'calc(100% + 8px)',
-					}}>
+				<div className='dashboard-panel__panel'>
 					<div className={ClassNames(
 							'dashboard-panel__panel__button',
 							'dashboard-panel__panel__button--standalone',
@@ -75,10 +72,6 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 						)}
 						onMouseDown={(e) => this.props.onButtonDown(button, e)}
 						onMouseUp={(e) => this.props.onButtonUp(button, e)}
-						style={{
-							width: 'calc(100% - 8px)',
-							height: 'calc(100% - 8px)'
-						}}
 						data-obj-id={button.type}
 						>
 						<span className='dashboard-panel__panel__button__label'>{button.label}</span>
