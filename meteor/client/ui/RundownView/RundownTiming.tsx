@@ -14,6 +14,9 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 
+// Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
+const MINIMAL_NONZERO_DURATION = 1
+
 export interface TimeEventArgs {
 	currentTime: number
 }
@@ -332,7 +335,7 @@ withTracker<IRundownTimingProviderProps, IRundownTimingProviderState, IRundownTi
 					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 						(this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0) + (partInstance.part.expectedDuration || 0)
 					displayDurationFromGroup = partInstance.part.displayDuration
-						|| Math.max(0, this.displayDurationGroups[partInstance.part.displayDurationGroup], partInstance.part.gap ? 1 : this.props.defaultDuration || DEFAULT_DURATION)
+						|| Math.max(0, this.displayDurationGroups[partInstance.part.displayDurationGroup], partInstance.part.gap ? MINIMAL_NONZERO_DURATION : this.props.defaultDuration || DEFAULT_DURATION)
 					memberOfDisplayDurationGroup = true
 				}
 
