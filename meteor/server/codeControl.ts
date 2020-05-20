@@ -62,6 +62,12 @@ function getFunctionName<T extends Function> (parent: Function, fcn: T): string 
  */
 export function syncFunction<T extends Function> (fcn: T, id0?: string, timeout: number = 10000, priority: number = 1): T {
 	let id1 = Random.id()
+	if (!Meteor.isProduction) {
+		// Make a check: require function names
+		if (!fcn.name) {
+			throw new Meteor.Error(500, `Self-test error: syncFunction name not set.`)
+		}
+	}
 	return syncFunctionInner(id1, fcn, id0, timeout, priority)
 }
 function syncFunctionInner<T extends Function> (id1: string, fcn: T, id0?: string, timeout: number = 10000, priority: number = 1): T {
