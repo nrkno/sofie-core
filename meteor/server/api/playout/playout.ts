@@ -85,6 +85,7 @@ import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/col
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist, initCacheForStudio, initCacheForNoRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -590,6 +591,13 @@ export namespace ServerPlayoutAPI {
 							'timings.takeDone': takeDoneTime
 						}
 					})
+					if (takePartInstance) {
+						const playoutDevices = cache.PeripheralDevices.findFetch({ studioId: takeRundown.studioId, type: PeripheralDeviceAPI.DeviceType.PLAYOUT })
+						if (playoutDevices.length === 0) {
+							logger.info(`No Playout gateway attached to studio, reporting PartInstance "${takePartInstance._id}" to have started playback on timestamp ${(new Date(takeDoneTime)).toISOString()}`)
+							reportPartHasStarted(cache, takePartInstance, takeDoneTime)
+						}
+					}
 					// let bp = getBlueprintOfRundown(rundown)
 					if (firstTake) {
 						if (blueprint.onRundownFirstTake) {
