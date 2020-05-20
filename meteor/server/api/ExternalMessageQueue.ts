@@ -18,7 +18,8 @@ import {
 	removeNullyProperties,
 	getRandomId,
 	makePromise,
-	protectString
+	protectString,
+	omit
 } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
@@ -40,30 +41,42 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 		if (!message.message) 	throw new Meteor.Error('attribute .message missing!')
 
 		// Save the output into the message queue, for later processing:
-		let now = getCurrentTime()
-		let message2: ExternalMessageQueueObj = {
-			...message,
-			_id: protectString(message._id) || getRandomId(),
+		if (message._id) {
+			// Overwrite an existing message
+			const messageId = protectString(message._id)
 
-			studioId:		rundown.studioId,
-			rundownId:		rundown._id,
+			const existingMessage = ExternalMessageQueue.findOne(messageId)
+			if (!existingMessage) throw new Meteor.Error(`ExternalMessage ${message._id} not found!`)
+			if (existingMessage.studioId !== rundown.studioId) throw new Meteor.Error(`ExternalMessage ${message._id} is not in the right studio!`)
+			if (existingMessage.rundownId !== rundown._id) throw new Meteor.Error(`ExternalMessage ${message._id} is not in the right rundown!`)
 
-			created:		now,
-			tryCount:		0,
-			expires:		now + 35 * 24 * 3600 * 1000, // 35 days
-			manualRetry:	false,
-		}
+			if (!playlist.rehearsal) {
+				ExternalMessageQueue.update(existingMessage._id, { $set: {
+					...omit(message, '_id')
+				}})
+				triggerdoMessageQueue() // trigger processing of the queue
+			}
+		} else {
 
-		message2 = removeNullyProperties(message2)
-		if (!playlist.rehearsal) { // Don't save the message when running rehearsals
+			let now = getCurrentTime()
+			let message2: ExternalMessageQueueObj = {
+				_id: getRandomId(),
 
-			ExternalMessageQueue.upsert({
-				_id: protectString(message._id)
-			}, {
-				$set: message2
-			})
-			triggerdoMessageQueue() // trigger processing of the queue
+				...omit(message, '_id'),
 
+				studioId: 		rundown.studioId,
+				rundownId: 		rundown._id,
+
+				created: now,
+				tryCount: 0,
+				expires: now + 35 * 24 * 3600 * 1000, // 35 days
+				manualRetry: false,
+			}
+			message2 = removeNullyProperties(message2)
+			if (!playlist.rehearsal) { // Don't save the message when running rehearsals
+				ExternalMessageQueue.insert(message2)
+				triggerdoMessageQueue() // trigger processing of the queue
+			}
 		}
 	})
 }
@@ -95,9 +108,9 @@ function doMessageQueue () {
 	try {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find({
-			expires: { $gt: now },
-			lastTry: { $not: { $gt: now - tryInterval } },
 			sent: { $not: { $gt: 0 } },
+			lastTry: { $not: { $gt: now - tryInterval } },
+			expires: { $gt: now },
 			hold: { $not: { $eq: true } },
 			errorFatal: { $not: { $eq: true } },
 			queueForLater: { $ne: true }

@@ -329,14 +329,16 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	}
 	/** Get all unsent and queued messages in the rundown */
 	getAllQueuedMessages (): Readonly<IBlueprintExternalMessageQueueObj[]> {
-		return unprotectObjectArray(ExternalMessageQueue.find({
-			rundownId: this._rundown._id,
-			queueForLater: true
-		}, {
-			sort: {
-				created: 1
-			}
-		}).fetch())
+		return unprotectObjectArray(
+			ExternalMessageQueue.find({
+				rundownId: this._rundown._id,
+				queueForLater: true
+			}, {
+				sort: {
+					created: 1
+				}
+			}).fetch()
+		)
 	}
 	/** Get all segments in this rundown */
 	getSegments (): Array<IBlueprintSegmentDB> {
