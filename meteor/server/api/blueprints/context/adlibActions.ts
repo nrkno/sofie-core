@@ -51,7 +51,7 @@ import { CacheForRundownPlaylist } from '../../../DatabaseCaches';
 import { getResolvedPieces } from '../../playout/pieces';
 import { postProcessPieces } from '../postProcess';
 import { StudioContext, NotesContext, ShowStyleContext } from './context';
-import { setNextPart, getRundownIDsFromCache } from '../../playout/lib';
+import { setNextPart, getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib';
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib';
 
 export enum ActionPartChange {
@@ -265,7 +265,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
-		// TODO - check if close to autonext
+		if (isTooCloseToAutonext(currentPartInstance, false)) {
+			throw new Error('Too close to an autonext to queue a part')
+		}
 
 		if (rawPieces.length === 0) {
 			throw new Error('New part must contain at least one piece')
@@ -297,7 +299,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartQueuedAdLib(this.cache, this.rundownPlaylist, this.rundown, currentPartInstance, newPartInstance, newPieceInstances)
 
-		// TODO - track this replace differently, so we can do a check related to autonext?
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
 
 		return _.clone(unprotectObject(newPartInstance))
