@@ -1265,11 +1265,7 @@ export namespace ServerPlayoutAPI {
 				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
 			}
 
-			const res = blueprint.blueprint.executeAction(context, actionId, userData)
-			if (res) {
-				// TODO - timeout
-				waitForPromise(res)
-			}
+			blueprint.blueprint.executeAction(context, actionId, userData)
 		})
 	}
 
@@ -1278,7 +1274,7 @@ export namespace ServerPlayoutAPI {
 			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 			if (!tmpPlaylist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			if (!tmpPlaylist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
+			if (!tmpPlaylist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to execute an action`)
 
 			const cache = waitForPromise(initCacheForRundownPlaylist(tmpPlaylist))
 			const playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
@@ -1296,11 +1292,8 @@ export namespace ServerPlayoutAPI {
 			const notesContext = new NotesContext(`${rundown.name}(${playlist.name})`, `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${currentPartInstance._id}`, true)
 			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 
+			// If any action cannot be done due to timings, that needs to be rejected by the context
 			func(context, cache, rundown, currentPartInstance)
-
-			// TODO - can we safely block some operations if we are too close to an autonext?
-
-			// TODO - other side effects and bits to save/do
 
 			// Mark the parts as dirty if needed, so that they get a reimport on reset to undo any changes
 			if (context.currentPartState === ActionPartChange.MARK_DIRTY) {
@@ -1321,25 +1314,26 @@ export namespace ServerPlayoutAPI {
 				const nextPartInstance = cache.PartInstances.findOne(playlist.nextPartInstanceId)
 				if (!nextPartInstance) throw new Meteor.Error(500, `Cannot mark non-existant partInstance as dirty`)
 				
-				cache.PartInstances.update(nextPartInstance._id, {
-					$set: {
-						'part.dirty': true
-					}
-				})
-				// TODO-PartInstance - pending new data flow
-				cache.Parts.update(nextPartInstance.part._id, {
-					$set: {
-						dirty: true
-					}
-				})
+				if (!nextPartInstance.part.dynamicallyInserted) {
+					cache.PartInstances.update(nextPartInstance._id, {
+						$set: {
+							'part.dirty': true
+						}
+					})
+					// TODO-PartInstance - pending new data flow
+					cache.Parts.update(nextPartInstance.part._id, {
+						$set: {
+							dirty: true
+						}
+					})
+				}
 			}
 
 			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
-				// TODO - some of these could possibly be run more intelligently
 				updateSourceLayerInfinitesAfterPart(cache, rundown, currentPartInstance.part)
 			}
 
-			if (context.currentPartState || context.nextPartState) {
+			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
 				updateTimeline(cache, playlist.studioId)
 			}
 

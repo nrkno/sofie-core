@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
-import { getHash, literal, protectString, unprotectObject, unprotectString, waitForPromise, getRandomId } from '../../../../lib/lib'
+import { getHash, literal, protectString, unprotectObject, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
 import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR, IBlueprintPartInstance, IBlueprintPieceInstance, IBlueprintPiece } from 'tv-automation-sofie-blueprints-integration'
 import { CommonContext, StudioConfigContext, StudioContext, ShowStyleContext, NotesContext, SegmentContext, PartEventContext, AsRunEventContext, ActionExecutionContext, ActionPartChange } from '../context'
@@ -42,6 +42,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
+import { isTooCloseToAutonext } from '../../playout/lib';
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
@@ -543,6 +544,21 @@ describe('Test blueprint api context', () => {
 				expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 				expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 				expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
+
+				partInstance.part.autoNext = true
+				partInstance.part.expectedDuration = 4000
+				partInstance.part.startedPlayback = true
+				partInstance.part.timings = {
+					startedPlayback: [getCurrentTime()],
+					stoppedPlayback: [],
+					playOffset: [0],
+					take: [],
+					takeDone: [],
+					takeOut: [],
+					next: []
+				}
+				expect(isTooCloseToAutonext(partInstance, false)).toBeTruthy()
+				expect(() => context.queuePart({} as any, [{}] as any)).toThrowError('Too close to an autonext to queue a part')
 				
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.NONE)

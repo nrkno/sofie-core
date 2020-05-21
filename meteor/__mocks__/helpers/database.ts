@@ -195,13 +195,18 @@ export function setupMockShowStyleVariant (showStyleBaseId: ShowStyleBaseId, doc
 	return showStyleVariant
 }
 
-export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constant: string]: string}, blueprintFcn: () => T): string {
+export function packageBlueprint<T extends BlueprintManifestBase> (constants: {[constant: string]: string | number}, blueprintFcn: () => T): string {
 	let code = blueprintFcn.toString()
 	_.each(constants, (newConstant, constant) => {
 
-		newConstant = newConstant.replace(/^\^/,'') || '0.0.0' // fix the version, the same way the bleprint does it
+		if (_.isString(newConstant)) {
+			newConstant = newConstant.replace(/^\^/,'') || '0.0.0' // fix the version, the same way the bleprint does it
+			newConstant = `'${newConstant}'`
+		} else {
+			newConstant = `${newConstant}`
+		}
 
-		code = code.replace(new RegExp(constant, 'g'), _.isString(newConstant) ? `'${newConstant}'` : newConstant)
+		code = code.replace(new RegExp(constant, 'g'), newConstant)
 	})
 	return `{default: (${code})()}`
 }
