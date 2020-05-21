@@ -84,7 +84,7 @@
     "safer-eval": "^1.2.3",
     "semver": "^6.0.0",
     "soap": "^0.24.0",
-    "superfly-timeline": "^7.2.4",
+    "superfly-timeline": "^7.3.1",
     "timecode": "0.0.4",
     "timeline-state-resolver-types": "git+https://github.com/olzzon/tv-automation-state-timeline-resolver#dist_types20200514_1",
     "tv-automation-sofie-blueprints-integration": "git+https://github.com/olzzon/tv-automation-sofie-blueprints-integration.git#dist20200514_1",
