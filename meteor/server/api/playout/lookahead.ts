@@ -24,7 +24,7 @@ export function getLookeaheadObjects (playoutData: RundownPlaylistPlayoutData, s
 		obj.enable = enable
 		obj.isLookahead = true
 		if (obj.keyframes) {
-			obj.keyframes = obj.keyframes.filter(kf => (kf as any).preserveForLookahead)
+			obj.keyframes = obj.keyframes.filter(kf => kf.preserveForLookahead)
 		}
 		delete obj.inGroup // force it to be cleared
 
