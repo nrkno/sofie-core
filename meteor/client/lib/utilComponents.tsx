@@ -4,7 +4,8 @@ import * as _ from 'underscore'
 export function makeTableOfObject (o: any) {
 	return (
 		<table><tbody>
-			{_.map(o, (val, key) => {
+			{_.map(_.keys(o), (key) => {
+				const val = o[key]
 
 				let content: any = null
 				if (_.isObject(val)) {
