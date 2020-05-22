@@ -31,9 +31,9 @@ const ActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLi
 	= createMongoCollection<TransformedAdLibAction>(null as any)
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-	let piece = RundownUtils.isAdLibPiece(this.props.piece) ?
-		this.props.piece as AdLibPieceUi :
-		this.props.piece.instance.piece as Piece
+	let piece = RundownUtils.isAdLibPiece(props.piece) ?
+		props.piece as AdLibPieceUi :
+		props.piece.instance.piece as Piece
 
 	let action = (piece as AdLibPieceUi).adlibAction
 
@@ -119,7 +119,7 @@ function isActionItem(item: AdLibPieceUi | PieceUi): boolean {
 		item as AdLibPieceUi :
 		item.instance.piece as Piece
 
-	if (content || (content as AdLibPieceUi).isAction) {
+	if (content && (content as AdLibPieceUi).isAction) {
 		return true
 	}
 

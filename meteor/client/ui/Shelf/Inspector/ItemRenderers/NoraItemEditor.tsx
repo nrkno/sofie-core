@@ -29,7 +29,6 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	}
 
 	componentDidUpdate(prevProps: INoraEditorProps) {
-		console.log('componentDidUpdate')
 		if (this.iframe && this.iframe.contentWindow) {
 			this.setUpEventListeners(this.iframe.contentWindow)
 		}
@@ -41,8 +40,6 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	}
 
 	shouldComponentUpdate() {
-		console.log('shouldComponentUpdate')
-
 		return false
 	}
 

@@ -11,6 +11,8 @@ import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { BucketId } from '../../../lib/collections/Buckets'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { cleanUpExpectedMediaItemForBucketAdLibPiece, updateExpectedMediaItemForBucketAdLibPiece } from '../expectedMediaItems'
+import { waitForPromise } from '../../../lib/lib'
+import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
 
 export function updateBucketAdlibFromIngestData(showStyle: ShowStyleCompound, studio: Studio, bucketId: BucketId, ingestData: IngestAdlib): PieceId | null {
 	const { blueprint, blueprintId } = loadShowStyleBlueprints(showStyle)

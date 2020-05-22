@@ -163,7 +163,7 @@ $inspector-shelf-tabs-height: 2.3em;
 		flex: 1 1;
 		position: relative;
 		width: 100%;
-		height: 100%;
+		height: calc(100% - 2.3em);
 
 		& > * {
 			position: absolute;

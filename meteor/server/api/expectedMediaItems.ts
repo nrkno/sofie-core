@@ -116,7 +116,7 @@ export const updateExpectedMediaItemsOnRundown: (cache: CacheForRundownPlaylist,
 
 			const eMIs: ExpectedMediaItem[] = []
 
-			function iterateOnPieceLike(piece: PieceGeneric, pieceType: string) {
+			function iterateOnPieceLike(piece: RundownPieceGeneric, pieceType: string) {
 				eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
 			}
 
@@ -171,7 +171,7 @@ export const updateExpectedMediaItemsOnPart: (cache: CacheForRundownPlaylist, ru
 				partId: part._id
 			}).fetch()
 
-			function iterateOnPieceLike(piece: PieceGeneric, pieceType: string) {
+			function iterateOnPieceLike(piece: RundownPieceGeneric, pieceType: string) {
 				eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
 			}
 

@@ -81,8 +81,6 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 					mediaId: this.objId
 				})
 			}
-		} else {
-			console.error('One of the Piece\'s is invalid:', this.props.piece)
 		}
 	}
 

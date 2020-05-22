@@ -25,7 +25,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { PieceGeneric } from '../../../lib/collections/Pieces'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer, SomeContent, IBlueprintActionManifestDisplayContent } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
@@ -34,6 +34,7 @@ import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
+import { AdLibActions } from '../../../lib/collections/AdLibActions'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -128,6 +129,7 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<Tr
 											adLibListItem={item}
 											selected={this.props.selectedPiece && RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 												this.props.selectedPiece._id === item._id || false}
+											outputLayer={undefined}
 											layer={item.layer}
 											onToggleAdLib={this.props.onToggleSticky}
 											onSelectAdLib={this.props.onSelectAdLib}
@@ -145,6 +147,22 @@ const AdLibListView = translate()(class AdLibListView extends React.Component<Tr
 												this.props.selectedPiece._id === item._id || false}
 											layer={this.state.sourceLayers[item.sourceLayerId]}
 											outputLayer={this.state.outputLayers[item.outputLayerId]}
+											onToggleAdLib={this.props.onToggleAdLib}
+											onSelectAdLib={this.props.onSelectAdLib}
+											playlist={this.props.playlist}
+										/>
+									)
+								} else if (
+									(!this.props.searchFilter || item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
+								) {
+									return (
+										<AdLibListItem
+											key={unprotectString(item._id)}
+											adLibListItem={item}
+											selected={this.props.selectedPiece && RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+												this.props.selectedPiece._id === item._id || false}
+											layer={undefined}
+											outputLayer={undefined}
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
@@ -316,6 +334,45 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			// always add them to the list
 			rundownAdLibs.push(uiAdLib)
 		})
+
+		const globalAdLibActions = AdLibActions.find({
+			rundownId: currentRundown._id,
+			partId: {
+				$exists: false
+			}
+		}, {
+			sort: { _rank: 1 }
+		}).fetch().map((action) => {
+			let sourceLayerId = ''
+			let outputLayerId = ''
+			let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+			const isContent = RundownUtils.isAdlibActionContent(action.display)
+			if (isContent) {
+				sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+				outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+				content = (action.display as IBlueprintActionManifestDisplayContent).content
+			}
+
+			return literal<AdLibPieceUi>({
+				_id: protectString(`function_${action._id}`),
+				name: action.display.label,
+				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				isAction: true,
+				isGlobal: true,
+				expectedDuration: 0,
+				disabled: false,
+				externalId: unprotectString(action._id),
+				rundownId: action.rundownId,
+				sourceLayerId,
+				outputLayerId,
+				_rank: action.display._rank || 0,
+				content: content,
+				userData: action.userData,
+				adlibAction: action
+			})
+		})
+
+		rundownAdLibs = rundownAdLibs.concat(globalAdLibActions)
 	}
 
 	return {
