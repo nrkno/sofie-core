@@ -11,16 +11,11 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
-import { PlayoutDeviceSettingsComponent } from './components/PlayoutDeviceSettingsComponent'
-import { MediaManagerSettingsComponent } from './components/MediaManagerSettingsComponent'
-import { SpreadsheetSettingsComponent } from './components/SpreadsheetSettingsComponent'
-import { INewsSettingsComponent } from './components/INewsSettingsComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { PeripheralDeviceStatus } from '../Status/SystemStatus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettingsComponent'
-import { MosDeviceSettingsComponent } from './components/MosDeviceSettingsComponent'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -55,32 +50,13 @@ class DeviceSettings extends MeteorReactComponent<Translated<IDeviceSettingsProp
 						device={this.props.device}
 						subDevices={this.props.subDevices}
 					/>
-			}
-			// @todo: deprecate:
-			switch (this.props.device.type) {
-				case PeripheralDeviceAPI.DeviceType.MOS:
-					return <MosDeviceSettingsComponent
-						device={this.props.device}
-						subDevices={this.props.subDevices}
-					/>
-				case PeripheralDeviceAPI.DeviceType.PLAYOUT:
-					return <PlayoutDeviceSettingsComponent
-						device={this.props.device}
-						subDevices={this.props.subDevices}
-					/>
-				case PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER:
-					return <MediaManagerSettingsComponent
-						device={this.props.device}
-						subDevices={this.props.subDevices}
-					/>
-				case PeripheralDeviceAPI.DeviceType.SPREADSHEET:
-					return <SpreadsheetSettingsComponent
-						device={this.props.device}
-					/>
-				case PeripheralDeviceAPI.DeviceType.INEWS:
-					return <INewsSettingsComponent
-						device={this.props.device}
-					/>
+			} else {
+				const { t } = this.props
+
+				return <div>
+					<h2>{ t('Peripheral Device is outdated') }</h2>
+					<p>{ t('The config UI is now driven by manifests fed by the device. This device needs updating to provide the configManifest to be configurable') }</p>
+				</div>
 			}
 		}
 		return null

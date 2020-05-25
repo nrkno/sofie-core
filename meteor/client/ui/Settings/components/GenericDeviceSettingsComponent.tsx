@@ -8,14 +8,13 @@ import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
 import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { translate } from 'react-i18next'
-import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDeviceSettings/mosDevice'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Meteor } from 'meteor/meteor'
 import { DeviceItem } from '../../Status/SystemStatus'
-import { IPlayoutDeviceSettingsComponentProps } from './IHttpSendDeviceSettingsComponentProps'
 import { ConfigManifestEntry, ConfigManifestEntryType, TableConfigManifestEntry, SubDeviceConfigManifestEntry } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
@@ -27,8 +26,14 @@ interface IGenericDeviceSettingsComponentState {
 	showDeleteConfirm: boolean
 	editedObjects: EditId[]
 }
-export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IGenericDeviceSettingsComponentState> {
-	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
+
+interface IGenericDeviceSettingsComponentProps {
+	device: PeripheralDevice
+	subDevices?: PeripheralDevice[]
+}
+
+export const GenericDeviceSettingsComponent = translate()(class GenericDeviceSettingsComponent extends React.Component<Translated<IGenericDeviceSettingsComponentProps>, IGenericDeviceSettingsComponentState> {
+	constructor (props: Translated<IGenericDeviceSettingsComponentProps>) {
 		super(props)
 		this.state = {
 			deleteConfirmItemPath: undefined,
