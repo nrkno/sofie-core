@@ -143,7 +143,7 @@ mousetrap.addKeycodes({
 	192: 'ø',
 	222: 'æ',
 	191: '\'',
-	190: '.',
+	190: 'nbPeriod',
 	189: 'nbMinus',
 
 	96: 'num0',
