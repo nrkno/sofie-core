@@ -4,13 +4,15 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
-import { NoraContent, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings } from '../../../Settings/ConfigManifestSettings'
+import { ConfigManifestEntry as BlueprintConfigManifestEntry, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibAction } from '../../../../../lib/collections/AdLibActions'
 import { createMongoCollection } from '../../../../../lib/collections/lib'
 import { TransformedCollection } from '../../../../../lib/typings/meteor'
+import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
+import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../../lib/api/deviceConfig'
+import { Spinner } from '../../../../lib/Spinner'
 
 export { isActionItem }
 
@@ -23,7 +25,9 @@ export interface ITrackedProps {
 }
 
 export interface TransformedAdLibAction extends AdLibAction {
-	transformedUserData: Array<IConfigItem>
+	transformedUserData: {
+		[key: string]: any
+	}
 }
 
 // create a temporary collection to store changes to the AdLib Actions
@@ -47,10 +51,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		if (action) {
 			ActionItems.insert({
 				...action,
-				transformedUserData: _.map(action.userData, (value, key) => ({
-					_id: key,
-					value
-				}))
+				transformedUserData: {
+					...action.userData
+				}
 			})
 		}
 	}
@@ -62,13 +65,26 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			ActionItems.remove(prevProps.targetAction._id)
 		}
 
-		if (action) {
+		if (action && prevProps.targetAction && prevProps.targetAction._id === action._id) {
 			ActionItems.upsert(action._id, {
+				$set: {
+					actionId: action.actionId,
+					partId: action.partId,
+					rundownId: action.rundownId,
+					display: {
+						...action.display
+					},
+					userDataManifest: {
+						...action.userDataManifest
+					}
+				}
+			})
+		} else if (action && prevProps.targetAction && prevProps.targetAction._id !== action._id) {
+			ActionItems.insert({
 				...action,
-				transformedUserData: _.map(action.userData, (value, key) => ({
-					_id: key,
-					value
-				}))
+				transformedUserData: {
+					...action.userData
+				}
 			})
 		} else if (prevProps.targetAction) {
 			ActionItems.remove(prevProps.targetAction._id)
@@ -93,24 +109,43 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		return action
 	}
 
+	renderConfigFields(configManifest: Array<ConfigManifestEntry | BlueprintConfigManifestEntry>, obj: any, prefix?: string) {
+		const { t } = this.props
+
+		return configManifest.length ?
+			<div>
+				{configManifest.map((configField) => (
+					(configField.type === ConfigManifestEntryType.TABLE) ?
+						null :
+						<ConfigManifestEntryComponent key={configField.id} collection={ActionItems} configField={configField} obj={obj} prefix={prefix} className=''></ConfigManifestEntryComponent>
+				))}
+			</div> :
+			<span>{t('AdLib does not provide any options')}</span>
+	}
+
 	render() {
 		const { t } = this.props
 		const action = this.getActionItem()
 
 		if (!action) {
-			return (
-				<span>{t('AdLib is an action, but it wasn\'t attached.')}</span>
-			)
+			return <Spinner />
 		}
 
-		return (action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction &&
-			<ConfigManifestSettings
-				t={this.props.t}
-				manifest={action.userDataManifest.editableFields}
-				collection={ActionItems}
-				configPath={'transformedUserData'}
-				object={this.props.targetAction}
-			/>) || <span>{t('AdLib does not provide any options')}</span>
+		return (
+			<div className='shelf-inspector__action-editor'>
+				<div className='shelf-inspector__action-editor__panel'>
+					{(action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction &&
+						<>{this.renderConfigFields(action.userDataManifest.editableFields, this.props.targetAction, 'transformedUserData.')}</>
+						|| null
+					)}
+				</div>
+				<div className='shelf-inspector__action-editor__actions'>
+					<button>{t('Cue as Next')}</button>
+					<button>{t('Save to Bucket')}</button>
+					<button>{t('Reveal in List')}</button>
+				</div>
+			</div>
+		)
 	}
 })
 
