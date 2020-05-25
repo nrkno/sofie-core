@@ -122,10 +122,6 @@ export interface MediaAttachment {
 	data?: string // base64
 }
 
-// export interface MediaScannerConfig {
-// 	host?: string,
-// 	port?: number
-// }
 export enum MediaStreamType {
 	Audio = 'audio',
 	Video = 'video'

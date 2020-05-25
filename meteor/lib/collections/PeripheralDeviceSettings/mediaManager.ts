@@ -34,7 +34,7 @@ export interface MediaManagerDeviceSettings {
 
 	/** Local path configuration for media manager system */
 	paths?: {
-		/** Cammand to execute to run `ffmpeg` */
+		/** Command to execute to run `ffmpeg` */
 		ffmpeg?: string
 		/** Command to execute to run `ffprobe` */
 		ffprobe?: string
