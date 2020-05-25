@@ -21,6 +21,8 @@ import {
 	RundownLayoutElementType,
 	RundownLayoutElementBase,
 	RundownLayoutExternalFrame,
+	RundownLayoutAdLibRegion,
+	RundownLayoutAdLibRegionRole,
 	RundownLayoutId
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
@@ -73,9 +75,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	componentDidMount () {
 		super.componentDidMount && super.componentDidMount()
 
-		this.subscribe(PubSub.rundownLayouts, {
-			showStyleBaseId: this.props.showStyleBase._id
-		})
+		this.subscribe(PubSub.rundownLayouts, {})
 	}
 
 	onAddLayout = (e: any) => {
@@ -122,7 +122,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							t('New Panel') :
 							t('New Item'),
 					currentSegment: false,
-					displayStyle: PieceDisplayStyle.LIST,
+					displayStyle: PieceDisplayStyle.BUTTONS,
 					label: undefined,
 					sourceLayerIds: undefined,
 					outputLayerIds: undefined,
@@ -130,6 +130,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					tags: undefined,
 					rank: 0,
 					rundownBaseline: false,
+					showThumbnailsInList: false,
 					default: false
 				})
 			}
@@ -301,6 +302,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	renderFilter (item: RundownLayoutBase, tab: RundownLayoutFilterBase, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
 		const { t } = this.props
+		const isList = tab.displayStyle === PieceDisplayStyle.LIST
 		const rundownBaselineOptions = [
 			{
 				name: t('Yes'),
@@ -331,6 +333,34 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			</div>
 			{isDashboardLayout &&
 				<React.Fragment>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Display Style')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.displayStyle`}
+								obj={item}
+								type='dropdown'
+								collection={RundownLayouts}
+								options={PieceDisplayStyle}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					{
+						isList &&
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Show thumbnails next to list items')}
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute={`filters.${index}.showThumbnailsInList`}
+									obj={item}
+									type='checkbox'
+									collection={RundownLayouts}
+									className='mod mas' />
+							</label>
+						</div>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('X')}
@@ -379,30 +409,34 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Button width scale factor')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.buttonWidthScale`}
-								obj={item}
-								type='float'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
-					<div className='mod mvs mhs'>
-						<label className='field'>
-							{t('Button height scale factor')}
-							<EditAttribute
-								modifiedClassName='bghl'
-								attribute={`filters.${index}.buttonHeightScale`}
-								obj={item}
-								type='float'
-								collection={RundownLayouts}
-								className='input text-input input-l' />
-						</label>
-					</div>
+					{!isList &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button width scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonWidthScale`}
+										obj={item}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Button height scale factor')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.buttonHeightScale`}
+										obj={item}
+										type='float'
+										collection={RundownLayouts}
+										className='input text-input input-l' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
 				</React.Fragment>
 			}
 			<div className='mod mvs mhs'>
@@ -568,6 +602,30 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Tags must contain')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas'
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true}
+						mutateUpdateValue={(v) => undefined} />
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='text'
+						collection={RundownLayouts}
+						className='input text-input input-l'
+						label={t('Filter Disabled')}
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
+						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+				</label>
+			</div>
 			{isDashboardLayout &&
 				<React.Fragment>
 					<div className='mod mvs mhs'>
@@ -612,6 +670,30 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={`filters.${index}.overflowHorizontally`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Display Take buttons')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.displayTakeButtons`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Queue all adlibs')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.queueAllAdlibs`}
 								obj={item}
 								type='checkbox'
 								collection={RundownLayouts}
@@ -702,26 +784,185 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Tags must contain')}
+							{t('Scale')}
 							<EditAttribute
 								modifiedClassName='bghl'
-								attribute={`filters.${index}.tags`}
+								attribute={`filters.${index}.scale`}
 								obj={item}
-								type='checkbox'
+								type='float'
 								collection={RundownLayouts}
-								className='mod mas'
-								mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true}
-								mutateUpdateValue={(v) => undefined} />
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Display Rank')}
 							<EditAttribute
 								modifiedClassName='bghl'
-								attribute={`filters.${index}.tags`}
+								attribute={`filters.${index}.rank`}
 								obj={item}
-								type='text'
+								type='float'
 								collection={RundownLayouts}
-								className='input text-input input-l'
-								label={t('Filter Disabled')}
-								mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
-								mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+								className='input text-input input-l' />
+						</label>
+					</div>
+					{isDashboardLayout &&
+						<React.Fragment>
+							<div className='mod mvs mhs'>
+								<label className='field'>
+									{t('Register Shortcuts for this Panel')}
+									<EditAttribute
+										modifiedClassName='bghl'
+										attribute={`filters.${index}.assignHotKeys`}
+										obj={item}
+										type='checkbox'
+										collection={RundownLayouts}
+										className='mod mas' />
+								</label>
+							</div>
+						</React.Fragment>
+					}
+				</React.Fragment>
+			}
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Scale')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.scale`}
+						obj={item}
+						type='float'
+						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+		</React.Fragment>
+	}
+
+	renderAdLibRegion (item: RundownLayoutBase, tab: RundownLayoutAdLibRegion, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
+		const { t } = this.props
+		return <React.Fragment>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Name')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.name`}
+						obj={item}
+						type='text'
+						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Role')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.role`}
+						obj={item}
+						type='dropdown'
+						collection={RundownLayouts}
+						options={RundownLayoutAdLibRegionRole}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Adlib Rank')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.adlibRank`}
+						obj={item}
+						type='int'
+						collection={RundownLayouts}
+						className='input text-input input-l' />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+				{t('Tags must contain')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas'
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true}
+						mutateUpdateValue={(v) => undefined} />
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.tags`}
+						obj={item}
+						type='text'
+						collection={RundownLayouts}
+						className='input text-input input-l'
+						label={t('Filter Disabled')}
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
+						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Place label below panel')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.labelBelowPanel`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas' />
+				</label>
+			</div>
+			{isDashboardLayout &&
+				<React.Fragment>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('X')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.x`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Y')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.y`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Width')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.width`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Height')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.height`}
+								obj={item}
+								type='int'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
 						</label>
 					</div>
 					{isDashboardLayout &&
@@ -792,6 +1033,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						this.renderFilter(item, tab, index, isRundownLayout, isDashboardLayout) :
 					 RundownLayoutsAPI.isExternalFrame(tab) ?
 						this.renderFrame(item, tab, index, isRundownLayout, isDashboardLayout) :
+					 RundownLayoutsAPI.isAdLibRegion(tab) ?
+					 	this.renderAdLibRegion(item, tab, index, isRundownLayout, isDashboardLayout) :
 						undefined}
 				</div>
 			))}

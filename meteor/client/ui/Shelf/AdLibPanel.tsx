@@ -74,6 +74,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Filter out items that are not within outputLayerIds filter
 		if (
 			filter.outputLayerIds !== undefined &&
+			filter.outputLayerIds.length &&
 			filter.outputLayerIds.indexOf(item.outputLayerId) < 0
 		) {
 			return false
@@ -81,6 +82,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Source layers
 		if (
 			filter.sourceLayerIds !== undefined &&
+			filter.sourceLayerIds.length &&
 			filter.sourceLayerIds.indexOf(item.sourceLayerId) < 0
 		) {
 			return false
@@ -90,6 +92,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		if (
 			sourceLayerType &&
 			filter.sourceLayerTypes !== undefined &&
+			filter.sourceLayerTypes.length &&
 			filter.sourceLayerTypes.indexOf(sourceLayerType.type) < 0
 		) {
 			return false
@@ -97,6 +100,7 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Item label needs at least one of the strings in the label array
 		if (
 			filter.label !== undefined &&
+			filter.label.length &&
 			filter.label.reduce((p, v) => {
 				return p || uppercaseLabel.indexOf(v.toUpperCase()) >= 0
 			}, false) === false
@@ -106,8 +110,9 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 		// Item tags needs to contain all of the strings in the tags array
 		if (
 			filter.tags !== undefined &&
+			filter.tags.length &&
 			filter.tags.reduce((p, v) => {
-				return p && (item.tags && item.tags.indexOf(v) >= 0)
+				return p && (item.tags !== undefined && item.tags.indexOf(v) >= 0)
 			}, true) === false
 		) {
 			return false
@@ -120,7 +125,19 @@ export function matchFilter (item: AdLibPieceUi, showStyleBase: ShowStyleBase, u
 	}
 }
 
-const AdLibListView = translate()(class AdLibListView extends React.Component<
+export function matchTags (item: AdLibPieceUi, tags?: string[]) {
+	if (
+		tags !== undefined &&
+		tags.reduce((p, v) => {
+			return p && (item.tags !== undefined && item.tags.indexOf(v) >= 0)
+		}, true) === false
+	) {
+		return false
+	}
+	return true
+}
+
+const AdLibListView = translate()(class extends React.Component<
 	Translated<IListViewPropsHeader>, IListViewStateHeader
 > {
 	table: HTMLTableElement
@@ -420,7 +437,6 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	const segments = props.playlist.getSegments()
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
-	
 	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun((
 		currentPartId: PartId,
 		nextPartId: PartId,
@@ -453,7 +469,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 			})
 
 			uiSegmentMap.set(segmentUi._id, segmentUi)
-			
+
 			return segmentUi
 		})
 
@@ -614,10 +630,6 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 			}, 'rundownBaselineAdLibs', currentRundown._id, sourceLayerLookup, props.showStyleBase.sourceLayers, sourceHotKeyUse)
 		}
 
-		if (props.filter.rundownBaseline === 'only') {
-			uiSegments.length = 0
-		}
-
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun((sourceLayers: ISourceLayer[]) => {
 				return sourceLayers.filter(i => !!i.clearKeyboardHotkey).
@@ -644,7 +656,7 @@ export function fetchAndFilter (props: Translated<IAdLibPanelProps>): IAdLibPane
 	}
 
 	return {
-		uiSegments,
+		uiSegments: props.filter && props.filter.rundownBaseline === 'only' ? [] : uiSegments,
 		liveSegment,
 		sourceLayerLookup,
 		rundownBaselineAdLibs

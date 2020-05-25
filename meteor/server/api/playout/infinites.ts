@@ -54,7 +54,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 	   // figure out the baseline to set
 	   let prevPieces = getOrderedPiece(previousPart)
 	   _.each(prevPieces, piece => {
-		   if (!piece.infiniteMode || piece.playoutDuration || piece.userDuration || piece.enable.end || piece.enable.duration) {
+		   if (!piece.infiniteMode || piece.playoutDuration || piece.userDuration || piece.enable.end || piece.enable.duration || piece.definitelyEnded) {
 			   delete activeInfinitePieces[piece.sourceLayerId]
 			   delete activeInfiniteItemsSegmentId[piece.sourceLayerId]
 		   } else {

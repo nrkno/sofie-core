@@ -463,6 +463,14 @@ export function resyncRundown (rundownId: RundownId) {
 		ServerRundownAPI.resyncRundown(rundownId)
 	)
 }
+export function resyncSegment (segmentId: SegmentId) {
+	let segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.resyncSegment(segmentId)
+	)
+}
 export function recordStop (studioId: StudioId) {
 	check(studioId, String)
 	const record = RecordedFiles.findOne({
@@ -650,6 +658,9 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	resyncRundown (_userEvent: string, rundownId: RundownId) {
 		return makePromise(() => resyncRundown(rundownId))
 	}
+	resyncSegment (_userEvent: string, segmentId: SegmentId) {
+		return makePromise(() => resyncSegment(segmentId))
+	}
 	recordStop (_userEvent: string, studioId: StudioId) {
 		return makePromise(() => recordStop(studioId))
 	}
@@ -668,16 +679,16 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	mediaPrioritizeWorkflow (_userEvent: string, workflowId: MediaWorkFlowId) {
 		return makePromise(() => mediaPrioritizeWorkflow(workflowId))
 	}
-	mediaRestartAllWorkflows (_userEvent: string, ) {
+	mediaRestartAllWorkflows (_userEvent: string,) {
 		return makePromise(() => mediaRestartAllWorkflows())
 	}
-	mediaAbortAllWorkflows (_userEvent: string, ) {
+	mediaAbortAllWorkflows (_userEvent: string,) {
 		return makePromise(() => mediaAbortAllWorkflows())
 	}
 	regenerateRundownPlaylist (_userEvent: string, playlistId: RundownPlaylistId) {
 		return makePromise(() => regenerateRundownPlaylist(playlistId))
 	}
-	generateRestartToken (_userEvent: string, ) {
+	generateRestartToken (_userEvent: string,) {
 		return makePromise(() => generateRestartToken())
 	}
 	restartCore (_userEvent: string, token: string) {
