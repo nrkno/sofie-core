@@ -10,6 +10,7 @@ import { UserActionAPI } from '../../../lib/api/userActions'
 import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { doModalDialog } from '../../lib/ModalDialog'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]
@@ -32,7 +33,14 @@ export const DashboardActionButtonGroup = translate()(class DashboardActionButto
 		const { t } = this.props
 		if (this.props.studioMode) {
 			if (this.props.rundown.active) {
-				doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
+				doModalDialog({
+					title: this.props.rundown.name,
+					message: t('Are you sure you want to deactivate this Rundown?\n(This will clear the outputs)'),
+					warning: true,
+					onAccept: () => {
+						doUserAction(t, e, UserActionAPI.methods.deactivate, [this.props.rundown._id])
+					}
+				})
 			} else {
 				doUserAction(t, e, UserActionAPI.methods.resetAndActivate, [this.props.rundown._id])
 				doUserAction(t, e, UserActionAPI.methods.take, [this.props.rundown._id])
