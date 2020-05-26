@@ -33,31 +33,31 @@ npm link mos-connection
 
 In order for the system to work properly, it may be neccessary to set up several system properties. These can be set through environement variables - if not present, default values will be used.
 
-| Setting       | Use                                                           | Default value       |
-| ------------- | ------------------------------------------------------------- | ------------------- |
-| `NTP_SERVERS` | Comma separated list of time servers to sync the system to    | `0.se.pool.ntp.org` |
+| Setting       | Use                                                        | Default value       |
+| ------------- | ---------------------------------------------------------- | ------------------- |
+| `NTP_SERVERS` | Comma separated list of time servers to sync the system to | `0.se.pool.ntp.org` |
 
 ## User Interface settings
 
 When running meteor it is possible to provide it with [additional settings](https://docs.meteor.com/api/core.html#Meteor-settings). The User Interface allows specyfing the following Settings in the `public` key and will use default values if not present.
 
-| Setting         | Use                     | Default value |
-| --------------- | ----------------------- | ------------- |
-| `frameRate`       | Frames per second base for displaying timecodes in the UI | 25 |
-| `defaultToCollapsedSegments` | All segments be collapsed by default | `false` |
-| `autoRewindLeavingSegment` | Should the segment in the Rundown view automatically rewind after it stops being live? | `false` |
-| `autoExpandCurrentNextSegment` | Should the Current and Next segments be automatically made expanded (uncollapsed) | `false` |
+| Setting                        | Use                                                                                    | Default value |
+| ------------------------------ | -------------------------------------------------------------------------------------- | ------------- |
+| `frameRate`                    | Frames per second base for displaying timecodes in the UI                              | 25            |
+| `defaultToCollapsedSegments`   | All segments be collapsed by default                                                   | `false`       |
+| `autoRewindLeavingSegment`     | Should the segment in the Rundown view automatically rewind after it stops being live? | `false`       |
+| `autoExpandCurrentNextSegment` | Should the Current and Next segments be automatically made expanded (uncollapsed)      | `false`       |
 
 ## Additional views
 
 For the purpose of running the system in a studio environment, there are additional endpoints, unavailable from the menu structure.
 
-| Path                              | Function                                                                      |
-| --------------------------------- | ----------------------------------------------------------------------------- |
-| `/countdowns/:studioId/presenter` | Countdown clocks for a given studio, to be shown to the studio presenter      |
-| `/activeRundown/:studioId`        | Redirects to the rundown currently active in a given studio                   |
-| `/activeRundown/:studioId/shelf`  | Shows a Detached Shelf for the current active rundown in a studio |
-| `/prompter/:studioId`             | A simple prompter for the studio presenter                                    |
+| Path                              | Function                                                                 |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| `/countdowns/:studioId/presenter` | Countdown clocks for a given studio, to be shown to the studio presenter |
+| `/activeRundown/:studioId`        | Redirects to the rundown currently active in a given studio              |
+| `/activeRundown/:studioId/shelf`  | Shows a Detached Shelf for the current active rundown in a studio        |
+| `/prompter/:studioId`             | A simple prompter for the studio presenter                               |
 
 ## Studio mode
 
@@ -105,13 +105,12 @@ The Detached Shelf view with a custom DASHBOARD_LAYOUT allows displaying the She
 
 The prompter can be controlled by different types of controllers. Which mode is set by the query parameter, like so: `?mode=mouse`.
 
-| Query parameter           | Description                                                                                     |
-|---------------------------|-------------------------------------------------------------------------------------------------|
-|  Default                  | Controlled by both mouse and keyboard                                                           |
-| `?mode=mouse`             | Controlled by mouse only                                                                        |
-| `?mode=keyboard`          | Controlled by keyboard only                                                                     |
-| `?mode=shuttlekeyboard`   | Controlled by a Contour-ShuttleXpress or X-keys, configured as keyboard-inputs (see below)      |
-| `?mode=joycon`   			| Controlled by a Nintendo Joy-con controller over the HTML5 Gamepad API					      |
+| Query parameter         | Description                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| Default                 | Controlled by both mouse and keyboard                                                      |
+| `?mode=mouse`           | Controlled by mouse only                                                                   |
+| `?mode=keyboard`        | Controlled by keyboard only                                                                |
+| `?mode=shuttlekeyboard` | Controlled by a Contour-ShuttleXpress or X-keys, configured as keyboard-inputs (see below) |
 
 ### Customize looks
 
@@ -134,11 +133,11 @@ Example: http://mySofie/prompter/studio0/?mode=mouse&followTake=0&fontsize=20
 
 The prompter can be controlled in multiple ways when using the scroll wheel:
 
-| Query parameter              | Description                                                                                       |
-|------------------------------|---------------------------------------------------------------------------------------------------|
-| `?controlmode=normal`        | Scrolling of the mouse works as "normal scrolling"                                                |
-| `?controlmode=speed`         | Scrolling of the mouse changes the speed of scolling. Left-click to toggle, right-click to rewind |
-| `?controlmode=smoothscroll`  | Scrolling the mouse wheel starts continous scrolling. Small speed adjustments can then be made by nudging the scroll wheel. Stop the scrolling by making a "larger scroll" on the wheel. |
+| Query parameter             | Description                                                                                                                                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `?controlmode=normal`       | Scrolling of the mouse works as "normal scrolling"                                                                                                                                       |
+| `?controlmode=speed`        | Scrolling of the mouse changes the speed of scolling. Left-click to toggle, right-click to rewind                                                                                        |
+| `?controlmode=smoothscroll` | Scrolling the mouse wheel starts continous scrolling. Small speed adjustments can then be made by nudging the scroll wheel. Stop the scrolling by making a "larger scroll" on the wheel. |
 
 has several operating modes, described further below.
 All modes are intended to be controlled by a computer mouse or similar, such as a presenter tool.
@@ -147,12 +146,12 @@ All modes are intended to be controlled by a computer mouse or similar, such as 
 
 Keyboard control is intended to be used when having a "keyboard"-device, such as a presenter tool.
 
-| Scroll up  | Scroll down  |
-|------------|--------------|
-| Arrow Up   | Arrow Down   |
-| Arrow Left | Arrow Right  |
-| Page Up    | Page Down    |
-|            | Space        |
+| Scroll up  | Scroll down |
+| ---------- | ----------- |
+| Arrow Up   | Arrow Down  |
+| Arrow Left | Arrow Right |
+| Page Up    | Page Down   |
+|            | Space       |
 
 ### Control using Contour ShuttleXpress or X-keys
 
