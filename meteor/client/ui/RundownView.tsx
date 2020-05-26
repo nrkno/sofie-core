@@ -912,7 +912,7 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 			Meteor.setTimeout(() => {
 				this.rewindSegments()
 				window.dispatchEvent(new Event(RundownViewEvents.goToTop))
-			}, 5000)
+			}, 500)
 		})
 	}
 
