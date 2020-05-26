@@ -16,7 +16,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 const Tooltip = require('rc-tooltip')
 
@@ -331,19 +331,19 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		})
 	}
 	actionRestart = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, 'Restarting Media Workflow', (e) => MeteorCall.userAction.mediaRestartWorkflow(e, workflow._id))
+		doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaRestartWorkflow(e, workflow._id))
 	}
 	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, 'Aborting Media Workflow ', (e) => MeteorCall.userAction.mediaAbortWorkflow(e, workflow._id))
+		doUserAction(this.props.t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaAbortWorkflow(e, workflow._id))
 	}
 	actionPrioritize = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, 'Prioritizing Media Workflow', (e) => MeteorCall.userAction.mediaPrioritizeWorkflow(e, workflow._id))
+		doUserAction(this.props.t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaPrioritizeWorkflow(e, workflow._id))
 	}
 	actionRestartAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, 'Restarting Media Workflow', (e) => MeteorCall.userAction.mediaRestartAllWorkflows(e, ))
+		doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaRestartAllWorkflows(e, ))
 	}
 	actionAbortAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, 'Aborting all Media Workflows', (e) => MeteorCall.userAction.mediaAbortAllWorkflows(e, ))
+		doUserAction(this.props.t, event, UserAction.ABORT_ALL_MEDIA_WORKFLOWS, (e) => MeteorCall.userAction.mediaAbortAllWorkflows(e, ))
 	}
 
 	renderWorkFlows () {

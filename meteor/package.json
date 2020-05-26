@@ -54,6 +54,7 @@
     "i18next": "^11.2.3",
     "i18next-browser-languagedetector": "^2.2.0",
     "i18next-xhr-backend": "^1.5.1",
+    "immutability-helper": "^3.0.1",
     "indexof": "0.0.1",
     "lottie-web": "^5.1.10",
     "meteor-node-stubs": "^0.3.3",
@@ -64,11 +65,13 @@
     "prop-types": "^15.6.1",
     "query-string": "^6.4.2",
     "rc-tooltip": "^3.7.3",
-    "react": "^16.3.0",
+    "react": "^16.6.3",
     "react-bootstrap": "^0.32.1",
     "react-circular-progressbar": "^1.0.0",
     "react-contextmenu": "^2.9.2",
     "react-datepicker": "^1.6.0",
+    "react-dnd": "^7.4.1",
+    "react-dnd-html5-backend": "^7.4.4",
     "react-dom": "^16.3.0",
     "react-escape": "0.0.8",
     "react-hotkeys": "^0.10.0",
@@ -111,6 +114,7 @@
     "@types/sinon": "^7.0.12",
     "@types/winston": "^2.3.9",
     "@types/xml2json": "^0.11.0",
+    "@types/xmldom": "^0.1.29",
     "@welldone-software/why-did-you-render": "^3.5.0",
     "codecov": "^3.5.0",
     "ejson": "^2.2.0",
@@ -130,6 +134,7 @@
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.8.0",
     "typescript": "2.8.3",
+    "xmldom": "^0.1.27",
     "typescript-tslint-plugin": "^0.4.0"
   }
 }

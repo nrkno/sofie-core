@@ -27,7 +27,8 @@
 		"no-reference-import": true,
 		"class-name": true,
 		"no-unnecessary-type-assertion": false, // @todo For some reason, TSLint picks up the wrong typings for Collection.findOne
-		"no-unnecessary-qualifier": false
+		"no-unnecessary-qualifier": false,
+		"no-unused-variable": true
 	},
 	"linterOptions": {
 		"exclude": [

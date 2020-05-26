@@ -139,7 +139,7 @@ type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot | De
  * Create a snapshot of all items related to a RundownPlaylist
  * @param playlistId
  */
-function createRundownPlaylistSnapshot (playlistId: RundownPlaylistId): RundownPlaylistSnapshot {
+function createRundownPlaylistSnapshot(playlistId: RundownPlaylistId): RundownPlaylistSnapshot {
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`)
 
@@ -208,13 +208,13 @@ function createRundownPlaylistSnapshot (playlistId: RundownPlaylistId): RundownP
  * If studioId is provided, only return items related to that studio
  * @param studioId (Optional) Only generate for a certain studio
  */
-function createSystemSnapshot (studioId: StudioId | null): SystemSnapshot {
+function createSystemSnapshot(studioId: StudioId | null): SystemSnapshot {
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
-	const coreSystem 		= getCoreSystem()
+	const coreSystem = getCoreSystem()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
-	const studios 			= Studios.find((studioId ? { _id: studioId } : {})).fetch()
+	const studios = Studios.find((studioId ? { _id: studioId } : {})).fetch()
 
 	let queryShowStyleBases: MongoSelector<ShowStyleBase> = {}
 	let queryShowStyleVariants: MongoSelector<ShowStyleVariant> = {}
@@ -239,10 +239,10 @@ function createSystemSnapshot (studioId: StudioId | null): SystemSnapshot {
 		}
 		queryDevices = { studioId: studioId }
 	}
-	const showStyleBases 	= ShowStyleBases	.find(queryShowStyleBases).fetch()
-	const showStyleVariants = ShowStyleVariants	.find(queryShowStyleVariants).fetch()
-	const rundownLayouts	= RundownLayouts	.find(queryRundownLayouts).fetch()
-	const devices 			= PeripheralDevices	.find(queryDevices).fetch()
+	const showStyleBases = ShowStyleBases.find(queryShowStyleBases).fetch()
+	const showStyleVariants = ShowStyleVariants.find(queryShowStyleVariants).fetch()
+	const rundownLayouts = RundownLayouts.find(queryRundownLayouts).fetch()
+	const devices = PeripheralDevices.find(queryDevices).fetch()
 
 	if (studioId) {
 		let blueprintIds: BlueprintId[] = []
@@ -253,7 +253,7 @@ function createSystemSnapshot (studioId: StudioId | null): SystemSnapshot {
 			_id: { $in: blueprintIds }
 		}
 	}
-	const blueprints 		= Blueprints		.find(queryBlueprints).fetch()
+	const blueprints = Blueprints.find(queryBlueprints).fetch()
 
 	const deviceCommands = PeripheralDeviceCommands.find({
 		deviceId: { $in: _.map(devices, device => device._id) }
@@ -285,12 +285,12 @@ function createSystemSnapshot (studioId: StudioId | null): SystemSnapshot {
  * Create a snapshot of active rundowns related to a studio and all related data, for debug purposes
  * @param studioId
  */
-function createDebugSnapshot (studioId: StudioId): DebugSnapshot {
+function createDebugSnapshot(studioId: StudioId): DebugSnapshot {
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating Debug snapshot "${snapshotId}" for studio "${studioId}"`)
 
 	const studio = Studios.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404,`Studio ${studioId} not found`)
+	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} not found`)
 
 	let systemSnapshot = createSystemSnapshot(studioId)
 
@@ -318,7 +318,7 @@ function createDebugSnapshot (studioId: StudioId): DebugSnapshot {
 			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 		) {
 			let startTime = getCurrentTime()
-			let deviceSnapshot = ServerPeripheralDeviceAPI.executeFunction(device._id,'getSnapshot')
+			let deviceSnapshot = ServerPeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
 
 			deviceSnaphots.push({
 				deviceId: device._id,
@@ -350,7 +350,7 @@ function createDebugSnapshot (studioId: StudioId): DebugSnapshot {
 }
 
 // Setup endpoints:
-function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot: SnapshotBase})) {
+function handleResponse(response: ServerResponse, snapshotFcn: (() => { snapshot: SnapshotBase })) {
 
 	try {
 		let s: any = snapshotFcn()
@@ -359,8 +359,8 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 
 		let content = (
 			_.isString(s) ?
-			s :
-			JSON.stringify(s, null, 4)
+				s :
+				JSON.stringify(s, null, 4)
 		)
 		response.statusCode = 200
 		response.end(content)
@@ -374,7 +374,7 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 		}
 	}
 }
-function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): SnapshotId {
+function storeSnaphot(snapshot: { snapshot: SnapshotBase }, comment: string): SnapshotId {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
@@ -401,7 +401,7 @@ function storeSnaphot (snapshot: {snapshot: SnapshotBase}, comment: string): Sna
 
 	return id
 }
-function retreiveSnapshot (snapshotId: SnapshotId): AnySnapshot {
+function retreiveSnapshot(snapshotId: SnapshotId): AnySnapshot {
 	let snapshot = Snapshots.findOne(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
 
@@ -417,7 +417,7 @@ function retreiveSnapshot (snapshotId: SnapshotId): AnySnapshot {
 
 	return readSnapshot
 }
-function restoreFromSnapshot (snapshot: AnySnapshot) {
+function restoreFromSnapshot(snapshot: AnySnapshot) {
 	// Determine what kind of snapshot
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
@@ -450,7 +450,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	}
 }
 
-function restoreFromDeprecatedRundownSnapshot (snapshot0: DeprecatedRundownSnapshot) {
+function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapshot) {
 	// Convert the Rundown snaphost into a rundown playlist
 	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
 
@@ -467,7 +467,7 @@ function restoreFromDeprecatedRundownSnapshot (snapshot0: DeprecatedRundownSnaps
 
 	return restoreFromRundownPlaylistSnapshot(snapshot)
 }
-function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) {
+function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
 	const oldPlaylistId = snapshot.playlistId
 
@@ -588,14 +588,14 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	// Apply the updates of any properties to any document
 	function updateItemIds<T extends {
 		_id: ProtectedString<any>,
-		rundownId: RundownId,
+		rundownId?: RundownId,
 		partId?: PartId,
 		segmentId?: SegmentId,
 		infiniteId?: PieceId,
 		enable?: TSR.Timeline.TimelineEnable,
 		part?: T,
 		piece?: T
-	}> (objs: T[], updateId: boolean): T[] {
+	}>(objs: T[], updateId: boolean): T[] {
 		const updateIds = (obj: T) => {
 			if (obj.rundownId) {
 				obj.rundownId = rundownIdMap[unprotectString(obj.rundownId)]
@@ -639,7 +639,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	}
 
 
-	saveIntoDb(RundownPlaylists, { _id: playlistId }, [ snapshot.playlist ])
+	saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist])
 	saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns)
 	saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true))
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
@@ -657,7 +657,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 
 	logger.info(`Restore done`)
 }
-function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
+function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 	logger.info(`Restoring from system snapshot "${snapshot.snapshot.name}"`)
 	let studioId = snapshot.studioId
 
@@ -678,27 +678,27 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 	logger.info(`Restore done (added ${changes.added}, updated ${changes.updated}, removed ${changes.removed} documents)`)
 }
 
-export function storeSystemSnapshot (studioId: StudioId | null, reason: string) {
+export function storeSystemSnapshot(studioId: StudioId | null, reason: string) {
 	if (!_.isNull(studioId)) check(studioId, String)
 	let s = createSystemSnapshot(studioId)
 	return storeSnaphot(s, reason)
 }
-export function storeRundownPlaylistSnapshot (playlistId: RundownPlaylistId, reason: string) {
+export function storeRundownPlaylistSnapshot(playlistId: RundownPlaylistId, reason: string) {
 	check(playlistId, String)
 	let s = createRundownPlaylistSnapshot(playlistId)
 	return storeSnaphot(s, reason)
 }
-export function storeDebugSnapshot (studioId: StudioId, reason: string) {
+export function storeDebugSnapshot(studioId: StudioId, reason: string) {
 	check(studioId, String)
 	let s = createDebugSnapshot(studioId)
 	return storeSnaphot(s, reason)
 }
-export function restoreSnapshot (snapshotId: SnapshotId) {
+export function restoreSnapshot(snapshotId: SnapshotId) {
 	check(snapshotId, String)
 	let snapshot = retreiveSnapshot(snapshotId)
 	return restoreFromSnapshot(snapshot)
 }
-export function removeSnapshot (snapshotId: SnapshotId) {
+export function removeSnapshot(snapshotId: SnapshotId) {
 	check(snapshotId, String)
 
 	logger.info(`Removing snapshot ${snapshotId}`)
@@ -776,19 +776,19 @@ PickerGET.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage,
 })
 
 class ServerSnapshotAPI implements NewSnapshotAPI {
-	storeSystemSnapshot (studioId: StudioId | null, reason: string) {
+	storeSystemSnapshot(studioId: StudioId | null, reason: string) {
 		return makePromise(() => storeSystemSnapshot(studioId, reason))
 	}
-	storeRundownPlaylist (playlistId: RundownPlaylistId, reason: string) {
+	storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
 		return makePromise(() => storeRundownPlaylistSnapshot(playlistId, reason))
 	}
-	storeDebugSnapshot (studioId: StudioId, reason: string) {
+	storeDebugSnapshot(studioId: StudioId, reason: string) {
 		return makePromise(() => storeDebugSnapshot(studioId, reason))
 	}
-	restoreSnapshot (snapshotId: SnapshotId) {
+	restoreSnapshot(snapshotId: SnapshotId) {
 		return makePromise(() => restoreSnapshot(snapshotId))
 	}
-	removeSnapshot (snapshotId: SnapshotId) {
+	removeSnapshot(snapshotId: SnapshotId) {
 		return makePromise(() => removeSnapshot(snapshotId))
 	}
 }

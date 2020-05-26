@@ -139,6 +139,9 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 	}
 
 	> .adlib-panel__list-view__list {
+		display: grid;
+		grid-template-columns: 3fr 1fr;
+
 		grid-column: list-view / end;
 		grid-row: list-view / end;
 		position: relative;
@@ -152,7 +155,6 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 		> .adlib-panel__list-view__list__table {
 			position: relative;
 			display: block;
-			width: 100%;
 			max-height: 100%;
 			overflow-y: auto;
     		overflow-x: hidden;
@@ -210,9 +212,6 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			.adlib-panel__list-view__list__table__cell--name {
 				width: auto;
 				max-width: none;
-			}
-			.adlib-panel__list-view__list__table__cell--data {
-
 			}
 			.adlib-panel__list-view__list__table__cell--resolution {
 				width: 9%;
