@@ -37,7 +37,7 @@ a:visited {
 	}
 
 	.checkbox {
-		vertical-align: bottom;
+		vertical-align: top;
 
 		&.mod {
 			vertical-align: middle;
@@ -52,7 +52,11 @@ a:visited {
 		&::-webkit-input-placeholder, &::placeholder {
 			color: #bbb;
 		}
-	} 
+	}
+
+	.scroll-x {
+		overflow-x: auto;
+	}
 }
 
 .origo-pulse {

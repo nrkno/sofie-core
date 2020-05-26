@@ -1,17 +1,18 @@
 import { check } from 'meteor/check'
-import { PieceGeneric, Piece } from '../../../lib/collections/Pieces'
-import { ExpectedPlayoutItem, ExpectedPlayoutItemGeneric, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { PieceGeneric, Piece, PieceId } from '../../../lib/collections/Pieces'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../../codeControl'
 import { logger } from '../../logging'
-import { Parts } from '../../../lib/collections/Parts'
-import { saveIntoDb } from '../../../lib/lib'
+import { Parts, PartId } from '../../../lib/collections/Parts'
+import { saveIntoDb, protectString } from '../../../lib/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
-	partId?: string
-	pieceId: string
+	partId?: PartId
+	pieceId: PieceId
 }
 export function extractExpectedPlayoutItems (rundown: DBRundown, pieces: Array<Piece | AdLibPiece>): ExpectedPlayoutItem[] {
 
@@ -31,21 +32,11 @@ export function extractExpectedPlayoutItems (rundown: DBRundown, pieces: Array<P
 			})
 		}
 	})
-	// TODO: Maybe make the expectedPlayoutItemsGeneric unique first?
-
-	// expectedPlayoutItemsGeneric.sort((a, b) => {
-	// })
-	// expectedPlayoutItemsGeneric = _.uniq(expectedPlayoutItemsGeneric, false, (a ,b) => {
-	// 	return _.isEqual(
-	// 		_.omit(a, ['pieceId']),
-	// 		_.omit(b, ['pieceId'])
-	// 	)
-	// })
 
 	let i: number = 0
 	return _.map<ExpectedPlayoutItemGenericWithPiece, ExpectedPlayoutItem>(expectedPlayoutItemsGeneric, item => {
 		return {
-			_id: item.pieceId + '_' + (i++),
+			_id: protectString(item.pieceId + '_' + (i++)),
 			studioId: rundown.studioId,
 			rundownId: rundown._id,
 			...item
@@ -53,8 +44,8 @@ export function extractExpectedPlayoutItems (rundown: DBRundown, pieces: Array<P
 	})
 }
 
-export const updateExpectedPlayoutItemsOnRundown: (rundownId: string) => void
-= syncFunctionIgnore(function updateExpectedPlayoutItemsOnRundown (rundownId: string) {
+export const updateExpectedPlayoutItemsOnRundown: (rundownId: RundownId) => void
+= syncFunctionIgnore(function updateExpectedPlayoutItemsOnRundown (rundownId: RundownId) {
 	check(rundownId, String)
 
 	const rundown = Rundowns.findOne(rundownId)
@@ -83,8 +74,8 @@ export const updateExpectedPlayoutItemsOnRundown: (rundownId: string) => void
 	}, expectedPlayoutItems)
 })
 
-export const updateExpectedPlayoutItemsOnPart: (rundownId: string, partId: string) => void
-= syncFunctionIgnore(function updateExpectedPlayoutItemsOnPart (rundownId: string, partId: string) {
+export const updateExpectedPlayoutItemsOnPart: (rundownId: RundownId, partId: PartId) => void
+= syncFunctionIgnore(function updateExpectedPlayoutItemsOnPart (rundownId: RundownId, partId: PartId) {
 	check(rundownId, String)
 	check(partId, String)
 

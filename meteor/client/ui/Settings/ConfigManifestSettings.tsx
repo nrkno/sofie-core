@@ -6,7 +6,8 @@ const Tooltip = require('rc-tooltip')
 import {
 	Studio,
 	Studios,
-	MappingsExt
+	MappingsExt,
+	StudioId
 } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
@@ -14,7 +15,7 @@ import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue, ConfigManifestEntrySourceLayers, ConfigManifestEntryLayerMappings, SourceLayerType, ConfigManifestEntrySelectFromOptions } from 'tv-automation-sofie-blueprints-integration'
-import { literal, DBObj, KeysByType } from '../../../lib/lib'
+import { literal, DBObj, KeysByType, ProtectedString } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { logger } from '../../../lib/logging'
@@ -52,7 +53,11 @@ function filterLayerMappings (select: ConfigManifestEntryLayerMappings<true | fa
 	}
 }
 
-function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2, TObj>, object: TObj, item: BasicConfigManifestEntry, attribute: string) {
+function getEditAttribute<DBInterface extends { _id: ProtectedString<any>}, DocClass extends DBInterface> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	object: DBInterface, item: BasicConfigManifestEntry, attribute: string,
+	layerMappings?: {[key: string]: MappingsExt},
+	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>) {
 	switch (item.type) {
 		case ConfigManifestEntryType.STRING:
 			return <EditAttribute
@@ -100,35 +105,45 @@ function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2,
 				className='input text-input dropdown input-l' />
 		case ConfigManifestEntryType.SOURCE_LAYERS:
 			const selectSourceLayer = item as ConfigManifestEntrySourceLayers<true | false>
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
-				options={filterSourceLayers(selectSourceLayer, object['sourceLayersFlat'])}
-				collection={collection}
-				className='input text-input dropdown input-l' />
+			if (sourceLayers) {
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={object}
+					type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
+					options={filterSourceLayers(selectSourceLayer, sourceLayers)}
+					collection={collection}
+					className='input text-input dropdown input-l'
+				/>
+			}
+			break
 		case ConfigManifestEntryType.LAYER_MAPPINGS:
 			const selectLayerMappings = item as ConfigManifestEntryLayerMappings <true | false>
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
-				options={filterLayerMappings(selectLayerMappings, object['layerMappingsFlat'])}
-				collection={collection}
-				className='input text-input dropdown input-l' />
+			if (layerMappings) {
+				return <EditAttribute
+					modifiedClassName='bghl'
+					attribute={attribute}
+					obj={object}
+					type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
+					options={filterLayerMappings(selectLayerMappings, layerMappings)}
+					collection={collection}
+					className='input text-input dropdown input-l' />
+			}
+			break
 		default:
 			return null
 	}
 }
 
-interface IConfigManifestSettingsProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
+interface IConfigManifestSettingsProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface> {
 	manifest: ConfigManifestEntry[]
 
 	collection: TCol
-	object: TObj
-	configPath: KeysByType<TObj, Array<IConfigItem>>
+	object: DBInterface
+	configPath: KeysByType<DBInterface, Array<IConfigItem>>
+
+	layerMappings?: {[key: string]: MappingsExt}
+	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>
 
 	subPanel?: boolean
 }
@@ -141,12 +156,15 @@ interface IConfigManifestSettingsState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 
-interface IConfigManifestTableProps<TCol extends TransformedCollection<TObj2, TObj>, TObj, TObj2> {
+interface IConfigManifestTableProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface> {
 	item: ConfigManifestEntryTable
 	baseAttribute: string
 
 	collection: TCol
-	object: TObj
+	object: DBInterface
+
+	layerMappings?: {[key: string]: MappingsExt}
+	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>
 
 	subPanel?: boolean
 }
@@ -156,10 +174,10 @@ interface IConfigManifestTableState {
 	sortOrder: 'asc' | 'desc'
 }
 
-export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
-	extends React.Component<Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>, IConfigManifestTableState> {
+export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends DBObj, DocClass extends DBInterface>
+	extends React.Component<Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>, IConfigManifestTableState> {
 
-	constructor (props: Translated<IConfigManifestTableProps<TCol, TObj, TObj2>>) {
+	constructor (props: Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>) {
 		super(props)
 
 		this.state = {
@@ -169,7 +187,7 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 		}
 	}
 
-	updateObject (obj: TObj, updateObj: MongoModifier<TObj>) {
+	updateObject (obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
 		this.props.collection.update(obj._id, updateObj)
 	}
 
@@ -337,7 +355,7 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 						{
 							_.map(vals, (val, i) => <tr key={sortedIndices[i]}>
 								{ _.map(configEntry.columns, col => <td key={col.id}>{
-									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${sortedIndices[i]}.${col.id}`)
+									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${sortedIndices[i]}.${col.id}`, this.props.layerMappings, this.props.sourceLayers)
 								}</td>) }
 								<td>
 									<button className={ClassNames('btn btn-danger', {
@@ -375,10 +393,10 @@ export class ConfigManifestTable<TCol extends TransformedCollection<TObj2, TObj>
 	}
 }
 
-export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TObj>, TObj extends DBObj, TObj2>
-	extends React.Component<Translated<IConfigManifestSettingsProps<TCol, TObj, TObj2>>, IConfigManifestSettingsState> {
+export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends DBObj, DocClass extends DBInterface>
+	extends React.Component<Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>, IConfigManifestSettingsState> {
 
-	constructor (props: Translated<IConfigManifestSettingsProps<TCol, TObj, TObj2>>) {
+	constructor (props: Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>) {
 		super(props)
 
 		this.state = {
@@ -395,7 +413,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 		return this.props.object[this.props.configPath]
 	}
 
-	updateObject (obj: TObj, updateObj: MongoModifier<TObj>) {
+	updateObject (obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
 		this.props.collection.update(obj._id, updateObj)
 	}
 
@@ -533,21 +551,21 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
 				const item2 = item as ConfigManifestEntryTable
-				return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+				return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} layerMappings={this.props.layerMappings} sourceLayers={this.props.sourceLayers} />
 			case ConfigManifestEntryType.SELECT:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:
 				return (
 					<div className='field'>
 						{t('Value')}
-						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute, this.props.layerMappings, this.props.sourceLayers) }
 					</div>
 				)
 			default:
 				return (
 					<label className='field'>
 						{t('Value')}
-						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute) }
+						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute, this.props.layerMappings, this.props.sourceLayers) }
 					</label>
 				)
 		}
@@ -635,7 +653,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 	render () {
 		const { t } = this.props
 		return (
-			<div>
+			<div className='scroll-x'>
 				<ModalDialog title={t('Add config item')} acceptText={t('Add')}
 					secondaryText={t('Cancel')} show={this.state.showAddItem}
 					onAccept={(e) => this.handleConfirmAddItemAccept(e)}
@@ -683,37 +701,4 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<TObj2, TO
 			</div>
 		)
 	}
-}
-
-export function collectConfigs (item: Studio | ShowStyleBase | ShowStyleVariant): ConfigManifestEntry[] {
-	if (item instanceof Studio) {
-		if (item.blueprintId) {
-			const blueprint = Blueprints.findOne(item.blueprintId)
-			if (blueprint) {
-				return blueprint.studioConfigManifest || []
-			}
-		}
-	} else if (item instanceof ShowStyleBase) {
-		if (item.blueprintId) {
-			const blueprint = Blueprints.findOne(item.blueprintId)
-			if (blueprint) {
-				return blueprint.showStyleConfigManifest || []
-			}
-		}
-	} else if (item instanceof ShowStyleVariant) {
-		const showStyleBase = ShowStyleBases.findOne({
-			_id: item.showStyleBaseId
-		})
-
-		if (showStyleBase && showStyleBase.blueprintId) {
-			const blueprint = Blueprints.findOne(showStyleBase.blueprintId)
-			if (blueprint) {
-				return blueprint.showStyleConfigManifest || []
-			}
-		}
-	} else {
-		logger.error('collectConfigs: unknown item type', item)
-	}
-
-	return []
 }

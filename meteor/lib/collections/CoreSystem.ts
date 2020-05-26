@@ -1,12 +1,13 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import * as semver from 'semver'
 import { createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
 
-export const SYSTEM_ID = 'core'
+export const SYSTEM_ID = protectString('core')
 
 /**
  * Criticality level for service messages. Specification of criticality in server
@@ -33,8 +34,11 @@ export interface ServiceMessage {
 	timestamp: Date
 }
 
+/** A string, identifying a CoreSystem */
+export type CoreSystemId = ProtectedString<'CoreSystemId'>
+
 export interface ICoreSystem {
-	_id: 'core'
+	_id: CoreSystemId // always is 'core'
 	/** Timestamp of creation, (ie the time the database was created) */
 	created: number
 	/** Last modified time */
@@ -45,7 +49,7 @@ export interface ICoreSystem {
 	previousVersion: string | null
 
 	/** Id of the blueprint used by this system */
-	blueprintId?: string
+	blueprintId?: BlueprintId
 
 	/** File path to store persistant data (like snapshots, etc) */
 	storePath: string

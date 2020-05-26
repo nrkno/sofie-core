@@ -13,27 +13,30 @@ import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakConten
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
+import { PieceId } from '../../../lib/collections/Pieces'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 
 export interface IAdLibListItem {
-	_id: string,
+	_id: PieceId,
 	name: string,
 	status?: RundownAPI.PieceStatusCode
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
+	floated?: boolean
 }
 
 export interface IDashboardButtonProps {
-	item: IAdLibListItem
+	adLibListItem: IAdLibListItem
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
-	onToggleAdLib: (context: any, aSLine: IAdLibListItem, queue: boolean, alwaysQueue: boolean,) => void
-	rundown: Rundown
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
+	playlist: RundownPlaylist
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
 	isNext?: boolean
@@ -41,6 +44,8 @@ export interface IDashboardButtonProps {
 	heightScale?: number
 	displayStyle?: PieceDisplayStyle
 	isSelected?: boolean
+	queueAllAdlibs?: boolean
+	showThumbnailsInList?: boolean
 }
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
@@ -51,15 +56,15 @@ interface IDashboardButtonTrackedProps {
 }
 
 export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
-	const piece = props.item as any as AdLibPieceUi
+	const piece = props.adLibListItem as any as AdLibPieceUi
 
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
+	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 
 	return {
 		status,
 		metadata
 	}
-})(class extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
+})(class DashboardPieceButton extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
 	private objId: string
 
 	constructor (props: IDashboardButtonProps) {
@@ -79,35 +84,30 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	}
 
 	updateMediaObjectSubscription () {
-		if (this.props.item && this.props.layer) {
-			const piece = this.props.item as any as AdLibPieceUi
+		if (this.props.adLibListItem && this.props.layer) {
+			const piece = this.props.adLibListItem as any as AdLibPieceUi
 			let objId: string | undefined = undefined
 
 			if (piece.content) {
-				let fileName: string | undefined
 				switch (this.props.layer.type) {
 					case SourceLayerType.VT:
-						fileName = (piece.content as VTContent).fileName
+						objId = (piece.content as VTContent).fileName.toUpperCase()
 						break
 					case SourceLayerType.LIVE_SPEAK:
-						fileName = (piece.content as LiveSpeakContent).fileName
-						break
-					case SourceLayerType.TRANSITION:
-						fileName = (piece.content as VTContent).fileName
+						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
 						break
 				}
-				objId = fileName ? fileName.toUpperCase() : undefined
 			}
 
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.rundown.studioId, {
+				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
 					mediaId: this.objId
 				})
 			}
 		} else {
-			console.error('One of the Piece\'s is invalid:', this.props.item)
+			console.error('One of the Piece\'s is invalid:', this.props.adLibListItem)
 		}
 	}
 
@@ -121,27 +121,28 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		return undefined
 	}
 
-	renderVTLiveSpeak () {
+	renderVTLiveSpeak (renderThumbnail?: boolean) {
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
-			const adLib = this.props.item as AdLibPieceUi
+			const adLib = this.props.adLibListItem as AdLibPieceUi
+			const vtContent = adLib.content as VTContent | undefined
 			return <React.Fragment>
-				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
-				{adLib.content && (adLib.content as VTContent) &&
+				{previewUrl && renderThumbnail && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
+				{vtContent &&
 					<span className='dashboard-panel__panel__button__sub-label'>
-						{RundownUtils.formatDiffToTimecode((adLib.content as VTContent).sourceDuration || 0, false, undefined, undefined, undefined, true)}
+						{RundownUtils.formatDiffToTimecode(vtContent.sourceDuration || 0, false, undefined, undefined, undefined, true)}
 					</span>}
 			</React.Fragment>
 		}
 	}
 
 	renderSplits (renderThumbnail: boolean = false) {
-		const splitAdLib = this.props.item as AdLibPieceUi
+		const splitAdLib = this.props.adLibListItem as AdLibPieceUi
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
 			return <React.Fragment>
 				{renderThumbnail ?
-					<DashboardPieceButtonSplitPreview piece={this.props.item as any as AdLibPieceUi} /> :
+					<DashboardPieceButtonSplitPreview piece={this.props.adLibListItem as any as AdLibPieceUi} /> :
 					<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
 				}
 			</React.Fragment>
@@ -149,39 +150,44 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 	}
 
 	render () {
-		const isOfftubeList = this.props.displayStyle === PieceDisplayStyle.OFFTUBE_LIST
+		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
+		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
 		const hasMediaInfo = this.props.layer.type === SourceLayerType.VT && this.props.metadata && this.props.metadata.mediainfo
 		return (
 			<div className={ClassNames('dashboard-panel__panel__button', {
-				'invalid': this.props.item.invalid,
+				'invalid': this.props.adLibListItem.invalid,
+				'floated': this.props.adLibListItem.floated,
 
 				'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 				'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 				'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 				'live': this.props.isOnAir,
-				'list': isOfftubeList,
-				'selected': this.props.isSelected || this.props.isNext
-			}, RundownUtils.getSourceLayerClassName(this.props.layer.type))}
+				'list': isList,
+				'selected': this.props.isNext || this.props.isSelected
+			}, this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type))}
 				style={{
-					width: isOfftubeList ? 'calc(100% - 8px)' : (this.props.widthScale ?
+					width: isList ? 'calc(100% - 8px)' : (this.props.widthScale ?
 						(this.props.widthScale * DEFAULT_BUTTON_WIDTH) + 'em' :
 						undefined),
-					height: !isOfftubeList && this.props.heightScale ?
+					height: !isList && this.props.heightScale ?
 						(this.props.heightScale * DEFAULT_BUTTON_HEIGHT) + 'em' :
 						undefined
 				}}
-				onClick={(e) => this.props.onToggleAdLib(e, this.props.item, e.shiftKey, isOfftubeList)}
-				data-obj-id={this.props.item._id}
+				onClick={(e) => this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey || !!this.props.queueAllAdlibs, e)}
+				data-obj-id={this.props.adLibListItem._id}
 				>
 				{
-					([SourceLayerType.VT, SourceLayerType.LIVE_SPEAK, SourceLayerType.TRANSITION].includes(this.props.layer.type)) ?
-						this.renderVTLiveSpeak() :
+					!this.props.layer ?
+						null :
+					(this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK) ?
+						// VT should have thumbnails in "Button" layout.
+						this.renderVTLiveSpeak(isButtons || (isList && this.props.showThumbnailsInList)) :
 					(this.props.layer.type === SourceLayerType.SPLITS) ?
-						this.renderSplits(isOfftubeList) :
+						this.renderSplits(isList && this.props.showThumbnailsInList) :
 						null
 				}
-				<span className='dashboard-panel__panel__button__label'>{isOfftubeList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.item.name}</span>
+				<span className='dashboard-panel__panel__button__label'>{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}</span>
 			</div>
 		)
 	}

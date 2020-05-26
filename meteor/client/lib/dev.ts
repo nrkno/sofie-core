@@ -4,6 +4,7 @@ import { Session } from 'meteor/session'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
+import { MeteorCall } from '../../lib/api/methods'
 
 // Note: These things are convenience functions to be used during development:
 
@@ -33,6 +34,7 @@ if (debugData) {
 	console.log('Debug: comment out this!')
 	setDebugData()
 }
+window['MeteorCall'] = MeteorCall
 
 const expectToRunWithinCache: any = {}
 export function expectToRunWithin (name, time: number = 1000) {

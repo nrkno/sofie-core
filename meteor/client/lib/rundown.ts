@@ -11,7 +11,7 @@ export namespace RundownUtils {
 
 	export function getSegmentDuration (parts: Array<PartUi>, display?: boolean) {
 		return parts.reduce((memo, part) => {
-			return memo + (part.duration || part.expectedDuration || part.renderedDuration || (display ? Settings.defaultDisplayDuration : 0))
+			return memo + (part.instance.part.duration || part.instance.part.expectedDuration || part.renderedDuration || (display ? Settings.defaultDisplayDuration : 0))
 		}, 0)
 	}
 
@@ -114,14 +114,14 @@ export namespace RundownUtils {
 		} else if (scrollLeft > (partStartsAt || part.startsAt || 0) +
 					(piece !== undefined ?
 						(piece.renderedInPoint || 0) + (piece.renderedDuration || (
-							(part.duration !== undefined ?
-								(part.duration + (part.getLastPlayOffset() || 0)) :
-								(partDuration || part.renderedDuration || part.expectedDuration || 0)
+							(part.instance.part.duration !== undefined ?
+								(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
+								(partDuration || part.renderedDuration || part.instance.part.expectedDuration || 0)
 									- (piece.renderedInPoint || 0))
 							)
 						) :
-						(part.duration !== undefined ?
-							(part.duration + (part.getLastPlayOffset() || 0)) :
+						(part.instance.part.duration !== undefined ?
+							(part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)) :
 							(partDuration || part.renderedDuration || 0)
 						)
 					)

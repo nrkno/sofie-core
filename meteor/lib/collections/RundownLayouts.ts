@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
+import { ShowStyleBaseId } from './ShowStyleBases'
 
 /**
  * The view targeted by this layout:
@@ -33,8 +35,7 @@ export enum PieceDisplayStyle {
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
-	ADLIB_REGION = 'adlib_region',
-	KEYBOARD_PREVIEW = 'keyboard_preview'
+	ADLIB_REGION = 'adlib_region'
 }
 
 export interface RundownLayoutElementBase {
@@ -58,10 +59,10 @@ export enum RundownLayoutAdLibRegionRole {
 
 export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.ADLIB_REGION
-	windowNumber: number
 	tags: string[] | undefined
 	role: RundownLayoutAdLibRegionRole
 	adlibRank: number
+	labelBelowPanel: boolean
 }
 
 /**
@@ -79,6 +80,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	label: string[] | undefined
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
+	showThumbnailsInList: boolean
 	currentSegment: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
@@ -126,7 +128,11 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	showAsTimeline?: boolean
 	hide?: boolean
 	displayTakeButtons?: boolean
+	queueAllAdlibs?: boolean
 }
+
+/** A string, identifying a RundownLayout */
+export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
 export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPreview {
 	x: number
@@ -136,9 +142,9 @@ export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPre
 }
 
 export interface RundownLayoutBase {
-	_id: string
-	showStyleBaseId: string
-	blueprintId?: string
+	_id: RundownLayoutId
+	showStyleBaseId: ShowStyleBaseId
+	blueprintId?: BlueprintId
 	userId?: string
 	name: string
 	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT

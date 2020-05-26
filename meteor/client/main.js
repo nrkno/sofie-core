@@ -17,7 +17,7 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     // in some versions of Chrome, registering the Service Worker over HTTP throws
     // an arror
-    if (window.location.protocol === 'https:') {
+    if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
       navigator.serviceWorker.register('/sw.js').catch((err) => {
         console.error(err)
       });

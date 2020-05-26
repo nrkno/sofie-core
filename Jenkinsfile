@@ -3,6 +3,7 @@
 pipeline {
   agent any
   stages {
+    /*
     stage('Version') {
       when {
         branch 'master'
@@ -11,6 +12,7 @@ pipeline {
         versionRelease('meteor')
       }
     }
+    */
     stage('Build') {
       steps {
         sofieSlackSendBuildStarted()
@@ -19,10 +21,10 @@ pipeline {
     }
     stage('Deploy') {
       when {		
-        branch 'stage'		
+        branch 'develop'		
       }
       steps {
-        coreDeploy()
+        coreDeploy('malxsofietest02')
       }
     }
   }

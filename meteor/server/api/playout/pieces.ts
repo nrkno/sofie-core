@@ -2,9 +2,9 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver } from 'superfly-timeline'
 import * as _ from 'underscore'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
-import { literal, extendMandadory, getCurrentTime, clone } from '../../../lib/lib'
+import { literal, extendMandadory, getCurrentTime, clone, normalizeArray, protectString, unprotectObject, unprotectString } from '../../../lib/lib'
 import {
 	TimelineContentTypeOther,
 	TimelineObjPieceAbstract,
@@ -18,17 +18,18 @@ import {
 	getPieceGroupId,
 	getPieceFirstObjectId,
 	TimelineObjectCoreExt,
-	PieceLifespan,
-	OnGenerateTimelineObj
+	OnGenerateTimelineObj,
+	TSR
 } from 'tv-automation-sofie-blueprints-integration'
-import { transformTimeline } from '../../../lib/timeline'
+import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds } from './lib'
-import { DeviceType } from 'timeline-state-resolver-types'
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
-import { RundownData } from '../../../lib/collections/Rundowns'
+import { RundownPlaylistPlayoutData } from '../../../lib/collections/RundownPlaylists'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
+import { PieceInstance, ResolvedPieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -36,20 +37,17 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-/**
- * Returns a list of the pieces in a Part, ordered in the order they will be played
- * @param part
- */
-export function getOrderedPiece (part: Part, allPieces?: Piece[]): Array<PieceResolved> {
-	const pieces = allPieces ? allPieces.filter(p => p.partId === part._id) : part.getAllPieces()
+export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: number): Array<PieceResolved> {
 	const now = getCurrentTime()
-	const partStarted = part.getLastStartedPlayback()
 
-	const pieceMap: { [key: string]: Piece } = {}
-	pieces.forEach(i => pieceMap[i._id] = i)
+	const pieceMap = normalizeArray(pieces, '_id')
 
 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
-		const obj = clone(createPieceGroup(piece))
+		const obj = createPieceGroup({
+			_id: protectString(unprotectString(piece._id)) as PieceInstanceId, // Set the id to the same, as it is just for metadata
+			rundownId: piece.rundownId,
+			piece: piece
+		})
 
 		if (obj.enable.start === 0) {
 			if (piece.infiniteId && piece.infiniteId !== piece._id) {
@@ -74,8 +72,8 @@ export function getOrderedPiece (part: Part, allPieces?: Piece[]): Array<PieceRe
 	let unresolvedCount = tlResolved.statistics.unresolvedCount
 	_.each(tlResolved.objects, obj0 => {
 		const obj = obj0 as any as TimelineObjRundown
-		const pieceId = (obj.metadata || {}).pieceId
-		const piece = _.clone(pieceMap[pieceId]) as PieceResolved
+		const pieceInstanceId = (obj.metaData || {}).pieceId
+		const piece = _.clone(pieceMap[pieceInstanceId]) as PieceResolved
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			piece.resolvedStart = obj0.resolved.instances[0].start || 0
 			piece.resolved = true
@@ -96,10 +94,10 @@ export function getOrderedPiece (part: Part, allPieces?: Piece[]): Array<PieceRe
 	})
 
 	if (unresolvedCount > 0) {
-		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
+		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${partId} (${unresolvedIds.join(', ')})`)
 	}
 	if (pieces.length !== resolvedPieces.length) {
-		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${part._id}`)
+		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${partId}`)
 	}
 
 	resolvedPieces.sort((a, b) => {
@@ -113,244 +111,121 @@ export function getOrderedPiece (part: Part, allPieces?: Piece[]): Array<PieceRe
 
 	return resolvedPieces
 }
+/**
+ * Returns a list of the pieces in a Part, ordered in the order they will be played
+ * @param part
+ */
+export function getOrderedPiece (part: Part): Array<PieceResolved> {
+	const pieces = part.getAllPieces()
+	const partStarted = part.getLastStartedPlayback()
+
+	return orderPieces(pieces, part._id, partStarted)
+}
 export function createPieceGroupFirstObject (
-	piece: Piece,
+	pieceInstance: PieceInstance,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
 ): (TimelineObjPieceAbstract & OnGenerateTimelineObj) {
-	return literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
-		id: getPieceFirstObjectId(piece),
-		_id: '', // set later
-		studioId: '', // set later
-		rundownId: piece.rundownId,
-		pieceId: piece._id,
-		infinitePieceId: piece.infiniteId,
+	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
+		id: getPieceFirstObjectId(unprotectObject(pieceInstance.piece)),
+		_id: protectString(''), // set later
+		studioId: protectString(''), // set later
+		pieceInstanceId: unprotectString(pieceInstance._id),
+		infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
-		layer: piece.sourceLayerId + '_firstobject',
+		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
 		content: {
-			deviceType: DeviceType.ABSTRACT,
+			deviceType: TSR.DeviceType.ABSTRACT,
 			type: 'callback',
-
 			callBack: 'piecePlaybackStarted',
 			callBackData: {
-				rundownId: piece.rundownId,
-				pieceId: piece._id
+				rundownId: pieceInstance.rundownId,
+				pieceInstanceId: pieceInstance._id,
+				dynamicallyInserted: pieceInstance.piece.dynamicallyInserted
 			},
 			callBackStopped: 'piecePlaybackStopped' // Will cause a callback to be called, when the object stops playing:
 		},
 		classes: firstObjClasses,
 		inGroup: pieceGroup.id
 	})
+	return firstObject
 }
 export function createPieceGroup (
-	piece: Piece,
+	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece'>,
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
 	return literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
-		id: getPieceGroupId(piece),
-		_id: '', // set later
-		studioId: '', // set later
+		id: getPieceGroupId(unprotectObject(pieceInstance.piece)),
+		_id: protectString(''), // set later
+		studioId: protectString(''), // set later
 		content: {
-			deviceType: DeviceType.ABSTRACT,
+			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.GROUP
 		},
 		children: [],
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
-		rundownId: piece.rundownId,
-		pieceId: piece._id,
-		infinitePieceId: piece.infiniteId,
+		pieceInstanceId: unprotectString(pieceInstance._id),
+		infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
 		objectType: TimelineObjType.RUNDOWN,
-		enable: calculatePieceTimelineEnable(piece),
-		layer: piece.sourceLayerId,
-		metadata: {
-			pieceId: piece._id
+		enable: calculatePieceTimelineEnable(pieceInstance.piece),
+		layer: pieceInstance.piece.sourceLayerId,
+		metaData: {
+			pieceId: pieceInstance._id
 		}
 	})
 }
-export function getResolvedPieces (part: Part, allPieces?: Piece[]): Piece[] {
-	// TODO - was this mangled for endState and could it have broken something else?
-	let pieces = allPieces ? allPieces.filter(p => p.partId === part._id) : part.getAllPieces()
 
-	pieces = pieces.filter(p => !p.stoppedPlayback)
-
-	const itemMap: { [key: string]: Piece } = {}
-	pieces.forEach(piece => itemMap[piece._id] = piece)
-
-	const objs = pieces.map(piece => clone(createPieceGroup(piece)))
-	objs.forEach(o => {
-		if (o.enable.start === 'now' && part.getLastStartedPlayback()) {
-			// Emulate playout starting now. TODO - ensure didnt break other uses
-			o.enable.start = getCurrentTime() - (part.getLastStartedPlayback() || 0)
-		} else if (o.enable.start === 0 || o.enable.start === 'now') {
-			o.enable.start = 1
-		}
-	})
-	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
-		time: 0
-	})
-	const events: Array<{
-		start: number
-		end: number | undefined
-		id: string
-		piece: Piece
-	}> = []
+function resolvePieceTimeline (objs: TimelineContentObject[], baseTime: number, pieceInstanceMap: { [id: string]: PieceInstance | undefined }, resolveForStr: string): ResolvedPieceInstance[] {
+	const tlResolved = Resolver.resolveTimeline(objs, { time: baseTime })
+	const resolvedPieces: Array<ResolvedPieceInstance> = []
 
 	let unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = obj0 as any as TimelineObjRundown
-		const id = (obj.metadata || {}).pieceId
+		const id = (obj.metaData || {}).pieceId
 
-		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
-			const firstInstance = obj0.resolved.instances[0] || {}
-			events.push({
-				start: firstInstance.start || 0,
-				end: firstInstance.end || undefined,
-				id: id,
-				piece: itemMap[id]
-			})
-		} else {
-			events.push({
-				start: 0,
-				end: undefined,
-				id: id,
-				piece: itemMap[id]
-			})
-			unresolvedIds.push(id)
-		}
-	})
-
-	if (tlResolved.statistics.unresolvedCount > 0) {
-		logger.warn(`Got ${tlResolved.statistics.unresolvedCount} unresolved pieces for piece #${part._id} (${unresolvedIds.join(', ')})`)
-	}
-	if (pieces.length !== events.length) {
-		logger.warn(`Got ${events.length} ordered pieces. Expected ${pieces.length}. for piece #${part._id}`)
-	}
-
-	events.sort((a, b) => {
-		if (a.start < b.start) {
-			return -1
-		} else if (a.start > b.start) {
-			return 1
-		} else {
-			if (a.piece.isTransition === b.piece.isTransition) {
-				return 0
-			} else if (b.piece.isTransition) {
-				return 1
-			} else {
-				return -1
-			}
-		}
-	})
-
-	const processedPieces: Piece[] = events.map<Piece>(event => {
-		return literal<Piece>({
-			...event.piece,
-			enable: {
-				start: Math.max(0, event.start - 1),
-			},
-			playoutDuration: Math.max(0, (event.end || 0) - event.start) || undefined
-		})
-	})
-
-	// crop infinite pieces
-	processedPieces.forEach((piece, index, source) => {
-		if (piece.infiniteMode) {
-			for (let i = index + 1; i < source.length; i++) {
-				const sourcePiece = source[i]
-				if (piece.sourceLayerId === sourcePiece.sourceLayerId) {
-					// TODO - verify this
-					piece.playoutDuration = (sourcePiece.enable.start as number) - (piece.enable.start as number)
-					return
-				}
-			}
-		}
-	})
-
-	return processedPieces
-}
-
-export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, allObjs: TimelineObjGeneric[]): { pieces: Piece[], time: number } {
-	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metadata && o.metadata.pieceId))))
-
-	const now = getCurrentTime()
-
-	const partIds = _.compact([rundownData.rundown.previousPartId, rundownData.rundown.currentPartId])
-	const pieces: Piece[] = rundownData.pieces.filter(p => partIds.indexOf(p.partId) !== -1)
-
-	if (rundownData.rundown.currentPartId && rundownData.rundown.nextPartId) {
-		const part = rundownData.partsMap[rundownData.rundown.currentPartId]
-		if (part && part.autoNext) {
-			pieces.push(...rundownData.pieces.filter(p => p.partId === rundownData.rundown.nextPartId))
-		}
-	}
-
-	const itemMap: { [key: string]: Piece } = {}
-	pieces.forEach(piece => itemMap[piece._id] = piece)
-
-	objs.forEach(o => {
-		if (o.enable.start === 'now') {
-			o.enable.start = now
-		}
-	})
-
-	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
-		time: now
-	})
-	const events: Array<{
-		start: number
-		end: number | undefined
-		id: string
-		piece: Piece
-	}> = []
-
-	let unresolvedIds: string[] = []
-	_.each(tlResolved.objects, (obj0) => {
-		const obj = obj0 as any as TimelineObjRundown
-		const id = (obj.metadata || {}).pieceId
-
-		// Probably the part
 		if (!id) return
 
+		const pieceInstance = pieceInstanceMap[id]
 		// Erm... How?
-		if (!itemMap[id]) {
+		if (!pieceInstance) {
 			unresolvedIds.push(id)
 			return
 		}
 
 		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
 			const firstInstance = obj0.resolved.instances[0] || {}
-			events.push({
-				start: firstInstance.start || now,
-				end: firstInstance.end || undefined,
-				id: id,
-				piece: itemMap[id]
-			})
+			resolvedPieces.push(literal<ResolvedPieceInstance>({
+				...pieceInstance,
+				resolvedStart: firstInstance.start || baseTime,
+				resolvedDuration: firstInstance.end ? firstInstance.end - (firstInstance.start || baseTime) : undefined
+			}))
 		} else {
-			events.push({
-				start: now,
-				end: undefined,
-				id: id,
-				piece: itemMap[id]
-			})
+			resolvedPieces.push(literal<ResolvedPieceInstance>({
+				...pieceInstance,
+				resolvedStart: baseTime,
+				resolvedDuration: undefined
+			}))
 			unresolvedIds.push(id)
 		}
 	})
 
 	if (tlResolved.statistics.unresolvedCount > 0) {
-		logger.warn(`Got ${tlResolved.statistics.unresolvedCount} unresolved pieces (${unresolvedIds.join(', ')})`)
+		logger.warn(`Got ${tlResolved.statistics.unresolvedCount} unresolved pieces for ${resolveForStr} (${unresolvedIds.join(', ')})`)
 	}
-	if (pieces.length !== events.length) {
-		logger.warn(`Got ${events.length} ordered pieces. Expected ${pieces.length}.`)
+	if (_.size(pieceInstanceMap) !== resolvedPieces.length) {
+		logger.warn(`Got ${resolvedPieces.length} ordered pieces. Expected ${_.size(pieceInstanceMap)}. for ${resolveForStr}`)
 	}
 
-	events.sort((a, b) => {
-		if (a.start < b.start) {
+	// Sort the pieces by time, then transitions first
+	resolvedPieces.sort((a, b) => {
+		if (a.resolvedStart < b.resolvedStart) {
 			return -1
-		} else if (a.start > b.start) {
+		} else if (a.resolvedStart > b.resolvedStart) {
 			return 1
-		} else if (a.piece && b.piece) {
+		} else {
 			if (a.piece.isTransition === b.piece.isTransition) {
 				return 0
 			} else if (b.piece.isTransition) {
@@ -358,33 +233,99 @@ export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, all
 			} else {
 				return -1
 			}
-		} else {
-			return 0
 		}
 	})
 
-	const processedPieces: Piece[] = events.map<Piece>(event => {
-		return literal<Piece>({
-			...event.piece,
-			enable: {
-				start: Math.max(0, event.start - 1),
-			},
-			playoutDuration: Math.max(0, (event.end || 0) - event.start) || undefined
-		})
+	// Clamp the times to be reasonably valid
+	resolvedPieces.forEach(resolvedPiece => {
+		resolvedPiece.resolvedStart = Math.max(0, resolvedPiece.resolvedStart - 1)
+		resolvedPiece.resolvedDuration = resolvedPiece.resolvedDuration ? Math.max(0, resolvedPiece.resolvedDuration) : undefined // TODO does this behave the same?
 	})
 
+	return resolvedPieces
+}
+
+export function getResolvedPieces (partInstance: PartInstance): ResolvedPieceInstance[] {
+	const pieceInstances = partInstance.getAllPieceInstances()
+
+	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
+
+	const objs = pieceInstances.map(piece => clone(createPieceGroup(piece)))
+	objs.forEach(o => {
+		if (o.enable.start === 'now' && partInstance.part.getLastStartedPlayback()) {
+			// Emulate playout starting now. TODO - ensure didnt break other uses
+			o.enable.start = getCurrentTime() - (partInstance.part.getLastStartedPlayback() || 0)
+		} else if (o.enable.start === 0 || o.enable.start === 'now') {
+			o.enable.start = 1
+		}
+	})
+
+	const resolvedPieces = resolvePieceTimeline(transformTimeline(objs), 0, pieceInststanceMap, `PartInstance #${partInstance._id}`)
+
 	// crop infinite pieces
-	processedPieces.forEach((piece, index, source) => {
-		if (piece.infiniteMode) { // && piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
+	resolvedPieces.forEach((pieceInstance, index, source) => {
+		if (pieceInstance.piece.infiniteMode) {
 			for (let i = index + 1; i < source.length; i++) {
-				const sourcePiece = source[i]
-				if (piece.sourceLayerId === sourcePiece.sourceLayerId) {
-					// TODO - verify this, the min is necessary and correct though
-					const infDuration = (sourcePiece.enable.start as number) - (piece.enable.start as number)
-					if (piece.playoutDuration) {
-						piece.playoutDuration = Math.min(piece.playoutDuration, infDuration)
+				const sourcePieceInstance = source[i]
+				if (pieceInstance.piece.sourceLayerId === sourcePieceInstance.piece.sourceLayerId) {
+					// TODO - verify this (it is different to the getResolvedPiecesFromFullTimeline...)
+					pieceInstance.resolvedDuration = sourcePieceInstance.resolvedStart - pieceInstance.resolvedStart
+					return
+				}
+			}
+		}
+	})
+
+	return resolvedPieces
+}
+export function getResolvedPiecesFromFullTimeline (playoutData: RundownPlaylistPlayoutData, allObjs: TimelineObjGeneric[]): { pieces: ResolvedPieceInstance[], time: number } {
+	const objs = clone(allObjs.filter(o => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId))))
+
+	const now = getCurrentTime()
+
+	const partInstanceIds = _.compact([playoutData.rundownPlaylist.previousPartInstanceId, playoutData.rundownPlaylist.currentPartInstanceId])
+	const pieceInstances: PieceInstance[] = playoutData.selectedInstancePieces.filter(p => partInstanceIds.indexOf(p.partInstanceId) !== -1)
+
+	if (playoutData.currentPartInstance && playoutData.currentPartInstance.part.autoNext && playoutData.rundownPlaylist.nextPartInstanceId) {
+		pieceInstances.push(...playoutData.selectedInstancePieces.filter(p => p.partInstanceId === playoutData.rundownPlaylist.nextPartInstanceId))
+	}
+
+	const replaceNows = (obj: TimelineContentObject, parentAbsoluteStart: number) => {
+		let absoluteStart = parentAbsoluteStart
+		if (obj.enable.start === 'now') {
+			// Start is always relative to parent start, so we need to factor that when flattening the 'now
+			obj.enable.start = Math.max(0, now - parentAbsoluteStart)
+			absoluteStart = now
+		} else if (typeof obj.enable.start === 'number') {
+			absoluteStart += obj.enable.start
+		} else {
+			// We can't resolve this here, so lets hope there are no 'now' inside and end
+			return
+		}
+
+		// Ensure any children have their 'now's updated
+		if (obj.isGroup && obj.children && obj.children.length) {
+			obj.children.forEach(ch => replaceNows(ch, absoluteStart))
+		}
+	}
+	const transformedObjs = transformTimeline(objs)
+	transformedObjs.forEach(o => replaceNows(o, 0))
+
+	const pieceInstanceMap = normalizeArray(pieceInstances, '_id')
+	const resolvedPieces = resolvePieceTimeline(transformedObjs, now, pieceInstanceMap, 'timeline')
+
+	// crop infinite pieces
+	resolvedPieces.forEach((instance, index, source) => {
+		if (instance.piece.infiniteMode) { // && piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
+			for (let i = index + 1; i < source.length; i++) {
+				const sourceInstance = source[i]
+				if (instance.piece.sourceLayerId === sourceInstance.piece.sourceLayerId) {
+					// TODO - verify this, the min is necessary and correct though (and it is different to getResolvedPieces)
+					const infDuration = sourceInstance.resolvedStart - instance.resolvedStart
+					if (instance.resolvedDuration) {
+						instance.resolvedDuration = Math.min(instance.resolvedDuration, infDuration)
 					} else {
-						piece.playoutDuration = infDuration
+						instance.resolvedDuration = infDuration
 					}
 					return
 				}
@@ -393,7 +334,7 @@ export function getResolvedPiecesFromFullTimeline (rundownData: RundownData, all
 	})
 
 	return {
-		pieces: processedPieces,
+		pieces: resolvedPieces,
 		time: now
 	}
 }
@@ -418,8 +359,8 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						_id: '', // set later
-						studioId: '', // set later
+						_id: protectString(''), // set later
+						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN
 					})
 				})
@@ -431,7 +372,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 	return newAdLibPiece
 }
 
-export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part, queue: boolean, start: number | 'now'): Piece {
+export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, partInstance: PartInstance, queue: boolean): PieceInstance {
 	let duration: number | string | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
@@ -439,101 +380,106 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 		duration = adLibPiece['enable'].duration
 	}
 
-	const newId = Random.id()
-	const newPiece = literal<Piece>({
-		..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
-		_id: newId,
-		enable: {
-			start: start,
-			duration: duration
-		},
-		partId: part._id,
-		adLibSourceId: adLibPiece._id,
-		dynamicallyInserted: !queue,
-		// expectedDuration: adLibPiece.expectedDuration || 0, // set duration to infinite if not set by AdLibItem
-		timings: {
-			take: [getCurrentTime()],
-			startedPlayback: [],
-			next: [],
-			stoppedPlayback: [],
-			playOffset: [],
-			takeDone: [],
-			takeOut: [],
-		}
-	})
-
-	if (newPiece.content && newPiece.content.timelineObjects) {
-		let contentObjects = newPiece.content.timelineObjects
-		const objs = prefixAllObjectIds(_.compact(
-			_.map(contentObjects, (obj) => {
-				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-					_id: '', // set later
-					studioId: '', // set later
-					objectType: TimelineObjType.RUNDOWN
-				})
-			})
-		), newId + '_')
-		newPiece.content.timelineObjects = objs
-	}
-	return newPiece
-}
-
-export function resolveActivePieces (part: Part, now: number): Piece[] {
-	const pieces = part.getAllPieces()
-
-	const itemMap: { [key: string]: Piece } = {}
-	pieces.forEach(i => itemMap[i._id] = i)
-
-	const partStartTime = part.startedPlayback ? part.getLastStartedPlayback() || 0 : 0
-	const targetTime = part.startedPlayback ? now - partStartTime : 0
-
-	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
-		const obj = createPieceGroup(piece)
-
-		// If start is now, then if the part is active set it to be now, or fallback to start of the part
-		if (piece.enable.start === 'now') {
-			piece.enable.start = targetTime
-		}
-
-		return obj
-	})
-
-	const resolved = Resolver.resolveTimeline(transformTimeline(objs), {
-		time: targetTime
-	})
-
-	const state = Resolver.getState(resolved, targetTime, 1)
-
-	let unresolvedIds: string[] = []
-	let unresolvedCount = resolved.statistics.unresolvedCount
-	_.each(resolved.objects, obj0 => {
-		if (!obj0.resolved.resolved || !obj0.resolved.instances || obj0.resolved.instances.length === 0) {
-			const obj = obj0 as any as TimelineObjRundown
-			const pieceId = (obj.metadata || {}).pieceId
-			const piece = itemMap[pieceId]
-			if (piece && piece.virtual) {
-				// Virtuals always are unresolved and should be ignored
-				unresolvedCount -= 1
-			} else {
-				unresolvedIds.push(obj.id)
+	const newPieceId = Random.id()
+	const newPieceInstance = literal<PieceInstance>({
+		_id: protectString(`${partInstance._id}_${newPieceId}`),
+		rundownId: partInstance.rundownId,
+		partInstanceId: partInstance._id,
+		piece: {
+			..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
+			_id: newPieceId,
+			rundownId: partInstance.rundownId,
+			partId: partInstance.part._id,
+			enable: {
+				start: (queue ? 0 : 'now'),
+				duration: duration
+			},
+			adLibSourceId: adLibPiece._id,
+			dynamicallyInserted: !queue,
+			timings: {
+				take: [getCurrentTime()],
+				startedPlayback: [],
+				next: [],
+				stoppedPlayback: [],
+				playOffset: [],
+				takeDone: [],
+				takeOut: [],
 			}
 		}
 	})
 
-	let activePieces: Array<Piece> = []
-	_.each(state.layers, obj0 => {
-		const obj = obj0 as any as TimelineObjRundown
-		const pieceId = (obj.metadata || {}).pieceId
-		const piece = itemMap[pieceId]
-
-		if (piece) {
-			activePieces.push(piece)
-		}
-	})
-
-	if (unresolvedCount > 0) {
-		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
+	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
+		let contentObjects = newPieceInstance.piece.content.timelineObjects
+		const objs = prefixAllObjectIds(_.compact(
+			_.map(contentObjects, (obj) => {
+				return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
+					_id: protectString(''), // set later
+					studioId: protectString(''), // set later
+					objectType: TimelineObjType.RUNDOWN
+				})
+			})
+		), newPieceId + '_')
+		newPieceInstance.piece.content.timelineObjects = objs
 	}
-
-	return activePieces
+	return newPieceInstance
 }
+
+// export function resolveActivePieces (playlistId: RundownPlaylistId, part: Part, now: number): Piece[] {
+// 	const pieces = part.getAllPieces()
+
+// 	const itemMap: { [key: string]: Piece } = {}
+// 	pieces.forEach(i => itemMap[i._id] = i)
+
+// 	const partStartTime = part.startedPlayback ? part.getLastStartedPlayback() || 0 : 0
+// 	const targetTime = part.startedPlayback ? now - partStartTime : 0
+
+// 	const objs: Array<TimelineObjRundown> = pieces.map(piece => {
+// 		const obj = createPieceGroup(playlistId, piece)
+
+// 		// If start is now, then if the part is active set it to be now, or fallback to start of the part
+// 		if (piece.enable.start === 'now') {
+// 			piece.enable.start = targetTime
+// 		}
+
+// 		return obj
+// 	})
+
+// 	const resolved = Resolver.resolveTimeline(transformTimeline(objs), {
+// 		time: targetTime
+// 	})
+
+// 	const state = Resolver.getState(resolved, targetTime, 1)
+
+// 	let unresolvedIds: string[] = []
+// 	let unresolvedCount = resolved.statistics.unresolvedCount
+// 	_.each(resolved.objects, obj0 => {
+// 		if (!obj0.resolved.resolved || !obj0.resolved.instances || obj0.resolved.instances.length === 0) {
+// 			const obj = obj0 as any as TimelineObjRundown
+// 			const pieceId = (obj.metadata || {}).pieceId
+// 			const piece = itemMap[pieceId]
+// 			if (piece && piece.virtual) {
+// 				// Virtuals always are unresolved and should be ignored
+// 				unresolvedCount -= 1
+// 			} else {
+// 				unresolvedIds.push(obj.id)
+// 			}
+// 		}
+// 	})
+
+// 	let activePieces: Array<Piece> = []
+// 	_.each(state.layers, obj0 => {
+// 		const obj = obj0 as any as TimelineObjRundown
+// 		const pieceId = (obj.metadata || {}).pieceId
+// 		const piece = itemMap[pieceId]
+
+// 		if (piece) {
+// 			activePieces.push(piece)
+// 		}
+// 	})
+
+// 	if (unresolvedCount > 0) {
+// 		logger.error(`Got ${unresolvedCount} unresolved timeline-objects for part #${part._id} (${unresolvedIds.join(', ')})`)
+// 	}
+
+// 	return activePieces
+// }

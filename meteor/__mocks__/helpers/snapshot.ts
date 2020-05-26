@@ -5,10 +5,11 @@ import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns
 import { DBSegment } from '../../lib/collections/Segments'
 import { Part } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
+import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 
 // About snapshot testing: https://jestjs.io/docs/en/snapshot-testing
 
-type Data = undefined | TimelineObjGeneric | DBRundown | DBSegment | Part | Piece
+type Data = undefined | TimelineObjGeneric | DBRundownPlaylist | DBRundown | DBSegment | Part | Piece
 /**
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data
@@ -50,13 +51,16 @@ export function fixSnapshot (
 
 			}
 			if (
-				o.metadata &&
-				o.metadata.versions &&
-				o.metadata.versions.core
+				o.metaData &&
+				o.metaData.versions &&
+				o.metaData.versions.core
 			) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
-				o.metadata.versions.core = '0.0.0-test'
+				o.metaData.versions.core = '0.0.0-test'
 			}
+		} else if (isPlaylist(o)) {
+			delete o['created']
+			delete o['modified']
 		} else if (isRundown(o)) {
 			delete o['created']
 			delete o['modified']
@@ -74,8 +78,11 @@ export function fixSnapshot (
 function isTimelineObj (o): o is TimelineObjGeneric {
 	return o.enable && o._id && o.id && o.studioId
 }
+function isPlaylist (o): o is DBRundownPlaylist {
+	return o._id && _.has(o, 'currentPartInstanceId')
+}
 function isRundown (o): o is DBRundown {
-	return o._id && _.has(o, 'currentPartId')
+	return o._id && _.has(o, 'playlistId')
 }
 function isSegment (o): o is DBSegment {
 	return (

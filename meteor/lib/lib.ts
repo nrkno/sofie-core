@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
+import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions, FindOptions } from './typings/meteor'
 import { logger } from './logging'
@@ -18,6 +19,10 @@ export function clone<T> (o: T): T {
 export function getHash (str: string): string {
 	const hash = crypto.createHash('sha1')
 	return hash.update(str).digest('base64').replace(/[\+\/\=]/g, '_') // remove +/= from strings, because they cause troubles
+}
+
+export function getRandomId<T> (numberOfChars?: number): ProtectedString<T> {
+	return Random.id(numberOfChars) as any
 }
 
 /**
@@ -49,16 +54,8 @@ export function getCurrentTime (): Time {
 }
 export { systemTime }
 
-export type Optional<T> = {
-	[K in keyof T]?: T[K]
-}
-
-// type Test<T> = {
-// 	[K in keyof T]: T[K]
-// }
-
 export interface DBObj {
-	_id: string,
+	_id: ProtectedString<any>,
 	[key: string]: any
 }
 interface SaveIntoDbOptions<DocClass, DBInterface> {
@@ -67,7 +64,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeRemove?: (o: DocClass) => DBInterface
 	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
 	insert?: (o: DBInterface) => void
-	update?: (id: string, o: DBInterface,) => void
+	update?: (id: ProtectedString<any>, o: DBInterface,) => void
 	remove?: (o: DBInterface) => void
 	unchanged?: (o: DBInterface) => void
 	afterInsert?: (o: DBInterface) => void
@@ -107,17 +104,16 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 		options
 	)
 }
-
-export interface PreparedChangesChangesDoc<T> {
-	doc: T
-	oldId: string
-}
-
 export interface PreparedChanges<T> {
 	inserted: T[]
 	changed: PreparedChangesChangesDoc<T>[]
 	removed: T[]
 	unchanged: T[]
+}
+
+export interface PreparedChangesChangesDoc<T> {
+	doc: T
+	oldId: ProtectedString<any>
 }
 export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,
@@ -140,10 +136,10 @@ export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface exte
 
 	const newObjIds: {[identifier: string]: true} = {}
 	_.each(newData, (o) => {
-		if (newObjIds[o[identifier]]) {
+		if (newObjIds[o[identifier] as any]) {
 			throw new Meteor.Error(500, `prepareSaveIntoDb into collection "${(collection as any)._name}": Duplicate identifier ${identifier}: "${o[identifier]}"`)
 		}
-		newObjIds[o[identifier]] = true
+		newObjIds[o[identifier] as any] = true
 	})
 
 	const oldObjs: Array<DocClass> = waitForPromise(pOldObjs)
@@ -359,13 +355,13 @@ export function partial<T> (o: Partial<T>) {
 }
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 export interface IDObj {
-	_id: string
+	_id: ProtectedString<any>
 }
 export function partialExceptId<T> (o: Partial<T> & IDObj) {
 	return o
 }
 export interface ObjId {
-	_id: string
+	_id: ProtectedString<any>
 }
 export type OmitId<T> = Omit<T & ObjId, '_id'>
 
@@ -405,6 +401,7 @@ export function formatDateTime (time: Time) {
 	let ss: any = d.getSeconds()
 
 	if (mm < 10) mm = '0' + mm
+	if (dd < 10) dd = '0' + dd
 	if (hh < 10) hh = '0' + hh
 	if (ii < 10) ii = '0' + ii
 	if (ss < 10) ss = '0' + ss
@@ -468,24 +465,27 @@ export function stringifyObjects (objs: any): string {
 		return objs + ''
 	}
 }
-export const Collections: {[name: string]: Mongo.Collection<any>} = {}
-export function registerCollection (name: string, collection: Mongo.Collection<any>) {
+export const Collections: {[name: string]: TransformedCollection<any, any>} = {}
+export function registerCollection (name: string, collection: TransformedCollection<any, any>) {
 	Collections[name] = collection
 }
-export const getCollectionIndexes: (collection: Mongo.Collection<any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionIndexes (collection: Mongo.Collection<any>, cb) {
+export const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
+	function getCollectionIndexes (collection: TransformedCollection<any, any>, cb) {
 		let raw = collection.rawCollection()
 		raw.indexes(cb)
 	}
 )
-export const getCollectionStats: (collection: Mongo.Collection<any>) => Array<any> = Meteor.wrapAsync(
-	function getCollectionStats (collection: Mongo.Collection<any>, cb) {
+export const getCollectionStats: (collection: TransformedCollection<any, any>) => Array<any> = Meteor.wrapAsync(
+	function getCollectionStats (collection: TransformedCollection<any, any>, cb) {
 		let raw = collection.rawCollection()
 		raw.stats(cb)
 	}
 )
-export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: MongoSelector<T>, rank: number | null): T {
-	if (_.isNull(rank)) rank = Number.POSITIVE_INFINITY
+export function fetchBefore<T> (
+	collection: TransformedCollection<T, any>,
+	selector: MongoSelector<T> = {},
+	rank: number = Number.POSITIVE_INFINITY
+): T {
 	return collection.find(_.extend(selector, {
 		_rank: { $lt: rank }
 	}), {
@@ -496,37 +496,48 @@ export function fetchBefore<T> (collection: Mongo.Collection<T>, selector: Mongo
 		limit: 1
 	}).fetch()[0]
 }
-export function fetchAfter<T> (collection: Mongo.Collection<T> | Array<T>, selector: MongoSelector<T>, rank: number | null): T | undefined {
-	if (_.isNull(rank)) rank = Number.NEGATIVE_INFINITY
+export function fetchNext<T extends { _id: ProtectedString<any> }> (
+	values: Array<T>,
+	currentValue: T | undefined
+): T | undefined {
 
-	selector = _.extend({}, selector, {
-		_rank: { $gt: rank }
+	if (!currentValue) return values[0]
+
+	let nextValue: T | undefined
+	let found: boolean = false
+	return _.find(values, (value) => {
+		if (found) {
+			nextValue = value
+			return true
+		}
+
+		if (currentValue._id) {
+			found = (currentValue._id === value._id)
+		} else {
+			found = (currentValue === value)
+		}
+		return false
 	})
-
-	if (_.isArray(collection)) {
-		return _.find(collection, (o) => mongoWhere(o, selector))
-	} else {
-		return collection.find(selector, {
-			sort: {
-				_rank: 1,
-				_id: 1
-			},
-			limit: 1
-		}).fetch()[0]
-	}
 }
+/**
+ * Returns a rank number, to be used to insert new objects in a ranked list
+ * @param before	Object before, null/undefined if inserted first
+ * @param after			Object after, null/undefined if inserted last
+ * @param i				If inserting multiple objects, this is the number of this object
+ * @param count			If inserting multiple objects, this is total count of objects
+ */
 export function getRank<T extends {_rank: number}> (
-	beforeOrLast: T | null | undefined,
+	before: T | null | undefined,
 	after: T | null | undefined,
-	i: number,
-	count: number
+	i: number = 0,
+	count: number = 1
 ): number {
 	let newRankMax
 	let newRankMin
 
 	if (after) {
-		if (beforeOrLast) {
-			newRankMin = beforeOrLast._rank
+		if (before) {
+			newRankMin = before._rank
 			newRankMax = after._rank
 		} else {
 			// First
@@ -534,10 +545,10 @@ export function getRank<T extends {_rank: number}> (
 			newRankMax = after._rank
 		}
 	} else {
-		if (beforeOrLast) {
+		if (before) {
 			// Last
-			newRankMin = beforeOrLast._rank
-			newRankMax = beforeOrLast._rank + 1
+			newRankMin = before._rank
+			newRankMax = before._rank + 1
 		} else {
 			// Empty list
 			newRankMin = 0
@@ -546,6 +557,14 @@ export function getRank<T extends {_rank: number}> (
 	}
 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
 }
+export function normalizeArrayFunc<T> (array: Array<T>, getKey: (o: T) => string): {[indexKey: string]: T} {
+	const normalizedObject: any = {}
+	for (let i = 0; i < array.length; i++) {
+		const key = getKey(array[i])
+		normalizedObject[key] = array[i]
+	}
+	return normalizedObject as { [key: string]: T }
+}
 export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexKey: string]: T} {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -553,6 +572,10 @@ export function normalizeArray<T> (array: Array<T>, indexKey: keyof T): {[indexK
 		normalizedObject[key] = array[i]
 	}
 	return normalizedObject as { [key: string]: T }
+}
+/** Convenience function, to be used when length of array has previously been verified */
+export function last<T> (values: T[]): T {
+	return _.last(values) as T
 }
 
 const rateLimitCache: {[name: string]: number} = {}
@@ -736,26 +759,29 @@ export function toc (name: string = 'default', logStr?: string | Promise<any>[])
 	}
 }
 
-export function asyncCollectionFindFetch<DocClass, DBInterface> (
+export function asyncCollectionFindFetch<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string,
 	options?: FindOptions
 ): Promise<Array<DocClass>> {
-	return new Promise((resolve, reject) => {
-		let results = collection.find(selector, options).fetch()
-		resolve(results)
+	// Make the collection fethcing in another Fiber:
+	const p = makePromise(() => {
+		return collection.find(selector as any, options).fetch()
 	})
+	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
+	waitTime(0)
+	return p
 }
-export function asyncCollectionFindOne<DocClass, DBInterface> (
+export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoSelector<DBInterface> | string
-): Promise<DocClass> {
+): Promise<DocClass | undefined> {
 	return asyncCollectionFindFetch(collection, selector)
 	.then((arr) => {
 		return arr[0]
 	})
 }
-export function asyncCollectionInsert<DocClass, DBInterface> (
+export function asyncCollectionInsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	doc: DBInterface,
 ): Promise<string> {
@@ -766,8 +792,14 @@ export function asyncCollectionInsert<DocClass, DBInterface> (
 		})
 	})
 }
+export function asyncCollectionInsertMany<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
+	collection: TransformedCollection<DocClass, DBInterface>,
+	docs: DBInterface[],
+): Promise<string[]> {
+	return Promise.all(_.map(docs, doc => asyncCollectionInsert(collection, doc)))
+}
 /** Insert document, and ignore if document already exists */
-export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
+export function asyncCollectionInsertIgnore<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
 	doc: DBInterface,
 ): Promise<string> {
@@ -784,9 +816,9 @@ export function asyncCollectionInsertIgnore<DocClass, DBInterface> (
 		})
 	})
 }
-export function asyncCollectionUpdate<DocClass, DBInterface> (
+export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | string,
+	selector: MongoSelector<DBInterface> | ProtectedString<any>,
 	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 
@@ -799,9 +831,9 @@ export function asyncCollectionUpdate<DocClass, DBInterface> (
 	})
 }
 
-export function asyncCollectionUpsert<DocClass, DBInterface> (
+export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | string,
+	selector: MongoSelector<DBInterface> | ProtectedString<any>,
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 
@@ -814,9 +846,9 @@ export function asyncCollectionUpsert<DocClass, DBInterface> (
 	})
 }
 
-export function asyncCollectionRemove<DocClass, DBInterface> (
+export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | string
+	selector: MongoSelector<DBInterface> | ProtectedString<any>
 
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
@@ -839,16 +871,23 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = (f => p => (p.catch(f), 
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export const waitForPromiseAll: <T>(ps: Array<Promise<T>>) => Array<T> = Meteor.wrapAsync(function waitForPromises<T> (ps: Array<Promise<T>>, cb: (err: any | null, result?: any) => T) {
-	Promise.all(ps)
-	.then((result) => {
-		cb(null, result)
-	})
-	.catch((e) => {
-		cb(e)
-	})
-})
+export function waitForPromiseAll<T> (ps: Array<Promise<T>>): Array<T> {
+	return waitForPromise(Promise.all(ps))
+}
+
+export type Promisify<T> = { [K in keyof T]: Promise<T[K]> }
+export function waitForPromiseObj <T extends object> (obj: Promisify<T>): T {
+	const values = waitForPromiseAll(_.values<Promise<any>>(obj))
+	return _.object(_.keys(obj), values)
+}
+
+/**
+ * Convert a promise to a "synchronous" Fiber function
+ * Makes the Fiber wait for the promise to resolve, then return the value of the promise.
+ * If the fiber rejects, the function in the Fiber will "throw"
+ */
 export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+	if (Meteor.isClient) throw new Meteor.Error(500, `waitForPromise can't be used client-side`)
 	Promise.resolve(p)
 	.then((result) => {
 		cb(null, result)
@@ -857,6 +896,7 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 		cb(e)
 	})
 })
+/** Executes the provided function in another (asynchronous) Fiber, returning the result in a promise */
 export function makePromise<T> (fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
@@ -1131,3 +1171,98 @@ export function firstIfArray<T> (value: any): T {
 
 
 export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, result: T) => void)
+
+/**
+ * Wait for specified time
+ * @param time
+ */
+export function waitTime (time: number) {
+	let p = new Promise((resolve) => {
+		Meteor.setTimeout(resolve, time)
+	})
+	waitForPromise(p)
+}
+
+/** Runtime-wise, this is a string.
+ * In compile-time, this is used to make sure that the "right" string is provided, typings-wise,
+ * in order to provide stringer typings.
+ */
+export interface ProtectedString<T> {
+	_protectedType: T
+}
+export type ProtectedStringProperties<T, K extends keyof T> = {
+	[P in keyof T]: P extends K ? ProtectedString<any> : T[P]
+}
+export function protectString<T extends ProtectedString<any>> (str: string): T
+export function protectString<T extends ProtectedString<any>> (str: string | null): T | null
+export function protectString<T extends ProtectedString<any>> (str: string | undefined): T | undefined
+export function protectString<T extends ProtectedString<any>> (str: string | undefined | null): T | undefined | null {
+	return str as any as T
+}
+export function protectStringArray<T extends ProtectedString<any>> (arr: string[]): T[] {
+	return arr as any as T[]
+}
+export function unprotectString (protectedStr: ProtectedString<any>): string
+export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined
+export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined {
+	return protectedStr as any as string
+}
+export function isProtectedString (str: any): str is ProtectedString<any> {
+	return typeof str === 'string'
+}
+export type ProtectId<T extends { _id: string }> = Omit<T, '_id'> & { _id: ProtectedString<any> }
+export type UnprotectedStringProperties<T extends object> = {
+	[P in keyof T]:
+		T[P] extends ProtectedString<any> ?
+			string :
+			T[P] extends ProtectedString<any> | undefined ?
+			string | undefined :
+		T[P] extends UnprotectedStringProperties<any> ?
+			UnprotectedStringProperties<T[P]> :
+		T[P]
+}
+export function unprotectObject<T extends object> (obj: T): UnprotectedStringProperties<T>
+export function unprotectObject<T extends object> (obj: T | undefined): UnprotectedStringProperties<T> | undefined
+export function unprotectObject (obj: undefined): undefined
+export function unprotectObject<T extends object> (obj: T | undefined): UnprotectedStringProperties<T> | undefined {
+	return obj as any
+}
+export function unprotectObjectArray<T extends object> (obj: T[]): UnprotectedStringProperties<T>[] {
+	return obj as any
+}
+export function isStringOrProtectedString<T extends ProtectedString<any>> (val: any): val is string | T {
+	return _.isString(val)
+}
+
+export function isPromise<T extends any> (val: any): val is Promise<T> {
+	return (_.isObject(val)) && (typeof val.then === 'function') && (typeof val.catch === 'function')
+}
+// const aaa: ProtectedString<'aaaa'> = protectString('asdf')
+
+// interface Test {
+// 	a: string
+// 	b: string
+// 	c: string
+// 	d: number
+// }
+// type A = ProtectedStringProperties<Test, 'a' | 'b'>
+// const a: A = {
+// 	a : protectString('123'),
+// 	b : protectString('123'),
+// 	c: '123',
+// 	d: 123
+// }
+
+// a.a = '123' // should be wrong
+// a.b = '123' // should be wrong
+// a.c = '123' // should be ok
+// a.d = 123 // should be ok
+
+// const b = unprotectObject(a)
+
+
+// b.a = '123' // should be ok
+// b.b = '123' // should be ok
+// b.c = '123' // should be ok
+// a.d = 123 // should be ok
+// a.d = '123' // not ok

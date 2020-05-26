@@ -6,17 +6,9 @@ const Tooltip = require('rc-tooltip')
 import {
 	Studio,
 	Studios,
-	MappingExt
+	MappingExt,
+	StudioId
 } from '../../../lib/collections/Studios'
-import {
-	MappingAtemType,
-	MappingLawoType,
-	MappingPanasonicPtzType,
-	MappingHyperdeckType,
-	DeviceType as PlayoutDeviceType,
-	ChannelFormat,
-	QuantelControlMode
-} from 'timeline-state-resolver-types'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -31,13 +23,12 @@ import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/Pe
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { translate } from 'react-i18next'
-import { ShowStyleBases, ShowStyleBase, } from '../../../lib/collections/ShowStyleBases'
-import { LookaheadMode, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { PlayoutAPI } from '../../../lib/api/playout'
+import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, } from '../../../lib/collections/ShowStyleBases'
+import { LookaheadMode, BlueprintManifestType, TSR, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
+import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
 	mappingIsAbstract,
 	mappingIsCasparCG,
@@ -56,6 +47,9 @@ import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import { unprotectString, protectString } from '../../../lib/lib'
+import { PlayoutAPIMethods } from '../../../lib/api/playout'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -101,7 +95,7 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 	renderDevices () {
 		return (
 			this.props.studioDevices.map((device, index) => {
-				return <tr key={device._id}>
+				return <tr key={unprotectString(device._id)}>
 							<th className='settings-studio-device__name c3'>
 								<Link to={'/settings/peripheralDevice/' + device._id}>{device.name}</Link>
 							</th>
@@ -176,8 +170,8 @@ const StudioDevices = translate()(class StudioDevices extends React.Component<Tr
 								{
 									this.props.availableDevices.map((device) => {
 										return (
-											<div className='ctx-menu-item' key={device._id} onClick={(e) => this.onAddDevice(device)}>
-												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({device._id})
+											<div className='ctx-menu-item' key={unprotectString(device._id)} onClick={(e) => this.onAddDevice(device)}>
+												<b>{device.name}</b> <MomentFromNow date={device.lastSeen} /> ({unprotectString(device._id)})
 											</div>
 										)
 									})
@@ -259,7 +253,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 		}
 		let setObject = {}
 		setObject['mappings.' + newLayerKeyName + iter.toString()] = {
-			device: PlayoutDeviceType.CASPARCG,
+			device: TSR.DeviceType.CASPARCG,
 			deviceId: 'newDeviceId',
 		}
 
@@ -352,7 +346,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingAtemType}
+							options={TSR.MappingAtemType}
 							optionsAreNumbers={true}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -385,8 +379,8 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingLawoType}
-							optionsAreNumbers={true}
+							options={TSR.MappingLawoType}
+							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
 					</label>
@@ -430,7 +424,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingPanasonicPtzType}
+							options={TSR.MappingPanasonicPtzType}
 							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -459,7 +453,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mappingType'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={MappingHyperdeckType}
+							options={TSR.MappingHyperdeckType}
 							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -534,7 +528,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							attribute={'mappings.' + layerId + '.mode'}
 							obj={this.props.studio}
 							type='dropdown'
-							options={QuantelControlMode}
+							options={TSR.QuantelControlMode}
 							optionsAreNumbers={false}
 							collection={Studios}
 							className='input text-input input-l'></EditAttribute>
@@ -560,7 +554,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							{layerId}
 						</th>
 						<td className='settings-studio-device__id c2'>
-							{PlayoutDeviceType[mapping.device]}
+							{TSR.DeviceType[mapping.device]}
 						</td>
 						<td className='settings-studio-device__id c2'>
 							{mapping.deviceId}
@@ -577,19 +571,19 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 							)) ||
 							(
 								mappingIsAtem(mapping) && (
-								<span>{ MappingAtemType[mapping.mappingType] } { mapping.index }</span>
+								<span>{ TSR.MappingAtemType[mapping.mappingType] } { mapping.index }</span>
 							)) ||
 							(
 								mappingIsLawo(mapping) && (
-								<span>{ MappingLawoType[mapping.mappingType] } { mapping.identifier }</span>
+								<span>{ TSR.MappingLawoType[mapping.mappingType] } { mapping.identifier }</span>
 							)) ||
 							(
 								mappingIsPanasonicPtz(mapping) && (
 									<span>{
-										mapping.mappingType === MappingPanasonicPtzType.PRESET ? t('Preset') :
-										mapping.mappingType === MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
-										mapping.mappingType === MappingPanasonicPtzType.ZOOM ? t('Zoom') :
-										mapping.mappingType === MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET ? t('Preset') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.PRESET_SPEED ? t('Preset Transition Speed') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM ? t('Zoom') :
+										mapping.mappingType === TSR.MappingPanasonicPtzType.ZOOM_SPEED ? t('Zoom Speed') :
 										t('Unknown Mapping')
 									}</span>
 							)) ||
@@ -618,7 +612,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 									<span>{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}</span>
 							)) ||
 							(
-								<span>{t('Unknown device type: {{device}}', { device: PlayoutDeviceType[mapping.device] }) } </span>
+								<span>{t('Unknown device type: {{device}}', { device: TSR.DeviceType[mapping.device] }) } </span>
 							)
 						}
 						</td>
@@ -659,7 +653,7 @@ const StudioMappings = translate()(class StudioMappings extends React.Component<
 												attribute={'mappings.' + layerId + '.device'}
 												obj={this.props.studio}
 												type='dropdown'
-												options={PlayoutDeviceType}
+												options={TSR.DeviceType}
 												optionsAreNumbers={true}
 												collection={Studios}
 												className='input text-input input-l'></EditAttribute>
@@ -852,9 +846,9 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 							attribute='testToolsConfig.recordings.channelFormat'
 							obj={this.props.studio}
 							type='dropdown'
-							options={_.keys(ChannelFormat).map((k) => ({
+							options={_.keys(TSR.ChannelFormat).map((k) => ({
 								name: k,
-								value: ChannelFormat[k]
+								value: TSR.ChannelFormat[k]
 							}))}
 							collection={Studios}
 							className='input text-input input-l '></EditAttribute>
@@ -868,7 +862,7 @@ const TestToolsRecordingsSettings = translate()(class TestToolsRecordingsSetting
 interface IStudioSettingsProps {
 	match: {
 		params: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }
@@ -879,15 +873,16 @@ interface IStudioSettingsTrackedProps {
 	studioDevices: Array<PeripheralDevice>
 	availableShowStyleVariants: Array<{
 		name: string,
-		value: string,
+		value: ShowStyleVariantId,
 		showStyleVariant: ShowStyleVariant
 	}>
 	availableShowStyleBases: Array<{
 		name: string,
-		value: string
+		value: ShowStyleBaseId
 		showStyleBase: ShowStyleBase
 	}>
 	availableDevices: Array<PeripheralDevice>
+	blueprintConfigManifest: ConfigManifestEntry[]
 }
 
 interface IStudioBaselineStatusProps {
@@ -924,32 +919,22 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 	updateStatus (props?: Translated<IStudioBaselineStatusProps>) {
 		const studio = props ? props.studio : this.props.studio
 
-		Meteor.call(PlayoutAPI.methods.shouldUpdateStudioBaseline, studio._id, (err, res) => {
-			if (err) {
-				console.log('Failed to update studio baseline status: ' + err)
-				res = false
-			}
-
-			if (this.updateInterval) {
-				this.setState({
-					needsUpdate: !!res
-				})
-			}
+		MeteorCall.playout.shouldUpdateStudioBaseline(studio._id)
+		.then(result => {
+			if (this.updateInterval) this.setState({ needsUpdate: !!result })
+		}).catch(err => {
+			console.error('Failed to update studio baseline status',err)
+			if (this.updateInterval) this.setState({ needsUpdate: false })
 		})
 	}
 
 	reloadBaseline () {
-		Meteor.call(PlayoutAPI.methods.updateStudioBaseline, this.props.studio._id, (err, res) => {
-			if (err) {
-				console.log('Failed to update studio baseline: ' + err)
-				res = false
-			}
-
-			if (this.updateInterval) {
-				this.setState({
-					needsUpdate: !!res
-				})
-			}
+		MeteorCall.playout.updateStudioBaseline(this.props.studio._id)
+		.then(result => {
+			if (this.updateInterval) this.setState({ needsUpdate: !!result })
+		}).catch(err => {
+			console.error('Failed to update studio baseline',err)
+			if (this.updateInterval) this.setState({ needsUpdate: false })
 		})
 	}
 
@@ -982,6 +967,10 @@ class StudioBaselineStatus extends MeteorReactComponent<Translated<IStudioBaseli
 
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>((props: IStudioSettingsProps, state) => {
 	const studio = Studios.findOne(props.match.params.studioId)
+	const blueprint = studio ? Blueprints.findOne({
+		_id: studio.blueprintId,
+		blueprintType: BlueprintManifestType.STUDIO
+	}) : undefined
 
 	return {
 		studio: studio,
@@ -1020,20 +1009,21 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			sort: {
 				lastConnected: -1
 			}
-		}).fetch()
+		}).fetch(),
+		blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : []
 	}
 })(class StudioSettings extends MeteorReactComponent<Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>, IStudioSettingsState> {
 	getBlueprintOptions () {
 		const { t } = this.props
 
-		let options: { name: string, value: string | null }[] = [{
+		let options: { name: string, value: BlueprintId | null }[] = [{
 			name: t('None'),
-			value: '',
+			value: protectString(''),
 		}]
 
 		options.push(..._.map(Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO }).fetch(), (blueprint) => {
 			return {
-				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
+				name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : unprotectString(blueprint._id),
 				value: blueprint._id
 			}
 		}))
@@ -1231,11 +1221,9 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
 							t={this.props.t}
-							manifest={collectConfigs(this.props.studio)}
-							object={{
-								...this.props.studio,
-								layerMappingsFlat: this.getLayerMappingsFlat(),
-							}}
+							manifest={this.props.blueprintConfigManifest}
+							object={this.props.studio}
+							layerMappings={ this.getLayerMappingsFlat() }
 							collection={Studios}
 							configPath={'config'}
 							/>

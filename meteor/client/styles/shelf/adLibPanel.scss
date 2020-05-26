@@ -310,6 +310,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 					}
 					
 					@include invalid-overlay();
+					@include floated-overlay();
 				}
 
 				.adlib-panel__list-view__list__table__cell--icon {

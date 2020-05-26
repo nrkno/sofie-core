@@ -6,7 +6,7 @@ import { getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { IngestDataCache } from '../lib/collections/IngestDataCache'
-import { DeviceType as TSR_DeviceType } from 'timeline-state-resolver-types'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
@@ -94,10 +94,9 @@ Meteor.startup(() => {
 				PeripheralDevices.find({
 					parentDeviceId: device._id
 				}).forEach(subDevice => {
-					// TODO: implement better way to determine if CasparCG, ref: client/ui/Status/SystemStatus.tsx:237
 					if (
 						subDevice.type === PeripheralDeviceAPI.DeviceType.PLAYOUT &&
-						subDevice.subType === TSR_DeviceType.CASPARCG
+						subDevice.subType === TSR.DeviceType.CASPARCG
 					) {
 						logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 

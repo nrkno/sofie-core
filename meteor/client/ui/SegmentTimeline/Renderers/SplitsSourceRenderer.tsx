@@ -52,24 +52,14 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	constructor (props) {
 		super(props)
 		this.state = {
-			subItems: _.map((props.piece.content as SplitsContent).boxSourceConfiguration, (item, index) => {
-				return literal<SplitSubItem>({
-					_id: item.studioLabel + '_' + index,
-					type: item.type,
-					label: item.studioLabel,
-					role: SplitRole.BOX,
-					content: item.geometry || DEFAULT_POSITIONS[index]
-				})
-			})
+			subItems: []
 		}
 	}
 
 	static getDerivedStateFromProps (props: IProps): IState {
-
-
 		let subItems: Array<SplitSubItem> = []
-		if (props.piece.content) {
-			const splitContent = props.piece.content as SplitsContent
+		const splitContent = props.piece.instance.piece.content as SplitsContent | undefined
+		if (splitContent) {
 			subItems = _.map(splitContent.boxSourceConfiguration, (item, index) => {
 				return literal<SplitSubItem>({
 					_id: item.studioLabel + '_' + index,
@@ -110,7 +100,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		if (this.props.piece.name !== prevProps.piece.name) {
+		if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
 			this.updateAnchoredElsWidths()
 		}
 	}
@@ -167,7 +157,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	}
 
 	render () {
-		let labelItems = this.props.piece.name.split('||')
+		let labelItems = this.props.piece.instance.piece.name.split('||')
 		let begin = labelItems[0] || ''
 		let end = labelItems[1] || ''
 

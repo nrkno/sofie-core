@@ -7,7 +7,6 @@ import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { translate } from 'react-i18next'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { TimelineContentTypeHTTP } from 'timeline-state-resolver-types'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -16,6 +15,7 @@ import {
 	IHttpSendDeviceSettingsComponentProps,
 	IHttpSendDeviceSettingsComponentState
 } from './IHttpSendDeviceSettingsComponentProps'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceSettingsComponent extends React.Component<Translated<IHttpSendDeviceSettingsComponentProps>, IHttpSendDeviceSettingsComponentState> {
 	constructor (props: Translated<IHttpSendDeviceSettingsComponentProps>) {
@@ -80,7 +80,7 @@ export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceS
 		let setObject = {}
 		setObject['settings.devices.' + deviceId + '.options.makeReadyCommands'] = {
 			id: Random.id(),
-			type: TimelineContentTypeHTTP.POST,
+			type: TSR.TimelineContentTypeHTTP.POST,
 			url: 'http://',
 			params: {}
 		}
@@ -124,7 +124,7 @@ export const HttpSendDeviceSettingsComponent = translate()(class HttpSendDeviceS
 								<div className='mod mvs mhs'>
 									<label className='field'>
 										{t('Type')}
-										<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.makeReadyCommands.' + i + '.type'} obj={this.props.parentDevice} type='dropdown' options={TimelineContentTypeHTTP} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
+										<EditAttribute modifiedClassName='bghl' attribute={'settings.devices.' + deviceId + '.options.makeReadyCommands.' + i + '.type'} obj={this.props.parentDevice} type='dropdown' options={TSR.TimelineContentTypeHTTP} collection={PeripheralDevices} className='input text-input input-l'></EditAttribute>
 									</label>
 								</div>
 								<div className='mod mvs mhs'>

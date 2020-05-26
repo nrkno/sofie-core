@@ -1,7 +1,7 @@
 /**
  * Coordinates for an elements upper left corner's position
  */
-export interface Position {
+export interface OffsetPosition {
 	top: number,
 	left: number
 }
@@ -14,7 +14,7 @@ export interface Position {
  * @param element - the element to calculate offset for
  * @returns the element's top left corner position relative to the document
  */
-export function getElementDocumentOffset (element: Element | null): Position | null {
+export function getElementDocumentOffset (element: Element | null): OffsetPosition | null {
 	if (!element) {
 		return null
 	}

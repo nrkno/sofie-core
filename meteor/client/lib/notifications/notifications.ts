@@ -6,8 +6,9 @@ import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
-import { Time } from '../../../lib/lib'
+import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
 import { HTMLAttributes } from 'react'
+import { SegmentId } from '../../../lib/collections/Segments'
 
 /**
  * Priority level for Notifications.
@@ -112,6 +113,7 @@ export class NotifierHandle {
 	}
 }
 
+type NotificationsSource = SegmentId | string | undefined
 /**
  * Singleton handling all the notifications.
  *
@@ -121,14 +123,14 @@ class NotificationCenter0 {
 	/** Default notification timeout for non-persistent notifications */
 	private NOTIFICATION_TIMEOUT = 5000
 	/** The highlighted source of notifications */
-	private highlightedSource: ReactiveVar<string | undefined>
+	private highlightedSource: ReactiveVar<NotificationsSource>
 	/** The highlighted level of highlighted level */
 	private highlightedLevel: ReactiveVar<NoticeLevel>
 
 	private _isOpen: boolean = false
 
 	constructor () {
-		this.highlightedSource = new ReactiveVar<string>('')
+		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
 	}
 
@@ -245,7 +247,7 @@ class NotificationCenter0 {
 	 * @param {NoticeLevel} level
 	 * @memberof NotificationCenter0
 	 */
-	highlightSource (source: string | undefined, level: NoticeLevel) {
+	highlightSource (source: SegmentId | undefined, level: NoticeLevel) {
 		this.highlightedSource.set(source)
 		this.highlightedLevel.set(level)
 	}
@@ -301,7 +303,7 @@ export class Notification extends EventEmitter {
 	id: string | undefined
 	status: NoticeLevel
 	message: string | React.ReactElement<HTMLElement> | null
-	source: string
+	source: NotificationsSource
 	persistent?: boolean
 	timeout?: number
 	snoozed?: boolean
@@ -310,10 +312,10 @@ export class Notification extends EventEmitter {
 	rank: number
 
 	constructor (
-		id: string | undefined,
+		id: string | ProtectedString<any> | undefined,
 		status: NoticeLevel,
 		message: string | React.ReactElement<HTMLElement> | null,
-		source: string,
+		source: NotificationsSource,
 		created?: Time,
 		persistent?: boolean,
 		actions?: Array<NotificationAction>,
@@ -322,7 +324,7 @@ export class Notification extends EventEmitter {
 	) {
 		super()
 
-		this.id = id
+		this.id = isProtectedString(id) ? unprotectString(id) : id
 		this.status = status
 		this.message = message
 		this.source = source
@@ -397,5 +399,5 @@ export class Notification extends EventEmitter {
 }
 
 window['testNotification'] = function () {
-	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', 'test'))
+	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', protectString('test')))
 }

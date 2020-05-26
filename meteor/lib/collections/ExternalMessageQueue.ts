@@ -1,15 +1,20 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintExternalMessageQueueObj, IBlueprintExternalMessageQueueType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { StudioId } from './Studios'
+import { RundownId } from './Rundowns'
+
+/** A string, identifying a ExternalMessageQueueObj */
+export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>
 
 export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
-	_id: string
+	_id: ExternalMessageQueueObjId
 	/** Id of the studio this message originates from */
-	studioId: string
+	studioId: StudioId
 	/** (Optional) id of the rundown this message originates from */
-	rundownId?: string
+	rundownId?: RundownId
 	/** At this time the message will be removed */
 	expires: Time
 	/** Time of message creation */

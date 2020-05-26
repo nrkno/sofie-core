@@ -61,12 +61,12 @@ export class PointerLockCursor extends React.Component<{}, IState> {
 	}
 }
 
-export function showPointerLockCursor(left: number, top: number) {
+export function showPointerLockCursor (left: number, top: number) {
 	if (!PointerLockCursorSingleton) return
 	PointerLockCursorSingleton.show(left, top)
 }
 
-export function hidePointerLockCursor() {
+export function hidePointerLockCursor () {
 	if (!PointerLockCursorSingleton) return
 	PointerLockCursorSingleton.hide()
 }

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, applyClassToDocument } from '../lib'
+import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import {
 	IConfigItem,
 	IBlueprintShowStyleBase,
@@ -11,6 +11,7 @@ import {
 	SourceLayerType
 } from 'tv-automation-sofie-blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
 
 export interface HotkeyDefinition {
 	_id: string
@@ -19,12 +20,13 @@ export interface HotkeyDefinition {
 	platformKey?: string
 	sourceLayerType?: SourceLayerType
 }
-
-export interface DBShowStyleBase extends IBlueprintShowStyleBase {
+/** A string, identifying a ShowStyleBase */
+export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>
+export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintShowStyleBase, '_id' | 'blueprintId'> {
 	/** Name of this show style */
 	name: string
 	/** Id of the blueprint used by this show-style */
-	blueprintId: string
+	blueprintId: BlueprintId
 
 	hotkeyLegend?: Array<HotkeyDefinition>
 
@@ -34,9 +36,9 @@ export interface DBShowStyleBase extends IBlueprintShowStyleBase {
 }
 
 export class ShowStyleBase implements DBShowStyleBase {
-	public _id: string
+	public _id: ShowStyleBaseId
 	public name: string
-	public blueprintId: string
+	public blueprintId: BlueprintId
 	public outputLayers: Array<IOutputLayer>
 	public sourceLayers: Array<ISourceLayer>
 	public config: Array<IConfigItem>

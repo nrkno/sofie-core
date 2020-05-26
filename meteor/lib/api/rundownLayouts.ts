@@ -3,22 +3,28 @@ import {
 	RundownLayout,
 	DashboardLayout,
 	RundownLayoutType,
+	RundownLayoutId,
 	RundownLayoutElementBase,
 	RundownLayoutFilterBase,
 	RundownLayoutElementType,
 	RundownLayoutExternalFrame,
 	RundownLayoutAdLibRegion,
 	PieceDisplayStyle,
-	RundownLayoutKeyboardPreview,
 } from '../collections/RundownLayouts'
+import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 
-export namespace RundownLayoutsAPI {
-	export enum methods {
-		'removeRundownLayout' = 'rundown.removeRundownLayout',
-		'createRundownLayout' = 'rundown.createRundownLayout'
-	}
+export interface NewRundownLayoutsAPI {
+	createRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId): Promise<RundownLayoutId>
+	removeRundownLayout (id: RundownLayoutId): Promise<void>
+}
 
+export enum RundownLayoutsAPIMethods {
+	'removeRundownLayout' = 'rundownLayout.removeRundownLayout',
+	'createRundownLayout' = 'rundownLayout.createRundownLayout'
+}
+
+export namespace RundownLayoutsAPI {
 	export function isRundownLayout (layout: RundownLayoutBase): layout is RundownLayout {
 		return layout.type === RundownLayoutType.RUNDOWN_LAYOUT
 	}

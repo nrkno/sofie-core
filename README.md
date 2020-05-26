@@ -42,18 +42,28 @@ In order for the system to work properly, it may be neccessary to set up several
 | Setting       | Use                                                           | Default value       |
 | ------------- | ------------------------------------------------------------- | ------------------- |
 | `NTP_SERVERS` | Comma separated list of time servers to sync the system to    | `0.se.pool.ntp.org` |
-| `FRAME_RATE`  | Framerate to be used when displaying time with frame accuracy | `25`                |
 
+## User Interface settings
+
+When running meteor it is possible to provide it with [additional settings](https://docs.meteor.com/api/core.html#Meteor-settings). The User Interface allows specyfing the following Settings in the `public` key and will use default values if not present.
+
+| Setting         | Use                     | Default value |
+| --------------- | ----------------------- | ------------- |
+| `frameRate`       | Frames per second base for displaying timecodes in the UI | 25 |
+| `defaultToCollapsedSegments` | All segments be collapsed by default | `false` |
+| `autoRewindLeavingSegment` | Should the segment in the Rundown view automatically rewind after it stops being live? | `false` |
+| `autoExpandCurrentNextSegment` | Should the Current and Next segments be automatically made expanded (uncollapsed) | `false` |
 
 ## Additional views
 
 For the purpose of running the system in a studio environment, there are additional endpoints, unavailable from the menu structure.
 
-| Path                              | Function                                                                 |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `/countdowns/:studioId/presenter` | Countdown clocks for a given studio, to be shown to the studio presenter |
-| `/activeRundown/:studioId`        | Redirects to the rundown currently active in a given studio              |
-| `/prompter/:studioId`             | A simple prompter for the studio presenter                               |
+| Path                              | Function                                                                      |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| `/countdowns/:studioId/presenter` | Countdown clocks for a given studio, to be shown to the studio presenter      |
+| `/activeRundown/:studioId`        | Redirects to the rundown currently active in a given studio                   |
+| `/activeRundown/:studioId/shelf`  | Shows a Detached Shelf for the current active rundown in a studio |
+| `/prompter/:studioId`             | A simple prompter for the studio presenter                                    |
 
 ## Studio mode
 
@@ -82,6 +92,20 @@ The UI will automatically detect user browser's default matching and select the 
 ```http://localhost:3000/?lng=xx```
 
 This choice is persisted in browser's Local Storage, and the same language will be used until a new forced language is chosen using this method.
+
+## Rundown view & Detached Shelf view layouts
+
+The Rundown view and the Detached Shelf view UI can have multiple concurrent layouts for any given Show Style. The automatic selection mechanism works as follows:
+
+1. select the first layout of the RUNDOWN_LAYOUT type, 
+2. select the first layout of any type, 
+3. use the default layout (no additional filters), in the style of RUNDOWN_LAYOUT.
+
+To use a specific layout in these views, you can use the `?layout=...` query string, providing either the ID of the layout or a part of the name. This string will then be mached against all available layouts for the Show Style, and the first matching will be selected. For example, for a layout called `Stream Deck layout`, to open the currently active rundown's Detached Shelf use:
+
+```http://localhost:3000/activeRundown/studio0/shelf?layout=Stream```
+
+The Detached Shelf view with a custom DASHBOARD_LAYOUT allows displaying the Shelf on an auxiliary touch screen, tablet or a Stream Deck device. A specialized Stream Deck view will be used if the view is opened on a device with hardware characteristics matching a Stream Deck device.
 
 ## Operating the prompter screen
 

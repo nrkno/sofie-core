@@ -1,11 +1,14 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time, Omit } from '../lib'
+import { registerCollection, Time, Omit, ProtectedString, protectString, isProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
-import { Timeline as TimelineTypes, TSRTimelineObj, DeviceType } from 'timeline-state-resolver-types'
+import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { createMongoCollection } from './lib'
+import { StudioId } from './Studios'
+import { RundownId } from './Rundowns'
+import { PartInstanceId } from './PartInstances'
+import { PieceInstanceId } from './PieceInstances'
 
 
 export enum TimelineContentTypeOther {
@@ -13,28 +16,26 @@ export enum TimelineContentTypeOther {
 	GROUP = 'group',
 }
 
+/** A string, identifying a TimelineObj */
+export type TimelineObjId = ProtectedString<'TimelineObjId'>
+
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Unique _id (generally obj.studioId + '_' + obj.id) */
-	_id: string
+	_id: TimelineObjId
 	/** Unique within a timeline (ie within a studio) */
 	id: string
 	/** Set when the id of the object is prefixed */
 	originalId?: string
 
 	/** Studio installation Id */
-	studioId: string
-	rundownId?: string
+	studioId: StudioId
 
 	objectType: TimelineObjType
 
-	enable: TimelineTypes.TimelineEnable & { setFromNow?: boolean }
+	enable: TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 	/** The id of the group object this object is in  */
 	inGroup?: string
-
-	metadata?: {
-		[key: string]: any
-	}
 }
 // export type TimelineObj = TimelineObjRundown | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 
@@ -51,7 +52,7 @@ export enum TimelineObjType {
 export interface TimelineObjStat extends TimelineObjGeneric {
 	objectType: TimelineObjType.STAT
 	content: {
-		deviceType: DeviceType.ABSTRACT
+		deviceType: TSR.DeviceType.ABSTRACT
 		type: TimelineContentTypeOther.NOTHING
 		modified: Time
 		objCount: number
@@ -60,8 +61,6 @@ export interface TimelineObjStat extends TimelineObjGeneric {
 }
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
-	/** Rundown Id */
-	rundownId: string
 }
 export interface TimelineObjRecording extends TimelineObjGeneric {
 	objectType: TimelineObjType.RECORDING
@@ -83,36 +82,37 @@ export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 }
 export interface TimelineObjPartAbstract extends TimelineObjRundown { // used for sending callbacks
 	content: {
-		deviceType: DeviceType.ABSTRACT
+		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
 		callBack: 'partPlaybackStarted'
 		callBackStopped: 'partPlaybackStopped'
 		callBackData: {
-			rundownId: string
-			partId: string
+			rundownId: RundownId
+			partInstanceId: PartInstanceId
 		}
 	}
 }
 export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used for sending callbacks
 	content: {
-		deviceType: DeviceType.ABSTRACT
+		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
-			rundownId: string,
-			pieceId: string
+			rundownId: RundownId,
+			pieceInstanceId: PieceInstanceId,
+			dynamicallyInserted?: boolean
 		}
 	}
 }
 
-export function getTimelineId (obj: TimelineObjGeneric): string
-export function getTimelineId (studioId: string, id: string): string
-export function getTimelineId (objOrStudioId: TimelineObjGeneric | string, id?: string): string {
-	if (typeof objOrStudioId === 'string') {
+export function getTimelineId (obj: TimelineObjGeneric): TimelineObjId
+export function getTimelineId (studioId: StudioId, id: string): TimelineObjId
+export function getTimelineId (objOrStudioId: TimelineObjGeneric | StudioId, id?: string): TimelineObjId {
+	if (isProtectedString(objOrStudioId)) {
 		if (!objOrStudioId) throw new Meteor.Error(500, `Parameter studioId missing`)
 		if (!id) throw new Meteor.Error(500, `Parameter id missing`)
-		return objOrStudioId + '_' + id
+		return protectString(objOrStudioId + '_' + id)
 	} else {
 		const obj: TimelineObjGeneric = objOrStudioId
 		if (!obj.id) {
@@ -123,7 +123,7 @@ export function getTimelineId (objOrStudioId: TimelineObjGeneric | string, id?: 
 			logger.debug(obj)
 			throw new Meteor.Error(500, `TimelineObj missing studioId attribute, id: "${obj.id}")`)
 		}
-		return obj.studioId + '_' + obj.id
+		return protectString(obj.studioId + '_' + obj.id)
 	}
 }
 export function setTimelineId<T extends TimelineObjGeneric> (objs: Array<T>): Array<T> {

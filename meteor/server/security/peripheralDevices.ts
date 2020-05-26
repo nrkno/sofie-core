@@ -1,24 +1,25 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from 'meteor/check'
 
-import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { rejectFields } from './lib'
 import { Mongo } from 'meteor/mongo'
+import { protectString } from '../../lib/lib'
 
 export namespace PeripheralDeviceSecurity {
 
-	export function getPeripheralDevice (id: string, token: string, context: any): PeripheralDevice {
+	export function getPeripheralDevice (deviceId: PeripheralDeviceId, token: string, context: any): PeripheralDevice {
 		context = context || {}
-		if (!id) throw new Meteor.Error(400,'id missing!')
-		check(id, String)
+		if (!deviceId) throw new Meteor.Error(400,'id missing!')
+		check(deviceId, String)
 
 		if (! (context || {}).userId) {
 			if (!token) throw new Meteor.Error(400,'token missing!')
 			check(token, String)
 		}
 
-		let peripheralDevice = PeripheralDevices.findOne(id)
-		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + id + '" not found')
+		let peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + deviceId + '" not found')
 		// if (!peripheralDevice) return null
 
 		if (peripheralDevice.token === token) return peripheralDevice
@@ -38,7 +39,7 @@ export namespace PeripheralDeviceSecurity {
 		if (selector._id && token) {
 
 			check(selector['_id'], String)
-			selector._id = selector._id + ''
+			selector._id = protectString(selector._id + '')
 
 			getPeripheralDevice(selector._id, token, context)
 

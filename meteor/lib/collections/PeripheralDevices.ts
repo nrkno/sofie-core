@@ -1,5 +1,5 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, ProtectedString } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 
@@ -9,9 +9,14 @@ import { MosDeviceSettings } from './PeripheralDeviceSettings/mosDevice'
 import { SpreadsheetDeviceSettings, SpreadsheetDeviceSecretSettings } from './PeripheralDeviceSettings/spreadsheet'
 import { INewsDeviceSettings } from './PeripheralDeviceSettings/iNews'
 import { createMongoCollection } from './lib'
+import { DeviceConfigManifest } from '../api/deviceConfig'
+import { StudioId } from './Studios'
+
+/** A string, identifying a PeripheralDevice */
+export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
 
 export interface PeripheralDevice {
-	_id: string
+	_id: PeripheralDeviceId
 
 	name: string
 
@@ -20,8 +25,8 @@ export interface PeripheralDevice {
 	subType: PeripheralDeviceAPI.DeviceSubType
 
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioId?: string
-	parentDeviceId?: string
+	studioId?: StudioId
+	parentDeviceId?: PeripheralDeviceId
 	/** Versions reported from the device */
 	versions?: {
 		[libraryName: string]: string
@@ -47,6 +52,8 @@ export interface PeripheralDevice {
 
 	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
 	ignore?: boolean
+
+	configManifest: DeviceConfigManifest
 }
 
 export interface MosParentDevice extends PeripheralDevice {
@@ -97,7 +104,7 @@ Meteor.startup(() => {
 	}
 })
 
-export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): string | undefined {
+export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): StudioId | undefined {
 	if (peripheralDevice.studioId) {
 		return peripheralDevice.studioId
 	}

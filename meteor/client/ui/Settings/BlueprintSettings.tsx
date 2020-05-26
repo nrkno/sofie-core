@@ -5,26 +5,26 @@ import { Spinner } from '../../lib/Spinner'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { Blueprint, Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { Meteor } from 'meteor/meteor'
-import { BlueprintAPI } from '../../../lib/api/blueprint'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import * as faUpload from '@fortawesome/fontawesome-free-solid/faUpload'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
+import { unprotectString } from '../../../lib/lib'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IProps {
 	match: {
 		params: {
-			blueprintId: string
+			blueprintId: BlueprintId
 		}
 	}
 }
@@ -73,6 +73,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			let uploadFileContents = (e2.target as any).result
 			let blueprint = this.props.blueprint
 
+			// First attempt
 			doModalDialog({
 				title: t('Update Blueprints?'),
 				yes: t('Update'),
@@ -83,19 +84,58 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				</React.Fragment>,
 				onAccept: () => {
 					if (uploadFileContents && blueprint) {
-						fetchFrom('/blueprints/restore/' + blueprint._id, {
+						fetchFrom(`/blueprints/restore/${blueprint._id}`, {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
 								'content-type': 'text/javascript'
 							},
 						})
-						.then(response => {
+						.then(() => {
 							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
 							// console.log('Blueprint restore success')
 						}).catch(err => {
-							// console.error('Blueprint restore failure: ', err)
-							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
+							if (err && err.toString().endsWith('[422]')) { // Needs a force flag
+
+								// Try again as a replace
+								doModalDialog({
+									title: t('Replace Blueprints?'),
+									yes: t('Replace'),
+									no: t('Cancel'),
+									warning: true,
+									message: <React.Fragment>
+										<p>{t('Are you sure you want to replace the blueprints with the file "{{fileName}}"?', { fileName: file.name })}</p>
+										<p>{t('Please note: This action is irreversible!')}</p>
+									</React.Fragment>,
+									onAccept: () => {
+										if (uploadFileContents && blueprint) {
+											fetchFrom(`/blueprints/restore/${blueprint._id}?force=1`, {
+												method: 'POST',
+												body: uploadFileContents,
+												headers: {
+													'content-type': 'text/javascript'
+												},
+											})
+											.then(() => {
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, t('Blueprints updated successfully.'), 'BlueprintSettings'))
+												// console.log('Blueprint restore success')
+											}).catch((err: string) => {
+												// console.error('Blueprint restore failure: ', err)
+												NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
+											})
+										}
+									},
+									onSecondary: () => {
+										this.setState({
+											uploadFileKey: Date.now()
+										})
+									}
+								})
+
+							} else {
+								// console.error('Blueprint restore failure: ', err)
+								NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update blueprints: {{errorMessage}}', { errorMessage: err + '' }), 'BlueprintSettings'))
+							}
 						})
 					}
 				},
@@ -109,8 +149,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		reader.readAsText(file)
 	}
 
-	assignSystemBlueprint (id: string | undefined) {
-		Meteor.call(BlueprintAPI.methods.assignSystemBlueprint, id)
+	assignSystemBlueprint (id: BlueprintId | undefined) {
+		MeteorCall.blueprint.assignSystemBlueprint(id).catch(console.error)
 	}
 
 	renderAssignment (blueprint: Blueprint) {
@@ -123,7 +163,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>{t('Assigned Show Styles:')}</p>
 						<p className='mod mhn mvs'>
 							{this.props.assignedShowStyles.length > 0 ?
-								this.props.assignedShowStyles.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/showStyleBase/${i._id}`}>{i.name}</Link></span>) :
+								this.props.assignedShowStyles.map(showStyleBase => <span key={unprotectString(showStyleBase._id)} className='pill'><Link className='pill-link' to={`/settings/showStyleBase/${showStyleBase._id}`}>{showStyleBase.name}</Link></span>) :
 								t('This Blueprint is not being used by any Show Style')}
 						</p>
 					</div>
@@ -134,7 +174,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<p className='mod mhn mvs'>{t('Assigned Studios:')}</p>
 						<p className='mod mhn mvs'>
 							{this.props.assignedStudios.length > 0 ?
-								this.props.assignedStudios.map(i => <span key={i._id} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
+								this.props.assignedStudios.map(i => <span key={unprotectString(i._id)} className='pill'><Link className='pill-link' to={`/settings/studio/${i._id}`}>{i.name}</Link></span>) :
 								t('This Blueprint is not compatible with any Studio')}
 						</p>
 					</div>
@@ -143,7 +183,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				return (
 					<div>
 						<p className='mod mhn mvs'>
-							<button className='btn btn-primary' onClick={(e) => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
+							<button className='btn btn-primary' onClick={() => this.assignSystemBlueprint(this.props.assignedSystem ? undefined : blueprint._id)}>
 								{ this.props.assignedSystem ? t('Unassign') : t('Assign') }
 							</button>
 						</p>
@@ -197,6 +237,12 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<div className='mod mvs mhn'>
 						<p className='mhn'>{t('Last modified')}: <Moment format='YYYY/MM/DD HH:mm:ss'>{blueprint.modified}</Moment></p>
 					</div>
+					{
+						blueprint.blueprintId ?
+						<div className='mod mvs mhn'>
+							<p className='mhn'>{t('Blueprint Id')}: {blueprint.blueprintId}</p>
+						</div> : null
+					}
 					{
 						blueprint.blueprintVersion ?
 						<div className='mod mvs mhn'>

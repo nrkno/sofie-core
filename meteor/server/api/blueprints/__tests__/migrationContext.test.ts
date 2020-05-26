@@ -1,19 +1,15 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { literal } from '../../../../lib/lib'
-import { LookaheadMode, BlueprintMapping, IConfigItem, ShowStyleVariantPart, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
+import { literal, getRandomId, protectString } from '../../../../lib/lib'
+import { LookaheadMode, BlueprintMapping, IConfigItem, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, TSR, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
-import { DeviceType } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-
-// require('../api.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint migrationContext', () => {
 
@@ -53,7 +49,7 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE
 				}
@@ -71,7 +67,7 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE
 				}
@@ -91,7 +87,7 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE
 				}
@@ -117,7 +113,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeTruthy()
 
 				const rawMapping = {
-					device: DeviceType.ATEM,
+					device: TSR.DeviceType.ATEM,
 					deviceId: 'dev2',
 					lookahead: LookaheadMode.PRELOAD
 				}
@@ -145,7 +141,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeTruthy()
 
 				const rawMapping = {
-					device: DeviceType.HYPERDECK,
+					device: TSR.DeviceType.HYPERDECK,
 					deviceId: 'hyper0'
 				}
 				ctx.updateMapping('mapping2', rawMapping)
@@ -177,7 +173,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeFalsy()
 
 				try {
-					ctx.updateMapping('', { device: DeviceType.HYPERDECK })
+					ctx.updateMapping('', { device: TSR.DeviceType.HYPERDECK })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Mapping "" cannot be updated as it does not exist`)
@@ -188,7 +184,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getMapping('mapping1')).toBeFalsy()
 
 				const rawMapping = {
-					device: DeviceType.HYPERDECK,
+					device: TSR.DeviceType.HYPERDECK,
 					deviceId: 'hyper0'
 				}
 
@@ -413,7 +409,7 @@ describe('Test blueprint migrationContext', () => {
 		describe('devices', () => {
 			function createPlayoutDevice (studio: Studio) {
 				return PeripheralDevices.insert({
-					_id: Random.id(),
+					_id: getRandomId(),
 					name: 'Fake parent device',
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -435,11 +431,14 @@ describe('Test blueprint migrationContext', () => {
 						},
 						devices: {
 							'device01': {
-								type: DeviceType.ABSTRACT,
+								type: TSR.DeviceType.ABSTRACT,
 								options: {}
 							}
 						}
-					})
+					}),
+					configManifest: {
+						deviceConfig: [] // can be empty as it's only useful for UI.
+					}
 				})
 			}
 			function getPlayoutDevice (studio: Studio): PeripheralDevice {
@@ -492,7 +491,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				try {
-					ctx.insertDevice('', { type: DeviceType.ABSTRACT } as any)
+					ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -507,7 +506,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.insertDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -523,7 +522,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				try {
-					ctx.insertDevice('device01', { type: DeviceType.CASPARCG } as any)
+					ctx.insertDevice('device01', { type: TSR.DeviceType.CASPARCG } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device01" cannot be inserted as it already exists`)
@@ -537,7 +536,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
 				expect(ctx.getDevice('device11')).toBeFalsy()
 
-				const rawDevice: any = { type: DeviceType.CASPARCG }
+				const rawDevice: any = { type: TSR.DeviceType.CASPARCG }
 
 				const deviceId = ctx.insertDevice('device11', rawDevice)
 				expect(deviceId).toEqual('device11')
@@ -556,7 +555,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				try {
-					ctx.updateDevice('', { type: DeviceType.ABSTRACT })
+					ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -571,7 +570,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.updateDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -587,7 +586,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device22')).toBeFalsy()
 
 				try {
-					ctx.updateDevice('device22', { type: DeviceType.ATEM })
+					ctx.updateDevice('device22', { type: TSR.DeviceType.ATEM })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device22" cannot be updated as it does not exist`)
@@ -602,7 +601,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				const rawDevice: any = {
-					type: DeviceType.HYPERDECK
+					type: TSR.DeviceType.HYPERDECK
 				}
 				const expectedDevice = {
 					...initialSettings.devices['device01'],
@@ -639,7 +638,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.removeDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.removeDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -690,7 +689,7 @@ describe('Test blueprint migrationContext', () => {
 			const showStyle = getShowStyle(ctx)
 
 			const rawVariant = literal<ShowStyleVariant>({
-				_id: ctx.getVariantId(id),
+				_id: protectString(ctx.getVariantId(id)),
 				name: 'test',
 				showStyleBaseId: showStyle._id,
 				config: config || [],
@@ -801,12 +800,12 @@ describe('Test blueprint migrationContext', () => {
 				expect(variantId).toEqual(ctx.getVariantId('variant2'))
 
 				initialVariants.push(literal<ShowStyleVariant>({
-					_id: variantId,
+					_id: protectString(variantId),
 					showStyleBaseId: getShowStyle(ctx)._id,
 					name: 'test2',
 					config: [],
 					_rundownVersionHash: '',
-				}))
+				}) as any as IBlueprintShowStyleVariant)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
 
@@ -1457,7 +1456,7 @@ describe('Test blueprint migrationContext', () => {
 		})
 		describe('variant-config', () => {
 			function getAllVariantConfigFromDb (ctx: MigrationContextShowStyle, variantId: string): IConfigItem[] {
-				const variant = ShowStyleVariants.findOne(ctx.getVariantId(variantId)) as ShowStyleVariant
+				const variant = ShowStyleVariants.findOne(protectString(ctx.getVariantId(variantId))) as ShowStyleVariant
 				expect(variant).toBeTruthy()
 				return variant.config
 			}

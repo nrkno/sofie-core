@@ -6,7 +6,8 @@ import { RundownLayoutExternalFrame, RundownLayoutBase, DashboardLayoutExternalF
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
 import { literal } from '../../../lib/lib'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 const PackageInfo = require('../../../package.json')
 
@@ -14,7 +15,7 @@ interface IProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutExternalFrame
 	visible: boolean
-	rundown: Rundown
+	playlist: RundownPlaylist
 }
 
 enum SofieExternalMessageType {
@@ -45,7 +46,7 @@ interface WelcomeSofieExternalMessage extends SofieExternalMessage {
 	payload: {
 		host: string
 		version: string
-		rundownId: string
+		rundownPlaylistId: RundownPlaylistId
 	}
 }
 
@@ -63,8 +64,8 @@ interface KeyboardEventSofieExternalMessage extends SofieExternalMessage {
 interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessage {
 	type: SofieExternalMessageType.CURRENT_PART_CHANGED | SofieExternalMessageType.NEXT_PART_CHANGED
 	payload: {
-		partId: string | null
-		prevPartId?: string | null
+		partInstanceId: PartInstanceId | null
+		prevPartInstanceId?: PartInstanceId | null
 	}
 }
 
@@ -98,17 +99,17 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			// Send the event sanitized to prevent sending huge objects
 			payload: _.omit(_.omit(e,
 				['currentTarget',
-				'path',
-				'srcElement',
-				'target',
-				'view',
-				'sourceCapabilities']
+					'path',
+					'srcElement',
+					'target',
+					'view',
+					'sourceCapabilities']
 			), (value, key) => typeof value === 'function')
 		}))
 	}
 
 	onReceiveMessage = (e: MessageEvent) => {
-		if (this.frame && e.source === this.frame.contentWindow) {
+		if (e.origin === 'null' && this.frame && e.source === this.frame.contentWindow) {
 			const data = e.data || e['message']
 			if (!data) return
 			this.actMessage(data)
@@ -140,7 +141,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 					payload: {
 						host: 'Sofie Automation System',
 						version: PackageInfo.version,
-						rundownId: this.props.rundown._id
+						rundownPlaylistId: this.props.playlist._id
 					}
 				}), true).then((e) => {
 					if (e.type === SofieExternalMessageType.ACK) {
@@ -174,7 +175,7 @@ export class ExternalFramePanel extends React.Component<IProps> {
 
 	sendMessage = (data: SofieExternalMessage, uninitialized?: boolean) => {
 		if (this.frame && this.frame.contentWindow && (this.initialized || uninitialized)) {
-			this.frame.contentWindow.postMessage(data, "*")
+			this.frame.contentWindow.postMessage(data, '*')
 		}
 	}
 
@@ -183,14 +184,14 @@ export class ExternalFramePanel extends React.Component<IProps> {
 			id: Random.id(),
 			type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 			payload: {
-				partId: this.props.rundown.currentPartId
+				partInstanceId: this.props.playlist.currentPartInstanceId
 			}
 		}))
 		this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 			id: Random.id(),
 			type: SofieExternalMessageType.NEXT_PART_CHANGED,
 			payload: {
-				partId: this.props.rundown.nextPartId
+				partInstanceId: this.props.playlist.nextPartInstanceId
 			}
 		}))
 	}
@@ -206,24 +207,24 @@ export class ExternalFramePanel extends React.Component<IProps> {
 	}
 
 	componentDidUpdate (prevProps: IProps) {
-		if (prevProps.rundown.currentPartId !== this.props.rundown.currentPartId) {
+		if (prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
 			this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 				id: Random.id(),
 				type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 				payload: {
-					partId: this.props.rundown.currentPartId,
-					prevPartId: prevProps.rundown.currentPartId
+					partInstanceId: this.props.playlist.currentPartInstanceId,
+					prevPartInstanceId: prevProps.playlist.currentPartInstanceId
 				}
 			}))
 		}
 
-		if (prevProps.rundown.nextPartId !== this.props.rundown.nextPartId) {
+		if (prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId) {
 			this.sendMessage(literal<CurrentNextPartChangedSofieExternalMessage>({
 				id: Random.id(),
 				type: SofieExternalMessageType.NEXT_PART_CHANGED,
 				payload: {
-					partId: this.props.rundown.nextPartId,
-					prevPartId: prevProps.rundown.nextPartId
+					partInstanceId: this.props.playlist.nextPartInstanceId,
+					prevPartInstanceId: prevProps.playlist.nextPartInstanceId
 				}
 			}))
 		}
@@ -263,6 +264,6 @@ export class ExternalFramePanel extends React.Component<IProps> {
 				width: `calc(100% / ${scale})`,
 				height: `calc(100% / ${scale})`,
 			}}></iframe>
-		</div> 
+		</div>
 	}
 }

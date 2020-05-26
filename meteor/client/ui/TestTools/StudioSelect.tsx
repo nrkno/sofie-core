@@ -4,6 +4,7 @@ import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
+import { unprotectString } from '../../../lib/lib'
 
 interface IStudioSelectProps {
 	title: string
@@ -38,7 +39,7 @@ const StudioSelect = translateWithTracker<IStudioSelectProps, IStudioSelectState
 						{
 							_.map(this.props.studios, (studio) => {
 								return (
-									<li key={studio._id}>
+									<li key={unprotectString(studio._id)}>
 										<Link to={`${path}/${studio._id}`}>{studio.name}</Link>
 									</li>
 								)

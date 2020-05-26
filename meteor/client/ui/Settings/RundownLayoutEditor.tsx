@@ -23,21 +23,20 @@ import {
 	RundownLayoutExternalFrame,
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
-	RundownLayoutKeyboardPreview
+	RundownLayoutId
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { callMethod } from '../../lib/clientAPI'
 import { PubSub } from '../../../lib/api/pubsub'
-import { literal } from '../../../lib/lib'
+import { literal, unprotectString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
-import { defaultColorPickerPalette } from '../../lib/colorPicker'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
+import { MeteorCall } from '../../../lib/api/methods'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {
@@ -46,7 +45,7 @@ export interface IProps {
 }
 
 interface IState {
-	editedItems: string[]
+	editedItems: RundownLayoutId[]
 	uploadFileKey: number
 }
 
@@ -76,20 +75,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	componentDidMount () {
 		super.componentDidMount && super.componentDidMount()
 
-		this.subscribe(PubSub.rundownLayouts, {
-			showStyleBaseId: this.props.showStyleBase._id
-		})
+		this.subscribe(PubSub.rundownLayouts, {})
 	}
 
 	onAddLayout = (e: any) => {
 		const { t, showStyleBase } = this.props
-		callMethod(
-			e,
-			RundownLayoutsAPI.methods.createRundownLayout,
+		MeteorCall.rundownLayout.createRundownLayout(
 			t('New Layout'),
 			RundownLayoutType.RUNDOWN_LAYOUT,
 			showStyleBase._id
-		)
+		).catch(console.error)
 	}
 
 	onAddButton = (item: RundownLayoutBase) => {
@@ -127,7 +122,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							t('New Panel') :
 							t('New Item'),
 					currentSegment: false,
-					displayStyle: PieceDisplayStyle.LIST,
+					displayStyle: PieceDisplayStyle.BUTTONS,
 					label: undefined,
 					sourceLayerIds: undefined,
 					outputLayerIds: undefined,
@@ -135,6 +130,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					tags: undefined,
 					rank: 0,
 					rundownBaseline: false,
+					showThumbnailsInList: false,
 					default: false
 				})
 			}
@@ -168,19 +164,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		})
 	}
 
-	isItemEdited = (item: RundownLayoutBase) => {
-		return this.state.editedItems.indexOf(item._id) >= 0
+	isItemEdited = (layoutBase: RundownLayoutBase) => {
+		return this.state.editedItems.indexOf(layoutBase._id) >= 0
 	}
 
-	editItem = (item: RundownLayoutBase) => {
-		if (!this.isItemEdited(item)) {
-			this.state.editedItems.push(item._id)
+	editItem = (layoutBase: RundownLayoutBase) => {
+		if (!this.isItemEdited(layoutBase)) {
+			this.state.editedItems.push(layoutBase._id)
 
 			this.setState({
 				editedItems: this.state.editedItems
 			})
 		} else {
-			this.finishEditItem(item)
+			this.finishEditItem(layoutBase)
 		}
 	}
 
@@ -208,11 +204,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			no: t('Cancel'),
 			message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
 			onAccept: () => {
-				callMethod(
-					e,
-					RundownLayoutsAPI.methods.removeRundownLayout,
-					item._id
-				)
+				MeteorCall.rundownLayout.removeRundownLayout(item._id).catch(console.error)
 			}
 
 		})
@@ -310,7 +302,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 	renderFilter (item: RundownLayoutBase, tab: RundownLayoutFilterBase, index: number, isRundownLayout: boolean, isDashboardLayout: boolean) {
 		const { t } = this.props
-		const isOfftubeList = tab.displayStyle === PieceDisplayStyle.OFFTUBE_LIST
+		const isList = tab.displayStyle === PieceDisplayStyle.LIST
 		const rundownBaselineOptions = [
 			{
 				name: t('Yes'),
@@ -354,6 +346,21 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
+					{
+						isList &&
+						<div className='mod mvs mhs'>
+							<label className='field'>
+								{t('Show thumbnails next to list items')}
+								<EditAttribute
+									modifiedClassName='bghl'
+									attribute={`filters.${index}.showThumbnailsInList`}
+									obj={item}
+									type='checkbox'
+									collection={RundownLayouts}
+									className='mod mas' />
+							</label>
+						</div>
+					}
 					<div className='mod mvs mhs'>
 						<label className='field'>
 							{t('X')}
@@ -363,6 +370,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								obj={item}
 								type='int'
 								collection={RundownLayouts}
+								options={PieceDisplayStyle}
 								className='input text-input input-l' />
 						</label>
 					</div>
@@ -402,7 +410,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								className='input text-input input-l' />
 						</label>
 					</div>
-					{!isOfftubeList &&
+					{!isList &&
 						<React.Fragment>
 							<div className='mod mvs mhs'>
 								<label className='field'>
@@ -647,6 +655,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
+							{t('Show panel as a timeline')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.showAsTimeline`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
 							{t('Overflow horizontally')}
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -659,30 +679,28 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
-							{t('Show panel as a timeline')}
+							{t('Display Take buttons')}
 							<EditAttribute
 								modifiedClassName='bghl'
-								attribute={`filters.${index}.showAsTimeline`}
+								attribute={`filters.${index}.displayTakeButtons`}
 								obj={item}
 								type='checkbox'
 								collection={RundownLayouts}
 								className='mod mas' />
 						</label>
 					</div>
-					{isOfftubeList &&
-						<div className='mod mvs mhs'>
-							<label className='field'>
-								{t('Display Take buttons')}
-								<EditAttribute
-									modifiedClassName='bghl'
-									attribute={`filters.${index}.displayTakeButtons`}
-									obj={item}
-									type='checkbox'
-									collection={RundownLayouts}
-									className='mod mas' />
-							</label>
-						</div>
-					}
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Queue all adlibs')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.queueAllAdlibs`}
+								obj={item}
+								type='checkbox'
+								collection={RundownLayouts}
+								className='mod mas' />
+						</label>
+					</div>
 				</React.Fragment>
 			}
 		</React.Fragment>
@@ -767,6 +785,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</div>
 					<div className='mod mvs mhs'>
 						<label className='field'>
+							{t('Scale')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`filters.${index}.scale`}
+								obj={item}
+								type='float'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
 							{t('Display Rank')}
 							<EditAttribute
 								modifiedClassName='bghl'
@@ -840,18 +870,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			</div>
 			<div className='mod mvs mhs'>
 				<label className='field'>
-					{t('Window Number')}
-					<EditAttribute
-						modifiedClassName='bghl'
-						attribute={`filters.${index}.windowNumber`}
-						obj={item}
-						type='int'
-						collection={RundownLayouts}
-						className='input text-input input-l' />
-				</label>
-			</div>
-			<div className='mod mvs mhs'>
-				<label className='field'>
 					{t('Adlib Rank')}
 					<EditAttribute
 						modifiedClassName='bghl'
@@ -884,6 +902,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						label={t('Filter Disabled')}
 						mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? undefined : v.join(', ')}
 						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
+				</label>
+			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+					{t('Place label below panel')}
+					<EditAttribute
+						modifiedClassName='bghl'
+						attribute={`filters.${index}.labelBelowPanel`}
+						obj={item}
+						type='checkbox'
+						collection={RundownLayouts}
+						className='mod mas' />
 				</label>
 			</div>
 			{isDashboardLayout &&
@@ -954,18 +984,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					}
 				</React.Fragment>
 			}
-			<div className='mod mvs mhs'>
-				<label className='field'>
-					{t('Scale')}
-					<EditAttribute
-						modifiedClassName='bghl'
-						attribute={`filters.${index}.scale`}
-						obj={item}
-						type='float'
-						collection={RundownLayouts}
-						className='input text-input input-l' />
-				</label>
-			</div>
 		</React.Fragment>
 	}
 
@@ -1123,7 +1141,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	renderItems () {
 		const { t } = this.props
 		return (this.props.rundownLayouts || []).map((item, index) =>
-			<React.Fragment key={item._id}>
+			<React.Fragment key={unprotectString(item._id)}>
 				<tr className={ClassNames({
 					'hl': this.isItemEdited(item)
 				})}>
@@ -1135,7 +1153,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					</td>
 					<td className='settings-studio-rundown-layouts-table__value c1'>
 						{this.props.studios.map(studio =>
-							<span className='pill' key={studio._id}>
+							<span className='pill' key={unprotectString(studio._id)}>
 								<Link target='_blank' className='pill-link' to={`/activeRundown/${studio._id}/shelf?layout=${item._id}`}>{studio.name}</Link>
 							</span>
 						)}

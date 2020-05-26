@@ -6,7 +6,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
 	SomeBlueprintManifest,
@@ -15,7 +15,7 @@ import {
 	SystemBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
-import { makePromise, rateLimit, cacheResult } from '../../../lib/lib'
+import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../lib/lib'
 
 const blueprintCache: {[id: string]: Cache} = {}
 interface Cache {
@@ -24,15 +24,15 @@ interface Cache {
 }
 
 export interface WrappedSystemBlueprint {
-	blueprintId: string
+	blueprintId: BlueprintId
 	blueprint: SystemBlueprintManifest
 }
 export interface WrappedStudioBlueprint {
-	blueprintId: string
+	blueprintId: BlueprintId
 	blueprint: StudioBlueprintManifest
 }
 export interface WrappedShowStyleBlueprint {
-	blueprintId: string
+	blueprintId: BlueprintId
 	blueprint: ShowStyleBlueprintManifest
 }
 
@@ -111,8 +111,8 @@ export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): WrappedS
 	}
 }
 
-function loadBlueprintsById (id: string): SomeBlueprintManifest | undefined {
-	const blueprint = Blueprints.findOne(id)
+function loadBlueprintsById (blueprintId: BlueprintId): SomeBlueprintManifest | undefined {
+	const blueprint = Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
 
 	if (blueprint.code) {
@@ -122,14 +122,14 @@ function loadBlueprintsById (id: string): SomeBlueprintManifest | undefined {
 			throw new Meteor.Error(402, 'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
 		}
 	} else {
-		throw new Meteor.Error(500, `Blueprint "${id}" code not set!`)
+		throw new Meteor.Error(500, `Blueprint "${blueprintId}" code not set!`)
 	}
 }
 export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
-		cached = blueprintCache[blueprint._id] ? blueprintCache[blueprint._id] : null
+		cached = blueprintCache[unprotectString(blueprint._id)] ? blueprintCache[unprotectString(blueprint._id)] : null
 		if (cached && (!cached.modified || cached.modified !== blueprint.modified)) {
 			// the function has been updated, invalidate it then:
 			cached = null

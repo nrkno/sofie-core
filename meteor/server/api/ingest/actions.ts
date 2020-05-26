@@ -9,13 +9,13 @@ import { check } from 'meteor/check'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
 import { resetRundown } from '../playout/lib'
-import { handleUpdatedRundownForStudio, handleUpdatedSegment } from './rundownInput'
+import { handleUpdatedRundown, RundownSyncFunctionPriority, rundownPlaylistSyncFunction, handleUpdatedRundownInner } from './rundownInput'
 import { logger } from '../../logging'
-import { Studios } from '../../../lib/collections/Studios'
-import { UserActionAPI } from '../../../lib/api/userActions'
+import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { Segment } from '../../../lib/collections/Segments'
-import { WrapAsyncCallback } from '../../../lib/lib'
-import { IngestSegment } from 'tv-automation-sofie-blueprints-integration'
 import { GenericDeviceActions } from './genericDevice/actions'
 
 /*
@@ -25,22 +25,35 @@ export namespace IngestActions {
 	/**
 	 * Trigger a reload of a rundown
 	 */
-	export function reloadRundown (rundown: Rundown): UserActionAPI.TriggerReloadDataResponse {
+	export function reloadRundown (rundown: Rundown): TriggerReloadDataResponse {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			return MOSDeviceActions.reloadRundown(device, rundown)
-		} else if (
-			device.type === PeripheralDeviceAPI.DeviceType.INEWS
-			// device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET
-		) {
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			return GenericDeviceActions.reloadRundown(device, rundown)
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
 			return GenericDeviceActions.reloadRundown(device, rundown)
 		} else {
 			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
 		}
-
 	}
+
+	export function reloadSegment (rundown: Rundown, segment: Segment): TriggerReloadDataResponse {
+		const device = getPeripheralDeviceFromRundown(rundown)
+
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+			return reloadRundown(rundown)
+		} else if (
+			device.type === PeripheralDeviceAPI.DeviceType.INEWS
+		) {
+			return GenericDeviceActions.reloadSegment(device, rundown, segment)
+		} else {
+			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
+		}
+	}
+
 	/**
 	 * Trigger a reload of a single Segment
 	 */
@@ -65,9 +78,15 @@ export namespace IngestActions {
 	 * @param currentPlayingPart
 	 */
 	export function notifyCurrentPlayingPart (rundown: Rundown, currentPlayingPart: Part | null) {
+		if (!rundown.peripheralDeviceId) {
+			logger.warn(`Rundown "${rundown._id} has no peripheralDevice. Skipping notifyCurrentPlayingPart`)
+			return
+		}
 		const device = getPeripheralDeviceFromRundown(rundown)
+		const playlist = RundownPlaylists.findOne(rundown.playlistId)
 
-		if (rundown.rehearsal) currentPlayingPart = null
+		if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
+		if (playlist.rehearsal) currentPlayingPart = null
 
 		const currentPlayingPartExternalId: string | null = (
 			currentPlayingPart ?
@@ -101,35 +120,39 @@ export namespace IngestActions {
 	/**
 	 * Run the cached data through blueprints in order to re-generate the Rundown
 	 */
-	export function regenerateRundown (rundownId: string, purgeExisting?: boolean) {
-		check(rundownId, String)
+	export function regenerateRundownPlaylist (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) {
+		check(rundownPlaylistId, String)
 
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) {
-			throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
-		}
+		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+		if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found`)
 
-		logger.info(`Regenerating rundown ${rundown.name} (${rundown._id})`)
+		logger.info(`Regenerating rundown playlist ${rundownPlaylist.name} (${rundownPlaylist._id})`)
 
-		const peripheralDevice = PeripheralDevices.findOne(
-			rundown.peripheralDeviceId
-		)
-		if (!peripheralDevice) {
-			logger.info(`Rundown has no valid PeripheralDevices. Running without`)
-		}
-		const studio = Studios.findOne(rundown.studioId)
+		const studio = Studios.findOne(rundownPlaylist.studioId)
 		if (!studio) {
-			throw new Meteor.Error(404,`Studios "${rundown.studioId}" was not found for rundown "${rundown._id}"`)
+			throw new Meteor.Error(404,`Studios "${rundownPlaylist.studioId}" was not found for Rundown Playlist "${rundownPlaylist._id}"`)
 		}
 
-		const ingestRundown = loadCachedRundownData(rundownId, rundown.externalId)
-		if (purgeExisting) {
-			rundown.remove()
-		} else {
-			// Reset the rundown (remove adlibs, etc):
-			resetRundown(rundown)
-		}
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
+			rundownPlaylist.getRundowns().forEach(rundown => {
+				if (rundown.studioId !== studio._id) {
+					logger.warning(`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`)
+				}
+				const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+				if (!peripheralDevice) {
+					logger.info(`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`)
+				}
 
-		handleUpdatedRundownForStudio(studio, peripheralDevice, ingestRundown, rundown.dataSource)
+				const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+				if (purgeExisting) {
+					rundown.remove()
+				} else {
+					// Reset the rundown (remove adlibs, etc):
+					resetRundown(rundown)
+				}
+
+				handleUpdatedRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
+			})
+		})
 	}
 }
