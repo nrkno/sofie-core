@@ -23,10 +23,6 @@ export interface PieceGeneric extends InternalIBlueprintPieceGeneric {
 	_id: PieceId
 	/** ID of the source object in MOS */
 	externalId: string
-	/** The rundown this piece belongs to */
-	rundownId: RundownId
-	/** The Part this piece belongs to */
-	partId?: PartId
 
 	/** Playback availability status */
 	status: RundownAPI.PieceStatusCode
@@ -53,7 +49,15 @@ export interface PieceGeneric extends InternalIBlueprintPieceGeneric {
 	extendOnHold?: boolean
 }
 
-export interface Piece extends PieceGeneric, ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
+/** A Single item in a Part: script, VT, cameras */
+export interface RundownPieceGeneric extends PieceGeneric {
+	/** The rundown this piece belongs to */
+	rundownId: RundownId
+	/** The Part this piece belongs to */
+	partId?: PartId
+}
+
+export interface Piece extends RundownPieceGeneric, ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
 	// -----------------------------------------------------------------------
 
 	partId: PartId

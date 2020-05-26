@@ -2,6 +2,7 @@ import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { ControllerAbstract } from './lib'
 import { ShuttleKeyboardController } from './shuttle-keyboard-device'
+import { JoyconController } from './joycon-device'
 import * as _ from 'underscore'
 import { KeyboardController } from './keyboard-device'
 
@@ -18,16 +19,24 @@ export class PrompterControlManager {
 		window.addEventListener('mousedown', this._onMouseKeyDown)
 		window.addEventListener('mouseup', this._onMouseKeyUp)
 
-		if (this._view.configOptions.mode === PrompterConfigMode.MOUSE) {
-			this._controllers.push(new MouseIshController(this._view))
+		if(Array.isArray(this._view.configOptions.mode)) {
+			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.MOUSE) > -1) {
+				this._controllers.push(new MouseIshController(this._view))
 
-		} else if (this._view.configOptions.mode === PrompterConfigMode.KEYBOARD) {
-			this._controllers.push(new KeyboardController(this._view))
+			}
+			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.KEYBOARD) > -1) {
+				this._controllers.push(new KeyboardController(this._view))
 
-		} else if (this._view.configOptions.mode === PrompterConfigMode.SHUTTLEKEYBOARD) {
-			this._controllers.push(new ShuttleKeyboardController(this._view))
+			} 
+			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.SHUTTLEKEYBOARD) > -1) {
+				this._controllers.push(new ShuttleKeyboardController(this._view))
+			} 
+			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.JOYCON) > -1) {
+				this._controllers.push(new JoyconController(this._view))
+			} 
+		}
 
-		} else {
+		if (this._controllers.length === 0) {
 			// Default behaviour:
 			this._controllers.push(new MouseIshController(this._view))
 			this._controllers.push(new KeyboardController(this._view))

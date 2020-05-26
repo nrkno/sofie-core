@@ -1319,8 +1319,9 @@ export function protectStringArray<T extends ProtectedString<any>> (arr: string[
 	return arr as any as T[]
 }
 export function unprotectString (protectedStr: ProtectedString<any>): string
+export function unprotectString (protectedStr: ProtectedString<any> | null): string | null
 export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined
-export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined {
+export function unprotectString (protectedStr: ProtectedString<any> | undefined | null): string | undefined | null {
 	return protectedStr as any as string
 }
 export function isProtectedString (str: any): str is ProtectedString<any> {

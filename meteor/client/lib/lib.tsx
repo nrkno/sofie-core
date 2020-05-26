@@ -14,6 +14,21 @@ function isEventInInputField (e: Event) {
 	return (e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1)
 }
 
+export function contextMenuHoldToDisplayTime(): number {
+	return isTouchDevice() ? 1000 : -1
+}
+
+let touchDeviceCache: undefined | boolean = undefined
+export function isTouchDevice(): boolean {
+	if (touchDeviceCache !== undefined) return touchDeviceCache
+
+	touchDeviceCache = false
+	if (window.matchMedia("(pointer: coarse)").matches) {
+		touchDeviceCache = true
+	}
+	return touchDeviceCache
+}
+
 const loadScriptCache: {[url: string]: {
 	status: 'loading' | 'ok',
 	callbacks: Array<(err?: any) => void>

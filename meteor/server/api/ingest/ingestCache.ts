@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { saveIntoDb, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
-import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCacheObj, IngestDataCache, IngestCacheType, IngestDataCacheObjPart, IngestDataCacheObjRundown, IngestDataCacheObjSegment, IngestDataCacheObjId } from '../../../lib/collections/IngestDataCache'
 import { getSegmentId, getPartId } from './lib'
 import { logger } from '../../../lib/logging'
@@ -9,7 +9,7 @@ import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 
-export function loadCachedRundownData (rundownId: RundownId, rundownExternalId: string): IngestRundown {
+export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): IngestRundown {
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
 	const baseEntry = cacheEntries.find(e => e.type === IngestCacheType.RUNDOWN)
@@ -37,7 +37,7 @@ export function loadCachedRundownData (rundownId: RundownId, rundownExternalId: 
 
 	return ingestRundown
 }
-export function loadCachedIngestSegment (rundownId: RundownId, rundownExternalId: string, segmentId: SegmentId, segmentExternalId: string): IngestSegment {
+export function loadCachedIngestSegment(rundownId: RundownId, rundownExternalId: string, segmentId: SegmentId, segmentExternalId: string): IngestSegment {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
 		segmentId: segmentId,
@@ -62,7 +62,7 @@ export function loadCachedIngestSegment (rundownId: RundownId, rundownExternalId
 
 	return ingestSegment
 }
-export function loadIngestDataCachePart (rundownId: RundownId, rundownExternalId: string, partId: PartId, partExternalId: string): IngestDataCacheObjPart {
+export function loadIngestDataCachePart(rundownId: RundownId, rundownExternalId: string, partId: PartId, partExternalId: string): IngestDataCacheObjPart {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
 		partId: partId,
@@ -76,14 +76,14 @@ export function loadIngestDataCachePart (rundownId: RundownId, rundownExternalId
 	return partEntry
 }
 
-export function saveRundownCache (rundownId: RundownId, ingestRundown: IngestRundown) {
+export function saveRundownCache(rundownId: RundownId, ingestRundown: IngestRundown) {
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(rundownId, ingestRundown)
 	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache, {
 		rundownId: rundownId,
 	}, cacheEntries)
 }
-export function saveSegmentCache (rundownId: RundownId, segmentId: SegmentId, ingestSegment: IngestSegment) {
+export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ingestSegment: IngestSegment) {
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundownId, ingestSegment)
 	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache, {
@@ -92,7 +92,7 @@ export function saveSegmentCache (rundownId: RundownId, segmentId: SegmentId, in
 	}, cacheEntries)
 }
 
-function generateCacheForRundown (rundownId: RundownId, ingestRundown: IngestRundown): IngestDataCacheObj[] {
+function generateCacheForRundown(rundownId: RundownId, ingestRundown: IngestRundown): IngestDataCacheObj[] {
 	// cache the Data
 	const cacheEntries: IngestDataCacheObj[] = []
 	const rundown: IngestDataCacheObjRundown = {
@@ -109,7 +109,7 @@ function generateCacheForRundown (rundownId: RundownId, ingestRundown: IngestRun
 	_.each(ingestRundown.segments, segment => cacheEntries.push(...generateCacheForSegment(rundownId, segment)))
 	return cacheEntries
 }
-function generateCacheForSegment (rundownId: RundownId, ingestSegment: IngestSegment): IngestDataCacheObj[] {
+function generateCacheForSegment(rundownId: RundownId, ingestSegment: IngestSegment): IngestDataCacheObj[] {
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 	const cacheEntries: Array<IngestDataCacheObjSegment | IngestDataCacheObjPart> = []
 
@@ -132,7 +132,7 @@ function generateCacheForSegment (rundownId: RundownId, ingestSegment: IngestSeg
 
 	return cacheEntries
 }
-function generateCacheForPart (rundownId: RundownId, segmentId: SegmentId, part: IngestPart): IngestDataCacheObjPart {
+function generateCacheForPart(rundownId: RundownId, segmentId: SegmentId, part: IngestPart): IngestDataCacheObjPart {
 	const partId = getPartId(rundownId, part.externalId)
 	return {
 		_id: protectString<IngestDataCacheObjId>(`${rundownId}_${partId}`),

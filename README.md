@@ -110,7 +110,8 @@ The prompter can be controlled by different types of controllers. Which mode is 
 |  Default                  | Controlled by both mouse and keyboard                                                           |
 | `?mode=mouse`             | Controlled by mouse only                                                                        |
 | `?mode=keyboard`          | Controlled by keyboard only                                                                     |
-| `?mode=shuttlekeyboard`   | Controlled by a Contour-ShuttleXpress or X-keys, configured as keyboard-inputs (see below)       |
+| `?mode=shuttlekeyboard`   | Controlled by a Contour-ShuttleXpress or X-keys, configured as keyboard-inputs (see below)      |
+| `?mode=joycon`   			| Controlled by a Nintendo Joy-con controller over the HTML5 Gamepad API					      |
 
 ### Customize looks
 
@@ -162,6 +163,9 @@ Config-files to be used in respective config software:
 * [Contour ShuttleXpress](resources/prompter_layout_shuttlexpress.pref)
 * [X-keys](resources/prompter_layout_xkeys.mw3)
 
+### Control using Nintendo Joy-con controlelr
+
+This mode is intended to be used when having a Nintendo Joy-con. This wireless handheld controller works over Bluetooth and with the native HTML5 Gamepad API in the client.
 
 # For developers
 
