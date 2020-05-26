@@ -1052,7 +1052,9 @@ export enum RundownViewEvents {
 	'goToLiveSegment' = 'sofie:goToLiveSegment',
 	'goToTop' = 'sofie:goToTop',
 	'segmentZoomOn' = 'sofie:segmentZoomOn',
-	'segmentZoomOff' = 'sofie:segmentZoomOff'
+	'segmentZoomOff' = 'sofie:segmentZoomOff',
+	'revealInShelf' = 'sofie:revealInShelf',
+	'switchShelfTab' = 'sofie:switchShelfTab'
 }
 
 interface ITrackedProps {
@@ -1808,9 +1810,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					isInspectorShelfExpanded: true
 				})
-				if (this._inspectorShelf) {
-					this._inspectorShelf.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
-				}
+				window.dispatchEvent(new CustomEvent(RundownViewEvents.switchShelfTab, {
+					detail: {
+						tab: ShelfTabs.SYSTEM_HOTKEYS
+					}
+				}))
 			} else {
 				this.setState({
 					isInspectorShelfExpanded: false

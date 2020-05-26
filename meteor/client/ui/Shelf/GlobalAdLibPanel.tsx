@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -17,7 +18,7 @@ import * as faList from '@fortawesome/fontawesome-free-solid/faList'
 import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
@@ -35,6 +36,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
+import { ShelfTabs } from './Shelf'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -406,6 +408,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				})
 			}
 		})
+
+		window.addEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 	}
 
 	componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -422,6 +426,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 
 		this.usedHotkeys.length = 0
+
+		window.removeEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 	}
 
 	refreshKeyboardHotkeys() {
@@ -546,6 +552,34 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 	}
 
+	onRevealInShelf = (e: CustomEvent) => {
+		const pieceId = e.detail && e.detail.pieceId
+		if (pieceId) {
+			let found = false
+			const index = this.props.rundownAdLibs.findIndex(piece => piece._id === pieceId)
+			if (index >= 0) {
+				found = true
+			}
+
+			if (found) {
+				window.dispatchEvent(new CustomEvent(RundownViewEvents.switchShelfTab, {
+					detail: {
+						tab: ShelfTabs.GLOBAL_ADLIB
+					}
+				}))
+
+				Meteor.setTimeout(() => {
+					const el = document.querySelector(`.adlib-panel__list-view__list__segment__item[data-obj-id="${pieceId}"]`)
+					if (el) {
+						el.scrollIntoView({
+							behavior: 'smooth'
+						})
+					}
+				}, 100)
+			}
+		}
+	}
+
 	renderListView() {
 		// let a = new AdLibPanelToolbar({
 		// t: () => {},
@@ -574,7 +608,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				return <Spinner />
 			} else {
 				return (
-					<div className='adlib-panel super-dark'>
+					<div
+						className='adlib-panel super-dark'
+						data-tab-id={ShelfTabs.GLOBAL_ADLIB}>
 						{this.renderListView()}
 					</div>
 				)

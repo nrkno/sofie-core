@@ -13,11 +13,15 @@ import { TransformedCollection } from '../../../../../lib/typings/meteor'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../../lib/api/deviceConfig'
 import { Spinner } from '../../../../lib/Spinner'
+import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import InspectorTitle from './InspectorTitle'
+import { RundownViewEvents } from '../../../RundownView'
 
 export { isActionItem }
 
 export interface IProps {
 	piece: PieceUi | AdLibPieceUi
+	showStyleBase: ShowStyleBase
 }
 
 export interface ITrackedProps {
@@ -31,7 +35,7 @@ export interface TransformedAdLibAction extends AdLibAction {
 }
 
 // create a temporary collection to store changes to the AdLib Actions
-const ActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction>
+const LocalActionItems: TransformedCollection<TransformedAdLibAction, TransformedAdLibAction>
 	= createMongoCollection<TransformedAdLibAction>(null as any)
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
@@ -42,14 +46,14 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 	let action = (piece as AdLibPieceUi).adlibAction
 
 	return {
-		targetAction: action ? ActionItems.findOne(action._id) : undefined
+		targetAction: action ? LocalActionItems.findOne(action._id) : undefined
 	}
 })(class ActionItemRenderer extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
 	componentDidMount() {
 		const action = this.getActionItem()
 
 		if (action) {
-			ActionItems.insert({
+			LocalActionItems.insert({
 				...action,
 				transformedUserData: {
 					...action.userData
@@ -62,11 +66,11 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		const action = this.getActionItem()
 
 		if (prevProps.targetAction && ((action && action._id !== prevProps.targetAction._id) || !action)) {
-			ActionItems.remove(prevProps.targetAction._id)
+			LocalActionItems.remove(prevProps.targetAction._id)
 		}
 
 		if (action && prevProps.targetAction && prevProps.targetAction._id === action._id) {
-			ActionItems.upsert(action._id, {
+			LocalActionItems.upsert(action._id, {
 				$set: {
 					actionId: action.actionId,
 					partId: action.partId,
@@ -80,14 +84,14 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 				}
 			})
 		} else if (action && prevProps.targetAction && prevProps.targetAction._id !== action._id) {
-			ActionItems.insert({
+			LocalActionItems.insert({
 				...action,
 				transformedUserData: {
 					...action.userData
 				}
 			})
 		} else if (prevProps.targetAction) {
-			ActionItems.remove(prevProps.targetAction._id)
+			LocalActionItems.remove(prevProps.targetAction._id)
 		}
 	}
 
@@ -95,7 +99,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		super.componentWillUnmount()
 
 		if (this.props.targetAction) {
-			ActionItems.remove(this.props.targetAction._id)
+			LocalActionItems.remove(this.props.targetAction._id)
 		}
 	}
 
@@ -117,10 +121,22 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 				{configManifest.map((configField) => (
 					(configField.type === ConfigManifestEntryType.TABLE) ?
 						null :
-						<ConfigManifestEntryComponent key={configField.id} collection={ActionItems} configField={configField} obj={obj} prefix={prefix} className=''></ConfigManifestEntryComponent>
+						<ConfigManifestEntryComponent key={configField.id} collection={LocalActionItems} configField={configField} obj={obj} prefix={prefix} className=''></ConfigManifestEntryComponent>
 				))}
 			</div> :
 			<span>{t('AdLib does not provide any options')}</span>
+	}
+
+	onRevealSelectedItem = () => {
+		let piece = RundownUtils.isAdLibPiece(this.props.piece) ?
+			this.props.piece as AdLibPieceUi :
+			this.props.piece.instance.piece as Piece
+
+		window.dispatchEvent(new CustomEvent(RundownViewEvents.revealInShelf, {
+			detail: {
+				pieceId: piece._id
+			}
+		}))
 	}
 
 	render() {
@@ -132,19 +148,22 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		}
 
 		return (
-			<div className='shelf-inspector__action-editor'>
-				<div className='shelf-inspector__action-editor__panel'>
-					{(action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction &&
-						<>{this.renderConfigFields(action.userDataManifest.editableFields, this.props.targetAction, 'transformedUserData.')}</>
-						|| null
-					)}
+			<>
+				<InspectorTitle piece={this.props.piece} showStyleBase={this.props.showStyleBase} />
+				<div className='shelf-inspector__action-editor'>
+					<div className='shelf-inspector__action-editor__panel'>
+						{(action.userDataManifest && action.userDataManifest.editableFields && this.props.targetAction &&
+							<>{this.renderConfigFields(action.userDataManifest.editableFields, this.props.targetAction, 'transformedUserData.')}</>
+							|| null
+						)}
+					</div>
+					<div className='shelf-inspector__action-editor__actions'>
+						<button className='btn'>{t('Cue as Next')}</button>
+						<button className='btn'>{t('Save to Bucket')}</button>
+						<button className='btn' onClick={this.onRevealSelectedItem}>{t('Reveal in Shelf')}</button>
+					</div>
 				</div>
-				<div className='shelf-inspector__action-editor__actions'>
-					<button>{t('Cue as Next')}</button>
-					<button>{t('Save to Bucket')}</button>
-					<button>{t('Reveal in List')}</button>
-				</div>
-			</div>
+			</>
 		)
 	}
 })

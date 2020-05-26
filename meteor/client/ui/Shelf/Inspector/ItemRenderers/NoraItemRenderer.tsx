@@ -6,11 +6,14 @@ import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
 import { translate, InjectedTranslateProps } from 'react-i18next'
+import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import InspectorTitle from './InspectorTitle'
 
 export { isNoraItem }
 
 interface INoraSuperRendererProps {
 	piece: AdLibPieceUi | PieceUi
+	showStyleBase: ShowStyleBase
 }
 
 interface INoraSuperRendererState {
@@ -46,13 +49,16 @@ export default translate()(class NoraItemRenderer extends React.Component<INoraS
 		}
 
 		return (
-			<div className='shelf-inspector__content'>
-				<h2>{actualPiece.name}</h2>
-				<button className='btn btn-primary' disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>{t('Edit')}</button>
-				<Modal {...modalProps}>
-					<NoraItemEditor piece={actualPiece} />
-				</Modal>
-			</div>
+			<>
+				<InspectorTitle piece={this.props.piece} showStyleBase={this.props.showStyleBase} />
+				<div className='shelf-inspector__content'>
+					<h2>{actualPiece.name}</h2>
+					<button className='btn btn-primary' disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>{t('Edit')}</button>
+					<Modal {...modalProps}>
+						<NoraItemEditor piece={actualPiece} />
+					</Modal>
+				</div>
+			</>
 		)
 	}
 })

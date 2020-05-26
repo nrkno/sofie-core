@@ -1,4 +1,4 @@
-$inspector-shelf-tabs-height: 2.3em;
+@import "../variables";
 
 .rundown-view__shelf {
 	position: fixed;
@@ -163,7 +163,7 @@ $inspector-shelf-tabs-height: 2.3em;
 		flex: 1 1;
 		position: relative;
 		width: 100%;
-		height: calc(100% - 2.3em);
+		height: calc(100% - #{$inspector-shelf-tabs-height});
 
 		& > * {
 			position: absolute;
