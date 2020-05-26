@@ -12,6 +12,7 @@ import { literal, fetchNext, last, normalizeArray, unprotectObject } from '../..
 import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { Part } from '../../lib/collections/Parts'
+import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {
@@ -479,6 +480,19 @@ export namespace RundownUtils {
 		}
 
 		// get the part immediately after the last segment
+	}
+	
+	export function isPieceInstance(piece: PieceUi | AdLibPieceUi): piece is PieceUi {
+		if (piece['instance'] && piece['name'] === undefined) {
+			return true
+		}
+		return false
+	}
 
+	export function isAdLibPiece(piece: PieceUi | AdLibPieceUi): piece is AdLibPieceUi {
+		if (piece['instance'] || piece['name'] === undefined) {
+			return false
+		}
+		return true
 	}
 }

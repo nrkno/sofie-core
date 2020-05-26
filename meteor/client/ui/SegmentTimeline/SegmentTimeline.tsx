@@ -47,6 +47,7 @@ import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 
 interface IProps {
 	id: string
@@ -684,6 +685,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					attributes={{
 						className: 'segment-timeline__title'
 					}}
+					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag='div'>
 					<h2>
 						{this.props.segment.name}

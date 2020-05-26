@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { saveIntoDb, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
-import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCacheObj, IngestDataCache, IngestCacheType, IngestDataCacheObjPart, IngestDataCacheObjRundown, IngestDataCacheObjSegment, IngestDataCacheObjId } from '../../../lib/collections/IngestDataCache'
 import { getSegmentId, getPartId } from './lib'
 import { logger } from '../../../lib/logging'
@@ -73,7 +73,7 @@ export function loadCachedIngestSegment (rundownId: RundownId, rundownExternalId
 
 	return ingestSegment
 }
-export function loadIngestDataCachePart (rundownId: RundownId, rundownExternalId: string, partId: PartId, partExternalId: string): IngestDataCacheObjPart {
+export function loadIngestDataCachePart(rundownId: RundownId, rundownExternalId: string, partId: PartId, partExternalId: string): IngestDataCacheObjPart {
 	const cacheEntries = IngestDataCache.find({
 		rundownId: rundownId,
 		partId: partId,

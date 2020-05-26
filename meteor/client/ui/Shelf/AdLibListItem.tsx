@@ -15,13 +15,12 @@ import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceId } from '../../../lib/collections/Pieces'
+import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
 import { unprotectString } from '../../../lib/lib'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 
-export interface IAdLibListItem {
-	_id: PieceId
-	name: string
-	status?: RundownAPI.PieceStatusCode
+export interface IAdLibListItem extends PieceGeneric {
+	status: RundownAPI.PieceStatusCode
 	hotkey?: string
 	isHidden?: boolean
 	invalid?: boolean
@@ -33,7 +32,7 @@ interface IListViewItemProps {
 	selected: boolean
 	layer: ISourceLayer
 	outputLayer?: IOutputLayer
-	onSelectAdLib: (aSLine: IAdLibListItem) => void
+	onSelectAdLib: (aSLine: PieceGeneric) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	playlist: RundownPlaylist
 }
@@ -55,23 +54,23 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 })(class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps & IAdLibListItemTrackedProps>> {
 	private objId: string
 
-	constructor (props: IListViewItemProps) {
+	constructor(props: IListViewItemProps) {
 		super(props)
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 		})
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 		})
 	}
 
-	updateMediaObjectSubscription () {
+	updateMediaObjectSubscription() {
 		if (this.props.adLibListItem && this.props.layer) {
 			const piece = this.props.adLibListItem as any as AdLibPieceUi
 			let objId: string | undefined = undefined
@@ -99,7 +98,7 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 		}
 	}
 
-	render () {
+	render() {
 		return (
 			<tr className={ClassNames('adlib-panel__list-view__list__segment__item', {
 				'selected': this.props.selected,
@@ -109,17 +108,17 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 				onClick={(e) => this.props.onSelectAdLib(this.props.adLibListItem)}
 				onDoubleClick={(e) => this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey, e)}
 				data-obj-id={this.props.adLibListItem._id}
-				>
+			>
 				<td className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
-					RundownUtils.getSourceLayerClassName(this.props.layer.type),
+					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
 					{
 						'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
 						'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 						'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN
 					}
 				)}>
-					{this.props.layer && (this.props .layer.abbreviation || this.props.layer.name)}
+					{this.props.layer && (this.props.layer.abbreviation || this.props.layer.name)}
 				</td>
 				<td className='adlib-panel__list-view__list__table__cell--shortcut'>
 					{this.props.adLibListItem.hotkey && mousetrapHelper.shortcutLabel(this.props.adLibListItem.hotkey, _isMacLike)}

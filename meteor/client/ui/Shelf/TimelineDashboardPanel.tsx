@@ -25,6 +25,7 @@ interface IState {
 }
 
 interface IDashboardPanelProps {
+	shouldQueue: boolean
 }
 
 interface IDashboardPanelTrackedProps {
@@ -34,8 +35,8 @@ interface IDashboardPanelTrackedProps {
 	}
 }
 
-export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return{
+export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
+	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
 		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
@@ -49,11 +50,11 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 		this.liveLine = el
 		this.ensureLiveLineVisible()
 	}
-	componentDidUpdate (prevProps) {
+	componentDidUpdate(prevProps) {
 		super.componentDidUpdate(prevProps)
 		this.ensureLiveLineVisible()
 	}
-	componentDidMount () {
+	componentDidMount() {
 		super.componentDidMount()
 		this.ensureLiveLineVisible()
 	}
@@ -66,7 +67,7 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 			})
 		}
 	}, 250)
-	render () {
+	render() {
 		if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 			const filter = this.props.filter as DashboardLayoutFilter
 			if (!this.props.uiSegments || !this.props.playlist) {
@@ -81,7 +82,7 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 						<h4 className='dashboard-panel__header'>
 							{this.props.filter.name}
 						</h4>
-						{ filter.enableSearch &&
+						{filter.enableSearch &&
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
 						}
@@ -90,20 +91,20 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 						})}>
 							{filteredRudownBaselineAdLibs.length > 0 &&
 								<div className='dashboard-panel__panel__group'>
-									{filteredRudownBaselineAdLibs.map((item: AdLibPieceUi) => {
+									{filteredRudownBaselineAdLibs.map((adLibListItem: AdLibPieceUi) => {
 										return <DashboardPieceButton
-													key={unprotectString(item._id)}
-													adLibListItem={item}
-													layer={this.state.sourceLayers[item.sourceLayerId]}
-													outputLayer={this.state.outputLayers[item.outputLayerId]}
-													onToggleAdLib={this.onToggleAdLib}
-													playlist={this.props.playlist}
-													isOnAir={this.isAdLibOnAir(item)}
-													mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
-													widthScale={filter.buttonWidthScale}
-													heightScale={filter.buttonHeightScale}
-												>
-													{item.name}
+											key={unprotectString(adLibListItem._id)}
+											adLibListItem={adLibListItem}
+											layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
+											outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
+											onToggleAdLib={this.onToggleAdLib}
+											playlist={this.props.playlist}
+											isOnAir={this.isAdLibOnAir(adLibListItem)}
+											mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+											widthScale={filter.buttonWidthScale}
+											heightScale={filter.buttonHeightScale}
+										>
+											{adLibListItem.name}
 										</DashboardPieceButton>
 									})}
 								</div>
@@ -112,7 +113,6 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 								const filteredPieces = seg.pieces ?
 									seg.pieces.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter, this.state.searchFilter)) :
 									[]
-
 								return filteredPieces.length > 0 || seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId) ?
 									<div key={unprotectString(seg._id)}
 										id={'dashboard-panel__panel__group__' + seg._id}
@@ -123,20 +123,20 @@ export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & ID
 										{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) &&
 											<div className='dashboard-panel__panel__group__liveline' ref={this.setRef}></div>
 										}
-										{filteredPieces.map((item: AdLibPieceUi) => {
+										{filteredPieces.map((adLibListItem: AdLibPieceUi) => {
 											return <DashboardPieceButton
-														key={unprotectString(item._id)}
-														adLibListItem={item}
-														layer={this.state.sourceLayers[item.sourceLayerId]}
-														outputLayer={this.state.outputLayers[item.outputLayerId]}
-														onToggleAdLib={this.onToggleAdLib}
-														playlist={this.props.playlist}
-														isOnAir={this.isAdLibOnAir(item)}
-														mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
-														widthScale={filter.buttonWidthScale}
-														heightScale={filter.buttonHeightScale}
-													>
-														{item.name}
+												key={unprotectString(adLibListItem._id)}
+												adLibListItem={adLibListItem}
+												layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
+												outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
+												onToggleAdLib={this.onToggleAdLib}
+												playlist={this.props.playlist}
+												isOnAir={this.isAdLibOnAir(adLibListItem)}
+												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
+												widthScale={filter.buttonWidthScale}
+												heightScale={filter.buttonHeightScale}
+											>
+												{adLibListItem.name}
 											</DashboardPieceButton>
 										})}
 									</div> :
