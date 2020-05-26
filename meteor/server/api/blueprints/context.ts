@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { getHash, formatDateAsTimecode, formatDurationAsTimecode, unprotectString, unprotectObject, unprotectObjectArray, protectString } from '../../../lib/lib'
+import { getHash, formatDateAsTimecode, formatDurationAsTimecode, unprotectString, unprotectObject, unprotectObjectArray, protectString, getCurrentTime } from '../../../lib/lib'
 import { DBPart, PartId } from '../../../lib/collections/Parts'
 import { check, Match } from 'meteor/check'
 import { logger } from '../../../lib/logging'
@@ -253,7 +253,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 /** Rundown */
 
-export class RundownContext extends ShowStyleContext implements IRundownContext {
+export class RundownContext extends ShowStyleContext implements IRundownContext, IEventContext {
 	readonly rundownId: string
 	readonly rundown: Readonly<IBlueprintRundownDB>
 	readonly _rundown: Rundown
@@ -266,6 +266,10 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		this.rundown = unprotectObject(rundown)
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
+	}
+	
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
 }
 
@@ -299,6 +303,10 @@ export class SegmentContext extends RundownContext implements ISegmentContext {
 
 export class EventContext extends CommonContext implements IEventContext {
 	// TDB: Certain actions that can be triggered in Core by the Blueprint
+
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
 }
 
 export class PartEventContext extends RundownContext implements IPartEventContext {
@@ -308,6 +316,10 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 		super(rundown, new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false), studio)
 
 		this.part = unprotectPartInstance(partInstance)
+	}
+	
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
 }
 
