@@ -44,3 +44,9 @@
 		z-index: 999;
 	}
 }
+
+.testtools-timelinetable {
+	&> tbody > tr {
+		border-bottom: 1px solid #000;
+	}
+}
