@@ -438,12 +438,18 @@ function buildTimelineObjsForRundown(cache: CacheForRundownPlaylist, baselineIte
 
 
 	// Fetch the nextPart first, because that affects how the currentPart will be treated
-	// We may be at the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
-	if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.nextPartInstanceId}" not found!`)
-
-	if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.currentPartInstanceId}" not found!`)
-
-	if (!previousPartInstance) logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
+	if (activePlaylist.nextPartInstanceId) {
+		// We may be at the end of a show, where there is no next part
+		if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.nextPartInstanceId}" not found!`)
+	}
+	if (activePlaylist.currentPartInstanceId) {
+		// We may be before the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
+		if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.currentPartInstanceId}" not found!`)
+	}
+	if (activePlaylist.previousPartInstanceId) {
+		// We may be at the beginning of a show, where there is no previous part
+		if (!previousPartInstance) logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
+	}
 
 	if (baselineItems) {
 		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
