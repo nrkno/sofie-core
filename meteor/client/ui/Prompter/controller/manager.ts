@@ -2,7 +2,6 @@ import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { ControllerAbstract } from './lib'
 import { ShuttleKeyboardController } from './shuttle-keyboard-device'
-import { JoyconController } from './joycon-device'
 import * as _ from 'underscore'
 import { KeyboardController } from './keyboard-device'
 
@@ -10,7 +9,7 @@ export class PrompterControlManager {
 	private _view: PrompterViewInner
 	private _controllers: Array<ControllerAbstract> = []
 
-	constructor (view: PrompterViewInner) {
+	constructor(view: PrompterViewInner) {
 		this._view = view
 
 		window.addEventListener('keydown', this._onKeyDown)
@@ -19,7 +18,7 @@ export class PrompterControlManager {
 		window.addEventListener('mousedown', this._onMouseKeyDown)
 		window.addEventListener('mouseup', this._onMouseKeyUp)
 
-		if(Array.isArray(this._view.configOptions.mode)) {
+		if (Array.isArray(this._view.configOptions.mode)) {
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.MOUSE) > -1) {
 				this._controllers.push(new MouseIshController(this._view))
 
@@ -27,13 +26,10 @@ export class PrompterControlManager {
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.KEYBOARD) > -1) {
 				this._controllers.push(new KeyboardController(this._view))
 
-			} 
+			}
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.SHUTTLEKEYBOARD) > -1) {
 				this._controllers.push(new ShuttleKeyboardController(this._view))
-			} 
-			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.JOYCON) > -1) {
-				this._controllers.push(new JoyconController(this._view))
-			} 
+			}
 		}
 
 		if (this._controllers.length === 0) {
@@ -42,7 +38,7 @@ export class PrompterControlManager {
 			this._controllers.push(new KeyboardController(this._view))
 		}
 	}
-	destroy () {
+	destroy() {
 		window.removeEventListener('keydown', this._onKeyDown)
 		window.removeEventListener('keyup', this._onKeyUp)
 		window.removeEventListener('wheel', this._onWheel)
