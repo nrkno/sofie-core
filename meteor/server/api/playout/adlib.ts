@@ -182,10 +182,39 @@ export namespace ServerPlayoutAdLibAPI {
 		})
 		if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
-		let nextPart = rundown.nextPartId && rundown.nextPartId !== partId ? Parts.findOne({
-			_id: rundown.nextPartId,
+		let nextPartInstance = rundownPlaylist.nextPartInstanceId && rundownPlaylist.nextPartInstanceId !== partInstanceId ? PartInstances.findOne({
+			_id: rundownPlaylist.nextPartInstanceId,
 			rundownId: rundown._id
 		}) : undefined
+
+		let pieceStart: number | 'now' = queue ? 0 : 'now'
+
+		if (!queue && nextPartInstance && partInstance && adLibPiece.sourceLayerId.match(/dve_box/)) {
+			// Find any core dve pieces
+			const dvePieces = PieceInstances.find({
+				rundownId: rundown._id,
+				partInstanceId: { $in: [ partInstance._id, nextPartInstance._id ] },
+				'piece.sourceLayerId': /dve(?!_box|_back)/i // dve layers but not dve_box layers
+			}).fetch()
+			const partInstanceIds = dvePieces.map(p => p.partInstanceId)
+
+			// If only next says it is a dve and not current
+			if (partInstanceIds.indexOf(nextPartInstance._id) !== -1 && partInstanceIds.indexOf(partInstance._id) === -1) {
+				partInstance = nextPartInstance
+				pieceStart = 0
+
+				// Ensure any previous adlibs are pruned first
+				PieceInstances.remove({
+					partInstanceId: partInstance._id,
+					rundownId: rundown._id,
+					'piece.enable.start': 0,
+					'piece.dynamicallyInserted': true,
+					'piece.sourceLayerId': adLibPiece.sourceLayerId
+				})
+			}
+		}
+
+		const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, partInstance, queue)
 
 		let pieceStart: number | 'now' = queue ? 0 : 'now'
 		// HACK WARNING: Temporary 'fix' to insert adlibs to the next part if it is a dve and the current one is not.
