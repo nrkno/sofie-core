@@ -33,6 +33,7 @@ import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
 import { ContextMenuTrigger } from 'react-contextmenu'
+import { AdLibRegionPanel } from './AdLibRegionPanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -375,6 +376,67 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.setState({
 			shouldQueue
 		})
+	}
+
+	renderDashboardLayout (rundownLayout: DashboardLayout) {
+		const { t } = this.props
+		return <div className='dashboard'>
+			{rundownLayout.filters
+				.sort((a, b) => a.rank - b.rank)
+				.map((panel) =>
+					RundownLayoutsAPI.isFilter(panel) ?
+						(panel as DashboardLayoutFilter).showAsTimeline ?
+							<TimelineDashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={!(panel as DashboardLayoutFilter).hide}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								playlist={this.props.playlist}
+								showStyleBase={this.props.showStyleBase}
+								studioMode={this.props.studioMode}
+								{...this.props}
+								/> :
+							<DashboardPanel
+								key={panel._id}
+								includeGlobalAdLibs={true}
+								filter={panel}
+								visible={!(panel as DashboardLayoutFilter).hide}
+								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								playlist={this.props.playlist}
+								showStyleBase={this.props.showStyleBase}
+								studioMode={this.props.studioMode}
+								shouldQueue={this.state.shouldQueue}
+								{...this.props}
+								/> :
+					RundownLayoutsAPI.isExternalFrame(panel) ?
+						<ExternalFramePanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							visible={true}
+							playlist={this.props.playlist}
+							{...this.props}
+							/> :
+					RundownLayoutsAPI.isAdLibRegion(panel) ?
+						<AdLibRegionPanel
+							key={panel._id}
+							includeGlobalAdLibs={true}
+							panel={panel}
+							filter={RundownLayoutsAPI.adLibRegionToFilter(panel)}
+							layout={rundownLayout}
+							adlibRank={panel.adlibRank}
+							visible={true}
+							{...this.props}
+							/> :
+						undefined
+			)}
+			{rundownLayout.actionButtons &&
+				<DashboardActionButtonGroup
+					playlist={this.props.playlist}
+					buttons={rundownLayout.actionButtons}
+					studioMode={this.props.studioMode} />}
+		</div>
 	}
 
 	render() {

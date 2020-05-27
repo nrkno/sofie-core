@@ -731,6 +731,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							hideOnZero={true}
 						/>
 					}
+					{
+						Settings.allowUnsyncedSegments && this.props.segment.unsynced &&
+						<span className='segment-timeline__unsynced'>
+							{ t('Unsynced') }
+						</span>
+					}
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.externalId}</div>
 				<div className='segment-timeline__output-layers'>

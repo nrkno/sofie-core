@@ -106,9 +106,14 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 }
 export interface PreparedChanges<T> {
 	inserted: T[]
-	changed: {doc: T, oldId: ProtectedString<any>}[]
+	changed: PreparedChangesChangesDoc<T>[]
 	removed: T[]
 	unchanged: T[]
+}
+
+export interface PreparedChangesChangesDoc<T> {
+	doc: T
+	oldId: ProtectedString<any>
 }
 export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,

@@ -197,11 +197,21 @@ export namespace ServerPlayoutAdLibAPI {
 			// Update any infinites
 			updateSourceLayerInfinitesAfterPart(rundown, previousPartInstance!.part)
 
+			// Copy across adlib-preroll and other properties needed on the part
+			PartInstances.update(partInstance._id, {
+				$set: {
+					prerollDuration: adLibPiece.adlibPreroll,
+					autoNext: adLibPiece.adlibAutoNext,
+					autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
+					disableOutTransition: adLibPiece.adlibDisableOutTransition,
+					expectedDuration: adLibPiece.expectedDuration
+				}
+			})
+
 			setNextPart(rundownPlaylist, partInstance)
-		} else {
-			cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
-			stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 		}
+		cropInfinitesOnLayer(rundown, partInstance, newPieceInstance)
+		stopInfinitesRunningOnLayer(rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 		updateTimeline(rundownPlaylist.studioId)
 	}
 	function adlibQueueInsertPartInstance(rundownPlaylist: RundownPlaylist, rundown: Rundown, afterPartInstance: PartInstance, adLibPiece: AdLibPiece | BucketAdLib): PartInstanceId {

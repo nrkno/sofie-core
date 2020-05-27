@@ -55,7 +55,7 @@ import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction, UserAction } from '../lib/userAction'
-import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
@@ -1672,6 +1672,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		onResyncSegment = (segmentId: SegmentId, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.rundownPlaylistId) {
+				doUserAction(t, e, 'Resync Segment', (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
+			}
+		}
+		
 		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			const { t } = this.props
 			if (
@@ -2001,6 +2008,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										playlist={this.props.playlist}
 										onSetNext={this.onSetNext}
 										onSetNextSegment={this.onSetNextSegment}
+										onResyncSegment={this.onResyncSegment}
 										studioMode={this.state.studioMode} />
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2118,7 +2126,7 @@ export function handleRundownPlaylistReloadResponse(t: i18next.TranslationFuncti
 
 	let maybeMissingRundownId: RundownId | null = null
 	_.each(result.rundownsResponses, r => {
-		if (r.response === ReloadRundownResponse.MISSING) {
+		if (r.response === TriggerReloadDataResponse.MISSING) {
 			maybeMissingRundownId = r.rundownId
 		}
 	})

@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { withTracker, Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
@@ -26,6 +26,9 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { translate } from 'react-i18next'
+import { doUserAction } from '../../lib/userAction'
+import { MeteorCall } from '../../../lib/api/methods'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -100,7 +103,7 @@ interface ITrackedProps {
 	followingPart: PartUi | undefined
 	lastValidPartIndex: number | undefined
 }
-export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
 	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 	const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
@@ -213,7 +216,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 	}
 
 	return false
-})(class SegmentTimelineContainer extends MeteorReactComponent<IProps & ITrackedProps, IState> {
+})(class SegmentTimelineContainer extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired
 	}
@@ -317,6 +320,11 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 			this.isLiveSegment = false
 			this.stopLive()
 			if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
+
+			if (this.props.segmentui && this.props.segmentui.unsynced) {
+				const { t } = this.props
+				doUserAction(t, undefined, 'Resync Segment', (e) => MeteorCall.userAction.resyncSegment('', this.props.segmentui!._id))
+			}
 
 			if (this.state.autoExpandCurrentNextSegment) {
 				this.setState({
@@ -585,4 +593,4 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 		) || null
 	}
 }
-)
+))

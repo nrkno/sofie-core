@@ -1,0 +1,186 @@
+import * as React from 'react'
+import * as _ from 'underscore'
+import { RundownLayoutBase, RundownLayoutAdLibRegion, DashboardLayoutAdLibRegion, RundownLayoutAdLibRegionRole, RundownLayoutElementType, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import * as classNames from 'classnames'
+import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
+import { doUserAction } from '../../lib/userAction'
+import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { unprotectString } from '../../../lib/lib'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { MeteorCall } from '../../../lib/api/methods'
+import { PieceId } from '../../../lib/collections/Pieces'
+
+interface IState {
+}
+
+interface IAdLibRegionPanelProps {
+	layout: RundownLayoutBase
+	panel: RundownLayoutAdLibRegion
+	visible: boolean
+	adlibRank?: number
+}
+
+interface IAdLibRegionPanelTrackedProps {
+	unfinishedPieces: {
+		[key: string]: PieceInstance[]
+	}
+	nextPieces: {
+		[key: string]: PieceInstance[]
+	}
+}
+
+export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>, IState> {
+
+	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+		super(props)
+
+	}
+
+	isAdLibOnAir (adLib: AdLibPieceUi) {
+		if (this.props.unfinishedPieces[unprotectString(adLib._id)] && this.props.unfinishedPieces[unprotectString(adLib._id)].length > 0) {
+			return true
+		}
+		return false
+	}
+
+	isAdLibNext (adLib: AdLibPieceUi) {
+		if (this.props.nextPieces[unprotectString(adLib._id)] && this.props.nextPieces[unprotectString(adLib._id)].length > 0) {
+			return true
+		}
+		return false
+	}
+
+	onToggleSticky = (sourceLayerId: string, e: any) => {
+		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
+			const { t } = this.props
+			doUserAction(t, e, 'Start Sticky Piece', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e,
+				this.props.playlist._id, sourceLayerId
+			))
+		}
+	}
+
+	toggleAdLib (e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
+		const { t } = this.props
+		if (!piece) {
+			return
+		}
+
+		if (piece.invalid) {
+			NotificationCenter.push(new Notification(
+				t('Invalid AdLib'),
+				NoticeLevel.WARNING,
+				t('Cannot play this AdLib because it is marked as Invalid'),
+				'toggleAdLib'))
+			return
+		}
+
+		const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+
+		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
+			if (!piece.isGlobal) {
+				doUserAction(t, e, 'Start Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
+					this.props.playlist._id, currentPartInstanceId, piece._id, true
+				))
+			} else if (piece.isGlobal && !piece.isSticky) {
+				doUserAction(t, e, 'Start global Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
+					this.props.playlist._id, currentPartInstanceId, piece._id, true
+				))
+			} else if (piece.isSticky) {
+				this.onToggleSticky(piece.sourceLayerId, e)
+			}
+		}
+	}
+
+	take = (e: any) => {
+		const { t } = this.props
+		if (this.props.studioMode) {
+			doUserAction(t, e, 'Take', (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+		}
+	}
+
+	onAction = (e: any, piece?: AdLibPieceUi) => {
+		switch (this.props.panel.role) {
+			case RundownLayoutAdLibRegionRole.QUEUE:
+				this.toggleAdLib(e, piece, true)
+				break
+			case RundownLayoutAdLibRegionRole.TAKE:
+				this.take(e)
+				break
+			case RundownLayoutAdLibRegionRole.PROGRAM:
+				break
+		}
+	}
+
+	render () {
+		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs ?
+		this.props.rundownBaselineAdLibs.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces))).filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[this.props.adlibRank ? this.props.adlibRank : 0] : undefined
+		return <div className='adlib-region-panel'
+			style={
+				_.extend(
+					RundownLayoutsAPI.isDashboardLayout(this.props.layout) ?
+						dashboardElementPosition(this.props.panel as DashboardLayoutAdLibRegion) :
+						{},
+					{
+						'visibility': this.props.visible ? 'visible' : 'hidden'
+					}
+				)
+			}>
+			<div className={classNames('adlib-region-panel__image-container', {
+				'next': piece && this.isAdLibNext(piece),
+				'on-air': piece && this.isAdLibOnAir(piece)
+			})} >
+				<div className='adlib-region-panel__button'
+					onClick={(e) => this.onAction(e, piece)}
+				>
+					{
+					<span className={classNames('adlib-region-panel__label',{
+						'adlib-region-panel__label--large': this.props.panel.labelBelowPanel
+					})}>{this.props.panel.name}</span>
+					}
+				</div>
+			</div>
+		</div>
+	}
+}
+
+
+export function getNextPiecesReactive (nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
+	let prospectivePieceInstances: PieceInstance[] = []
+	if (nextPartInstanceId) {
+		prospectivePieceInstances = PieceInstances.find({
+			partInstanceId: nextPartInstanceId,
+			$and: [
+				{
+					piece: {
+						$exists: true
+					}
+				},
+				{
+					'piece.adLibSourceId': {
+						$exists: true
+					}
+				}
+			]
+		}).fetch()
+	}
+
+	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
+	_.each(_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId), (grp, id) => nextPieces[id] = _.map(grp, instance => instance))
+	return nextPieces
+}
+
+export const AdLibRegionPanel = translateWithTracker<Translated<IAdLibPanelProps & IAdLibRegionPanelProps>, IState, IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>((props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
+	return Object.assign({}, fetchAndFilter(props), {
+		studio: props.playlist.getStudio(),
+		unfinishedPieces: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+		nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId)
+	})
+}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	return !_.isEqual(props, nextProps)
+})(AdLibRegionPanelInner)
