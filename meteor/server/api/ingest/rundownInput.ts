@@ -42,6 +42,7 @@ import {
 	unprotectString,
 	protectString,
 	omit,
+	Omit,
 	ProtectedString,
 	PreparedChangesChangesDoc
 } from '../../../lib/lib'
@@ -726,7 +727,7 @@ export function handleUpdatedSegment (peripheralDevice: PeripheralDevice, rundow
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-		const segment = getSegment(segmentId)
+		const segment = Segments.findOne(segmentId) // Note: undefined is valid here, as it means this is a new segment
 		if (!canBeUpdated(rundown, segment)) return
 
 		saveSegmentCache(rundown._id, segmentId, ingestSegment)
@@ -1264,6 +1265,7 @@ function processChangeGroup <
 	changeField: ChangeType
 ) {
 	const subset = preparedChanges[changeField]
+	// @ts-ignore
 	subset.forEach((ch) => {
 		if (changeField === 'changed') {
 			const existing = changes.findIndex((c) => (ch as PreparedChangesChangesDoc<ChangedObj>).doc._id === c.segmentId)
@@ -1288,9 +1290,11 @@ function processChangeGroupInner <
 			}
 		}
 
+		// @ts-ignore
 		changes[existing].segment[changeField].push(changedObject as any)
 	} else {
 		const newChange = makeChangeObj(segmentId)
+		// @ts-ignore
 		newChange.segment[changeField].push(changedObject as any)
 		changes.push(newChange)
 	}

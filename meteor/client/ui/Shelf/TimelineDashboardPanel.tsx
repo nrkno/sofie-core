@@ -30,16 +30,16 @@ interface IDashboardPanelProps {
 
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
-	unfinishedPieceInstanceIds: {
-		[adlibId: string]: PieceInstance[]
-	}
+	// unfinishedPieceInstanceIds: {
+	// 	[adlibId: string]: PieceInstance[]
+	// }
 }
 
 export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
+		// unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
 	}
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)

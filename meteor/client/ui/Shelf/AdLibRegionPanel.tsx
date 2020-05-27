@@ -6,7 +6,7 @@ import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from '.
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import * as classNames from 'classnames'
 import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -59,7 +59,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLi
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, 'Start Sticky Piece', (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e,
+			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e,
 				this.props.playlist._id, sourceLayerId
 			))
 		}
@@ -84,11 +84,11 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLi
 
 		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
 			if (!piece.isGlobal) {
-				doUserAction(t, e, 'Start Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
+				doUserAction(t, e, UserAction.START_ADLIB, (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
 					this.props.playlist._id, currentPartInstanceId, piece._id, true
 				))
 			} else if (piece.isGlobal && !piece.isSticky) {
-				doUserAction(t, e, 'Start global Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
+				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
 					this.props.playlist._id, currentPartInstanceId, piece._id, true
 				))
 			} else if (piece.isSticky) {
@@ -100,7 +100,7 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLi
 	take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
-			doUserAction(t, e, 'Take', (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
+			doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
 		}
 	}
 

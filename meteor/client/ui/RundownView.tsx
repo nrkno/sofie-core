@@ -1675,7 +1675,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onResyncSegment = (segmentId: SegmentId, e: any) => {
 			const { t } = this.props
 			if (this.state.studioMode && this.props.rundownPlaylistId) {
-				doUserAction(t, e, 'Resync Segment', (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
+				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
 			}
 		}
 		

@@ -27,7 +27,7 @@ import { unprotectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { translate } from 'react-i18next'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
@@ -323,7 +323,7 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 
 			if (this.props.segmentui && this.props.segmentui.unsynced) {
 				const { t } = this.props
-				doUserAction(t, undefined, 'Resync Segment', (e) => MeteorCall.userAction.resyncSegment('', this.props.segmentui!._id))
+				doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) => MeteorCall.userAction.resyncSegment('', this.props.segmentui!._id))
 			}
 
 			if (this.state.autoExpandCurrentNextSegment) {

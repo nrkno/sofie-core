@@ -45,7 +45,7 @@ import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PieceInstanceId, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceInstanceId, PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
@@ -171,7 +171,7 @@ export interface IBucketPanelProps {
 
 export interface IBucketPanelTrackedProps {
 	adLibPieces: BucketAdLib[]
-	unfinishedPieceInstanceIds: _.Dictionary<PieceInstanceId[]>
+	unfinishedPieceInstances: _.Dictionary<PieceInstance[]>
 	studio: Studio
 	showStyleVariantId: ShowStyleVariantId
 }
@@ -226,7 +226,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 			}
 		}).fetch(),
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+		unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
 		showStyleVariantId
 	})
 }, (data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
@@ -321,7 +321,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 	}
 
 	isAdLibOnAir(adLib: IAdLibListItem) {
-		if (this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)] && this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)].length > 0) {
+		if (this.props.unfinishedPieceInstances[unprotectString(adLib._id)] && this.props.unfinishedPieceInstances[unprotectString(adLib._id)].length > 0) {
 			return true
 		}
 		return false

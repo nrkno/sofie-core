@@ -63,7 +63,7 @@ export interface IDashboardPanelProps {
 
 export interface IDashboardPanelTrackedProps {
 	studio?: Studio
-	unfinishedPieceInstanceIds: {
+	unfinishedPieceInstances: {
 		[adlibId: string]: PieceInstance[]
 	}
 	nextPieces: {
@@ -231,7 +231,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 	}
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
-		if (this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)] && this.props.unfinishedPieceInstanceIds[unprotectString(adLib._id)].length > 0) {
+		if (this.props.unfinishedPieceInstances[unprotectString(adLib._id)] && this.props.unfinishedPieceInstances[unprotectString(adLib._id)].length > 0) {
 			return true
 		}
 		return false
@@ -424,14 +424,14 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
 					if (!piece.isGlobal) {
-						doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
+						doUserAction(t, e, UserAction.START_ADLIB, (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
 							this.props.playlist._id,
 							this.props.playlist.currentPartInstanceId as PartInstanceId,
 							piece._id,
 							false
 						))
 					} else if (piece.isGlobal && !piece.isSticky) {
-						doUserAction(t, e, 'Start playing Adlib', (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
+						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
 							this.props.playlist._id,
 							this.props.playlist.currentPartInstanceId as PartInstanceId,
 							piece._id,
@@ -617,7 +617,7 @@ export const DashboardPanel = translateWithTracker<Translated<IAdLibPanelProps &
 	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+		unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
 		nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId)
 	}
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
