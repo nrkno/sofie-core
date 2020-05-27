@@ -597,7 +597,7 @@ function buildTimelineObjsForRundown(cache: CacheForRundownPlaylist, baselineIte
 
 			let toSkipIds = currentPieces.filter(i => i.piece.infiniteId).map(i => i.piece.infiniteId)
 
-			let nextPieceInstances = cache.PieceInstances.findFetch({ pieceInstanceId: nextPartInstance._id })
+			let nextPieceInstances = cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
 			nextPieceInstances = nextPieceInstances.filter(i => !i.piece.infiniteId || toSkipIds.indexOf(i.piece.infiniteId) === -1)
 
 			const groupClasses: string[] = ['next_part']
