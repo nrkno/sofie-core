@@ -472,7 +472,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineWheel = (e: React.WheelEventHandler<HTMLDivElement> & any) => {
+	onTimelineWheel = (e: WheelEvent) => {
 		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey &&
 			// @ts-ignore
 			!window.keyboardModifiers.altRight) { // ctrl + Scroll
@@ -488,6 +488,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { // no modifier
 			if (e.deltaX !== 0) {
 				this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)
+				e.preventDefault()
 			}
 		}
 	}
