@@ -136,7 +136,7 @@ mousetrap.addKeycodes({
 	90220: '\\', // on ANSI-based keyboards, this is the key with single quote
 	91220: '|', // this key is not present on ANSI-based keyboards
 
-	90187: 'nbPlus', // this is also listed as 'add' below
+	187: 'nbPlus', // this is also listed as 'add' below
 	219: 'nbBackslash',
 	221: 'å',
 	186: '¨',
@@ -161,6 +161,6 @@ mousetrap.addKeycodes({
 	109: 'numSub',
 	110: 'numDot',
 	111: 'numDiv',
-	187: 'add',
+	// 187: 'add',
 	188: 'comma'
 })
