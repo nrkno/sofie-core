@@ -11,9 +11,10 @@ import { IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, AdLibPieceUi
 import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { DashboardPanelInner, dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
+import { DashboardPanelInner, dashboardElementPosition, getUnfinishedPieceInstancesReactive, IDashboardPanelProps, IDashboardPanelTrackedProps } from './DashboardPanel'
 import { PieceInstanceId, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { unprotectString, protectString } from '../../../lib/lib'
+import { getNextPiecesReactive } from './AdLibRegionPanel'
 interface IState {
 	outputLayers: {
 		[key: string]: IOutputLayer
@@ -24,21 +25,12 @@ interface IState {
 	searchFilter: string | undefined
 }
 
-interface IDashboardPanelProps {
-}
-
-interface IDashboardPanelTrackedProps {
-	studio?: Studio
-	unfinishedPieceInstanceIds: {
-		[adlibId: string]: PieceInstance[]
-	}
-}
-
-export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
-	return{
+export const TimelineDashboardPanel = translateWithTracker<IAdLibPanelProps & IDashboardPanelProps, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
+	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
+		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+		nextPieces: getNextPiecesReactive(props.playlist.currentPartInstanceId)
 	}
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)

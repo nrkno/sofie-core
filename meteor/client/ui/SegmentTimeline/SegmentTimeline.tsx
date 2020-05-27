@@ -46,7 +46,6 @@ import { MAGIC_TIME_SCALE_FACTOR, RundownViewEvents, IContextMenuContext } from 
 import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
-import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	id: string

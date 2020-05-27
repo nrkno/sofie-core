@@ -21,14 +21,6 @@ import { Random } from 'meteor/random'
 import { translate } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
-import { callMethod } from '../../lib/clientAPI'
-import { ShowStylesAPI } from '../../../lib/api/showStyles'
-import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings, collectConfigs } from './ConfigManifestSettings'
-import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
@@ -36,7 +28,10 @@ import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
 import { downloadBlob } from '../../lib/downloadBlob'
-import { AHKModifierMap, AHKKeyboardMap, AHKBaseHeader, useAHKComboTemplate } from '../../../lib/tv2/AHKkeyboardMap';
+import { AHKModifierMap, AHKKeyboardMap, AHKBaseHeader, useAHKComboTemplate } from '../../../lib/tv2/AHKkeyboardMap'
+import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
+import { ConfigManifestEntry, BlueprintManifestType, IBlueprintRuntimeArgumentsItem, ISourceLayer, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 
 interface IProps {
 	match: {
@@ -1190,17 +1185,17 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 		const mappedKeys = this.props.showStyleBase.hotkeyLegend
 		let ahkCommands: string[] = _.clone(AHKBaseHeader)
 
-		function convertComboToAHK(combo: string) {
+		function convertComboToAHK (combo: string) {
 			return combo.split(/\s*\+\s*/).map(key => {
-					const lowerCaseKey = key.toLowerCase()
-					if (AHKModifierMap[lowerCaseKey] !== undefined) {
-						return AHKModifierMap[lowerCaseKey]
-					} else if (AHKKeyboardMap[lowerCaseKey] !== undefined) {
-						return AHKKeyboardMap[lowerCaseKey]
-					} else {
-						return lowerCaseKey
-					}
-				}).join('')
+				const lowerCaseKey = key.toLowerCase()
+				if (AHKModifierMap[lowerCaseKey] !== undefined) {
+					return AHKModifierMap[lowerCaseKey]
+				} else if (AHKKeyboardMap[lowerCaseKey] !== undefined) {
+					return AHKKeyboardMap[lowerCaseKey]
+				} else {
+					return lowerCaseKey
+				}
+			}).join('')
 		}
 
 		if (mappedKeys) {
@@ -1214,7 +1209,7 @@ const HotkeyLegendSettings = translate()(class HotkeyLegendSettings extends Reac
 				}))
 		}
 
-		const blob = new Blob([ ahkCommands.join('\r\n') ], {type: 'text/plain'})
+		const blob = new Blob([ ahkCommands.join('\r\n') ], { type: 'text/plain' })
 		downloadBlob(blob, `${this.props.showStyleBase.name}_${(new Date()).toLocaleDateString()}_${(new Date()).toLocaleTimeString()}.ahk`)
 	}
 

@@ -342,7 +342,7 @@ export function getResolvedSegment (
 			})
 
 			// use the expectedDuration and fallback to the default display duration for the part
-			partE.renderedDuration = partE.expectedDuration || Settings.defaultDisplayDuration // furthestDuration
+			partE.renderedDuration = partE.instance.part.expectedDuration || Settings.defaultDisplayDuration // furthestDuration
 
 			// displayDuration groups are sets of Parts that share their expectedDurations.
 			// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.

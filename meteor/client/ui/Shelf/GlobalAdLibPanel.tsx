@@ -31,12 +31,12 @@ import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notific
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
-import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry';
+import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: AdLibPieceUi) => void
-	onToggleSticky: (e: any, item: IAdLibListItem) => void
-	onToggleAdLib: (e: any, piece: AdLibPieceUi, queue: boolean) => void
+	onToggleSticky: (item: IAdLibListItem, e: any) => void
+	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: any) => void
 	selectedPiece: AdLibPieceUi | undefined
 	searchFilter: string | undefined
 	showStyleBase: ShowStyleBase
@@ -346,7 +346,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 			this.usedHotkeys.length = 0
-	
+
 			this.refreshKeyboardHotkeys()
 		}
 	}
@@ -373,9 +373,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		if (this.props.rundownAdLibs) {
-            RegisteredHotkeys.remove({
-                tag: HOTKEY_GROUP
-            })
+			RegisteredHotkeys.remove({
+				tag: HOTKEY_GROUP
+			})
 			this.props.rundownAdLibs.forEach((item) => {
 				if (item.hotkey) {
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
@@ -385,8 +385,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					}, 'keyup', HOTKEY_GROUP)
 					this.usedHotkeys.push(item.hotkey)
 
-                    if (this.props.sourceLayerLookup[item.sourceLayerId]) {
-							registerHotkey(
+					if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+						registerHotkey(
 								item.hotkey,
 								item.name,
 								HotkeyAssignmentType.GLOBAL_ADLIB,
@@ -396,7 +396,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 								[item, false],
 								HOTKEY_GROUP
 							)
-						}
+					}
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
@@ -405,10 +405,10 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, true, e)
-                        }, 'keyup', HOTKEY_GROUP)
-                        this.usedHotkeys.push(queueHotkey)
+						}, 'keyup', HOTKEY_GROUP)
+						this.usedHotkeys.push(queueHotkey)
 
-                        if (this.props.sourceLayerLookup[item.sourceLayerId]) {
+						if (this.props.sourceLayerLookup[item.sourceLayerId]) {
 							registerHotkey(
 								item.hotkey,
 								item.name,
@@ -421,8 +421,9 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							)
 						}
 					}
-				})
-			}
+				}
+			})
+		}
 
 		if (this.props.sourceLayerLookup) {
 

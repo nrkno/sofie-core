@@ -7,10 +7,6 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { Segment } from '../../../lib/collections/Segments'
-import { Part } from '../../../lib/collections/Parts'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem } from './AdLibListItem'
 import * as ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -32,7 +28,6 @@ import { RundownLayoutFilter, RundownLayoutFilterBase, DashboardLayoutFilter } f
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
 import { literal, extendMandadory, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
-import { literal, extendMandadory } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
@@ -42,7 +37,7 @@ import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../l
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
 	onSelectAdLib: (piece: AdLibPieceUi) => void
-	onToggleAdLib: (e: ExtendedKeyboardEvent, piece: AdLibPieceUi, queue: boolean) => void
+	onToggleAdLib: (piece: AdLibPieceUi, queue: boolean, e: ExtendedKeyboardEvent) => void
 	selectedPart: AdLibPieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
@@ -749,13 +744,13 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 		this.usedHotkeys.length = 0
 
-        if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
-            this.setState({
-                selectedSegment: this.props.liveSegment
-            })
-        }
+		if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
+			this.setState({
+				selectedSegment: this.props.liveSegment
+			})
+		}
 
-        this.refreshKeyboardHotkeys()
+		this.refreshKeyboardHotkeys()
 	}
 
 	componentWillUnmount () {
@@ -895,7 +890,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			))
 		}
 	}
-
 	onSelectSegment = (segment: AdlibSegmentUi) => {
 		// console.log(segment)
 		this.setState({
@@ -903,7 +897,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			followLive: (this.props.liveSegment ? segment._id === this.props.liveSegment._id : true)
 		})
 	}
-
 	renderSegmentList () {
 		return this.props.uiSegments.map((item) => {
 			return (
@@ -919,7 +912,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			)
 		})
 	}
-
 	renderListView (withSegments?: boolean) {
 		// let a = new AdLibPanelToolbar({
 		// t: () => {},
@@ -945,8 +937,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			</React.Fragment>
 		)
 	}
-
-	render () {
+	rendr () {
 		if (this.props.visible) {
 			if (!this.props.uiSegments || !this.props.playlist) {
 				return <Spinner />

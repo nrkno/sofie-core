@@ -208,35 +208,6 @@ export class Part implements DBPart {
 		})
 		return notes
 	}
-	getMinimumReactiveNotes (rundown: Rundown, studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
-		let notes: Array<PartNote> = []
-		notes = notes.concat(this.notes || [])
-
-		const pieces = this.getPieces()
-		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-		_.each(pieces, (piece) => {
-			// TODO: check statuses (like media availability) here
-
-			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
-				const part = partLookup[piece.sourceLayerId]
-				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
-				if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
-					notes.push({
-						type: NoteType.WARNING,
-						origin: {
-							name: 'Media Check',
-							rundownId: this.rundownId,
-							segmentId: this.segmentId,
-							partId: this._id,
-							pieceId: piece._id
-						},
-						message: st.message || ''
-					})
-				}
-			}
-		})
-		return notes
-	}
 	getLastTake () {
 		if (!this.timings) return undefined
 

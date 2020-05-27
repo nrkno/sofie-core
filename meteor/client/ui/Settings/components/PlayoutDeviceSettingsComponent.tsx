@@ -487,7 +487,7 @@ export const PlayoutDeviceSettingsComponent = translate()(class PlayoutDeviceSet
 			</div>
 		</React.Fragment>
 	}
-	renderVizMSEDeviceSettings (_subDevice: PlayoutDeviceSettingsDevice, deviceId: string) {
+	renderVizMSEDeviceSettings (_subDevice: TSR.DeviceOptionsAny, deviceId: PeripheralDeviceId) {
 		const { t } = this.props
 		return <React.Fragment>
 			<div className='mod mvs mhs'>

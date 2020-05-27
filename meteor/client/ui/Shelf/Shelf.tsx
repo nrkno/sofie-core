@@ -32,7 +32,6 @@ import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { Settings } from '../../../lib/Settings'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
-import { ExternalFramePanel } from './ExternalFramePanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',

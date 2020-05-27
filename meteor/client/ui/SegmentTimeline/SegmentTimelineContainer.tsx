@@ -29,7 +29,6 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { translate } from 'react-i18next'
 import { doUserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Settings } from '../../../lib/Settings'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -85,6 +84,7 @@ interface IState {
 	},
 	collapsed: boolean,
 	followLiveLine: boolean,
+	livePosition: number,
 	displayTimecode: number
 	autoExpandCurrentNextSegment: boolean
 }
@@ -556,10 +556,6 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 			)
 		}
 		if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
-	}
-
-	onZoomChange = (newScale: number, e: any) => {
-		this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
 	}
 
 	onZoomChange = (newScale: number, e: any) => {

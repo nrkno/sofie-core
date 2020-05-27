@@ -23,7 +23,8 @@ import {
 	RundownLayoutExternalFrame,
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
-	RundownLayoutId
+	RundownLayoutId,
+	RundownLayoutKeyboardPreview
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -37,6 +38,7 @@ import { fetchFrom } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
+import { defaultColorPickerPalette } from '../../lib/colorPicker'
 // import { Link } from 'react-router-dom'
 
 export interface IProps {

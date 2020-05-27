@@ -63,9 +63,7 @@ import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
 import { OffsetPosition } from '../utils/positions'
-import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
-import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdlibSegmentUi } from './Shelf/AdLibPanel'
 import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
@@ -932,7 +930,7 @@ const RundownHeader = translate()(class RundownHeader extends React.Component<Tr
 										// </MenuItem> :
 										// null
 								}
-								<MenuItem onClick={(e) => this.reloadRundown(e)}>
+								<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
 									{t('Reload iNews Data')}
 								</MenuItem>
 								<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>

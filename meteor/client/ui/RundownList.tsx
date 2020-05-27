@@ -50,7 +50,7 @@ interface IRundownListItemProps {
 }
 
 interface IRundownListItemState {
-	selectedView: string
+	selectedView: string // TODO
 }
 
 export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemState> {
@@ -58,7 +58,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 
 		this.state = {
-			selectedView: UIStateStorage.getItemString(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', 'default')
+			selectedView: '' // UIStateStorage.getItemString(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', 'default')
 		}
 	}
 
@@ -116,7 +116,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 	}
 
 	saveViewChoice (key: string) {
-		UIStateStorage.setItem(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', key)
+		// UIStateStorage.setItem(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', key)
 	}
 
 	renderLinkItem (layout: RundownLayoutBase, link: string, key: string) {
@@ -133,26 +133,28 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 	}
 
 	renderViewLinks () {
-		const { t } = this.props
-		const standaloneLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsStandalone).map(layout => {
-			return this.renderLinkItem(layout, this.getShelfLink(this.props.rundown._id, layout._id), `standalone${layout._id}`)
-		})
-		const shelfLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsShelf).map(layout => {
-			return this.renderLinkItem(layout, this.getRundownWithLayoutLink(this.props.rundown._id, layout._id), `shelf${layout._id}`)
-		})
-		const allElements = [
-			...standaloneLayouts,
-			<div className='expco-header' key={'header2'}>{t('Timeline views')}</div>,
-			...shelfLayouts,
-			<Link to={this.getRundownLink(this.props.rundown._id)} onClick={() => this.saveViewChoice('default')} key={'default'}>
-				<div className='action-btn expco-item'>{t('Default')}</div>
-			</Link>
-		]
-		return (
-			<React.Fragment>
-				<SplitDropdown selectedKey={this.state.selectedView} elements={allElements}/>
-			</React.Fragment>
-		)
+		// const { t } = this.props
+		// const standaloneLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsStandalone).map(layout => {
+		// 	return this.renderLinkItem(layout, this.getShelfLink(this.props.rundown._id, layout._id), `standalone${layout._id}`)
+		// })
+		// const shelfLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsShelf).map(layout => {
+		// 	return this.renderLinkItem(layout, this.getRundownWithLayoutLink(this.props.rundown._id, layout._id), `shelf${layout._id}`)
+		// })
+		// const allElements = [
+		// 	...standaloneLayouts,
+		// 	<div className='expco-header' key={'header2'}>{t('Timeline views')}</div>,
+		// 	...shelfLayouts,
+		// 	// <Link to={this.getRundownLink(this.props.rundown._id)} onClick={() => this.saveViewChoice('default')} key={'default'}>
+		// 	//	<div className='action-btn expco-item'>{t('Default')}</div>
+		// 	// </Link>
+		// ]
+		// return (
+		// 	<React.Fragment>
+		// 		<SplitDropdown selectedKey={this.state.selectedView} elements={allElements}/>
+		// 	</React.Fragment>
+		// )
+
+		return <div></div>
 	}
 
 	render () {

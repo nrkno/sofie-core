@@ -189,6 +189,8 @@ export namespace ServerPlayoutAdLibAPI {
 
 		let pieceStart: number | 'now' = queue ? 0 : 'now'
 
+		// HACK WARNING: Temporary 'fix' to insert adlibs to the next part if it is a dve and the current one is not.
+		// This will soon get a better way to make this decision
 		if (!queue && nextPartInstance && partInstance && adLibPiece.sourceLayerId.match(/dve_box/)) {
 			// Find any core dve pieces
 			const dvePieces = PieceInstances.find({
@@ -216,58 +218,13 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, partInstance, queue)
 
-		let pieceStart: number | 'now' = queue ? 0 : 'now'
-		// HACK WARNING: Temporary 'fix' to insert adlibs to the next part if it is a dve and the current one is not.
-		// This will soon get a better way to make this decision
-		if (!queue && nextPart && part && adLibPiece.sourceLayerId.match(/dve_box/)) {
-			// Find any core dve pieces
-			const dvePieces = Pieces.find({
-				rundownId: rundown._id,
-				partId: { $in: [ part._id, nextPart._id ] },
-				sourceLayerId: /dve(?!_box|_back)/i // dve layers but not dve_box layers
-			}).fetch()
-			const partIds = dvePieces.map(p => p.partId)
-
-			// If only next says it is a dve and not current
-			if (partIds.indexOf(nextPart._id) !== -1 && partIds.indexOf(part._id) === -1) {
-				part = nextPart
-				pieceStart = 0
-
-				// Ensure any previous adlibs are pruned first
-				Pieces.remove({
-					partId: part._id,
-					rundownId: rundown._id,
-					'enable.start': 0,
-					dynamicallyInserted: true,
-					sourceLayerId: adLibPiece.sourceLayerId
-				})
-			}
-		}
-
-		let newPiece = convertAdLibToPiece(adLibPiece, part, queue, pieceStart)
-		Pieces.insert(newPiece)
-
 		PieceInstances.insert(newPieceInstance)
 		// TODO-PartInstance - pending new data flow
 		Pieces.insert(newPieceInstance.piece)
 
 		if (queue) {
-				if (!showStyle) throw new Meteor.Error(`Could not find showstyle base with Id "${rundown.showStyleBaseId}"`)
-            // NRK
-            // NRK
 			// Update any infinites
 			updateSourceLayerInfinitesAfterPart(rundown, previousPartInstance!.part)
-
-			// Copy across adlib-preroll and other properties needed on the part
-			PartInstances.update(partInstance._id, {
-				$set: {
-					prerollDuration: adLibPiece.adlibPreroll,
-					autoNext: adLibPiece.adlibAutoNext,
-					autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
-					disableOutTransition: adLibPiece.adlibDisableOutTransition,
-					expectedDuration: adLibPiece.expectedDuration
-				}
-			})
 
 			setNextPart(rundownPlaylist, partInstance)
 		}
@@ -308,7 +265,10 @@ export namespace ServerPlayoutAdLibAPI {
 			afterPart: afterPartInstance.part.afterPart || afterPartInstance.part._id,
 			typeVariant: 'adlib',
 			prerollDuration: adLibPiece.adlibPreroll,
-			expectedDuration: adLibPiece.expectedDuration
+			expectedDuration: adLibPiece.expectedDuration,
+			autoNext: adLibPiece.adlibAutoNext,
+			autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
+			disableOutTransition: adLibPiece.adlibDisableOutTransition
 		})
 		PartInstances.insert({
 			_id: newPartInstanceId,
@@ -369,50 +329,6 @@ export namespace ServerPlayoutAdLibAPI {
 			if (lastPieceInstances.length > 0) {
 				const lastPiece = convertPieceToAdLibPiece(lastPieceInstances[0].piece)
 				innerStartAdLibPiece(playlist, rundown, false, playlist.currentPartInstanceId, lastPiece)
-			}
-		})
-	}
-	export function sourceLayerStickyPieceStart (rundownId: string, sourceLayerId: string) {
-		return rundownSyncFunction(rundownId, RundownSyncFunctionPriority.Playout, () => {
-			const rundown = Rundowns.findOne(rundownId)
-			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-			if (!rundown.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			if (!rundown.currentPartId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
-
-			let showStyleBase = rundown.getShowStyleBase()
-
-			const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
-			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
-			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
-
-			const query = literal<Mongo.Query<Piece>>({
-				rundownId: rundown._id,
-				sourceLayerId: sourceLayer._id,
-				startedPlayback: {
-					$exists: true
-				}
-			})
-
-			if (sourceLayer.stickyOriginalOnly) {
-				// Ignore adlibs if using original only
-				query.adLibSourceId = {
-					$exists: false
-				}
-			}
-
-			const lastPieces = Pieces.find(query, {
-				sort: {
-					startedPlayback: -1
-				},
-				limit: 1
-			}).fetch()
-
-			if (lastPieces.length > 0) {
-				const currentPart = Parts.findOne(rundown.currentPartId)
-				if (!currentPart) throw new Meteor.Error(501, `Current Part "${rundown.currentPartId}" could not be found.`)
-
-				const lastPiece = convertPieceToAdLibPiece(lastPieces[0])
-				innerStartAdLibPiece(rundown, false, rundown.currentPartId, lastPiece)
 			}
 		})
 	}

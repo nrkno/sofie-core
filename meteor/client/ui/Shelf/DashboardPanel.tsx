@@ -40,6 +40,7 @@ import { invalidateAt } from '../../lib/invalidatingTime'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { getNextPiecesReactive } from './AdLibRegionPanel'
+import { registerHotkey, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 
 interface IState {
 	outputLayers: {
@@ -59,7 +60,7 @@ export interface IDashboardPanelProps {
 	hotkeyGroup: string
 }
 
-interface IDashboardPanelTrackedProps {
+export interface IDashboardPanelTrackedProps {
 	studio?: Studio
 	unfinishedPieceInstanceIds: {
 		[adlibId: string]: PieceInstance[]
@@ -215,9 +216,9 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate (prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+	componentDidUpdate (prevProps: IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps) {
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
 
 		// Unregister hotkeys if group name has changed
@@ -232,8 +233,8 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 
 	componentWillUnmount () {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
 		RegisteredHotkeys.remove({
 			tag: this.props.hotkeyGroup
@@ -275,10 +276,10 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
-						this.onToggleAdLib(e, item, false)
+						this.onToggleAdLib(item, false, e)
 					}, 'keyup', this.props.hotkeyGroup)
 					this.usedHotkeys.push(item.hotkey)
 
@@ -299,7 +300,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleAdLib(e, item, true)
+							this.onToggleAdLib(item, true, e)
 						}, 'keyup', this.props.hotkeyGroup)
 						this.usedHotkeys.push(queueHotkey)
 					}
@@ -313,7 +314,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(item.hotkey, (e: ExtendedKeyboardEvent) => {
 						preventDefault(e)
-						this.onToggleAdLib(e, item, false)
+						this.onToggleAdLib(item, false, e)
 					}, 'keyup', this.props.hotkeyGroup)
 					this.usedHotkeys.push(item.hotkey)
 
@@ -334,7 +335,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(queueHotkey, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleAdLib(e, item, true)
+							this.onToggleAdLib(item, true, e)
 						}, 'keyup', this.props.hotkeyGroup)
 						this.usedHotkeys.push(queueHotkey)
 					}
@@ -358,7 +359,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 						mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(element, (e: ExtendedKeyboardEvent) => {
 							preventDefault(e)
-							this.onToggleSticky(e, sourceLayer._id)
+							this.onToggleSticky(sourceLayer._id, e)
 						}, 'keyup', this.props.hotkeyGroup)
 						this.usedHotkeys.push(element)
 
@@ -380,7 +381,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.constructor.name)
 				mousetrapHelper.bind(hotkey, (e: ExtendedKeyboardEvent) => {
 					preventDefault(e)
-					this.onClearAllSourceLayers(e, sourceLayers)
+					this.onClearAllSourceLayers(sourceLayers, e)
 				}, 'keyup', this.props.hotkeyGroup)
 				this.usedHotkeys.push(hotkey)
 
@@ -398,7 +399,7 @@ export class DashboardPanelInner extends MeteorReactComponent<Translated<IAdLibP
 		}
 	}
 
-	onToggleAdLib = (e: any, adlibPiece: AdLibPieceUi, queue: boolean, alwaysQueue: boolean = false) => {
+	onToggleAdLib = (adlibPiece: AdLibPieceUi, queue: boolean, e: any) => {
 		const { t } = this.props
 
 		queue = queue || this.props.shouldQueue

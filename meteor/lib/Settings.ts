@@ -52,7 +52,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
-	allowUnsyncedSegments: false
+	allowUnsyncedSegments: false,
 	'defaultDisplayDuration': 3000,
 	'allowUnsafeResets': false,
 	'showKeyboardMap': true,

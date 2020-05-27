@@ -35,7 +35,8 @@ export enum PieceDisplayStyle {
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
-	ADLIB_REGION = 'adlib_region'
+	ADLIB_REGION = 'adlib_region',
+	KEYBOARD_PREVIEW = 'keyboard_preview'
 }
 
 export interface RundownLayoutElementBase {

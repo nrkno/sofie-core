@@ -41,10 +41,6 @@ import { TSR } from 'tv-automation-sofie-blueprints-integration'
 export function resetRundown (rundown: Rundown) {
 	logger.info('resetRundown ' + rundown._id)
 
-	if (rundown.active && rundown.currentPartId && !Settings.allowUnsafeResets) {
-		throw new Meteor.Error(500, `Not able to reset active rundown "${rundown._id}"`)
-	}
-
 	// Remove all dunamically inserted pieces (adlibs etc)
 
 	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
@@ -566,14 +562,6 @@ export function setNextPart (
 		}))
 		delete rundownPlaylist.nextSegmentId
 	}
-	if (movingToNewSegment && rundown.nextSegmentId) {
-		ps.push(asyncCollectionUpdate(Rundowns, rundown._id, {
-			$unset: {
-				nextSegmentId: 1
-			}
-		}))
-		delete rundown.nextSegmentId
-	}
 
 	waitForPromiseAll(ps)
 }
@@ -649,10 +637,7 @@ function resetPart (part: DBPart): Promise<void> {
 		afterPart: part._id,
 		dynamicallyInserted: true
 	}).fetch()
-	if (rundown.active && rundown.currentPartId) {
-		// Don't remove a currently playing part:
-		afterPartsToRemove = afterPartsToRemove.filter(part => part._id !== rundown.currentPartId)
-	}
+
 	if (afterPartsToRemove.length) {
 		ps.push(asyncCollectionRemove(Parts, {
 			_id: { $in: afterPartsToRemove.map(p => p._id) }
