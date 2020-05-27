@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Accounts } from 'meteor/accounts-base'
+import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { RouteComponentProps } from 'react-router'
@@ -14,19 +14,18 @@ interface ISignupPageProps extends RouteComponentProps {
 }
 
 interface ISignupPageState {
-	systemStatus?: StatusResponse
-	subsReady: boolean
 	email: string
 	password: string
 	name: string
 	organization: string
 	applications: string[]
 	broadcastMediums: string[]
+	error: string
 }
 
 export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 	const user = getUser()
-	if (user) props.history.push('/lobby')
+	if (user) props.history.push('/rundowns')
 	return {}
 })(
 class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
@@ -42,13 +41,13 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 		super(props)
 
 		this.state = {
-			subsReady: false,
 			email: '',
 			password: '',
 			name: '',
 			organization: '',
 			applications: [],
-			broadcastMediums: []
+			broadcastMediums: [],
+			error: ''
 		}
 
 		this.handleChange = this.handleChange.bind(this)
@@ -76,12 +75,14 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 		}
 	}
 
-	private handleError (msg: string, lvl: NoticeLevel) {
-		NotificationCenter.push(new Notification(undefined, lvl, msg, 'Signup Page'))
+	private handleError (msg: string) {
+		this.setState({ error: msg })
 	}
 
-	private createAccount () {
+	private createAccount (e: React.MouseEvent<HTMLElement>) {
+		e.preventDefault()
 		try {
+			if (!this.state.name.length) throw new Error('Please enter a name for the account')
 			if (!this.state.email.length) throw new Error('Please enter an email address')
 			// if(!validEmailRegex.test(this.state.email)) throw new Error('Invalid email address')
 			if (!this.state.password.length) throw new Error('Please enter an password')
@@ -90,22 +91,26 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 			if (!this.state.applications.length) throw new Error('Please tell us what you mainly do')
 			if (!this.state.broadcastMediums.length) throw new Error('Please select a broadcast medium')
 		} catch (error) {
-			this.handleError(error.message, NoticeLevel.WARNING)
-			console.warn(error)
+			this.handleError(error.message)
 			return
 		}
 
-		Accounts.createUser({
-			email: this.state.email,
-			password: this.state.password,
-			profile: { name: this.state.name }
-		}, (error) => {
-			if (error) this.handleError('Error creating new user', NoticeLevel.NOTIFICATION)
-			MeteorCall.organization.insertOrganization({
-				name: this.state.organization,
-				applications: this.state.applications,
-				broadcastMediums: this.state.broadcastMediums
-			}).catch(console.error)
+		MeteorCall.user.createUser(
+			this.state.email,
+			this.state.password,
+			{ name: this.state.name }
+		).then(() => {
+			Meteor.loginWithPassword(this.state.email, this.state.password, () => {
+				MeteorCall.organization.insertOrganization({
+					name: this.state.organization,
+					applications: this.state.applications,
+					broadcastMediums: this.state.broadcastMediums
+				}).catch((error) => {
+					this.handleError('Error creating new organization')
+				})
+			})
+		}).catch(error => {
+			this.handleError('Error creating new user')
 		})
 	}
 	render () {
@@ -118,7 +123,7 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 					</div>
 					<h1>{t('Sofie - TV Automation System')}</h1>
 				</header>
-				<div className='frow'>
+				<form className='frow'>
 					<div className='mtl flex-col page'>
 							<p>{t('Your Account')}</p>
 							<input
@@ -205,10 +210,16 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 							</div>
 						</ul>
 					</div>
-				</div>
+				</form>
 				<div className='flex-row-center container pills'>
 					<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
-					<button className='btn btn-primary' onClick={() => this.createAccount()}>{t('Create new Account')}</button>
+					<button
+						className='btn btn-primary'
+						onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.createAccount(e)}
+					>{t('Create new Account')}</button>
+				</div>
+				<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
+					<p>{this.state.error ? this.state.error : ''}&nbsp;</p>
 				</div>
 			</div>
 		)

@@ -42,9 +42,9 @@ import { LoginPage } from './LoginPage'
 import { SignupPage } from './SignupPage'
 import { RequestResetPage } from './RequestResetPage'
 import { ResetPage } from './ResetPage'
-import { AccountPage } from './AccountPage';
+import { AccountPage } from './AccountPage'
 import { getUserId, UserId } from '../../lib/collections/Users'
-import { PubSub } from '../../lib/api/pubsub'
+import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
@@ -54,8 +54,6 @@ const CRON_INTERVAL = 30 * 60 * 1000
 const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
 const WINDOW_START_HOUR = 3
 const WINDOW_END_HOUR = 5
-
-
 
 interface iAppProps extends InjectedI18nProps {
 	userId: UserId | null
@@ -72,6 +70,7 @@ interface IAppState {
 // App component - represents the whole app
 export const App = translateWithTracker(() => {
 	const userId = getUserId() // just for reactivity
+	meteorSubscribe(PubSub.organization, {})
 	return { userId }
 })(class App extends MeteorReactComponent<Translated<iAppProps>, IAppState> {
 	private lastStart = 0
@@ -113,9 +112,9 @@ export const App = translateWithTracker(() => {
 		this.lastStart = Date.now()
 		this.protectedRoute = this.protectedRoute.bind(this)
 	}
-	private protectedRoute ({component: Component, ...args}: any) {
-		if(!Settings.enableUserAccounts) {
-			return <Route {...args} render={Component}/>
+	private protectedRoute ({ component: Component, ...args }: any) {
+		if (!Settings.enableUserAccounts) {
+			return <Route {...args} render={(props) => <Component {...props} />}/>
 		} else {
 			return <Route {...args} render={(props) => (
 				this.props.userId
@@ -123,7 +122,6 @@ export const App = translateWithTracker(() => {
 					: <Redirect to='/' />
 			)}/>
 		}
-		
 	}
 	cronJob = () => {
 		const now = new Date()
@@ -169,36 +167,33 @@ export const App = translateWithTracker(() => {
 			<Router>
 				<div className='container-fluid'>
 					{/* Header switch - render the usual header for all pages but the rundown view */}
-					<ErrorBoundary>
+					{(!Settings.enableUserAccounts || this.props.userId) && <ErrorBoundary>
 						<Switch>
 							<Route path='/rundown/:playlistId' component={NullComponent} />
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/activeRundown' component={NullComponent} />
 							<Route path='/prompter/:studioId' component={NullComponent} />
-							<Route path='/' render={(props) => <Header 
+							<Route path='/' render={(props) => <Header
 								{...props}
 								userId={this.props.userId}
-								allowConfigure={this.state.allowConfigure} 
-								allowTesting={this.state.allowTesting} 
-								allowDeveloper={this.state.allowDeveloper} 
+								allowConfigure={this.state.allowConfigure}
+								allowTesting={this.state.allowTesting}
+								allowDeveloper={this.state.allowDeveloper}
 							/>} />
 						</Switch>
-					</ErrorBoundary>
+					</ErrorBoundary>}
 					{/* Main app switch */}
 					<ErrorBoundary>
 						<Switch>
-							{Settings.enableUserAccounts ?
-								[
-									<Route key='0' exact path='/' component={(props) => <LoginPage {...props}/>} />,
-									<Route key='1' exact path='/login' component={() => <Redirect to='/'/>}/>,
-									<Route key='2' exact path='/signup' component={SignupPage} />,
-									<Route key='3' exact path='/reset' component={RequestResetPage} />,
-									<Route key='4' exact path='/reset/:token' component={ResetPage} />,
-									<this.protectedRoute key='5' exact path='/account' component={AccountPage} />,
-									<this.protectedRoute key='6' exact path='/lobby' component={RundownList} />
-								] :
-								<Route exact path='/' component={RundownList} />
+							{Settings.enableUserAccounts ? [
+								<Route key='0' exact path='/' component={(props) => <LoginPage {...props}/>} />,
+								<Route key='1' exact path='/login' component={() => <Redirect to='/'/>}/>,
+								<Route key='2' exact path='/signup' component={SignupPage} />,
+								<Route key='3' exact path='/reset' component={RequestResetPage} />,
+								<Route key='4' exact path='/reset/:token' component={ResetPage} />,
+								<this.protectedRoute key='5' exact path='/account' component={AccountPage} />
+							] : <Route exact path='/' component={RundownList} />
 							}
 							<this.protectedRoute path='/rundowns' component={RundownList} />
 							<this.protectedRoute path='/rundown/:playlistId' component={RundownView} />
@@ -216,7 +211,6 @@ export const App = translateWithTracker(() => {
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
 							<Route path='/countdowns/presenter' component={NullComponent} />
 							<Route path='/prompter/:studioId' component={NullComponent} />
-
 							<Route path='/' component={ConnectionStatusNotification} />
 						</Switch>
 					</ErrorBoundary>

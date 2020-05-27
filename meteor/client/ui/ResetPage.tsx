@@ -11,18 +11,15 @@ interface IResetPageProps extends RouteComponentProps<{token: string}> {
 }
 
 interface IResetPageState {
-	systemStatus?: StatusResponse
-	subsReady: boolean
 	password: string
+	error: string | React.ReactElement<HTMLElement>
 }
 
 export const ResetPage = translateWithTracker((props: IResetPageProps) => {
 
 	const user = getUser()
 	if (user) {
-		// If user is logged in, forward to lobby:
-		// https://reacttraining.com/react-router/web/api/Redirect
-		props.history.push('/lobby')
+		props.history.push('/rundowns')
 	}
 
 	return {}
@@ -32,8 +29,8 @@ class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState>
 		super(props)
 
 		this.state = {
-			subsReady: false,
-			password: ''
+			password: '',
+			error: ''
 		}
 		this.handleChange = this.handleChange.bind(this)
 		this.validateChange = this.validateChange.bind(this)
@@ -53,22 +50,24 @@ class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState>
 		}
 		/** Add more password rules */
 		if (errors.length) {
-			NotificationCenter.push(new Notification(
-				undefined,
-				NoticeLevel.WARNING,
+			this.HandleError(
 				<React.Fragment>
 					{errors.map(e => <span>{e}</span>)}
-				</React.Fragment>,
-				'Reset Password Page'
-			))
+				</React.Fragment>
+			)
 			return false
 		}
 		return true
 	}
 
-	private handleReset () {
+	private handleReset (e: React.MouseEvent<HTMLElement>) {
+		e.preventDefault()
 		if (!this.validateChange()) return
 		const token = this.props.match.params.token
+	}
+
+	private HandleError (msg: string | React.ReactElement<HTMLElement>) {
+		this.setState({ error: msg })
 	}
 
 	render () {
@@ -83,18 +82,28 @@ class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState>
 						<h1>{t('Sofie - TV Automation System')}</h1>
 					</header>
 					<div className='container'>
-						<p>{t('Enter your new password')}</p>
-						<input
-							className='mdinput mas'
-							type='password'
-							name='password'
-							value={this.state.password}
-							onChange={this.handleChange}
-							onBlur={this.validateChange}
-							placeholder={t('Password')}
-						/>
-						<button className='btn btn-primary' onClick={this.handleReset}>{t('Set new password')}</button>
-						<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
+						<form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.handleReset(e)}>
+							<label htmlFor='password-reset'>{t('Enter your new password')}</label>
+							<input
+								id='password-reset'
+								className='mdinput mas'
+								type='password'
+								name='password'
+								value={this.state.password}
+								onChange={this.handleChange}
+								onBlur={this.validateChange}
+								placeholder={t('Password')}
+							/>
+							<button
+								type='submit'
+								className='btn btn-primary'
+								onClick={this.handleReset}
+							>{t('Set new password')}</button>
+							<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
+						</form>
+					</div>
+					<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
+						<p>{this.state.error ? this.state.error : ''}&nbsp;</p>
 					</div>
 				</div>
 			</div>

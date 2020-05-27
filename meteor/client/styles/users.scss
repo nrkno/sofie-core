@@ -21,6 +21,14 @@
 		min-width: 30vw;
 		text-align: center;
 	}
+	.error-msg {
+		text-align: center;
+		opacity: 0;
+		transition: opacity 1s;
+	}
+	.error-msg-active {
+		opacity: 1;
+	}
 	a, a:visited {color: #000}
 	p {margin: 0;}
 	li {list-style: none;}

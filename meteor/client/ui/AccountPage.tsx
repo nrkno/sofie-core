@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
+import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -8,22 +8,67 @@ import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/co
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
 import { MeteorCall } from '../../lib/api/methods'
 import { getUser, User } from '../../lib/collections/Users'
+import { Organizations, DBOrganization } from '../../lib/collections/Organization'
+import { Spinner } from '../lib/Spinner'
 
 interface IAccountPageProps extends RouteComponentProps {
-	coreSystem: ICoreSystem
+	user: User
+	organization: DBOrganization
 }
 
 interface IAccountPageState {
-	user: User | undefined
+	password: string
+	oldPassword: string
+	edit: boolean
+}
+
+interface UserUI {
+	username: string
+	emails: {address: string, verified: boolean}[]
+	password: string
 }
 
 export const AccountPage = translateWithTracker(() => {
-	return {}
+
+	const user = getUser() as User
+	const organization = user && Organizations.findOne({ _id: user.organizationId })
+	return {
+		user: user,
+		organization: organization
+	}
 })(
 class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageState> {
 	constructor (props) {
 		super(props)
-		this.state = { user: undefined }
+	}
+
+	state = {
+		password: '',
+		oldPassword: '',
+		edit: false
+	}
+
+	private handleChange (e: React.ChangeEvent<HTMLInputElement>) {
+		this.setState({ ...this.state, [e.currentTarget.name]: e.currentTarget.value })
+	}
+
+	private handleChangePassword (e: React.MouseEvent<HTMLElement>) {
+		e.preventDefault()
+		if (!this.state.edit) return this.setState({ edit: true })
+		try {
+			if (!this.state.oldPassword || !this.state.password) throw { message: 'Missing requried password' }
+			if (this.state.password.length < 5) throw { message: 'New password must be atleast 5 characters' }
+			Accounts.changePassword(this.state.oldPassword, this.state.password, (error) => {
+				if (error) {
+					throw { message: error, lvl: NoticeLevel.CRITICAL }
+				}
+				this.handleNotif('Password Updated Successfully', NoticeLevel.NOTIFICATION)
+				this.setState({ edit: false })
+			})
+		} catch (error) {
+			console.log(error)
+			this.handleNotif(error.message, error.lvl)
+		}
 	}
 
 	private handleRemoveUser () {
@@ -34,40 +79,72 @@ class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageSt
 			this.props.history.push('/')
 		}).catch(error => {
 			console.log(error)
-			NotificationCenter.push(new Notification(
-				undefined,
-				NoticeLevel.CRITICAL,
-				'Error deleting account',
-				'Account Page'
-			))
+			this.handleNotif('Error deleting account', NoticeLevel.CRITICAL)
 		})
 	}
 
-	componentDidUpdate () {
-		if (this.state.user === undefined && getUser() !== undefined) {
-			this.setState({ user: getUser() as User })
-		}
-	}
-
-	componentDidMount () {
-		if (this.state.user === undefined && getUser() !== undefined) {
-			this.setState({ user: getUser() as User })
-		}
+	private handleNotif (error: string, lvl?: NoticeLevel) {
+		if (lvl === undefined) lvl = NoticeLevel.WARNING
+		NotificationCenter.push(new Notification(undefined, lvl, error, 'Account Page'))
 	}
 
 	render () {
 		const { t } = this.props
-
 		return (
-			<React.Fragment>
-				<h1>{t('Account Page')}</h1>
-				{this.state.user && <React.Fragment>
-					<p>{t('Account Name:')} {this.state.user.profile.name}</p>
-					<p>{t('Account Email:')} {this.state.user.emails.map(e => e.address).join(', ')}</p>
-					<p>{t('Organization:')} {this.state.user.organizationId}</p>
-				</React.Fragment>}
-				<button onClick={() => this.handleRemoveUser()}>{t('Remove Self')}</button>
-			</React.Fragment>
+			<div className='center-page'>
+				<div className='mtl page'>
+					<h1>{t('Account Page')}</h1>
+					{this.props.user ? <form
+						className='flex-col'
+						onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.handleChangePassword(e)}
+					>
+						<p>{t('Account Name:')}</p>
+						<input
+							type='text'
+							value={this.props.user.profile.name}
+							disabled={true}
+						/>
+						<p>{t('Account Email:')}</p>
+						<input
+							type='text'
+							value={this.props.user.emails.map(e => e.address).join(', ')}
+							disabled={true}
+						/>
+						{this.state.edit && <React.Fragment>
+							<p>{t('Old Password')}</p>
+							<input
+								type='password'
+								name='oldPassword'
+								value={this.state.oldPassword}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.handleChange(e)}
+							/>
+							<p>{t('New Password')}</p>
+							<input
+								type='password'
+								name='password'
+								value={this.state.password}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.handleChange(e)}
+							/>
+						</React.Fragment>}
+						<button
+							className='btn btn-primary'
+							type='submit'
+						>{this.state.edit ? t('Save Changes') : t('Edit Account')}</button>
+						{this.state.edit && <button
+							className='btn'
+							type='button'
+							onClick={() => this.setState({ edit: false, password: '', oldPassword: '' })}
+						>Cancel</button>}
+					</form>
+					: <Spinner />}
+					<h3>{t('Organzation Info')}</h3>
+					{this.props.organization ? <React.Fragment>
+						<p>{t('Name:')} {this.props.organization.name}</p>
+					</React.Fragment>
+					: <Spinner />}
+					{this.state.edit && <button className='btn' onClick={() => this.handleRemoveUser()}>{t('Remove Self')}</button>}
+				</div>
+			</div>
 		)
 	}
 })

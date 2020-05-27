@@ -13,15 +13,14 @@ interface IRequestResetPageProps extends RouteComponentProps {
 
 interface IRequestResetPageState {
 	email: string
+	error: string
 }
 
 export const RequestResetPage = translateWithTracker((props: IRequestResetPageProps) => {
 
 	const user = getUser()
 	if (user) {
-		// If user is logged in, forward to lobby:
-		// https://reacttraining.com/react-router/web/api/Redirect
-		props.history.push('/lobby')
+		props.history.push('/rundowns')
 	}
 
 	return {}
@@ -31,29 +30,29 @@ class extends MeteorReactComponent<Translated<IRequestResetPageProps>, IRequestR
 		super(props)
 
 		this.state = {
-			email: ''
+			email: '',
+			error: ''
 		}
-		this.resetPassword = this.resetPassword.bind(this)
 	}
 
 	private validateEmail (e: React.FocusEvent<HTMLInputElement>) {
-		// if(!this.state.email)
+		/** Find good email regex */
 	}
 
-	private resetPassword (e: React.MouseEvent<HTMLButtonElement>): void {
+	private resetPassword (e: React.MouseEvent<HTMLElement>): void {
+		e.preventDefault()
 		if (!this.state.email) {
-			NotificationCenter.push(new Notification(
-				undefined,
-				NoticeLevel.NOTIFICATION,
-				'Please enter a valid email',
-				'Reset Password Page'
-			))
+			this.HandleError('Please enter a valid email')
 		} else {
 			/**
 			 * Attmept to get userid for email entered
 			 * Accounts.sendResetPasswordEmail(userid, *optional email*)
 			 */
 		}
+	}
+
+	private HandleError (msg: string) {
+		this.setState({ error: msg })
 	}
 
 
@@ -69,19 +68,29 @@ class extends MeteorReactComponent<Translated<IRequestResetPageProps>, IRequestR
 						<h1>{t('Sofie - TV Automation System')}</h1>
 					</header>
 					<div className='container'>
-						<p>Lost password?</p>
-						<input
-							className='mdinput mas'
-							type='text'
-							value={this.state.email}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-								this.setState({ ...this.state, email: e.target.value })}
-							onBlur={this.validateEmail}
-							placeholder={t('Email Address')}
-							name='email'
-						/>
-						<button className='btn btn-primary' onClick={this.resetPassword}>{t('Send reset email')}</button>
-						<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
+						<form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.resetPassword(e)}>
+							<label htmlFor='lost-password'>Lost password?</label>
+							<input
+								id='lost-password'
+								className='mdinput mas'
+								type='text'
+								value={this.state.email}
+								onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+									this.setState({ ...this.state, email: e.target.value })}
+								onBlur={this.validateEmail}
+								placeholder={t('Email Address')}
+								name='email'
+							/>
+							<button
+								type='submit'
+								className='btn btn-primary'
+								onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.resetPassword(e)}
+							>{t('Send reset email')}</button>
+							<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
+						</form>
+					</div>
+					<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
+						<p>{this.state.error.length ? this.state.error : ''}&nbsp;</p>
 					</div>
 				</div>
 			</div>

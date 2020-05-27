@@ -7,6 +7,9 @@ import { OrganizationId } from './Organization'
 /** A string, identifying a User */
 export type UserId = ProtectedString<'UserId'>
 
+export interface UserProfile {
+	name: string
+}
 
 export interface DBUser {
 	// Note: This interface is partly defined by the dataset from the Meteor.users collection
@@ -22,12 +25,10 @@ export interface DBUser {
 	emails: [
 		{
 			address: string
-			verified: false
+			verified: boolean
 		}
 	],
-	profile: {
-		name: string
-	},
+	profile: UserProfile,
 	organizationId: OrganizationId
 	roles: UserRole[]
 	superAdmin?: boolean
@@ -61,7 +62,6 @@ Meteor.startup(() => {
 export function getUser (): DBUser | null {
 	const user = Meteor.user() as any
 	return user
-	//return user ? Users.findOne({_id: user._id}) as DBUser : null
 }
 export function getUserId (): UserId | null {
 	return Meteor.userId() as any || null

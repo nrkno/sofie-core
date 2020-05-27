@@ -18,11 +18,12 @@ interface ILoginPageState {
 	systemStatus?: StatusResponse
 	email: string
 	password: string
+	error: string
 }
 
 export const LoginPage = translateWithTracker((props: ILoginPageProps) => {
 	const user = getUser()
-	if (user) props.history.push('/lobby')
+	if (user) props.history.push('/rundowns')
 	return {}
 })(
 class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState> {
@@ -33,7 +34,8 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 
 		this.state = {
 			email: '',
-			password: ''
+			password: '',
+			error: ''
 		}
 
 		this.handleChange = this.handleChange.bind(this)
@@ -46,18 +48,13 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 		return this.setState({ ...this.state, [e.currentTarget.name]: e.currentTarget.value })
 	}
 
-	private attempLogin (): void {
+	private attempLogin (e: React.MouseEvent<HTMLFormElement>): void {
+		e.preventDefault()
 		try {
 			if (!this.state.email.length) throw new Error('Please enter an email address')
 			if (!this.state.password.length) throw new Error('Please enter an password')
 		} catch (error) {
-			NotificationCenter.push(new Notification(
-				undefined,
-				NoticeLevel.NOTIFICATION,
-				error.message,
-				'Login Page'
-			))
-			console.error(error)
+			this.HandleError(error.message)
 			return
 		}
 		Meteor.loginWithPassword(this.state.email, this.state.password, this.handleLoginAttempt)
@@ -65,13 +62,12 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 
 	private handleLoginAttempt (error: Error) {
 		if (error) {
-			NotificationCenter.push(new Notification(
-				undefined,
-				NoticeLevel.NOTIFICATION,
-				'Incorrect email or password',
-				'Login Page'
-			))
+			this.HandleError('Incorrect email or password')
 		}
+	}
+
+	private HandleError (msg: string) {
+		this.setState({ error: msg })
 	}
 
 	render () {
@@ -87,29 +83,34 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 						<h1>{t('Sofie - TV Automation System')}</h1>
 					</header>
 					<div className='container'>
-						<input
-							className='mdinput mas'
-							type='text'
-							value={this.state.email}
-							onChange={this.handleChange}
-							placeholder={t('Email Address')}
-							name='email'
-						/>
-						<input
-							className='mdinput mas'
-							type='password'
-							value={this.state.password}
-							onChange={this.handleChange}
-							placeholder={t('Password')}
-							name='password'
-						/>
-						<button onClick={() => this.attempLogin()} className='btn btn-primary'>Sign In</button>
-						<Link className='selectable right mas' to='/reset' >{t('Lost password?')}</Link>
+						<form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.attempLogin(e)}>
+							<input
+								className='mdinput mas'
+								type='text'
+								value={this.state.email}
+								onChange={this.handleChange}
+								placeholder={t('Email Address')}
+								name='email'
+							/>
+							<input
+								className='mdinput mas'
+								type='password'
+								value={this.state.password}
+								onChange={this.handleChange}
+								placeholder={t('Password')}
+								name='password'
+							/>
+							<button type='submit' className='btn btn-primary'>Sign In</button>
+							<Link className='selectable right mas' to='/reset' >{t('Lost password?')}</Link>
+						</form>
 					</div>
 					<div className='mas'>
 						<Link className='selectable' to='/signup'>
 							<button className='btn'>{t('Create new account')}</button>
 						</Link>
+					</div>
+					<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
+						<p>{this.state.error.length ? this.state.error : ''}&nbsp;</p>
 					</div>
 				</div>
 			</div>
