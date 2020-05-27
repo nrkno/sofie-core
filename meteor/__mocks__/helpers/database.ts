@@ -417,6 +417,7 @@ export function setupDefaultRundownPlaylist (env: DefaultEnvironment, rundownId0
 
 		externalId: 'MOCK_RUNDOWNPLAYLIST',
 		peripheralDeviceId: env.ingestDevice._id,
+		organizationId: null,
 		studioId: env.studio._id,
 
 		name: 'Default RundownPlaylist',
@@ -448,6 +449,7 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: Rundow
 	const rundown: DBRundown = {
 
 		peripheralDeviceId: env.ingestDevice._id,
+		organizationId: null,
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,

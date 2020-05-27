@@ -43,7 +43,8 @@ class WelcomeToSettings extends React.Component {
 }
 
 interface ISettingsMenuProps {
-	userAccounts: boolean
+	userAccounts?: boolean
+	superAdmin?: boolean
 	match?: any
 }
 interface ISettingsMenuState {
@@ -297,7 +298,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						]
 					})
 				}
-				{!this.props.userAccounts && <React.Fragment>
+				{(!this.props.userAccounts || this.props.superAdmin) && <React.Fragment>
 					<h2 className='mhs'>
 						<button className='action-btn right' onClick={() => this.onAddBlueprint()}>
 							<FontAwesomeIcon icon={faPlus} />
@@ -361,10 +362,10 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 				}
 				<h2 className='mhs'>{t('Tools')}</h2>
 				<hr className='vsubtle man' />
-				<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/messages'>
-					<h3>{t('System Messages')}</h3>
-				</NavLink>
-				{!this.props.userAccounts && <React.Fragment>
+				{(!this.props.userAccounts || this.props.superAdmin) && <React.Fragment>
+					<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/messages'>
+						<h3>{t('System Messages')}</h3>
+					</NavLink>
 					<NavLink activeClassName='selectable-selected' className='settings-menu__settings-menu-item selectable clickable' to='/settings/tools/migration'>
 						<h3>{t('Upgrade Database')}</h3>
 					</NavLink>
@@ -386,7 +387,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		super(props)
 		this.user = getUser()
 	}
-	
+
 	componentWillMount () {
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})
@@ -407,7 +408,11 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 					<div className='row'>
 						<div className='col c12 rm-c3 settings-menu'>
 							<ErrorBoundary>
-								<SettingsMenu match={this.props.match} userAccounts={this.props.userAccounts}/>
+								<SettingsMenu
+									match={this.props.match}
+									userAccounts={this.props.userAccounts}
+									superAdmin={this.user ? this.user.superAdmin : false}
+								/>
 							</ErrorBoundary>
 						</div>
 						<div className='col c12 rm-c9 settings-dialog'>
@@ -417,7 +422,10 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 									<Route path='/settings/studio/:studioId' component={StudioSettings} />
 									<Route path='/settings/showStyleBase/:showStyleBaseId' component={ShowStyleSettings} />
 									<Route path='/settings/peripheralDevice/:deviceId' component={DeviceSettings} />
-									<Route path='/settings/blueprint/:blueprintId' component={BlueprintSettings} />
+									<Route path='/settings/blueprint/:blueprintId' component={(props) => <BlueprintSettings
+										{...props}
+										userId={this.user && this.user._id}/>}
+									/>
 									<Route path='/settings/tools/snapshots' component={SnapshotsView} />
 									<Route path='/settings/tools/migration' component={MigrationView} />
 									<Route path='/settings/tools/messages' component={SystemMessages} />

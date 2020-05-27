@@ -33,12 +33,21 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 		check(blueprintId, String)
 		check(blueprintName, Match.Maybe(String))
 
+		const userId = req.headers.authorization
+			? req.headers.authorization.split(' ')[1]
+			: ''
 		const body = (req as any).body as string | undefined
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
 		if (!_.isString(body) || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		uploadBlueprint({}, protectString<BlueprintId>(blueprintId), body, blueprintName, force)
+		uploadBlueprint(
+			{ userId: protectString(userId) },
+			protectString<BlueprintId>(blueprintId),
+			body,
+			blueprintName,
+			force
+		)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -74,7 +83,10 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {
 			try {
-				uploadBlueprint({}, protectString<BlueprintId>(id), collection[id], id)
+				const userId = req.headers.authorization
+					? req.headers.authorization.split(' ')[1]
+					: ''
+				uploadBlueprint({userId: protectString(userId)}, protectString<BlueprintId>(id), collection[id], id)
 			} catch (e) {
 				logger.error('Blueprint restore failed: ' + e)
 				errors.push(e)

@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import * as _ from 'underscore'
-import { meteorPublish } from './lib'
+import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { MongoQuery, FindOptions } from '../../lib/typings/meteor'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
@@ -18,11 +18,19 @@ import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections
 import { IngestDataCacheObjBase, IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { NoSecurityReadAccess } from '../security/noSecurity'
+import { OrganizationReadAccess } from '../security/organization'
+import { StudioReadAccess } from '../security/studio'
 
-meteorPublish(PubSub.rundowns, function (selector, token?: string) {
+meteorPublish(PubSub.rundowns, function (selector0, token: string) {
+	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	if (!selector) throw new Meteor.Error(400,'selector argument missing')
 	const modifier = { fields: {} }
-	if (RundownReadAccess.rundown(selector, { userId: this.userId, token })) {
+	if (
+		NoSecurityReadAccess.any() ||
+		(selector.organizationId && OrganizationReadAccess.organizationContent(selector, cred)) ||
+		(selector.studioId && StudioReadAccess.studioContent(selector, cred)) ||
+		(selector.rundownId && RundownReadAccess.rundown(selector, cred))
+	) {
 		return Rundowns.find(selector, modifier)
 	}
 	return null
@@ -47,7 +55,10 @@ meteorPublish(PubSub.parts, function (selector: MongoQuery<DBPart>, token?: stri
 	const modifier: FindOptions<DBPart> = {
 		fields: {}
 	}
-	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+	if (
+		(selector.rundownId && RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) ||
+		(selector._id && RundownReadAccess.pieces(selector, { userId: this.userId, token }))
+	) {
 		return Parts.find(selector, modifier)
 	}
 	return null

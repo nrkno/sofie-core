@@ -303,6 +303,7 @@ function updateRundownFromIngestData (
 			notes: rundownNotes,
 			_id: rundownId,
 			externalId: ingestRundown.externalId,
+			organizationId: studio.organizationId,
 			studioId: studio._id,
 			showStyleVariantId: showStyle.variant._id,
 			showStyleBaseId: showStyle.base._id,

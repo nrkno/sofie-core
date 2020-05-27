@@ -21,6 +21,7 @@ import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance } from './PartInstances'
 import { PieceInstances, PieceInstance } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
+import { OrganizationId } from './Organization'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -42,6 +43,8 @@ export type RundownId = ProtectedString<'RundownId'>
 /** This is a very uncomplete mock-up of the Rundown object */
 export interface DBRundown extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
 	_id: RundownId
+	/** ID of the organization that owns the rundown */
+	organizationId: OrganizationId | null
 	/** The id of the Studio this rundown is in */
 	studioId: StudioId
 
@@ -87,6 +90,7 @@ export interface DBRundown extends ProtectedStringProperties<IBlueprintRundownDB
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
 	public externalId: string
+	public organizationId: OrganizationId
 	public name: string
 	public expectedStart?: Time
 	public expectedDuration?: number

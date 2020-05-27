@@ -140,6 +140,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 
 			_id: playlistId,
 			externalId: playlistInfo.playlist.externalId,
+			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: playlistInfo.playlist.name,
 			expectedStart: playlistInfo.playlist.expectedStart,
@@ -187,6 +188,7 @@ export function produceRundownPlaylistInfo (studio: Studio, currentRundown: DBRu
 
 			_id: playlistId,
 			externalId: currentRundown.externalId,
+			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: currentRundown.name,
 			expectedStart: currentRundown.expectedStart,

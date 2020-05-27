@@ -17,14 +17,16 @@ import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../../security/organization'
 import { SystemWriteAccess } from '../../security/system'
 import { OrganizationId } from '../../../lib/collections/Organization'
-import { Credentials } from '../../security/lib/credentials'
+import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
 
 export function insertBlueprint (methodContext: MethodContext, type?: BlueprintManifestType, name?: string): BlueprintId {
-	const { organizationId } = OrganizationContentWriteAccess.blueprint(methodContext)
-	
-	/** @todo Add check for superadmin once roles are active */
-	if(Settings.enableUserAccounts) throw new Meteor.Error(401, 'Only Super Admins can upload blueprints')
+	const { organizationId, cred } = OrganizationContentWriteAccess.blueprint(methodContext)
+	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
+		if (!cred.user || !cred.user.superAdmin) {
+			throw new Meteor.Error(401, 'Only super admins can create new blueprints')
+		}
+	}
 
 	return Blueprints.insert({
 		_id: getRandomId(),

@@ -15,7 +15,8 @@ meteorPublish(PubSub.coreSystem, function (token) {
 				support: 1,
 				systemInfo: 1,
 				name: 1,
-				serviceMessages: 1
+				serviceMessages: 1,
+				blueprintId: 1
 			}
 		})
 	}

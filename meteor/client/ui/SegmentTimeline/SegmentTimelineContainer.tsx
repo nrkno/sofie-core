@@ -263,6 +263,7 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 
 	componentWillMount() {
 		this.subscribe(PubSub.segments, {
+			rundownId: this.props.rundownId,
 			_id: this.props.segmentId
 		})
 		this.subscribe(PubSub.parts, {
@@ -284,11 +285,13 @@ export const SegmentTimelineContainer = withTracker<IProps, IState, ITrackedProp
 				segmentId: this.props.segmentId
 			}).map(instance => instance._id)
 			this.subscribe(PubSub.pieces, {
+				rundownId: this.props.rundownId,
 				partId: {
 					$in: partIds
 				}
 			})
 			this.subscribe(PubSub.pieceInstances, {
+				rundownId: this.props.rundownId,
 				partInstanceId: {
 					$in: partInstanceIds
 				},

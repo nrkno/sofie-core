@@ -27,11 +27,13 @@ interface IProps {
 			blueprintId: BlueprintId
 		}
 	}
+	userId?: string
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 interface ITrackedProps {
+	userId?: string
 	blueprint?: Blueprint
 	assignedStudios: Studio[]
 	assignedShowStyles: ShowStyleBase[]
@@ -41,6 +43,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	const id = props.match.params.blueprintId
 
 	return {
+		userId: props.userId,
 		blueprint: Blueprints.findOne(id),
 		assignedStudios: Studios.find({ blueprintId: id }).fetch(),
 		assignedShowStyles: ShowStyleBases.find({ blueprintId: id }).fetch(),
@@ -88,7 +91,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
-								'content-type': 'text/javascript'
+								'content-type': 'text/javascript',
+								'authorization': 'id ' + this.props.userId
 							},
 						})
 						.then(() => {
@@ -113,7 +117,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 												method: 'POST',
 												body: uploadFileContents,
 												headers: {
-													'content-type': 'text/javascript'
+													'content-type': 'text/javascript',
+													'authorization': 'id ' + this.props.userId
 												},
 											})
 											.then(() => {

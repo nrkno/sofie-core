@@ -19,6 +19,7 @@ export namespace RundownPlaylistReadAccess {
 	}
 	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
 	export function rundownPlaylistContent (selector: MongoQuery<RundownPlaylistContent>, cred: Credentials | ResolvedCredentials): boolean {
+		triggerWriteAccess()
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.playlistId) throw new Meteor.Error(400, 'selector must contain playlistId')

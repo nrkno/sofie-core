@@ -3,7 +3,7 @@ import { check } from '../../lib/check'
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { Credentials } from './lib/credentials'
+import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundown } from './lib/security'
 import { RundownId } from '../../lib/collections/Rundowns'
@@ -14,15 +14,14 @@ import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
-import { triggerWriteAccess } from './lib/securityVerify'
 
 type RundownContent = { rundownId: RundownId }
 export namespace RundownReadAccess {
-	export function rundown (selector: MongoQuery<{_id: RundownId}>, cred: Credentials): boolean {
+	export function rundown (selector: MongoQuery<{_id: RundownId}>, cred: Credentials | ResolvedCredentials): boolean {
 		return rundownContent({ rundownId: selector._id }, cred)
 	}
 	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
-	export function rundownContent (selector: MongoQuery<RundownContent>, cred: Credentials): boolean {
+	export function rundownContent (selector: MongoQuery<RundownContent>, cred: Credentials | ResolvedCredentials): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.rundownId) throw new Meteor.Error(400, 'selector must contain rundownId')

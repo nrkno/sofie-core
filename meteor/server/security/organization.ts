@@ -16,7 +16,7 @@ import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collec
 
 type OrganizationContent = { organizationId: OrganizationId }
 export namespace OrganizationReadAccess {
-	export function organization (selector: MongoQuery<{_id: OrganizationId}>, cred: Credentials): boolean {
+	export function organization (selector: MongoQuery<{_id: OrganizationId}>, cred: Credentials | ResolvedCredentials): boolean {
 		return organizationContent({ organizationId: selector._id }, cred)
 	}
 	/** Handles read access for all organization content (UserActions, Evaluations etc..) */

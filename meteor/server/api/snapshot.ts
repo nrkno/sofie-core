@@ -68,7 +68,7 @@ import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/
 import { OrganizationId, Organization } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { resolveCredentials, Credentials } from '../security/lib/credentials'
+import { resolveCredentials, Credentials, isResolvedCredentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
@@ -219,9 +219,6 @@ function createRundownPlaylistSnapshot (playlistId: RundownPlaylistId, organizat
  * @param studioId (Optional) Only generate for a certain studio
  */
 function createSystemSnapshot (studioId: StudioId | null, organizationId: OrganizationId | null): SystemSnapshot {
-	/** @todo Add check for superadmin once roles are active */
-	if(Settings.enableUserAccounts) throw new Meteor.Error(401, 'Only Super Admins can upload blueprints')
-	
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
@@ -723,8 +720,10 @@ function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
 /** Take and store a system snapshot */
 export function storeSystemSnapshot (context: MethodContext, studioId: StudioId | null, reason: string) {
 	if (!_.isNull(studioId)) check(studioId, String)
-	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
-
+	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	if(Settings.enableUserAccounts  && isResolvedCredentials(cred)) {
+		if(cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
 	return internalStoreSystemSnapshot(organizationId, studioId, reason)
 }
 /** Take and store a system snapshot. For internal use only, performs no access control. */
@@ -742,23 +741,30 @@ export function storeRundownPlaylistSnapshot (context: MethodContext, playlistId
 }
 export function storeDebugSnapshot (context: MethodContext, studioId: StudioId, reason: string) {
 	check(studioId, String)
-	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	if(Settings.enableUserAccounts  && isResolvedCredentials(cred)) {
+		if(cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
 	let s = createDebugSnapshot(studioId, organizationId)
 	return storeSnaphot(s, organizationId, reason)
 }
 export function restoreSnapshot (context: MethodContext, snapshotId: SnapshotId) {
 	check(snapshotId, String)
-	OrganizationContentWriteAccess.snapshot(context)
+	const { cred } = OrganizationContentWriteAccess.snapshot(context)
+	if(Settings.enableUserAccounts  && isResolvedCredentials(cred)) {
+		if(cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
 	let snapshot = retreiveSnapshot(snapshotId, context)
 	return restoreFromSnapshot(snapshot)
 }
 export function removeSnapshot (context: MethodContext, snapshotId: SnapshotId) {
 	check(snapshotId, String)
-	const access = OrganizationContentWriteAccess.snapshot(context, snapshotId)
-
+	const { snapshot, cred } = OrganizationContentWriteAccess.snapshot(context, snapshotId)
+	if(Settings.enableUserAccounts  && isResolvedCredentials(cred)) {
+		if(cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
 	logger.info(`Removing snapshot ${snapshotId}`)
 
-	const snapshot = access.snapshot
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot "${snapshotId}" not found!`)
 
 	if (snapshot.fileName) {
