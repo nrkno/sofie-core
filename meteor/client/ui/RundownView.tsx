@@ -1053,7 +1053,7 @@ export enum RundownViewEvents {
 	'goToLiveSegment' = 'sofie:goToLiveSegment',
 	'goToTop' = 'sofie:goToTop',
 	'segmentZoomOn' = 'sofie:segmentZoomOn',
-	'segmentZoomOff' = 'sofie:segmentZoomOff'
+	'segmentZoomOff' = 'sofie:segmentZoomOff',
 	'goToPart'			=	'goToPart',
 	'goToPartInstance'			=	'goToPartInstance'
 }
