@@ -10,5 +10,10 @@ export default function renderItem(piece: AdLibPieceUi | PieceUi): JSX.Element {
 		return React.createElement(NoraItemRenderer, { piece })
 	}
 
-	return React.createElement(DefaultItemRenderer, { piece })
+	if (Object.prototype.hasOwnProperty.call(piece, 'instance')) {
+		const pieceUi = piece as PieceUi
+		return React.createElement(DefaultItemRenderer, { piece: pieceUi.instance.piece })
+	} else {
+		return React.createElement(DefaultItemRenderer, { piece: piece as AdLibPieceUi })
+	}
 }

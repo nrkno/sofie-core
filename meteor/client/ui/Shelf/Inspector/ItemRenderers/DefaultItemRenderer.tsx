@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
+import { PieceGeneric } from '../../../../../lib/collections/Pieces';
 
-export default function DefaultItemRenderer(props: { piece: PieceUi }): JSX.Element {
-	const { externalId, name, partId, sourceLayerId, outputLayerId, metaData } = props.piece.instance.piece
+export default function DefaultItemRenderer(props: { piece: PieceGeneric }): JSX.Element {
+	const { externalId, name, partId, sourceLayerId, outputLayerId, metaData } = props.piece
 
 	return (
 		<dl>
