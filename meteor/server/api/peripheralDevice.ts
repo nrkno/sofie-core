@@ -207,10 +207,7 @@ export namespace ServerPeripheralDeviceAPI {
 				}
 			})
 			// After we've updated the timeline, we must call afterUpdateTimeline!
-			const studio = cache.Studios.findOne(studioId)
-			if (studio) {
-				afterUpdateTimeline(cache, studio)
-			}
+			afterUpdateTimeline(cache, studioId)
 			waitForPromise(cache.saveAllToDatabase())
 		}
 
