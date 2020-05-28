@@ -70,6 +70,15 @@
 				}
 			}
 		}
+
+		.table-values-list {
+			list-style-type: none;
+			margin: 0px;
+			
+			li {
+				margin: 0px;
+			}
+		}
 	}
 
 	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table,
@@ -91,6 +100,35 @@
 				> .action-btn {
 					padding: 0 0.4em;
 				}
+			}
+		}
+
+		.expando-details > td {
+			max-width: 0;
+		}
+
+
+	}
+
+	.settings-studio-sticky-scroller {
+		overflow: auto;
+		max-height: 80vh;
+		margin-bottom: 8px;
+
+		> table {
+			width: auto;
+
+			> tbody > tr > td {
+				padding-right: 3px;
+			}
+	
+			> thead > tr > th {
+				position: sticky;
+				position: -webkit-sticky;
+				top: 0;
+				background: #fff;
+				z-index: 20;
+				padding-right: 3px;
 			}
 		}
 	}

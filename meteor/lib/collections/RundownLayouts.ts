@@ -33,7 +33,8 @@ export enum PieceDisplayStyle {
 
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
-	EXTERNAL_FRAME = 'external_frame'
+	EXTERNAL_FRAME = 'external_frame',
+	ADLIB_REGION = 'adlib_region'
 }
 
 export interface RundownLayoutElementBase {
@@ -46,6 +47,21 @@ export interface RundownLayoutElementBase {
 export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.EXTERNAL_FRAME
 	url: string
+	scale: number
+}
+
+export enum RundownLayoutAdLibRegionRole {
+	QUEUE = 'queue',
+	TAKE = 'take',
+	PROGRAM = 'program'
+}
+
+export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.ADLIB_REGION
+	tags: string[] | undefined
+	role: RundownLayoutAdLibRegionRole
+	adlibRank: number
+	labelBelowPanel: boolean
 }
 
 /**
@@ -63,6 +79,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	label: string[] | undefined
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
+	showThumbnailsInList: boolean
 	currentSegment: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
@@ -77,6 +94,13 @@ export interface RundownLayoutFilter extends RundownLayoutFilterBase {
 }
 
 export interface DashboardLayoutExternalFrame extends RundownLayoutExternalFrame {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
+export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	x: number
 	y: number
 	width: number
@@ -98,6 +122,8 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	overflowHorizontally?: boolean
 	showAsTimeline?: boolean
 	hide?: boolean
+	displayTakeButtons?: boolean
+	queueAllAdlibs?: boolean
 }
 
 /** A string, identifying a RundownLayout */

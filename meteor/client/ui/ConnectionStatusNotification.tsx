@@ -14,14 +14,15 @@ import { NotificationCenterPopUps } from '../lib/notifications/NotificationCente
 import { PubSub } from '../../lib/api/pubsub'
 import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import { notDeepEqual } from 'assert'
+import { documentTitle } from '../lib/documentTitle'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
 	private _translator: TranslationFunction
-	private _serviceMessageRegistry: {[index: string]: ServiceMessage}
+	private _serviceMessageRegistry: { [index: string]: ServiceMessage }
 
-	constructor (t: TranslationFunction) {
+	constructor(t: TranslationFunction) {
 		super()
 
 		this.subscribe(PubSub.coreSystem, null)
@@ -53,7 +54,9 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 				}
 			}
 
-			document.title = 'Sofie' + (cs && cs.name ? ' - ' + cs.name : '')
+			const doc = documentTitle.get()
+
+			document.title = (doc === null ? '' : `${doc} - `) + 'Sofie' + (cs && cs.name ? ` - ${cs.name}` : '')
 
 			let systemNotification: Notification | undefined = createSystemNotification(cs)
 			let newNotification = this.createNewStatusNotification(meteorStatus)
@@ -76,13 +79,13 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		})
 	}
 
-	stop () {
+	stop() {
 		super.stop()
 
 		this._notifier.stop()
 	}
 
-	private getNoticeLevel (status: string) {
+	private getNoticeLevel(status: string) {
 		switch (status) {
 			case 'connected':
 				return NoticeLevel.NOTIFICATION
@@ -93,7 +96,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		}
 	}
 
-	private getNoticeLevelForCriticality (criticality: Criticality) {
+	private getNoticeLevelForCriticality(criticality: Criticality) {
 		switch (criticality) {
 			case Criticality.CRITICAL:
 				return NoticeLevel.CRITICAL
@@ -107,7 +110,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		}
 	}
 
-	private getStatusText (
+	private getStatusText(
 		status: DDP.Status,
 		reason: string | undefined,
 		retryTime: number | undefined
@@ -129,7 +132,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		return null
 	}
 
-	private createNewStatusNotification (meteorStatus: DDP.DDPStatus): Notification {
+	private createNewStatusNotification(meteorStatus: DDP.DDPStatus): Notification {
 		const { status, reason, retryTime, connected } = meteorStatus
 		const t = this._translator
 		const notification = new Notification(
@@ -140,20 +143,20 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			Date.now(),
 			!connected,
 			(status === 'failed' || status === 'waiting' || status === 'offline')
-			? [
-				{
-					label: t('Reconnect now'),
-					type: 'primary',
-					icon: 'icon-retry',
-					action: () => { Meteor.reconnect() }
-				}
-			] : undefined,
+				? [
+					{
+						label: t('Reconnect now'),
+						type: 'primary',
+						icon: 'icon-retry',
+						action: () => { Meteor.reconnect() }
+					}
+				] : undefined,
 			-100)
 
 		return notification
 	}
 
-	private updateServiceMessages (serviceMessages: {[index: string]: ServiceMessage}): void {
+	private updateServiceMessages(serviceMessages: { [index: string]: ServiceMessage }): void {
 		const systemMessageIds = Object.keys(serviceMessages)
 
 		// remove from internal list where ids not in active list
@@ -188,7 +191,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 
 	}
 
-	private createNotificationFromServiceMessage (message: ServiceMessage): Notification {
+	private createNotificationFromServiceMessage(message: ServiceMessage): Notification {
 		return new Notification(
 			message.id,
 			this.getNoticeLevelForCriticality(message.criticality),
@@ -196,11 +199,11 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			message.sender || '(service message)',
 			message.timestamp.getMilliseconds(),
 			true
-			)
+		)
 	}
 }
 
-function createSystemNotification (cs: ICoreSystem | undefined): Notification | undefined {
+function createSystemNotification(cs: ICoreSystem | undefined): Notification | undefined {
 	if (cs && cs.systemInfo && cs.systemInfo.enabled) {
 		return new Notification(
 			Random.id(),
@@ -226,20 +229,20 @@ interface IState {
 export const ConnectionStatusNotification = translate()(class ConnectionStatusNotification extends React.Component<Translated<IProps>, IState> {
 	private notifier: ConnectionStatusNotifier
 
-	constructor (props: Translated<IProps>) {
+	constructor(props: Translated<IProps>) {
 		super(props)
 
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.notifier = new ConnectionStatusNotifier(this.props.t)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this.notifier.stop()
 	}
 
-	render () {
+	render() {
 		// this.props.connected
 		return <NotificationCenterPopUps />
 	}

@@ -14,6 +14,9 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 
+// Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
+const MINIMAL_NONZERO_DURATION = 1
+
 export interface TimeEventArgs {
 	currentTime: number
 }
@@ -332,7 +335,7 @@ export const RundownTimingProvider =
 							this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 								(this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0) + (partInstance.part.expectedDuration || 0)
 							displayDurationFromGroup = partInstance.part.displayDuration
-								|| Math.max(0, this.displayDurationGroups[partInstance.part.displayDurationGroup], this.props.defaultDuration || DEFAULT_DURATION)
+								|| Math.max(0, this.displayDurationGroups[partInstance.part.displayDurationGroup], partInstance.part.gap ? MINIMAL_NONZERO_DURATION : this.props.defaultDuration || DEFAULT_DURATION)
 							memberOfDisplayDurationGroup = true
 						}
 
@@ -411,7 +414,7 @@ export const RundownTimingProvider =
 						}
 
 						// Handle invalid parts by overriding the values to preset values for Invalid parts
-						if (partInstance.part.invalid) {
+						if (partInstance.part.invalid && !partInstance.part.gap) {
 							partDisplayDuration = this.props.defaultDuration || DEFAULT_DURATION
 							this.partPlayed[unprotectString(partInstance.part._id)] = 0
 						}
@@ -446,7 +449,7 @@ export const RundownTimingProvider =
 
 						// remaining is the sum of unplayed lines + whatever is left of the current segment
 						// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
-						// if false (default), past unplayed parts will not count towards remaining time 
+						// if false (default), past unplayed parts will not count towards remaining time
 						if (
 							!partInstance.part.startedPlayback &&
 							!partInstance.part.floated &&

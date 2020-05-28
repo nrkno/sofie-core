@@ -16,6 +16,7 @@ export enum UserAction {
 	REMOVE_RUNDOWN_PLAYLIST,
 	REMOVE_RUNDOWN,
 	RESYNC_RUNDOWN_PLAYLIST,
+	RESYNC_SEGMENT,
 	DISABLE_NEXT_PIECE,
 	TAKE,
 	MOVE_NEXT,
@@ -68,6 +69,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TranslationFunctio
 			return t('Removing Rundown Playlist')
 		case UserAction.RESYNC_RUNDOWN_PLAYLIST:
 			return t('Re-Syncing Rundown Playlist')
+		case UserAction.RESYNC_SEGMENT:
+			return t('Resync Segment')
 		case UserAction.DISABLE_NEXT_PIECE:
 			return t('Disabling next Piece')
 		case UserAction.TAKE:

@@ -43,6 +43,7 @@ import { Parts, PartId } from '../../../../lib/collections/Parts'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getSelectedPartInstancesFromCache } from '../../playout/lib'
+import { Settings } from '../../../../lib/Settings'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -571,7 +572,11 @@ function diffAndApplyChanges (
 		if (!currentPart) {
 			// Looks like the currently playing part has been removed.
 			logger.warn(`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`)
-			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+			if (Settings.allowUnsyncedSegments) {
+				ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, currentPartInstance.part.segmentId)
+			} else {
+				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+			}
 			return
 		} else {
 			// TODO: add logic for determining whether to allow changes to the currently playing Part.

@@ -46,7 +46,8 @@ export interface NewUserActionAPI {
 	removeRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
-	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<ReloadRundownResponse>>
+	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
+	resyncSegment(userEvent: string, segmentId: SegmentId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	recordStop(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
 	recordStart(userEvent: string, studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<void>>
 	recordDelete(userEvent: string, id: RecordedFileId): Promise<ClientAPI.ClientResponse<void>>
@@ -115,6 +116,7 @@ export enum UserActionAPIMethods {
 
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
+	'resyncSegment' = 'userAction.resyncSegment',
 
 	'recordStop' = 'userAction.recordStop',
 	'recordStart' = 'userAction.recordStart',
@@ -138,11 +140,11 @@ export enum UserActionAPIMethods {
 export interface ReloadRundownPlaylistResponse {
 	rundownsResponses: {
 		rundownId: RundownId
-		response: ReloadRundownResponse
+		response: TriggerReloadDataResponse
 	}[]
 }
 
-export enum ReloadRundownResponse {
+export enum TriggerReloadDataResponse {
 	/** When reloading has been successfully completed */
 	COMPLETED = 'ok',
 	/** When reloading has successfully started, and will finish asynchronously */

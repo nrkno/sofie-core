@@ -55,7 +55,7 @@ import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { doUserAction, UserAction } from '../lib/userAction'
-import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from '../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { NoteType } from '../../lib/api/notes'
 import { PubSub } from '../../lib/api/pubsub'
@@ -70,6 +70,7 @@ import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
+import { documentTitle } from '../lib/documentTitle'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1322,6 +1323,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			window.addEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 			window.addEventListener(RundownViewEvents.goToTop, this.onGoToTop)
+
+			if (this.props.playlist) {
+				documentTitle.set(this.props.playlist.name)
+			}
+
+			const themeColor = document.head.querySelector('meta[name="theme-color"]')
+			if (themeColor) {
+				themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
+				themeColor.setAttribute('content', '#000000')
+			}
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
@@ -1372,6 +1383,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (typeof this.props.showStyleBase !== typeof prevProps.showStyleBase ||
 				this.props.showStyleBase && this.props.showStyleBase.runtimeArguments) {
 				this.refreshHotkeys()
+			}
+
+			if (typeof this.props.playlist !== typeof prevProps.playlist ||
+				(this.props.playlist || { name: '' }).name !== (prevProps.playlist || { name: '' }).name) {
+				if (this.props.playlist && this.props.playlist.name) {
+					documentTitle.set(this.props.playlist.name)
+				} else {
+					documentTitle.set(null)
+				}
 			}
 		}
 
@@ -1473,6 +1493,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 				}
 			})
+
+			documentTitle.set(null)
+
+			const themeColor = document.head.querySelector('meta[name="theme-color"]')
+			if (themeColor) {
+				themeColor.setAttribute('content', themeColor.getAttribute('data-content') || '#ffffff')
+			}
 
 			window.removeEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 			window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop)
@@ -1619,6 +1646,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
+		onResyncSegment = (segmentId: SegmentId, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.rundownPlaylistId) {
+				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
+			}
+		}
+		
 		onPieceDoubleClick = (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => {
 			const { t } = this.props
 			if (
@@ -1948,6 +1982,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										playlist={this.props.playlist}
 										onSetNext={this.onSetNext}
 										onSetNextSegment={this.onSetNextSegment}
+										onResyncSegment={this.onResyncSegment}
 										studioMode={this.state.studioMode} />
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2065,7 +2100,7 @@ export function handleRundownPlaylistReloadResponse(t: i18next.TranslationFuncti
 
 	let maybeMissingRundownId: RundownId | null = null
 	_.each(result.rundownsResponses, r => {
-		if (r.response === ReloadRundownResponse.MISSING) {
+		if (r.response === TriggerReloadDataResponse.MISSING) {
 			maybeMissingRundownId = r.rundownId
 		}
 	})

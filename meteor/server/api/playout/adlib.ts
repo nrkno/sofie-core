@@ -217,6 +217,17 @@ export namespace ServerPlayoutAdLibAPI {
 			// Update any infinites
 			updateSourceLayerInfinitesAfterPart(cache, rundown, previousPartInstance!.part)
 
+			// Copy across adlib-preroll and other properties needed on the part
+			cache.PartInstances.update(partInstance._id, {
+				$set: {
+					prerollDuration: adLibPiece.adlibPreroll,
+					autoNext: adLibPiece.adlibAutoNext,
+					autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
+					disableOutTransition: adLibPiece.adlibDisableOutTransition,
+					expectedDuration: adLibPiece.expectedDuration
+				}
+			})
+
 			setNextPart(cache, rundownPlaylist, partInstance)
 		} else {
 			cropInfinitesOnLayer(cache, rundown, partInstance, newPieceInstance)
@@ -345,7 +356,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 
 			if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
-			
+
 			const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
 
 			const currentPartInstance = cache.PartInstances.findOne(rundownPlaylist.currentPartInstanceId)

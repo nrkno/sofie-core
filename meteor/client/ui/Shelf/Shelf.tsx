@@ -33,6 +33,7 @@ import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
 import { ContextMenuTrigger } from 'react-contextmenu'
+import { AdLibRegionPanel } from './AdLibRegionPanel'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',

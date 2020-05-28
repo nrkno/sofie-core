@@ -54,6 +54,7 @@ namespace UserActionAPI { // Using our own method definition, to catch external 
 
 		'removeRundown'						= 'userAction.removeRundown',
 		'resyncRundown'						= 'userAction.resyncRundown',
+		'resyncSegment'						= 'userAction.resyncSegment',
 
 		'recordStop'							= 'userAction.recordStop',
 		'recordStart'							= 'userAction.recordStart',

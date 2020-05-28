@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.8.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.8.1...v1.8.2) (2020-05-27)
+
+
+### Bug Fixes
+
+* better convert now to real times in getResolvedPiecesFromFullTimeline ([8958463](https://github.com/nrkno/tv-automation-server-core/commit/8958463))
+* getResolvedPiecesFromFullTimeline returning stupid resolvedDuration values when adlibs are used ([6a7ef0f](https://github.com/nrkno/tv-automation-server-core/commit/6a7ef0f))
+* some pieces starting at non-zero time being forced to zero-time ([8f6916c](https://github.com/nrkno/tv-automation-server-core/commit/8f6916c))
+
+
+
 ## [1.8.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.8.0...v1.8.1) (2020-05-13)
 
 ### Bug Fixes

@@ -11,18 +11,18 @@ import { parseMosString } from './lib'
 import { IngestActions } from '../actions'
 import { WrapAsyncCallback } from '../../../../lib/lib'
 import * as _ from 'underscore'
-import { ReloadRundownResponse } from '../../../../lib/api/userActions'
+import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 
 export namespace MOSDeviceActions {
-	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => ReloadRundownResponse = Meteor.wrapAsync(
-		function reloadRundown (peripheralDevice: PeripheralDevice, rundown: Rundown, cb: WrapAsyncCallback<ReloadRundownResponse>): void {
+	export const reloadRundown: (peripheralDevice: PeripheralDevice, rundown: Rundown) => TriggerReloadDataResponse = Meteor.wrapAsync(
+		function reloadRundown (peripheralDevice: PeripheralDevice, rundown: Rundown, cb: WrapAsyncCallback<TriggerReloadDataResponse>): void {
 			logger.info('reloadRundown ' + rundown._id)
 
 			PeripheralDeviceAPI.executeFunction(peripheralDevice._id, (err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
 				if (err) {
 					if (_.isString(err) && err.match(/rundown does not exist/i)) {
 						// Don't throw an error, instead return MISSING value
-						cb(null, ReloadRundownResponse.MISSING)
+						cb(null, TriggerReloadDataResponse.MISSING)
 					} else {
 						logger.error('Error in MOSDeviceActions.reloadRundown', err)
 						cb(err)
@@ -39,7 +39,7 @@ export namespace MOSDeviceActions {
 						handleMosRundownData(peripheralDevice, mosRunningOrder, false)
 
 						// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point
-						cb(null, ReloadRundownResponse.WORKING)
+						cb(null, TriggerReloadDataResponse.WORKING)
 					} catch (e) {
 						cb(e)
 					}

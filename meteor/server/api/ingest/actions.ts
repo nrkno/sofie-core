@@ -12,10 +12,11 @@ import { handleUpdatedRundown, RundownSyncFunctionPriority, rundownPlaylistSyncF
 import { logger } from '../../logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { ReloadRundownResponse } from '../../../lib/api/userActions'
-import { INewsDeviceActions } from './iNewsDevice/actions'
+import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { waitForPromise } from '../../../lib/lib'
 import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { Segment } from '../../../lib/collections/Segments'
+import { GenericDeviceActions } from './genericDevice/actions'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)
@@ -24,21 +25,35 @@ export namespace IngestActions {
 	/**
 	 * Trigger a reload of a rundown
 	 */
-	export function reloadRundown (rundown: Rundown): ReloadRundownResponse {
+	export function reloadRundown (rundown: Rundown): TriggerReloadDataResponse {
 		const device = getPeripheralDeviceFromRundown(rundown)
 
 		// TODO: refacor this into something nicer perhaps?
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			return MOSDeviceActions.reloadRundown(device, rundown)
-		// } else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET ) {
-			// TODO
+		} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+			return GenericDeviceActions.reloadRundown(device, rundown)
 		} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
-			return INewsDeviceActions.reloadRundown(device, rundown)
+			return GenericDeviceActions.reloadRundown(device, rundown)
 		} else {
 			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
 		}
-
 	}
+
+	export function reloadSegment (rundown: Rundown, segment: Segment): TriggerReloadDataResponse {
+		const device = getPeripheralDeviceFromRundown(rundown)
+
+		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+			return reloadRundown(rundown)
+		} else if (
+			device.type === PeripheralDeviceAPI.DeviceType.INEWS
+		) {
+			return GenericDeviceActions.reloadSegment(device, rundown, segment)
+		} else {
+			throw new Meteor.Error(400, `The device ${device._id} does not support the method "reloadRundown"`)
+		}
+	}
+
 	/**
 	 * Notify the device on what part is currently playing
 	 * @param rundown

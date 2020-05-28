@@ -12,7 +12,7 @@ import { DashboardPieceButton } from './DashboardPieceButton'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { DashboardPanelInner, dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
-import { PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstanceId, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { unprotectString, protectString } from '../../../lib/lib'
 interface IState {
 	outputLayers: {
@@ -30,16 +30,16 @@ interface IDashboardPanelProps {
 
 interface IDashboardPanelTrackedProps {
 	studio?: Studio
-	unfinishedPieceInstanceIds: {
-		[adlibId: string]: PieceInstanceId[]
-	}
+	// unfinishedPieceInstanceIds: {
+	// 	[adlibId: string]: PieceInstance[]
+	// }
 }
 
 export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPanelProps & IDashboardPanelProps>, IState, IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>((props: Translated<IAdLibPanelProps>) => {
 	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
+		// unfinishedPieceInstanceIds: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
 	}
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
@@ -103,6 +103,7 @@ export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPane
 											mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 											widthScale={filter.buttonWidthScale}
 											heightScale={filter.buttonHeightScale}
+											showThumbnailsInList={filter.showThumbnailsInList}
 										>
 											{adLibListItem.name}
 										</DashboardPieceButton>
@@ -135,6 +136,7 @@ export const TimelineDashboardPanel = translateWithTracker<Translated<IAdLibPane
 												mediaPreviewUrl={this.props.studio ? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || '' : ''}
 												widthScale={filter.buttonWidthScale}
 												heightScale={filter.buttonHeightScale}
+												showThumbnailsInList={filter.showThumbnailsInList}
 											>
 												{adLibListItem.name}
 											</DashboardPieceButton>

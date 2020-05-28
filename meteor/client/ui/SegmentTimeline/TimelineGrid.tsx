@@ -37,8 +37,8 @@ let gridFont: any | undefined = undefined
 let gridFontAvailable: boolean = false
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
-	canvasElement: HTMLCanvasElement
-	parentElement: HTMLDivElement
+	canvasElement: HTMLCanvasElement | null
+	parentElement: HTMLDivElement | null
 	ctx: CanvasRenderingContext2D | null
 
 	width: number
@@ -60,7 +60,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	longLineColor: string = LONG_LINE_GRID_COLOR
 
 	contextResize = _.throttle((parentElementWidth: number, parentElementHeight: number) => {
-		if (this.ctx) {
+		if (this.ctx && this.canvasElement) {
 			let devicePixelRatio = window.devicePixelRatio || 1
 
 			let backingStoreRatio = (this.ctx as any).webkitBackingStorePixelRatio ||
@@ -118,7 +118,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 		if (box && box.width !== undefined) {
 			this.contextResize(box.width, box.height)
-		} else {
+		} else if (this.parentElement) {
 			this.contextResize(getElementWidth(this.parentElement), getElementHeight(this.parentElement))
 		}
 	}
@@ -253,45 +253,52 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		)
 	}
 
+	initialize() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.ctx = this.canvasElement.getContext('2d', {
+				// alpha: false
+			})
+			if (this.ctx) {
+				const parentWidth = getElementWidth(this.parentElement)
+				const parentHeight = getElementHeight(this.parentElement)
+				this.contextResize(parentWidth, parentHeight)
+
+				// $(window).on('resize', this.onCanvasResize)
+				this._resizeObserver = onElementResize(this.parentElement, this.onCanvasResize)
+
+				if (!gridFont && typeof FontFace !== 'undefined') {
+
+					gridFont = new FontFace('GridTimecodeFont', LABEL_FONT_URL, {
+						style: 'normal',
+						weight: 100
+					})
+					gridFont.load()
+					gridFont.loaded.then((fontFace) => {
+						// console.log('Grid font loaded: ' + fontFace.status)
+						gridFontAvailable = true
+						window.requestAnimationFrame(() => {
+							this.repaint()
+						})
+					}).catch(err => console.log(err))
+					document['fonts'].add(gridFont)
+				} else if (gridFont && !gridFontAvailable) {
+					gridFont.loaded.then((fontFace) => {
+						window.requestAnimationFrame(() => {
+							this.repaint()
+						})
+					})
+				}
+
+				if (this.props.onResize) {
+					this.props.onResize([parentWidth || 1, parentHeight || 1])
+				}
+			}
+		}
+	}
+
 	componentDidMount() {
-		// console.log('TimelineGrid mounted, render the grid & attach resize notifiers')
-		this.ctx = this.canvasElement.getContext('2d', {
-			// alpha: false
-		})
-		if (this.ctx) {
-			const parentWidth = getElementWidth(this.parentElement)
-			const parentHeight = getElementHeight(this.parentElement)
-			this.contextResize(parentWidth, parentHeight)
-
-			// $(window).on('resize', this.onCanvasResize)
-			this._resizeObserver = onElementResize(this.parentElement, this.onCanvasResize)
-
-			if (!gridFont && typeof FontFace !== 'undefined') {
-
-				gridFont = new FontFace('GridTimecodeFont', LABEL_FONT_URL, {
-					style: 'normal',
-					weight: 100
-				})
-				gridFont.load()
-				gridFont.loaded.then((fontFace) => {
-					// console.log('Grid font loaded: ' + fontFace.status)
-					gridFontAvailable = true
-					window.requestAnimationFrame(() => {
-						this.repaint()
-					})
-				}).catch(err => console.log(err))
-				document['fonts'].add(gridFont)
-			} else if (gridFont && !gridFontAvailable) {
-				gridFont.loaded.then((fontFace) => {
-					window.requestAnimationFrame(() => {
-						this.repaint()
-					})
-				})
-			}
-
-			if (this.props.onResize) {
-				this.props.onResize([parentWidth || 1, parentHeight || 1])
-			}
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.initialize()
 		}
 	}
 
@@ -303,6 +310,9 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	componentDidUpdate() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.initialize()
+		}
 		this.requestRepaint()
 	}
 
