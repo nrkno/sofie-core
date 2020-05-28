@@ -40,7 +40,9 @@ export enum UserRoleType {
 	/** Can play out things in a studio */
 	STUDIO_PLAYOUT = 'studio_playout',
 	/** Can access and modify the settings */
-	CONFIGURATOR = 'configurator'
+	CONFIGURATOR = 'configurator',
+	/** Can enable devloper features including test tools */
+	DEVELOPER = 'developer'
 }
 
 export type User = DBUser // to be replaced by a class somet ime later?

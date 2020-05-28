@@ -92,12 +92,14 @@ export const App = translateWithTracker(() => {
 		}
 
 		if (params['admin']) {
-			const val = params['admin'] === '1'
-			setAllowStudio(val)
-			setAllowConfigure(val)
-			setAllowDeveloper(val)
-			setAllowTesting(val)
-			setAllowService(val)
+			if (!Settings.enableUserAccounts) {
+				const val = params['admin'] === '1'
+				setAllowStudio(val)
+				setAllowConfigure(val)
+				setAllowDeveloper(val)
+				setAllowTesting(val)
+				setAllowService(val)
+			}
 		}
 
 		this.state = {
@@ -159,6 +161,19 @@ export const App = translateWithTracker(() => {
 		const uiZoom = getUIZoom()
 		if (uiZoom !== 1) {
 			document.documentElement.style.fontSize = (uiZoom * 16) + 'px'
+		}
+	}
+
+	componentDidUpdate () {
+		if (Settings.enableUserAccounts && this.props.userId) {
+			const roles = {
+				allowConfigure: getAllowConfigure(),
+				allowStudio: getAllowStudio(),
+				allowDeveloper: getAllowDeveloper(),
+				allowTesting: getAllowTesting()
+			}
+			const invalid = Object.keys(roles).findIndex(k => roles[k] !== this.state[k])
+			if (invalid !== -1) this.setState({ ...roles })
 		}
 	}
 

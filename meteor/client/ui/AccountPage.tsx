@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
@@ -7,7 +8,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
 import { MeteorCall } from '../../lib/api/methods'
-import { getUser, User } from '../../lib/collections/Users'
+import { getUser, User, UserRoleType } from '../../lib/collections/Users'
 import { Organizations, DBOrganization } from '../../lib/collections/Organization'
 import { Spinner } from '../lib/Spinner'
 
@@ -83,6 +84,17 @@ class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageSt
 		})
 	}
 
+	private toggleAccess (access: UserRoleType) {
+		const roles = this.props.user.roles
+		const index = roles.findIndex(r => r.type === access)
+		if (index === -1) {
+			roles.push({ type: access })
+		} else {
+			roles.splice(index, 1)
+		}
+		Meteor.users.update(this.props.user._id, { $set: { roles } })
+	}
+
 	private handleNotif (error: string, lvl?: NoticeLevel) {
 		if (lvl === undefined) lvl = NoticeLevel.WARNING
 		NotificationCenter.push(new Notification(undefined, lvl, error, 'Account Page'))
@@ -140,6 +152,21 @@ class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageSt
 					<h3>{t('Organzation Info')}</h3>
 					{this.props.organization ? <React.Fragment>
 						<p>{t('Name:')} {this.props.organization.name}</p>
+						<button className='btn' onClick={() => this.toggleAccess(UserRoleType.STUDIO_PLAYOUT)}>{
+							this.props.user.roles.find(r => r.type === UserRoleType.STUDIO_PLAYOUT)
+							? t('Remove Studio Access')
+							: t('Add Studio Access')
+						}</button>
+						<button className='btn' onClick={() => this.toggleAccess(UserRoleType.CONFIGURATOR)}>{
+							this.props.user.roles.find(r => r.type === UserRoleType.CONFIGURATOR)
+							? t('Remove Configurator Access')
+							: t('Add Configurator Access')
+						}</button>
+						<button className='btn' onClick={() => this.toggleAccess(UserRoleType.DEVELOPER)}>{
+							this.props.user.roles.find(r => r.type === UserRoleType.DEVELOPER)
+							? t('Remove Developer Access')
+							: t('Add Developer Access')
+						}</button>
 					</React.Fragment>
 					: <Spinner />}
 					{this.state.edit && <button className='btn' onClick={() => this.handleRemoveUser()}>{t('Remove Self')}</button>}
