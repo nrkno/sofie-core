@@ -59,10 +59,12 @@ export function scrollToPartInstance (partInstanceId: PartInstanceId, forceScrol
 	return Promise.reject('Could not find PartInstance')
 }
 
-export function scrollToPart (partId: PartId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
+export async function scrollToPart (partId: PartId, forceScroll?: boolean, noAnimation?: boolean): Promise<boolean> {
 	quitFocusOnPart()
 	let part = Parts.findOne(partId)
 	if (part) {
+		await scrollToSegment(part.segmentId, forceScroll, noAnimation)
+
 		window.dispatchEvent(
 			new CustomEvent<IGoToPartEvent>(
 				RundownViewEvents.goToPart, {
@@ -71,7 +73,9 @@ export function scrollToPart (partId: PartId, forceScroll?: boolean, noAnimation
 						partId: partId
 					}
 				}))
-		return scrollToSegment(part.segmentId, forceScroll, noAnimation)
+
+		return true // rather meaningless as we don't know what happened
+		
 	}
 	return Promise.reject('Could not find part')
 }

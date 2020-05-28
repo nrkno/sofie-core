@@ -463,12 +463,11 @@ export const SegmentTimelineContainer = translate()(withTracker<IProps, IState, 
 
 	onGoToPart = (e: CustomEvent<IGoToPartEvent>) => {
 		if (this.props.segmentId === e.detail.segmentId) {
-			for (const part of this.props.parts) {
-				if (part.partId === e.detail.partId) {
-					this.setState({
-						scrollLeft: part.startsAt
-					})
-				}
+			const part = this.props.parts.find(part => part.partId === e.detail.partId)
+			if (part) {
+				this.setState({
+					scrollLeft: part.startsAt
+				})
 			}
 		}
 	}
