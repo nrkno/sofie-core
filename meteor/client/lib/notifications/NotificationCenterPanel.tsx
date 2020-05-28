@@ -109,6 +109,8 @@ interface IProps {
 	showEmptyListLabel?: boolean
 	/** Should snoozed notifications be shown? Defaults to false */
 	showSnoozed?: boolean
+	/** Limit the amount of shown notifications */
+	limitCount?: number
 }
 
 interface IState {
@@ -192,7 +194,21 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 
 	render () {
 		const { t, highlightedSource, highlightedLevel } = this.props
-		const displayList = this.props.notifications.filter(i => this.props.showSnoozed || !i.snoozed).sort((a, b) => Notification.compare(a, b)).map(item => (
+
+		let notifications
+		if (this.props.limitCount !== undefined) {
+			notifications = this.props.notifications
+				.filter(i => this.props.showSnoozed || !i.snoozed)
+				.sort((a, b) => Notification.compare(a, b))
+				.slice(0, this.props.limitCount)
+		} else {
+			notifications = this.props.notifications
+				.filter(i => this.props.showSnoozed || !i.snoozed)
+				.sort((a, b) => Notification.compare(a, b))
+		}
+
+		const displayList = notifications
+			.map(item => (
 			<NotificationPopUp key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
 				item={item} onDismiss={() => this.dismissNotification(item)}
 				showDismiss={!item.persistent || !this.props.showSnoozed}
@@ -227,11 +243,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
  * @class NotificationCenterPanel
  * @extends React.Component
  */
-export class NotificationCenterPanel extends React.Component {
+export class NotificationCenterPanel extends React.Component<{limitCount?: number}> {
 	render () {
 		return (
 			<div className='notification-center-panel'>
-				<NotificationCenterPopUps showEmptyListLabel={true} showSnoozed={true} />
+				<NotificationCenterPopUps showEmptyListLabel={true} showSnoozed={true} limitCount={this.props.limitCount} />
 			</div>
 		)
 	}

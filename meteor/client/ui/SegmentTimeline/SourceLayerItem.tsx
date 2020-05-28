@@ -67,10 +67,9 @@ interface ISourceLayerItemState {
 	rightAnchoredWidth: number
 }
 export const SourceLayerItem = translate()(class SourceLayerItem extends React.Component<ISourceLayerItemProps & InjectedTranslateProps, ISourceLayerItemState> {
-	private _forceSizingRecheck: boolean
-	private _placeHolderElement: boolean
+	private _resizeObserver: ResizeObserver | undefined
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
 			showMiniInspector: false,
@@ -89,8 +88,6 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 			leftAnchoredWidth: 0,
 			rightAnchoredWidth: 0
 		}
-
-		this._forceSizingRecheck = false
 	}
 
 	setRef = (e: HTMLDivElement) => {
@@ -233,7 +230,7 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		return itemDuration
 	}
 
-	getItemStyle (): { [key: string]: string } {
+	getItemStyle(): { [key: string]: string } {
 		const piece = this.props.piece
 		const innerPiece = piece.instance.piece
 
@@ -262,9 +259,63 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		}
 	}
 
-	checkElementWidth = () => {
-		if (this.state.itemElement && this._forceSizingRecheck) {
-			this._forceSizingRecheck = false
+	// TODO(Performance): use ResizeObserver to avoid style recalculations
+	// checkElementWidth = () => {
+	// 	if (this.state.itemElement && this._forceSizingRecheck) {
+	// 		this._forceSizingRecheck = false
+	// 		const width = getElementWidth(this.state.itemElement) || 0
+	// 		if (this.state.elementWidth !== width) {
+	// 			this.setState({
+	// 				elementWidth: width
+	// 			})
+	// 		}
+	// 	}
+	// }
+
+	private onResize = (entries: ResizeObserverEntry[]) => {
+		const firstEntry = entries && entries[0]
+
+		if (
+			firstEntry &&
+			firstEntry.contentBoxSize &&
+			firstEntry.contentBoxSize.width
+		) {
+			const width = firstEntry.contentBoxSize!.width
+			if (this.state.elementWidth !== width) {
+				this.setState({
+					elementWidth: width
+				})
+			}
+		} else if (
+			firstEntry &&
+			firstEntry.borderBoxSize &&
+			firstEntry.borderBoxSize.width
+		) {
+			const width = firstEntry.borderBoxSize!.width
+			if (this.state.elementWidth !== width) {
+				this.setState({
+					elementWidth: width
+				})
+			}
+		} else if (
+			firstEntry &&
+			firstEntry.contentRect &&
+			firstEntry.contentRect.width
+		) {
+			const width = firstEntry.contentRect!.width
+			if (this.state.elementWidth !== width) {
+				this.setState({
+					elementWidth: width
+				})
+			}
+		}
+	}
+
+	private mountResizeObserver() {
+		if (this.props.isLiveLine && !this._resizeObserver && this.state.itemElement) {
+			this._resizeObserver = new ResizeObserver(this.onResize)
+			this._resizeObserver.observe(this.state.itemElement)
+
 			const width = getElementWidth(this.state.itemElement) || 0
 			if (this.state.elementWidth !== width) {
 				this.setState({
@@ -274,13 +325,20 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		}
 	}
 
-	componentDidMount () {
-		this.checkElementWidth()
+	private unmountResizeObserver() {
+		if (this._resizeObserver) {
+			this._resizeObserver.disconnect()
+			this._resizeObserver = undefined
+		}
 	}
 
-	componentDidUpdate (prevProps: ISourceLayerItemProps) {
-		this._forceSizingRecheck = true
+	componentDidMount() {
+		if (this.props.isLiveLine) {
+			this.mountResizeObserver()
+		}
+	}
 
+	componentDidUpdate(prevProps: ISourceLayerItemProps) {
 		if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 			this.setState({
 				scrollLeftOffset: this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft),
@@ -288,7 +346,11 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 			})
 		}
 
-		this.checkElementWidth()
+		if (this.props.isLiveLine && this.state.itemElement && !this._resizeObserver) {
+			this.mountResizeObserver()
+		} else if (!this.props.isLiveLine && this._resizeObserver) {
+			this.unmountResizeObserver()
+		}
 	}
 
 	itemClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -307,7 +369,6 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 			no: 'Discard',
 			// acceptOnly?: boolean
 			onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
-				console.log('accept', inputResult)
 				const rundown = Rundowns.findOne(this.props.part.instance.rundownId)
 				if (!rundown) throw Error(`Rundown ${this.props.part.instance.rundownId} not found (in/out)`)
 
@@ -399,7 +460,7 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		})
 	}
 
-	renderInsideItem (typeClass: string) {
+	renderInsideItem(typeClass: string) {
 		switch (this.props.layer.type) {
 			case SourceLayerType.SCRIPT:
 				// case SourceLayerType.MIC:
@@ -465,7 +526,7 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		}
 	}
 
-	isInsideViewport () {
+	isInsideViewport() {
 		if (this.props.relative) {
 			return true
 		} else {
@@ -473,10 +534,8 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		}
 	}
 
-	render () {
+	render() {
 		if (this.isInsideViewport()) {
-
-			this._placeHolderElement = false
 
 			const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
 
@@ -541,9 +600,6 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 			)
 
 		} else { // render a placeholder
-
-			this._placeHolderElement = true
-
 			return (
 				<div className='segment-timeline__piece'
 					data-obj-id={this.props.piece.instance._id}
@@ -551,7 +607,6 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 					style={this.getItemStyle()}>
 				</div>
 			)
-
 		}
 	}
 })

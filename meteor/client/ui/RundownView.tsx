@@ -1274,32 +1274,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							$in: rundownIDs
 						}
 					})
-					this.subscribe(PubSub.parts, {
-						rundownId: {
-							$in: rundownIDs
-						}
-					})
-					this.subscribe(PubSub.partInstances, {
-						rundownId: {
-							$in: rundownIDs
-						},
-						reset: {
-							$ne: true
-						}
-					})
-					this.subscribe(PubSub.pieces, {
-						rundownId: {
-							$in: rundownIDs
-						}
-					})
-					this.subscribe(PubSub.pieceInstances, {
-						rundownId: {
-							$in: rundownIDs
-						},
-						reset: {
-							$ne: true
-						}
-					})
 					this.subscribe(PubSub.adLibPieces, {
 						rundownId: {
 							$in: rundownIDs

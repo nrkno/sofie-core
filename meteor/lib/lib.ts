@@ -301,7 +301,7 @@ export function anythingChanged (changes: Changes): boolean {
  * @param onlyKeysFromA If true, only uses the keys of (a) for comparison
  * @param omit Array of keys to omit in the comparison
  */
-function compareObjs (a: any, b: any, onlyKeysFromA?: boolean, omit?: Array<string>): boolean {
+export function compareObjs (a: any, b: any, onlyKeysFromA?: boolean, omit?: Array<string>): boolean {
 
 	// let omit = ['_id','type','created','owner','OP','disabled']
 	omit = omit || []
@@ -737,6 +737,10 @@ export function escapeHtml (text: string): string {
 	return outText
 }
 const ticCache = {}
+/**
+ * Performance debugging. tic() starts a timer, toc() traces the time since tic()
+ * @param name
+ */
 export function tic (name: string = 'default') {
 	ticCache[name] = Date.now()
 }
@@ -974,11 +978,116 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 				}
 			}
 		} catch (e) {
-			logger.warn(e)
+			logger.warn(e || e.reason || e.toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}
 	})
 	return ok
+}
+export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
+	if (options) {
+		if (options.sort) {
+			docs = [...docs] // Shallow clone it
+
+			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
+			const keys = _.keys(options.sort).filter(k => options.sort)
+			function doSort(a: any, b: any, i: number): number {
+				if (i >= keys.length) return 0
+
+				const key = keys[i]
+				const order = options!.sort![key]
+
+				// Get the values, and handle asc vs desc
+				const val1 = objectPath.get(order > 0 ? a : b, key)
+				const val2 = objectPath.get(order > 0 ? b : a, key)
+
+				if (_.isEqual(val1, val2)) {
+					return doSort(a, b, i + 1)
+				} else if (val1 > val2) { 
+					return 1
+				} else {
+					return -1
+				}
+			}
+
+			if (keys.length > 0) {
+				docs.sort((a, b) => doSort(a, b, 0))
+			}
+		}
+
+		if (options.skip) {
+			docs = docs.slice(options.skip)
+		}
+		if (options.limit !== undefined) {
+			docs = _.take(docs, options.limit)
+		}
+
+		if (options.fields !== undefined) {
+			const idVal = options.fields['_id']
+			const includeKeys: string[] = _.keys(options.fields).filter(key => key !== '_id' && options.fields![key] !== 0)
+			const excludeKeys: string[] = _.keys(options.fields).filter(key => key !== '_id' && options.fields![key] === 0)
+
+			// Mongo does allow mixed include and exclude (exception being excluding _id)
+			// https://docs.mongodb.com/manual/reference/method/db.collection.find/#projection
+			if (includeKeys.length !== 0 && excludeKeys.length !== 0) {
+				throw new Meteor.Error(`options.fields cannot contain both include and exclude rules`)
+			}
+
+			// TODO - does this need to use objectPath in some way?
+
+			if (includeKeys.length !== 0) {
+				if (idVal !== 0) includeKeys.push('_id')
+				docs = _.map(docs, doc => _.pick(doc, includeKeys))
+			} else if (excludeKeys.length !== 0) {
+				if (idVal === 0) excludeKeys.push('_id')
+				docs = _.map(docs, doc => _.omit(doc, excludeKeys))
+			}
+		}
+
+		// options.reactive // Not used server-side
+		if (options.transform) throw new Meteor.Error(`options.transform not implemented`)
+	}
+	return docs
+}
+export function mongoModify<DBInterface extends {_id: ProtectedString<any>}> (selector: MongoSelector<DBInterface>, doc: DBInterface, modifier: MongoModifier<DBInterface>): DBInterface {
+	let replace = false
+	_.each(modifier, (value: any, key: string) => {
+		if (key === '$set') {
+			_.each(value, (value: any, key: string) => {
+				setOntoPath(doc, key, selector, value)
+			})
+		} else if (key === '$unset') {
+			_.each(value, (value: any, key: string) => {
+				unsetPath(doc, key, selector)
+			})
+		} else if (key === '$push') {
+			_.each(value, (value: any, key: string) => {
+				pushOntoPath(doc, key, value)
+			})
+		} else if (key === '$pull') {
+			_.each(value, (value: any, key: string) => {
+				pullFromPath(doc, key, value)
+			})
+		} else if (key === '$rename') {
+			_.each(value, (value: any, key: string) => {
+				renamePath(doc, key, value)
+			})
+		} else {
+			if (key[0] === '$') {
+				throw Error(`Update method "${key}" not implemented yet`)
+			} else {
+				replace = true
+			}
+		}
+
+	})
+	if (replace) {
+		const newDoc = modifier as any
+		if (!newDoc._id) newDoc._id = doc._id
+		return newDoc
+	} else {
+		return doc
+	}
 }
 /**
  * Mutate a value on a object
@@ -1117,6 +1226,18 @@ export function setOntoPath<T> (obj: Object, path: string, substitutions: Object
  */
 export function unsetPath (obj: Object, path: string, substitutions: Object) {
 	mutatePath(obj, path, substitutions, (parentObj: Object, key: string) => delete parentObj[key])
+}
+/**
+ * Rename a path to value
+ * @param obj Object
+ * @param oldPath Old path to value in object
+ * @param newPath New path to value
+ */
+export function renamePath (obj: Object, oldPath: string, newPath: string) {
+	mutatePath(obj, oldPath, {}, (parentObj: Object, key: string) => {
+		setOntoPath(obj, newPath, {}, parentObj[key])
+		delete parentObj[key]
+	})
 }
 /**
  * Replaces all invalid characters in order to make the path a valid one

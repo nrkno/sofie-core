@@ -67,6 +67,7 @@ describe('test peripheralDevice general API methods', () => {
 			_rank: 0,
 			rundownId: rundownID,
 			name: 'Fire',
+			externalModified: 1
 		})
 		Parts.insert({
 			_id: protectString('part000'),
@@ -91,14 +92,16 @@ describe('test peripheralDevice general API methods', () => {
 			_rank: 1,
 			externalId: 'segment01',
 			rundownId: rundownID,
-			name: 'Water'
+			name: 'Water',
+			externalModified: 1
 		})
 		Segments.insert({
 			_id: protectString('segment2'),
 			_rank: 2,
 			externalId: 'segment02',
 			rundownId: rundownID,
-			name: 'Earth'
+			name: 'Earth',
+			externalModified: 1
 		})
 	})
 

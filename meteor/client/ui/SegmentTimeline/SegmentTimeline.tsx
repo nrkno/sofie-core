@@ -85,7 +85,6 @@ interface IProps {
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: NoteType) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
-	followingPart: PartUi | undefined
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
 }

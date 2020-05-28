@@ -8,6 +8,7 @@ import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/R
 import { Piece } from '../../../../lib/collections/Pieces'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { resetRandomId } from '../../../../__mocks__/random'
+import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 
 namespace PlayoutAPI { // Using our own method definition, to catch external API changes
 	export enum methods {
@@ -300,7 +301,7 @@ describe('Playout API', () => {
 		{
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
 			Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, instances[0]._id, globalAdLibs[0]._id)
-			const pieces0 = instances[0].getPieceInstances()
+			const pieces0 = PieceInstances.find({ partInstanceId: instances[0]._id }).fetch()
 			expect(pieces0).toMatchSnapshot()
 		}
 
@@ -309,7 +310,7 @@ describe('Playout API', () => {
 		{
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
 			Meteor.call(PlayoutAPI.methods.segmentAdLibPieceStart, playlistId0, instances[0]._id, adLibs[0]._id)
-			const pieces1 = instances[0].getPieceInstances()
+			const pieces1 = PieceInstances.find({ partInstanceId: instances[0]._id }).fetch()
 			expect(pieces1).toMatchSnapshot()
 		}
 	})

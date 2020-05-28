@@ -12,6 +12,7 @@ import * as request from 'request'
 import { promisify } from 'util'
 import { check } from 'meteor/check'
 import { updateTimeline } from './playout/timeline'
+import { initCacheForRundownPlaylistFromStudio } from '../DatabaseCaches'
 
 const deleteRequest = promisify(request.delete)
 
@@ -90,7 +91,10 @@ export namespace ServerTestToolsAPI {
 	 */
 	export function recordStop (studioId: StudioId) {
 		check(studioId, String)
-		const updated = RecordedFiles.update({
+
+		const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
+
+		const updated = cache.RecordedFiles.update({
 			studioId: studioId,
 			stoppedAt: { $exists: false }
 		}, {
@@ -101,16 +105,21 @@ export namespace ServerTestToolsAPI {
 
 		if (updated === 0) throw new Meteor.Error(404, `No active recording for "${studioId}" was found!`)
 
-		updateTimeline(studioId)
+		updateTimeline(cache, studioId)
+
+		waitForPromise(cache.saveAllToDatabase())
 	}
 
 	export function recordStart (studioId: StudioId, name: string) {
 		check(studioId, String)
 		check(name, String)
-		const studio = Studios.findOne(studioId)
+
+		const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
+
+		const studio = cache.Studios.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 
-		const active = RecordedFiles.findOne({
+		const active = cache.RecordedFiles.findOne({
 			studioId: studioId,
 			stoppedAt: { $exists: false }
 		})
@@ -142,12 +151,12 @@ export namespace ServerTestToolsAPI {
 			lookahead: LookaheadMode.NONE,
 			internal: true
 		})
-		Studios.update(studio._id, { $set: setter })
+		cache.Studios.update(studio._id, { $set: setter })
 
 		const fileId: RecordedFileId = getRandomId(7)
 		const path = (config.recordings.filePrefix || defaultConfig.prefix) + fileId + '.mp4'
 
-		RecordedFiles.insert({
+		cache.RecordedFiles.insert({
 			_id: fileId,
 			studioId: studioId,
 			modified: getCurrentTime(),
@@ -156,7 +165,9 @@ export namespace ServerTestToolsAPI {
 			path: path
 		})
 
-		updateTimeline(studioId)
+		updateTimeline(cache, studioId)
+
+		waitForPromise(cache.saveAllToDatabase())
 	}
 
 	export function recordDelete (fileId: RecordedFileId) {

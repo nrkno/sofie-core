@@ -100,52 +100,6 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 			this.overrides = {}
 			const overrides = this.overrides
 
-			// console.log(`${this.props.piece._id}: running data tracker`)
-
-			if (props.isLiveLine) {
-				// Check in Timeline collection for any changes to the related object
-				// TODO - this query appears to be unable to load any data
-				let timelineObj = Timeline.findOne({ id: getPieceGroupId(unprotectObject(props.piece.instance.piece)) })
-
-				if (timelineObj) {
-					// Deep clone the required bits
-					const origPiece = (overrides.piece || props.piece) as PieceUi
-					const pieceCopy = {
-						...(overrides.piece || props.piece),
-						instance: {
-							...origPiece.instance,
-							piece: {
-								...origPiece.instance.piece,
-								enable: timelineObj.enable
-							}
-						}
-					}
-
-					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
-						pieceCopy.renderedInPoint = timelineObj.enable.start
-					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
-						if (props.part && props.part.instance.part.startedPlayback && props.part.instance.part.getLastStartedPlayback()) {
-							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.instance.part.getLastStartedPlayback() || 0)
-						} else {
-							pieceCopy.renderedInPoint = 0
-						}
-					} else {
-						pieceCopy.renderedInPoint = 0
-					}
-
-					if (typeof timelineObj.enable.duration === 'number' && !pieceCopy.cropped) {
-						pieceCopy.renderedDuration = (
-							timelineObj.enable.duration !== 0 ?
-								timelineObj.enable.duration :
-								(props.partDuration - (pieceCopy.renderedInPoint || 0))
-						) || null
-					}
-					// console.log(segmentCopy.renderedDuration)
-
-					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
-				}
-			}
-
 			// Check item status
 			if (props.piece.sourceLayer) {
 

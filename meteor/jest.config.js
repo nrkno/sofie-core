@@ -63,7 +63,10 @@ module.exports = {
 				'!.meteor/*.*'
 			],
 			testEnvironment: 'jsdom',
-			setupFilesAfterEnv: ['<rootDir>/client/__tests__/jest-setup.js']
+			setupFilesAfterEnv: [
+				...commonConfig.setupFilesAfterEnv,
+				'<rootDir>/client/__tests__/jest-setup.js'
+			]
 		}), Object.assign({}, commonConfig, {
 			displayName: 'lib',
 			testMatch: [

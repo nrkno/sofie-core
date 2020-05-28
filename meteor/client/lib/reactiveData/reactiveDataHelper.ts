@@ -48,7 +48,7 @@ const isolatedAutorunsMem: {
 
 export function memoizedIsolatedAutorun<T> (fnc: (...params) => T, functionName: string, ...params): T {
 	function hashFncAndParams (fName: string, p: any): string {
-		return fName + '_' + getHash(JSON.stringify(p))
+		return fName + '_' + JSON.stringify(p)
 	}
 
 	let result: T

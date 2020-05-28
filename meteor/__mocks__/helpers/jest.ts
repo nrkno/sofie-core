@@ -5,6 +5,11 @@ export function beforeAllInFiber (fcn: Function) {
 		await runInFiber(fcn)
 	})
 }
+export function beforeEachInFiber (fcn: Function) {
+	beforeEach(async () => {
+		await runInFiber(fcn)
+	})
+}
 
 export function testInFiber (testName: string, fcn: Function) {
 	test(testName, async () => {

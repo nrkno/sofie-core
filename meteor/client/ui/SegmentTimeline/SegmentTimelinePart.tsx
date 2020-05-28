@@ -360,6 +360,8 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 })(class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
+	private delayedInstanceUpdate: NodeJS.Timer | undefined
+
 	constructor(props: Translated<WithTiming<IProps>>) {
 		super(props)
 
@@ -385,7 +387,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 						(partInstance.part.displayDuration || props.timingDurations.partDurations[unprotectString(partInstance.part._id)]) :
 						0
 				)
-				: 0
+				: 0,
 		}
 	}
 
@@ -427,13 +429,15 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 				SegmentTimelinePart0.getPartDuration(nextProps, liveDuration)
 			)
 
-		return ({
+		const partial = {
 			isLive,
 			isNext,
 			isDurationSettling,
 			liveDuration,
 			isInsideViewport
-		})
+		}
+
+		return partial
 	}
 
 	static getLiveLineTimePadding(timeScale): number {
@@ -452,8 +456,33 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 		}
 	}
 
+	queueDelayedUpdate() {
+		this.delayedInstanceUpdate = setTimeout(() => {
+			this.delayedInstanceUpdate = undefined
+			this.forceUpdate()
+		}, 5000)
+	}
+
 	shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
-		return (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState))
+		if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
+		if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
+			if (
+				((this.props.part.instance.isTemporary === true) && (nextProps.part.instance.isTemporary === false)) &&
+				((this.props.part.pieces.length > 0) && (nextProps.part.pieces.length === 0) && (!nextProps.part.instance.part.invalid))
+			) {
+				this.queueDelayedUpdate()
+				return false
+			} else if (
+				((this.props.part.instance.isTemporary === false) && (nextProps.part.instance.isTemporary === false)) &&
+				((this.props.part.pieces.length === 0) && (nextProps.part.pieces.length === 0) && (!nextProps.part.instance.part.invalid))
+			) {
+				this.queueDelayedUpdate()
+				return false
+			}
+			return true
+		} else {
+			return false
+		}
 	}
 
 	getLayerStyle() {

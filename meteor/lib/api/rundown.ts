@@ -10,7 +10,7 @@ export interface RundownPlaylistValidateBlueprintConfigResult {
 	showStyles: Array<{
 		id: string
 		name: string
-		checkFailed: boolean 
+		checkFailed: boolean
 		fields: string[]
 	}>
 }
@@ -24,7 +24,7 @@ export interface NewRundownAPI {
 	resyncRundown (rundownId: RundownId): Promise<TriggerReloadDataResponse>
 	resyncSegment (segmentId: SegmentId): Promise<TriggerReloadDataResponse>
 	unsyncRundown (rundownId: RundownId): Promise<void>
-	unsyncSegment (segmentId: SegmentId): Promise<void>
+	unsyncSegment (rundownId: RundownId, segmentId: SegmentId): Promise<void>
 }
 
 export enum RundownAPIMethods {

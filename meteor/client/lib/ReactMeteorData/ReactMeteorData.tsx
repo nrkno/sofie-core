@@ -9,23 +9,57 @@ import { translate, InjectedTranslateProps } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import * as _ from 'underscore'
 
+const globalTrackerQueue: Array<Function> = []
+let globalTrackerTimestamp: number | undefined = undefined
+let globalTrackerTimeout: number | undefined = undefined
+
+const METEOR_DATA_DEBOUNCE = 120
+const METEOR_DATA_DEBOUNCE_STALE = 200
+
 // A class to keep the state and utility methods needed to manage
 // the Meteor data for a component.
 class MeteorDataManager {
 	component: any
 	computation: any
 	oldData: any
+	queueTrackerUpdates: boolean
 
-	constructor (component) {
+	constructor (component, queueTrackerUpdates: boolean) {
 		this.component = component
 		this.computation = null
 		this.oldData = null
+		this.queueTrackerUpdates = queueTrackerUpdates || false
 	}
 
 	dispose () {
 		if (this.computation) {
 			this.computation.stop()
 			this.computation = null
+		}
+	}
+
+	static runUpdates () {
+		// console.log(`running ${globalTrackerQueue.length} queued updates`)
+		clearTimeout(globalTrackerTimeout)
+		globalTrackerTimeout = undefined
+		globalTrackerTimestamp = undefined
+		globalTrackerQueue.map(func => func())
+		globalTrackerQueue.length = 0
+	}
+
+	static enqueueUpdate (func: Function) {
+		if (globalTrackerTimeout !== undefined) {
+			clearTimeout(globalTrackerTimeout)
+			globalTrackerTimeout = undefined
+		}
+		if (globalTrackerTimestamp === undefined) {
+			globalTrackerTimestamp = Date.now()
+		}
+		globalTrackerQueue.push(func)
+		if (Date.now() - globalTrackerTimestamp < METEOR_DATA_DEBOUNCE_STALE) {
+			globalTrackerTimeout = Meteor.setTimeout(MeteorDataManager.runUpdates, METEOR_DATA_DEBOUNCE)
+		} else {
+			MeteorDataManager.runUpdates()
 		}
 	}
 
@@ -73,18 +107,28 @@ class MeteorDataManager {
 						component.setState = savedSetState
 					}
 				} else {
-							// Stop this computation instead of using the re-run.
-							// We use a brand-new autorun for each call to getMeteorData
-							// to capture dependencies on any reactive data sources that
-							// are accessed.  The reason we can't use a single autorun
-							// for the lifetime of the component is that Tracker only
-							// re-runs autoruns at flush time, while we need to be able to
-							// re-call getMeteorData synchronously whenever we want, e.g.
-							// from componentWillUpdate.
+					// Stop this computation instead of using the re-run.
+					// We use a brand-new autorun for each call to getMeteorData
+					// to capture dependencies on any reactive data sources that
+					// are accessed.  The reason we can't use a single autorun
+					// for the lifetime of the component is that Tracker only
+					// re-runs autoruns at flush time, while we need to be able to
+					// re-call getMeteorData synchronously whenever we want, e.g.
+					// from componentWillUpdate.
 					c.stop()
-							// Calling forceUpdate() triggers componentWillUpdate which
-							// recalculates getMeteorData() and re-renders the component.
-					component.forceUpdate()
+					// Calling forceUpdate() triggers componentWillUpdate which
+					// recalculates getMeteorData() and re-renders the component.
+
+					// TODO(performance): optionally queue tracker updates for a while
+					if (this.queueTrackerUpdates) {
+						MeteorDataManager.enqueueUpdate(() => {
+							if (this.computation) {
+								component.forceUpdate()
+							}
+						})
+					} else {
+						component.forceUpdate()
+					}
 				}
 			})
 		))
@@ -133,7 +177,7 @@ class MeteorDataManager {
 export const ReactMeteorData = {
 	componentWillMount () {
 		this.data = {}
-		this._meteorDataManager = new MeteorDataManager(this)
+		this._meteorDataManager = new MeteorDataManager(this, this._queueTrackerUpdates || false)
 		const newData = this._meteorDataManager.calculateData()
 		this._meteorDataManager.updateData(newData)
 	},
@@ -171,7 +215,7 @@ export const ReactMeteorData = {
 
 class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
 	data: any
-	_renderedContent: any
+	// _renderedContent: any
 }
 Object.assign(ReactMeteorComponentWrapper.prototype, ReactMeteorData)
 class ReactMeteorPureComponentWrapper<P, S> extends React.PureComponent<P, S> {}
@@ -180,13 +224,15 @@ Object.assign(ReactMeteorPureComponentWrapper.prototype, ReactMeteorData)
 export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 	getMeteorData: (props: IProps) => TrackedProps
 	shouldComponentUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean
+	queueTrackerUpdates?: boolean
 	// pure?: boolean
 }
 // @todo: add withTrackerPure()
-type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => MeteorReactComponent<IProps & TrackedProps, IState>
+type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>
 export function withTracker<IProps, IState, TrackedProps> (
 	autorunFunction: (props: IProps) => TrackedProps,
-	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
+	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	queueTrackerUpdates?: boolean
 	):
 	(WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) =>
 		new (props: IProps) => React.Component<IProps, IState> {
@@ -195,12 +241,15 @@ export function withTracker<IProps, IState, TrackedProps> (
 
 	expandedOptions = {
 		getMeteorData: autorunFunction,
-		shouldComponentUpdate: checkUpdate
+		shouldComponentUpdate: checkUpdate,
+		queueTrackerUpdates
 	}
 
 	return (WrappedComponent) => {
 		// return ''
 		const HOC = class extends ReactMeteorComponentWrapper<IProps, IState> {
+			_queueTrackerUpdates = expandedOptions.queueTrackerUpdates
+
 			getMeteorData () {
 				return expandedOptions.getMeteorData.call(this, this.props)
 			}
@@ -215,7 +264,7 @@ export function withTracker<IProps, IState, TrackedProps> (
 			}
 			render () {
 				let content = <WrappedComponent {...this.props} {...this.data} />
-				this._renderedContent = content
+				// this._renderedContent = content
 				return content
 			}
 		}

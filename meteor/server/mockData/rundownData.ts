@@ -5,12 +5,14 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { check } from 'meteor/check'
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../DatabaseCaches'
+import { removeRundownPlaylistFromCache } from '../api/playout/lib'
 
 // These are temporary method to fill the rundown database with some sample data
 // for development
@@ -48,14 +50,20 @@ Meteor.methods({
 		logger.debug('Remove rundown "' + id + '"')
 
 		const playlist = RundownPlaylists.findOne(id)
-		if (playlist) playlist.remove()
+		if (playlist) {
+			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+			removeRundownPlaylistFromCache(cache, playlist)
+			waitForPromise(cache.saveAllToDatabase())
+		}
 	},
 
 	'debug_removeAllRos' () {
 		logger.debug('Remove all rundowns')
 
 		RundownPlaylists.find({}).forEach((playlist) => {
-			playlist.remove()
+			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+			removeRundownPlaylistFromCache(cache, playlist)
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	},
 
@@ -67,16 +75,22 @@ Meteor.methods({
 		const rundown = Rundowns.findOne(rundownId)
 		if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
-		const prevPart = previousPartId ? Parts.findOne(previousPartId) : undefined
+		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundown._id))
+		const prevPart = previousPartId ? cache.Parts.findOne(previousPartId) : undefined
 
-		updateSourceLayerInfinitesAfterPart(rundown, prevPart, runToEnd)
+		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart, runToEnd)
 
+		waitForPromise(cache.saveAllToDatabase())
 		logger.info('debug_updateSourceLayerInfinitesAfterPart: done')
 	},
 
 	'debug_recreateExpectedMediaItems' () {
 		const rundowns = Rundowns.find().fetch()
 
-		rundowns.map((i) => updateExpectedMediaItemsOnRundown(i._id))
+		rundowns.map((i) => {
+			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
+			updateExpectedMediaItemsOnRundown(cache, i._id)
+			waitForPromise(cache.saveAllToDatabase())
+		})
 	}
 })

@@ -17,6 +17,8 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	_rank: number
 	/** ID of the source object in the gateway */
 	externalId: string
+	/** Timestamp when the externalData was last modified */
+	externalModified: number
 	/** The rundown this segment belongs to */
 	rundownId: RundownId
 
@@ -35,6 +37,7 @@ export class Segment implements DBSegment {
 	public _id: SegmentId
 	public _rank: number
 	public externalId: string
+	public externalModified: number
 	public rundownId: RundownId
 	public name: string
 	public metaData?: { [key: string]: any }

@@ -3,8 +3,8 @@ import { check } from 'meteor/check'
 
 import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { rejectFields } from './lib'
-import { Mongo } from 'meteor/mongo'
 import { protectString } from '../../lib/lib'
+import { MongoQuery } from '../../lib/typings/meteor'
 
 export namespace PeripheralDeviceSecurity {
 
@@ -35,7 +35,7 @@ export namespace PeripheralDeviceSecurity {
 
 		throw new Meteor.Error(401,'Not allowed access to peripheralDevice')
 	}
-	export function allowReadAccess (selector: Mongo.Query<PeripheralDevice>, token: string, context: any) {
+	export function allowReadAccess (selector: MongoQuery<PeripheralDevice>, token: string, context: any) {
 		if (selector._id && token) {
 
 			check(selector['_id'], String)

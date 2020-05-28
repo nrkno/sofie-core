@@ -3,7 +3,7 @@ import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../../lib
 import { setupDefaultStudioEnvironment, setupMockPeripheralDevice } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Segment, Segments } from '../../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../../lib/collections/Parts'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
@@ -13,7 +13,9 @@ import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString, protectString } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { getSegmentId } from '../lib';
+import { getSegmentId } from '../lib'
+import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { removeRundownPlaylistFromCache } from '../../playout/lib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -90,7 +92,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundownPlaylist).toMatchObject({
 			externalId: rundownData.externalId
 		})
-		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
@@ -160,7 +161,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: rundownData.externalId,
 			name: rundownData.name
 		})
-		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
@@ -331,7 +331,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundownPlaylist).toMatchObject({
 			externalId: rundownData.externalId
 		})
-		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
@@ -405,7 +404,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(rundownPlaylist).toMatchObject({
 			externalId: rundownData.externalId
 		})
-		expect(typeof rundownPlaylist.fetchAllPlayoutData).toEqual('function')
 		expect(RundownPlaylists.find().count()).toBe(1)
 
 		const rundown = Rundowns.findOne() as Rundown
@@ -943,7 +941,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updatePartRanks(rundown)
+		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
+			updatePartRanks(cache, rundown)
+		})
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
 		expect(dynamicPart._rank).toEqual(1.5) // TODO - this value is bad
@@ -1045,7 +1045,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Parts.findOne(protectString('dynamic2'))).toBeTruthy()
 
 		// Let the logic generate the correct rank first
-		updatePartRanks(rundown)
+		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
+			updatePartRanks(cache, rundown)
+		})
 
 		let part1 = Parts.findOne({ externalId: 'part1' }) as Part
 		expect(part1._rank).toEqual(1)
@@ -1090,8 +1092,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	testInFiber('unsyncing of rundown', () => {
-		// Cleanup any rundowns/playlists
-		RundownPlaylists.find().fetch().forEach(r => r.remove())
+		// Cleanup any rundowns / playlists
+		RundownPlaylists.find().fetch().forEach(playlist => wrapWithCacheForRundownPlaylist(playlist, (cache) => removeRundownPlaylistFromCache(cache, playlist)))
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,

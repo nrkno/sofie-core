@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath, pullFromPath, Omit, ProtectedString, unprotectString, protectString } from '../lib/lib'
+import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath, pullFromPath, Omit, ProtectedString, unprotectString, protectString, mongoModify, mongoFindOptions } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions, MongoSelector, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
@@ -29,14 +29,18 @@ export namespace MongoMock {
 	export interface MongoCollection<T extends CollectionObject> {
 	}
 	export class Collection<T extends CollectionObject> implements MongoCollection<T> {
-		private localName: string
+		public _name: string
 		private _options: any = {}
 		private _isMock: true = true // used in test to check that it's a mock
 		private observers: ObserverEntry[] = []
 
-		constructor (localName: string, options: any) {
-			this.localName = localName
+		private _transform?: (o: T) => T
+
+		constructor (name: string, options: any) {
 			this._options = options || {}
+			this._name = name
+			this._transform = this._options.transform
+
 		}
 		find (query: any, options?: FindOptions) {
 			if (_.isString(query)) query = { _id: query }
@@ -54,23 +58,7 @@ export namespace MongoMock {
 				_.filter(docsArray, (doc) => mongoWhere(doc, query))
 			))
 
-			if (options && options.sort) {
-				let tmpDocs = _.chain(docs)
-				for (const key of _.keys(options.sort)) {
-					const dir = options.sort[key]
-					// TODO - direction
-					tmpDocs = tmpDocs.sortBy(doc => doc[key])
-				}
-				docs = tmpDocs.value()
-			}
-
-			if (options && options.limit !== undefined) {
-				docs = _.take(docs, options.limit)
-			}
-
-			if (options && options.fields !== undefined) {
-				docs = _.map(docs, doc => _.omit(doc, _.keys(options.fields).filter(key => options.fields![key] === 0)))
-			}
+			docs = mongoFindOptions(docs, options)
 
 			const observers = this.observers
 
@@ -80,8 +68,8 @@ export namespace MongoMock {
 				},
 				fetch: () => {
 					const transform = (
-						this._options.transform ?
-						this._options.transform :
+						this._transform ?
+						this._transform :
 						(doc) => doc
 					)
 					return _.map(docs, (doc) => {
@@ -141,40 +129,8 @@ export namespace MongoMock {
 
 				// console.log(query, docs)
 				_.each(docs, (doc) => {
-					let replace = false
-
-					_.each(modifier, (value: any, key: string) => {
-						if (key === '$set') {
-							_.each(value, (value: any, key: string) => {
-								setOntoPath(doc, key, query, value)
-							})
-						} else if (key === '$unset') {
-							_.each(value, (value: any, key: string) => {
-								unsetPath(doc, key, query)
-							})
-						} else if (key === '$push') {
-							_.each(value, (value: any, key: string) => {
-								pushOntoPath(doc, key, value)
-							})
-						} else if (key === '$pull') {
-							_.each(value, (value: any, key: string) => {
-								pullFromPath(doc, key, value)
-							})
-						} else {
-							if (key[0] === '$') {
-								throw Error(`Update method "${key}" not implemented yet`)
-							} else {
-								replace = true
-							}
-							// setOntoPath(doc, key, value )
-						}
-
-					})
-					if (replace) {
-						this.remove(doc._id)
-						if (!modifier._id) modifier._id = doc._id
-						this.insert(modifier)
-					}
+					const modifiedDoc = mongoModify(query, doc, modifier)
+					this.documents[unprotectString(doc._id)] = modifiedDoc
 
 					_.each(_.clone(this.observers), obs => {
 						if (mongoWhere(doc, obs.query)) {
@@ -262,8 +218,8 @@ export namespace MongoMock {
 		// 	// todo
 		// }
 		private get documents (): MockCollection<T> {
-			if (!mockCollections[this.localName]) mockCollections[this.localName] = {}
-			return mockCollections[this.localName]
+			if (!mockCollections[this._name]) mockCollections[this._name] = {}
+			return mockCollections[this._name]
 		}
 	}
 	// Mock functions:
@@ -271,8 +227,7 @@ export namespace MongoMock {
 		const collectionName: string = (
 			_.isString(collection) ?
 			collection :
-			// @ts-ignore
-			collection.localName
+			(collection as MongoMock.Collection<any>)._name
 		)
 		data = data || {}
 		if (_.isArray(data)) {

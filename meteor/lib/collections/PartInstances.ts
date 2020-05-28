@@ -13,6 +13,7 @@ import { PieceInstance, PieceInstances } from './PieceInstances'
 import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
+import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
@@ -63,38 +64,6 @@ export class PartInstance implements DBPartInstance {
 		this.isTemporary = isTemporary === true
 		this.part = new Part(document.part)
 	}
-	getPieceInstances (selector?: MongoSelector<PieceInstance>, options?: FindOptions) {
-		if (this.isTemporary) {
-			throw new Error('Not implemented') // TODO?
-			// const pieces = Pieces.find(
-			// 	{
-			// 		...selector,
-			// 		rundownId: this.rundownId,
-			// 		partId: this._id
-			// 	},
-			// 	{
-			// 		sort: { _rank: 1 },
-			// 		...options
-			// 	}
-			// ).fetch()
-		} else {
-			return PieceInstances.find(
-				{
-					...selector,
-					rundownId: this.rundownId,
-					partInstanceId: this._id
-				},
-				{
-					// sort: { _rank: 1 },
-					...options
-				}
-			).fetch()
-		}
-	}
-	getAllPieceInstances () {
-		return this.getPieceInstances()
-	}
-
 }
 
 export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {
