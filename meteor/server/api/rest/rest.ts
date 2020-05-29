@@ -8,7 +8,6 @@ import { MeteorPublications, MeteorPublicationSignatures } from '../../publicati
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
 import { PickerPOST, PickerGET } from '../http'
 
-
 const apiVersion = 0
 
 const index: any = []
@@ -17,10 +16,8 @@ Meteor.startup(() => {
 	// Expose all user actions:
 
 	_.each(_.keys(UserActionAPIMethods), (methodName) => {
-
 		const methodValue = UserActionAPIMethods[methodName]
 		const signature = MeteorMethodSignatures[methodValue]
-
 
 		let resource = `/api/${apiVersion}/action/${methodName}`
 		let docString = resource
@@ -36,7 +33,6 @@ Meteor.startup(() => {
 
 	// Expose publications:
 	_.each(_.keys(PubSub), (pubName) => {
-
 		const pubValue = PubSub[pubName]
 		const signature = MeteorPublicationSignatures[pubValue]
 
@@ -53,9 +49,12 @@ Meteor.startup(() => {
 			})
 
 			assignRoute('GET', resource, docString, (p) => {
-				const cursor = f.apply({
-					ready: () => null
-				}, p)
+				const cursor = f.apply(
+					{
+						ready: () => null,
+					},
+					p
+				)
 				if (cursor) return cursor.fetch()
 				return []
 			})
@@ -63,18 +62,11 @@ Meteor.startup(() => {
 	})
 })
 
-function assignRoute (routeType: 'POST' | 'GET', resource: string, indexResource: string, fcn: (p: any[]) => any) {
-
-	const route: Router = (
-		routeType === 'POST' ?
-		PickerPOST :
-		PickerGET
-	)
+function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource: string, fcn: (p: any[]) => any) {
+	const route: Router = routeType === 'POST' ? PickerPOST : PickerGET
 
 	index.push(routeType + ' ' + indexResource)
 	route.route(resource, (params: Params, req: IncomingMessage, res: ServerResponse, next) => {
-
-
 		let p: any[] = []
 		for (let i = 0; i < 20; i++) {
 			if (_.has(params, 'param' + i)) {
@@ -103,7 +95,8 @@ function assignRoute (routeType: 'POST' | 'GET', resource: string, indexResource
 				res.end(result)
 			}
 		} catch (e) {
-			if (e.error && e.reason) { // is Meteor.Error
+			if (e.error && e.reason) {
+				// is Meteor.Error
 				res.statusCode = e.error
 				res.setHeader('Content-Type', 'text/plain')
 				res.end(e.reason)

@@ -10,7 +10,14 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime } from '../../../lib/lib'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
-import { setNextPart, onPartHasStoppedPlaying, selectNextPart, getSelectedPartInstancesFromCache, getStudioFromCache, getAllOrderedPartsFromCache } from './lib'
+import {
+	setNextPart,
+	onPartHasStoppedPlaying,
+	selectNextPart,
+	getSelectedPartInstancesFromCache,
+	getStudioFromCache,
+	getAllOrderedPartsFromCache,
+} from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
@@ -42,15 +49,16 @@ export function activateRundownPlaylist(
 		throw new Meteor.Error(
 			409,
 			'Only one rundown can be active at the same time. Active rundown playlists: ' +
-			_.map(anyOtherActiveRundowns, playlist => playlist._id),
-			JSON.stringify(_.map(anyOtherActiveRundowns, playlist => playlist._id)))
+				_.map(anyOtherActiveRundowns, (playlist) => playlist._id),
+			JSON.stringify(_.map(anyOtherActiveRundowns, (playlist) => playlist._id))
+		)
 	}
 
 	cache.RundownPlaylists.update(rundownPlaylist._id, {
 		$set: {
 			active: true,
-			rehearsal: rehearsal
-		}
+			rehearsal: rehearsal,
+		},
 	})
 
 	let rundown: Rundown | undefined
@@ -60,7 +68,8 @@ export function activateRundownPlaylist(
 		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
-		if (!nextPartInstance) throw new Meteor.Error(404, `Could not find nextPartInstance "${rundownPlaylist.nextPartInstanceId}"`)
+		if (!nextPartInstance)
+			throw new Meteor.Error(404, `Could not find nextPartInstance "${rundownPlaylist.nextPartInstanceId}"`)
 		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Could not find rundown "${nextPartInstance.rundownId}"`)
 	}
@@ -71,36 +80,38 @@ export function activateRundownPlaylist(
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const { blueprint } = getBlueprintOfRundown(rundown)
 		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, undefined, studio)))
-				.catch(logger.error)
+			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, undefined, studio))).catch(
+				logger.error
+			)
 		}
 	})
 }
 export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): void {
-
 	const rundown = deactivateRundownPlaylistInner(cache, rundownPlaylist)
 
 	updateTimeline(cache, rundownPlaylist.studioId)
-
 
 	cache.defer(() => {
 		if (rundown) {
 			const { blueprint } = getBlueprintOfRundown(rundown)
 			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, undefined)))
-					.catch(logger.error)
+				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, undefined))).catch(
+					logger.error
+				)
 			}
 		}
 	})
 }
-export function deactivateRundownPlaylistInner(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): Rundown | undefined {
+export function deactivateRundownPlaylistInner(
+	cache: CacheForRundownPlaylist,
+	rundownPlaylist: RundownPlaylist
+): Rundown | undefined {
 	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
 
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
 
 	let rundown: Rundown | undefined
 	if (currentPartInstance) {
-
 		// defer so that an error won't prevent deactivate
 		Meteor.setTimeout(() => {
 			rundown = Rundowns.findOne(currentPartInstance.rundownId)
@@ -108,7 +119,9 @@ export function deactivateRundownPlaylistInner(cache: CacheForRundownPlaylist, r
 			if (rundown) {
 				IngestActions.notifyCurrentPlayingPart(rundown, null)
 			} else {
-				logger.error(`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`)
+				logger.error(
+					`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
+				)
 			}
 		}, 40)
 	} else {
@@ -125,7 +138,7 @@ export function deactivateRundownPlaylistInner(cache: CacheForRundownPlaylist, r
 			previousPartInstanceId: null,
 			currentPartInstanceId: null,
 			holdState: RundownHoldState.NONE,
-		}
+		},
 	})
 	// rundownPlaylist.currentPartInstanceId = null
 	// rundownPlaylist.previousPartInstanceId = null
@@ -134,15 +147,15 @@ export function deactivateRundownPlaylistInner(cache: CacheForRundownPlaylist, r
 	if (currentPartInstance) {
 		cache.PartInstances.update(currentPartInstance._id, {
 			$push: {
-				'part.timings.takeOut': getCurrentTime()
-			}
+				'part.timings.takeOut': getCurrentTime(),
+			},
 		})
 
 		// TODO-PartInstance - pending new data flow
 		cache.Parts.update(currentPartInstance.part._id, {
 			$push: {
-				'timings.takeOut': getCurrentTime()
-			}
+				'timings.takeOut': getCurrentTime(),
+			},
 		})
 	}
 	return rundown
@@ -162,17 +175,23 @@ export function prepareStudioForBroadcast(
 
 	let playoutDevices = cache.PeripheralDevices.findFetch({
 		studioId: studio._id,
-		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 	})
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
-		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-			if (err) {
-				logger.error(err)
-			} else {
-				logger.info('devicesMakeReady OK')
-			}
-		}, 'devicesMakeReady', okToDestoryStuff, rundownPlaylistToBeActivated._id)
+		PeripheralDeviceAPI.executeFunction(
+			device._id,
+			(err) => {
+				if (err) {
+					logger.error(err)
+				} else {
+					logger.info('devicesMakeReady OK')
+				}
+			},
+			'devicesMakeReady',
+			okToDestoryStuff,
+			rundownPlaylistToBeActivated._id
+		)
 	})
 }
 /**
@@ -180,25 +199,26 @@ export function prepareStudioForBroadcast(
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function standDownStudio(
-	cache: CacheForRundownPlaylist,
-	studio: Studio,
-	okToDestoryStuff: boolean
-): void {
+export function standDownStudio(cache: CacheForRundownPlaylist, studio: Studio, okToDestoryStuff: boolean): void {
 	logger.info('standDownStudio ' + studio._id)
 
 	let playoutDevices = cache.PeripheralDevices.findFetch({
 		studioId: studio._id,
-		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 	})
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
-		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-			if (err) {
-				logger.error(err)
-			} else {
-				logger.info('devicesStandDown OK')
-			}
-		}, 'devicesStandDown', okToDestoryStuff)
+		PeripheralDeviceAPI.executeFunction(
+			device._id,
+			(err) => {
+				if (err) {
+					logger.error(err)
+				} else {
+					logger.info('devicesStandDown OK')
+				}
+			},
+			'devicesStandDown',
+			okToDestoryStuff
+		)
 	})
 }

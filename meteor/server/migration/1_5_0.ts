@@ -6,11 +6,10 @@ import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { protectString } from '../../lib/lib'
 
-
 // 1.5.0 (Release 17)
 addMigrationSteps('1.5.0', [
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.4.0'),
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.5.0'),
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.5.0'),
 	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.1.0'),
 
 	{
@@ -21,7 +20,7 @@ addMigrationSteps('1.5.0', [
 				$or: [
 					{ 'sourceLayers.unlimited': { $exists: true } },
 					{ 'sourceLayers.onPGMClean': { $exists: true } },
-				]
+				],
 			}).count()
 			if (showStyles) {
 				return 'SourceLayers unlimited or onPGMClean is defined'
@@ -33,22 +32,22 @@ addMigrationSteps('1.5.0', [
 				$or: [
 					{ 'sourceLayers.unlimited': { $exists: true } },
 					{ 'sourceLayers.onPGMClean': { $exists: true } },
-				]
+				],
 			}).fetch()
 
-			_.each(showStyles, show => {
-				_.each(show.sourceLayers, layer => {
+			_.each(showStyles, (show) => {
+				_.each(show.sourceLayers, (layer) => {
 					delete layer['unlimited']
 					delete layer['onPGMClean']
 				})
 
 				ShowStyleBases.update(show._id, {
 					$set: {
-						sourceLayers: show.sourceLayers
-					}
+						sourceLayers: show.sourceLayers,
+					},
 				})
 			})
-		}
+		},
 	},
 
 	{
@@ -56,7 +55,7 @@ addMigrationSteps('1.5.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			let blueprints = Blueprints.find({
-				blueprintId: { $exists: false }
+				blueprintId: { $exists: false },
 			}).count()
 			if (blueprints) {
 				return 'Blueprints.blueprintId is "undefined"'
@@ -64,13 +63,16 @@ addMigrationSteps('1.5.0', [
 			return false
 		},
 		migrate: () => {
-			Blueprints.update({
-				blueprintId: { $exists: false }
-			}, {
-				$set: {
-					blueprintId: protectString('')
+			Blueprints.update(
+				{
+					blueprintId: { $exists: false },
+				},
+				{
+					$set: {
+						blueprintId: protectString(''),
+					},
 				}
-			})
-		}
+			)
+		},
 	},
 ])

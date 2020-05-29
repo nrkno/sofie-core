@@ -21,7 +21,7 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 		super(props)
 
 		this.state = {
-			editMode: false
+			editMode: false,
 		}
 	}
 
@@ -32,22 +32,27 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 	render() {
 		const { piece } = this.props
 
-		const actualPiece = RundownUtils.isAdLibPiece(piece) ?
-			piece :
-			piece.instance.piece
+		const actualPiece = RundownUtils.isAdLibPiece(piece) ? piece : piece.instance.piece
 
 		const modalProps: IModalAttributes = {
 			title: actualPiece.name,
 			show: this.state.editMode,
 			onDiscard: () => {
 				this.setEditMode(false)
-			}
+			},
 		}
 
 		return (
-			<div className='shelf-inspector'>
+			<div className="shelf-inspector">
 				<h2>{actualPiece.name}</h2>
-				<button className='btn btn-primary' disabled={this.state.editMode} onClick={() => { this.setEditMode(true) }}>Edit</button>
+				<button
+					className="btn btn-primary"
+					disabled={this.state.editMode}
+					onClick={() => {
+						this.setEditMode(true)
+					}}>
+					Edit
+				</button>
 				<Modal {...modalProps}>
 					<NoraItemEditor piece={actualPiece} />
 				</Modal>
@@ -57,9 +62,9 @@ class NoraItemRenderer extends React.Component<INoraSuperRendererProps, INoraSup
 }
 
 function isNoraItem(item: AdLibPieceUi | PieceUi): boolean {
-	const content = RundownUtils.isAdLibPiece(item) ?
-		item.content as NoraContent :
-		item.instance.piece.content as NoraContent
+	const content = RundownUtils.isAdLibPiece(item)
+		? (item.content as NoraContent)
+		: (item.instance.piece.content as NoraContent)
 
 	if (!content || !content.payload || !content.payload.template) {
 		return false

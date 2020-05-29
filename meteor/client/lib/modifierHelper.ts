@@ -3,7 +3,7 @@ namespace modifierHelper {
 		[key: string]: boolean
 	} = {}
 
-	function setMap (name: string, e: KeyboardEvent, value: boolean) {
+	function setMap(name: string, e: KeyboardEvent, value: boolean) {
 		if (e.location === 2) {
 			activeModifiers[name + 'Right'] = value
 		} else {
@@ -11,7 +11,7 @@ namespace modifierHelper {
 		}
 	}
 
-	function handleKeyEvent (e: KeyboardEvent) {
+	function handleKeyEvent(e: KeyboardEvent) {
 		const value = e.type === 'keydown' ? true : false
 
 		switch (e.key) {

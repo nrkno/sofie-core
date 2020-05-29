@@ -24,17 +24,18 @@ export interface ExpectedPlayoutItem extends ExpectedPlayoutItemGeneric {
 	pieceId: PieceId
 }
 
-
-export const ExpectedPlayoutItems: TransformedCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
-	= createMongoCollection<ExpectedPlayoutItem>('expectedPlayoutItems')
+export const ExpectedPlayoutItems: TransformedCollection<
+	ExpectedPlayoutItem,
+	ExpectedPlayoutItem
+> = createMongoCollection<ExpectedPlayoutItem>('expectedPlayoutItems')
 registerCollection('ExpectedPlayoutItems', ExpectedPlayoutItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ExpectedPlayoutItems._ensureIndex({
-			studioId: 1
+			studioId: 1,
 		})
 		ExpectedPlayoutItems._ensureIndex({
-			rundownId: 1
+			rundownId: 1,
 		})
 	}
 })

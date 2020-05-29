@@ -13,7 +13,7 @@ export enum WorkStepStatus {
 	ERROR = 'error',
 	SKIPPED = 'skipped',
 	CANCELED = 'canceled',
-	BLOCKED = 'blocked'
+	BLOCKED = 'blocked',
 }
 /** A string, identifying a MediaWorkFlowStep */
 export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
@@ -39,18 +39,19 @@ export abstract class MediaWorkFlowStep {
 	expectedLeft?: number
 }
 
-export const MediaWorkFlowSteps: TransformedCollection<MediaWorkFlowStep, MediaWorkFlowStep>
-	= createMongoCollection<MediaWorkFlowStep>('mediaWorkFlowSteps')
+export const MediaWorkFlowSteps: TransformedCollection<MediaWorkFlowStep, MediaWorkFlowStep> = createMongoCollection<
+	MediaWorkFlowStep
+>('mediaWorkFlowSteps')
 registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaWorkFlowSteps._ensureIndex({
 			// TODO: add deviceId: 1,
-			mediaWorkFlowId: 1
+			mediaWorkFlowId: 1,
 		})
 		MediaWorkFlowSteps._ensureIndex({
 			status: 1,
-			priority: 1
+			priority: 1,
 		})
 	}
 })

@@ -20,12 +20,11 @@ const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
  *    Use the scroll-wheel as you normally do to scroll the page but the page will scroll more smoothly
  */
 export class MouseIshController extends ControllerAbstract {
-
 	private _mode: Mode = Mode.NORMAL
 	private _allowModeSwitch: boolean = true
 	private _destroyed: boolean = false
 
-	private _mouseKeyDown: {[button: string]: number} = {}
+	private _mouseKeyDown: { [button: string]: number } = {}
 
 	private _prompterView: PrompterViewInner
 
@@ -46,7 +45,7 @@ export class MouseIshController extends ControllerAbstract {
 	private _nextPausePosition: number | null = null
 	private _lastWheelTime: number = 0
 
-	constructor (view: PrompterViewInner) {
+	constructor(view: PrompterViewInner) {
 		super(view)
 
 		this._prompterView = view
@@ -57,34 +56,29 @@ export class MouseIshController extends ControllerAbstract {
 		} else {
 			// Recall mode:
 			const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE)
-			this._setMode(recalledMode as Mode || Mode.NORMAL)
+			this._setMode((recalledMode as Mode) || Mode.NORMAL)
 			this._allowModeSwitch = true
 		}
 	}
-	public destroy () {
+	public destroy() {
 		this._destroyed = true
 	}
-	public onKeyDown (e: KeyboardEvent) {
+	public onKeyDown(e: KeyboardEvent) {
 		// Nothing
-		if (
-			e.code === 'KeyP' &&
-			e.ctrlKey
-		) {
+		if (e.code === 'KeyP' && e.ctrlKey) {
 			e.preventDefault() // Prevent print-dialogue
-		} else if (
-			e.code === 'F5'
-		) {
+		} else if (e.code === 'F5') {
 			e.preventDefault() // Prevent reload of page
 		}
 	}
-	public onKeyUp (e: KeyboardEvent) {
+	public onKeyUp(e: KeyboardEvent) {
 		// Nothing
 	}
-	public onMouseKeyDown (e: MouseEvent) {
-
+	public onMouseKeyDown(e: MouseEvent) {
 		if (this._mode === Mode.SPEED) {
-			if (e.button === 0 || // left mouse button
-				e.button === 1	// middle mouse button
+			if (
+				e.button === 0 || // left mouse button
+				e.button === 1 // middle mouse button
 			) {
 				e.preventDefault()
 				this._scrollingDown = !this._scrollingDown
@@ -102,13 +96,13 @@ export class MouseIshController extends ControllerAbstract {
 
 		this._mouseKeyDown[e.button + ''] = Date.now()
 	}
-	public onMouseKeyUp (e: MouseEvent) {
+	public onMouseKeyUp(e: MouseEvent) {
 		const timeSincePress = Date.now() - this._mouseKeyDown[e.button + '']
 
 		if (this._mode === Mode.SPEED) {
 			if (
 				e.button === 0 || // left mouse button
-				e.button === 1	// middle mouse button
+				e.button === 1 // middle mouse button
 			) {
 				e.preventDefault()
 				if (timeSincePress > LONGPRESS_TIME) {
@@ -129,7 +123,7 @@ export class MouseIshController extends ControllerAbstract {
 		}
 		this._mouseKeyDown[e.button + ''] = 0
 	}
-	public onWheel (e: WheelEvent) {
+	public onWheel(e: WheelEvent) {
 		const timeSinceLastWheel = Date.now() - this._lastWheelTime
 
 		this._lastWheelTime = Date.now()
@@ -155,7 +149,6 @@ export class MouseIshController extends ControllerAbstract {
 			const delta: number = e.deltaY || 0
 
 			if (delta) {
-
 				if (Math.sign(this._scrollDownDeltaTracker) === Math.sign(delta)) {
 					this._scrollDownDeltaTracker += delta
 				} else {
@@ -166,10 +159,7 @@ export class MouseIshController extends ControllerAbstract {
 					// Continue scrolling
 					this._scrollDownDelta += delta
 				} else if (Math.sign(this._scrollDownDelta) !== 0) {
-					if (
-						this._scrollSpeedCurrent === 0 ||
-						Math.abs(this._scrollDownDeltaTracker) > 500
-					) {
+					if (this._scrollSpeedCurrent === 0 || Math.abs(this._scrollDownDeltaTracker) > 500) {
 						// Stop
 						this._scrollDownDelta = 0
 					} else {
@@ -182,12 +172,7 @@ export class MouseIshController extends ControllerAbstract {
 						this._scrollDownDelta = delta
 					}
 				}
-				const scrollSpeed = Math.max(
-					2,
-					Math.round(
-						Math.abs(this._scrollDownDelta) / 100
-					) * 1
-				)
+				const scrollSpeed = Math.max(2, Math.round(Math.abs(this._scrollDownDelta) / 100) * 1)
 
 				if (this._scrollDownDelta > 0) {
 					this._scrollSpeedTarget = scrollSpeed
@@ -201,12 +186,11 @@ export class MouseIshController extends ControllerAbstract {
 					this._scrollingDown = false
 					this._scrollingUp = false
 				}
-
 			}
 			this.triggerStartSpeedScrolling()
 		}
 	}
-	private triggerStartSpeedScrolling () {
+	private triggerStartSpeedScrolling() {
 		if (this._scrollingDown) {
 			const scrollPosition = window.scrollY
 			if (scrollPosition !== undefined) {
@@ -218,24 +202,27 @@ export class MouseIshController extends ControllerAbstract {
 		this._noMovement = 0
 		this._updateScrollPosition()
 	}
-	private _setMode (mode: Mode) {
+	private _setMode(mode: Mode) {
 		const { t } = this._prompterView.props
 
 		this._mode = mode
 		// console.log('Mouse-control: Switching mode to ' + mode)
 		localStorage.setItem(LOCALSTORAGE_MODE, mode)
 
-		NotificationCenter.push(new Notification(t('Operating Mode'), NoticeLevel.NOTIFICATION, t('Switching operating mode to {{mode}}', { mode: mode }), 'setMode'))
-
+		NotificationCenter.push(
+			new Notification(
+				t('Operating Mode'),
+				NoticeLevel.NOTIFICATION,
+				t('Switching operating mode to {{mode}}', { mode: mode }),
+				'setMode'
+			)
+		)
 	}
-	private _updateScrollPosition () {
+	private _updateScrollPosition() {
 		if (this._destroyed) return
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
-		if (
-			this._mode !== Mode.SPEED &&
-			this._mode !== Mode.SMOOTHSCROLL
-		) return
+		if (this._mode !== Mode.SPEED && this._mode !== Mode.SMOOTHSCROLL) return
 
 		let scrollPosition = window.scrollY
 
@@ -260,7 +247,7 @@ export class MouseIshController extends ControllerAbstract {
 			targetSpeed = 0
 		}
 
-		let ds: number = (targetSpeed - this._scrollSpeedCurrent)
+		let ds: number = targetSpeed - this._scrollSpeedCurrent
 		if (Math.abs(this._scrollSpeedCurrent) < Math.abs(targetSpeed)) {
 			// Do it quicker when accelerating, to increate perceived latency:
 			ds *= 0.2
@@ -294,19 +281,17 @@ export class MouseIshController extends ControllerAbstract {
 		if (scrollPosition !== undefined) {
 			// Reached end-of-scroll:
 			if (
-				(
-					scrollPosition < 10 && // positioned at the top
-					speed < -10 // only check if we have a significant speed
-				) && (
-					scrollPosition >= 10 && // positioned not at the top
-					speed > 10 // only check if we have a significant speed
-				) &&
+				scrollPosition < 10 && // positioned at the top
+				speed < -10 && // only check if we have a significant speed
+				scrollPosition >= 10 && // positioned not at the top
+				speed > 10 && // only check if we have a significant speed
 				this._scrollPosition === scrollPosition
 			) {
 				// We tried to move, but haven't
 				// Reset speeds:
 
-				if (!this._scrollingUp) { // don't check if we're scrolling up
+				if (!this._scrollingUp) {
+					// don't check if we're scrolling up
 					this._scrollSpeedCurrent = 0
 					this._scrollSpeedTarget = 0
 				}
@@ -327,7 +312,6 @@ export class MouseIshController extends ControllerAbstract {
 			})
 		}
 	}
-
 }
 enum Mode {
 	/** Normal scrolling */

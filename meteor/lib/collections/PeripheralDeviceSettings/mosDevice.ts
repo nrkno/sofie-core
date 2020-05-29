@@ -1,5 +1,5 @@
 export interface MosDeviceSettings {
-	mosId: string,
+	mosId: string
 	devices: {
 		[deviceId: string]: MosDeviceSettingsDevice
 	}

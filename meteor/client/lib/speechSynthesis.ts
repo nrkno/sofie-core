@@ -2,7 +2,8 @@ import * as _ from 'underscore'
 
 const speechSynthesis = window.speechSynthesis
 
-const VOICE_PREFERENCE = [ // ordered in preferred order (best first)
+const VOICE_PREFERENCE = [
+	// ordered in preferred order (best first)
 	'Google uk English Female',
 	'Google uk English Male',
 	'en-gb',
@@ -21,7 +22,7 @@ class SpeechSynthesisClass {
 	private _voice: SpeechSynthesisVoice | undefined
 
 	private _queue: Array<TextCommand> = []
-	init () {
+	init() {
 		if (!this._isInitialized) {
 			this._isInitialized = true
 
@@ -32,13 +33,13 @@ class SpeechSynthesisClass {
 			}
 		}
 	}
-	speak (textToSpeak: string, category?: string) {
+	speak(textToSpeak: string, category?: string) {
 		return this._speak({
 			text: textToSpeak,
-			category: category || ''
+			category: category || '',
 		})
 	}
-	_speak (textCommand: TextCommand, fromQueue?: boolean) {
+	_speak(textCommand: TextCommand, fromQueue?: boolean) {
 		if (!this._isInitialized) {
 			console.warn('Speech synthesis not initialized')
 			return
@@ -81,16 +82,14 @@ class SpeechSynthesisClass {
 		utterThis.rate = VOICE_RATE
 		speechSynthesis.speak(utterThis)
 	}
-	private _checkQueue () {
+	private _checkQueue() {
 		let textCommand = this._queue.shift()
 		if (textCommand) {
 			this._speak(textCommand)
 		}
 	}
-	private selectVoice (): SpeechSynthesisVoice | undefined {
-
+	private selectVoice(): SpeechSynthesisVoice | undefined {
 		const voices = _.map(speechSynthesis.getVoices(), (voice) => {
-
 			const voiceName = voice.name + ` (${voice.lang})` + (voice.default ? ' -default' : '')
 
 			let weight = 999
@@ -102,7 +101,7 @@ class SpeechSynthesisClass {
 			return a.weight - b.weight
 		})
 		return (voices[0] || {}).voice
-	  }
+	}
 }
 
 // Singleton:

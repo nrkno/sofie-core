@@ -47,16 +47,16 @@ export const RundownViewBuckets = translate()(
 			x: number
 			y: number
 		} = {
-				x: 0,
-				y: 0
-			}
+			x: 0,
+			y: 0,
+		}
 		private _mouseOffset: {
 			x: number
 			y: number
 		} = {
-				x: 0,
-				y: 0
-			}
+			x: 0,
+			y: 0,
+		}
 		private _mouseDown: number
 		private _targetBucket: Bucket | undefined
 
@@ -68,19 +68,23 @@ export const RundownViewBuckets = translate()(
 				contextBucket: undefined,
 				contextBucketAdLib: undefined,
 				editedNameId: undefined,
-				localBuckets: ([] as Bucket[]).concat(props.buckets || [])
+				localBuckets: ([] as Bucket[]).concat(props.buckets || []),
 			}
 		}
 
 		static getDerivedStateFromProps(props: IBucketsProps, state: IState) {
 			return {
-				panelWidths: props.buckets ?
-					props.buckets.map((bucket, index) =>
-						state.panelWidths[index] !== undefined ?
-							state.panelWidths[index] :
-							UIStateStorage.getItemNumber('rundownView.shelf.buckets', unprotectString(bucket._id),
-								bucket.width !== undefined ? bucket.width : 0.2)
-					) : []
+				panelWidths: props.buckets
+					? props.buckets.map((bucket, index) =>
+							state.panelWidths[index] !== undefined
+								? state.panelWidths[index]
+								: UIStateStorage.getItemNumber(
+										'rundownView.shelf.buckets',
+										unprotectString(bucket._id),
+										bucket.width !== undefined ? bucket.width : 0.2
+								  )
+					  )
+					: [],
 			}
 		}
 
@@ -89,8 +93,12 @@ export const RundownViewBuckets = translate()(
 				this.setState({
 					localBuckets: ([] as Bucket[]).concat(this.props.buckets || []),
 					panelWidths: (this.props.buckets || []).map((bucket) =>
-						UIStateStorage.getItemNumber('rundownView.shelf.buckets', unprotectString(bucket._id),
-							bucket.width !== undefined ? bucket.width : 0.2))
+						UIStateStorage.getItemNumber(
+							'rundownView.shelf.buckets',
+							unprotectString(bucket._id),
+							bucket.width !== undefined ? bucket.width : 0.2
+						)
+					),
 				})
 			}
 		}
@@ -100,7 +108,7 @@ export const RundownViewBuckets = translate()(
 				const index = this.props.buckets.indexOf(this._targetBucket)
 				if (index >= 0) {
 					const panelWidths = ([] as number[]).concat(this.state.panelWidths)
-					const delta = ((this._mouseLast.x - x) / window.innerWidth)
+					const delta = (this._mouseLast.x - x) / window.innerWidth
 					const targetWidth = Math.min(1, Math.max(panelWidths[index] + delta, 0))
 					panelWidths[index] = targetWidth
 					if (index > 0 && targetWidth > 0) {
@@ -113,7 +121,7 @@ export const RundownViewBuckets = translate()(
 					}
 
 					this.setState({
-						panelWidths
+						panelWidths,
 					})
 				}
 			}
@@ -121,7 +129,7 @@ export const RundownViewBuckets = translate()(
 
 		endResize = () => {
 			// Re-enable pointer-events on the iframes, until the resizing ends
-			document.querySelectorAll('iframe').forEach(iframe => {
+			document.querySelectorAll('iframe').forEach((iframe) => {
 				iframe.style.pointerEvents = ''
 			})
 
@@ -137,7 +145,7 @@ export const RundownViewBuckets = translate()(
 
 		beginResize = (x: number, y: number, targetBucket: Bucket, targetElement: HTMLElement) => {
 			// Disable pointer-events on all iframes, until the resizing ends
-			document.querySelectorAll('iframe').forEach(iframe => {
+			document.querySelectorAll('iframe').forEach((iframe) => {
 				iframe.style.pointerEvents = 'none'
 			})
 
@@ -146,8 +154,8 @@ export const RundownViewBuckets = translate()(
 
 			const handlePosition = getElementDocumentOffset(targetElement)
 			if (handlePosition) {
-				this._mouseOffset.x = (handlePosition.left - window.scrollX) - this._mouseLast.x
-				this._mouseOffset.y = (handlePosition.top - window.scrollY) - this._mouseLast.y
+				this._mouseOffset.x = handlePosition.left - window.scrollX - this._mouseLast.x
+				this._mouseOffset.y = handlePosition.top - window.scrollY - this._mouseLast.y
 			}
 
 			document.body.style.cursor = 'ew-resize'
@@ -171,11 +179,11 @@ export const RundownViewBuckets = translate()(
 
 		touchOnHandle = (e: React.TouchEvent<HTMLDivElement>, bucket: Bucket) => {
 			document.addEventListener('touchmove', this.touchMoveHandle, {
-				passive: false
+				passive: false,
 			})
 			document.addEventListener('touchcancel', this.touchOffHandle)
 			document.addEventListener('touchend', this.touchOffHandle, {
-				passive: false
+				passive: false,
 			})
 
 			if (e.touches.length > 1) {
@@ -221,7 +229,7 @@ export const RundownViewBuckets = translate()(
 
 		clearContextBucket = () => {
 			this.setState({
-				contextBucket: undefined
+				contextBucket: undefined,
 			})
 		}
 
@@ -230,13 +238,18 @@ export const RundownViewBuckets = translate()(
 
 			if (e.persist) e.persist()
 
-			doUserAction(t, e, UserAction.CREATE_BUCKET, (e) => MeteorCall.userAction.bucketsCreateNewBucket(e, t('New Bucket'), this.props.playlist.studioId, null), (_err, res) => {
-				if (ClientAPI.isClientResponseSuccess(res)) {
-					this.setState({
-						editedNameId: (res.result as Bucket)._id
-					})
+			doUserAction(
+				t,
+				e,
+				UserAction.CREATE_BUCKET,
+				(e) => MeteorCall.userAction.bucketsCreateNewBucket(e, t('New Bucket'), this.props.playlist.studioId, null),
+				(_err, res) => {
+					if (ClientAPI.isClientResponseSuccess(res)) {
+						this.setState({
+							editedNameId: (res.result as Bucket)._id,
+						})
+					}
 				}
-			}
 			)
 		}
 
@@ -245,13 +258,17 @@ export const RundownViewBuckets = translate()(
 
 			if (e.persist) e.persist()
 
-			doModalDialog(literal<ModalDialogQueueItem>({
-				message: t('Are you sure you want to delete this AdLib?'),
-				title: bucketAdLib.name,
-				onAccept: () => {
-					doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) => MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id))
-				}
-			}))
+			doModalDialog(
+				literal<ModalDialogQueueItem>({
+					message: t('Are you sure you want to delete this AdLib?'),
+					title: bucketAdLib.name,
+					onAccept: () => {
+						doUserAction(t, e, UserAction.REMOVE_BUCKET_ADLIB, (e) =>
+							MeteorCall.userAction.bucketsRemoveBucketAdLib(e, bucketAdLib._id)
+						)
+					},
+				})
+			)
 		}
 
 		deleteBucket = (e: any, bucket: Bucket) => {
@@ -259,18 +276,22 @@ export const RundownViewBuckets = translate()(
 
 			if (e.persist) e.persist()
 
-			doModalDialog(literal<ModalDialogQueueItem>({
-				message: t('Are you sure you want to delete this Bucket?'),
-				title: bucket.name,
-				onAccept: () => {
-					doUserAction(t, e, UserAction.REMOVE_BUCKET, (e) => MeteorCall.userAction.bucketsRemoveBucket(e, bucket._id))
-				}
-			}))
+			doModalDialog(
+				literal<ModalDialogQueueItem>({
+					message: t('Are you sure you want to delete this Bucket?'),
+					title: bucket.name,
+					onAccept: () => {
+						doUserAction(t, e, UserAction.REMOVE_BUCKET, (e) =>
+							MeteorCall.userAction.bucketsRemoveBucket(e, bucket._id)
+						)
+					},
+				})
+			)
 		}
 
 		renameBucket = (bucket: Bucket) => {
 			this.setState({
-				editedNameId: bucket._id
+				editedNameId: bucket._id,
 			})
 		}
 
@@ -279,27 +300,35 @@ export const RundownViewBuckets = translate()(
 
 			if (e.persist) e.persist()
 
-			doModalDialog(literal<ModalDialogQueueItem>({
-				message: t('Are you sure you want to empty (remove all adlibs inside) this Bucket?'),
-				title: bucket.name,
-				onAccept: () => {
-					doUserAction(t, e, UserAction.EMPTY_BUCKET, (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
-				}
-			}))
+			doModalDialog(
+				literal<ModalDialogQueueItem>({
+					message: t('Are you sure you want to empty (remove all adlibs inside) this Bucket?'),
+					title: bucket.name,
+					onAccept: () => {
+						doUserAction(t, e, UserAction.EMPTY_BUCKET, (e) => MeteorCall.userAction.bucketsEmptyBucket(e, bucket._id))
+					},
+				})
+			)
 		}
 
 		finishRenameBucket = (e: any, bucket: Bucket, newName: string) => {
 			const { t } = this.props
 
 			this.setState({
-				editedNameId: undefined
+				editedNameId: undefined,
 			})
 
 			if (e.persist) e.persist()
 
-			doUserAction(t, e, UserAction.MODIFY_BUCKET, (e) => MeteorCall.userAction.bucketsModifyBucket(e, bucket._id, partial<Bucket>({
-				name: newName
-			})))
+			doUserAction(t, e, UserAction.MODIFY_BUCKET, (e) =>
+				MeteorCall.userAction.bucketsModifyBucket(
+					e,
+					bucket._id,
+					partial<Bucket>({
+						name: newName,
+					})
+				)
+			)
 		}
 
 		private moveBucket = (id: BucketId, atIndex: number) => {
@@ -310,11 +339,11 @@ export const RundownViewBuckets = translate()(
 				this.setState(
 					update(this.state, {
 						localBuckets: {
-							$splice: [[index, 1], [atIndex, 0, bucket] as any]
+							$splice: [[index, 1], [atIndex, 0, bucket] as any],
 						},
 						panelWidths: {
-							$splice: [[index, 1], [atIndex, 0, panelWidth] as any]
-						}
+							$splice: [[index, 1], [atIndex, 0, panelWidth] as any],
+						},
 					})
 				)
 			}
@@ -322,18 +351,18 @@ export const RundownViewBuckets = translate()(
 
 		private findBucket = (id: BucketId) => {
 			const { localBuckets: buckets } = this.state
-			const bucket = buckets.find(b => b._id === id)
+			const bucket = buckets.find((b) => b._id === id)
 
 			return {
 				bucket,
-				index: bucket ? buckets.indexOf(bucket) : -1
+				index: bucket ? buckets.indexOf(bucket) : -1,
 			}
 		}
 
 		private onBucketReorder = (draggedId: BucketId, newIndex: number, oldIndex: number) => {
 			const { t } = this.props
 			if (this.props.buckets) {
-				const draggedB = this.props.buckets.find(b => b._id === draggedId)
+				const draggedB = this.props.buckets.find((b) => b._id === draggedId)
 
 				if (draggedB) {
 					let newRank = draggedB._rank
@@ -352,101 +381,122 @@ export const RundownViewBuckets = translate()(
 						newRank = (this.props.buckets[newIndex]._rank + this.props.buckets[newIndex + 1]._rank) / 2
 					}
 
-					doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) => MeteorCall.userAction.bucketsModifyBucket(e, draggedB._id, partial<Bucket>({
-						_rank: newRank
-					})))
+					doUserAction(t, { type: 'drop' }, UserAction.MODIFY_BUCKET, (e) =>
+						MeteorCall.userAction.bucketsModifyBucket(
+							e,
+							draggedB._id,
+							partial<Bucket>({
+								_rank: newRank,
+							})
+						)
+					)
 				}
 			}
 		}
 
-		private onAdLibContext = ({ contextBucketAdLib, contextBucket }: { contextBucketAdLib: BucketAdLib, contextBucket: Bucket }, callback: () => void) => {
-			this.setState({
-				contextBucket,
-				contextBucketAdLib
-			}, callback)
+		private onAdLibContext = (
+			{ contextBucketAdLib, contextBucket }: { contextBucketAdLib: BucketAdLib; contextBucket: Bucket },
+			callback: () => void
+		) => {
+			this.setState(
+				{
+					contextBucket,
+					contextBucketAdLib,
+				},
+				callback
+			)
 		}
 
 		render() {
 			const { playlist, showStyleBase, shouldQueue, t } = this.props
 			const { localBuckets: buckets } = this.state
-			return <>
-				<Escape to='document'>
-					<ContextMenu id='bucket-context-menu' onHide={this.clearContextBucket}>
-						{!this.state.contextBucketAdLib && this.state.contextBucket &&
-							<div className='react-contextmenu-label'>
-								{this.state.contextBucket.name}
-							</div>}
-						{this.state.contextBucketAdLib && <>
-							<div className='react-contextmenu-label'>
-								{this.state.contextBucketAdLib.name}
-							</div>
+			return (
+				<>
+					<Escape to="document">
+						<ContextMenu id="bucket-context-menu" onHide={this.clearContextBucket}>
+							{!this.state.contextBucketAdLib && this.state.contextBucket && (
+								<div className="react-contextmenu-label">{this.state.contextBucket.name}</div>
+							)}
+							{this.state.contextBucketAdLib && (
+								<>
+									<div className="react-contextmenu-label">{this.state.contextBucketAdLib.name}</div>
+									<MenuItem
+										onClick={(e) =>
+											this.state.contextBucketAdLib && this.deleteBucketAdLib(e, this.state.contextBucketAdLib)
+										}>
+										{t('Delete this AdLib')}
+									</MenuItem>
+									<hr />
+								</>
+							)}
 							<MenuItem
-								onClick={(e) => this.state.contextBucketAdLib && this.deleteBucketAdLib(e, this.state.contextBucketAdLib)}>
-								{t('Delete this AdLib')}
+								onClick={(e) => this.state.contextBucket && this.emptyBucket(e, this.state.contextBucket)}
+								disabled={!this.state.contextBucket}>
+								{t('Empty this Bucket')}
+							</MenuItem>
+							<MenuItem
+								onClick={(e) => this.state.contextBucket && this.renameBucket(this.state.contextBucket)}
+								disabled={!this.state.contextBucket}>
+								{t('Rename this Bucket')}
+							</MenuItem>
+							<MenuItem
+								onClick={(e) => this.state.contextBucket && this.deleteBucket(e, this.state.contextBucket)}
+								disabled={!this.state.contextBucket}>
+								{t('Delete this Bucket')}
 							</MenuItem>
 							<hr />
-						</>}
-						<MenuItem
-							onClick={(e) => this.state.contextBucket && this.emptyBucket(e, this.state.contextBucket)}
-							disabled={!this.state.contextBucket}>
-							{t('Empty this Bucket')}
-						</MenuItem>
-						<MenuItem
-							onClick={(e) => this.state.contextBucket && this.renameBucket(this.state.contextBucket)}
-							disabled={!this.state.contextBucket}
-						>
-							{t('Rename this Bucket')}
-						</MenuItem>
-						<MenuItem
-							onClick={(e) => this.state.contextBucket && this.deleteBucket(e, this.state.contextBucket)}
-							disabled={!this.state.contextBucket}
-						>
-							{t('Delete this Bucket')}
-						</MenuItem>
-						<hr />
-						<MenuItem onClick={this.createNewBucket}>
-							{t('Create new Bucket')}
-						</MenuItem>
-					</ContextMenu>
-				</Escape>
-				{buckets && buckets.map((bucket, index) =>
-					<div className='rundown-view__shelf__contents__pane'
-						key={unprotectString(bucket._id)}
-						style={{
-							minWidth: (this.state.panelWidths[index] * 100) + 'vw'
-						}}
-					>
-						<div className='rundown-view__shelf__contents__pane__divider'
-							onMouseDown={(e) => this.grabHandle(e, bucket)}
-							onTouchStart={(e) => this.touchOnHandle(e, bucket)}>
-							<div className='rundown-view__shelf__contents__pane__handle'>
-								<FontAwesomeIcon icon={faBars} />
+							<MenuItem onClick={this.createNewBucket}>{t('Create new Bucket')}</MenuItem>
+						</ContextMenu>
+					</Escape>
+					{buckets &&
+						buckets.map((bucket, index) => (
+							<div
+								className="rundown-view__shelf__contents__pane"
+								key={unprotectString(bucket._id)}
+								style={{
+									minWidth: this.state.panelWidths[index] * 100 + 'vw',
+								}}>
+								<div
+									className="rundown-view__shelf__contents__pane__divider"
+									onMouseDown={(e) => this.grabHandle(e, bucket)}
+									onTouchStart={(e) => this.touchOnHandle(e, bucket)}>
+									<div className="rundown-view__shelf__contents__pane__handle">
+										<FontAwesomeIcon icon={faBars} />
+									</div>
+								</div>
+								<ContextMenuTrigger
+									id="bucket-context-menu"
+									collect={() =>
+										new Promise((resolve) => {
+											this.setState(
+												{
+													contextBucket: bucket,
+													contextBucketAdLib: undefined,
+												},
+												resolve
+											)
+										})
+									}
+									holdToDisplay={contextMenuHoldToDisplayTime()}>
+									{this.state.panelWidths[index] > 0 && (
+										<BucketPanel
+											playlist={playlist}
+											showStyleBase={showStyleBase}
+											shouldQueue={shouldQueue}
+											bucket={bucket}
+											editableName={this.state.editedNameId === bucket._id}
+											onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
+											moveBucket={this.moveBucket}
+											findBucket={this.findBucket}
+											onBucketReorder={this.onBucketReorder}
+											onAdLibContext={this.onAdLibContext}
+										/>
+									)}
+								</ContextMenuTrigger>
 							</div>
-						</div>
-						<ContextMenuTrigger id='bucket-context-menu' collect={() => new Promise((resolve) => {
-							this.setState({
-								contextBucket: bucket,
-								contextBucketAdLib: undefined
-							}, resolve)
-						})}
-							holdToDisplay={contextMenuHoldToDisplayTime()}>
-							{this.state.panelWidths[index] > 0 &&
-								<BucketPanel
-									playlist={playlist}
-									showStyleBase={showStyleBase}
-									shouldQueue={shouldQueue}
-									bucket={bucket}
-									editableName={this.state.editedNameId === bucket._id}
-									onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
-									moveBucket={this.moveBucket}
-									findBucket={this.findBucket}
-									onBucketReorder={this.onBucketReorder}
-									onAdLibContext={this.onAdLibContext}
-								/>
-							}
-						</ContextMenuTrigger>
-					</div>
-				)}
-			</>
+						))}
+				</>
+			)
 		}
-	})
+	}
+)

@@ -7,8 +7,7 @@ import { logger } from './logging'
 
 // This is a collection of functions that match what the playout-gateway / TSR does
 // playout-gateway:
-export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<TimelineContentObject> {
-
+export function transformTimeline(timeline: Array<TimelineObjGeneric>): Array<TimelineContentObject> {
 	let transformObject = (obj: TimelineObjGeneric | TimelineObjGroup): TimelineContentObject => {
 		if (!obj.id) throw new Meteor.Error(500, `Timeline object missing id attribute (_id: "${obj._id}") `)
 
@@ -24,7 +23,7 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 	}
 
 	// First, transform and convert timeline to a key-value store, for fast referencing:
-	let objects: {[id: string]: TimelineContentObject} = {}
+	let objects: { [id: string]: TimelineContentObject } = {}
 	_.each(timeline, (obj: TimelineObjGeneric) => {
 		let transformedObj = transformObject(obj)
 		objects[transformedObj.id] = transformedObj
@@ -54,7 +53,6 @@ export function transformTimeline (timeline: Array<TimelineObjGeneric>): Array<T
 		}
 	})
 	return transformedTimeline
-
 }
 
 // TSR: ---------

@@ -1,7 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../__mocks__/helpers/database'
+import {
+	setupDefaultStudioEnvironment,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+} from '../../../__mocks__/helpers/database'
 import { getHash, waitForPromise, protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
 import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
@@ -13,7 +17,7 @@ require('../rundownLayouts') // include in order to create the Meteor methods ne
 
 enum RundownLayoutsAPIMethods { // Using our own method definition, to catch external API changes
 	'removeRundownLayout' = 'rundownLayout.removeRundownLayout',
-	'createRundownLayout' = 'rundownLayout.createRundownLayout'
+	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
 describe('Rundown Layouts', () => {
@@ -23,19 +27,24 @@ describe('Rundown Layouts', () => {
 	})
 	let rundownLayoutId: string
 	testInFiber('Create rundown layout', () => {
-		const res = Meteor.call(RundownLayoutsAPIMethods.createRundownLayout, 'Test', RundownLayoutType.RUNDOWN_LAYOUT, env.showStyleBaseId)
-		expect(typeof res).toBe("string") // this should contain the ID for the rundown layout
+		const res = Meteor.call(
+			RundownLayoutsAPIMethods.createRundownLayout,
+			'Test',
+			RundownLayoutType.RUNDOWN_LAYOUT,
+			env.showStyleBaseId
+		)
+		expect(typeof res).toBe('string') // this should contain the ID for the rundown layout
 		rundownLayoutId = res
 
 		const item = RundownLayouts.findOne(protectString(rundownLayoutId))
 		expect(item).toMatchObject({
-			_id: rundownLayoutId
+			_id: rundownLayoutId,
 		})
 	})
 	testInFiber('Remove rundown layout', () => {
 		const item0 = RundownLayouts.findOne(protectString(rundownLayoutId))
 		expect(item0).toMatchObject({
-			_id: rundownLayoutId
+			_id: rundownLayoutId,
 		})
 
 		const res = Meteor.call(RundownLayoutsAPIMethods.removeRundownLayout, rundownLayoutId)

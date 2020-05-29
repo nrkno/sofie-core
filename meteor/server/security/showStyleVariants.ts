@@ -3,15 +3,13 @@ import { rejectFields } from './lib'
 
 // Setup rules:
 ShowStyleVariants.allow({
-	insert (userId: string, doc: ShowStyleVariant): boolean {
+	insert(userId: string, doc: ShowStyleVariant): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
-		return rejectFields(fields, [
-			'showStyleBaseId'
-		])
+	update(userId, doc, fields, modifier) {
+		return rejectFields(fields, ['showStyleBaseId'])
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
