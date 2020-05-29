@@ -30,17 +30,21 @@
     "i18n-compile-json-nb": "i18next-conv -l nb -s i18n/nb.po -t public/locales/nb/translations.json --skipUntranslated",
     "i18n-compile-json-nn": "i18next-conv -l nn -s i18n/nn.po -t public/locales/nn/translations.json --skipUntranslated",
     "i18n-compile-json-sv": "i18next-conv -l sv -s i18n/sv.po -t public/locales/sv/translations.json --skipUntranslated",
+    "visualize": "meteor --production --extra-packages bundle-visualizer",
     "release": "standard-version",
     "prepareChangelog": "standard-version --prerelease",
     "validate-dependencies": "npm audit && npm run license-validate",
     "deprecated-unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
     "deprecated-integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
-    "deprecated-test-once": "meteor test --once --driver-package meteortesting:mocha"
+    "deprecated-test-once": "meteor test --once --driver-package meteortesting:mocha",
+    "check-types": "tsc --noEmit -p tsconfig-base.json"
   },
   "dependencies": {
-    "@babel/runtime": "7.9.6",
+    "@babel/runtime": "^7.10.1",
     "@fortawesome/fontawesome": "^1.1.8",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
+    "@fortawesome/fontawesome-svg-core": "^1.2.28",
+    "@fortawesome/free-solid-svg-icons": "^5.13.0",
     "@fortawesome/react-fontawesome": "0.1.9",
     "@nrk/core-icons": "^9.2.1",
     "@slack/client": "^5.0.2",
@@ -59,6 +63,7 @@
     "meteor-node-stubs": "^1.0.0",
     "moment": "^2.26.0",
     "mos-connection": "^0.8.10",
+    "mousetrap": "^1.6.5",
     "ntp-client": "^0.5.3",
     "object-path": "^0.11.4",
     "prop-types": "^15.7.2",
@@ -114,7 +119,7 @@
     "@welldone-software/why-did-you-render": "^4.2.2",
     "codecov": "^3.7.0",
     "ejson": "^2.2.0",
-    "fibers": "^5.0.0",
+    "fibers-npm": "npm:fibers@4.0.3",
     "i18next-conv": "^10.0.2",
     "i18next-extract-gettext": "^3.2.1",
     "jest": "^26.0.1",
@@ -131,5 +136,11 @@
     "typedoc": "^0.17.7",
     "typescript": "3.9.3",
     "typescript-tslint-plugin": "^0.5.5"
+  },
+  "meteor": {
+    "mainModule": {
+      "client": "client/main.tsx",
+      "server": "server/main.ts"
+    }
   }
 }

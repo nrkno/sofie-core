@@ -24,7 +24,7 @@ react-meteor-data             # React higher-order component for reactively trac
 
 tracker@1.2.0                       # Meteor's client-side reactive programming library
 session@1.2.0
-fourseven:scss
+fourseven:scss@4.12.0
 
 hwillson:stub-collections
 nerdmed:catiline
