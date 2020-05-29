@@ -55,7 +55,8 @@ export namespace RundownLayoutsAPI {
 			outputLayerIds: [],
 			label: [],
 			displayStyle: PieceDisplayStyle.BUTTONS,
-			currentSegment: false
+			currentSegment: false,
+			showThumbnailsInList: false
 		}
 	}
 }

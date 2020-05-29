@@ -7,6 +7,7 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 
+		"skipLibCheck": true,
 		"sourceMap": true,
 		"allowJs": false,
 		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017", "es2018"]
