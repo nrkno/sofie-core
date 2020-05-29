@@ -532,19 +532,19 @@ describe('lib/lib', () => {
 			// those are covered by MongoFieldSpecifier type:
 			// expect(() => mongoFindOptions(rawDocs, { fields: { val: 0, val2: 1 } })).toThrowError('options.fields cannot contain both include and exclude rules')
 			// expect(() => mongoFindOptions(rawDocs, { fields: { _id: 0, val2: 1 } })).not.toThrowError()
-			// expect(() => mongoFindOptions(rawDocs, { fields: { _id: 1, val: 0 } })).not.toThrowError()
+			// expect(() => mongoFindOptions(rawDocs, { fields: { _id: '1', val: 0 } })).not.toThrowError()
 
 			expect(mongoFindOptions(rawDocs2, { fields: { val: 0 } } as FindOptions<SomeDoc>)).toEqual([
 				{
-					_id: 1,
+					_id: '1',
 					val2: 'c'
 				},
 				{
-					_id: 2,
+					_id: '2',
 					val2: 'c'
 				},
 				{
-					_id: 3,
+					_id: '3',
 					val2: 'b'
 				},
 			])
@@ -561,15 +561,15 @@ describe('lib/lib', () => {
 			])
 			expect(mongoFindOptions(rawDocs2, { fields: { val: 1 } } as FindOptions<SomeDoc>)).toEqual([
 				{
-					_id: 1,
+					_id: '1',
 					val: 'a',
 				},
 				{
-					_id: 2,
+					_id: '2',
 					val: 'x',
 				},
 				{
-					_id: 3,
+					_id: '3',
 					val: 'n',
 				},
 			])
@@ -590,34 +590,34 @@ describe('lib/lib', () => {
 		test('fields', () => {
 			expect(mongoFindOptions(rawDocs2, { sort: { val: 1 } } as FindOptions<SomeDoc>)).toEqual([
 				{
-					_id: 1,
+					_id: '1',
 					val: 'a',
 					val2: 'c'
 				},
 				{
-					_id: 3,
+					_id: '3',
 					val: 'n',
 					val2: 'b'
 				},
 				{
-					_id: 2,
+					_id: '2',
 					val: 'x',
 					val2: 'c'
 				},
 			])
 			expect(mongoFindOptions(rawDocs2, { sort: { val: -1 } } as FindOptions<SomeDoc>)).toEqual([
 				{
-					_id: 2,
+					_id: '2',
 					val: 'x',
 					val2: 'c'
 				},
 				{
-					_id: 3,
+					_id: '3',
 					val: 'n',
 					val2: 'b'
 				},
 				{
-					_id: 1,
+					_id: '1',
 					val: 'a',
 					val2: 'c'
 				},
@@ -625,34 +625,34 @@ describe('lib/lib', () => {
 
 			expect(mongoFindOptions(rawDocs2, { sort: { val2: 1, val: 1 } } as FindOptions<SomeDoc>)).toEqual([
 				{
-					_id: 3,
+					_id: '3',
 					val: 'n',
 					val2: 'b'
 				},
 				{
-					_id: 1,
+					_id: '1',
 					val: 'a',
 					val2: 'c'
 				},
 				{
-					_id: 2,
+					_id: '2',
 					val: 'x',
 					val2: 'c'
 				},
 			])
 			expect(mongoFindOptions(rawDocs2, { sort: { val2: 1, val: -1 } } as FindOptions<SomeDoc>)).toEqual([
 				{
-					_id: 3,
+					_id: '3',
 					val: 'n',
 					val2: 'b'
 				},
 				{
-					_id: 2,
+					_id: '2',
 					val: 'x',
 					val2: 'c'
 				},
 				{
-					_id: 1,
+					_id: '1',
 					val: 'a',
 					val2: 'c'
 				},

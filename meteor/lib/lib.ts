@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
-import { check as MeteorCheck } from 'meteor/check'
+import { check as MeteorCheck, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoQuery, MongoModifier, UpdateOptions, UpsertOptions, FindOptions } from './typings/meteor'
 import { logger } from './logging'

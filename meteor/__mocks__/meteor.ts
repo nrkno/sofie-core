@@ -14,7 +14,8 @@ namespace Meteor {
 	export interface Settings {
 		public: {
 			[id: string]: any
-		}, [id: string]: any
+		}
+		[id: string]: any
 	}
 
 	export interface UserEmail {

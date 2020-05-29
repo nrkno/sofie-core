@@ -137,7 +137,7 @@
     "tslint": "^6.1.2",
     "tslint-config-standard": "^9.0.0",
     "typedoc": "^0.17.7",
-    "typescript": "3.9.3",
+    "typescript": "~3.8.3",
     "typescript-tslint-plugin": "^0.5.5"
   },
   "meteor": {

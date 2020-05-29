@@ -1,6 +1,6 @@
 {
 	"extends": "./tsconfig-base.json",
-	"exclude": [
-		"**/__mocks__/**/*"
-	]
+	"compilerOptions": {
+		"types": ["node", "jest"],
+	}
 }
