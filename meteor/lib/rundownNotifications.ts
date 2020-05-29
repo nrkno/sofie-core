@@ -88,7 +88,6 @@ export function getMediaObjectIssues (rundownIds: RundownId[]): IMediaObjectIssu
 				const part = Parts.findOne(piece.partId, {
 					fields: {
 						_rank: 1,
-						name: 1,
 						segmentId: 1,
 					}
 				})

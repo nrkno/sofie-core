@@ -2,9 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
 
-import * as faChevronLeft from '@fortawesome/fontawesome-free-solid/faChevronLeft'
-import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface IProps {
 	className?: string

@@ -2,10 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
 
-import * as faCheckSquare from '@fortawesome/fontawesome-free-solid/faCheckSquare'
-import * as faSquare from '@fortawesome/fontawesome-free-solid/faSquare'
-import * as faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheckSquare, faSquare, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 
 export interface MultiSelectEvent {
 	selectedValues: Array<string>

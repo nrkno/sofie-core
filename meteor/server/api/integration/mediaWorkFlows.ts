@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
@@ -7,6 +7,7 @@ import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../../lib/col
 import { MediaWorkFlowSteps, MediaWorkFlowStep, MediaWorkFlowStepId } from '../../../lib/collections/MediaWorkFlowSteps'
 import { PeripheralDeviceAPI, MediaWorkFlowRevision, MediaWorkFlowStepRevision } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { check } from '../../../lib/lib'
 
 export namespace MediaManagerIntegration {
 

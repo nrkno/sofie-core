@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import {
@@ -41,7 +40,8 @@ import {
 	unprotectString,
 	protectString,
 	omit,
-	ProtectedString
+	ProtectedString,
+	check
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { IngestRundown, IngestSegment, IngestPart, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'

@@ -4,15 +4,15 @@ import {
 	PeripheralDevice,
 	PeripheralDevices
 } from '../../../lib/collections/PeripheralDevices'
-import * as i18next from 'react-i18next'
+import * as reacti18next from 'react-i18next'
+import * as i18next from 'i18next'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import Tooltip from 'rc-tooltip'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faEye from '@fortawesome/fontawesome-free-solid/faEye'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -56,7 +56,7 @@ export function statusCodeToString (t: i18next.TFunction, statusCode: Peripheral
 	)
 }
 
-export const DeviceItem = i18next.withTranslation()(class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
+export const DeviceItem = reacti18next.withTranslation()(class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
 	constructor (props: Translated<IDeviceItemProps>) {
 		super(props)
 		this.state = {
@@ -303,7 +303,7 @@ interface ICoreItemState {
 
 const PackageInfo = require('../../../package.json')
 
-export const CoreItem = i18next.withTranslation()(class CoreItem extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
+export const CoreItem = reacti18next.withTranslation()(class CoreItem extends React.Component<Translated<ICoreItemProps>, ICoreItemState> {
 	constructor (props: Translated<ICoreItemProps>) {
 		super(props)
 		this.state = {}
@@ -353,7 +353,7 @@ export const CoreItem = i18next.withTranslation()(class CoreItem extends React.C
 									no: t('Cancel'),
 									message: <p>{t('Are you sure you want to restart this Sofie Automation Server Core: {{name}}?', { name: this.props.coreSystem.name || 'unnamed' })}</p>,
 									onAccept: (e) => {
-										doUserAction(t, e, 'Generate restart token', (e) => MeteorCall.userAction.generateRestartToken(e, ), (err, token) => {
+										doUserAction(t, e, 'Generate restart token', (e) => MeteorCall.userAction.generateRestartToken(e), (err, token) => {
 											if (err || !token) {
 												NotificationCenter.push(new Notification(undefined, NoticeLevel.CRITICAL, t('Could not generate restart token!'), 'SystemStatus'))
 												return
@@ -536,8 +536,8 @@ interface PeripheralDeviceStatusProps {
 interface PeripheralDeviceStatusState {
 
 }
-export const PeripheralDeviceStatus = i18next.withTranslation()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & i18next.WithTranslation, PeripheralDeviceStatusState> {
-	constructor (props: PeripheralDeviceStatusProps & i18next.WithTranslation) {
+export const PeripheralDeviceStatus = reacti18next.withTranslation()(class PeripheralDeviceStatus extends React.Component<PeripheralDeviceStatusProps & reacti18next.WithTranslation, PeripheralDeviceStatusState> {
+	constructor (props: PeripheralDeviceStatusProps & reacti18next.WithTranslation) {
 		super(props)
 
 	}

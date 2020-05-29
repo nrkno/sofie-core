@@ -816,10 +816,6 @@ export function getAllPiecesFromCache (cache: CacheForRundownPlaylist, part: Par
 	return cache.Pieces.findFetch({
 		rundownId: part.rundownId,
 		partId: part._id
-	}, {
-		sort: {
-			_rank: 1
-		}
 	})
 }
 /** Get all adlib pieces in a part */

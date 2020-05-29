@@ -2,8 +2,8 @@ import * as _ from 'underscore'
 import * as React from 'react'
 import * as VelocityReact from 'velocity-react'
 
-import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFastBackward } from '@fortawesome/free-solid-svg-icons'
 
 import Lottie from 'react-lottie'
 import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel'

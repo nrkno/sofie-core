@@ -1,13 +1,13 @@
-import { check } from 'meteor/check'
 
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/PeripheralDevices'
 
-import { MongoSelector } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
+import { check } from '../../lib/lib'
 
 export namespace ExpectedMediaItemsSecurity {
-	export function allowReadAccess (selector: MongoSelector<ExpectedMediaItem> | any, token: string, context: any) {
+	export function allowReadAccess (selector: MongoQuery<ExpectedMediaItem> | any, token: string, context: any) {
 		check(selector, Object)
 		if (selector.mediaFlowId) {
 			check(selector.mediaFlowId, Object)

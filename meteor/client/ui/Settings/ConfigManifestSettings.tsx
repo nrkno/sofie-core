@@ -10,7 +10,7 @@ import {
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType, ProtectedString } from '../../../lib/lib'
@@ -21,7 +21,7 @@ import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteo
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import { Random } from 'meteor/random'
-import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload } from '@fortawesome/fontawesome-free-solid'
+import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
@@ -393,10 +393,10 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 
 	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
 		const baseAttribute = `config.${valIndex}.value`
-		const { t, collection, object } = this.props
+		const { t, collection, object, i18n, tReady } = this.props
 		if (item.type === ConfigManifestEntryType.TABLE) {
 			const item2 = item as ConfigManifestEntryTable
-			return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
+			return <ConfigManifestTable t={t} i18n={i18n} tReady={tReady} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} />
 		} else {
 			return (
 				<label className='field'>

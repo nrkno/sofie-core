@@ -64,12 +64,12 @@ const TranslatedSimpleComponent = withTranslation()(
 		}
 	}
 )
-function testTranslatedSimpleComponent () {
-	let a = new TranslatedSimpleComponent({
-		myProp0: '',
-		// asdf: 123, // invalid argument
-	})
-}
+// function testTranslatedSimpleComponent () {
+// 	let a = new TranslatedSimpleComponent({
+// 		myProp0: '',
+// 		// asdf: 123, // invalid argument
+// 	})
+// }
 // Reactive Component ----------------------------
 
 interface ReactiveComponentProps {
@@ -83,7 +83,7 @@ interface ReactiveComponentTrackedProps {
 }
 const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentState, ReactiveComponentTrackedProps>(() => {
 	return {
-		myReactiveProp0: Meteor.status()
+		myReactiveProp0: Meteor.status().status
 	}
 })(
 class ReactiveComponent extends MeteorReactComponent<ReactiveComponentProps & ReactiveComponentTrackedProps, ReactiveComponentState> {
@@ -123,7 +123,7 @@ interface TranslatedReactiveComponentTrackedProps {
 
 const TranslatedReactiveComponent = translateWithTracker<TranslatedReactiveComponentProps, TranslatedReactiveComponentState, TranslatedReactiveComponentTrackedProps>(() => {
 	return {
-		myReactiveProp0: Meteor.status()
+		myReactiveProp0: Meteor.status().status
 	}
 })(
 	class TranslatedReactiveComponent extends MeteorReactComponent<Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>, TranslatedReactiveComponentState> {
@@ -146,12 +146,12 @@ const TranslatedReactiveComponent = translateWithTracker<TranslatedReactiveCompo
 		}
 	}
 )
-function testTranslatedReactiveComponent () {
-	let a = new TranslatedReactiveComponent({
-		myProp0: '',
-		// asdf: 123, // invalid argument
-	})
-}
+// function testTranslatedReactiveComponent () {
+// 	let a = new TranslatedReactiveComponent({
+// 		myProp0: '',
+// 		// asdf: 123, // invalid argument
+// 	})
+// }
 
 // withTiming ----------------------
 interface WithTimingComponentProps {

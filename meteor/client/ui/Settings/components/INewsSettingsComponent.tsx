@@ -1,10 +1,7 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { withTranslation } from 'react-i18next'
+import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as ClassNames from 'classnames'
 import { literal } from '../../../../lib/lib'
 import { Random } from 'meteor/random'
@@ -23,7 +20,7 @@ interface IINewsSettingsComponentState {
 interface IINewsSettingsComponentProps {
 	device: PeripheralDevice
 }
-export const INewsSettingsComponent = translate()(class INewsSettingsComponent extends React.Component<Translated<IINewsSettingsComponentProps>, IINewsSettingsComponentState> {
+export const INewsSettingsComponent = withTranslation()(class INewsSettingsComponent extends React.Component<Translated<IINewsSettingsComponentProps>, IINewsSettingsComponentState> {
 	constructor (props: Translated<IINewsSettingsComponentProps>) {
 		super(props)
 		this.state = {

@@ -13,11 +13,8 @@ import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faExclamationTriangle, faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
@@ -43,7 +40,6 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend
 } from '../../../lib/api/studios'
-import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
@@ -1197,7 +1193,10 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 				</div>
 				<div className='row'>
 					<div className='col c12 r1-c12'>
-						<StudioBaselineStatus studio={this.props.studio} t={t} />
+						<StudioBaselineStatus studio={this.props.studio}
+							t={t}
+							i18n={this.props.i18n}
+							tReady={this.props.tReady} />
 					</div>
 				</div>
 				<div className='row'>
@@ -1213,6 +1212,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
 							t={this.props.t}
+							i18n={this.props.i18n}
+							tReady={this.props.tReady}
 							manifest={this.props.blueprintConfigManifest}
 							object={this.props.studio}
 							collection={Studios}

@@ -1,11 +1,10 @@
 import * as React from 'react'
 import { Random } from 'meteor/random'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { RundownLayoutExternalFrame, RundownLayoutBase, DashboardLayoutExternalFrame } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
-import { literal } from '../../../lib/lib'
+import { literal, check } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 

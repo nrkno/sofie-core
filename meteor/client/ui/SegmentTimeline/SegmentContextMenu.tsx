@@ -33,7 +33,7 @@ export const SegmentContextMenu = withTranslation()(class SegmentContextMenu ext
 		const timecode = this.getTimePosition()
 		const startsAt = this.getPartStartsAt()
 
-		const isCurrentPart = part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId
+		const isCurrentPart = (part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
 
 		return (
 			this.props.studioMode && this.props.playlist && this.props.playlist.active ?

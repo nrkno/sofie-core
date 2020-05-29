@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import {
@@ -7,7 +7,7 @@ import {
 	RundownHoldState,
 	RundownId
 } from '../../lib/collections/Rundowns'
-import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, makePromise, check } from '../../lib/lib'
 import {
 	Parts, Part, PartId
 } from '../../lib/collections/Parts'

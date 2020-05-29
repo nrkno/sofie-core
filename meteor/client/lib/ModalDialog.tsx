@@ -149,7 +149,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 												<div className='flex-col horizontal-align-right vertical-align-middle'>
 													<p>
 														<button className='action-btn' onClick={this.handleDiscard}>
-															<CoreIcons id='nrk-close' />
+															<CoreIcons.NrkClose />
 														</button>
 													</p>
 												</div>

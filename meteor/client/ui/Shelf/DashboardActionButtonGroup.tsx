@@ -6,7 +6,7 @@ import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceBut
 import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
 import { DashboardActionButton } from './DashboardActionButton'
 import { doUserAction } from '../../lib/userAction'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -19,7 +19,7 @@ export interface IDashboardButtonGroupProps {
 	onChangeQueueAdLib?: (isQueue: boolean, e: any) => void
 }
 
-export const DashboardActionButtonGroup = translate()(class DashboardActionButtonGroup extends React.Component<Translated<IDashboardButtonGroupProps>> {
+export const DashboardActionButtonGroup = withTranslation()(class DashboardActionButtonGroup extends React.Component<Translated<IDashboardButtonGroupProps>> {
 
 	take = (e: any) => {
 		const { t } = this.props

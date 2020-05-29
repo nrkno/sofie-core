@@ -69,7 +69,6 @@ export const RundownOverview =
 			}, {
 				fields: {
 					_rank: 1,
-					name: 1,
 					rundownId: 1,
 					segmentId: 1,
 					duration: 1,
@@ -105,7 +104,7 @@ export const RundownOverview =
 	})(
 		withTiming<RundownOverviewProps & RundownOverviewTrackedProps, RundownOverviewState>()(
 			class RundownOverview extends MeteorReactComponent<WithTiming<RundownOverviewProps & RundownOverviewTrackedProps>, RundownOverviewState> {
-				renderPart(part: PartUi, timingDurations: TimeMap, segmentDuration: number, totalDuration: number, isLive: boolean, isNext: boolean) {
+				renderPart (part: PartUi, timingDurations: TimeMap, segmentDuration: number, totalDuration: number, isLive: boolean, isNext: boolean) {
 					const innerPart = part.instance.part
 
 					return (
@@ -137,7 +136,7 @@ export const RundownOverview =
 					)
 				}
 
-				renderSegment(playlist: RundownPlaylist, segment: SegmentUi, timingDurations: TimeMap, totalDuration: number) {
+				renderSegment (playlist: RundownPlaylist, segment: SegmentUi, timingDurations: TimeMap, totalDuration: number) {
 					const segmentDuration = timingDurations ? segment.items.map((i) => timingDurations[unprotectString(i.instance.part._id)]).reduce((memo, item) => (memo || 0) + (item || 0), 0) : undefined
 
 					return segment.items && (
@@ -173,7 +172,7 @@ export const RundownOverview =
 					) || null
 				}
 
-				render() {
+				render () {
 					if (this.props.playlist && this.props.rundownPlaylistId && this.props.segments) {
 						const playlist = this.props.playlist
 						return (<ErrorBoundary>

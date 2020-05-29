@@ -1,9 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
+import { FindOptions } from '../../lib/typings/meteor'
 
 meteorPublish(PubSub.peripheralDevices, function (selector, token) {
 
@@ -11,7 +12,7 @@ meteorPublish(PubSub.peripheralDevices, function (selector, token) {
 
 	if (PeripheralDeviceSecurity.allowReadAccess(selector, token, this)) {
 
-		const modifier = {
+		const modifier: FindOptions<PeripheralDevice> = {
 			fields: {
 				token: 0,
 				secretSettings: 0
@@ -19,7 +20,7 @@ meteorPublish(PubSub.peripheralDevices, function (selector, token) {
 		}
 		if (selector._id && token) {
 			// in this case, send the secretSettings:
-			delete modifier.fields.secretSettings
+			delete modifier.fields!.secretSettings
 		}
 		return PeripheralDevices.find(selector, modifier)
 
@@ -33,7 +34,7 @@ meteorPublish(PubSub.peripheralDevicesAndSubDevices, function (selector) {
 
 	const parents = PeripheralDevices.find(selector).fetch()
 
-	const modifier = {
+	const modifier: FindOptions<PeripheralDevice> = {
 		fields: {
 			token: 0,
 			secretSettings: 0

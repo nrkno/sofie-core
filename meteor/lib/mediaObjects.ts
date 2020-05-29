@@ -110,7 +110,7 @@ export function getMediaObjectMediaId (piece: InternalIBlueprintPieceGeneric, so
 }
 
 export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, sourceLayer: ISourceLayer | undefined, settings: IStudioSettings | undefined, t?: i18next.TFunction) {
-	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
+	t = t || ((s: string, options?: _.Dictionary<any> | string) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options)) // kz: TODO not sure if this is ok - the second param can be a defaultValue
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
 	let message: string | null = null

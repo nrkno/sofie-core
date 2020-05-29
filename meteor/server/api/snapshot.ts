@@ -2,7 +2,7 @@ import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {
 	Snapshots,
@@ -34,7 +34,8 @@ import {
 	unprotectString,
 	makePromise,
 	ProtectedString,
-	protectStringArray
+	protectStringArray,
+	check
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'

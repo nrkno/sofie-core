@@ -16,13 +16,7 @@ export function sendSlackMessageToWebhook (message: string, webhookURL: string):
 			webhook = new IncomingWebhook(webhookURL)
 			webHookCache[webhookURL] = webhook
 		}
-		webhook.send(message, (err, result) => {
-			if (err) {
-				reject(err)
-			} else {
-				resolve(result)
-			}
-		})
+		return webhook.send(message)
 	})
 }
 export const sendSlackMessageToWebhookSync: (message: string, webhookURL: string) => IncomingWebhookResult =

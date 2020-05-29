@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../lib/api/studios'
 import { Studios, DBStudio, StudioId } from '../../lib/collections/Studios'
-import { literal, getRandomId, makePromise } from '../../lib/lib'
+import { literal, getRandomId, makePromise, check } from '../../lib/lib'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 

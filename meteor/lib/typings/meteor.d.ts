@@ -10,71 +10,29 @@ declare module 'meteor/tracker' {
 }
 
 // Note: This file is temporary, we should make a PR to @typings/meteor later on!
-/*
-export type OptionalType<T, M> = {
-	[K in keyof T]?: M
-}
-export type PopModifierSelector = -1 | 1
-export type PullModifierSelector<DBInterface> = Array<any> | string | number | Optional<T> | MongoSelector<DBInterface>
-export type BitModifierSelector = {and: number} | {or: number} | {xor: number}
-export type MongoModifier<DBInterface> = {
-	$set?: Optional<T> | {[path: string]: any}
-	$unset?: OptionalType<T, number> | {[path: string]: number}
-	$setOnInsert?: Optional<T> | {[path: string]: any}
-	$inc?: OptionalType<T, number> | {[path: string]: number}
-	$min?: Optional<T> | {[path: string]: any}
-	$max?: Optional<T> | {[path: string]: any}
-	$mul?: OptionalType<T, number> | {[path: string]: number}
-	$rename?: OptionalType<T, string> | {[path: string]: string}
 
-	$push?: Optional<T> | {[path: string]: any}
-	$pop?: OptionalType<T, PopModifierSelector> | {[path: string]: PopModifierSelector}
-	$pull?: OptionalType<T, PullModifierSelector<DBInterface>> | {[path: string]: PullModifierSelector<DBInterface>}
-	$pullAll?: Optional<T> | {[path: string]: any}
-
-	$bit?: OptionalType<T, BitModifierSelector> | {[path: string]: BitModifierSelector}
-}
-export type MongoBits = Array<number> | number // | BinData
-export type SelectorValue<T, MongoSelector> =
-	T |
-	{$eq: T} |
-	{$ne: T} |
-	{$gt: T} |
-	{$lt: T} |
-	{$gte: T} |
-	{$lte: T} |
-	{$nin: Array<T>} |
-	{$in: Array<T>} |
-	{$and: Array<MongoSelector>} |
-	{$not: SelectorValue<T, MongoSelector>} |
-	{$or: Array<MongoSelector>} |
-	{$nor: Array<MongoSelector>} |
-	{$exists: boolean} |
-	{$all: Array<T>} |
-	{$elemMatch: Array<MongoSelector>} |
-	{$size: number} |
-	{$bitsAllClear: MongoBits} |
-	{$bitsAllSet: MongoBits} |
-	{$bitsAnySet: MongoBits} |
-	{$bitsAnySet: MongoBits}
-
-// export type MongoSelector<DBInterface> = {
-// 	[K in keyof DBInterface]?: SelectorValue<DBInterface[K], MongoSelector<DBInterface>>
-// }
-export type MongoSelector<DBInterface> = Query<T> | QueryWithModifiers<T>
-
-// export interface TransformedCollection<Class, DBInterface> extends Mongo.Collection<Class> {
-*/
-
-export interface SortSpecifier {
-	[key: string]: -1 | 1
+export type SortSpecifier<T> = {
+	[P in keyof T]?: -1 | 1
 }
 
-export interface FindOptions {
-	sort?: SortSpecifier
+// From Meteor docs: It is not possible to mix inclusion and exclusion styles: the keys must either be all 1 or all 0
+export type MongoFieldSpecifierOnes<T> = {
+	[P in keyof T]?: 1
+}
+export type MongoFieldSpecifierZeroes<T> = {
+	[P in keyof T]?: 0
+}
+export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
+
+export type IndexSpecifier<T> = {
+	[P in keyof T]?: -1 | 1 | string
+}
+
+export interface FindOptions<DBInterface> {
+	sort?: SortSpecifier<DBInterface>
 	skip?: number
 	limit?: number
-	fields?: Mongo.FieldSpecifier
+	fields?: MongoFieldSpecifier<DBInterface>
 	reactive?: boolean
 	transform?: Function
 }
@@ -126,8 +84,8 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 		fetch?: string[]
 		transform?: Function
 	}): boolean
-	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: FindOptions): Mongocursor<Class>
-	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: Omit<FindOptions, 'limit'>): Class | undefined
+	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: FindOptions<DBInterface>): Mongocursor<Class>
+	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: Omit<FindOptions<DBInterface>, 'limit'>): Class | undefined
 	insert (doc: DBInterface, callback?: Function): DBInterface['_id']
 	rawCollection (): any
 	rawDatabase (): any

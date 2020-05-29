@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import {
@@ -17,7 +16,8 @@ import {
 	getCurrentTime,
 	removeNullyProperties,
 	getRandomId,
-	makePromise
+	makePromise,
+	check
 } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'

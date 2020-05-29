@@ -12,10 +12,8 @@ import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
-import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
-import * as faList from '@fortawesome/fontawesome-free-solid/faList'
-import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { RundownViewKbdShortcuts } from '../RundownView'
 

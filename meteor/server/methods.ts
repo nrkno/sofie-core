@@ -4,11 +4,13 @@ import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext } from '../lib/api/methods'
 
+type MeteorMethod = (this: Meteor.MethodThisType, ...args: any[]) => any
+
 interface Methods {
-	[method: string]: Function
+	[method: string]: MeteorMethod
 }
 export interface MethodsInner {
-	[method: string]: { wrapped: Function, original: Function}
+	[method: string]: { wrapped: MeteorMethod, original: MeteorMethod}
 }
 export const MeteorMethodSignatures: {[key: string]: string[]} = {}
 

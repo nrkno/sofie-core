@@ -4,7 +4,7 @@ import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { VTContent, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { withTranslation } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
 import CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
@@ -187,7 +187,7 @@ export enum RundownViewKbdShortcuts {
 	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = ''
 }
 
-const TimingDisplay = withTranslation()(withTiming<ITimingDisplayProps, {}>()(
+const TimingDisplay = withTranslation()(withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 	render () {
 		const { t } = this.props
@@ -985,7 +985,7 @@ const RundownHeader = withTranslation()(class RundownHeader extends React.Compon
 						<div className='flex-col right horizontal-align-right'>
 							<div className='links mod close'>
 								<NavLink to='/rundowns'>
-									<CoreIcon id='nrk-close' />
+									<CoreIcon.NrkClose />
 								</NavLink>
 							</div>
 						</div>

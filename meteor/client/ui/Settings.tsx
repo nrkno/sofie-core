@@ -23,15 +23,13 @@ import SnapshotsView from './Settings/SnapshotsView'
 import BlueprintSettings from './Settings/BlueprintSettings'
 import SystemMessages from './Settings/SystemMessages'
 
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faPlus, faTrash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
-import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { MeteorCall } from '../../lib/api/methods'
 
 class WelcomeToSettings extends React.Component {

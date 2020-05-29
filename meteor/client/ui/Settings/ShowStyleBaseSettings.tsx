@@ -9,11 +9,8 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { ShowStyleBase, ShowStyleBases, HotkeyDefinition, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { doModalDialog } from '../../lib/ModalDialog'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTrash, faPencilAlt, faCheck, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
 import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
@@ -25,7 +22,6 @@ import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
-import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -196,6 +192,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					<div className='col c12 r1-c12'>
 						<ConfigManifestSettings
 							t={this.props.t}
+							i18n={this.props.i18n}
+							tReady={this.props.tReady}
 							manifest={this.props.blueprintConfigManifest}
 							object={showStyleBase}
 							collection={ShowStyleBases}
@@ -1337,6 +1335,8 @@ const ShowStyleVariantsSettings = withTranslation()(class ShowStyleVariantsSetti
 									<div className='col c12 r1-c12 phs'>
 										<ConfigManifestSettings
 											t={this.props.t}
+											i18n={this.props.i18n}
+											tReady={this.props.tReady}
 											manifest={this.props.blueprintConfigManifest}
 											collection={ShowStyleVariants}
 											configPath={'config'}

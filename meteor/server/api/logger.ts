@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../logging'
+import { logger, transports } from '../logging'
 import * as _ from 'underscore'
 
 Meteor.methods({
@@ -12,5 +12,5 @@ Meteor.methods({
 
 // This is used when running in tests to minimize the logged output:
 export function setLoggerLevel (loggerLevel: 'debug' | 'info' | 'warning' | 'error') {
-	logger.transports.console.level = loggerLevel
+	transports.console.level = loggerLevel
 }

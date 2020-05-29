@@ -5,8 +5,8 @@ import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
 
-import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faBars } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
@@ -36,7 +36,7 @@ export enum ShelfTabs {
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys'
 }
-export interface ShelfProps {
+export interface ShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	// segments: Array<SegmentUi>
 	// liveSegment?: SegmentUi
@@ -393,7 +393,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							panel={panel}
 							layout={rundownLayout}
 							visible={(this.state.selectedTab || DEFAULT_TAB) === `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${panel._id}`}
-							playlist={this.props.playlist}
 							{...this.props}
 							/> :
 						undefined
@@ -429,9 +428,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								filter={panel}
 								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-								playlist={this.props.playlist}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.props.studioMode}
 								{...this.props}
 								/> :
 							<DashboardPanel
@@ -440,9 +436,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 								filter={panel}
 								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
-								playlist={this.props.playlist}
-								showStyleBase={this.props.showStyleBase}
-								studioMode={this.props.studioMode}
 								shouldQueue={this.state.shouldQueue}
 								{...this.props}
 								/> :
@@ -452,7 +445,6 @@ export class ShelfBase extends React.Component<Translated<ShelfProps>, IState> {
 							panel={panel}
 							layout={rundownLayout}
 							visible={true}
-							playlist={this.props.playlist}
 							{...this.props}
 							/> :
 						undefined

@@ -1,7 +1,7 @@
 
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { Rundowns, Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Part, Parts, DBPart, PartId } from '../../../lib/collections/Parts'
 import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
@@ -22,7 +22,8 @@ import { getCurrentTime,
 	unprotectObjectArray,
 	protectString,
 	isStringOrProtectedString,
-	getRandomId
+	getRandomId,
+	check
 } from '../../../lib/lib'
 import { Timeline, TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import { Segments, Segment, SegmentId } from '../../../lib/collections/Segments'

@@ -92,7 +92,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 							if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 						}}
 					>
-						<CoreIcon id='nrk-close' />
+						<CoreIcon.NrkClose />
 					</button>
 					{/* </div> */}
 				</ContextMenuTrigger>

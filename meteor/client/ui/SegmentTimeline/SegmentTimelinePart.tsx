@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { withTranslation } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import * as _ from 'underscore'
@@ -92,7 +92,7 @@ class SourceLayerBase<T extends ISourceLayerPropsBase> extends React.PureCompone
 }
 
 class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
-	renderInside() {
+	renderInside () {
 		if (this.props.layer.pieces !== undefined) {
 			return _.chain(this.props.layer.pieces.filter((piece) => {
 				// filter only pieces belonging to this part
@@ -108,7 +108,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 				.map((piece) => {
 					return (
 						<SourceLayerItemContainer key={piece.instance._id}
-							{...this.props}
+							{..._.omit(this.props, 'key')} // kz: TODO two keys is to many but which one to choose?
 							// The following code is fine, just withTracker HOC messing with available props
 							onClick={this.props.onPieceClick}
 							onDoubleClick={this.props.onPieceDoubleClick}
@@ -131,7 +131,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 		}
 	}
 
-	render() {
+	render () {
 		return (
 			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
 				className: 'segment-timeline__layer',
@@ -148,7 +148,7 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
 }
 class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> {
-	renderInside() {
+	renderInside () {
 		return this.props.layers.map((layer) => {
 			if (layer.pieces !== undefined) {
 				return _.chain(layer.pieces.filter((piece) => {
@@ -165,7 +165,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 					.map((piece) => {
 						return (
 							<SourceLayerItemContainer key={piece.instance._id}
-								{...this.props}
+								{..._.omit(this.props, 'key')}
 								// The following code is fine, just withTracker HOC messing with available props
 								onClick={this.props.onPieceClick}
 								onDoubleClick={this.props.onPieceDoubleClick}
@@ -189,7 +189,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 		})
 	}
 
-	render() {
+	render () {
 		return (
 			<ContextMenuTrigger id='segment-timeline-context-menu' attributes={{
 				className: 'segment-timeline__layer segment-timeline__layer--flattened',
@@ -232,7 +232,7 @@ interface IOutputGroupProps {
 class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 	static whyDidYouRender = true
 
-	renderInside(isOutputGroupCollapsed) {
+	renderInside (isOutputGroupCollapsed) {
 		if (this.props.layer.sourceLayers !== undefined) {
 			if (!this.props.layer.isFlattened) {
 				return this.props.layer.sourceLayers.filter(i => !i.isHidden).sort((a, b) => a._rank - b._rank)
@@ -269,7 +269,7 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 		}
 	}
 
-	render() {
+	render () {
 		const isCollapsed = (this.props.collapsedOutputs[this.props.layer._id] !== undefined) ?
 			(this.props.collapsedOutputs[this.props.layer._id] === true) :
 			(this.props.layer.isDefaultCollapsed)
@@ -341,7 +341,7 @@ const CARRIAGE_RETURN_ICON =
 		</svg>
 	</div>
 
-export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>((props: IProps) => {
+export const SegmentTimelinePart = withTranslation()(withTiming<IProps & WithTranslation, IState>((props: IProps) => {
 	return {
 		isHighResolution: false,
 		filter: (durations: RundownTiming.RundownTimingContext) => {
@@ -361,7 +361,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 })(class SegmentTimelinePart0 extends React.Component<Translated<WithTiming<IProps>>, IState> {
 	private delayedInstanceUpdate: NodeJS.Timer | undefined
 
-	constructor(props: Translated<WithTiming<IProps>>) {
+	constructor (props: Translated<WithTiming<IProps>>) {
 		super(props)
 
 		const partInstance = this.props.part.instance
@@ -390,7 +390,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		}
 	}
 
-	static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
+	static getDerivedStateFromProps (nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
 		const isLive = (nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id)
 		const isNext = (nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id)
 
@@ -439,11 +439,11 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		return partial
 	}
 
-	static getLiveLineTimePadding(timeScale): number {
+	static getLiveLineTimePadding (timeScale): number {
 		return LIVE_LINE_TIME_PADDING / timeScale
 	}
 
-	static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
+	static getCurrentLiveLinePosition (part: PartUi, currentTime: number): number {
 		if (part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback()) {
 			if (part.instance.part.duration) {
 				return part.instance.part.duration
@@ -455,14 +455,14 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		}
 	}
 
-	queueDelayedUpdate() {
+	queueDelayedUpdate () {
 		this.delayedInstanceUpdate = setTimeout(() => {
 			this.delayedInstanceUpdate = undefined
 			this.forceUpdate()
 		}, 5000)
 	}
 
-	shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
+	shouldComponentUpdate (nextProps: WithTiming<IProps>, nextState: IState) {
 		if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
 		if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
 			if (
@@ -484,7 +484,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		}
 	}
 
-	getLayerStyle() {
+	getLayerStyle () {
 		// this.props.part.expectedDuration ||
 		if (this.props.relative) {
 			return {
@@ -501,7 +501,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		}
 	}
 
-	static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
+	static getPartDuration (props: WithTiming<IProps>, liveDuration: number): number {
 		// const part = this.props.part
 		const innerPart = props.part.instance.part
 
@@ -517,7 +517,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 			this.props.part.renderedDuration || 0, this.state.liveDuration, 0) */
 	}
 
-	static getPartStartsAt(props: WithTiming<IProps>): number {
+	static getPartStartsAt (props: WithTiming<IProps>): number {
 		return Math.max(0, (props.firstPartInSegment &&
 			props.timingDurations.partDisplayStartsAt &&
 			(
@@ -527,7 +527,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		) || 0)
 	}
 
-	renderTimelineOutputGroups(part: PartUi) {
+	renderTimelineOutputGroups (part: PartUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			return _.map(_.filter(this.props.segment.outputLayers, (layer) => {
 				return (layer.used) ? true : false
@@ -578,7 +578,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		}
 	}
 
-	static convertHexToRgba(hexColor: string): { red: number, green: number, blue: number } | undefined {
+	static convertHexToRgba (hexColor: string): { red: number, green: number, blue: number } | undefined {
 		if (hexColor.substr(0, 1) !== '#') return
 		if (hexColor.length !== 7) return
 
@@ -589,7 +589,7 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 		return { red, green, blue }
 	}
 
-	render() {
+	render () {
 		const { t } = this.props
 
 		const innerPart = this.props.part.instance.part
@@ -600,8 +600,8 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps, IState>(
 			const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
 			if (invalidColor) {
 				invalidReasonColorVars = {
-					'--invalid-reason-color-opaque': `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
-					'--invalid-reason-color-transparent': `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 0)`
+					['--invalid-reason-color-opaque' as any]: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
+					['--invalid-reason-color-transparent' as any]: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 0)`
 				}
 			}
 		}

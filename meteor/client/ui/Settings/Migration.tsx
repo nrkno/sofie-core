@@ -3,8 +3,8 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import ClassNames from 'classnames'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/fontawesome-free-solid'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faClipboardCheck, faDatabase, faCoffee, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../../lib/logging'
 import {

@@ -9,9 +9,7 @@ import './api/blueprints/api'
 import './api/client'
 import './api/expectedMediaItems'
 import './api/ExternalMessageQueue'
-import './api/ingest/api'
 import './api/ingest/debug'
-import './api/ingest/mosDevice/api'
 import './api/integration/media-scanner'
 import './api/integration/mediaWorkFlows'
 import './api/logger'
@@ -20,10 +18,10 @@ import './api/peripheralDevice'
 import './api/playout/api'
 import './api/rundown'
 import './api/rundownLayouts'
+import './api/rundownNotifications'
 import './api/showStyles'
 import './api/snapshot'
 import './api/studios'
-import './api/systemTime/api'
 import './api/testTools'
 import './api/userActions'
 import './methods'
@@ -33,12 +31,16 @@ import './mockData/rundownData'
 import './performanceMonitor'
 import './systemStatus/api'
 
-// import all files that calls Meteor.startup
+// import all files that calls Meteor.startup:
 import './api/rest/rest'
 import './api/systemTime/systemTime'
 import './Connections'
 import './coreSystem'
 import './cronjobs'
+// import './api/ExternalMessageQueue' // called above
+// import './performanceMonitor' // called above
 
+
+// Setup publications and security:
 import './publications/_publications'
 import './security/_security'

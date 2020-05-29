@@ -8,7 +8,7 @@ interface IProps {
 	children?: React.ReactNode
 }
 
-export const UploadButton: React.SFC<IProps> = function (props: IProps) {
+export const UploadButton: React.FunctionComponent<IProps> = function (props: IProps) {
 	return <label className={props.className}>
 		{props.children}
 		<input type='file'

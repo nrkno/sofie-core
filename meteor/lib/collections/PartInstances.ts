@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
+import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, Time, registerCollection, ProtectedString, ProtectedStringProperties, protectString, unprotectString, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {

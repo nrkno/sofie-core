@@ -30,17 +30,17 @@ declare global {
   }
 
 expect.extend({
-	toBeHttpOkStatusCode (value) {
+	toBeHttpOkStatusCode (value): jest.CustomMatcherResult {
 		const allowed = [200, 201, 204]
 		if (allowed.indexOf(value) > -1) {
 			return {
-				message: `expected ${value} to not be one of ${allowed.join(',')}`,
+				message: () => `expected ${value} to not be one of ${allowed.join(',')}`,
 				pass: true
 			}
 		}
 
 		return {
-			message: `expected ${value} to be one of ${allowed.join(',')}`,
+			message: () => `expected ${value} to be one of ${allowed.join(',')}`,
 			pass: false
 		}
 	}
@@ -141,8 +141,9 @@ describe('ServiceMessages API POST endpoint', () => {
 			})
 
 			it('should reject non-criticality positive number', () => {
-				const tooHigh = Object.values(Criticality)
-					.filter((value) => !isNaN(value))
+				Object.values(Criticality)
+				const tooHigh = (Object.values(Criticality)
+					.filter((value) => typeof value === 'number') as number[])
 					.sort((a, b) => b - a)[0] + 1
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = tooHigh

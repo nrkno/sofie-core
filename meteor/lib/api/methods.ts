@@ -66,10 +66,10 @@ function makeMethods (methods: object): any {
 	return o
 }
 export interface MethodContext {
-	userId?: string
+	userId: string | null
 	connection: {
 		clientAddress: string
-	}
+	} | null
 }
 /** Convenience-method to call a userAction method old-Meteor.call-style */
 export function CallUserActionAPIMethod (method: UserActionAPIMethods, ...args: any[]) {

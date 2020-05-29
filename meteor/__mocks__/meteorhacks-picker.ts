@@ -52,7 +52,7 @@ export interface MockResponseDataString extends MockResponseData {
 	statusCode: number
 }
 
-export function parseResponseBuffer (res: MockResponse, encoding?: string): MockResponseDataString {
+export function parseResponseBuffer (res: MockResponse, encoding?: BufferEncoding): MockResponseDataString {
 	const internal = res._internal
 	const bufferStr = internal.buffer.toString(encoding)
 	return {

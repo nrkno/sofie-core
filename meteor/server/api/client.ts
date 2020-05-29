@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise, check } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -16,7 +15,7 @@ import { MethodContext } from '../../lib/api/methods'
 export namespace ServerClientAPI {
 	export function clientErrorReport (methodContext: MethodContext, timestamp: Time, errorObject: any, location: string): void {
 		check(timestamp, Number)
-		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${methodContext.connection.clientAddress}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
+		logger.error(`Uncaught error happened in GUI\n  in "${location}"\n  on "${methodContext.connection ? methodContext.connection.clientAddress : ''}"\n  at ${(new Date(timestamp)).toISOString()}:\n${JSON.stringify(errorObject)}`)
 	}
 
 	export function runInUserLog<Result> (methodContext: MethodContext, context: string, methodName: string, args: any[], fcn: () => Result | Promise<Result>): Result {
@@ -28,8 +27,8 @@ export namespace ServerClientAPI {
 
 		UserActionsLog.insert(literal<UserActionsLogItem>({
 			_id: actionId,
-			clientAddress: methodContext.connection.clientAddress,
-			userId: methodContext.userId,
+			clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
+			userId: methodContext.userId || undefined,
 			context: context,
 			method: methodName,
 			args: JSON.stringify(args),
@@ -88,8 +87,8 @@ export namespace ServerClientAPI {
 		return new Promise((resolve, reject) => {
 			UserActionsLog.insert(literal<UserActionsLogItem>({
 				_id: actionId,
-				clientAddress: methodContext.connection.clientAddress,
-				userId: methodContext.userId,
+				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
+				userId: methodContext.userId || undefined,
 				context: context,
 				method: `${deviceId}: ${functionName}`,
 				args: JSON.stringify(args),

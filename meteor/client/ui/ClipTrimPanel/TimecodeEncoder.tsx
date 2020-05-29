@@ -2,9 +2,8 @@ import * as React from 'react'
 import { Timecode } from 'timecode'
 import * as _ from 'underscore'
 import ClassNames from 'classnames'
-import * as faCaretUp from '@fortawesome/fontawesome-free-solid/faCaretUp'
-import * as faCaretDown from '@fortawesome/fontawesome-free-solid/faCaretDown'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faCaretUp, faCaretDown } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 export interface IProps {
 	value?: number

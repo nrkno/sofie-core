@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { OmitId, trimIfString, getHash, unprotectObject, protectString, unprotectString } from '../../../lib/lib'
+import { OmitId, trimIfString, getHash, unprotectObject, protectString, unprotectString, check } from '../../../lib/lib'
 import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
@@ -18,7 +18,6 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 
 import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { check } from 'meteor/check'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'

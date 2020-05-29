@@ -410,7 +410,7 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 		let omitNames = [
 			'@babel/runtime',
 			'@fortawesome/fontawesome',
-			'@fortawesome/fontawesome-free-solid',
+			'@fortawesome/free-solid-svg-icons',
 			'@fortawesome/react-fontawesome',
 			'@nrk/core-icons',
 			'@slack/client',

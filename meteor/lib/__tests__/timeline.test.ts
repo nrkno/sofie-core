@@ -2,7 +2,7 @@ import { testInFiber } from '../../__mocks__/helpers/jest'
 import { transformTimeline } from '../timeline'
 import { TimelineObjGeneric, TimelineObjType, TimelineObjRundown } from '../collections/Timeline'
 import { protectString } from '../lib'
-import { TSR } from 'tv-automation-sofie-blueprints-integration';
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 
 describe('lib/timeline', () => {
@@ -73,6 +73,7 @@ describe('lib/timeline', () => {
 					start: 0
 				},
 				content: {
+					// @ts-ignore temporary ignoring typing issue
 					callBack: 'partPlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',
@@ -93,6 +94,7 @@ describe('lib/timeline', () => {
 					start: 0
 				},
 				content: {
+					// @ts-ignore temporary ignoring typing issue
 					callBack: 'piecePlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',

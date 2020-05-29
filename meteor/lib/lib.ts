@@ -1,8 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
+import { check as MeteorCheck } from 'meteor/check'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoSelector, MongoModifier, UpdateOptions, UpsertOptions, FindOptions } from './typings/meteor'
+import { TransformedCollection, MongoQuery, MongoModifier, UpdateOptions, UpsertOptions, FindOptions } from './typings/meteor'
 import { logger } from './logging'
 import { Timecode } from 'timecode'
 import { Settings } from './Settings'
@@ -37,6 +38,10 @@ export function MeteorPromiseCall (callName: string, ...args: any[]): Promise<an
 			else resolve(res)
 		})
 	})
+}
+export function check (value: any, pattern: Match.Pattern) {
+	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
+	MeteorCheck(value, pattern)
 }
 
 export type Time = number
@@ -86,7 +91,7 @@ interface Changes {
  */
 export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	filter: MongoSelector<DBInterface>,
+	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
@@ -112,7 +117,7 @@ export interface PreparedChanges<T> {
 }
 export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	filter: MongoSelector<DBInterface>,
+	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ): PreparedChanges<DBInterface> {
@@ -478,7 +483,7 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 )
 export function fetchBefore<T> (
 	collection: TransformedCollection<T, any>,
-	selector: MongoSelector<T> = {},
+	selector: MongoQuery<T> = {},
 	rank: number = Number.POSITIVE_INFINITY
 ): T {
 	return collection.find(_.extend(selector, {
@@ -760,8 +765,8 @@ export function toc (name: string = 'default', logStr?: string | Promise<any>[])
 
 export function asyncCollectionFindFetch<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | string,
-	options?: FindOptions
+	selector: MongoQuery<DBInterface> | string,
+	options?: FindOptions<DBInterface>
 ): Promise<Array<DocClass>> {
 	// Make the collection fethcing in another Fiber:
 	const p = makePromise(() => {
@@ -773,7 +778,7 @@ export function asyncCollectionFindFetch<DocClass extends DBInterface, DBInterfa
 }
 export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | string
+	selector: MongoQuery<DBInterface> | string
 ): Promise<DocClass | undefined> {
 	return asyncCollectionFindFetch(collection, selector)
 	.then((arr) => {
@@ -817,7 +822,7 @@ export function asyncCollectionInsertIgnore<DocClass extends DBInterface, DBInte
 }
 export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | ProtectedString<any>,
 	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 
@@ -832,7 +837,7 @@ export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | ProtectedString<any>,
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 
@@ -847,7 +852,7 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | ProtectedString<any>
+	selector: MongoQuery<DBInterface> | ProtectedString<any>
 
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
@@ -907,7 +912,7 @@ export function makePromise<T> (fcn: () => T): Promise<T> {
 		})
 	})
 }
-export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
+export function mongoWhere<T> (o: any, selector: MongoQuery<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
 		if (!ok) return
@@ -979,22 +984,25 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 	})
 	return ok
 }
-export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
+export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }> (
+	docs: Class[],
+	options?: FindOptions<DBInterface>
+): Class[] {
 	if (options) {
 		if (options.sort) {
 			docs = [...docs] // Shallow clone it
 
 			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
 			const keys = _.keys(options.sort).filter(k => options.sort)
-			function doSort(a: any, b: any, i: number): number {
+			const doSort = (a: any, b: any, i: number): number => {
 				if (i >= keys.length) return 0
 
 				const key = keys[i]
 				const order = options!.sort![key]
 
 				// Get the values, and handle asc vs desc
-				const val1 = objectPath.get(order > 0 ? a : b, key)
-				const val2 = objectPath.get(order > 0 ? b : a, key)
+				const val1 = objectPath.get(order! > 0 ? a : b, key)
+				const val2 = objectPath.get(order! > 0 ? b : a, key)
 
 				if (_.isEqual(val1, val2)) {
 					return doSort(a, b, i + 1)
@@ -1019,7 +1027,7 @@ export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
 
 		if (options.fields !== undefined) {
 			const idVal = options.fields['_id']
-			const includeKeys: string[] = _.keys(options.fields).filter(key => key !== '_id' && options.fields![key] !== 0)
+			const includeKeys = _.keys(options.fields).filter(key => key !== '_id' && options.fields![key] !== 0) as any as (keyof DBInterface)[]
 			const excludeKeys: string[] = _.keys(options.fields).filter(key => key !== '_id' && options.fields![key] === 0)
 
 			// Mongo does allow mixed include and exclude (exception being excluding _id)
@@ -1032,10 +1040,10 @@ export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
 
 			if (includeKeys.length !== 0) {
 				if (idVal !== 0) includeKeys.push('_id')
-				docs = _.map(docs, doc => _.pick(doc, includeKeys))
+				docs = _.map(docs, doc => _.pick(doc, includeKeys)) as any // any since includeKeys breaks strict typings anyway
 			} else if (excludeKeys.length !== 0) {
 				if (idVal === 0) excludeKeys.push('_id')
-				docs = _.map(docs, doc => _.omit(doc, excludeKeys))
+				docs = _.map(docs, doc => _.omit(doc, excludeKeys)) as any // any since excludeKeys breaks strict typings anyway
 			}
 		}
 
@@ -1044,7 +1052,7 @@ export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
 	}
 	return docs
 }
-export function mongoModify<DBInterface extends {_id: ProtectedString<any>}> (selector: MongoSelector<DBInterface>, doc: DBInterface, modifier: MongoModifier<DBInterface>): DBInterface {
+export function mongoModify<DBInterface extends {_id: ProtectedString<any>}> (selector: MongoQuery<DBInterface>, doc: DBInterface, modifier: MongoModifier<DBInterface>): DBInterface {
 	let replace = false
 	_.each(modifier, (value: any, key: string) => {
 		if (key === '$set') {
@@ -1272,7 +1280,7 @@ export function extendMandadory<A, B extends A> (original: A, extendObj: Differe
 	return _.extend(original, extendObj)
 }
 
-export function trimIfString<T extends any> (value: T): T {
+export function trimIfString<T extends any> (value: T): T | string {
 	if (_.isString(value)) return value.trim()
 	return value
 }

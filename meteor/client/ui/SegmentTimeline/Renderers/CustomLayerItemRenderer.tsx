@@ -8,8 +8,8 @@ import {
 } from '../SegmentTimelineContainer'
 
 import { RundownUtils } from '../../../lib/rundown'
-import * as faCut from '@fortawesome/fontawesome-free-solid/faCut'
-import FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faCut } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { OffsetPosition } from '../../../utils/positions'
 
