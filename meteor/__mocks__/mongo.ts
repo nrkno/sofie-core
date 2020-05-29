@@ -1,9 +1,8 @@
 import * as _ from 'underscore'
-import { pushOntoPath, setOntoPath, mongoWhere, literal, unsetPath, pullFromPath, Omit, ProtectedString, unprotectString, protectString, mongoModify, mongoFindOptions } from '../lib/lib'
+import { mongoWhere, literal, Omit, ProtectedString, unprotectString, protectString, mongoModify, mongoFindOptions } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
-import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 const clone = require('fast-clone')

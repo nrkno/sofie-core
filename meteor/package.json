@@ -123,6 +123,7 @@
     "i18next-conv": "^10.0.2",
     "i18next-extract-gettext": "^3.2.1",
     "jest": "^26.0.1",
+    "meteor-babel": "^7.9.0",
     "meteor-promise": "0.8.7",
     "mock-http": "^1.1.0",
     "node-license-validator": "^1.3.0",
