@@ -300,6 +300,11 @@ export function afterRemovePartsAuxiliary(cache: CacheForRundownPlaylist, rundow
 			rundownId: rundownId,
 			partId: { $in: _.map(removedParts, p => p._id) }
 		})
+
+		AdLibActions.remove({
+			rundownId: rundownId,
+			partId: { $in: _.map(removedParts, p => p._id) }
+		})
 	})
 }
 

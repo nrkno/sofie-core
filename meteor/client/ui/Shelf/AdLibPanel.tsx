@@ -432,7 +432,8 @@ export interface IAdLibPanelTrackedProps {
 }
 
 export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
-	const { t } = this.props
+	const { t } = props
+
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists

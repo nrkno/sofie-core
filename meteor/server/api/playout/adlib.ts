@@ -4,7 +4,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, literal, protectString, unprotectString, getRandomId, waitForPromise, MeteorPromiseCall, unprotectStringArray } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, getRandomId, waitForPromise, unprotectStringArray } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
@@ -208,6 +208,38 @@ export namespace ServerPlayoutAdLibAPI {
 		updateTimeline(cache, rundownPlaylist.studioId)
 	}
 
+	export function sourceLayerStickyPieceStart(rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
+			if (!playlist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
+
+			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
+			const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+			if (!currentPartInstance) throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
+
+			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+			if (!rundown) throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
+
+			let showStyleBase = rundown.getShowStyleBase() // todo: database again
+
+			const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
+			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
+			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
+
+			const lastPieceInstance = innerFindLastPieceOnLayer(cache, playlist, sourceLayer._id, sourceLayer.stickyOriginalOnly || false, false)
+
+			if (lastPieceInstance) {
+				const lastPiece = convertPieceToAdLibPiece(lastPieceInstance.piece)
+				innerStartOrQueueAdLibPiece(cache, playlist, rundown, false, currentPartInstance, lastPiece)
+			}
+
+			waitForPromise(cache.saveAllToDatabase())
+		})
+	}
+
 	export function innerFindLastPieceOnLayer(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist, sourceLayerId: string, originalOnly: boolean, excludeCurrentPart: boolean) {
 		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 
@@ -234,53 +266,6 @@ export namespace ServerPlayoutAdLibAPI {
 			sort: {
 				'piece.startedPlayback': -1
 			}
-		})
-	}
-
-	export function sourceLayerStickyPieceStart(rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-			if (!playlist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
-			if (!playlist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to place a sticky item`)
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-
-			const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
-			if (!currentPartInstance) throw new Meteor.Error(501, `Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
-
-			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
-			if (!rundown) throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
-
-			let showStyleBase = rundown.getShowStyleBase() // todo: database again
-
-			const sourceLayer = showStyleBase.sourceLayers.find(i => i._id === sourceLayerId)
-			if (!sourceLayer) throw new Meteor.Error(404, `Source layer "${sourceLayerId}" not found!`)
-			if (!sourceLayer.isSticky) throw new Meteor.Error(400, `Only sticky layers can be restarted. "${sourceLayerId}" is not sticky.`)
-
-			const query = {
-				rundownId: rundown._id,
-				'piece.sourceLayerId': sourceLayer._id,
-				'piece.startedPlayback': {
-					$exists: true
-				}
-			}
-
-			if (sourceLayer.stickyOriginalOnly) {
-				// Ignore adlibs if using original only
-				query['pieces.adLibSourceId'] = {
-					$exists: false
-				}
-			}
-
-			const lastPieceInstance = innerFindLastPieceOnLayer(cache, playlist, sourceLayer._id, sourceLayer.stickyOriginalOnly || false, false)
-
-			if (lastPieceInstance) {
-				const lastPiece = convertPieceToAdLibPiece(lastPieceInstance.piece)
-				innerStartOrQueueAdLibPiece(cache, playlist, rundown, false, currentPartInstance, lastPiece)
-			}
-
-			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 

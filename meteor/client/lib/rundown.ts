@@ -502,4 +502,11 @@ export namespace RundownUtils {
 		}
 		return false
 	}
+
+	export function isAdlibActionContent(display: IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent): display is IBlueprintActionManifestDisplayContent {
+		if ((display as any).sourceLayerId !== undefined) {
+			return true
+		}
+		return false
+	}
 }

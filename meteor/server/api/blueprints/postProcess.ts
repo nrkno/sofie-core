@@ -16,7 +16,7 @@ import {
 	IBlueprintAdLibPiece,
 	RundownContext,
 	TSR,
-	IBlueprintActionManifest
+	IBlueprintActionManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
