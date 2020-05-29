@@ -1,15 +1,10 @@
-
 import * as React from 'react'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 
 import { Studios, Studio, MappingExt } from '../../lib/collections/Studios'
-import {
-	PeripheralDevices,
-} from '../../lib/collections/PeripheralDevices'
-import {
-	PlayoutDeviceSettings
-} from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { EditAttribute } from '../lib/EditAttribute'
 import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
@@ -17,8 +12,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { unprotectString } from '../../lib/lib'
 import { MeteorCall } from '../../lib/api/methods'
-interface IManualPlayoutProps {
-}
+interface IManualPlayoutProps {}
 interface IManualPlayoutState {
 	inputValues: {
 		[id: string]: {
@@ -27,45 +21,41 @@ interface IManualPlayoutState {
 	}
 }
 export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IManualPlayoutState> {
-
-	constructor (props: IManualPlayoutProps) {
+	constructor(props: IManualPlayoutProps) {
 		super(props)
 		this.state = {
-			inputValues: {}
+			inputValues: {},
 		}
 	}
-	UNSAFE_componentWillMount () {
+	UNSAFE_componentWillMount() {
 		this.subscribe(PubSub.studios, {})
 		this.subscribe(PubSub.peripheralDevices, {})
 	}
-	getStudios () {
+	getStudios() {
 		return Studios.find().fetch()
 	}
-	getAtems (studio: Studio) {
-
-		let atems: {[id: string]: TSR.DeviceOptionsAtem} = {}
+	getAtems(studio: Studio) {
+		let atems: { [id: string]: TSR.DeviceOptionsAtem } = {}
 
 		let parentDevices = PeripheralDevices.find({
 			studioId: studio._id,
-			type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 		}).fetch()
 
 		_.each(parentDevices, (parentDevice) => {
 			if (parentDevice.settings) {
 				let settings = parentDevice.settings as PlayoutDeviceSettings
-				_.each(
-					settings.devices, (device, deviceId) => {
-						if (device.type === TSR.DeviceType.ATEM) {
-							atems[deviceId] = device
-						}
+				_.each(settings.devices, (device, deviceId) => {
+					if (device.type === TSR.DeviceType.ATEM) {
+						atems[deviceId] = device
 					}
-				)
+				})
 			}
 		})
 		return atems
 	}
-	getAtemMEs (studio: Studio) {
-		let mappings: {[layer: string]: TSR.MappingAtem} = {}
+	getAtemMEs(studio: Studio) {
+		let mappings: { [layer: string]: TSR.MappingAtem } = {}
 		_.each(studio.mappings, (mapping, layerId) => {
 			if (mapping.device === TSR.DeviceType.ATEM) {
 				// @ts-ignore
@@ -73,17 +63,15 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				if (mappingAtem.mappingType === TSR.MappingAtemType.MixEffect) {
 					mappings[layerId] = mappingAtem
 				}
-
 			}
 		})
 		return mappings
 	}
-	atemCamera (studio: Studio, mappingLayerId: string, cam: number) {
-
+	atemCamera(studio: Studio, mappingLayerId: string, cam: number) {
 		let o: TSR.TimelineObjAtemME = {
 			id: 'camera_' + mappingLayerId,
 			enable: {
-				start: 'now'
+				start: 'now',
 			},
 			layer: mappingLayerId,
 			content: {
@@ -92,33 +80,28 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 				me: {
 					input: cam,
-					transition: TSR.AtemTransitionStyle.CUT
-				}
-			}
+					transition: TSR.AtemTransitionStyle.CUT,
+				},
+			},
 		}
 		MeteorCall.manualPlayout.insertTimelineObject(studio._id, o).catch(console.error)
 	}
-	getManualLayers (studio: Studio) {
-		let mappings: {[layer: string]: MappingExt} = {}
+	getManualLayers(studio: Studio) {
+		let mappings: { [layer: string]: MappingExt } = {}
 		_.each(studio.mappings, (mapping, layerId) => {
-			if (
-				mapping.device === TSR.DeviceType.CASPARCG ||
-				mapping.device === TSR.DeviceType.QUANTEL
-			) {
+			if (mapping.device === TSR.DeviceType.CASPARCG || mapping.device === TSR.DeviceType.QUANTEL) {
 				mappings[layerId] = mapping
-
 			}
 		})
 		return mappings
 	}
-	casparcgPlay (studio: Studio, mappingLayerId: string) {
-
+	casparcgPlay(studio: Studio, mappingLayerId: string) {
 		let file = this.state.inputValues[mappingLayerId].file
 
 		let o: TSR.TimelineObjCCGMedia = {
 			id: 'caspar_' + mappingLayerId,
 			enable: {
-				start: 'now'
+				start: 'now',
 			},
 			layer: mappingLayerId,
 			content: {
@@ -126,21 +109,18 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 				type: TSR.TimelineContentTypeCasparCg.MEDIA,
 
 				file: file + '',
-
-			}
+			},
 		}
 		MeteorCall.manualPlayout.insertTimelineObject(studio._id, o).catch(console.error)
 	}
-	casparcgClear (studio: Studio, mappingLayerId: string) {
+	casparcgClear(studio: Studio, mappingLayerId: string) {
 		MeteorCall.manualPlayout.removeTimelineObject(studio._id, 'caspar_' + mappingLayerId).catch(console.error)
 	}
-	quantelPlay (studio: Studio, mappingLayerId: string) {
-
+	quantelPlay(studio: Studio, mappingLayerId: string) {
 		let input = this.state.inputValues[mappingLayerId]
 
 		let o: TSR.TimelineObjQuantelAny = {
-
-			id: 'quantel_' + mappingLayerId ,
+			id: 'quantel_' + mappingLayerId,
 
 			classes: [],
 			content: {
@@ -148,127 +128,134 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 
 				title: input.title || '',
 				// @ts-ignore temporary ignore, remove soon
-				guid: input.guid || ''
+				guid: input.guid || '',
 			},
 			enable: {
 				start: 'now',
-				duration: null
+				duration: null,
 			},
 			layer: mappingLayerId,
 			// objectType: 'rundown',
 			// priority: 0,
 			// rundownId: '',
 			// studioId: 'studio0'
-
 		}
 
 		MeteorCall.manualPlayout.insertTimelineObject(studio._id, o).catch(console.error)
 	}
-	quantelClear (studio: Studio, mappingLayerId: string) {
+	quantelClear(studio: Studio, mappingLayerId: string) {
 		MeteorCall.manualPlayout.removeTimelineObject(studio._id, 'quantel_' + mappingLayerId).catch(console.error)
 	}
-	onInputChange (id: string, no: string, value: any) {
-
+	onInputChange(id: string, no: string, value: any) {
 		let iv = this.state.inputValues
 		if (!iv[id]) iv[id] = {}
 		iv[id][no] = value
 
 		this.setState({
-			inputValues: iv
+			inputValues: iv,
 		})
 	}
-	render () {
+	render() {
 		return (
 			<div>
 				<h1>Manual control</h1>
-				{
-					_.map(this.getStudios(), (studio) => {
-						return <div key={unprotectString(studio._id)}>
+				{_.map(this.getStudios(), (studio) => {
+					return (
+						<div key={unprotectString(studio._id)}>
 							<h2>{studio.name}</h2>
-							<h3 className='mhs'>ATEM Control</h3>
+							<h3 className="mhs">ATEM Control</h3>
 							<table>
 								<tbody>
-								{
-									_.map(this.getAtemMEs(studio), (mapping, mappingLayerId) => {
-										return <tr key={mappingLayerId}>
-											<th>{mappingLayerId}</th>
-											{
-												_.map([1,2,3,4,5,6,7,8], (cam) => {
+									{_.map(this.getAtemMEs(studio), (mapping, mappingLayerId) => {
+										return (
+											<tr key={mappingLayerId}>
+												<th>{mappingLayerId}</th>
+												{_.map([1, 2, 3, 4, 5, 6, 7, 8], (cam) => {
 													return (
 														<td key={cam}>
-															<button className='btn btn-primary' onClick={(e) => this.atemCamera(studio, mappingLayerId, cam)}>
+															<button
+																className="btn btn-primary"
+																onClick={(e) => this.atemCamera(studio, mappingLayerId, cam)}>
 																Camera {cam}
 															</button>
 														</td>
 													)
-												})
-											}
-										</tr>
-									})
-								}
+												})}
+											</tr>
+										)
+									})}
 								</tbody>
 							</table>
-							<h3 className='mhs'>CasparCG Control</h3>
+							<h3 className="mhs">CasparCG Control</h3>
 							<table>
 								<tbody>
-								{
-									_.map(this.getManualLayers(studio), (mapping, mappingLayerId) => {
+									{_.map(this.getManualLayers(studio), (mapping, mappingLayerId) => {
 										if (mappingIsCasparCG(mapping)) {
-											return <tr key={mappingLayerId}>
-												<th>{mappingLayerId}</th>
-												<td>
-													<button className='btn btn-primary' onClick={(e) => this.casparcgPlay(studio, mappingLayerId)}>
-														Caspar Play
-													</button>
-													<button className='btn btn-primary' onClick={(e) => this.casparcgClear(studio, mappingLayerId)}>
-														Clear
-													</button>
-												</td>
-												<td>
-													<EditAttribute
-														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'file', value)}
-														type='text'
-														overrideDisplayValue={this.state.inputValues[mappingLayerId]}
-													/>
-												</td>
-											</tr>
+											return (
+												<tr key={mappingLayerId}>
+													<th>{mappingLayerId}</th>
+													<td>
+														<button
+															className="btn btn-primary"
+															onClick={(e) => this.casparcgPlay(studio, mappingLayerId)}>
+															Caspar Play
+														</button>
+														<button
+															className="btn btn-primary"
+															onClick={(e) => this.casparcgClear(studio, mappingLayerId)}>
+															Clear
+														</button>
+													</td>
+													<td>
+														<EditAttribute
+															updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'file', value)}
+															type="text"
+															overrideDisplayValue={this.state.inputValues[mappingLayerId]}
+														/>
+													</td>
+												</tr>
+											)
 										} else if (mappingIsQuantel(mapping)) {
-											return <tr key={mappingLayerId}>
-												<th>{mappingLayerId}</th>
-												<td>
-													<button className='btn btn-primary' onClick={(e) => this.quantelPlay(studio, mappingLayerId)}>
-														Quantel Play
-													</button>
-													<button className='btn btn-primary' onClick={(e) => this.quantelClear(studio, mappingLayerId)}>
-														Clear
-													</button>
-												</td>
-												<td>
-													<EditAttribute
-														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'title', value)}
-														type='text'
-														overrideDisplayValue={(this.state.inputValues[mappingLayerId] || {}).title}
-													/>
-												</td>
-												<td>
-													<EditAttribute
-														updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'guid', value)}
-														type='text'
-														overrideDisplayValue={(this.state.inputValues[mappingLayerId] || {}).guid}
-													/>
-												</td>
-											</tr>
+											return (
+												<tr key={mappingLayerId}>
+													<th>{mappingLayerId}</th>
+													<td>
+														<button
+															className="btn btn-primary"
+															onClick={(e) => this.quantelPlay(studio, mappingLayerId)}>
+															Quantel Play
+														</button>
+														<button
+															className="btn btn-primary"
+															onClick={(e) => this.quantelClear(studio, mappingLayerId)}>
+															Clear
+														</button>
+													</td>
+													<td>
+														<EditAttribute
+															updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'title', value)}
+															type="text"
+															overrideDisplayValue={(this.state.inputValues[mappingLayerId] || {}).title}
+														/>
+													</td>
+													<td>
+														<EditAttribute
+															updateFunction={(_edit, value) => this.onInputChange(mappingLayerId, 'guid', value)}
+															type="text"
+															overrideDisplayValue={(this.state.inputValues[mappingLayerId] || {}).guid}
+														/>
+													</td>
+												</tr>
+											)
 										}
 										return null
-									})
-								}
+									})}
 								</tbody>
 							</table>
 						</div>
-					})
-				}
+					)
+				})}
 			</div>
-
 		)
 	}
 }

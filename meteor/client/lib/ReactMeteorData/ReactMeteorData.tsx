@@ -24,30 +24,30 @@ class MeteorDataManager {
 	oldData: any
 	queueTrackerUpdates: boolean
 
-	constructor (component, queueTrackerUpdates: boolean) {
+	constructor(component, queueTrackerUpdates: boolean) {
 		this.component = component
 		this.computation = null
 		this.oldData = null
 		this.queueTrackerUpdates = queueTrackerUpdates || false
 	}
 
-	dispose () {
+	dispose() {
 		if (this.computation) {
 			this.computation.stop()
 			this.computation = null
 		}
 	}
 
-	static runUpdates () {
+	static runUpdates() {
 		// console.log(`running ${globalTrackerQueue.length} queued updates`)
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined
-		globalTrackerQueue.map(func => func())
+		globalTrackerQueue.map((func) => func())
 		globalTrackerQueue.length = 0
 	}
 
-	static enqueueUpdate (func: Function) {
+	static enqueueUpdate(func: Function) {
 		if (globalTrackerTimeout !== undefined) {
 			clearTimeout(globalTrackerTimeout)
 			globalTrackerTimeout = undefined
@@ -63,7 +63,7 @@ class MeteorDataManager {
 		}
 	}
 
-	calculateData () {
+	calculateData() {
 		const component = this.component
 
 		if (!component.getMeteorData) {
@@ -87,19 +87,20 @@ class MeteorDataManager {
 		// In that case, we want to opt out of the normal behavior of nested
 		// Computations, where if the outer one is invalidated or stopped,
 		// it stops the inner one.
-		this.computation = Tracker.nonreactive(() => (
+		this.computation = Tracker.nonreactive(() =>
 			Tracker.autorun((c) => {
 				if (c.firstRun) {
 					const savedSetState = component.setState
 					try {
 						component.setState = () => {
 							throw new Error(
-										'Can\'t call `setState` inside `getMeteorData` as this could '
-										+ 'cause an endless loop. To respond to Meteor data changing, '
-										+ 'consider making this component a \"wrapper component\" that '
-										+ 'only fetches data and passes it in as props to a child '
-										+ 'component. Then you can use `componentWillReceiveProps` in '
-										+ 'that child component.')
+								"Can't call `setState` inside `getMeteorData` as this could " +
+									'cause an endless loop. To respond to Meteor data changing, ' +
+									'consider making this component a "wrapper component" that ' +
+									'only fetches data and passes it in as props to a child ' +
+									'component. Then you can use `componentWillReceiveProps` in ' +
+									'that child component.'
+							)
 						}
 
 						data = component.getMeteorData()
@@ -131,16 +132,16 @@ class MeteorDataManager {
 					}
 				}
 			})
-		))
+		)
 
 		if (Mongo && data) {
 			Object.keys(data).forEach((key) => {
 				if (data[key] instanceof Mongo.Cursor) {
 					console.warn(
-						'Warning: you are returning a Mongo cursor from getMeteorData. '
-						+ 'This value will not be reactive. You probably want to call '
-						+ '`.fetch()` on the cursor before returning it.'
-						)
+						'Warning: you are returning a Mongo cursor from getMeteorData. ' +
+							'This value will not be reactive. You probably want to call ' +
+							'`.fetch()` on the cursor before returning it.'
+					)
 				}
 			})
 		}
@@ -148,11 +149,11 @@ class MeteorDataManager {
 		return data
 	}
 
-	updateData (newData) {
+	updateData(newData) {
 		const component = this.component
 		const oldData = this.oldData
 
-		if (!(newData && (typeof newData) === 'object')) {
+		if (!(newData && typeof newData === 'object')) {
 			throw new Error('Expected object returned from getMeteorData')
 		}
 		// update componentData in place based on newData
@@ -175,14 +176,14 @@ class MeteorDataManager {
 	}
 }
 export const ReactMeteorData = {
-	UNSAFE_componentWillMount () {
+	UNSAFE_componentWillMount() {
 		this.data = {}
 		this._meteorDataManager = new MeteorDataManager(this, this._queueTrackerUpdates || false)
 		const newData = this._meteorDataManager.calculateData()
 		this._meteorDataManager.updateData(newData)
 	},
 
-	UNSAFE_componentWillUpdate (nextProps, nextState) {
+	UNSAFE_componentWillUpdate(nextProps, nextState) {
 		const saveProps = this.props
 		const saveState = this.state
 		let newData
@@ -205,12 +206,12 @@ export const ReactMeteorData = {
 		this._meteorDataManager.updateData(newData)
 	},
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this._meteorDataManager.dispose()
 	},
 	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
 	autorun: MeteorReactComponent.prototype.autorun,
-	subscribe: MeteorReactComponent.prototype.subscribe
+	subscribe: MeteorReactComponent.prototype.subscribe,
 }
 
 class ReactMeteorComponentWrapper<P, S> extends React.Component<P, S> {
@@ -228,21 +229,25 @@ export interface WithTrackerOptions<IProps, IState, TrackedProps> {
 	// pure?: boolean
 }
 // @todo: add withTrackerPure()
-type IWrappedComponent<IProps, IState, TrackedProps> = new (props: IProps & TrackedProps, state: IState) => React.Component<IProps & TrackedProps, IState>
-export function withTracker<IProps, IState, TrackedProps> (
+type IWrappedComponent<IProps, IState, TrackedProps> = new (
+	props: IProps & TrackedProps,
+	state: IState
+) => React.Component<IProps & TrackedProps, IState>
+export function withTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps) => TrackedProps,
-	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	checkUpdate?:
+		| ((data: any, props: IProps, nextProps: IProps) => boolean)
+		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
 	queueTrackerUpdates?: boolean
-	):
-	(WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>) =>
-		new (props: IProps) => React.Component<IProps, IState> {
-
+): (
+	WrappedComponent: IWrappedComponent<IProps, IState, TrackedProps>
+) => new (props: IProps) => React.Component<IProps, IState> {
 	let expandedOptions: WithTrackerOptions<IProps, IState, TrackedProps>
 
 	expandedOptions = {
 		getMeteorData: autorunFunction,
 		shouldComponentUpdate: checkUpdate,
-		queueTrackerUpdates
+		queueTrackerUpdates,
 	}
 
 	return (WrappedComponent) => {
@@ -250,34 +255,40 @@ export function withTracker<IProps, IState, TrackedProps> (
 		const HOC = class extends ReactMeteorComponentWrapper<IProps, IState> {
 			_queueTrackerUpdates = expandedOptions.queueTrackerUpdates
 
-			getMeteorData () {
+			getMeteorData() {
 				return expandedOptions.getMeteorData.call(this, this.props)
 			}
 			// This hook allows lower-level components to do smart optimization,
 			// without running a potentially heavy recomputation of the getMeteorData.
 			// This is potentially very dangerous, so use with caution.
-			shouldComponentUpdate (nextProps: IProps, nextState: IState): boolean {
+			shouldComponentUpdate(nextProps: IProps, nextState: IState): boolean {
 				if (typeof expandedOptions.shouldComponentUpdate === 'function') {
 					return expandedOptions.shouldComponentUpdate(this.data, this.props, nextProps, this.state, nextState)
 				}
 				return true
 			}
-			render () {
+			render() {
 				let content = <WrappedComponent {...this.props} {...this.data} />
 				// this._renderedContent = content
 				return content
 			}
 		}
-		HOC['displayName'] = `ReactMeteorComponentWrapper(${WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'})`
+		HOC['displayName'] = `ReactMeteorComponentWrapper(${WrappedComponent['displayName'] ||
+			WrappedComponent.name ||
+			'Unnamed component'})`
 		return HOC
 	}
 }
-export function translateWithTracker<IProps, IState, TrackedProps> (
+export function translateWithTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps, state?: IState) => TrackedProps,
-	checkUpdate?: ((data: any, props: IProps, nextProps: IProps) => boolean) | ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
-	) {
+	checkUpdate?:
+		| ((data: any, props: IProps, nextProps: IProps) => boolean)
+		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
+) {
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
-		const inner = withTracker(autorunFunction, checkUpdate)(WrappedComponent) as new (props: IProps & WithTranslation) => React.Component<IProps & WithTranslation, IState, any>
+		const inner = withTracker(autorunFunction, checkUpdate)(WrappedComponent) as new (
+			props: IProps & WithTranslation
+		) => React.Component<IProps & WithTranslation, IState, any>
 		return withTranslation()(inner)
 	}
 }

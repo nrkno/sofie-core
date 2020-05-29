@@ -16,7 +16,8 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 	try {
 		let ingestRundown = req.body
 		if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')
-		if (typeof ingestRundown !== 'object') { // sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
+		if (typeof ingestRundown !== 'object') {
+			// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
 			ingestRundown = JSON.parse(ingestRundown)
 		}
 
@@ -34,7 +35,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 		}
 	}
 })
-export function ingestMOSRundown (studioId: StudioId, ingestRundown: any) {
+export function ingestMOSRundown(studioId: StudioId, ingestRundown: any) {
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 
@@ -42,7 +43,11 @@ export function ingestMOSRundown (studioId: StudioId, ingestRundown: any) {
 
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
-	if (existingDbRundown && existingDbRundown.dataSource !== 'http') throw new Meteor.Error(403, `Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`)
+	if (existingDbRundown && existingDbRundown.dataSource !== 'http')
+		throw new Meteor.Error(
+			403,
+			`Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`
+		)
 
 	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, 'http')
 }

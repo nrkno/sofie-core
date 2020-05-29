@@ -32,20 +32,20 @@ export class MultiSelect extends React.Component<IProps, IState> {
 	private _popperRef: HTMLElement
 	private _popperUpdate: () => Promise<any>
 
-	constructor (props: IProps) {
+	constructor(props: IProps) {
 		super(props)
 
 		this.state = {
 			checkedValues: {},
-			expanded: false
+			expanded: false,
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.refreshChecked()
 	}
 
-	async componentDidUpdate (prevProps: IProps) {
+	async componentDidUpdate(prevProps: IProps) {
 		if (this.props.value !== prevProps.value) {
 			this.refreshChecked()
 		}
@@ -55,7 +55,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	refreshChecked () {
+	refreshChecked() {
 		if (this.props.value && _.isArray(this.props.value)) {
 			const checkedValues: _.Dictionary<boolean> = {}
 			_.forEach(this.props.value, (value, index) => {
@@ -63,11 +63,11 @@ export class MultiSelect extends React.Component<IProps, IState> {
 			})
 
 			this.setState({
-				checkedValues
+				checkedValues,
 			})
 		} else {
 			this.setState({
-				checkedValues: {}
+				checkedValues: {},
 			})
 		}
 	}
@@ -78,14 +78,18 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		const valueUpdate = _.extend(this.state.checkedValues, obj)
 
 		this.setState({
-			checkedValues: valueUpdate
+			checkedValues: valueUpdate,
 		})
 
 		if (this.props.onChange && typeof this.props.onChange === 'function') {
 			this.props.onChange({
-				selectedValues: _.compact(_.values(_.mapObject(valueUpdate, (value, key) => {
-					return value ? key : null
-				})))
+				selectedValues: _.compact(
+					_.values(
+						_.mapObject(valueUpdate, (value, key) => {
+							return value ? key : null
+						})
+					)
+				),
 			})
 		}
 	}
@@ -95,18 +99,27 @@ export class MultiSelect extends React.Component<IProps, IState> {
 	}
 
 	generateSummary = () => {
-		return _.compact(_.values(_.mapObject(this.state.checkedValues, (value, key) => {
-			return value ? (this.props.availableOptions[key] || key) : null
-		}))).join(', ')
+		return _.compact(
+			_.values(
+				_.mapObject(this.state.checkedValues, (value, key) => {
+					return value ? this.props.availableOptions[key] || key : null
+				})
+			)
+		).join(', ')
 	}
 
 	onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
 		if (
-			!(event.relatedTarget && event.relatedTarget instanceof HTMLElement &&
-			(this._popperRef === event.relatedTarget || this._popperRef.contains(event.relatedTarget) || this._titleRef === event.relatedTarget))
+			!(
+				event.relatedTarget &&
+				event.relatedTarget instanceof HTMLElement &&
+				(this._popperRef === event.relatedTarget ||
+					this._popperRef.contains(event.relatedTarget) ||
+					this._titleRef === event.relatedTarget)
+			)
 		) {
 			this.setState({
-				expanded: false
+				expanded: false,
 			})
 		}
 	}
@@ -114,7 +127,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 	toggleExpco = async () => {
 		await this._popperUpdate()
 		this.setState({
-			expanded: !this.state.expanded
+			expanded: !this.state.expanded,
 		})
 	}
 
@@ -138,16 +151,21 @@ export class MultiSelect extends React.Component<IProps, IState> {
 
 	renderOption = (value: string, key: string) => {
 		return (
-			<p className='expco-item' key={key}>
-				<label className='action-btn'>
-					<span className='checkbox'>
-						<input type='checkbox'
-							className='form-control'
+			<p className="expco-item" key={key}>
+				<label className="action-btn">
+					<span className="checkbox">
+						<input
+							type="checkbox"
+							className="form-control"
 							checked={this.isChecked(key)}
 							onChange={() => this.handleChange(key)}
 						/>
-						<span className='checkbox-checked'><FontAwesomeIcon icon={faCheckSquare} /></span>
-						<span className='checkbox-unchecked'><FontAwesomeIcon icon={faSquare} /></span>
+						<span className="checkbox-checked">
+							<FontAwesomeIcon icon={faCheckSquare} />
+						</span>
+						<span className="checkbox-unchecked">
+							<FontAwesomeIcon icon={faSquare} />
+						</span>
 					</span>
 					{value}
 				</label>
@@ -155,61 +173,92 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		)
 	}
 
-	render () {
+	render() {
 		const summary = this.generateSummary()
 		return (
 			<Manager>
 				<Reference>
 					{({ ref }) => (
-						<div ref={r => this.setTitleRef(r, ref)} className={ClassNames('expco subtle', {
-							'expco-expanded': this.state.expanded
-						}, this.props.className)} tabIndex={-1} onBlur={this.onBlur}>
-							<div className={ClassNames('expco-title', {
-								'placeholder': !summary
-							})} onClick={this.toggleExpco} title={summary || this.props.placeholder || ''}>{summary || this.props.placeholder || ''}</div>
-							<a className='action-btn right expco-expand subtle' onClick={this.toggleExpco}>
+						<div
+							ref={(r) => this.setTitleRef(r, ref)}
+							className={ClassNames(
+								'expco subtle',
+								{
+									'expco-expanded': this.state.expanded,
+								},
+								this.props.className
+							)}
+							tabIndex={-1}
+							onBlur={this.onBlur}>
+							<div
+								className={ClassNames('expco-title', {
+									placeholder: !summary,
+								})}
+								onClick={this.toggleExpco}
+								title={summary || this.props.placeholder || ''}>
+								{summary || this.props.placeholder || ''}
+							</div>
+							<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
 								<FontAwesomeIcon icon={faChevronUp} />
 							</a>
 						</div>
 					)}
 				</Reference>
-				<Popper placement='bottom-start' modifiers={[
-					{ name: 'flip', enabled: false },
-					{ name: 'offset', enabled: true, options: { offset: [0, -1] } },
-					{ name: 'eventListeners', enabled: true, options: {
-						scroll: this.state.expanded,
-						resize: this.state.expanded
-				  	}}
-				]}>
+				<Popper
+					placement="bottom-start"
+					modifiers={[
+						{ name: 'flip', enabled: false },
+						{ name: 'offset', enabled: true, options: { offset: [0, -1] } },
+						{
+							name: 'eventListeners',
+							enabled: true,
+							options: {
+								scroll: this.state.expanded,
+								resize: this.state.expanded,
+							},
+						},
+					]}>
 					{({ ref, style, placement, update }) => {
 						this.setUpdate(update)
 						return (
-							<div ref={r => this.setPopperRef(r, ref)} style={style} data-placement={placement}
-								className={ClassNames('expco subtle expco-popper', {
-									'expco-expanded': this.state.expanded
-								}, this.props.className)} tabIndex={-1} onBlur={this.onBlur}
-							>
-								{this.state.expanded &&
-								<div className='expco-body bd'>
+							<div
+								ref={(r) => this.setPopperRef(r, ref)}
+								style={style}
+								data-placement={placement}
+								className={ClassNames(
+									'expco subtle expco-popper',
 									{
-										_.values(_.mapObject(this.props.availableOptions, (value, key) => {
-											return Array.isArray(value) ?
-											<React.Fragment key={key}>
-												<p className='expco-item' key={key}>{key}</p>
-												{_.map(value, (v) => {
-													return this.renderOption(v, v)
-												})}
-											</React.Fragment> :
-											this.renderOption(value, key)
-										}))
-									}
-								</div>
-								}
+										'expco-expanded': this.state.expanded,
+									},
+									this.props.className
+								)}
+								tabIndex={-1}
+								onBlur={this.onBlur}>
+								{this.state.expanded && (
+									<div className="expco-body bd">
+										{_.values(
+											_.mapObject(this.props.availableOptions, (value, key) => {
+												return Array.isArray(value) ? (
+													<React.Fragment key={key}>
+														<p className="expco-item" key={key}>
+															{key}
+														</p>
+														{_.map(value, (v) => {
+															return this.renderOption(v, v)
+														})}
+													</React.Fragment>
+												) : (
+													this.renderOption(value, key)
+												)
+											})
+										)}
+									</div>
+								)}
 							</div>
 						)
 					}}
 				</Popper>
-  			</Manager>
+			</Manager>
 		)
 	}
 }

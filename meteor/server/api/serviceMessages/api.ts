@@ -12,16 +12,10 @@ PickerGET.route('/serviceMessages/:id', getMessageHandler)
 
 PickerDELETE.route('/serviceMessages/:id', deleteHandler)
 
-
 /**
  * List all current messages stored on this instance
  */
-function getHandler (
-	params,
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void
-) {
+function getHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
 	try {
 		const valuesArray = readAllMessages()
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
@@ -36,15 +30,10 @@ function getHandler (
 /**
  * Delete a message
  */
-function deleteHandler (
-	params,
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void
-) {
+function deleteHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
 	const { id } = params
 	try {
-		if (readAllMessages().find(m => m.id === id)) {
+		if (readAllMessages().find((m) => m.id === id)) {
 			const deleted = deleteMessage(id)
 			res.setHeader('Content-Type', 'application/json; charset-utf8')
 			res.end(JSON.stringify(deleted), 'utf-8')
@@ -61,15 +50,10 @@ function deleteHandler (
 /**
  * Retrieves a single message based on a given id
  */
-function getMessageHandler (
-	params,
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void
-) {
+function getMessageHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
 	const { id } = params
 	try {
-		const message = readAllMessages().find(m => m.id === id)
+		const message = readAllMessages().find((m) => m.id === id)
 		if (message) {
 			res.setHeader('Content-Type', 'application/json; charset-utf8')
 			res.end(JSON.stringify(message), 'utf-8')

@@ -39,8 +39,7 @@ export interface PrompterData {
 
 export namespace PrompterAPI {
 	// TODO: discuss: move this implementation to server-side?
-	export function getPrompterData (playlistId: RundownPlaylistId): PrompterData {
-
+	export function getPrompterData(playlistId: RundownPlaylistId): PrompterData {
 		check(playlistId, String)
 
 		const playlist = RundownPlaylists.findOne(playlistId)
@@ -51,13 +50,13 @@ export namespace PrompterAPI {
 		const { parts, segments } = playlist.getSegmentsAndPartsSync()
 		// let parts = playlist.getAllOrderedParts().filter(p => !p.floated)
 		const segmentsMap = normalizeArray(segments, '_id')
-		const groupedParts = _.groupBy(parts, p => p.segmentId)
+		const groupedParts = _.groupBy(parts, (p) => p.segmentId)
 
 		let data: PrompterData = {
 			title: playlist.name,
 			currentPartId: currentPartInstance ? currentPartInstance.part._id : null,
 			nextPartId: nextPartInstance ? nextPartInstance.part._id : null,
-			segments: []
+			segments: [],
 		}
 
 		const piecesIncluded: PieceId[] = []
@@ -72,12 +71,20 @@ export namespace PrompterAPI {
 			const segmentData: PrompterDataSegment = {
 				id: protectString(segmentId),
 				title: segment ? segment.name : undefined,
-				parts: []
+				parts: [],
 			}
 
-			_.each(parts, part => {
+			_.each(parts, (part) => {
 				let title: string | undefined = part ? part.title : undefined
-				if (part && part.typeVariant && part.typeVariant.toString && part.typeVariant.toString().toLowerCase().trim() === 'full') {
+				if (
+					part &&
+					part.typeVariant &&
+					part.typeVariant.toString &&
+					part.typeVariant
+						.toString()
+						.toLowerCase()
+						.trim() === 'full'
+				) {
 					title = 'FULL'
 				}
 				if (title) {
@@ -87,13 +94,11 @@ export namespace PrompterAPI {
 				const partData: PrompterDataPart = {
 					id: part._id,
 					title: title,
-					pieces: []
+					pieces: [],
 				}
 
 				_.each(part.getAllPieces(), (piece) => {
-					if (
-						piece.content
-					) {
+					if (piece.content) {
 						const content = piece.content as ScriptContent
 						if (content.fullScript) {
 							if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) > 0) {
@@ -102,17 +107,16 @@ export namespace PrompterAPI {
 							piecesIncluded.push(piece.continuesRefId || piece._id)
 							partData.pieces.push({
 								id: piece._id,
-								text: content.fullScript
+								text: content.fullScript,
 							})
 						}
-
 					}
 				})
 				if (partData.pieces.length === 0) {
 					// insert an empty line
 					partData.pieces.push({
 						id: getRandomId(),
-						text: ''
+						text: '',
 					})
 				}
 

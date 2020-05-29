@@ -41,7 +41,6 @@ import './cronjobs'
 // import './api/ExternalMessageQueue' // called above
 // import './performanceMonitor' // called above
 
-
 // Setup publications and security:
 import './publications/_publications'
 import './security/_security'

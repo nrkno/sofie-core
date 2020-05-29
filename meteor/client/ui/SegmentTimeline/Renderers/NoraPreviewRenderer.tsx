@@ -12,19 +12,19 @@ interface IStateHeader extends IPropsHeader {
 }
 
 export class NoraPreviewController extends React.Component<IPropsHeader> {
-	componentDidMount () {
+	componentDidMount() {
 		NoraPreviewRenderer.show(this.props.noraContent, this.props.style)
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
 		NoraPreviewRenderer.show(this.props.noraContent, this.props.style)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		NoraPreviewRenderer.hide()
 	}
 
-	render () {
+	render() {
 		return null
 	}
 }
@@ -34,59 +34,62 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 
 	iframeElement: HTMLIFrameElement
 
-	static show (noraContent: NoraContent, style: { [key: string]: any }) {
+	static show(noraContent: NoraContent, style: { [key: string]: any }) {
 		NoraPreviewRenderer._singletonRef._show(noraContent, style)
 	}
 
-	static hide () {
+	static hide() {
 		NoraPreviewRenderer._singletonRef._hide()
 	}
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		NoraPreviewRenderer._singletonRef = this
 	}
 
-	private _show (noraContent: NoraContent, style: { [key: string]: any }) {
+	private _show(noraContent: NoraContent, style: { [key: string]: any }) {
 		if (this.state && JSON.stringify(this.state.noraContent) !== JSON.stringify(noraContent)) {
 			if (this.iframeElement && this.iframeElement.contentWindow) {
-				this.iframeElement.contentWindow.postMessage({
-					event: 'nora',
-					contentToShow: {
-						'manifest': noraContent.payload.manifest,
-						'template': {
-							'event': 'preview',
-							'name': noraContent.payload.template.name,
-							'channel': 'gfx1',
-							'layer': noraContent.payload.template.layer,
-							'system': 'html'
+				this.iframeElement.contentWindow.postMessage(
+					{
+						event: 'nora',
+						contentToShow: {
+							manifest: noraContent.payload.manifest,
+							template: {
+								event: 'preview',
+								name: noraContent.payload.template.name,
+								channel: 'gfx1',
+								layer: noraContent.payload.template.layer,
+								system: 'html',
+							},
+							content: {
+								...noraContent.payload.content,
+								_valid: false,
+							},
+							timing: {
+								duration: '00:05',
+								in: 'auto',
+								out: 'auto',
+								timeIn: '00:00',
+							},
 						},
-						'content': {
-							...noraContent.payload.content,
-							_valid: false
-						},
-						'timing': {
-							duration: '00:05',
-							in: 'auto',
-							out: 'auto',
-							timeIn: '00:00'
-						}
-					}
-				}, '*')
+					},
+					'*'
+				)
 			}
 		}
 		this.setState({
 			show: true,
 			noraContent,
-			style
+			style,
 		})
 	}
 
-	private _hide () {
+	private _hide() {
 		this.setState({
 			...this.state,
-			show: false
+			show: false,
 		})
 	}
 
@@ -94,60 +97,63 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		if (!e) return
 		this.iframeElement = e
 		const noraContent = this.state.noraContent
-		window.onmessage = msg => {
+		window.onmessage = (msg) => {
 			if (msg.data.source === 'nora-render') console.log(msg)
 		}
 		setTimeout(() => {
 			if (e.contentWindow) {
-				e.contentWindow.postMessage({
-					event: 'nora',
-					contentToShow: {
-						'manifest': noraContent.payload.manifest,
-						'template': {
-							'event': 'preview',
-							'name': noraContent.payload.template.name,
-							'channel': 'gfx1',
-							'layer': noraContent.payload.template.layer,
-							'system': 'html'
+				e.contentWindow.postMessage(
+					{
+						event: 'nora',
+						contentToShow: {
+							manifest: noraContent.payload.manifest,
+							template: {
+								event: 'preview',
+								name: noraContent.payload.template.name,
+								channel: 'gfx1',
+								layer: noraContent.payload.template.layer,
+								system: 'html',
+							},
+							content: {
+								...noraContent.payload.content,
+								_valid: false,
+							},
+							timing: {
+								duration: '00:05',
+								in: 'auto',
+								out: 'auto',
+								timeIn: '00:00',
+							},
 						},
-						'content': {
-							...noraContent.payload.content,
-							_valid: false
-						},
-						'timing': {
-							duration: '00:05',
-							in: 'auto',
-							out: 'auto',
-							timeIn: '00:00'
-						}
-					}
-				}, '*')
+					},
+					'*'
+				)
 			}
 		}, 1000)
 	}
 
-	render () {
+	render() {
 		if (!this.state) return null
 
 		const style = { ...this.state.style }
 		style['visibility'] = this.state.show ? 'visible' : 'hidden'
 
-
-		return <React.Fragment>
-			<Escape to='document'>
-				<div className='segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics' style={style}>
-					<div className='preview'>
-						<img width='100%' src='../images/previewBG.png' alt=''/>
-						<iframe
-							sandbox='allow-scripts'
-							src={this.state.noraContent.previewRenderer as string}
-							ref={this._setPreview}
-							width='1920'
-							height='1080'
-						></iframe>
+		return (
+			<React.Fragment>
+				<Escape to="document">
+					<div className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics" style={style}>
+						<div className="preview">
+							<img width="100%" src="../images/previewBG.png" alt="" />
+							<iframe
+								sandbox="allow-scripts"
+								src={this.state.noraContent.previewRenderer as string}
+								ref={this._setPreview}
+								width="1920"
+								height="1080"></iframe>
+						</div>
 					</div>
-				</div>
-			</Escape>
-		</React.Fragment>
+				</Escape>
+			</React.Fragment>
+		)
 	}
 }

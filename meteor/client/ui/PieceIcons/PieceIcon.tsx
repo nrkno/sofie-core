@@ -29,11 +29,16 @@ interface INamePropsHeader extends IPropsHeader {
 	partSlug: string
 }
 
-function findPieceInstanceToShow (props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
+function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
 	let pieceInstances = PieceInstances.find({ partInstanceId: props.partInstanceId }).fetch()
 	let showStyleBase = ShowStyleBases.findOne(props.showStyleBaseId)
 
-	let sourceLayers = showStyleBase ? normalizeArray<ISourceLayer>(showStyleBase.sourceLayers.map((layer) => _.clone(layer)), '_id') : {}
+	let sourceLayers = showStyleBase
+		? normalizeArray<ISourceLayer>(
+				showStyleBase.sourceLayers.map((layer) => _.clone(layer)),
+				'_id'
+		  )
+		: {}
 	let foundSourceLayer: ISourceLayer | undefined
 	let foundPiece: PieceInstance | undefined
 
@@ -43,7 +48,8 @@ function findPieceInstanceToShow (props: IPropsHeader, supportedLayers: Set<Sour
 			if (foundSourceLayer && foundPiece) {
 				if (foundSourceLayer._rank >= layer._rank) {
 					foundSourceLayer = layer
-					if (pieceInstance.piece.enable &&
+					if (
+						pieceInstance.piece.enable &&
 						foundPiece.piece.enable &&
 						(pieceInstance.piece.enable.start || 0) > (foundPiece.piece.enable.start || 0) // TODO: look into this, what should the do, really?
 					) {
@@ -59,82 +65,95 @@ function findPieceInstanceToShow (props: IPropsHeader, supportedLayers: Set<Sour
 
 	return {
 		sourceLayer: foundSourceLayer,
-		pieceInstance: foundPiece
+		pieceInstance: foundPiece,
 	}
 }
 
 export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
-	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT ])
+	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT])
 	return findPieceInstanceToShow(props, supportedLayers)
-})(class PieceNameContainer extends MeteorReactComponent<INamePropsHeader & { sourceLayer: ISourceLayer, pieceInstance: PieceInstance }> {
-	UNSAFE_componentWillMount () {
-		this.subscribe(PubSub.pieceInstancesSimple, {
-			rundownId: { $in: this.props.rundownIds }
-		})
-		this.subscribe(PubSub.showStyleBases, {
-			_id: this.props.showStyleBaseId
-		})
-	}
-
-	render () {
-		if (this.props.sourceLayer) {
-			switch (this.props.sourceLayer.type) {
-				case SourceLayerType.GRAPHICS:
-				case SourceLayerType.LIVE_SPEAK:
-				case SourceLayerType.VT:
-					return this.props.pieceInstance.piece.name
-			}
+})(
+	class PieceNameContainer extends MeteorReactComponent<
+		INamePropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
+	> {
+		UNSAFE_componentWillMount() {
+			this.subscribe(PubSub.pieceInstancesSimple, {
+				rundownId: { $in: this.props.rundownIds },
+			})
+			this.subscribe(PubSub.showStyleBases, {
+				_id: this.props.showStyleBaseId,
+			})
 		}
-		return this.props.partSlug.split(';')[1] || ''
+
+		render() {
+			if (this.props.sourceLayer) {
+				switch (this.props.sourceLayer.type) {
+					case SourceLayerType.GRAPHICS:
+					case SourceLayerType.LIVE_SPEAK:
+					case SourceLayerType.VT:
+						return this.props.pieceInstance.piece.name
+				}
+			}
+			return this.props.partSlug.split(';')[1] || ''
+		}
 	}
-})
+)
 
 export const PieceIconContainer = withTracker((props: IPropsHeader) => {
-	const supportedLayers = new Set([ SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.REMOTE, SourceLayerType.SPLITS, SourceLayerType.VT, SourceLayerType.CAMERA ])
+	const supportedLayers = new Set([
+		SourceLayerType.GRAPHICS,
+		SourceLayerType.LIVE_SPEAK,
+		SourceLayerType.REMOTE,
+		SourceLayerType.SPLITS,
+		SourceLayerType.VT,
+		SourceLayerType.CAMERA,
+	])
 	return findPieceInstanceToShow(props, supportedLayers)
-})(class PieceIconContainer extends MeteorReactComponent<IPropsHeader & { sourceLayer: ISourceLayer, pieceInstance: PieceInstance }> {
-	UNSAFE_componentWillMount () {
-		this.subscribe(PubSub.pieceInstancesSimple, {
-			rundownId: { $in: this.props.rundownIds }
-		})
-		this.subscribe(PubSub.showStyleBases, {
-			_id: this.props.showStyleBaseId
-		})
-	}
-
-	render () {
-		if (this.props.sourceLayer) {
-			const piece = this.props.pieceInstance ? this.props.pieceInstance.piece : undefined
-
-			switch (this.props.sourceLayer.type) {
-				case SourceLayerType.GRAPHICS :
-					return (
-						<GraphicsInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
-					)
-				case SourceLayerType.LIVE_SPEAK :
-					return (
-						<LiveSpeakInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
-					)
-				case SourceLayerType.REMOTE :
-					const rmContent = piece ? piece.content as RemoteContent | undefined : undefined
-					return (
-						<RemoteInputIcon inputIndex={ rmContent ? rmContent.studioLabel : '' } abbreviation={this.props.sourceLayer.abbreviation} />
-					)
-				case SourceLayerType.SPLITS :
-					return (
-						<SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} piece={piece} />
-					)
-				case SourceLayerType.VT :
-					return (
-						<VTInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
-					)
-				case SourceLayerType.CAMERA :
-					const camContent = piece ? piece.content as CameraContent | undefined : undefined
-					return (
-						<CamInputIcon inputIndex={ camContent ? camContent.studioLabel : '' } abbreviation={this.props.sourceLayer.abbreviation} />
-					)
-			}
+})(
+	class PieceIconContainer extends MeteorReactComponent<
+		IPropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
+	> {
+		UNSAFE_componentWillMount() {
+			this.subscribe(PubSub.pieceInstancesSimple, {
+				rundownId: { $in: this.props.rundownIds },
+			})
+			this.subscribe(PubSub.showStyleBases, {
+				_id: this.props.showStyleBaseId,
+			})
 		}
-		return null
+
+		render() {
+			if (this.props.sourceLayer) {
+				const piece = this.props.pieceInstance ? this.props.pieceInstance.piece : undefined
+
+				switch (this.props.sourceLayer.type) {
+					case SourceLayerType.GRAPHICS:
+						return <GraphicsInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
+					case SourceLayerType.LIVE_SPEAK:
+						return <LiveSpeakInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
+					case SourceLayerType.REMOTE:
+						const rmContent = piece ? (piece.content as RemoteContent | undefined) : undefined
+						return (
+							<RemoteInputIcon
+								inputIndex={rmContent ? rmContent.studioLabel : ''}
+								abbreviation={this.props.sourceLayer.abbreviation}
+							/>
+						)
+					case SourceLayerType.SPLITS:
+						return <SplitInputIcon abbreviation={this.props.sourceLayer.abbreviation} piece={piece} />
+					case SourceLayerType.VT:
+						return <VTInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
+					case SourceLayerType.CAMERA:
+						const camContent = piece ? (piece.content as CameraContent | undefined) : undefined
+						return (
+							<CamInputIcon
+								inputIndex={camContent ? camContent.studioLabel : ''}
+								abbreviation={this.props.sourceLayer.abbreviation}
+							/>
+						)
+				}
+			}
+			return null
+		}
 	}
-})
+)

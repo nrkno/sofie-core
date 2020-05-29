@@ -1,4 +1,3 @@
-
 import { postHandler, BodyParsingIncomingMessage } from '../../../api/serviceMessages/postHandler'
 import { Criticality, ServiceMessage } from '../../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -9,7 +8,7 @@ import { isNumber } from 'util'
 jest.mock('../../../api/serviceMessages/serviceMessagesApi', () => {
 	return {
 		__esModule: true,
-		writeMessage: jest.fn(() => ({ systemError: false }))
+		writeMessage: jest.fn(() => ({ systemError: false })),
 	}
 })
 
@@ -18,32 +17,32 @@ const validInput: ServiceMessage = {
 	criticality: Criticality.CRITICAL,
 	message: 'Something is wrong that should have been right',
 	sender: 'ola',
-	timestamp: new Date()
+	timestamp: new Date(),
 }
 
 declare global {
 	namespace jest {
-	  interface Matchers<R> {
-		toBeHttpOkStatusCode (): R
-	  }
+		interface Matchers<R> {
+			toBeHttpOkStatusCode(): R
+		}
 	}
-  }
+}
 
 expect.extend({
-	toBeHttpOkStatusCode (value): jest.CustomMatcherResult {
+	toBeHttpOkStatusCode(value): jest.CustomMatcherResult {
 		const allowed = [200, 201, 204]
 		if (allowed.indexOf(value) > -1) {
 			return {
 				message: () => `expected ${value} to not be one of ${allowed.join(',')}`,
-				pass: true
+				pass: true,
 			}
 		}
 
 		return {
 			message: () => `expected ${value} to be one of ${allowed.join(',')}`,
-			pass: false
+			pass: false,
 		}
-	}
+	},
 })
 
 describe('ServiceMessages API POST endpoint', () => {
@@ -142,9 +141,10 @@ describe('ServiceMessages API POST endpoint', () => {
 
 			it('should reject non-criticality positive number', () => {
 				Object.values(Criticality)
-				const tooHigh = (Object.values(Criticality)
-					.filter((value) => typeof value === 'number') as number[])
-					.sort((a, b) => b - a)[0] + 1
+				const tooHigh =
+					(Object.values(Criticality).filter((value) => typeof value === 'number') as number[]).sort(
+						(a, b) => b - a
+					)[0] + 1
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = tooHigh
 				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
@@ -212,7 +212,6 @@ describe('ServiceMessages API POST endpoint', () => {
 				expect(mockResponse.statusCode).toEqual(400)
 				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
 			})
-
 		})
 
 		describe('sender field', () => {
@@ -326,7 +325,7 @@ describe('ServiceMessages API POST endpoint', () => {
 	describe('http response', () => {
 		it('should reply 201 Created for new messages', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(() => ({
-				isUpdate: false
+				isUpdate: false,
 			}))
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
@@ -338,7 +337,7 @@ describe('ServiceMessages API POST endpoint', () => {
 
 		it('should put the new message in the response body', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(() => ({
-				isUpdate: false
+				isUpdate: false,
 			}))
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
@@ -356,7 +355,7 @@ describe('ServiceMessages API POST endpoint', () => {
 
 		it('should reply 200 OK for updated messages', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(() => ({
-				isUpdate: true
+				isUpdate: true,
 			}))
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
@@ -367,7 +366,7 @@ describe('ServiceMessages API POST endpoint', () => {
 		})
 		it('should put the updated message in the response body', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(() => ({
-				isUpdate: true
+				isUpdate: true,
 			}))
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 

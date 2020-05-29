@@ -1,16 +1,15 @@
 /**
  * A device has configuration options. This file describes a format using
  * typescript in which these options can be described.
- * 
+ *
  * In general a device can have an array of configuration fields like strings,
  * booleans, numbers etc.
- * 
+ *
  * A special type is the TABLE. This type describes another array of config
  * options. A table type is rendered as an actual table in core, where the rows
  * are instances of a certain type or are all the same. Manifests entries can
  * describe some properties to be rendered inside this table
  */
-
 
 export interface DeviceConfigManifest {
 	/**
@@ -29,7 +28,6 @@ export interface DeviceOAuthFlow {
 	credentialsURL: string
 }
 
-
 export enum ConfigManifestEntryType {
 	LABEL = 'label',
 	LINK = 'link',
@@ -40,9 +38,8 @@ export enum ConfigManifestEntryType {
 	INT = 'int',
 	TABLE = 'table',
 	OBJECT = 'object',
-	ENUM = 'enum'
+	ENUM = 'enum',
 }
-
 
 export type ConfigManifestEntry = ConfigManifestEntryDefault | TableConfigManifestEntry | ConfigManifestEnumEntry
 export interface ConfigManifestEntryBase {

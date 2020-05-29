@@ -12,7 +12,7 @@ meteorPublish(PubSub.mediaObjects, (studioId, selector, token) => {
 	check(studioId, String)
 	check(selector, Object)
 	const modifier: FindOptions<MediaObject> = {
-		fields: {}
+		fields: {},
 	}
 	if (StudiosSecurity.allowReadAccess({ _id: studioId }, token, this)) {
 		selector.studioId = studioId

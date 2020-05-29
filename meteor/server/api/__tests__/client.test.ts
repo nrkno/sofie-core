@@ -41,12 +41,20 @@ describe('ClientAPI', () => {
 			const logMethodName = `${mockDeviceId}: ${mockFunctionName}`
 			let promise: Promise<any>
 			beforeAll(async () => {
-				promise = makePromise(() => Meteor.call(ClientAPIMethods.callPeripheralDeviceFunction, mockContext, mockDeviceId, mockFunctionName, ...mockArgs))
-				await new Promise(resolve => orgSetTimeout(resolve, 100))
+				promise = makePromise(() =>
+					Meteor.call(
+						ClientAPIMethods.callPeripheralDeviceFunction,
+						mockContext,
+						mockDeviceId,
+						mockFunctionName,
+						...mockArgs
+					)
+				)
+				await new Promise((resolve) => orgSetTimeout(resolve, 100))
 			})
 			it('Logs the call in UserActionsLog', () => {
 				const log = UserActionsLog.findOne({
-					method: logMethodName
+					method: logMethodName,
 				})
 				if (!log) {
 					fail('Log entry not found')
@@ -59,7 +67,7 @@ describe('ClientAPI', () => {
 			testInFiber('Sends a call to the peripheralDevice', () => {
 				const pdc = PeripheralDeviceCommands.findOne({
 					deviceId: mockDeviceId,
-					functionName: mockFunctionName
+					functionName: mockFunctionName,
 				})
 				if (!pdc) {
 					fail('Peripheral device command request not found')
@@ -72,18 +80,21 @@ describe('ClientAPI', () => {
 			})
 			testInFiber('Resolves the returned promise once a response from the peripheralDevice is received', () => {
 				return runInFiber(() => {
-					PeripheralDeviceCommands.update({
-						deviceId: mockDeviceId,
-						functionName: mockFunctionName
-					}, {
-						$set: {
-							hasReply: true,
-							reply: 'OK'
+					PeripheralDeviceCommands.update(
+						{
+							deviceId: mockDeviceId,
+							functionName: mockFunctionName,
+						},
+						{
+							$set: {
+								hasReply: true,
+								reply: 'OK',
+							},
 						}
-					})
+					)
 					return promise.then((value) => {
 						const log = UserActionsLog.findOne({
-							method: logMethodName
+							method: logMethodName,
 						})
 						if (!log) {
 							fail('Log entry not found')
@@ -101,11 +112,17 @@ describe('ClientAPI', () => {
 		describe('Call a failing method on the peripheralDevice', () => {
 			const logMethodName = `${mockDeviceId}: ${mockFailingFunctionName}`
 			const promise = makePromise(() => {
-				return Meteor.call(ClientAPIMethods.callPeripheralDeviceFunction, mockContext, mockDeviceId, mockFailingFunctionName, ...mockArgs)
+				return Meteor.call(
+					ClientAPIMethods.callPeripheralDeviceFunction,
+					mockContext,
+					mockDeviceId,
+					mockFailingFunctionName,
+					...mockArgs
+				)
 			})
 			testInFiber('Logs the call in UserActionsLog', () => {
 				const log = UserActionsLog.findOne({
-					method: logMethodName
+					method: logMethodName,
 				})
 				if (!log) {
 					fail('Log entry not found')
@@ -118,7 +135,7 @@ describe('ClientAPI', () => {
 			testInFiber('Sends a call to the peripheralDevice', () => {
 				const pdc = PeripheralDeviceCommands.findOne({
 					deviceId: mockDeviceId,
-					functionName: mockFailingFunctionName
+					functionName: mockFailingFunctionName,
 				})
 				if (!pdc) {
 					fail('Peripheral device command request not found')
@@ -131,20 +148,23 @@ describe('ClientAPI', () => {
 			})
 			testInFiber('Resolves the returned promise once a response from the peripheralDevice is received', () => {
 				return runInFiber(() => {
-					PeripheralDeviceCommands.update({
-						deviceId: mockDeviceId,
-						functionName: mockFailingFunctionName
-					}, {
-						$set: {
-							hasReply: true,
-							replyError: 'Failed'
+					PeripheralDeviceCommands.update(
+						{
+							deviceId: mockDeviceId,
+							functionName: mockFailingFunctionName,
+						},
+						{
+							$set: {
+								hasReply: true,
+								replyError: 'Failed',
+							},
 						}
-					})
+					)
 					// This will probably resolve after around 3s, since that is the timeout time
 					// of checkReply and the observeChanges is not implemented in the mock
 					return promise.catch((value) => {
 						const log = UserActionsLog.findOne({
-							method: logMethodName
+							method: logMethodName,
 						})
 						if (!log) {
 							fail('Log entry not found')

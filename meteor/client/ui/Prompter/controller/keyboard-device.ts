@@ -10,7 +10,6 @@ const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
  * Supports Page-up / Page-down keys
  */
 export class KeyboardController extends ControllerAbstract {
-
 	private _mode: Mode = Mode.NORMAL
 	private _destroyed: boolean = false
 
@@ -30,21 +29,19 @@ export class KeyboardController extends ControllerAbstract {
 
 	private _updateSpeedHandle: number | null = null
 
-	constructor (view: PrompterViewInner) {
+	constructor(view: PrompterViewInner) {
 		super(view)
 
 		this._prompterView = view
 
 		// Recall mode:
 		const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE)
-		this._mode = (
-			recalledMode as Mode || Mode.NORMAL
-		)
+		this._mode = (recalledMode as Mode) || Mode.NORMAL
 	}
-	public destroy () {
+	public destroy() {
 		this._destroyed = true
 	}
-	public onKeyDown (e: KeyboardEvent) {
+	public onKeyDown(e: KeyboardEvent) {
 		// console.log(e)
 		if (!this._keyDown[e.code]) this._keyDown[e.code] = Date.now()
 
@@ -52,14 +49,11 @@ export class KeyboardController extends ControllerAbstract {
 			const scrollBy = Math.round(window.innerHeight * 0.66)
 			const scrollPosition = window.scrollY
 			if (scrollPosition !== undefined) {
-				if (
-					e.code === 'ArrowLeft' ||
-					e.code === 'ArrowUp' ||
-					e.code === 'PageUp'
-				) {
+				if (e.code === 'ArrowLeft' || e.code === 'ArrowUp' || e.code === 'PageUp') {
 					e.preventDefault()
 					let newPosition = scrollPosition - scrollBy
-					this._targetPosition = this._prompterView.findAnchorPosition(newPosition, scrollPosition - 10, -1) || newPosition
+					this._targetPosition =
+						this._prompterView.findAnchorPosition(newPosition, scrollPosition - 10, -1) || newPosition
 					this._continousScrolling = -1
 					this._updateScrollPosition()
 				} else if (
@@ -71,14 +65,15 @@ export class KeyboardController extends ControllerAbstract {
 					e.preventDefault()
 
 					let newPosition = scrollPosition + scrollBy
-					this._targetPosition = this._prompterView.findAnchorPosition(scrollPosition + 10, newPosition, 1) || newPosition
+					this._targetPosition =
+						this._prompterView.findAnchorPosition(scrollPosition + 10, newPosition, 1) || newPosition
 					this._continousScrolling = 1
 					this._updateScrollPosition()
 				}
 			}
 		}
 	}
-	public onKeyUp (e: KeyboardEvent) {
+	public onKeyUp(e: KeyboardEvent) {
 		const timeSincePress = Date.now() - this._keyDown[e.code]
 
 		if (this._mode === Mode.NORMAL) {
@@ -86,12 +81,12 @@ export class KeyboardController extends ControllerAbstract {
 			if (scrollPosition !== undefined) {
 				if (
 					e.code === 'ArrowLeft' || // left
-					e.code === 'ArrowUp' ||	// up
+					e.code === 'ArrowUp' || // up
 					e.code === 'PageUp' || // page up
 					e.code === 'ArrowRight' || // right
 					e.code === 'ArrowDown' || // down
-					e.code === 'Space' ||	// space
-					e.code === 'PageDown' 	// page down
+					e.code === 'Space' || // space
+					e.code === 'PageDown' // page down
 				) {
 					e.preventDefault()
 					this._continousScrolling = 0
@@ -116,36 +111,36 @@ export class KeyboardController extends ControllerAbstract {
 
 		this._keyDown[e.code] = 0
 	}
-	public onMouseKeyDown (e: MouseEvent) {
+	public onMouseKeyDown(e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp (e: MouseEvent) {
+	public onMouseKeyUp(e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel (e: WheelEvent) {
+	public onWheel(e: WheelEvent) {
 		// Nothing
 	}
 
-	private _toggleMode () {
+	private _toggleMode() {
 		this._setMode(Mode.NORMAL)
 	}
-	private _setMode (mode: Mode) {
+	private _setMode(mode: Mode) {
 		this._mode = mode
 		// console.log('Arrow-control: Switching mode to ' + mode)
 		localStorage.setItem(LOCALSTORAGE_MODE, mode)
 	}
-	private _getDistanceToStop (currentSpeed, stopAcceleration): number {
+	private _getDistanceToStop(currentSpeed, stopAcceleration): number {
 		if (!stopAcceleration) return 0
 		let timeToStop = currentSpeed / stopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
-		return (stopAcceleration * Math.pow(timeToStop, 2) / 2) + currentSpeed * timeToStop
+		return (stopAcceleration * Math.pow(timeToStop, 2)) / 2 + currentSpeed * timeToStop
 	}
-	private _getAccelerationToStopInTime (currentSpeed, normalStopAcceleration, distanceLeft): number {
+	private _getAccelerationToStopInTime(currentSpeed, normalStopAcceleration, distanceLeft): number {
 		let timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
-		return (2 * (distanceLeft - (currentSpeed * timeToStop))) / Math.pow(timeToStop, 2)
+		return (2 * (distanceLeft - currentSpeed * timeToStop)) / Math.pow(timeToStop, 2)
 	}
-	private _updateScrollPosition () {
+	private _updateScrollPosition() {
 		if (this._destroyed) return
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
@@ -153,20 +148,21 @@ export class KeyboardController extends ControllerAbstract {
 		const scrollPosition = window.scrollY
 		if (scrollPosition !== undefined) {
 			this._currentPosition = scrollPosition
-			let dp = (
-				this._continousScrolling ?
-					99999 * this._continousScrolling :
-					this._targetPosition - this._currentPosition
-			)
+			let dp = this._continousScrolling
+				? 99999 * this._continousScrolling
+				: this._targetPosition - this._currentPosition
 			if (dp !== 0) {
-
 				let acceleration = Math.sign(dp) * this._acceleration
 				let stopAcceleration = Math.sign(this._currentSpeed) * this._acceleration
 				const distanceToStop = this._getDistanceToStop(this._currentSpeed, stopAcceleration)
 				if (Math.abs(dp) <= Math.abs(distanceToStop)) {
 					// We should deccelerate
 
-					let actualStopAcceleration = this._getAccelerationToStopInTime(this._currentSpeed, stopAcceleration, dp)
+					let actualStopAcceleration = this._getAccelerationToStopInTime(
+						this._currentSpeed,
+						stopAcceleration,
+						dp
+					)
 					if (Math.abs(this._currentSpeed) < Math.abs(actualStopAcceleration)) {
 						this._currentSpeed = 0
 					} else {
@@ -179,7 +175,6 @@ export class KeyboardController extends ControllerAbstract {
 						newSpeed = Math.sign(newSpeed) * this._maxSpeed
 					}
 					if (newSpeed !== this._currentSpeed) {
-
 						// Check so we won't overshoot next iteration of we do:
 						let dp2 = dp - this._currentSpeed
 						const distanceToStop = this._getDistanceToStop(newSpeed, stopAcceleration)
@@ -220,10 +215,8 @@ export class KeyboardController extends ControllerAbstract {
 				}
 			}
 		}
-
 	}
-
 }
 enum Mode {
-	NORMAL = 'normal'
+	NORMAL = 'normal',
 }

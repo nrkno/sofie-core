@@ -9,7 +9,7 @@ import { FindOptions } from '../../lib/typings/meteor'
 meteorPublish(PubSub.showStyleVariants, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBShowStyleVariant> = {
-		fields: {}
+		fields: {},
 	}
 	if (ShowStyleBasesSecurity.allowReadAccess(selector, token, this)) {
 		return ShowStyleVariants.find(selector, modifier)

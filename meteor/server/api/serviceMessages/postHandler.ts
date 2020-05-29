@@ -13,18 +13,16 @@ interface BodyParsingIncomingMessage extends IncomingMessage {
 
 const INPUT_MISSING_PARTIAL = 'Missing data in input: '
 
-const validCriticalities = Object.keys(Criticality).filter((k) => typeof Criticality[k as any] === 'number').map(k => Criticality[k])
+const validCriticalities = Object.keys(Criticality)
+	.filter((k) => typeof Criticality[k as any] === 'number')
+	.map((k) => Criticality[k])
 
 /**
  * Create new or update existing service message.
  *
  * Picker route handler, see Picker documentation for interface details.
  */
-function postHandler (
-	params,
-	req: BodyParsingIncomingMessage,
-	res: ServerResponse,
-) {
+function postHandler(params, req: BodyParsingIncomingMessage, res: ServerResponse) {
 	const { body } = req
 	if (!body) {
 		res.statusCode = 400
@@ -68,7 +66,7 @@ function postHandler (
 		criticality: Number(criticality),
 		message,
 		sender,
-		timestamp: new Date(timestamp)
+		timestamp: new Date(timestamp),
 	} as ServiceMessage
 
 	try {
@@ -82,4 +80,3 @@ function postHandler (
 		res.end('System error, unable to store message')
 	}
 }
-

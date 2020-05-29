@@ -8,24 +8,24 @@ import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { check } from '../../lib/lib'
 import { FindOptions } from '../../lib/typings/meteor'
 
-meteorPublish(PubSub.peripheralDeviceCommands, function (deviceId: PeripheralDeviceId, token) {
-	if (!deviceId) throw new Meteor.Error(400,'deviceId argument missing')
+meteorPublish(PubSub.peripheralDeviceCommands, function(deviceId: PeripheralDeviceId, token) {
+	if (!deviceId) throw new Meteor.Error(400, 'deviceId argument missing')
 	check(deviceId, String)
 
 	const modifier: FindOptions<PeripheralDeviceCommand> = {
-		fields: {}
+		fields: {},
 	}
 
 	if (PeripheralDeviceSecurity.allowReadAccess({ _id: deviceId }, token, this)) {
 		return PeripheralDeviceCommands.find({ deviceId: deviceId }, modifier)
-
 	}
 	return null
 })
-meteorPublish(PubSub.allPeripheralDeviceCommands, function () { // tmp: dev only, should be removed before release
+meteorPublish(PubSub.allPeripheralDeviceCommands, function() {
+	// tmp: dev only, should be removed before release
 
 	const modifier: FindOptions<PeripheralDeviceCommand> = {
-		fields: {}
+		fields: {},
 	}
 
 	return PeripheralDeviceCommands.find({}, modifier)

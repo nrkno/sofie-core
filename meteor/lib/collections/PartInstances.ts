@@ -1,6 +1,15 @@
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, Time, registerCollection, ProtectedString, ProtectedStringProperties, protectString, unprotectString, Omit } from '../lib'
+import {
+	applyClassToDocument,
+	Time,
+	registerCollection,
+	ProtectedString,
+	ProtectedStringProperties,
+	protectString,
+	unprotectString,
+	Omit,
+} from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPartInstance,
@@ -17,10 +26,11 @@ import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
-export interface InternalIBlueprintPartInstance extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
+export interface InternalIBlueprintPartInstance
+	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
 	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
 }
-export function unprotectPartInstance (partInstance: PartInstance): IBlueprintPartInstance {
+export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
 }
 
@@ -57,7 +67,7 @@ export class PartInstance implements DBPartInstance {
 	public segmentId: SegmentId
 	public rundownId: RundownId
 
-	constructor (document: DBPartInstance, isTemporary?: boolean) {
+	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
@@ -66,37 +76,46 @@ export class PartInstance implements DBPartInstance {
 	}
 }
 
-export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {
-	return new PartInstance({
-		_id: protectString(`${part._id}_tmp_instance`),
-		rundownId: part.rundownId,
-		segmentId: part.segmentId,
-		takeCount: -1,
-		part: new Part(part)
-	}, true)
+export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
+	return new PartInstance(
+		{
+			_id: protectString(`${part._id}_tmp_instance`),
+			rundownId: part.rundownId,
+			segmentId: part.segmentId,
+			takeCount: -1,
+			part: new Part(part),
+		},
+		true
+	)
 }
 
-export function findPartInstanceOrWrapToTemporary (partInstances: { [partId: string]: PartInstance | undefined }, part: DBPart): PartInstance {
+export function findPartInstanceOrWrapToTemporary(
+	partInstances: { [partId: string]: PartInstance | undefined },
+	part: DBPart
+): PartInstance {
 	return partInstances[unprotectString(part._id)] || wrapPartToTemporaryInstance(part)
 }
 
-export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>('partInstances', { transform: (doc) => applyClassToDocument(PartInstance, doc) })
+export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(
+	'partInstances',
+	{ transform: (doc) => applyClassToDocument(PartInstance, doc) }
+)
 registerCollection('PartInstances', PartInstances)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PartInstances._ensureIndex({
 			rundownId: 1,
 			segmentId: 1,
-			takeCount: 1
+			takeCount: 1,
 		})
 		PartInstances._ensureIndex({
 			rundownId: 1,
-			takeCount: 1
+			takeCount: 1,
 		})
 		PartInstances._ensureIndex({
 			rundownId: 1,
 			partId: 1,
-			takeCount: 1
+			takeCount: 1,
 		})
 	}
 })

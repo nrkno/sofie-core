@@ -15,13 +15,17 @@ import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 
 export interface NewRundownLayoutsAPI {
-	createRundownLayout(name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId): Promise<RundownLayoutId>
+	createRundownLayout(
+		name: string,
+		type: RundownLayoutType,
+		showStyleBaseId: ShowStyleBaseId
+	): Promise<RundownLayoutId>
 	removeRundownLayout(id: RundownLayoutId): Promise<void>
 }
 
 export enum RundownLayoutsAPIMethods {
 	'removeRundownLayout' = 'rundownLayout.removeRundownLayout',
-	'createRundownLayout' = 'rundownLayout.createRundownLayout'
+	'createRundownLayout' = 'rundownLayout.createRundownLayout',
 }
 
 export namespace RundownLayoutsAPI {
@@ -41,13 +45,13 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.EXTERNAL_FRAME
 	}
 
-	export function isAdLibRegion (element: RundownLayoutElementBase): element is RundownLayoutAdLibRegion {
+	export function isAdLibRegion(element: RundownLayoutElementBase): element is RundownLayoutAdLibRegion {
 		return element.type === RundownLayoutElementType.ADLIB_REGION
 	}
 
-	export function adLibRegionToFilter (element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
+	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
 		return {
-			...(_.pick(element, '_id', 'name', 'rank', 'tags')),
+			..._.pick(element, '_id', 'name', 'rank', 'tags'),
 			rundownBaseline: true,
 			type: RundownLayoutElementType.FILTER,
 			sourceLayerIds: [],
@@ -56,7 +60,7 @@ export namespace RundownLayoutsAPI {
 			label: [],
 			displayStyle: PieceDisplayStyle.BUTTONS,
 			currentSegment: false,
-			showThumbnailsInList: false
+			showThumbnailsInList: false,
 		}
 	}
 }

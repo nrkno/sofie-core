@@ -42,7 +42,6 @@ interface IState {
 }
 
 export class RundownFullscreenControls extends React.Component<IProps, IState> {
-
 	throttledRefreshFullScreenState: () => void
 
 	fullscreenOut: any
@@ -57,87 +56,91 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 		autoplay: true,
 		animationData: {},
 		rendererSettings: {
-			preserveAspectRatio: 'xMidYMid meet'
-		}
+			preserveAspectRatio: 'xMidYMid meet',
+		},
 	}
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.state = {
 			isFullscreen: this.checkFullScreen(),
 			fullScreenHover: false,
 			onAirHover: false,
-			rewindHover: false
+			rewindHover: false,
 		}
 
 		this.fullscreenOut = _.extend(_.clone(this.animationTemplate), {
-			animationData: Fullscreen_MouseOut
+			animationData: Fullscreen_MouseOut,
 		})
 		this.fullscreenOver = _.extend(_.clone(this.animationTemplate), {
-			animationData: Fullscreen_MouseOver
+			animationData: Fullscreen_MouseOver,
 		})
 		this.windowedOut = _.extend(_.clone(this.animationTemplate), {
-			animationData: Windowed_MouseOut
+			animationData: Windowed_MouseOut,
 		})
 		this.windowedOver = _.extend(_.clone(this.animationTemplate), {
-			animationData: Windowed_MouseOver
+			animationData: Windowed_MouseOver,
 		})
 		this.onAirOut = _.extend(_.clone(this.animationTemplate), {
-			animationData: On_Air_MouseOut
+			animationData: On_Air_MouseOut,
 		})
 		this.onAirOver = _.extend(_.clone(this.animationTemplate), {
-			animationData: On_Air_MouseOver
+			animationData: On_Air_MouseOver,
 		})
 
 		this.throttledRefreshFullScreenState = _.throttle(this.refreshFullScreenState, 500)
 	}
 
-	componentDidUpdate (prevProps: IProps, prevState: IState) {
+	componentDidUpdate(prevProps: IProps, prevState: IState) {
 		if (this.props.isFollowingOnAir && this.state.onAirHover) {
 			this.setState({
-				onAirHover: false
+				onAirHover: false,
 			})
 		}
 		if (this.state.isFullscreen && this.state.fullScreenHover) {
 			this.setState({
-				fullScreenHover: false
+				fullScreenHover: false,
 			})
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		window.addEventListener('resize', this.throttledRefreshFullScreenState)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		window.removeEventListener('resize', this.throttledRefreshFullScreenState)
 	}
 
-	checkFullScreen () {
+	checkFullScreen() {
 		// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
-		return document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen ||
-			(Math.abs(screen.height - window.innerHeight) < 10) ||
-			false // This will return true or false depending on if it's full screen or not.
+		return (
+			document.fullScreen ||
+			document.mozFullScreen ||
+			document.webkitIsFullScreen ||
+			Math.abs(screen.height - window.innerHeight) < 10 ||
+			false
+		) // This will return true or false depending on if it's full screen or not.
 	}
 
 	refreshFullScreenState = () => {
 		if (this.state.isFullscreen !== this.checkFullScreen()) {
 			this.setState({
-				isFullscreen: this.checkFullScreen()
+				isFullscreen: this.checkFullScreen(),
 			})
 		}
 	}
 
 	onFullscreenMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			fullScreenHover: true
+			fullScreenHover: true,
 		})
 	}
 
 	onFullscreenMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			fullScreenHover: false
+			fullScreenHover: false,
 		})
 	}
 
@@ -149,25 +152,25 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 
 	onOnAirMouseEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			onAirHover: true
+			onAirHover: true,
 		})
 	}
 
 	onOnAirMouseLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			onAirHover: false
+			onAirHover: false,
 		})
 	}
 
 	onRewindEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			rewindHover: true
+			rewindHover: true,
 		})
 	}
 
 	onRewindLeave = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			rewindHover: false
+			rewindHover: false,
 		})
 	}
 
@@ -183,31 +186,56 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 		}
 	}
 
-	render () {
+	render() {
 		return (
-			<div className='status-bar'>
+			<div className="status-bar">
 				<VelocityReact.VelocityTransitionGroup
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
-					<NotificationCenterPanelToggle onClick={this.props.onToggleNotifications} isOpen={this.props.isNotificationCenterOpen} />
-					<button className='status-bar__controls__button' role='button' onMouseEnter={this.onRewindEnter} onMouseLeave={this.onRewindLeave} onClick={this.onRewindClick} tabIndex={0}>
+					<NotificationCenterPanelToggle
+						onClick={this.props.onToggleNotifications}
+						isOpen={this.props.isNotificationCenterOpen}
+					/>
+					<button
+						className="status-bar__controls__button"
+						role="button"
+						onMouseEnter={this.onRewindEnter}
+						onMouseLeave={this.onRewindLeave}
+						onClick={this.onRewindClick}
+						tabIndex={0}>
 						<FontAwesomeIcon icon={faFastBackward} />
 					</button>
-					{!this.props.isFollowingOnAir &&
-						<button className='status-bar__controls__button' role='button' onMouseEnter={this.onOnAirMouseEnter} onMouseLeave={this.onOnAirMouseLeave} onClick={this.onOnAirClick} tabIndex={0}>
-							{this.state.onAirHover ?
-								<Lottie options={this.onAirOver} isStopped={false} isPaused={false} /> :
-								<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />}
+					{!this.props.isFollowingOnAir && (
+						<button
+							className="status-bar__controls__button"
+							role="button"
+							onMouseEnter={this.onOnAirMouseEnter}
+							onMouseLeave={this.onOnAirMouseLeave}
+							onClick={this.onOnAirClick}
+							tabIndex={0}>
+							{this.state.onAirHover ? (
+								<Lottie options={this.onAirOver} isStopped={false} isPaused={false} />
+							) : (
+								<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />
+							)}
 						</button>
-					}
-					{!this.state.isFullscreen &&
-						<div className='status-bar__controls__label'>
-							<div className='status-bar__controls__button__label'><span className='keyboard_key'>F11</span> Fullscreen</div>
+					)}
+					{!this.state.isFullscreen && (
+						<div className="status-bar__controls__label">
+							<div className="status-bar__controls__button__label">
+								<span className="keyboard_key">F11</span> Fullscreen
+							</div>
 						</div>
-					}
-					{this.props.isStudioMode && <button className='status-bar__controls__button status-bar__controls__button--take' role='button' onClick={this.onTakeClick} tabIndex={0}>
-						Take
-					</button>}
+					)}
+					{this.props.isStudioMode && (
+						<button
+							className="status-bar__controls__button status-bar__controls__button--take"
+							role="button"
+							onClick={this.onTakeClick}
+							tabIndex={0}>
+							Take
+						</button>
+					)}
 					<SupportPopUpToggle onClick={this.props.onToggleSupportPanel} isOpen={this.props.isSupportPanelOpen} />
 				</VelocityReact.VelocityTransitionGroup>
 			</div>

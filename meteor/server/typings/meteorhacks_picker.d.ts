@@ -4,18 +4,20 @@ declare module 'meteor/meteorhacks:picker' {
 	interface Params {
 		[key: string]: string
 	}
-	type Route = (route: string, cb: (params: Params, req: IncomingMessage, res: ServerResponse, next: () => void) => void) => void
+	type Route = (
+		route: string,
+		cb: (params: Params, req: IncomingMessage, res: ServerResponse, next: () => void) => void
+	) => void
 	class PickerClass {
 		route: Route
-		filter (cb: (req: IncomingMessage, res: ServerResponse) => boolean) : Router
+		filter(cb: (req: IncomingMessage, res: ServerResponse) => boolean): Router
 	}
 	class Router {
-		middleware (middleware: NextHandleFunction) : void
+		middleware(middleware: NextHandleFunction): void
 		route: Route
 	}
 	var Picker: PickerClass
 }
-
 
 declare module 'http' {
 	interface IncomingMessage {

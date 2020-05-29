@@ -19,13 +19,14 @@ export namespace BucketsAPI {
 		const adlib = BucketAdLibs.findOne(id)
 		if (!adlib) throw new Meteor.Error(404, `Bucket Ad-Lib not found: ${id}`)
 
-		if (!BucketSecurity.allowWriteAccess(adlib.bucketId)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
+		if (!BucketSecurity.allowWriteAccess(adlib.bucketId))
+			throw new Meteor.Error(403, `Not allowed to edit bucket: ${adlib.bucketId}`)
 
 		BucketAdLibs.remove({
-			_id: id
+			_id: id,
 		})
 		ExpectedMediaItems.remove({
-			bucketAdLibPieceId: id
+			bucketAdLibPieceId: id,
 		})
 	}
 
@@ -36,7 +37,7 @@ export namespace BucketsAPI {
 		if (!BucketSecurity.allowWriteAccess(id)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${id}`)
 
 		Buckets.update(id, {
-			$set: _.omit(bucket, ['_id'])
+			$set: _.omit(bucket, ['_id']),
 		})
 	}
 
@@ -47,26 +48,31 @@ export namespace BucketsAPI {
 		if (!BucketSecurity.allowWriteAccess(id)) throw new Meteor.Error(403, `Not allowed to edit bucket: ${id}`)
 
 		BucketAdLibs.remove({
-			bucketId: id
+			bucketId: id,
 		})
 		ExpectedMediaItems.remove({
-			bucketId: id
+			bucketId: id,
 		})
 	}
 	export function createNewBucket(name: string, studioId: StudioId, userId: string | null) {
 		const studio = Studios.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio not found: ${studioId}`)
 
-		const heaviestBucket = Buckets.find({
-			studioId
-		}, {
-			sort: {
-				_rank: 1
+		const heaviestBucket = Buckets.find(
+			{
+				studioId,
 			},
-			fields: {
-				_rank: 1
+			{
+				sort: {
+					_rank: 1,
+				},
+				fields: {
+					_rank: 1,
+				},
 			}
-		}).fetch().reverse()[0]
+		)
+			.fetch()
+			.reverse()[0]
 
 		let rank = 1
 		if (heaviestBucket) {
@@ -81,7 +87,7 @@ export namespace BucketsAPI {
 			userId,
 			width: DEFAULT_BUCKET_WIDTH,
 			buttonWidthScale: 1,
-			buttonHeightScale: 1
+			buttonHeightScale: 1,
 		})
 
 		Buckets.insert(newBucket)
@@ -118,7 +124,7 @@ export namespace BucketsAPI {
 		}
 
 		BucketAdLibs.update(id, {
-			$set: _.omit(adlib, ['_id'])
+			$set: _.omit(adlib, ['_id']),
 		})
 	}
 
@@ -130,10 +136,10 @@ export namespace BucketsAPI {
 
 		Buckets.remove(id)
 		BucketAdLibs.remove({
-			bucketId: id
+			bucketId: id,
 		})
 		ExpectedMediaItems.remove({
-			bucketId: id
+			bucketId: id,
 		})
 	}
 }

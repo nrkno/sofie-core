@@ -6,10 +6,10 @@ import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
 
-meteorPublish(PubSub.timeline, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.timeline, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<TimelineObjGeneric> = {
-		fields: {}
+		fields: {},
 	}
 	if (TimelineSecurity.allowReadAccess(selector, token, this)) {
 		return Timeline.find(selector, modifier)

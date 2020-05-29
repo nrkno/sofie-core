@@ -1,5 +1,14 @@
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, getCurrentTime, registerCollection, asyncCollectionFindFetch, ProtectedString, ProtectId, ProtectedStringProperties } from '../lib'
+import {
+	Time,
+	applyClassToDocument,
+	getCurrentTime,
+	registerCollection,
+	asyncCollectionFindFetch,
+	ProtectedString,
+	ProtectId,
+	ProtectedStringProperties,
+} from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
 import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
@@ -40,7 +49,8 @@ export interface RundownImportVersions {
 /** A string, identifying a Rundown */
 export type RundownId = ProtectedString<'RundownId'>
 /** This is a very uncomplete mock-up of the Rundown object */
-export interface DBRundown extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
+export interface DBRundown
+	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
 	_id: RundownId
 	/** The id of the Studio this rundown is in */
 	studioId: StudioId
@@ -117,62 +127,72 @@ export class Rundown implements DBRundown {
 	public _rank: number
 	_: any
 
-	constructor (document: DBRundown) {
+	constructor(document: DBRundown) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
-	getRundownPlaylist (): RundownPlaylist {
+	getRundownPlaylist(): RundownPlaylist {
 		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
 		let pls = RundownPlaylists.findOne(this.playlistId)
 		if (pls) {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
-	getShowStyleCompound (): ShowStyleCompound {
-
+	getShowStyleCompound(): ShowStyleCompound {
 		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
 		let ss = getShowStyleCompound(this.showStyleVariantId)
 		if (ss) {
 			return ss
 		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
 	}
-	getShowStyleBase (): ShowStyleBase {
+	getShowStyleBase(): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
 		return showStyleBase
 	}
-	getStudio (): Studio {
-		if (!this.studioId) throw new Meteor.Error(500,'Rundown is not in a studio!')
+	getStudio(): Studio {
+		if (!this.studioId) throw new Meteor.Error(500, 'Rundown is not in a studio!')
 		let studio = Studios.findOne(this.studioId)
 		if (studio) {
 			return studio
-
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
-	getSegments (selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
+	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		selector = selector || {}
 		options = options || {}
 		return Segments.find(
-			_.extend({
-				rundownId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
-	getParts (selector?: MongoQuery<Part>, options?: FindOptions<DBPart>, segmentsInOrder?: Segment[]): Part[] {
+	getParts(selector?: MongoQuery<Part>, options?: FindOptions<DBPart>, segmentsInOrder?: Segment[]): Part[] {
 		selector = selector || {}
 		options = options || {}
 
 		let parts = Parts.find(
-			_.extend({
-				rundownId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1 },
+				},
+				options
+			)
 		).fetch()
 		if (!options.sort) {
 			parts = RundownPlaylist._sortPartsInner(parts, segmentsInOrder || this.getSegments())
@@ -182,61 +202,82 @@ export class Rundown implements DBRundown {
 	/**
 	 * Return ordered lists of all Segments and Parts in the rundown
 	 */
-	async getSegmentsAndParts (): Promise<{ segments: Segment[], parts: Part[] }> {
+	async getSegmentsAndParts(): Promise<{ segments: Segment[]; parts: Part[] }> {
+		const pSegments = asyncCollectionFindFetch(
+			Segments,
+			{
+				rundownId: this._id,
+			},
+			{ sort: { _rank: 1 } }
+		)
 
-		const pSegments = asyncCollectionFindFetch(Segments, {
-			rundownId: this._id
-		}, { sort: { _rank: 1 } })
-
-		const pParts = asyncCollectionFindFetch(Parts, {
-			rundownId: this._id
-		}, { sort: { _rank: 1 } })
+		const pParts = asyncCollectionFindFetch(
+			Parts,
+			{
+				rundownId: this._id,
+			},
+			{ sort: { _rank: 1 } }
+		)
 
 		const segments = await pSegments
 		return {
 			segments: segments,
-			parts: RundownPlaylist._sortPartsInner(await pParts, segments)
+			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
 		}
 	}
-	getGlobalAdLibPieces (selector?: MongoQuery<AdLibPiece>, options?: FindOptions<RundownBaselineAdLibItem>) {
+	getGlobalAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<RundownBaselineAdLibItem>) {
 		selector = selector || {}
 		options = options || {}
 		return RundownBaselineAdLibPieces.find(
-			_.extend({
-				rundownId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
-	getAllPartInstances (selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
+	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
 		selector = selector || {}
 		options = options || {}
 		return PartInstances.find(
-			_.extend({
-				rundownId: this._id,
-			}, selector),
-			_.extend({
-				sort: { takeCount: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { takeCount: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
-	getActivePartInstances (selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
+	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
 		const newSelector = {
 			...selector,
-			reset: { $ne: true }
+			reset: { $ne: true },
 		}
 		return this.getAllPartInstances(newSelector, options)
 	}
-	removeTOBEREMOVED () {
+	removeTOBEREMOVED() {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		Rundowns.remove(this._id)
 		if (this.playlistId) {
 			// Check if any other members of the playlist are left
-			if (Rundowns.find({
-				playlistId: this.playlistId
-			}).count() === 0) {
+			if (
+				Rundowns.find({
+					playlistId: this.playlistId,
+				}).count() === 0
+			) {
 				RundownPlaylists.remove(this.playlistId)
 			}
 		}
@@ -252,31 +293,34 @@ export class Rundown implements DBRundown {
 		ExpectedMediaItems.remove({ rundownId: this._id })
 		ExpectedPlayoutItems.remove({ rundownId: this._id })
 	}
-	touch () {
+	touch() {
 		if (getCurrentTime() - this.modified > 3600 * 1000) {
 			const m = getCurrentTime()
 			this.modified = m
 			Rundowns.update(this._id, { $set: { modified: m } })
 		}
 	}
-	appendNote (note: RundownNote): void {
-		Rundowns.update(this._id, {$push: {
-			notes: note
-		}})
+	appendNote(note: RundownNote): void {
+		Rundowns.update(this._id, {
+			$push: {
+				notes: note,
+			},
+		})
 	}
 }
 
 // export const Rundowns = createMongoCollection<Rundown>('rundowns', {transform: (doc) => applyClassToDocument(Rundown, doc) })
-export const Rundowns: TransformedCollection<Rundown, DBRundown>
-	= createMongoCollection<Rundown>('rundowns', { transform: (doc) => applyClassToDocument(Rundown, doc) })
+export const Rundowns: TransformedCollection<Rundown, DBRundown> = createMongoCollection<Rundown>('rundowns', {
+	transform: (doc) => applyClassToDocument(Rundown, doc),
+})
 registerCollection('Rundowns', Rundowns)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Rundowns._ensureIndex({
-			playlistId: 1
+			playlistId: 1,
 		})
 		Rundowns._ensureIndex({
-			playlistExternalId: 1
+			playlistExternalId: 1,
 		})
 	}
 })

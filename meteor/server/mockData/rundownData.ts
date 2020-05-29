@@ -17,35 +17,38 @@ import { removeRundownPlaylistFromCache } from '../api/playout/lib'
 // for development
 
 Meteor.methods({
-
-	'debug_scrambleDurations' () {
+	debug_scrambleDurations() {
 		let pieces = Pieces.find().fetch()
 		_.each(pieces, (piece) => {
 			Pieces.update(
 				{ _id: piece._id },
-				{$inc: {
-					expectedDuration: ((Random.fraction() * 500) - 250)
-				}}
+				{
+					$inc: {
+						expectedDuration: Random.fraction() * 500 - 250,
+					},
+				}
 			)
 		})
 	},
 
-	'debug_purgeMediaDB' () {
+	debug_purgeMediaDB() {
 		MediaObjects.remove({})
 	},
 
-	'debug_rundownSetStarttimeSoon' () {
+	debug_rundownSetStarttimeSoon() {
 		let rundown = Rundowns.findOne({
-			active: true
+			active: true,
 		})
 		if (rundown) {
-			Rundowns.update(rundown._id, {$set: {
-				expectedStart: getCurrentTime() + 70 * 1000
-			}})
+			Rundowns.update(rundown._id, {
+				$set: {
+					expectedStart: getCurrentTime() + 70 * 1000,
+				},
+			})
 		}
 	},
 
-	'debug_removeRundown' (id: RundownPlaylistId) {
+	debug_removeRundown(id: RundownPlaylistId) {
 		logger.debug('Remove rundown "' + id + '"')
 
 		const playlist = RundownPlaylists.findOne(id)
@@ -56,7 +59,7 @@ Meteor.methods({
 		}
 	},
 
-	'debug_removeAllRos' () {
+	debug_removeAllRos() {
 		logger.debug('Remove all rundowns')
 
 		RundownPlaylists.find({}).forEach((playlist) => {
@@ -66,7 +69,7 @@ Meteor.methods({
 		})
 	},
 
-	'debug_updateSourceLayerInfinitesAfterPart' (rundownId: RundownId, previousPartId?: PartId, runToEnd?: boolean) {
+	debug_updateSourceLayerInfinitesAfterPart(rundownId: RundownId, previousPartId?: PartId, runToEnd?: boolean) {
 		check(rundownId, String)
 		if (previousPartId) check(previousPartId, String)
 		if (runToEnd !== undefined) check(runToEnd, Boolean)
@@ -83,7 +86,7 @@ Meteor.methods({
 		logger.info('debug_updateSourceLayerInfinitesAfterPart: done')
 	},
 
-	'debug_recreateExpectedMediaItems' () {
+	debug_recreateExpectedMediaItems() {
 		const rundowns = Rundowns.find().fetch()
 
 		rundowns.map((i) => {
@@ -91,5 +94,5 @@ Meteor.methods({
 			updateExpectedMediaItemsOnRundown(cache, i._id)
 			waitForPromise(cache.saveAllToDatabase())
 		})
-	}
+	},
 })

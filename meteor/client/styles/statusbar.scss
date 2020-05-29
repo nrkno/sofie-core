@@ -1,5 +1,5 @@
-@import "_colorScheme";
-@import "_variables";
+@import '_colorScheme';
+@import '_variables';
 
 .status-bar {
 	position: fixed;
@@ -50,17 +50,17 @@
 			right: 0;
 			width: $fullscreen-controls__button--radius;
 			height: $fullscreen-controls__button--radius;
-			background: transparentize(#4B4B4B, 0.45);
+			background: transparentize(#4b4b4b, 0.45);
 			transition: 0.3s background-color;
 		}
-
 
 		&.status-bar__controls__button--inactive {
 			cursor: default;
 		}
 
 		&:not(.status-bar__controls__button--inactive) {
-			&:active, &.active {
+			&:active,
+			&.active {
 				&::after {
 					background: $ui-button-primary;
 					transition: 0s background-color;
@@ -82,19 +82,19 @@
 
 		@keyframes help-fade {
 			0% {
-				background-color: #fff
+				background-color: #fff;
 			}
 			40% {
-				background-color: #fff
+				background-color: #fff;
 			}
 			50% {
-				background-color: $ui-button-primary
+				background-color: $ui-button-primary;
 			}
 			60% {
-				background-color: #fff
+				background-color: #fff;
 			}
 			100% {
-				background-color: #fff
+				background-color: #fff;
 			}
 		}
 
@@ -135,11 +135,11 @@
 
 .rundown-view .status-bar {
 	position: fixed;
-    padding-right: rem(5px);
-    top: rem(64px);
-    padding-top: rem(15px);
-    bottom: 0;
-    right: 0;
+	padding-right: rem(5px);
+	top: rem(64px);
+	padding-top: rem(15px);
+	bottom: 0;
+	right: 0;
 	width: #{$fullscreen-controls__button--radius + 0.625rem};
 	z-index: 2000;
 	background: $ui-dark-color;

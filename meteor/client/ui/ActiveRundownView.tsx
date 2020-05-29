@@ -1,8 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import {
-	Route, Switch
-} from 'react-router-dom'
+import { Route, Switch } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
@@ -32,7 +30,6 @@ interface IState {
 	subsReady: boolean
 }
 export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-
 	let studioId = objectPathGet(props, 'match.params.studioId')
 	let studio
 	if (studioId) {
@@ -40,97 +37,110 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 	}
 	const playlist = RundownPlaylists.findOne({
 		active: true,
-		studioId: studioId
+		studioId: studioId,
 	})
 
 	return {
 		playlist,
 		studio,
-		studioId
+		studioId,
 	}
-})(class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-
-	constructor (props) {
-		super(props)
-		this.state = {
-			subsReady: false
+})(
+	class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+		constructor(props) {
+			super(props)
+			this.state = {
+				subsReady: false,
+			}
 		}
-	}
 
-	UNSAFE_componentWillMount () {
-		this.subscribe(PubSub.rundownPlaylists, _.extend({
-			active: true
-		}, this.props.studioId ? {
-			studioId: this.props.studioId
-		} : {}))
+		UNSAFE_componentWillMount() {
+			this.subscribe(
+				PubSub.rundownPlaylists,
+				_.extend(
+					{
+						active: true,
+					},
+					this.props.studioId
+						? {
+								studioId: this.props.studioId,
+						  }
+						: {}
+				)
+			)
 
-		if (this.props.studioId) {
-			this.subscribe(PubSub.studios, {
-				_id: this.props.studioId
+			if (this.props.studioId) {
+				this.subscribe(PubSub.studios, {
+					_id: this.props.studioId,
+				})
+			}
+
+			this.autorun(() => {
+				if (this.props.playlist) {
+					this.subscribe(PubSub.rundowns, {
+						playlistId: this.props.playlist._id,
+					})
+				}
+
+				let subsReady = this.subscriptionsReady()
+				if (subsReady !== this.state.subsReady) {
+					this.setState({
+						subsReady: subsReady,
+					})
+				}
 			})
 		}
 
-		this.autorun(() => {
-			if (this.props.playlist) {
-				this.subscribe(PubSub.rundowns, {
-					playlistId: this.props.playlist._id
-				})
-			}
+		componentDidMount() {
+			document.body.classList.add('dark', 'vertical-overflow-only')
+		}
 
-			let subsReady = this.subscriptionsReady()
-			if (subsReady !== this.state.subsReady) {
-				this.setState({
-					subsReady: subsReady
-				})
-			}
-		})
-	}
+		componentWillUnmount() {
+			super.componentWillUnmount()
+			document.body.classList.remove('dark', 'vertical-overflow-only')
+		}
 
-	componentDidMount () {
-		document.body.classList.add('dark', 'vertical-overflow-only')
-	}
+		componentDidUpdate() {
+			document.body.classList.add('dark', 'vertical-overflow-only')
+		}
 
-	componentWillUnmount () {
-		super.componentWillUnmount()
-		document.body.classList.remove('dark', 'vertical-overflow-only')
-	}
+		renderMessage(message: string) {
+			const { t } = this.props
 
-	componentDidUpdate () {
-		document.body.classList.add('dark', 'vertical-overflow-only')
-	}
-
-	renderMessage (message: string) {
-		const { t } = this.props
-
-		return (
-			<div className='rundown-view rundown-view--unpublished'>
-				<div className='rundown-view__label'>
-					<p>
-						{message}
-					</p>
-					<p>
-						<Route render={({ history }) => (
-							<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
-								{t('Return to list')}
-							</button>
-						)} />
-					</p>
-				</div>
-			</div>
-		)
-	}
-
-	render () {
-		const { t } = this.props
-		if (!this.state.subsReady) {
 			return (
-				<div className='rundown-view rundown-view--loading' >
-					<Spinner />
-				</div >
+				<div className="rundown-view rundown-view--unpublished">
+					<div className="rundown-view__label">
+						<p>{message}</p>
+						<p>
+							<Route
+								render={({ history }) => (
+									<button
+										className="btn btn-primary"
+										onClick={() => {
+											history.push('/rundowns')
+										}}>
+										{t('Return to list')}
+									</button>
+								)}
+							/>
+						</p>
+					</div>
+				</div>
 			)
-		} else {
-			if (this.props.playlist) {
-				return <Switch>
+		}
+
+		render() {
+			const { t } = this.props
+			if (!this.state.subsReady) {
+				return (
+					<div className="rundown-view rundown-view--loading">
+						<Spinner />
+					</div>
+				)
+			} else {
+				if (this.props.playlist) {
+					return (
+						<Switch>
 							<Route path={this.props.match.path} exact>
 								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} />
 							</Route>
@@ -138,13 +148,15 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} onlyShelf={true} />
 							</Route>
 						</Switch>
-			} else if (this.props.studio) {
-				return this.renderMessage(t('There is no rundown active in this studio.'))
-			} else if (this.props.studioId) {
-				return this.renderMessage(t('This studio doesn\'t exist.'))
-			} else {
-				return this.renderMessage(t('There are no active rundowns.'))
+					)
+				} else if (this.props.studio) {
+					return this.renderMessage(t('There is no rundown active in this studio.'))
+				} else if (this.props.studioId) {
+					return this.renderMessage(t("This studio doesn't exist."))
+				} else {
+					return this.renderMessage(t('There are no active rundowns.'))
+				}
 			}
 		}
 	}
-})
+)

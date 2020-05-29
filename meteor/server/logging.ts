@@ -30,7 +30,7 @@ interface LeveledLogMethodFixed {
 let leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
 	if (num.length < length) {
-		return '00000000000000000000000000000000000000000'.slice(0,length - num.length) + num
+		return '00000000000000000000000000000000000000000'.slice(0, length - num.length) + num
 	} else {
 		return num
 	}
@@ -43,7 +43,7 @@ let logPath = process.env.LOG_FILE || ''
 let logger: LoggerInstanceFixed
 let transports
 
-function safeStringify (o: any): string {
+function safeStringify(o: any): string {
 	try {
 		return JSON.stringify(o) // make single line
 	} catch (e) {
@@ -55,16 +55,21 @@ const customFormat = Winston.format.printf(({ timestamp, level, message, meta })
 })
 
 if (logToFile || logPath !== '') {
-
 	// console.log(Meteor)
 	if (logPath === '') {
 		let time = new Date()
-		let startDate = time.getFullYear() + '-' +
-			leadingZeros(time.getMonth(),2) + '-' +
-			leadingZeros(time.getDate(),2) + '_' +
-			leadingZeros(time.getHours(),2) + '_' +
-			leadingZeros(time.getMinutes(),2) + '_' +
-			leadingZeros(time.getSeconds(),2)
+		let startDate =
+			time.getFullYear() +
+			'-' +
+			leadingZeros(time.getMonth(), 2) +
+			'-' +
+			leadingZeros(time.getDate(), 2) +
+			'_' +
+			leadingZeros(time.getHours(), 2) +
+			'_' +
+			leadingZeros(time.getMinutes(), 2) +
+			'_' +
+			leadingZeros(time.getSeconds(), 2)
 		let logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'
 		// let logPath = './log/'
@@ -86,27 +91,19 @@ if (logToFile || logPath !== '') {
 	}
 	logger = Winston.createLogger({
 		format: Winston.format.json(),
-		transports: [
-			transports.console,
-			transports.file
-		],
+		transports: [transports.console, transports.file],
 	})
 	console.log('Logging to ' + logPath)
 } else {
 	transports = {
 		console: new Winston.transports.Console({
 			level: 'silly',
-			handleExceptions: true
-		})
+			handleExceptions: true,
+		}),
 	}
 	logger = Winston.createLogger({
-		format: Winston.format.combine(
-			Winston.format.timestamp(),
-			customFormat
-		),
-		transports: [
-			transports.console,
-		],
+		format: Winston.format.combine(Winston.format.timestamp(), customFormat),
+		transports: [transports.console],
 	})
 }
 

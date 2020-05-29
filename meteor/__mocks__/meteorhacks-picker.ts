@@ -14,36 +14,35 @@ export interface PickerMockRoute {
 }
 
 export class PickerMock {
-
-	static mockRoutes: {[name: string]: PickerMockRoute} = {}
-	static route (routeName: string, fcn: HandlerFunction) {
+	static mockRoutes: { [name: string]: PickerMockRoute } = {}
+	static route(routeName: string, fcn: HandlerFunction) {
 		this.mockRoutes[routeName] = { handler: fcn }
 	}
 
-	static filter (fcn: FilterFunction) {
+	static filter(fcn: FilterFunction) {
 		return new Router(fcn)
 	}
 }
 export class Router {
 	private filter: FilterFunction
 
-	constructor (filter: FilterFunction) {
+	constructor(filter: FilterFunction) {
 		this.filter = filter
 	}
 
-	middleware () {
+	middleware() {
 		// todo
 	}
-	route (routeName: string, fcn: HandlerFunction) {
+	route(routeName: string, fcn: HandlerFunction) {
 		PickerMock.mockRoutes[routeName] = {
 			filter: this.filter,
-			handler: fcn
+			handler: fcn,
 		}
 	}
 }
-export function setup () {
+export function setup() {
 	return {
-		Picker: PickerMock
+		Picker: PickerMock,
 	}
 }
 
@@ -52,12 +51,12 @@ export interface MockResponseDataString extends MockResponseData {
 	statusCode: number
 }
 
-export function parseResponseBuffer (res: MockResponse, encoding?: BufferEncoding): MockResponseDataString {
+export function parseResponseBuffer(res: MockResponse, encoding?: BufferEncoding): MockResponseDataString {
 	const internal = res._internal
 	const bufferStr = internal.buffer.toString(encoding)
 	return {
 		...internal,
 		bufferStr,
-		statusCode: res.statusCode
+		statusCode: res.statusCode,
 	}
 }

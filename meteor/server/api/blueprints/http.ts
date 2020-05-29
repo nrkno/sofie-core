@@ -18,11 +18,7 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 	const force = url.query.force === '1' || url.query.force === 'true'
 
 	const blueprintNames = url.query['name'] || undefined
-	const blueprintName: string | undefined = (
-		_.isArray(blueprintNames) ?
-		blueprintNames[0] :
-		blueprintNames
-	)
+	const blueprintName: string | undefined = _.isArray(blueprintNames) ? blueprintNames[0] : blueprintNames
 
 	check(blueprintId, String)
 	check(blueprintName, Match.Maybe(String))
@@ -32,7 +28,8 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
-		if (!_.isString(body) || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+		if (!_.isString(body) || body.length < 10)
+			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
 		uploadBlueprint(protectString<BlueprintId>(blueprintId), body, blueprintName, force)
 
@@ -87,7 +84,6 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 		} else {
 			res.statusCode = 200
 		}
-
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''

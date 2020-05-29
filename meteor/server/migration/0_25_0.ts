@@ -4,7 +4,13 @@ import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 import * as semver from 'semver'
 import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
-import { asyncCollectionInsert, asyncCollectionInsertIgnore, waitForPromiseAll, partial, protectString } from '../../lib/lib'
+import {
+	asyncCollectionInsert,
+	asyncCollectionInsertIgnore,
+	waitForPromiseAll,
+	partial,
+	protectString,
+} from '../../lib/lib'
 
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Evaluations } from '../../lib/collections/Evaluations'
@@ -31,7 +37,6 @@ import { Rundown as Rundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [
-
 	{
 		id: 'migrateDatabaseCollections',
 		canBeRunAutomatically: true,
@@ -53,7 +58,6 @@ addMigrationSteps('0.25.0', [
 					})
 					if (foundAnything) return `Deprecated collection "${foundAnything}" is not empty`
 				}
-
 			}
 			return false
 		},
@@ -63,22 +67,32 @@ addMigrationSteps('0.25.0', [
 			if (dbs) {
 				const ps: Promise<unknown>[] = []
 
-				dbs.SegmentLines.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(Parts, doc)) })
+				dbs.SegmentLines.find().forEach((doc) => {
+					ps.push(asyncCollectionInsertIgnore(Parts, doc))
+				})
 				dbs.SegmentLines.remove({})
 
-				dbs.SegmentLineItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(Pieces, doc)) })
+				dbs.SegmentLineItems.find().forEach((doc) => {
+					ps.push(asyncCollectionInsertIgnore(Pieces, doc))
+				})
 				dbs.SegmentLineItems.remove({})
 
-				dbs.SegmentLineAdLibItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(AdLibPieces, doc)) })
+				dbs.SegmentLineAdLibItems.find().forEach((doc) => {
+					ps.push(asyncCollectionInsertIgnore(AdLibPieces, doc))
+				})
 				dbs.SegmentLineAdLibItems.remove({})
 
-				dbs.RunningOrderBaselineItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineObjs, doc)) })
+				dbs.RunningOrderBaselineItems.find().forEach((doc) => {
+					ps.push(asyncCollectionInsertIgnore(RundownBaselineObjs, doc))
+				})
 				dbs.RunningOrderBaselineItems.remove({})
 
 				// dbs.RunningOrderBaselineAdLibItems.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(RundownBaselineAdLibPieces, doc)) })
 				// dbs.RunningOrderBaselineAdLibItems.remove({})
 
-				dbs.StudioInstallations.find().forEach(doc => { ps.push(asyncCollectionInsertIgnore(Studios, doc)) })
+				dbs.StudioInstallations.find().forEach((doc) => {
+					ps.push(asyncCollectionInsertIgnore(Studios, doc))
+				})
 				dbs.StudioInstallations.remove({})
 
 				dbs.RunningOrderDataCache.remove({})
@@ -87,120 +101,136 @@ addMigrationSteps('0.25.0', [
 				// Step 2: Drop the databases
 				dropDeprecatedDatabases()
 			}
-
-		}
+		},
 	},
 
-	renamePropertiesInCollection('asRunLog',
+	renamePropertiesInCollection(
+		'asRunLog',
 		AsRunLog,
 		'AsRunLog',
 		{
-			rundownId:		'runningOrderId',
+			rundownId: 'runningOrderId',
 			// segmentId:	'segmentId',
-			partInstanceId:			'segmentLineId',
-			pieceInstanceId:		'segmentLineItemId',
+			partInstanceId: 'segmentLineId',
+			pieceInstanceId: 'segmentLineItemId',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('Evaluations',
+	renamePropertiesInCollection(
+		'Evaluations',
 		Evaluations,
 		'Evaluations',
 		{
-			rundownId: 'runningOrderId'
+			rundownId: 'runningOrderId',
 		} as any,
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('ExpectedMediaItems',
+	renamePropertiesInCollection(
+		'ExpectedMediaItems',
 		ExpectedMediaItems,
 		'ExpectedMediaItems',
 		{
 			rundownId: 'runningOrderId',
-			partId:		'segmentLineId',
-			studioId:	'studioInstallationId'
+			partId: 'segmentLineId',
+			studioId: 'studioInstallationId',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('ExternalMessageQueue',
+	renamePropertiesInCollection(
+		'ExternalMessageQueue',
 		ExternalMessageQueue,
 		'ExternalMessageQueue',
 		{
-			rundownId: 'roId'
+			rundownId: 'roId',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('MediaWorkFlows',
+	renamePropertiesInCollection(
+		'MediaWorkFlows',
 		MediaWorkFlows,
 		'MediaWorkFlows',
 		{
-			studioId: 'studioInstallationId'
+			studioId: 'studioInstallationId',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('MediaWorkFlowSteps',
+	renamePropertiesInCollection(
+		'MediaWorkFlowSteps',
 		MediaWorkFlowSteps,
 		'MediaWorkFlowSteps',
 		{
-			studioId: 'studioInstallationId'
+			studioId: 'studioInstallationId',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('PeripheralDevices',
+	renamePropertiesInCollection(
+		'PeripheralDevices',
 		PeripheralDevices,
 		'PeripheralDevices',
 		{
-			studioId: 'studioInstallationId'
+			studioId: 'studioInstallationId',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('Segments',
+	renamePropertiesInCollection(
+		'Segments',
 		Segments,
 		'Segments',
 		{
 			externalId: 'mosId',
-			rundownId: 	'runningOrderId'
+			rundownId: 'runningOrderId',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('ShowStyleBases',
+	renamePropertiesInCollection(
+		'ShowStyleBases',
 		ShowStyleBases,
 		'ShowStyleBases',
 		{
-			_rundownVersionHash: '_runningOrderVersionHash'
+			_rundownVersionHash: '_runningOrderVersionHash',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('ShowStyleVariants',
+	renamePropertiesInCollection(
+		'ShowStyleVariants',
 		ShowStyleVariants,
 		'ShowStyleVariants',
 		{
-			_rundownVersionHash: '_runningOrderVersionHash'
+			_rundownVersionHash: '_runningOrderVersionHash',
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('Snapshots',
+	renamePropertiesInCollection(
+		'Snapshots',
 		Snapshots,
 		'Snapshots',
 		{
 			rundownId: 'runningOrderId',
-			type:		{content: {
-				rundown: 'runningorder'
-			}}
+			type: {
+				content: {
+					rundown: 'runningorder',
+				},
+			},
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('Timeline',
+	renamePropertiesInCollection(
+		'Timeline',
 		Timeline,
 		'Timeline',
 		{
 			studioId: 'siId',
-			objectType: {content: {
-			rundown: 'ro'
-		}}
+			objectType: {
+				content: {
+					rundown: 'ro',
+				},
+			},
 		},
 		'migrateDatabaseCollections'
 	),
 
-	renamePropertiesInCollection('RundownBaselineObjs',
+	renamePropertiesInCollection(
+		'RundownBaselineObjs',
 		RundownBaselineObjs,
 		'RundownBaselineObjs',
 		{
@@ -208,7 +238,8 @@ addMigrationSteps('0.25.0', [
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('RundownBaselineAdLibPieces',
+	renamePropertiesInCollection(
+		'RundownBaselineAdLibPieces',
 		RundownBaselineAdLibPieces,
 		'RundownBaselineAdLibPieces',
 		{
@@ -218,22 +249,24 @@ addMigrationSteps('0.25.0', [
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('Rundowns',
+	renamePropertiesInCollection(
+		'Rundowns',
 		Rundowns,
 		'Rundowns',
-			{
-				externalId: 'mosId',
-				studioId: 'studioInstallationId',
-				peripheralDeviceId: 'mosDeviceId',
-				currentPartId: 'currentSegmentLineId',
-				nextPartId: 'nextSegmentLineId',
-				nextPartManual: 'nextSegmentLineManual',
-				previousPartId: 'previousSegmentLineId',
-				notifiedCurrentPlayingPartExternalId: 'currentPlayingStoryStatus',
-			} as any,
+		{
+			externalId: 'mosId',
+			studioId: 'studioInstallationId',
+			peripheralDeviceId: 'mosDeviceId',
+			currentPartId: 'currentSegmentLineId',
+			nextPartId: 'nextSegmentLineId',
+			nextPartManual: 'nextSegmentLineManual',
+			previousPartId: 'previousSegmentLineId',
+			notifiedCurrentPlayingPartExternalId: 'currentPlayingStoryStatus',
+		} as any,
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('AdLibPieces',
+	renamePropertiesInCollection(
+		'AdLibPieces',
 		AdLibPieces,
 		'AdLibPieces',
 		{
@@ -243,7 +276,8 @@ addMigrationSteps('0.25.0', [
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('Pieces',
+	renamePropertiesInCollection(
+		'Pieces',
 		Pieces,
 		'Pieces',
 		{
@@ -253,7 +287,8 @@ addMigrationSteps('0.25.0', [
 		},
 		'migrateDatabaseCollections'
 	),
-	renamePropertiesInCollection('Parts',
+	renamePropertiesInCollection(
+		'Parts',
 		Parts,
 		'Parts',
 		{
@@ -276,10 +311,7 @@ addMigrationSteps('0.25.0', [
 				// Old devices had property: type: number
 				// New devices has properties: category, type, subType
 
-				return (
-					_.has(device, 'type') &&
-					!_.has(device, 'category')
-				)
+				return _.has(device, 'type') && !_.has(device, 'category')
 			})
 
 			if (devicesNeedFixing.length > 0) {
@@ -291,18 +323,15 @@ addMigrationSteps('0.25.0', [
 			const devices = PeripheralDevices.find({}).fetch()
 
 			_.each(devices, (device) => {
-				if (
-					_.has(device, 'type') &&
-					!_.has(device, 'category')
-				) {
+				if (_.has(device, 'type') && !_.has(device, 'category')) {
 					const m: {
-						category: PeripheralDeviceAPI.DeviceCategory,
-						type: PeripheralDeviceAPI.DeviceType,
+						category: PeripheralDeviceAPI.DeviceCategory
+						type: PeripheralDeviceAPI.DeviceType
 						subType: PeripheralDeviceAPI.DeviceSubType
 					} = {
 						category: 'unknown' as any,
 						type: '' as any,
-						subType: '' as any
+						subType: '' as any,
 					}
 					enum OLDDeviceType { // From old typings
 						MOSDEVICE = 0,
@@ -310,40 +339,39 @@ addMigrationSteps('0.25.0', [
 						OTHER = 2, // i.e. sub-devices
 						MEDIA_MANAGER = 3,
 					}
-					const oldDeviceType = device.type as any as OLDDeviceType
+					const oldDeviceType = (device.type as any) as OLDDeviceType
 
 					if (oldDeviceType === OLDDeviceType.MOSDEVICE) {
 						m.category = PeripheralDeviceAPI.DeviceCategory.INGEST
 						m.type = PeripheralDeviceAPI.DeviceType.MOS
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
-
 					} else if (oldDeviceType === OLDDeviceType.PLAYOUT) {
 						m.category = PeripheralDeviceAPI.DeviceCategory.PLAYOUT
 						m.type = PeripheralDeviceAPI.DeviceType.PLAYOUT
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
-
 					} else if (oldDeviceType === OLDDeviceType.MEDIA_MANAGER) {
 						m.category = PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
 						m.type = PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
 						m.subType = PeripheralDeviceAPI.SUBTYPE_PROCESS
-
 					} else if (oldDeviceType === OLDDeviceType.OTHER) {
 						// Unknown sub-device
 					}
 					PeripheralDevices.update(device._id, { $set: m })
 				}
 			})
-		}
+		},
 	},
 	{
 		id: 'cleanUpExpectedItems',
 		canBeRunAutomatically: true,
 		validate: () => {
-			const currentRundowns = Rundowns.find({}).fetch().map(i => i._id)
+			const currentRundowns = Rundowns.find({})
+				.fetch()
+				.map((i) => i._id)
 			const itemsCount = ExpectedMediaItems.find({
 				rundownId: {
-					$nin: currentRundowns
-				}
+					$nin: currentRundowns,
+				},
 			}).count()
 			if (itemsCount > 0) {
 				return `ExpectedMediaItems contains ${itemsCount} orphaned media-items`
@@ -351,15 +379,22 @@ addMigrationSteps('0.25.0', [
 			return false
 		},
 		migrate: () => {
-			const currentRundowns = Rundowns.find({}).fetch().map(i => i._id)
+			const currentRundowns = Rundowns.find({})
+				.fetch()
+				.map((i) => i._id)
 			ExpectedMediaItems.remove({
 				rundownId: {
-					$nin: currentRundowns
-				}
+					$nin: currentRundowns,
+				},
 			})
-		}
+		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^0.20.0'),
-	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^0.8.0'),
-	setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^0.2.0'),
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^0.20.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^0.8.0'),
+	setExpectedVersion(
+		'expectedVersion.mediaManager',
+		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+		'_process',
+		'^0.2.0'
+	),
 ])

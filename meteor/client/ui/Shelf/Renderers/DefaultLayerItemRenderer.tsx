@@ -11,9 +11,7 @@ interface IPropsHeader {
 
 export const DefaultListItemRenderer: React.FunctionComponent<IPropsHeader> = (props: IPropsHeader) => (
 	<React.Fragment>
-		<td className='adlib-panel__list-view__list__table__cell--name'>
-			{props.adLibListItem.name}
-		</td>
+		<td className="adlib-panel__list-view__list__table__cell--name">{props.adLibListItem.name}</td>
 		{/*<td className='adlib-panel__list-view__list__table__cell--data'>
 			&nbsp;
 		</td>

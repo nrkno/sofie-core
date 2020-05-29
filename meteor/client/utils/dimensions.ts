@@ -7,7 +7,7 @@
  * @param element - the element to calculate width for
  * @returns the calculated width of the element excluding padding
  */
-export function getElementWidth (element: HTMLElement): number {
+export function getElementWidth(element: HTMLElement): number {
 	const { width, paddingLeft, paddingRight } = window.getComputedStyle(element)
 	const computedWidth = Number(width)
 
@@ -30,7 +30,7 @@ export function getElementWidth (element: HTMLElement): number {
  * @param element - the element to calculate height for
  * @returns the calculated height of the element excluding padding
  */
-export function getElementHeight (element: HTMLElement): number {
+export function getElementHeight(element: HTMLElement): number {
 	const { height, paddingTop, paddingBottom } = window.getComputedStyle(element)
 	const computedHeight = Number(height)
 

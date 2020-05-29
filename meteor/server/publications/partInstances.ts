@@ -9,7 +9,7 @@ import { FindOptions } from '../../lib/typings/meteor'
 meteorPublish(PubSub.partInstances, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
-		fields: {}
+		fields: {},
 	}
 
 	// Enforce only not-reset

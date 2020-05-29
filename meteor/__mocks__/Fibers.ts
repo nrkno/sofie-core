@@ -10,13 +10,11 @@ be sure you have run npm install (so that the postInstall script has run)
 and that you ran npm install with the correct Node version
 
 Original error:
-${e.toString()}`
-)
-// Head over to
-// 	meteor/node_modules/fibers/fibers.js
-// and add this line to line 13:
-// if (process.env.JEST_WORKER_ID !== undefined ) modPath += '.node'
-
+${e.toString()}`)
+		// Head over to
+		// 	meteor/node_modules/fibers/fibers.js
+		// and add this line to line 13:
+		// if (process.env.JEST_WORKER_ID !== undefined ) modPath += '.node'
 	} else throw e
 }
 /**
@@ -30,10 +28,10 @@ ${e.toString()}`
  *     })
  * })
  */
-export function isInFiber (): boolean {
+export function isInFiber(): boolean {
 	return !!Fiber.current
 }
-export function runInFiber (fcn: Function): Promise<void> {
+export function runInFiber(fcn: Function): Promise<void> {
 	return new Promise((resolve, reject) => {
 		Fiber(() => {
 			try {

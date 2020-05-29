@@ -30,10 +30,8 @@ if ('serviceWorker' in navigator) {
 Meteor.startup(() => {
 	render(
 		// <I18nextProvider i18n={i18nInstance}> // Note: Check if translation actually works without this?
-			<App />
+		<App />,
 		// </I18nextProvider>
-		, document.getElementById('render-target')
+		document.getElementById('render-target')
 	)
-
 })
-

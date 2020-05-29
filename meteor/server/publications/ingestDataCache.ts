@@ -8,10 +8,10 @@ import { FindOptions } from '../../lib/typings/meteor'
 
 // Note: this publication is for dev purposes only (it should probably not be used in production at all)
 
-meteorPublish(PubSub.ingestDataCache, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.ingestDataCache, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<IngestDataCacheObj> = {
-		fields: {}
+		fields: {},
 	}
 	if (RundownSecurity.allowReadAccess(selector, token, this)) {
 		return IngestDataCache.find(selector, modifier)

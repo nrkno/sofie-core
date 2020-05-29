@@ -10,7 +10,7 @@ describe('getElementDocumentOffset', () => {
 		width: 0,
 		x: 0,
 		y: 0,
-		toJSON: () => ''
+		toJSON: () => '',
 	}
 
 	test('should return null for null input', () => {
@@ -18,7 +18,6 @@ describe('getElementDocumentOffset', () => {
 
 		expect(actual).toBe(null)
 	})
-
 
 	describe('{top}', () => {
 		test('should be 0 when bounding client rect top is 0 and window.scrollY is 0', () => {

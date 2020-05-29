@@ -6,21 +6,23 @@ import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/Sho
 import { literal, protectString, getRandomId, makePromise, check } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 
-export function insertShowStyleBase (): ShowStyleBaseId {
-	let id = ShowStyleBases.insert(literal<ShowStyleBase>({
-		_id: getRandomId(),
-		name: 'New show style',
-		blueprintId: protectString(''),
-		outputLayers: [],
-		sourceLayers: [],
-		config: [],
-		runtimeArguments: [],
-		_rundownVersionHash: '',
-	}))
+export function insertShowStyleBase(): ShowStyleBaseId {
+	let id = ShowStyleBases.insert(
+		literal<ShowStyleBase>({
+			_id: getRandomId(),
+			name: 'New show style',
+			blueprintId: protectString(''),
+			outputLayers: [],
+			sourceLayers: [],
+			config: [],
+			runtimeArguments: [],
+			_rundownVersionHash: '',
+		})
+	)
 	insertShowStyleVariant(id, 'Default')
 	return id
 }
-export function insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId, name?: string): ShowStyleVariantId {
+export function insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId, name?: string): ShowStyleVariantId {
 	check(showStyleBaseId, String)
 
 	let showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
@@ -34,36 +36,36 @@ export function insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId, name?:
 		_rundownVersionHash: '',
 	})
 }
-export function removeShowStyleBase (showStyleBaseId: ShowStyleBaseId) {
+export function removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 	check(showStyleBaseId, String)
 
 	ShowStyleBases.remove(showStyleBaseId)
 
 	ShowStyleVariants.remove({
-		showStyleBaseId: showStyleBaseId
+		showStyleBaseId: showStyleBaseId,
 	})
 
 	RundownLayouts.remove({
-		showStyleBaseId: showStyleBaseId
+		showStyleBaseId: showStyleBaseId,
 	})
 }
-export function removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId) {
+export function removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
 	check(showStyleVariantId, String)
 
 	ShowStyleVariants.remove(showStyleVariantId)
 }
 
 class ServerShowStylesAPI implements NewShowStylesAPI {
-	insertShowStyleBase () {
+	insertShowStyleBase() {
 		return makePromise(() => insertShowStyleBase())
 	}
-	insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId) {
+	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return makePromise(() => insertShowStyleVariant(showStyleBaseId))
 	}
-	removeShowStyleBase (showStyleBaseId: ShowStyleBaseId) {
+	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return makePromise(() => removeShowStyleBase(showStyleBaseId))
 	}
-	removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId) {
+	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
 		return makePromise(() => removeShowStyleVariant(showStyleVariantId))
 	}
 }

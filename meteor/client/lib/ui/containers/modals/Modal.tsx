@@ -3,7 +3,7 @@ import * as CoreIcons from '@nrk/core-icons/jsx'
 import * as Escape from 'react-escape'
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
-import { mousetrapHelper } from '../../../mousetrapHelper';
+import { mousetrapHelper } from '../../../mousetrapHelper'
 
 export interface IModalAttributes {
 	show?: boolean
@@ -16,19 +16,19 @@ export type SomeEvent = Event | React.SyntheticEvent<object>
 export class Modal extends React.Component<IModalAttributes> {
 	boundKeys: Array<string> = []
 
-	constructor (props: IModalAttributes) {
+	constructor(props: IModalAttributes) {
 		super(props)
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.bindKeys()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
 		this.bindKeys()
 	}
 
@@ -60,7 +60,7 @@ export class Modal extends React.Component<IModalAttributes> {
 	handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
 			if (e.code === 'Escape') {
-					this.handleDiscard(e)
+				this.handleDiscard(e)
 			}
 		}
 	}
@@ -71,35 +71,33 @@ export class Modal extends React.Component<IModalAttributes> {
 		}
 	}
 
-	render () {
+	render() {
 		if (!this.props.show) {
 			return null
 		}
 
 		return (
-			<Escape to='viewport'>
-				<div className='glass-pane'>
-					<div className='glass-pane-content'>
-						<dialog className='border-box'>
+			<Escape to="viewport">
+				<div className="glass-pane">
+					<div className="glass-pane-content">
+						<dialog className="border-box">
 							<div className="flex-row info vertical-align-stretch tight-s">
-								<div className='flex-col c12'>
-									<h2>
-										{this.props.title}
-									</h2>
+								<div className="flex-col c12">
+									<h2>{this.props.title}</h2>
 								</div>
-								<div className='flex-col horizontal-align-right vertical-align-middle'>
+								<div className="flex-col horizontal-align-right vertical-align-middle">
 									<p>
-										<button className='action-btn' onClick={this.handleDiscard}>
-											<CoreIcons id='nrk-close' />
+										<button className="action-btn" onClick={this.handleDiscard}>
+											<CoreIcons id="nrk-close" />
 										</button>
 									</p>
 								</div>
 							</div>
-							<div className='title-box-content'>
-								{this.props.children}
-							</div>
+							<div className="title-box-content">{this.props.children}</div>
 							<div className="mod alright">
-								<button className="btn btn-primary right" onClick={this.handleDiscard}>OK</button>
+								<button className="btn btn-primary right" onClick={this.handleDiscard}>
+									OK
+								</button>
 							</div>
 						</dialog>
 					</div>
@@ -108,7 +106,7 @@ export class Modal extends React.Component<IModalAttributes> {
 		)
 	}
 
-	private preventDefault (e: KeyboardEvent) {
+	private preventDefault(e: KeyboardEvent) {
 		e.preventDefault()
 		e.stopPropagation()
 	}

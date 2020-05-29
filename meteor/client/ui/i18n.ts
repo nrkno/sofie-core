@@ -1,48 +1,51 @@
 import i18n, { TFunction } from 'i18next'
 import Backend from 'i18next-xhr-backend'
 import LanguageDetector from 'i18next-browser-languagedetector'
-import { initReactI18next  } from 'react-i18next'
+import { initReactI18next } from 'react-i18next'
 
 let i18nTranslator: TFunction
 const i18nInstancePromise = i18n
 	.use(Backend)
 	.use(LanguageDetector)
 	.use(initReactI18next)
-	.init({
-		fallbackLng: {
-			'nn': ['nb', 'en'],
-			'default': ['en']
+	.init(
+		{
+			fallbackLng: {
+				nn: ['nb', 'en'],
+				default: ['en'],
+			},
+
+			// have a common namespace used around the full app
+			ns: ['translations'],
+			defaultNS: 'translations',
+
+			debug: false,
+			joinArrays: '\n',
+
+			whitelist: ['en', 'nb', 'nn', 'sv'],
+
+			keySeparator: '→',
+			nsSeparator: '⇒',
+			pluralSeparator: '⥤',
+			contextSeparator: '⥤',
+
+			interpolation: {
+				escapeValue: false, // not needed for react!!
+			},
+
+			react: {
+				wait: true,
+				useSuspense: false,
+			},
 		},
-
-		// have a common namespace used around the full app
-		ns: ['translations'],
-		defaultNS: 'translations',
-
-		debug: false,
-		joinArrays: '\n',
-
-		whitelist: ['en', 'nb', 'nn', 'sv'],
-
-		keySeparator: '→',
-		nsSeparator: '⇒',
-		pluralSeparator: '⥤',
-		contextSeparator: '⥤',
-
-		interpolation: {
-			escapeValue: false, // not needed for react!!
-		},
-
-		react: {
-			wait: true,
-			useSuspense: false
+		(err, t) => {
+			if (err) {
+				console.error('Error initializing i18Next', err)
+			} else {
+				i18nTranslator = t
+			}
 		}
-	}, (err, t) => {
-		if (err) {
-			console.error('Error initializing i18Next', err)
-		} else {
-			i18nTranslator = t
-		}
-	})
+	)
 
 export { i18nInstancePromise, i18nTranslator }
 

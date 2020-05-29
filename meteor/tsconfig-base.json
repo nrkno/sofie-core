@@ -12,14 +12,6 @@
 		"allowJs": false,
 		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017", "es2018"]
 	},
-	"include": [
-		"client/**/*",
-		"server/**/*",
-		"lib/**/*",
-		"__mocks__/**/*"
-	],
-	"exclude": [
-		"node_modules",
-		"**/.coverage/**/*"
-	]
+	"include": ["client/**/*", "server/**/*", "lib/**/*", "__mocks__/**/*"],
+	"exclude": ["node_modules", "**/.coverage/**/*"]
 }

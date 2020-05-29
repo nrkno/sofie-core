@@ -13,10 +13,9 @@ interface MockedCollection {
 	mockReset: () => void
 }
 
-export function mockupCollection<A extends B, B extends { _id: ProtectedString<any> }> (
+export function mockupCollection<A extends B, B extends { _id: ProtectedString<any> }>(
 	collection0: TransformedCollection<A, B>
 ) {
-
 	const collection = collection0 as TransformedCollection<A, B> & MockedCollection
 
 	const methodNames = [
@@ -31,15 +30,15 @@ export function mockupCollection<A extends B, B extends { _id: ProtectedString<a
 		'update',
 		'upsert',
 		'_ensureIndex',
-		'_dropIndex'
+		'_dropIndex',
 	]
-	_.each(methodNames, methodName => collection[methodName] = jest.fn(collection[methodName]))
+	_.each(methodNames, (methodName) => (collection[methodName] = jest.fn(collection[methodName])))
 
 	collection.mockClear = () => {
-		_.each(methodNames, methodName => collection[methodName].mockClear())
+		_.each(methodNames, (methodName) => collection[methodName].mockClear())
 	}
 	collection.mockReset = () => {
-		_.each(methodNames, methodName => collection[methodName].mockReset())
+		_.each(methodNames, (methodName) => collection[methodName].mockReset())
 	}
 
 	return collection

@@ -1,6 +1,10 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { MigrationStepInput, MigrationStepInputFilteredResult, MigrationStepBase } from 'tv-automation-sofie-blueprints-integration'
+import {
+	MigrationStepInput,
+	MigrationStepInputFilteredResult,
+	MigrationStepBase,
+} from 'tv-automation-sofie-blueprints-integration'
 import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -21,7 +25,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
  * @param description
  * @param defaultValue
  */
-export function ensureCollectionProperty<T = any> (
+export function ensureCollectionProperty<T = any>(
 	collectionName: string,
 	selector: Mongo.Selector<T>,
 	property: string,
@@ -55,7 +59,6 @@ export function ensureCollectionProperty<T = any> (
 
 			let inputs: Array<MigrationStepInput> = []
 			_.each(objects, (obj: any) => {
-
 				let localLabel = (label + '').replace(/\$id/g, obj._id)
 				let localDescription = (description + '').replace(/\$id/g, obj._id)
 				if (inputType && !obj[property]) {
@@ -64,14 +67,13 @@ export function ensureCollectionProperty<T = any> (
 						description: localDescription,
 						inputType: inputType,
 						attribute: obj._id,
-						defaultValue: defaultValue
+						defaultValue: defaultValue,
 					})
 				}
 			})
 			return inputs
 		},
 		migrate: (input: MigrationStepInputFilteredResult) => {
-
 			if (value) {
 				let objects = collection.find(selector).fetch()
 				_.each(objects, (obj: any) => {
@@ -79,7 +81,7 @@ export function ensureCollectionProperty<T = any> (
 						let m = {}
 						m[property] = value
 						logger.info(`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${value}`)
-						collection.update(obj._id,{ $set: m })
+						collection.update(obj._id, { $set: m })
 					}
 				})
 			} else {
@@ -89,22 +91,28 @@ export function ensureCollectionProperty<T = any> (
 						if (obj && objectPathGet(obj, property) !== value) {
 							let m = {}
 							m[property] = value
-							logger.info(`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`)
-							collection.update(objectId,{ $set: m })
+							logger.info(
+								`Migration: Setting ${collectionName} object "${objectId}".${property} to ${value}`
+							)
+							collection.update(objectId, { $set: m })
 						}
 					}
 				})
 			}
 		},
-		dependOnResultFrom: dependOnResultFrom
+		dependOnResultFrom: dependOnResultFrom,
 	}
 }
-function getMinVersion (versionStr: string | undefined): string {
+function getMinVersion(versionStr: string | undefined): string {
 	return (semver.minVersion(versionStr || '0.0.0') || { version: '0.0.0' }).version
 }
 
-
-export function setExpectedVersion (id: string, deviceType: PeripheralDeviceAPI.DeviceType, libraryName: string, versionStr: string): MigrationStepBase {
+export function setExpectedVersion(
+	id: string,
+	deviceType: PeripheralDeviceAPI.DeviceType,
+	libraryName: string,
+	versionStr: string
+): MigrationStepBase {
 	return {
 		id: id,
 		canBeRunAutomatically: true,
@@ -113,7 +121,7 @@ export function setExpectedVersion (id: string, deviceType: PeripheralDeviceAPI.
 
 			let devices = PeripheralDevices.find({
 				type: deviceType,
-				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
+				subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 			}).fetch()
 
 			for (let i in devices) {
@@ -148,29 +156,31 @@ export function setExpectedVersion (id: string, deviceType: PeripheralDeviceAPI.
 				if (!expectedVersion || semver.lt(minExpectedVersion, minVersion)) {
 					let m = {}
 					m['expectedVersions.' + libraryName] = versionStr
-					logger.info(`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`)
+					logger.info(
+						`Migration: Updating expectedVersion ${libraryName} of device ${device._id} from "${expectedVersion}" to "${versionStr}"`
+					)
 					PeripheralDevices.update(device._id, { $set: m })
 				}
 			})
 		},
-		overrideSteps: [id]
+		overrideSteps: [id],
 	}
 }
 
 interface RenameContent {
 	content: { [newValue: string]: string }
 }
-export function renamePropertiesInCollection<T extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> (
+export function renamePropertiesInCollection<T extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	id: string,
 	collection: TransformedCollection<T, DBInterface>,
 	collectionName: string,
-	renames: Partial<{[newAttr in keyof T]: string | RenameContent}>,
+	renames: Partial<{ [newAttr in keyof T]: string | RenameContent }>,
 	dependOnResultFrom?: string
 ) {
 	const m: any = {
-		$or: []
+		$or: [],
 	}
-	const oldNames: {[oldAttr: string]: string} = {}
+	const oldNames: { [oldAttr: string]: string } = {}
 	_.each(_.keys(renames), (newAttr) => {
 		const oldAttr = renames[newAttr]
 		if (_.isString(oldAttr)) {
@@ -213,7 +223,6 @@ export function renamePropertiesInCollection<T extends DBInterface, DBInterface 
 					const oldAttr: string | RenameContent | undefined = renames[newAttr]
 					if (newAttr && oldAttr && newAttr !== oldAttr) {
 						if (_.isString(oldAttr)) {
-
 							if (_.has(doc, oldAttr) && !_.has(doc, newAttr)) {
 								doc[newAttr] = doc[oldAttr]
 							}
@@ -229,11 +238,9 @@ export function renamePropertiesInCollection<T extends DBInterface, DBInterface 
 							const oldAttrRenameContent: RenameContent = oldAttr // for some reason, tsc complains otherwise
 
 							_.each(oldAttrRenameContent.content, (oldValue, newValue) => {
-
 								if (doc[newAttr] === oldValue) {
 									doc[newAttr] = newValue
 								}
-
 							})
 						}
 					}
@@ -241,6 +248,6 @@ export function renamePropertiesInCollection<T extends DBInterface, DBInterface 
 				collection.update(doc._id, doc)
 			})
 			//
-		}
+		},
 	}
 }
