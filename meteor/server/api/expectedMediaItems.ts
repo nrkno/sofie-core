@@ -2,7 +2,7 @@ import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ExpectedMediaItems, ExpectedMediaItem, ExpectedMediaItemId } from '../../lib/collections/ExpectedMediaItems'
 import { RundownId } from '../../lib/collections/Rundowns'
-import { PieceGeneric, PieceId } from '../../lib/collections/Pieces'
+import { PieceGeneric, PieceId, RundownPieceGeneric } from '../../lib/collections/Pieces'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, getCurrentTime, getHash, protectString } from '../../lib/lib'
@@ -21,7 +21,7 @@ export enum PieceType {
 
 // TODO-PartInstance generate these for when the part has no need, but the instance still references something
 
-function generateExpectedMediaItems(rundownId: RundownId, studioId: StudioId, piece: PieceGeneric, pieceType: string): ExpectedMediaItem[] {
+function generateExpectedMediaItems(rundownId: RundownId, studioId: StudioId, piece: RundownPieceGeneric, pieceType: string): ExpectedMediaItem[] {
 	const result: ExpectedMediaItem[] = []
 
 	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds && piece.partId) {

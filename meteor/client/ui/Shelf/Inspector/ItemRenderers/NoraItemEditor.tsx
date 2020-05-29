@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
-import { InternalIBlueprintPieceGeneric } from '../../../../../lib/collections/Pieces'
+import { PieceGeneric } from '../../../../../lib/collections/Pieces'
 import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
@@ -18,7 +18,7 @@ export const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_B
 export { NoraItemEditor }
 
 interface INoraEditorProps {
-	piece: InternalIBlueprintPieceGeneric
+	piece: PieceGeneric
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {
