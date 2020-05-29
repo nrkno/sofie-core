@@ -15,22 +15,26 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
  * (This file is to be renamed to the correct version number when doing the release)
  *
  * **************************************************************************************
-*/
+ */
 // x.x.x (Release X)
 addMigrationSteps('1.7.0', [
-	{ // migrate from Rundowns to RundownPlaylists
+	{
+		// migrate from Rundowns to RundownPlaylists
 		id: 'convert Rundowns to RundownPlaylists',
 		canBeRunAutomatically: true,
 		validate: () => {
 			let validate: boolean | string = false
 			let count = Rundowns.find({
-				$or: [{
-					playlistId: {
-						$exists: false
-					}
-				}, {
-					playlistId: protectString('')
-				}]
+				$or: [
+					{
+						playlistId: {
+							$exists: false,
+						},
+					},
+					{
+						playlistId: protectString(''),
+					},
+				],
 			}).count()
 			if (count > 0) {
 				validate = `Orphaned rundowns: ${count}`
@@ -40,13 +44,16 @@ addMigrationSteps('1.7.0', [
 		},
 		migrate: () => {
 			Rundowns.find({
-				$or: [{
-					playlistId: {
-						$exists: false
-					}
-				}, {
-					playlistId: protectString('')
-				}]
+				$or: [
+					{
+						playlistId: {
+							$exists: false,
+						},
+					},
+					{
+						playlistId: protectString(''),
+					},
+				],
 			}).forEach((rundown) => {
 				const playlistId: RundownPlaylistId = getRandomId()
 				const playlist = makePlaylistFromRundown_1_0_0(rundown, playlistId)
@@ -55,12 +62,12 @@ addMigrationSteps('1.7.0', [
 				Rundowns.update(rundown._id, {
 					$set: {
 						playlistId,
-						_rank: 1
-					}
+						_rank: 1,
+					},
 				})
 			})
-		}
+		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.6.2'),
-	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.2.0')
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.6.2'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.2.0'),
 ])

@@ -2,13 +2,13 @@ import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collect
 
 // Setup rules:
 ExternalMessageQueue.allow({
-	insert (userId: string, doc: ExternalMessageQueueObj): boolean {
+	insert(userId: string, doc: ExternalMessageQueueObj): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })

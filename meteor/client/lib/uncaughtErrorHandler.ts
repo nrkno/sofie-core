@@ -20,26 +20,27 @@ try {
 	errorCache = []
 }
 
-function sendErrorToCore (errorLog: LoggedError) {
-	MeteorCall.client.clientErrorReport(errorLog.added, errorLog.content, errorLog.location)
-	.then(() => {
-
-		const sentIdx = errorCache.indexOf(errorLog)
-		if (sentIdx >= 0) {
-			errorCache.splice(sentIdx, 1)
-		}
-		localStorage.setItem('errorCache', JSON.stringify(errorCache))
-	}).catch(() => {
-		// fail silently, so that we don't erase useful logs with multiple 'failed to send' messages
-		return
-	})
+function sendErrorToCore(errorLog: LoggedError) {
+	MeteorCall.client
+		.clientErrorReport(errorLog.added, errorLog.content, errorLog.location)
+		.then(() => {
+			const sentIdx = errorCache.indexOf(errorLog)
+			if (sentIdx >= 0) {
+				errorCache.splice(sentIdx, 1)
+			}
+			localStorage.setItem('errorCache', JSON.stringify(errorCache))
+		})
+		.catch(() => {
+			// fail silently, so that we don't erase useful logs with multiple 'failed to send' messages
+			return
+		})
 }
 
-function uncaughtErrorHandler (errorObj: any) {
+function uncaughtErrorHandler(errorObj: any) {
 	const errorLog = {
 		location: window.location.href,
 		content: errorObj,
-		added: getCurrentTime()
+		added: getCurrentTime(),
 	}
 
 	errorCache.push(errorLog)
@@ -73,7 +74,7 @@ window.onerror = (event, source, line, col, error) => {
 			source,
 			line,
 			col,
-			error
+			error,
 		})
 	} catch (e) {
 		// ell, we can't do much then...

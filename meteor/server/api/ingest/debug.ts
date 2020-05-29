@@ -9,11 +9,11 @@ import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../.
 import { waitForPromise } from '../../../lib/lib'
 
 Meteor.methods({
-	'debug_playlistRunBlueprints': (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
+	debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
 		check(rundownPlaylistId, String)
 		IngestActions.regenerateRundownPlaylist(rundownPlaylistId, purgeExisting)
 	},
-	'debug_updateTimeline': (studioId: StudioId) => {
+	debug_updateTimeline: (studioId: StudioId) => {
 		check(studioId, String)
 
 		const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
@@ -27,5 +27,5 @@ Meteor.methods({
 			updateTimeline(cache, studioId)
 			waitForPromise(cache.saveAllToDatabase())
 		}
-	}
+	},
 })

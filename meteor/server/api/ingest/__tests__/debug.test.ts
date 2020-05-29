@@ -13,7 +13,6 @@ require('../../peripheralDevice.ts') // include in order to create the Meteor me
 require('../debug.ts') // include in order to create the Meteor methods needed
 
 describe('Test ingest actions for rundowns and segments', () => {
-
 	let device: PeripheralDevice
 	let externalId = 'abcde'
 	beforeAll(() => {
@@ -40,21 +39,21 @@ describe('Test ingest actions for rundowns and segments', () => {
 							name: 'Part 0',
 							rank: 0,
 							// payload?: any,
-						}
-					]
-				}
-			]
+						},
+					],
+				},
+			],
 		}
 
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
-			externalId: rundownData.externalId
+			externalId: rundownData.externalId,
 		})
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toMatchObject({
-			externalId: rundownData.externalId
+			externalId: rundownData.externalId,
 		})
 
 		// // Set to unsynced to ensure that flag gets ignored by the debug method

@@ -7,13 +7,13 @@ $inspector-shelf-tabs-height: 2.3em;
 	flex-wrap: nowrap;
 	align-items: stretch;
 	justify-items: stretch;
-    top: 100vh;
-    left: 0;
-    right: 60px;
-    bottom: 0;
-    z-index: 291;
+	top: 100vh;
+	left: 0;
+	right: 60px;
+	bottom: 0;
+	z-index: 291;
 	box-shadow: 0 0 20px #000;
-	
+
 	&.full-viewport {
 		position: absolute;
 		top: 0;
@@ -58,7 +58,6 @@ $inspector-shelf-tabs-height: 2.3em;
 		flex: 1 1;
 		display: flex;
 
-		
 		> .rundown-view__shelf__contents__pane {
 			position: relative;
 			flex: 0 1;
@@ -98,7 +97,8 @@ $inspector-shelf-tabs-height: 2.3em;
 				margin-left: 0;
 			}
 
-			> div.react-contextmenu-wrapper > .dashboard-panel__panel--bucket, > .dashboard-panel__panel--bucket {
+			> div.react-contextmenu-wrapper > .dashboard-panel__panel--bucket,
+			> .dashboard-panel__panel--bucket {
 				top: 0;
 				left: 0;
 				bottom: 0;
@@ -131,7 +131,7 @@ $inspector-shelf-tabs-height: 2.3em;
 			text-overflow: ellipsis;
 			white-space: nowrap;
 			text-align: center;
-			color: #4F4F4F;
+			color: #4f4f4f;
 			line-height: $inspector-shelf-tabs-height;
 			cursor: pointer;
 			user-select: none;
@@ -172,5 +172,4 @@ $inspector-shelf-tabs-height: 2.3em;
 			right: 0;
 		}
 	}
-
 }

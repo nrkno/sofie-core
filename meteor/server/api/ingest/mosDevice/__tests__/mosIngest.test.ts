@@ -25,23 +25,22 @@ require('../../../peripheralDevice.ts') // include in order to create the Meteor
 const Segments = mockupCollection(_Segments)
 const Parts = mockupCollection(_Parts)
 
-function getPartIdMap (segments: DBSegment[], parts: DBPart[]) {
+function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
 
-	const groupedParts = _.groupBy(sortedParts, p => p.segmentId)
+	const groupedParts = _.groupBy(sortedParts, (p) => p.segmentId)
 	const arr: [string, DBPart[]][] = _.pairs(groupedParts)
-	const idMap = _.map(arr, g => ({
+	const idMap = _.map(arr, (g) => ({
 		segmentId: protectString<SegmentId>(g[0]),
-		parts: _.map(g[1], p => p.externalId)
+		parts: _.map(g[1], (p) => p.externalId),
 	}))
-	return _.sortBy(idMap, s => {
-		const obj = _.find(segments, s2 => s2._id === s.segmentId)
+	return _.sortBy(idMap, (s) => {
+		const obj = _.find(segments, (s2) => s2._id === s.segmentId)
 		return obj ? obj._rank : 99999
 	})
 }
 
 describe('Test recieved mos ingest payloads', () => {
-
 	let device: PeripheralDevice
 	beforeAll(() => {
 		device = setupDefaultStudioEnvironment().ingestDevice
@@ -57,13 +56,13 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(rundownPlaylist).toMatchObject({
-			externalId: roData.ID.toString()
+			externalId: roData.ID.toString(),
 		})
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: roData.ID.toString(),
-			playlistId: rundownPlaylist._id
+			playlistId: rundownPlaylist._id,
 		})
 
 		const segments = rundown.getSegments()
@@ -90,13 +89,13 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(rundownPlaylist).toMatchObject({
-			externalId: roData.ID.toString()
+			externalId: roData.ID.toString(),
 		})
 
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: roData.ID.toString(),
-			playlistId: rundownPlaylist._id
+			playlistId: rundownPlaylist._id,
 		})
 
 		const segments = rundown.getSegments()
@@ -158,7 +157,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const payload = literal<MOS.IMOSRunningOrderStatus>({
 			ID: new MOS.MosString128(rundown.externalId),
 			Status: newStatus,
-			Time: new MOS.MosTime(0)
+			Time: new MOS.MosTime(0),
 		})
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStatus(device._id, device.token, payload))
@@ -182,7 +181,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const payload = literal<MOS.IMOSRunningOrderStatus>({
 			ID: new MOS.MosString128(externalId),
 			Status: newStatus,
-			Time: new MOS.MosTime(0)
+			Time: new MOS.MosTime(0),
 		})
 
 		try {
@@ -225,7 +224,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const payload = literal<MOS.IMOSROReadyToAir>({
 			ID: new MOS.MosString128(externalId),
-			Status: newStatus
+			Status: newStatus,
 		})
 
 		try {
@@ -250,7 +249,7 @@ describe('Test recieved mos ingest payloads', () => {
 			RunningOrderId: new MOS.MosString128(rundown.externalId),
 			ID: new MOS.MosString128(part.externalId),
 			Status: newStatus,
-			Time: new MOS.MosTime(0)
+			Time: new MOS.MosTime(0),
 		})
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload))
@@ -279,7 +278,7 @@ describe('Test recieved mos ingest payloads', () => {
 			RunningOrderId: new MOS.MosString128(rundownExternalId),
 			ID: new MOS.MosString128(part.externalId),
 			Status: newStatus,
-			Time: new MOS.MosTime(0)
+			Time: new MOS.MosTime(0),
 		})
 
 		try {
@@ -302,7 +301,7 @@ describe('Test recieved mos ingest payloads', () => {
 			RunningOrderId: new MOS.MosString128(rundown.externalId),
 			ID: new MOS.MosString128(partExternalId),
 			Status: newStatus,
-			Time: new MOS.MosTime(0)
+			Time: new MOS.MosTime(0),
 		})
 
 		try {
@@ -329,7 +328,12 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(expect.anything(), playlist, [newPartData.ID.toString()], false)
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(
+			expect.anything(),
+			playlist,
+			[newPartData.ID.toString()],
+			false
+		)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -346,11 +350,11 @@ describe('Test recieved mos ingest payloads', () => {
 
 		// Clean up after ourselves:
 		const partsToRemove = Parts.find({ externalId: 'ro1;s1;newPart1' }).fetch()
-		Parts.remove({ _id: { $in: partsToRemove.map(p => p._id) } })
+		Parts.remove({ _id: { $in: partsToRemove.map((p) => p._id) } })
 		IngestDataCache.remove({
 			rundownId: rundown._id,
 			type: IngestCacheType.PART,
-			partId: { $in: partsToRemove.map(p => p._id) }
+			partId: { $in: partsToRemove.map((p) => p._id) },
 		})
 	})
 
@@ -370,7 +374,12 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(expect.anything(), playlist, [newPartData.ID.toString()], false)
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(
+			expect.anything(),
+			playlist,
+			[newPartData.ID.toString()],
+			false
+		)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -378,7 +387,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const partMap = mockRO.segmentIdMap()
 		partMap.splice(1, 0, {
 			segmentId: '9VE_IbHiHyW6VjY6Fi8fMJEgtS4_',
-			parts: [newPartData.ID.toString()]
+			parts: [newPartData.ID.toString()],
 		})
 		partMap[2].segmentId = 'Qz1OqWVatX_W4Sp5C0m8VhTTfME_'
 		partMap[3].segmentId = '8GUNgE7zUulco2K3yuhJ1Fyceeo_'
@@ -406,7 +415,9 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 
 		try {
-			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
+			waitForPromise(
+				MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
+			)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
@@ -429,10 +440,14 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 
 		try {
-			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
+			waitForPromise(
+				MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
+			)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[500] Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`)
+			expect(e.message).toBe(
+				`[500] Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`
+			)
 		}
 	})
 
@@ -481,7 +496,12 @@ describe('Test recieved mos ingest payloads', () => {
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData]))
 
-		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(expect.anything(), playlist, [newPartData.ID.toString()], true)
+		expect(UpdateNext.afterInsertParts).toHaveBeenCalledWith(
+			expect.anything(),
+			playlist,
+			[newPartData.ID.toString()],
+			true
+		)
 
 		const segments = rundown.getSegments()
 		const parts = rundown.getParts({}, undefined, segments)
@@ -510,7 +530,9 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 
 		try {
-			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData]))
+			waitForPromise(
+				MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData])
+			)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
@@ -567,7 +589,9 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 
 		try {
-			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, partExternalIds))
+			waitForPromise(
+				MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, partExternalIds)
+			)
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
 			expect(e.message).toBe(`[404] Parts fakeId in rundown ${rundown.externalId} were not found`)
@@ -586,7 +610,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const story = literal<MOS.IMOSROFullStory>({
 			RunningOrderId: new MOS.MosString128(rundown.externalId),
 			ID: new MOS.MosString128('ro1;s1;p2'),
-			Body: []
+			Body: [],
 		})
 
 		waitForPromise(MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story))
@@ -609,14 +633,16 @@ describe('Test recieved mos ingest payloads', () => {
 		const story = literal<MOS.IMOSROFullStory>({
 			RunningOrderId: new MOS.MosString128(rundown.externalId),
 			ID: new MOS.MosString128('fakeId'),
-			Body: []
+			Body: [],
 		})
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story))
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Part "${story.ID.toString()}" in rundown "${rundown.externalId}" is missing cached ingest data`)
+			expect(e.message).toBe(
+				`[404] Part "${story.ID.toString()}" in rundown "${rundown.externalId}" is missing cached ingest data`
+			)
 		}
 	})
 
@@ -627,7 +653,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const story = literal<MOS.IMOSROFullStory>({
 			RunningOrderId: new MOS.MosString128('fakeId'),
 			ID: new MOS.MosString128('ro1;s1;p2'),
-			Body: []
+			Body: [],
 		})
 
 		try {
@@ -722,7 +748,9 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story0))
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[400] Cannot swap part ${story0} with itself in rundown ${action.RunningOrderID.toString()}`)
+			expect(e.message).toBe(
+				`[400] Cannot swap part ${story0} with itself in rundown ${action.RunningOrderID.toString()}`
+			)
 		}
 	})
 
@@ -833,7 +861,9 @@ describe('Test recieved mos ingest payloads', () => {
 		})
 		const story0 = 'ro1;s1;p3'
 
-		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, [new MOS.MosString128(story0)]))
+		waitForPromise(
+			MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, [new MOS.MosString128(story0)])
+		)
 
 		expect(UpdateNext.ensureNextPartIsValid).toHaveBeenCalledWith(expect.anything(), playlist)
 
@@ -908,7 +938,9 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`)
+			expect(e.message).toBe(
+				`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
+			)
 		}
 	})
 
@@ -930,7 +962,9 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`)
+			expect(e.message).toBe(
+				`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
+			)
 		}
 	})
 
@@ -955,7 +989,9 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
 			expect(true).toBe(false) // Please throw and don't get here
 		} catch (e) {
-			expect(e.message).toBe(`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`)
+			expect(e.message).toBe(
+				`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`
+			)
 		}
 	})
 
@@ -973,13 +1009,19 @@ describe('Test recieved mos ingest payloads', () => {
 		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
 		expect(partToBeRemoved).toBeTruthy()
 
-		Parts.update({
-			segmentId: partToBeRemoved.segmentId
-		}, {$set: {
-			'aCheckToSeeThatThePartHasNotBeenRemoved': true
-		}}, {
-			multi: true
-		})
+		Parts.update(
+			{
+				segmentId: partToBeRemoved.segmentId,
+			},
+			{
+				$set: {
+					aCheckToSeeThatThePartHasNotBeenRemoved: true,
+				},
+			},
+			{
+				multi: true,
+			}
+		)
 
 		const partsInSegmentBefore = rundown.getParts({ segmentId: partToBeRemoved.segmentId })
 		expect(partsInSegmentBefore).toHaveLength(3)
@@ -1007,12 +1049,8 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(partsInSegmentAfter).toHaveLength(2)
 
 		// The other parts in the segment should not not have changed:
-		expect(partsInSegmentAfter[0]).toMatchObject(
-			_.omit(partsInSegmentBefore[1], ['segmentId', '_rank'])
-		)
+		expect(partsInSegmentAfter[0]).toMatchObject(_.omit(partsInSegmentBefore[1], ['segmentId', '_rank']))
 
-		expect(partsInSegmentAfter[1]).toMatchObject(
-			_.omit(partsInSegmentBefore[2], ['segmentId', '_rank'])
-		)
+		expect(partsInSegmentAfter[1]).toMatchObject(_.omit(partsInSegmentBefore[2], ['segmentId', '_rank']))
 	})
 })

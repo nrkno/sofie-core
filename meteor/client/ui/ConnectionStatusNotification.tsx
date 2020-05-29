@@ -7,7 +7,13 @@ import * as _ from 'underscore'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { MomentFromNow } from '../lib/Moment'
 
-import { NotificationCenter, NoticeLevel, Notification, NotificationList, NotifierHandle } from '../lib/notifications/notifications'
+import {
+	NotificationCenter,
+	NoticeLevel,
+	Notification,
+	NotificationList,
+	NotifierHandle,
+} from '../lib/notifications/notifications'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { TranslationFunction, translate } from 'react-i18next'
 import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
@@ -30,9 +36,11 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		this._translator = t
 
 		this._notificationList = new NotificationList([])
-		this._notifier = NotificationCenter.registerNotifier((): NotificationList => {
-			return this._notificationList
-		})
+		this._notifier = NotificationCenter.registerNotifier(
+			(): NotificationList => {
+				return this._notificationList
+			}
+		)
 
 		// internal registry for service messages
 		this._serviceMessageRegistry = {}
@@ -123,7 +131,12 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			case 'failed':
 				return <span>{t('Cannot connect to the {{platformName}}: {{reason}}', { platformName, reason })}</span>
 			case 'waiting':
-				return <span>{t('Reconnecting to the {{platformName}}', { platformName })} <MomentFromNow unit='seconds'>{retryTime}</MomentFromNow></span>
+				return (
+					<span>
+						{t('Reconnecting to the {{platformName}}', { platformName })}{' '}
+						<MomentFromNow unit="seconds">{retryTime}</MomentFromNow>
+					</span>
+				)
 			case 'offline':
 				return <span>{t('Your machine is offline and cannot connect to the {{platformName}}.', { platformName })}</span>
 			case 'connected':
@@ -142,16 +155,20 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			this._translator('Sofie Automation Server'),
 			Date.now(),
 			!connected,
-			(status === 'failed' || status === 'waiting' || status === 'offline')
+			status === 'failed' || status === 'waiting' || status === 'offline'
 				? [
-					{
-						label: t('Reconnect now'),
-						type: 'primary',
-						icon: 'icon-retry',
-						action: () => { Meteor.reconnect() }
-					}
-				] : undefined,
-			-100)
+						{
+							label: t('Reconnect now'),
+							type: 'primary',
+							icon: 'icon-retry',
+							action: () => {
+								Meteor.reconnect()
+							},
+						},
+				  ]
+				: undefined,
+			-100
+		)
 
 		return notification
 	}
@@ -160,16 +177,18 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		const systemMessageIds = Object.keys(serviceMessages)
 
 		// remove from internal list where ids not in active list
-		Object.keys(this._serviceMessageRegistry).filter(id => systemMessageIds.indexOf(id) < 0)
-			.forEach(idToRemove => {
+		Object.keys(this._serviceMessageRegistry)
+			.filter((id) => systemMessageIds.indexOf(id) < 0)
+			.forEach((idToRemove) => {
 				delete this._serviceMessageRegistry[idToRemove]
 				NotificationCenter.drop(idToRemove)
 			})
 
 		const localMessagesId = Object.keys(this._serviceMessageRegistry)
 		// add ids not found in internal list
-		systemMessageIds.filter(id => localMessagesId.indexOf(id) < 0)
-			.forEach(id => {
+		systemMessageIds
+			.filter((id) => localMessagesId.indexOf(id) < 0)
+			.forEach((id) => {
 				const newMessage = serviceMessages[id]
 				this._serviceMessageRegistry[id] = newMessage
 
@@ -178,8 +197,9 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			})
 
 		// compare and update where ids are in both lists, update if changed
-		systemMessageIds.filter(id => localMessagesId.indexOf(id) > -1)
-			.forEach(id => {
+		systemMessageIds
+			.filter((id) => localMessagesId.indexOf(id) > -1)
+			.forEach((id) => {
 				const current = serviceMessages[id]
 				if (!_.isEqual(current, this._serviceMessageRegistry[id])) {
 					this._serviceMessageRegistry[id] = current
@@ -188,7 +208,6 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 					NotificationCenter.push(notification)
 				}
 			})
-
 	}
 
 	private createNotificationFromServiceMessage(message: ServiceMessage): Notification {
@@ -213,37 +232,37 @@ function createSystemNotification(cs: ICoreSystem | undefined): Notification | u
 			undefined,
 			true,
 			undefined,
-			1000)
+			1000
+		)
 	}
 
 	return undefined
 }
 
-
-interface IProps {
-}
+interface IProps {}
 interface IState {
 	dismissed: boolean
 }
 
-export const ConnectionStatusNotification = translate()(class ConnectionStatusNotification extends React.Component<Translated<IProps>, IState> {
-	private notifier: ConnectionStatusNotifier
+export const ConnectionStatusNotification = translate()(
+	class ConnectionStatusNotification extends React.Component<Translated<IProps>, IState> {
+		private notifier: ConnectionStatusNotifier
 
-	constructor(props: Translated<IProps>) {
-		super(props)
+		constructor(props: Translated<IProps>) {
+			super(props)
+		}
 
+		componentDidMount() {
+			this.notifier = new ConnectionStatusNotifier(this.props.t)
+		}
+
+		componentWillUnmount() {
+			this.notifier.stop()
+		}
+
+		render() {
+			// this.props.connected
+			return <NotificationCenterPopUps />
+		}
 	}
-
-	componentDidMount() {
-		this.notifier = new ConnectionStatusNotifier(this.props.t)
-	}
-
-	componentWillUnmount() {
-		this.notifier.stop()
-	}
-
-	render() {
-		// this.props.connected
-		return <NotificationCenterPopUps />
-	}
-})
+)

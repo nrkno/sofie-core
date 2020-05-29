@@ -51,26 +51,27 @@ export interface PeripheralDevice {
 	ignore?: boolean
 
 	configManifest: DeviceConfigManifest
-	
+
 	/** If this is an ingest gateway, the last tiem data was received */
 	lastDataReceived?: Time
-	
+
 	/** If an ingest device performing an oauth flow */
 	accessTokenUrl?: string
 }
 
-export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
-	= createMongoCollection<PeripheralDevice>('peripheralDevices')
+export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice> = createMongoCollection<
+	PeripheralDevice
+>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PeripheralDevices._ensureIndex({
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })
 
-export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): StudioId | undefined {
+export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId | undefined {
 	if (peripheralDevice.studioId) {
 		return peripheralDevice.studioId
 	}

@@ -8,11 +8,9 @@ import * as _ from 'underscore'
  * Use instead of <Moment fromNow></Moment>, its result is synced with getCurrentTime()
  * @param args same as for Moment
  */
-export function MomentFromNow (args: MomentProps) {
+export function MomentFromNow(args: MomentProps) {
 	let o: MomentProps = _.extend({}, args, {
-		from: moment(getCurrentTime())
+		from: moment(getCurrentTime()),
 	})
-	return (
-		<Moment {...o}></Moment>
-	)
+	return <Moment {...o}></Moment>
 }

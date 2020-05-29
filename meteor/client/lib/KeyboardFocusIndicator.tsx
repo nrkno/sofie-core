@@ -12,18 +12,21 @@ interface IKeyboardFocusIndicatorProps {
 	showWhenFocused?: boolean
 }
 
-export class KeyboardFocusIndicator extends React.Component<IKeyboardFocusIndicatorProps, IKeyboardFocusIndicatorState> {
+export class KeyboardFocusIndicator extends React.Component<
+	IKeyboardFocusIndicatorProps,
+	IKeyboardFocusIndicatorState
+> {
 	private keyboardFocusInterval: number
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.state = {
-			inFocus: true
+			inFocus: true,
 		}
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(), 3000)
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
@@ -31,7 +34,7 @@ export class KeyboardFocusIndicator extends React.Component<IKeyboardFocusIndica
 		document.addEventListener('visibilitychange', this.checkFocus)
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		Meteor.clearInterval(this.keyboardFocusInterval)
 		document.body.removeEventListener('focusin', this.checkFocus)
 		document.body.removeEventListener('focus', this.checkFocus)
@@ -43,7 +46,7 @@ export class KeyboardFocusIndicator extends React.Component<IKeyboardFocusIndica
 		const focusNow = document.hasFocus()
 		if (this.state.inFocus !== focusNow) {
 			this.setState({
-				inFocus: focusNow
+				inFocus: focusNow,
 			})
 			const viewInfo = [
 				window.location.href + window.location.search,
@@ -51,7 +54,7 @@ export class KeyboardFocusIndicator extends React.Component<IKeyboardFocusIndica
 				window.innerHeight,
 				getAllowStudio(),
 				getAllowConfigure(),
-				getAllowService()
+				getAllowService(),
 			]
 			if (focusNow) {
 				MeteorCall.userAction.guiFocused('checkFocus', viewInfo).catch(console.error)
@@ -61,7 +64,7 @@ export class KeyboardFocusIndicator extends React.Component<IKeyboardFocusIndica
 		}
 	}
 
-	render () {
+	render() {
 		if ((this.state.inFocus && !this.props.showWhenFocused) || (!this.state.inFocus && this.props.showWhenFocused)) {
 			return null
 		} else {

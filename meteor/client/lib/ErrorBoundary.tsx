@@ -2,10 +2,10 @@ import * as React from 'react'
 import * as _ from 'underscore'
 
 interface IState {
-	hasError: boolean,
-	error?: Error,
-	info?: React.ErrorInfo,
-	expandedStack?: boolean,
+	hasError: boolean
+	error?: Error
+	info?: React.ErrorInfo
+	expandedStack?: boolean
 	expandedComponentStack?: boolean
 }
 
@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			background: 'white',
 			textDecoration: 'none',
 			color: 'red',
-			border: '1px solid red'
+			border: '1px solid red',
 		} as React.CSSProperties,
 		header: {
 			display: 'block',
@@ -43,7 +43,7 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			background: 'none',
 			textDecoration: 'none',
 			color: 'red',
-			border: 'none'
+			border: 'none',
 		} as React.CSSProperties,
 		message: {
 			display: 'block',
@@ -60,7 +60,7 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			background: 'white',
 			textDecoration: 'none',
 			color: 'red',
-			border: 'none'
+			border: 'none',
 		} as React.CSSProperties,
 		stack: {
 			display: 'block',
@@ -80,7 +80,7 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			color: 'red',
 			border: 'none',
 			cursor: 'pointer',
-			whiteSpace: 'nowrap'
+			whiteSpace: 'nowrap',
 		} as React.CSSProperties,
 		componentStack: {
 			display: 'block',
@@ -100,10 +100,10 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			color: 'red',
 			border: 'none',
 			cursor: 'pointer',
-			whiteSpace: 'nowrap'
+			whiteSpace: 'nowrap',
 		} as React.CSSProperties,
 		expandedStack: {
-			whiteSpace: 'pre'
+			whiteSpace: 'pre',
 		} as React.CSSProperties,
 		resetButton: {
 			display: 'block',
@@ -121,22 +121,22 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 			textDecoration: 'underline',
 			color: 'red',
 			border: 'none',
-			cursor: 'pointer'
-		} as React.CSSProperties
+			cursor: 'pointer',
+		} as React.CSSProperties,
 	}
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
-			hasError: false
+			hasError: false,
 		}
 	}
 
-	componentDidCatch (error: Error, info: React.ErrorInfo) {
+	componentDidCatch(error: Error, info: React.ErrorInfo) {
 		this.setState({
 			hasError: true,
 			error: error,
-			info: info
+			info: info,
 		})
 	}
 
@@ -152,36 +152,36 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 		this.setState({ hasError: false })
 	}
 
-	render () {
+	render() {
 		if (this.state.hasError) {
 			return (
 				<div style={ErrorBoundary.style.box}>
-					{this.state.error &&
+					{this.state.error && (
 						<React.Fragment>
 							<h5 style={ErrorBoundary.style.header}>{this.state.error.name}</h5>
-							{this.state.info &&
-								<p style={_.extend(
+							{this.state.info && (
+								<p
+									style={_.extend(
 										_.clone(ErrorBoundary.style.componentStack),
-										this.state.expandedComponentStack ?
-											ErrorBoundary.style.expandedStack :
-											{})
-										}
-									onClick={this.toggleComponentStack}
-									>{this.state.info.componentStack}</p>
-							}
+										this.state.expandedComponentStack ? ErrorBoundary.style.expandedStack : {}
+									)}
+									onClick={this.toggleComponentStack}>
+									{this.state.info.componentStack}
+								</p>
+							)}
 							<p style={ErrorBoundary.style.message}>{this.state.error.message}</p>
-							{this.state.error.stack &&
-								<p style={_.extend(
+							{this.state.error.stack && (
+								<p
+									style={_.extend(
 										_.clone(ErrorBoundary.style.stack),
-										this.state.expandedStack ?
-											ErrorBoundary.style.expandedStack :
-											{})
-										}
-									onClick={this.toggleStack}
-									>{this.state.error.stack}</p>
-							}
+										this.state.expandedStack ? ErrorBoundary.style.expandedStack : {}
+									)}
+									onClick={this.toggleStack}>
+									{this.state.error.stack}
+								</p>
+							)}
 						</React.Fragment>
-					}
+					)}
 					<div style={ErrorBoundary.style.resetButton} onClick={this.resetComponent}>
 						Try to restart component
 					</div>

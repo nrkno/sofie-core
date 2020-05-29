@@ -20,10 +20,6 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 		const { selected } = this.props
 		const content = selected && renderItem(selected)
 
-		return (
-			<div className='shelf-inspector'>
-				{content}
-			</div>
-		)
+		return <div className="shelf-inspector">{content}</div>
 	}
 }

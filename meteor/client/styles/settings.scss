@@ -74,17 +74,22 @@
 		.table-values-list {
 			list-style-type: none;
 			margin: 0px;
-			
+
 			li {
 				margin: 0px;
 			}
 		}
 	}
 
-	.settings-studio-source-table, .settings-studio-output-table, .settings-studio-device-table,
-	.settings-studio-mappings-table, .settings-studio-custom-config-table,
-	.settings-line-templates-snapshots, .settings-studio-device-httpsend-table,
-	.settings-studio-showStyleVariants-table, .settings-studio-rundown-layouts-table {
+	.settings-studio-source-table,
+	.settings-studio-output-table,
+	.settings-studio-device-table,
+	.settings-studio-mappings-table,
+	.settings-studio-custom-config-table,
+	.settings-line-templates-snapshots,
+	.settings-studio-device-httpsend-table,
+	.settings-studio-showStyleVariants-table,
+	.settings-studio-rundown-layouts-table {
 		width: 100%;
 
 		> thead > tr {
@@ -106,8 +111,6 @@
 		.expando-details > td {
 			max-width: 0;
 		}
-
-
 	}
 
 	.settings-studio-sticky-scroller {
@@ -121,7 +124,7 @@
 			> tbody > tr > td {
 				padding-right: 3px;
 			}
-	
+
 			> thead > tr > th {
 				position: sticky;
 				position: -webkit-sticky;
@@ -135,7 +138,7 @@
 
 	.settings-studio-device-dropdown {
 		position: absolute;
-    	max-height: 300px;
+		max-height: 300px;
 	}
 
 	.runtime-function-edit__editor {

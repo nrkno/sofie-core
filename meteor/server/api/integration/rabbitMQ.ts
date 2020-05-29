@@ -12,7 +12,7 @@ interface Message {
 	_id: ExternalMessageQueueObjId
 	exchangeTopic: string
 	routingKey: string
-	headers: {[header: string]: string} | undefined
+	headers: { [header: string]: string } | undefined
 	message: string
 	resolve: Function
 	reject: Function
@@ -27,25 +27,19 @@ class Manager<T extends AMQP.Connection | AMQP.ConfirmChannel> {
 	/* If true, the connection needs to be restarted */
 	fatalError: boolean = false
 
-	async init () {
-
+	async init() {
 		this.open = false
 		this.blocked = false
 		this.errorCount = 0
 		this.fatalError = false
-
 	}
-	async prepare () {
+	async prepare() {
 		if (this.initializing) {
 			await this.initializing
 		}
 	}
-	protected needToInitialize () {
-		return (
-			!this.open ||
-			this.fatalError ||
-			this.errorCount > 10
-		)
+	protected needToInitialize() {
+		return !this.open || this.fatalError || this.errorCount > 10
 	}
 }
 class ConnectionManager extends Manager<AMQP.Connection> {
@@ -54,18 +48,18 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 
 	private hostURL: string
 
-	constructor (hostURL) {
+	constructor(hostURL) {
 		super()
 		// nothing
 		this.hostURL = hostURL
 	}
-	async prepare () {
+	async prepare() {
 		await super.prepare()
 		if (this.needToInitialize()) {
 			await this.init()
 		}
 	}
-	async init () {
+	async init() {
 		await super.init()
 
 		if (this.connection) {
@@ -84,17 +78,16 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 		delete this.initializing
 
 		this.channelManager = new ChannelManager(this.connection)
-
 	}
 
-	async initConnection (): Promise<AMQP.Connection> {
+	async initConnection(): Promise<AMQP.Connection> {
 		try {
 			const connection = await AMQP.connect(this.hostURL, {
 				// socketOptions
-				heartbeat: 0 // default
+				heartbeat: 0, // default
 			})
 
-			connection.on('error', err => {
+			connection.on('error', (err) => {
 				logger.error('AMQP connection error', err)
 				this.errorCount++
 			})
@@ -102,7 +95,7 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 				this.open = false
 				logger.error('AMQP connection closed')
 			})
-			connection.on('blocked', reason => {
+			connection.on('blocked', (reason) => {
 				this.blocked = true
 				logger.error('AMQP connection blocked', reason)
 			})
@@ -123,7 +116,6 @@ class ConnectionManager extends Manager<AMQP.Connection> {
 	}
 }
 class ChannelManager extends Manager<AMQP.ConfirmChannel> {
-
 	outgoingQueue: Array<Message> = []
 
 	connection: AMQP.Connection
@@ -131,17 +123,17 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 
 	handleOutgoingQueueTimeout: NodeJS.Timer | null = null
 
-	constructor (connection: AMQP.Connection) {
+	constructor(connection: AMQP.Connection) {
 		super()
 		this.connection = connection
 	}
-	async prepare () {
+	async prepare() {
 		await super.prepare()
 		if (this.needToInitialize()) {
 			await this.init()
 		}
 	}
-	async init () {
+	async init() {
 		await super.init()
 
 		if (this.channel) {
@@ -153,11 +145,11 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		this.channel = await this.initializing
 		delete this.initializing
 	}
-	async initChannel (connection: AMQP.Connection): Promise<AMQP.ConfirmChannel> {
+	async initChannel(connection: AMQP.Connection): Promise<AMQP.ConfirmChannel> {
 		try {
 			const channel = await connection.createConfirmChannel()
 
-			channel.on('error', err => {
+			channel.on('error', (err) => {
 				this.errorCount++
 				logger.error('AMQP channel error', err)
 			})
@@ -165,7 +157,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				this.open = false
 				logger.error('AMQP channel closed')
 			})
-			channel.on('blocked', reason => {
+			channel.on('blocked', (reason) => {
 				this.blocked = true
 				logger.error('AMQP channel blocked', reason)
 			})
@@ -184,7 +176,6 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 			this.open = true
 
 			return channel
-
 		} catch (err) {
 			this.fatalError = true
 			this.errorCount++
@@ -193,9 +184,14 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 		}
 	}
 
-	sendMessage (exchangeTopic: string, routingKey: string, messageId: ExternalMessageQueueObjId, message: string, headers: {[headers: string]: string} | undefined) {
+	sendMessage(
+		exchangeTopic: string,
+		routingKey: string,
+		messageId: ExternalMessageQueueObjId,
+		message: string,
+		headers: { [headers: string]: string } | undefined
+	) {
 		return new Promise((resolve, reject) => {
-
 			this.channel.assertExchange(exchangeTopic, 'topic', { durable: true })
 
 			this.outgoingQueue.push({
@@ -205,13 +201,13 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 				headers,
 				message,
 				resolve,
-				reject
+				reject,
 			})
 			this.triggerHandleOutgoingQueue()
 		})
 	}
 
-	triggerHandleOutgoingQueue () {
+	triggerHandleOutgoingQueue() {
 		if (!this.handleOutgoingQueueTimeout) {
 			this.handleOutgoingQueueTimeout = setTimeout(() => {
 				this.handleOutgoingQueueTimeout = null
@@ -219,8 +215,7 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 			}, 100)
 		}
 	}
-	handleOutgoingQueue () {
-
+	handleOutgoingQueue() {
 		let firstMessageInQueue: Message | undefined = this.outgoingQueue.shift()
 
 		if (firstMessageInQueue) {
@@ -234,8 +229,9 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 					// options
 					headers: messageToSend.headers,
 					messageId: unprotectString(messageToSend._id),
-					persistent : true // same thing as deliveryMode=2
-				}, (err, ok) => {
+					persistent: true, // same thing as deliveryMode=2
+				},
+				(err, ok) => {
 					if (err) {
 						messageToSend.reject(err)
 					} else {
@@ -257,13 +253,12 @@ class ChannelManager extends Manager<AMQP.ConfirmChannel> {
 	}
 }
 
-const connectionsCache: {[hostURL: string]: ConnectionManager} = {}
+const connectionsCache: { [hostURL: string]: ConnectionManager } = {}
 /**
  *
  * @param hostURL example: 'amqp://localhost'
  */
-async function getChannelManager (hostURL: string) {
-
+async function getChannelManager(hostURL: string) {
 	// Check if we have an existing connection in the cache:
 	let connectionManager: ConnectionManager | undefined = connectionsCache[hostURL]
 
@@ -279,23 +274,27 @@ async function getChannelManager (hostURL: string) {
 
 	return connectionManager.channelManager
 }
-export async function sendRabbitMQMessage (msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
+export async function sendRabbitMQMessage(msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
 	let msg: ExternalMessageQueueObjRabbitMQ = msg0 // for typings
 
-	let hostURL: string			= msg.receiver.host
-	const exchangeTopic: string		= msg.receiver.topic
-	const routingKey: string		= msg.message.routingKey
-	let message: any				= msg.message.message
-	let headers: {[header: string]: string}	= msg.message.headers
+	let hostURL: string = msg.receiver.host
+	const exchangeTopic: string = msg.receiver.topic
+	const routingKey: string = msg.message.routingKey
+	let message: any = msg.message.message
+	let headers: { [header: string]: string } = msg.message.headers
 
 	if (!hostURL) throw new Meteor.Error(400, `RabbitMQ: Message host not set`)
 	if (!exchangeTopic) throw new Meteor.Error(400, `RabbitMQ: Message topic not set`)
 	if (!routingKey) throw new Meteor.Error(400, `RabbitMQ: Message routing key not set`)
 	if (!message) throw new Meteor.Error(400, `RabbitMQ: Message message not set`)
 
-	hostURL = ConfigRef.retrieveRefs(hostURL, (str) => {
-		return encodeURIComponent(str)
-	}, true)
+	hostURL = ConfigRef.retrieveRefs(
+		hostURL,
+		(str) => {
+			return encodeURIComponent(str)
+		},
+		true
+	)
 
 	const channelManager = await getChannelManager(hostURL)
 

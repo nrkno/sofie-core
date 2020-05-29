@@ -36,7 +36,7 @@ registerCollection('Buckets', Buckets)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Buckets._ensureIndex({
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })

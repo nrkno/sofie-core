@@ -2,13 +2,13 @@ import { Parts, Part } from '../../lib/collections/Parts'
 
 // Setup rules:
 Parts.allow({
-	insert (userId: string, doc: Part): boolean {
+	insert(userId: string, doc: Part): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })

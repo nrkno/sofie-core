@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
 import { ExternalMessageQueueObj } from '../lib/collections/ExternalMessageQueue'
 
-export async function sendRabbitMQMessage (msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
+export async function sendRabbitMQMessage(msg0: ExternalMessageQueueObjRabbitMQ & ExternalMessageQueueObj) {
 	return new Promise((resolve, reject) => {
 		process.nextTick(() => {
 			if (msg0.message.message.match(/error/)) {
@@ -16,8 +16,8 @@ export async function sendRabbitMQMessage (msg0: ExternalMessageQueueObjRabbitMQ
 
 const sendRabbitMQMock = jest.fn(sendRabbitMQMessage)
 
-export function setup () {
+export function setup() {
 	return {
-	  sendRabbitMQMessage: sendRabbitMQMock
+		sendRabbitMQMessage: sendRabbitMQMock,
 	}
 }

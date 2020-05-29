@@ -8,7 +8,7 @@ export namespace MediaManagerAPI {
 		ERROR = 'error',
 		CANCELED = 'canceled',
 		SKIPPED = 'skipped',
-		BLOCKED = 'blocked'
+		BLOCKED = 'blocked',
 	}
 
 	export enum WorkStepAction {
@@ -17,6 +17,6 @@ export namespace MediaManagerAPI {
 		SCAN = 'scan',
 		GENERATE_PREVIEW = 'generate_preview',
 		GENERATE_THUMBNAIL = 'generate_thumbnail',
-		GENERATE_METADATA = 'generate_metadata'
+		GENERATE_METADATA = 'generate_metadata',
 	}
 }

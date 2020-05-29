@@ -1,10 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
-import {
-	getRunningMethods,
-	resetRunningMethods
-} from './methods'
+import { getRunningMethods, resetRunningMethods } from './methods'
 
 /**
  * The performanceMonotor runs at an interval, and when run it checks that it actually ran on time.
@@ -30,7 +27,7 @@ const statistics: Array<{
 	averageWarnings: number
 }> = []
 
-function traceDebuggingData () {
+function traceDebuggingData() {
 	// Collect a set of data that can be useful for performance debugging
 
 	let debugData: any = {
@@ -40,21 +37,20 @@ function traceDebuggingData () {
 		documentCount: 0,
 
 		subscriptions: {},
-		connections: []
+		connections: [],
 	}
 	// @ts-ignore
 	let connections = Meteor.server.stream_server.open_sockets
 	_.each(connections, (connection: any) => {
-
 		debugData.connectionCount++
 
 		let conn = {
-			address:		connection.address,
-			clientAddress:	null,
-			clientPort:		connection.clientclientPort,
-			remoteAddress:	connection.remoteAddress,
-			remotePort:		connection.remotePort,
-			documentCount:		0
+			address: connection.address,
+			clientAddress: null,
+			clientPort: connection.clientclientPort,
+			remoteAddress: connection.remoteAddress,
+			remotePort: connection.remotePort,
+			documentCount: 0,
 		}
 		debugData.connections.push(conn)
 		// named subscriptions
@@ -65,7 +61,6 @@ function traceDebuggingData () {
 		let session = connection._meteorSession
 
 		if (session) {
-
 			// console.log(session.connectionHandle)
 
 			// if (session.clientAddress) conn.clientAddress = session.clientAddress()
@@ -78,7 +73,7 @@ function traceDebuggingData () {
 				if (!debugData.subscriptions[sub._name]) {
 					debugData.subscriptions[sub._name] = {
 						count: 0,
-						documents: {}
+						documents: {},
 					}
 				}
 				let sub0 = debugData.subscriptions[sub._name]
@@ -102,7 +97,7 @@ function traceDebuggingData () {
 	})
 	return debugData
 }
-function updateStatistics (onlyReturn?: boolean) {
+function updateStatistics(onlyReturn?: boolean) {
 	let stat = {
 		timestamp: Date.now(),
 		count: statisticsDelays.length,
@@ -112,7 +107,7 @@ function updateStatistics (onlyReturn?: boolean) {
 		warnings: 0,
 		averageWarnings: 0,
 		halfWarnings: 0,
-		quarterWarnings: 0
+		quarterWarnings: 0,
 	}
 	_.each(statisticsDelays, (d) => {
 		stat.average += d
@@ -135,8 +130,7 @@ function updateStatistics (onlyReturn?: boolean) {
 	}
 	return stat
 }
-function getStatistics () {
-
+function getStatistics() {
 	let stat = {
 		timestamp: Date.now(),
 		count: 0,
@@ -147,7 +141,7 @@ function getStatistics () {
 		averageWarnings: 0,
 		halfWarnings: 0,
 		quarterWarnings: 0,
-		periods: []
+		periods: [],
 	}
 
 	let periods = [updateStatistics(true)]

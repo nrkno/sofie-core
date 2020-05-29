@@ -1,12 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection, ProtectedString } from '../lib'
 import * as _ from 'underscore'
-import {
-	IConfigItem,
-	BlueprintMappings,
-	BlueprintMapping,
-	TSR
-} from 'tv-automation-sofie-blueprints-integration'
+import { IConfigItem, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
@@ -82,15 +77,16 @@ export class Studio implements DBStudio {
 
 	public _rundownVersionHash: string
 
-	constructor (document: DBStudio) {
+	constructor(document: DBStudio) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
 }
 
-export const Studios: TransformedCollection<Studio, DBStudio>
-	= createMongoCollection<Studio>('studios', { transform: (doc) => applyClassToDocument(Studio, doc) })
+export const Studios: TransformedCollection<Studio, DBStudio> = createMongoCollection<Studio>('studios', {
+	transform: (doc) => applyClassToDocument(Studio, doc),
+})
 registerCollection('Studios', Studios)
 
 Meteor.startup(() => {

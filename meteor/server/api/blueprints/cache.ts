@@ -17,9 +17,9 @@ import {
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../lib/lib'
 
-const blueprintCache: {[id: string]: Cache} = {}
+const blueprintCache: { [id: string]: Cache } = {}
 interface Cache {
-	modified: number,
+	modified: number
 	fcn: SomeBlueprintManifest
 }
 
@@ -36,11 +36,12 @@ export interface WrappedShowStyleBlueprint {
 	blueprint: ShowStyleBlueprintManifest
 }
 
-export function loadSystemBlueprints (system: ICoreSystem): WrappedSystemBlueprint | undefined {
+export function loadSystemBlueprints(system: ICoreSystem): WrappedSystemBlueprint | undefined {
 	if (!system.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(system.blueprintId)
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${system.blueprintId}" not found! (referenced by CoreSystem)`)
+	if (!blueprint)
+		throw new Meteor.Error(404, `Blueprint "${system.blueprintId}" not found! (referenced by CoreSystem)`)
 
 	if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) {
 		throw new Meteor.Error(500, `Blueprint "${system.blueprintId}" is not valid for a CoreSystem!`)
@@ -48,16 +49,19 @@ export function loadSystemBlueprints (system: ICoreSystem): WrappedSystemBluepri
 
 	return {
 		blueprintId: system.blueprintId,
-		blueprint: blueprint
+		blueprint: blueprint,
 	}
 }
 
-export function loadStudioBlueprints (studio: Studio): WrappedStudioBlueprint | undefined {
+export function loadStudioBlueprints(studio: Studio): WrappedStudioBlueprint | undefined {
 	if (!studio.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(studio.blueprintId)
 	if (!blueprint) {
-		throw new Meteor.Error(404, `Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+		throw new Meteor.Error(
+			404,
+			`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`
+		)
 	}
 
 	if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) {
@@ -66,21 +70,25 @@ export function loadStudioBlueprints (studio: Studio): WrappedStudioBlueprint | 
 
 	return {
 		blueprintId: studio.blueprintId,
-		blueprint: blueprint
+		blueprint: blueprint,
 	}
 }
 
-export function getBlueprintOfRundownAsync (rundown: Rundown): Promise<WrappedShowStyleBlueprint> {
+export function getBlueprintOfRundownAsync(rundown: Rundown): Promise<WrappedShowStyleBlueprint> {
 	return makePromise(() => {
 		return getBlueprintOfRundown(rundown)
 	})
 }
-export function getBlueprintOfRundown (rundown: Rundown, noCache?: boolean): WrappedShowStyleBlueprint {
-
+export function getBlueprintOfRundown(rundown: Rundown, noCache?: boolean): WrappedShowStyleBlueprint {
 	const fcn = () => {
-		if (!rundown.showStyleBaseId) throw new Meteor.Error(400, `Rundown "${rundown._id}" is missing showStyleBaseId!`)
+		if (!rundown.showStyleBaseId)
+			throw new Meteor.Error(400, `Rundown "${rundown._id}" is missing showStyleBaseId!`)
 		let showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`)
+		if (!showStyleBase)
+			throw new Meteor.Error(
+				404,
+				`ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`
+			)
 		return loadShowStyleBlueprints(showStyleBase)
 	}
 
@@ -91,27 +99,33 @@ export function getBlueprintOfRundown (rundown: Rundown, noCache?: boolean): Wra
 	}
 }
 
-export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
+export function loadShowStyleBlueprints(showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
 	if (!showStyleBase.blueprintId) {
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
 	}
 
 	const blueprint = loadBlueprintsById(showStyleBase.blueprintId)
 	if (!blueprint) {
-		throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`)
+		throw new Meteor.Error(
+			404,
+			`Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`
+		)
 	}
 
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
-		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}"!`)
+		throw new Meteor.Error(
+			500,
+			`Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}"!`
+		)
 	}
 
 	return {
 		blueprintId: showStyleBase.blueprintId,
-		blueprint: blueprint
+		blueprint: blueprint,
 	}
 }
 
-function loadBlueprintsById (blueprintId: BlueprintId): SomeBlueprintManifest | undefined {
+function loadBlueprintsById(blueprintId: BlueprintId): SomeBlueprintManifest | undefined {
 	const blueprint = Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
 
@@ -125,7 +139,7 @@ function loadBlueprintsById (blueprintId: BlueprintId): SomeBlueprintManifest | 
 		throw new Meteor.Error(500, `Blueprint "${blueprintId}" code not set!`)
 	}
 }
-export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
+export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	let cached: Cache | null = null
 	if (!noCache) {
 		// First, check if we've got the function cached:
@@ -145,7 +159,9 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBl
 			moment,
 		}
 
-		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(blueprint.code)
+		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(
+			blueprint.code
+		)
 		let manifest = entry.default
 
 		// Wrap the functions, to emit better errors

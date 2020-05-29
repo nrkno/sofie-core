@@ -3,7 +3,6 @@ import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
 
 export namespace BucketSecurity {
 	export function allowReadAccess(selector: object, token: string, context: any) {
-
 		return true
 		// TODO: implement some security here
 	}
@@ -20,11 +19,9 @@ Buckets.allow({
 		return false
 	},
 	update(userId, doc, fields, modifier) {
-		return rejectFields(fields, [
-			'_id'
-		])
+		return rejectFields(fields, ['_id'])
 	},
 	remove(userId, doc) {
 		return false
-	}
+	},
 })

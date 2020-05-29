@@ -15,26 +15,26 @@ export class ReactNotification extends React.Component<IProps> {
 	private _notification: Notification
 	private _notificationId: string
 
-	componentDidMount () {
+	componentDidMount() {
 		this.buildNotification()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		NotificationCenter.drop(this._notificationId)
 	}
 
-	componentDidUpdate (prevProps: IProps) {
+	componentDidUpdate(prevProps: IProps) {
 		if (!_.isEqual(this.props, prevProps)) {
 			NotificationCenter.drop(this._notificationId)
 			this.buildNotification()
 		}
 	}
 
-	render () {
+	render() {
 		return null
 	}
 
-	private buildNotification () {
+	private buildNotification() {
 		this._notificationId = Random.id()
 		this._notification = new Notification(
 			this._notificationId,

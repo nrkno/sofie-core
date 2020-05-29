@@ -19,32 +19,133 @@ import { BucketAdLib } from '../collections/BucketAdlibs'
 
 export interface NewUserActionAPI {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	setNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number): Promise<ClientAPI.ClientResponse<void>>
-	setNextSegment(userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId | null): Promise<ClientAPI.ClientResponse<void>>
-	moveNext(userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number): Promise<ClientAPI.ClientResponse<PartId | null>>
-	prepareForBroadcast(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	resetRundownPlaylist(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	resetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean): Promise<ClientAPI.ClientResponse<void>>
-	activate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean): Promise<ClientAPI.ClientResponse<void>>
+	setNext(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partId: PartId,
+		timeOffset?: number
+	): Promise<ClientAPI.ClientResponse<void>>
+	setNextSegment(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		segmentId: SegmentId | null
+	): Promise<ClientAPI.ClientResponse<void>>
+	moveNext(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		horisontalDelta: number,
+		verticalDelta: number
+	): Promise<ClientAPI.ClientResponse<PartId | null>>
+	prepareForBroadcast(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
+	resetRundownPlaylist(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<void>>
+	resetAndActivate(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		rehearsal?: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
+	activate(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		rehearsal: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 	deactivate(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	forceResetAndActivate(userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean): Promise<ClientAPI.ClientResponse<void>>
-	reloadData(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
+	forceResetAndActivate(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		rehearsal: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
+	reloadData(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	unsyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
-	disableNextPiece(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
-	togglePartArgument(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string): Promise<ClientAPI.ClientResponse<void>>
-	pieceTakeNow(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId): Promise<ClientAPI.ClientResponse<void>>
-	setInOutPoints(userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, pieceId: PieceId, inPoint: number, duration: number): Promise<ClientAPI.ClientResponse<void>>
-	segmentAdLibPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean)
-	sourceLayerOnPartStop(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[])
-	baselineAdLibPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adlibPieceId: PieceId, queue: boolean)
-	sourceLayerStickyPieceStart(userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string): Promise<ClientAPI.ClientResponse<void>>
-	bucketAdlibImport(_userEvent: string, studioId: StudioId, showStyleVariantId: ShowStyleVariantId, bucketId: BucketId, ingestItem: IngestAdlib)
-	bucketAdlibStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: PieceId, queue?: boolean)
-	activateHold(userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean): Promise<ClientAPI.ClientResponse<void>>
+	disableNextPiece(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
+	togglePartArgument(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		property: string,
+		value: string
+	): Promise<ClientAPI.ClientResponse<void>>
+	pieceTakeNow(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
+	): Promise<ClientAPI.ClientResponse<void>>
+	setInOutPoints(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partId: PartId,
+		pieceId: PieceId,
+		inPoint: number,
+		duration: number
+	): Promise<ClientAPI.ClientResponse<void>>
+	segmentAdLibPieceStart(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		adLibPieceId: PieceId,
+		queue: boolean
+	)
+	sourceLayerOnPartStop(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		sourceLayerIds: string[]
+	)
+	baselineAdLibPieceStart(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		adlibPieceId: PieceId,
+		queue: boolean
+	)
+	sourceLayerStickyPieceStart(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		sourceLayerId: string
+	): Promise<ClientAPI.ClientResponse<void>>
+	bucketAdlibImport(
+		_userEvent: string,
+		studioId: StudioId,
+		showStyleVariantId: ShowStyleVariantId,
+		bucketId: BucketId,
+		ingestItem: IngestAdlib
+	)
+	bucketAdlibStart(
+		_userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		bucketAdlibId: PieceId,
+		queue?: boolean
+	)
+	activateHold(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		undo?: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 	saveEvaluation(userEvent: string, evaluation: EvaluationBase): Promise<ClientAPI.ClientResponse<void>>
-	storeRundownSnapshot(userEvent: string, playlistId: RundownPlaylistId, reason: string): Promise<ClientAPI.ClientResponse<SnapshotId>>
+	storeRundownSnapshot(
+		userEvent: string,
+		playlistId: RundownPlaylistId,
+		reason: string
+	): Promise<ClientAPI.ClientResponse<SnapshotId>>
 	removeRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	resyncRundownPlaylist(userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
+	resyncRundownPlaylist(
+		userEvent: string,
+		playlistId: RundownPlaylistId
+	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	resyncSegment(userEvent: string, segmentId: SegmentId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
@@ -62,11 +163,24 @@ export interface NewUserActionAPI {
 	guiFocused(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred(userEvent: string, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	bucketsRemoveBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
-	bucketsModifyBucket(userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucket(
+		userEvent: string,
+		id: BucketId,
+		bucket: Partial<Omit<Bucket, '_id'>>
+	): Promise<ClientAPI.ClientResponse<void>>
 	bucketsEmptyBucket(userEvent: string, id: BucketId): Promise<ClientAPI.ClientResponse<void>>
-	bucketsCreateNewBucket(userEvent: string, name: string, studioId: StudioId, userId: string | null): Promise<ClientAPI.ClientResponse<Bucket>>
+	bucketsCreateNewBucket(
+		userEvent: string,
+		name: string,
+		studioId: StudioId,
+		userId: string | null
+	): Promise<ClientAPI.ClientResponse<Bucket>>
 	bucketsRemoveBucketAdLib(userEvent: string, id: PieceId): Promise<ClientAPI.ClientResponse<void>>
-	bucketsModifyBucketAdLib(userEvent: string, id: PieceId, bucket: Partial<Omit<BucketAdLib, '_id'>>): Promise<ClientAPI.ClientResponse<void>>
+	bucketsModifyBucketAdLib(
+		userEvent: string,
+		id: PieceId,
+		bucket: Partial<Omit<BucketAdLib, '_id'>>
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -134,7 +248,7 @@ export enum UserActionAPIMethods {
 	'restartCore' = 'userAction.system.restartCore',
 
 	'guiFocused' = 'userAction.focused',
-	'guiBlurred' = 'userAction.blurred'
+	'guiBlurred' = 'userAction.blurred',
 }
 
 export interface ReloadRundownPlaylistResponse {
@@ -150,7 +264,7 @@ export enum TriggerReloadDataResponse {
 	/** When reloading has successfully started, and will finish asynchronously */
 	WORKING = 'working',
 	/** When reloading cannot continue, because the rundown is missing */
-	MISSING = 'missing'
+	MISSING = 'missing',
 }
 
 export const RESTART_SALT = 'clientRestart_'

@@ -2,10 +2,22 @@ import * as _ from 'underscore'
 import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
-import { CURRENT_SYSTEM_VERSION, clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
+import {
+	CURRENT_SYSTEM_VERSION,
+	clearMigrationSteps,
+	addMigrationSteps,
+	prepareMigration,
+	PreparedMigration,
+} from '../databaseMigration'
 import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
 import { literal, protectString, waitForPromise } from '../../../lib/lib'
-import { MigrationStepInputResult, BlueprintManifestType, MigrationStep, MigrationContextStudio, MigrationContextShowStyle } from 'tv-automation-sofie-blueprints-integration'
+import {
+	MigrationStepInputResult,
+	BlueprintManifestType,
+	MigrationStep,
+	MigrationContextStudio,
+	MigrationContextShowStyle,
+} from 'tv-automation-sofie-blueprints-integration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
@@ -20,36 +32,39 @@ require('../../api/blueprints/api.ts') // include in order to create the Meteor 
 
 // Include all migration scripts:
 const normalizedPath = require('path').join(__dirname, '../')
-require('fs').readdirSync(normalizedPath).forEach((fileName) => {
-	if (fileName.match(/\d+_\d+_\d+\.ts/)) { // x_y_z.ts
-		require('../' + fileName)
-	}
-})
+require('fs')
+	.readdirSync(normalizedPath)
+	.forEach((fileName) => {
+		if (fileName.match(/\d+_\d+_\d+\.ts/)) {
+			// x_y_z.ts
+			require('../' + fileName)
+		}
+	})
 
 describe('Test ingest actions for rundowns and segments', () => {
-
 	beforeAll(() => {
 		setupEmptyEnvironment()
 	})
-	function getSystem () {
+	function getSystem() {
 		return getCoreSystem() as ICoreSystem
 	}
-	function userInput (migrationStatus: GetMigrationStatusResult, userInput?: {[key: string]: any}): MigrationStepInputResult[] {
-		return _.compact(_.map(migrationStatus.migration.manualInputs, (manualInput) => {
-			if (
-				manualInput.stepId &&
-				manualInput.attribute
-			) {
-				return literal<MigrationStepInputResult>({
-					stepId: manualInput.stepId,
-					attribute: manualInput.attribute,
-					value: userInput && userInput[manualInput.stepId]
-				})
-			}
-		}))
+	function userInput(
+		migrationStatus: GetMigrationStatusResult,
+		userInput?: { [key: string]: any }
+	): MigrationStepInputResult[] {
+		return _.compact(
+			_.map(migrationStatus.migration.manualInputs, (manualInput) => {
+				if (manualInput.stepId && manualInput.attribute) {
+					return literal<MigrationStepInputResult>({
+						stepId: manualInput.stepId,
+						attribute: manualInput.attribute,
+						value: userInput && userInput[manualInput.stepId],
+					})
+				}
+			})
+		)
 	}
 	testInFiber('System migrations, initial setup', () => {
-
 		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
 
 		const migrationStatus0: GetMigrationStatusResult = waitForPromise(MeteorCall.migration.getMigrationStatus())
@@ -64,23 +79,25 @@ describe('Test ingest actions for rundowns and segments', () => {
 				automaticStepCount: expect.any(Number),
 				manualStepCount: 0,
 				ignoredStepCount: expect.any(Number),
-				partialMigration: true
+				partialMigration: true,
 				// chunks: expect.any(Array)
-			}
+			},
 		})
 		expect(migrationStatus0.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
 
-		const migrationResult0: RunMigrationResult = waitForPromise(MeteorCall.migration.runMigration(
-			migrationStatus0.migration.chunks,
-			migrationStatus0.migration.hash,
-			userInput(migrationStatus0)
-		))
+		const migrationResult0: RunMigrationResult = waitForPromise(
+			MeteorCall.migration.runMigration(
+				migrationStatus0.migration.chunks,
+				migrationStatus0.migration.hash,
+				userInput(migrationStatus0)
+			)
+		)
 
 		expect(migrationResult0).toMatchObject({
 			migrationCompleted: false,
 			partialMigration: true,
 			warnings: expect.any(Array),
-			snapshot: expect.any(String)
+			snapshot: expect.any(String),
 		})
 
 		// Connect a Playout-gateway to the system:
@@ -95,30 +112,30 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(migrationStatus1.migrationNeeded).toEqual(true)
 		expect(migrationStatus1.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
 
-		const migrationResult1: RunMigrationResult = waitForPromise(MeteorCall.migration.runMigration(
-			migrationStatus1.migration.chunks,
-			migrationStatus1.migration.hash,
-			userInput(migrationStatus1, {
-				'CoreSystem.storePath': 'mock',
-				'Studios.settings.mediaPreviewsUrl': 'mock',
-				'Studios.settings.sofieUrl': 'http://localhost',
-				'Studios.settings.slackEvaluationUrls': 'mock',
-				'Studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff'
-			})
-		))
+		const migrationResult1: RunMigrationResult = waitForPromise(
+			MeteorCall.migration.runMigration(
+				migrationStatus1.migration.chunks,
+				migrationStatus1.migration.hash,
+				userInput(migrationStatus1, {
+					'CoreSystem.storePath': 'mock',
+					'Studios.settings.mediaPreviewsUrl': 'mock',
+					'Studios.settings.sofieUrl': 'http://localhost',
+					'Studios.settings.slackEvaluationUrls': 'mock',
+					'Studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
+				})
+			)
+		)
 		expect(migrationResult1).toMatchObject({
 			migrationCompleted: true,
 			// partialMigration: true,
 			warnings: expect.any(Array),
-			snapshot: expect.any(String)
+			snapshot: expect.any(String),
 		})
 
 		expect(getSystem().version).toEqual(CURRENT_SYSTEM_VERSION)
-
 	})
 
 	testInFiber('Ensure migrations run in correct order', () => {
-
 		waitForPromise(MeteorCall.migration.resetDatabaseVersions())
 
 		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
@@ -140,14 +157,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
-							sofieUrl: ''
+							sofieUrl: '',
 						},
 						mappings: {},
 						config: [],
 						_rundownVersionHash: '',
 					})
-				}
-			}
+				},
+			},
 		])
 		addMigrationSteps('0.3.0', [
 			{
@@ -164,14 +181,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
-							sofieUrl: ''
+							sofieUrl: '',
 						},
 						mappings: {},
 						config: [],
 						_rundownVersionHash: '',
 					})
-				}
-			}
+				},
+			},
 		])
 		addMigrationSteps('0.1.0', [
 			{
@@ -188,13 +205,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
-							sofieUrl: ''
+							sofieUrl: '',
 						},
 						mappings: {},
 						config: [],
 						_rundownVersionHash: '',
 					})
-				}
+				},
 			},
 		])
 
@@ -204,9 +221,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(migration.migrationNeeded).toEqual(true)
 		expect(migration.automaticStepCount).toEqual(3)
 
-		expect(_.find(migration.steps, s => s.id.match(/myCoreMockStep1/))).toBeTruthy()
-		expect(_.find(migration.steps, s => s.id.match(/myCoreMockStep2/))).toBeTruthy()
-		expect(_.find(migration.steps, s => s.id.match(/myCoreMockStep3/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep1/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep2/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()
@@ -232,7 +249,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						if (!context.getConfig('mocktest2')) {
 							context.setConfig('mocktest2', true)
 						}
-					}
+					},
 				},
 				{
 					version: '0.3.0',
@@ -246,7 +263,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						if (!context.getConfig('mocktest3')) {
 							context.setConfig('mocktest3', true)
 						}
-					}
+					},
 				},
 				{
 					version: '0.1.0',
@@ -260,11 +277,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 						if (!context.getConfig('mocktest1')) {
 							context.setConfig('mocktest1', true)
 						}
-					}
-				}
+					},
+				},
 			],
 			getBaseline: () => [],
-			getShowStyleId: () => null
+			getShowStyleId: () => null,
 		})
 
 		const showStyleManifest = () => ({
@@ -288,7 +305,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						if (!context.getBaseConfig('mocktest2')) {
 							context.setBaseConfig('mocktest2', true)
 						}
-					}
+					},
 				},
 				{
 					version: '0.3.0',
@@ -302,7 +319,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						if (!context.getBaseConfig('mocktest3')) {
 							context.setBaseConfig('mocktest3', true)
 						}
-					}
+					},
 				},
 				{
 					version: '0.1.0',
@@ -316,8 +333,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 						if (!context.getBaseConfig('mocktest1')) {
 							context.setBaseConfig('mocktest1', true)
 						}
-					}
-				}
+					},
+				},
 			],
 			getBaseline: () => [],
 			getShowStyleId: () => null,
@@ -325,15 +342,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 			getRundown: () => ({
 				rundown: {
 					externalId: '',
-					name: ''
+					name: '',
 				},
 				globalAdLibPieces: [],
-				baseline: []
+				baseline: [],
 			}),
 			getSegment: () => ({
 				segment: { name: '' },
-				parts: []
-			})
+				parts: [],
+			}),
 		})
 
 		Blueprints.insert(generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest))
@@ -358,9 +375,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
-		Studios.update(studio._id, { $set: {
-			blueprintId: protectString('studio0')
-		}})
+		Studios.update(studio._id, {
+			$set: {
+				blueprintId: protectString('studio0'),
+			},
+		})
 
 		// migrationStatus = Meteor.call(MigrationMethods.getMigrationStatus)
 
@@ -371,16 +390,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		const steps = migration.steps as MigrationStep[]
 
-
-		const myCoreMockStep1 = _.find(steps, s => s.id.match(/myCoreMockStep1/)) as MigrationStep
-		const myCoreMockStep2 = _.find(steps, s => s.id.match(/myCoreMockStep2/)) as MigrationStep
-		const myCoreMockStep3 = _.find(steps, s => s.id.match(/myCoreMockStep3/)) as MigrationStep
-		const myStudioMockStep1 = _.find(steps, s => s.id.match(/myStudioMockStep1/)) as MigrationStep
-		const myStudioMockStep2 = _.find(steps, s => s.id.match(/myStudioMockStep2/)) as MigrationStep
-		const myStudioMockStep3 = _.find(steps, s => s.id.match(/myStudioMockStep3/)) as MigrationStep
-		const myShowStyleMockStep1 = _.find(steps, s => s.id.match(/myShowStyleMockStep1/)) as MigrationStep
-		const myShowStyleMockStep2 = _.find(steps, s => s.id.match(/myShowStyleMockStep2/)) as MigrationStep
-		const myShowStyleMockStep3 = _.find(steps, s => s.id.match(/myShowStyleMockStep3/)) as MigrationStep
+		const myCoreMockStep1 = _.find(steps, (s) => s.id.match(/myCoreMockStep1/)) as MigrationStep
+		const myCoreMockStep2 = _.find(steps, (s) => s.id.match(/myCoreMockStep2/)) as MigrationStep
+		const myCoreMockStep3 = _.find(steps, (s) => s.id.match(/myCoreMockStep3/)) as MigrationStep
+		const myStudioMockStep1 = _.find(steps, (s) => s.id.match(/myStudioMockStep1/)) as MigrationStep
+		const myStudioMockStep2 = _.find(steps, (s) => s.id.match(/myStudioMockStep2/)) as MigrationStep
+		const myStudioMockStep3 = _.find(steps, (s) => s.id.match(/myStudioMockStep3/)) as MigrationStep
+		const myShowStyleMockStep1 = _.find(steps, (s) => s.id.match(/myShowStyleMockStep1/)) as MigrationStep
+		const myShowStyleMockStep2 = _.find(steps, (s) => s.id.match(/myShowStyleMockStep2/)) as MigrationStep
+		const myShowStyleMockStep3 = _.find(steps, (s) => s.id.match(/myShowStyleMockStep3/)) as MigrationStep
 
 		expect(myCoreMockStep1).toBeTruthy()
 		expect(myCoreMockStep2).toBeTruthy()
@@ -410,6 +428,5 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(steps.indexOf(myShowStyleMockStep1)).toEqual(6)
 		expect(steps.indexOf(myShowStyleMockStep2)).toEqual(7)
 		expect(steps.indexOf(myShowStyleMockStep3)).toEqual(8)
-
 	})
 })
