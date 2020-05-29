@@ -270,7 +270,7 @@ class ComponentTimelineSimulate extends MeteorReactComponent<ITimelineSimulatePr
 						this.props.errorMsg
 						? <p>{this.props.errorMsg}</p>
 						: <div>
-							<table><tbody>
+							<table className="testtools-timelinetable"><tbody>
 								<tr>
 									<th>Layer</th>
 									<th>id</th>

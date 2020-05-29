@@ -6,7 +6,7 @@ import { Rundown } from '../../lib/collections/Rundowns'
 import { withTranslation } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { doUserAction } from '../lib/userAction'
+import { doUserAction, UserAction } from '../lib/userAction'
 import { MeteorCall } from '../../lib/api/methods'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 
@@ -41,9 +41,9 @@ export const AfterBroadcastForm = withTranslation()(class AfterBroadcastForm ext
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
-			doUserAction(t, e, 'Saving Evaluation', (e) => MeteorCall.userAction.saveEvaluation(e, evaluation))
+			doUserAction(t, e, UserAction.SAVE_EVALUATION, (e) => MeteorCall.userAction.saveEvaluation(e, evaluation))
 
-			doUserAction(t, e, 'Deactivating Rundown Playlist', (e) => MeteorCall.userAction.deactivate(e, this.props.playlist._id))
+			doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) => MeteorCall.userAction.deactivate(e, this.props.playlist._id))
 
 			this.setState({
 				q0: '',
@@ -53,7 +53,7 @@ export const AfterBroadcastForm = withTranslation()(class AfterBroadcastForm ext
 		}
 
 		if (answers.q0 !== 'nothing') {
-			doUserAction(t, e, 'Creating Snapshot for debugging', (e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Evaluation form'), (err, snapshotId) => {
+			doUserAction(t, e, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, (e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Evaluation form'), (err, snapshotId) => {
 				if (!err && snapshotId) {
 					saveEvaluation(snapshotId)
 				} else {

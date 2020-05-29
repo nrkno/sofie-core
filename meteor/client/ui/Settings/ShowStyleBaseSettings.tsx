@@ -19,7 +19,7 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem, BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { getHelpMode } from '../../lib/localStorage'
@@ -100,6 +100,28 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				value: blueprint._id
 			}
 		})
+	}
+
+	getLayerMappingsFlat () {
+		let mappings: { [key: string]: MappingsExt } = {}
+		_.each(this.props.compatibleStudios, studio => {
+			mappings[studio.name] = studio.mappings
+		})
+		return mappings
+	}
+
+	getSourceLayersFlat () {
+		if (this.props.showStyleBase) {
+			return _.map(this.props.showStyleBase.sourceLayers, layer => {
+				return {
+					value: layer._id,
+					name: layer.name,
+					type: layer.type
+				}
+			})
+		} else {
+			return []
+		}
 	}
 
 	renderEditForm (showStyleBase: ShowStyleBase) {
@@ -197,6 +219,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							manifest={this.props.blueprintConfigManifest}
 							object={showStyleBase}
 							collection={ShowStyleBases}
+							layerMappings={this.getLayerMappingsFlat()}
+							sourceLayers={this.getSourceLayersFlat()}
 							configPath={'config'}
 							/>
 					</div>

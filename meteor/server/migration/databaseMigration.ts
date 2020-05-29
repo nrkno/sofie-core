@@ -66,8 +66,9 @@ import { SnapshotId } from '../../lib/collections/Snapshots'
  * 1.6.0: Release 18  (TBD)
  * 1.7.0: Release 19  (TBD)
  * 1.8.0: Release 20  (TBD)
+ * 1.9.0: Release 21  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.8.0'
+export const CURRENT_SYSTEM_VERSION = '1.9.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)

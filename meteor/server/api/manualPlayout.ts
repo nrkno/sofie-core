@@ -22,24 +22,23 @@ function insertTimelineObject (cache: CacheForStudio, studioId: StudioId, timeli
 		objectType: TimelineObjType.MANUAL
 	}
 
-	let studio = Studios.findOne(studioId)
-
-	cache.Timeline.upsert(timelineObject._id, timelineObject)
-
+	let studio = cache.Studios.findOne(studioId)
+	
 	if (studio) {
-		afterUpdateTimeline(cache, studio)
+		cache.Timeline.upsert(timelineObject._id, timelineObject)
+		afterUpdateTimeline(cache, studio._id)
 	}
 
 }
 function removeTimelineObject (cache: CacheForStudio, studioId: StudioId, id: string) {
 	check(studioId, String)
 	check(id, String)
-	let studio = Studios.findOne(studioId)
+	let studio = cache.Studios.findOne(studioId)
 
 	if (studio) {
 		cache.Timeline.remove(getTimelineId(studio._id, id))
 
-		afterUpdateTimeline(cache, studio)
+		afterUpdateTimeline(cache, studio._id)
 	}
 
 }

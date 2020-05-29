@@ -5,12 +5,13 @@ import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-
 import { Studio } from '../../../lib/collections/Studios'
 import { Piece } from '../../../lib/collections/Pieces'
 import { ModalDialog } from '../../lib/ModalDialog'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications';
-import { protectString } from '../../../lib/lib';
-import { ClientAPI } from '../../../lib/api/client';
+import { AdLibPieceUi } from '../Shelf/AdLibPanel'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { protectString } from '../../../lib/lib'
+import { ClientAPI } from '../../../lib/api/client'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
@@ -45,7 +46,7 @@ export const ClipTrimDialog = withTranslation()(class ClipTrimDialog extends Rea
 
 		this.props.onClose && this.props.onClose()
 		let pendingInOutPoints: NodeJS.Timer
-		doUserAction(this.props.t, e, 'Set In & Out points', (e) => MeteorCall.userAction.setInOutPoints(e,
+		doUserAction(this.props.t, e, UserAction.SET_IN_OUT_POINTS, (e) => MeteorCall.userAction.setInOutPoints(e,
 			this.props.playlistId,
 			selectedPiece.partId,
 			selectedPiece._id,
@@ -100,7 +101,7 @@ export const ClipTrimDialog = withTranslation()(class ClipTrimDialog extends Rea
 			))
 		}, 5 * 1000)
 	}
-	render () {
+	render() {
 		const { t } = this.props
 		return (
 			<ModalDialog title={t('Trim "{{name}}"', { name: this.props.selectedPiece.name })} show={true} acceptText={t('OK')} secondaryText={t('Cancel')}

@@ -110,9 +110,14 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 }
 export interface PreparedChanges<T> {
 	inserted: T[]
-	changed: {doc: T, oldId: ProtectedString<any>}[]
+	changed: PreparedChangesChangesDoc<T>[]
 	removed: T[]
 	unchanged: T[]
+}
+
+export interface PreparedChangesChangesDoc<T> {
+	doc: T
+	oldId: ProtectedString<any>
 }
 export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,
@@ -1334,8 +1339,9 @@ export function protectStringArray<T extends ProtectedString<any>> (arr: string[
 	return arr as any as T[]
 }
 export function unprotectString (protectedStr: ProtectedString<any>): string
+export function unprotectString (protectedStr: ProtectedString<any> | null): string | null
 export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined
-export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined {
+export function unprotectString (protectedStr: ProtectedString<any> | undefined | null): string | undefined | null {
 	return protectedStr as any as string
 }
 export function isProtectedString (str: any): str is ProtectedString<any> {

@@ -10,7 +10,6 @@ import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Meteor } from 'meteor/meteor'
 import { DeviceItem } from '../../Status/SystemStatus'
-import { IPlayoutDeviceSettingsComponentProps } from './IHttpSendDeviceSettingsComponentProps'
 import { ConfigManifestEntry, ConfigManifestEntryType, TableConfigManifestEntry, TableEntryConfigManifestEntry } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
@@ -22,8 +21,8 @@ interface IGenericDeviceSettingsComponentState {
 	showDeleteConfirm: boolean
 	editedObjects: EditId[]
 }
-export const GenericDeviceSettingsComponent = withTranslation()(class GenericDeviceSettingsComponent extends React.Component<Translated<IPlayoutDeviceSettingsComponentProps>, IGenericDeviceSettingsComponentState> {
-	constructor (props: Translated<IPlayoutDeviceSettingsComponentProps>) {
+export const GenericDeviceSettingsComponent = withTranslation()(class GenericDeviceSettingsComponent extends React.Component<Translated<IGenericDeviceSettingsComponentState>, IGenericDeviceSettingsComponentState> {
+	constructor (props: Translated<IGenericDeviceSettingsComponentState>) {
 		super(props)
 		this.state = {
 			deleteConfirmItemPath: undefined,

@@ -425,10 +425,6 @@ describe('Test blueprint migrationContext', () => {
 					connectionId: null,
 					token: '',
 					settings: literal<PlayoutDeviceSettings>({
-						mediaScanner: {
-							host: '',
-							port: 0
-						},
 						devices: {
 							'device01': {
 								type: TSR.DeviceType.ABSTRACT,

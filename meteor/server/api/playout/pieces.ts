@@ -28,6 +28,7 @@ import { prefixAllObjectIds, getAllPiecesFromCache, getSelectedPartInstancesFrom
 import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { postProcessAdLibPieces } from '../blueprints/postProcess'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -38,7 +39,7 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-export function orderPieces (pieces: Piece[], partId: PartId, partStarted?: number): Array<PieceResolved> {
+export function orderPieces(pieces: Piece[], partId: PartId, partStarted?: number): Array<PieceResolved> {
 	const now = getCurrentTime()
 
 	const pieceMap = normalizeArray(pieces, '_id')
@@ -123,7 +124,7 @@ export function getOrderedPiece (cache: CacheForRundownPlaylist, part: Part): Ar
 
 	return orderPieces(pieces, part._id, partStarted)
 }
-export function createPieceGroupFirstObject (
+export function createPieceGroupFirstObject(
 	pieceInstance: PieceInstance,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
@@ -153,7 +154,7 @@ export function createPieceGroupFirstObject (
 	})
 	return firstObject
 }
-export function createPieceGroup (
+export function createPieceGroup(
 	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece'>,
 	partGroup?: TimelineObjRundown
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
@@ -347,7 +348,7 @@ export function getResolvedPiecesFromFullTimeline (cache: CacheForRundownPlaylis
 }
 
 
-export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
+export function convertPieceToAdLibPiece(piece: Piece): AdLibPiece {
 	// const oldId = piece._id
 	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
@@ -379,7 +380,7 @@ export function convertPieceToAdLibPiece (piece: Piece): AdLibPiece {
 	return newAdLibPiece
 }
 
-export function convertAdLibToPieceInstance (adLibPiece: AdLibPiece | Piece, partInstance: PartInstance, queue: boolean): PieceInstance {
+export function convertAdLibToPieceInstance(adLibPiece: AdLibPiece | Piece | BucketAdLib, partInstance: PartInstance, queue: boolean): PieceInstance {
 	let duration: number | string | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']

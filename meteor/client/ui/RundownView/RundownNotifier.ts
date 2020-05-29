@@ -18,7 +18,7 @@ import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
@@ -187,7 +187,7 @@ class RundownViewNotifier extends WithManagedTracker {
 											yes: t('Re-sync'),
 											no: t('Cancel'),
 											onAccept: (event) => {
-												doUserAction(t, event, 'Resync Rundown Playlist', (e) => MeteorCall.userAction.resyncRundownPlaylist(e, playlist._id), (err, reloadResult) => {
+												doUserAction(t, event, UserAction.RESYNC_RUNDOWN_PLAYLIST, (e) => MeteorCall.userAction.resyncRundownPlaylist(e, playlist._id), (err, reloadResult) => {
 													if (!err && reloadResult) {
 														handleRundownPlaylistReloadResponse(t, playlist, reloadResult)
 													}

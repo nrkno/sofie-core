@@ -48,7 +48,6 @@ import { RundownAPI } from '../../lib/api/rundown'
 import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { string } from 'prop-types'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -476,7 +475,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: Rundow
 		_rank: 0,
 		externalId: 'MOCK_SEGMENT_0',
 		rundownId: rundown._id,
-		name: 'Segment 0'
+		name: 'Segment 0',
+		externalModified: 1
 	}
 	Segments.insert(segment0)
 	/* tslint:disable:ter-indent*/
@@ -572,7 +572,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: Rundow
 		_rank: 1,
 		externalId: 'MOCK_SEGMENT_2',
 		rundownId: rundown._id,
-		name: 'Segment 1'
+		name: 'Segment 1',
+		externalModified: 1
 	}
 	Segments.insert(segment1)
 
@@ -614,7 +615,8 @@ export function setupDefaultRundown (env: DefaultEnvironment, playlistId: Rundow
 		_rank: 2,
 		externalId: 'MOCK_SEGMENT_2',
 		rundownId: rundown._id,
-		name: 'Segment 2'
+		name: 'Segment 2',
+		externalModified: 1
 	}
 	Segments.insert(segment2)
 

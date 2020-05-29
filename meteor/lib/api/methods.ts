@@ -58,7 +58,7 @@ export const MeteorCall: IMeteorCall = {
 	userAction:				makeMethods(UserActionAPIMethods),
 	rundownNotifications:	makeMethods(RundownNotificationsAPIMethods),
 }
-function makeMethods (methods: object): any {
+function makeMethods(methods: object): any {
 	const o = {}
 	_.each(methods, (value: any, methodName: string) => {
 		o[methodName] = (...args) => MeteorPromiseCall(value, ...args)
@@ -72,8 +72,8 @@ export interface MethodContext {
 	} | null
 }
 /** Convenience-method to call a userAction method old-Meteor.call-style */
-export function CallUserActionAPIMethod (method: UserActionAPIMethods, ...args: any[]) {
+export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]) {
 	const m: string = method
-	const fcn = MeteorCall[m.replace(/^userAction\./,'')]
+	const fcn = MeteorCall[m.replace(/^userAction\./, '')]
 	return fcn(...args)
 }

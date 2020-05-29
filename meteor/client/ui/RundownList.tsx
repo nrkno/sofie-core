@@ -17,7 +17,7 @@ import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
 import { ManualPlayout } from './manualPlayout'
 import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
-import { doUserAction } from '../lib/userAction'
+import { doUserAction, UserAction } from '../lib/userAction'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
 import { Studios, StudioId } from '../../lib/collections/Studios'
@@ -72,7 +72,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Delete'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, 'Removing Rundown Playlist', (e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id))
+				doUserAction(t, e, UserAction.REMOVE_RUNDOWN_PLAYLIST, (e) => MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to delete the "{{name}}" RundownPlaylist?', { name: rundownPlaylist.name }) + '\n' +
@@ -88,7 +88,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			yes: t('Re-Sync'),
 			no: t('Cancel'),
 			onAccept: (e) => {
-				doUserAction(t, e, 'Re-Syncing Rundown Playlist', (e) => MeteorCall.userAction.resyncRundownPlaylist(e, rundownPlaylist._id))
+				doUserAction(t, e, UserAction.RESYNC_RUNDOWN_PLAYLIST, (e) => MeteorCall.userAction.resyncRundownPlaylist(e, rundownPlaylist._id))
 			},
 			message: (
 				t('Are you sure you want to re-sync all rundowns in playlist "{{name}}"?', { name: rundownPlaylist.name })

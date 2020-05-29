@@ -20,7 +20,7 @@ import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { doModalDialog, SomeEvent, ModalInputResult } from '../../lib/ModalDialog'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
@@ -372,7 +372,7 @@ export const SourceLayerItem = withTranslation()(class SourceLayerItem extends R
 				const rundown = Rundowns.findOne(this.props.part.instance.rundownId)
 				if (!rundown) throw Error(`Rundown ${this.props.part.instance.rundownId} not found (in/out)`)
 
-				doUserAction(this.props.t, e, 'Set In & Out points', (e) => MeteorCall.userAction.setInOutPoints(e,
+				doUserAction(this.props.t, e, UserAction.SET_IN_OUT_POINTS, (e) => MeteorCall.userAction.setInOutPoints(e,
 					rundown.playlistId,
 					this.props.part.instance.part._id,
 					this.props.piece.instance.piece._id,
