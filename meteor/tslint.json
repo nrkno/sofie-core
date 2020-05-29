@@ -1,38 +1,23 @@
 {
-	"extends": "tslint-config-standard",
+	"extends": ["tslint-plugin-prettier", "tslint-config-prettier"],
 	"allowJs": true,
 	"jsRules": {
-			"no-empty": true
+		"no-empty": true
 	},
 	"rules": {
-		"indent": [true, "tabs", 4],
-		"ter-indent": [true, "tab",{
-			"SwitchCase": 1
-		}],
-		"trailing-comma": false,
-		"semicolon": [true, "never"],
 		"strict-type-predicates": false,
 		"await-promise": [true, "Bluebird"],
 		"no-use-before-declare": false,
 		"one-line": [true, "check-catch", "check-finally", "check-else"],
-		"space-before-function-paren": true,
-		"no-trailing-whitespace": true,
-		"eofline": true,
-		// "max-line-length": [true, 120],
-		"no-consecutive-blank-lines": [true, 2],
-		"new-parens": true,
-		"number-literal-format": true,
 		"prefer-while": true,
 		"prefer-method-signature": false,
 		"no-reference-import": true,
 		"class-name": true,
-		"no-unnecessary-type-assertion": false, // @todo For some reason, TSLint picks up the wrong typings for Collection.findOne
+		"no-unnecessary-type-assertion": false,
 		"no-unnecessary-qualifier": false,
-		"no-unused-variable": true
+		"prettier": true
 	},
 	"linterOptions": {
-		"exclude": [
-			"public/**"
-		]
+		"exclude": ["public/**", "node_modules"]
 	}
 }
