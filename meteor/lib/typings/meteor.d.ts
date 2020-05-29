@@ -1,6 +1,7 @@
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { Omit, ProtectedString } from '../lib'
+import { Meteor } from 'meteor/meteor'
 
 declare module 'meteor/tracker' {
 	namespace Tracker {

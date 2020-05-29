@@ -3,7 +3,7 @@
   "version": "1.8.1",
   "private": true,
   "engines": {
-    "node": "8.x"
+    "node": "12.16"
   },
   "scripts": {
     "start": "meteor run",
@@ -13,7 +13,7 @@
     "unit": "jest",
     "unitci": "jest --maxWorkers 2 --coverage",
     "unitcov": "jest --coverage",
-    "test": "meteor npm run unit",
+    "test": "meteor npm run check-types && meteor npm run unit",
     "watch": "jest --watch",
     "update-snapshots": "jest --updateSnapshot",
     "ci_tmp": "meteor npm run lint && meteor npm run cov",
@@ -38,8 +38,8 @@
     "deprecated-unit-test": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
     "deprecated-integration-test": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "deprecated-test-once": "meteor test --once --driver-package meteortesting:mocha",
-    "check-types": "tsc --noEmit -p tsconfig-base.json",
-    "watch-types": "tsc --watch --noEmit -p tsconfig-base.json"
+    "check-types": "tsc --noEmit -p tsconfig.json",
+    "watch-types": "npm run check-types -- --watch"
   },
   "dependencies": {
     "@babel/runtime": "^7.10.1",

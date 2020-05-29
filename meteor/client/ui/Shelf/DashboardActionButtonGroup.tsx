@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { RundownAPI } from '../../../lib/api/rundown'
 
 import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'

@@ -601,8 +601,8 @@ export const SegmentTimelinePart = withTranslation()(withTiming<IProps & WithTra
 			const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
 			if (invalidColor) {
 				invalidReasonColorVars = {
-					['--invalid-reason-color-opaque' as any]: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
-					['--invalid-reason-color-transparent' as any]: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 0)`
+					['--invalid-reason-color-opaque']: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
+					['--invalid-reason-color-transparent']: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 0)`
 				}
 			}
 		}

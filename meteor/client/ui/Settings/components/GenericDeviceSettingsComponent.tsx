@@ -1,12 +1,10 @@
 import ClassNames from 'classnames'
 import * as React from 'react'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
-import { MosDeviceSettings, MosDeviceSettingsDevice } from '../../../../lib/collections/PeripheralDeviceSettings/mosDevice'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -118,8 +116,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 		defaults[itemConfig.typeField || 'type'] = itemConfig.defaultType
 
 		for (const prop of itemConfig.config[itemConfig.defaultType]) {
-			if ((prop as SubDeviceConfigManifestEntry).defaultVal !== undefined) {
-				createDefault(prop.id.split('.'), (prop as SubDeviceConfigManifestEntry).defaultVal, defaults)
+			if (prop.defaultVal !== undefined) {
+				createDefault(prop.id.split('.'), prop.defaultVal, defaults)
 			}
 		}
 
@@ -234,7 +232,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 
 		if (deviceTypes.length === 1) {
 			const config = configManifest.config[configManifest.defaultType || 'default']
-			const propNames = config.map(o => (o as SubDeviceConfigManifestEntry).columnName)
+			const propNames = config.map(o => o.columnName)
 				.map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='action'>&nbsp;</th>)
 
@@ -357,7 +355,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 
 		_.each(configManifest.config, (c) => {
 			for (const field of c) {
-				if ((field as SubDeviceConfigManifestEntry).columnName) {
+				if (field.columnName) {
 					fieldNames[field.id] = field
 				}
 			}
@@ -424,7 +422,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(class GenericDev
 		if (configTypes.length === 1) {
 			if (configField.defaultType === undefined) throw new Error('Default type not set: ' + configField.id)
 			const config = configField.config[configField.defaultType]
-			const propNames = config.map(o => (o as SubDeviceConfigManifestEntry).columnName)
+			const propNames = config.map(o => o.columnName)
 				.map(name => name ? (<th key={name}>{name}</th>) : undefined)
 			propNames.push(<th key='actions'>&nbsp;</th>)
 
