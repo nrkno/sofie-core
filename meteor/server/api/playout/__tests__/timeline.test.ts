@@ -2,7 +2,11 @@ import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
+import {
+	setupDefaultStudioEnvironment,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+} from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { Timeline } from '../../../../lib/collections/Timeline'
@@ -10,7 +14,12 @@ import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { protectString } from '../../../../lib/lib'
+import { protectString, waitForPromise } from '../../../../lib/lib'
+import {
+	initCacheForNoRundownPlaylist,
+	initCacheForRundownPlaylist,
+	initCacheForRundownPlaylistFromStudio,
+} from '../../../DatabaseCaches'
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
@@ -19,14 +28,13 @@ describe('Timeline', () => {
 	})
 	testInFiber('non-existing studio', () => {
 		expect(() => {
-			updateTimeline(protectString('asdf'))
+			const studioId = protectString('asdf')
+			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			updateTimeline(cache, protectString('asdf'))
 		}).toThrowError(/not found/i)
 	})
 	testInFiber('Basic rundown', () => {
-		const {
-			rundownId: rundownId0,
-			playlistId: playlistId0
-		} = setupDefaultRundownPlaylist(env)
+		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
 		expect(rundownId0).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
 
@@ -43,7 +51,7 @@ describe('Timeline', () => {
 
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
-			rehearsal: false
+			rehearsal: false,
 		})
 
 		{
@@ -75,12 +83,18 @@ describe('Timeline', () => {
 			// })
 		}
 
-		updateTimeline(getRundown0().studioId)
+		let cache = waitForPromise(initCacheForRundownPlaylistFromStudio(getRundown0().studioId))
+
+		updateTimeline(cache, getRundown0().studioId)
+		waitForPromise(cache.saveAllToDatabase())
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
+		cache = waitForPromise(initCacheForRundownPlaylistFromStudio(getRundown0().studioId))
+
 		const currentTime = 100 * 1000
-		updateTimeline(getRundown0().studioId, currentTime)
+		updateTimeline(cache, getRundown0().studioId, currentTime)
+		waitForPromise(cache.saveAllToDatabase())
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
@@ -90,7 +104,7 @@ describe('Timeline', () => {
 			expect(getPlaylist0()).toMatchObject({
 				active: false,
 				currentPartInstanceId: null,
-				nextPartInstanceId: null
+				nextPartInstanceId: null,
 			})
 		}
 

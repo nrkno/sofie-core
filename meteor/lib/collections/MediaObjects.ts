@@ -38,6 +38,7 @@ export interface MediaObject0 {
 	}
 	_rev: string
 }
+
 export interface MediaObject extends MediaObject0 {
 	/** The studio this Mediaobject resides in */
 	studioId: StudioId
@@ -77,27 +78,32 @@ export interface MediaStream {
 	max_bit_rate?: string
 	nb_frames?: string
 }
+
 export interface MediaFormat {
 	name?: string
 	long_name?: string
 	start_time?: number
 	duration?: number
 	bit_rate?: string
+	max_bit_rate?: number
 }
 
 export enum FieldOrder {
 	Unknown = 'unknown',
 	Progressive = 'progressive',
 	TFF = 'tff',
-	BFF = 'bff'
+	BFF = 'bff',
 }
 
-export interface MediaInfo {
-	name: string
-	field_order?: FieldOrder
-	scenes?: number[]
+export interface Metadata {
+	scenes?: Array<number>
 	blacks?: Array<Anomaly>
 	freezes?: Array<Anomaly>
+}
+
+export interface MediaInfo extends Metadata {
+	name: string
+	field_order?: FieldOrder
 	streams?: MediaStream[]
 	format?: MediaFormat
 	timebase?: number
@@ -116,14 +122,11 @@ export interface MediaAttachment {
 	data?: string // base64
 }
 
-export interface MediaScannerConfig {
-	host?: string,
-	port?: number
-}
 export enum MediaStreamType {
 	Audio = 'audio',
-	Video = 'video'
+	Video = 'video',
 }
+
 export interface MediaStreamCodec {
 	type?: MediaStreamType
 	long_name?: string
@@ -131,8 +134,10 @@ export interface MediaStreamCodec {
 	tag_string?: string
 	is_avc?: string
 }
-export const MediaObjects: TransformedCollection<MediaObject, MediaObject>
-	= createMongoCollection<MediaObject>('mediaObjects')
+
+export const MediaObjects: TransformedCollection<MediaObject, MediaObject> = createMongoCollection<MediaObject>(
+	'mediaObjects'
+)
 registerCollection('MediaObjects', MediaObjects)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -140,11 +145,11 @@ Meteor.startup(() => {
 			studioId: 1,
 			collectionId: 1,
 			objId: 1,
-			mediaId: 1
+			mediaId: 1,
 		})
 		MediaObjects._ensureIndex({
 			studioId: 1,
-			mediaId: 1
+			mediaId: 1,
 		})
 	}
 })

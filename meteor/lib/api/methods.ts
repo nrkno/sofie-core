@@ -15,7 +15,7 @@ import { NewTestToolsAPI, TestToolsAPIMethods } from './testTools'
 import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
-
+import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -37,25 +37,27 @@ interface IMeteorCall {
 	systemStatus: NewSystemStatusAPI
 	testTools: NewTestToolsAPI
 	userAction: NewUserActionAPI
+	rundownNotifications: RundownNotificationsAPI
 }
 export const MeteorCall: IMeteorCall = {
-	blueprint:			makeMethods(BlueprintAPIMethods),
-	client:				makeMethods(ClientAPIMethods),
-	externalMessages:	makeMethods(ExternalMessageQueueAPIMethods),
-	manualPlayout:		makeMethods(ManualPlayoutAPIMethods),
-	migration:			makeMethods(MigrationAPIMethods),
-	peripheralDevice:	makeMethods(PeripheralDeviceAPIMethods),
-	playout:			makeMethods(PlayoutAPIMethods),
-	rundown:			makeMethods(RundownAPIMethods),
-	rundownLayout:		makeMethods(RundownLayoutsAPIMethods),
-	snapshot:			makeMethods(SnapshotAPIMethods),
-	showstyles:			makeMethods(ShowStylesAPIMethods),
-	studio:				makeMethods(StudiosAPIMethods),
-	systemStatus:		makeMethods(SystemStatusAPIMethods),
-	testTools:			makeMethods(TestToolsAPIMethods),
-	userAction:			makeMethods(UserActionAPIMethods)
+	blueprint: makeMethods(BlueprintAPIMethods),
+	client: makeMethods(ClientAPIMethods),
+	externalMessages: makeMethods(ExternalMessageQueueAPIMethods),
+	manualPlayout: makeMethods(ManualPlayoutAPIMethods),
+	migration: makeMethods(MigrationAPIMethods),
+	peripheralDevice: makeMethods(PeripheralDeviceAPIMethods),
+	playout: makeMethods(PlayoutAPIMethods),
+	rundown: makeMethods(RundownAPIMethods),
+	rundownLayout: makeMethods(RundownLayoutsAPIMethods),
+	snapshot: makeMethods(SnapshotAPIMethods),
+	showstyles: makeMethods(ShowStylesAPIMethods),
+	studio: makeMethods(StudiosAPIMethods),
+	systemStatus: makeMethods(SystemStatusAPIMethods),
+	testTools: makeMethods(TestToolsAPIMethods),
+	userAction: makeMethods(UserActionAPIMethods),
+	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
 }
-function makeMethods (methods: object): any {
+function makeMethods(methods: object): any {
 	const o = {}
 	_.each(methods, (value: any, methodName: string) => {
 		o[methodName] = (...args) => MeteorPromiseCall(value, ...args)
@@ -69,8 +71,8 @@ export interface MethodContext {
 	}
 }
 /** Convenience-method to call a userAction method old-Meteor.call-style */
-export function CallUserActionAPIMethod (method: UserActionAPIMethods, ...args: any[]) {
+export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]) {
 	const m: string = method
-	const fcn = MeteorCall[m.replace(/^userAction\./,'')]
+	const fcn = MeteorCall[m.replace(/^userAction\./, '')]
 	return fcn(...args)
 }

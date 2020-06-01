@@ -5,7 +5,6 @@ import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blu
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
-import { string } from 'prop-types'
 
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
@@ -20,8 +19,9 @@ export interface DBShowStyleVariant extends ProtectedStringProperties<IBlueprint
 
 export interface ShowStyleCompound extends ShowStyleBase {
 	showStyleVariantId: ShowStyleVariantId
+	_rundownVersionHashVariant: string
 }
-export function getShowStyleCompound (showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
+export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): ShowStyleCompound | undefined {
 	const showStyleVariant = ShowStyleVariants.findOne(showStyleVariantId)
 	if (!showStyleVariant) return undefined
 	const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId)
@@ -30,10 +30,13 @@ export function getShowStyleCompound (showStyleVariantId: ShowStyleVariantId): S
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
 }
 
-export function createShowStyleCompound(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): ShowStyleCompound | undefined {
+export function createShowStyleCompound(
+	showStyleBase: ShowStyleBase,
+	showStyleVariant: ShowStyleVariant
+): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
-	
-	let configs: {[id: string]: IConfigItem} = {}
+
+	let configs: { [id: string]: IConfigItem } = {}
 	_.each(showStyleBase.config, (config: IConfigItem) => {
 		configs[config._id] = config
 	})
@@ -42,11 +45,14 @@ export function createShowStyleCompound(showStyleBase: ShowStyleBase, showStyleV
 		configs[config._id] = config
 	})
 
-	return _.extend(showStyleBase, {
+	return {
+		...showStyleBase,
 		showStyleVariantId: showStyleVariant._id,
 		name: `${showStyleBase.name}-${showStyleVariant.name}`,
-		config: _.values(configs)
-	})
+		config: _.values(configs),
+		_rundownVersionHash: showStyleBase._rundownVersionHash,
+		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
+	}
 }
 
 export class ShowStyleVariant implements DBShowStyleVariant {
@@ -56,14 +62,15 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public config: Array<IConfigItem>
 	public _rundownVersionHash: string
 
-	constructor (document: DBShowStyleVariant) {
+	constructor(document: DBShowStyleVariant) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
 }
-export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant>
-	= createMongoCollection<ShowStyleVariant>('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
+export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant> = createMongoCollection<
+	ShowStyleVariant
+>('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

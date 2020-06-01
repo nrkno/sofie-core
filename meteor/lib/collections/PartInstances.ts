@@ -1,6 +1,15 @@
 import * as _ from 'underscore'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
-import { applyClassToDocument, Time, registerCollection, ProtectedString, ProtectedStringProperties, protectString, unprotectString, Omit } from '../lib'
+import {
+	applyClassToDocument,
+	Time,
+	registerCollection,
+	ProtectedString,
+	ProtectedStringProperties,
+	protectString,
+	unprotectString,
+	Omit,
+} from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPartInstance,
@@ -13,13 +22,15 @@ import { PieceInstance, PieceInstances } from './PieceInstances'
 import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
+import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
-export interface InternalIBlueprintPartInstance extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
+export interface InternalIBlueprintPartInstance
+	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
 	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
 }
-export function unprotectPartInstance (partInstance: PartInstance): IBlueprintPartInstance {
+export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
 }
 
@@ -56,78 +67,55 @@ export class PartInstance implements DBPartInstance {
 	public segmentId: SegmentId
 	public rundownId: RundownId
 
-	constructor (document: DBPartInstance, isTemporary?: boolean) {
+	constructor(document: DBPartInstance, isTemporary?: boolean) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 		this.isTemporary = isTemporary === true
 		this.part = new Part(document.part)
 	}
-	getPieceInstances (selector?: MongoSelector<PieceInstance>, options?: FindOptions) {
-		if (this.isTemporary) {
-			throw new Error('Not implemented') // TODO?
-			// const pieces = Pieces.find(
-			// 	{
-			// 		...selector,
-			// 		rundownId: this.rundownId,
-			// 		partId: this._id
-			// 	},
-			// 	{
-			// 		sort: { _rank: 1 },
-			// 		...options
-			// 	}
-			// ).fetch()
-		} else {
-			return PieceInstances.find(
-				{
-					...selector,
-					rundownId: this.rundownId,
-					partInstanceId: this._id
-				},
-				{
-					// sort: { _rank: 1 },
-					...options
-				}
-			).fetch()
-		}
-	}
-	getAllPieceInstances () {
-		return this.getPieceInstances()
-	}
-
 }
 
-export function wrapPartToTemporaryInstance (part: DBPart): PartInstance {
-	return new PartInstance({
-		_id: protectString(`${part._id}_tmp_instance`),
-		rundownId: part.rundownId,
-		segmentId: part.segmentId,
-		takeCount: -1,
-		part: new Part(part)
-	}, true)
+export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
+	return new PartInstance(
+		{
+			_id: protectString(`${part._id}_tmp_instance`),
+			rundownId: part.rundownId,
+			segmentId: part.segmentId,
+			takeCount: -1,
+			part: new Part(part),
+		},
+		true
+	)
 }
 
-export function findPartInstanceOrWrapToTemporary (partInstances: { [partId: string]: PartInstance | undefined }, part: DBPart): PartInstance {
+export function findPartInstanceOrWrapToTemporary(
+	partInstances: { [partId: string]: PartInstance | undefined },
+	part: DBPart
+): PartInstance {
 	return partInstances[unprotectString(part._id)] || wrapPartToTemporaryInstance(part)
 }
 
-export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>('partInstances', { transform: (doc) => applyClassToDocument(PartInstance, doc) })
+export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(
+	'partInstances',
+	{ transform: (doc) => applyClassToDocument(PartInstance, doc) }
+)
 registerCollection('PartInstances', PartInstances)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PartInstances._ensureIndex({
 			rundownId: 1,
 			segmentId: 1,
-			takeCount: 1
+			takeCount: 1,
 		})
 		PartInstances._ensureIndex({
 			rundownId: 1,
-			takeCount: 1
+			takeCount: 1,
 		})
 		PartInstances._ensureIndex({
 			rundownId: 1,
 			partId: 1,
-			takeCount: 1
+			takeCount: 1,
 		})
 	}
 })

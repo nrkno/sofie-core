@@ -65,7 +65,7 @@ if (Meteor.isServer) {
 		alert: getLogMethod('alert'),
 		crit: getLogMethod('crit'),
 		warning: getLogMethod('warn'),
-		notice: getLogMethod('notice')
+		notice: getLogMethod('notice'),
 	}
 } else {
 	let getLogMethod = (type) => {
@@ -96,7 +96,7 @@ if (Meteor.isServer) {
 		alert: getLogMethod('alert'),
 		crit: getLogMethod('crit'),
 		warning: getLogMethod('warn'),
-		notice: getLogMethod('notice')
+		notice: getLogMethod('notice'),
 	}
 	// @ts-ignore localStorage
 	if (localStorage && localStorage.getItem('developerMode') !== '1') {

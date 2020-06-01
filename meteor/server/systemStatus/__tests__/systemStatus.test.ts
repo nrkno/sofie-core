@@ -1,11 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../__mocks__/helpers/database'
+import {
+	setupDefaultStudioEnvironment,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+} from '../../../__mocks__/helpers/database'
 import { getHash, waitForPromise, protectString, literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { StatusCode, status2ExternalStatus, setSystemStatus } from '../systemStatus'
-import { StatusResponse } from '../../../lib/api/systemStatus';
+import { StatusResponse } from '../../../lib/api/systemStatus'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
@@ -13,7 +17,7 @@ require('../api')
 const PackageInfo = require('../../../package.json')
 
 enum SystemStatusAPIMethods {
-	'getSystemStatus' = 'systemStatus.getSystemStatus'
+	'getSystemStatus' = 'systemStatus.getSystemStatus',
 }
 
 describe('systemStatus', () => {
@@ -24,7 +28,7 @@ describe('systemStatus', () => {
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
-			_status: expectedStatus0
+			_status: expectedStatus0,
 		})
 		expect(result0.checks).toHaveLength(0)
 	})
@@ -38,24 +42,24 @@ describe('systemStatus', () => {
 		const expectedStatus0 = StatusCode.BAD
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
-			_status: expectedStatus0
+			_status: expectedStatus0,
 		})
 		expect(result0.checks && result0.checks.length).toBeGreaterThan(0)
 
-		const systemTimeCheck = result0.checks && result0.checks.find(p => p.description === 'systemTime')
+		const systemTimeCheck = result0.checks && result0.checks.find((p) => p.description === 'systemTime')
 		expect(systemTimeCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.BAD)
+			status: status2ExternalStatus(StatusCode.BAD),
 		})
-		const databaseVersionCheck = result0.checks && result0.checks.find(p => p.description === 'databaseVersion')
+		const databaseVersionCheck = result0.checks && result0.checks.find((p) => p.description === 'databaseVersion')
 		expect(databaseVersionCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.BAD)
+			status: status2ExternalStatus(StatusCode.BAD),
 		})
 	})
 	testInFiber('getSystemStatus: after time sync', () => {
 		// simulate time sync OK
 		setSystemStatus('systemTime', {
 			statusCode: StatusCode.GOOD,
-			messages: [`NTP-time accuracy (standard deviation): ${Math.floor(0 * 10) / 10} ms`]
+			messages: [`NTP-time accuracy (standard deviation): ${Math.floor(0 * 10) / 10} ms`],
 		})
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
@@ -64,22 +68,22 @@ describe('systemStatus', () => {
 		const expectedStatus0 = StatusCode.BAD
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
-			_status: expectedStatus0
+			_status: expectedStatus0,
 		})
-		const systemTimeCheck = result0.checks && result0.checks.find(p => p.description === 'systemTime')
+		const systemTimeCheck = result0.checks && result0.checks.find((p) => p.description === 'systemTime')
 		expect(systemTimeCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.GOOD)
+			status: status2ExternalStatus(StatusCode.GOOD),
 		})
-		const databaseVersionCheck = result0.checks && result0.checks.find(p => p.description === 'databaseVersion')
+		const databaseVersionCheck = result0.checks && result0.checks.find((p) => p.description === 'databaseVersion')
 		expect(databaseVersionCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.BAD)
+			status: status2ExternalStatus(StatusCode.BAD),
 		})
 	})
 	testInFiber('getSystemStatus: after all migrations completed', () => {
 		// simulate migrations completed
 		setSystemStatus('databaseVersion', {
 			statusCode: StatusCode.GOOD,
-			messages: [`${'databaseVersion'} version: ${PackageInfo.version}`]
+			messages: [`${'databaseVersion'} version: ${PackageInfo.version}`],
 		})
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
@@ -88,16 +92,16 @@ describe('systemStatus', () => {
 		const expectedStatus0 = StatusCode.GOOD
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
-			_status: expectedStatus0
+			_status: expectedStatus0,
 		})
 
-		const systemTimeCheck = result0.checks && result0.checks.find(p => p.description === 'systemTime')
+		const systemTimeCheck = result0.checks && result0.checks.find((p) => p.description === 'systemTime')
 		expect(systemTimeCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.GOOD)
+			status: status2ExternalStatus(StatusCode.GOOD),
 		})
-		const databaseVersionCheck = result0.checks && result0.checks.find(p => p.description === 'databaseVersion')
+		const databaseVersionCheck = result0.checks && result0.checks.find((p) => p.description === 'databaseVersion')
 		expect(databaseVersionCheck).toMatchObject({
-			status: status2ExternalStatus(StatusCode.GOOD)
+			status: status2ExternalStatus(StatusCode.GOOD),
 		})
 	})
 	testInFiber('getSystemStatus: a component has a fault', () => {
@@ -106,9 +110,9 @@ describe('systemStatus', () => {
 			$set: {
 				status: literal<PeripheralDeviceAPI.StatusObject>({
 					statusCode: StatusCode.WARNING_MAJOR,
-					messages: []
-				})
-			}
+					messages: [],
+				}),
+			},
 		})
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
@@ -117,11 +121,12 @@ describe('systemStatus', () => {
 		const expectedStatus0 = StatusCode.WARNING_MAJOR
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
-			_status: expectedStatus0
+			_status: expectedStatus0,
 		})
-		const component = result0.components && result0.components.find((c) => c.instanceId === unprotectString(env.ingestDevice._id))
+		const component =
+			result0.components && result0.components.find((c) => c.instanceId === unprotectString(env.ingestDevice._id))
 		expect(component).toMatchObject({
-			status: status2ExternalStatus(expectedStatus0)
+			status: status2ExternalStatus(expectedStatus0),
 		})
 	})
 	testInFiber('getSystemStatus: a component has a library version mismatch', () => {
@@ -130,9 +135,9 @@ describe('systemStatus', () => {
 			$set: {
 				status: literal<PeripheralDeviceAPI.StatusObject>({
 					statusCode: StatusCode.GOOD,
-					messages: []
-				})
-			}
+					messages: [],
+				}),
+			},
 		})
 
 		const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
@@ -141,23 +146,24 @@ describe('systemStatus', () => {
 		const expectedStatus0 = StatusCode.GOOD
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
-			_status: expectedStatus0
+			_status: expectedStatus0,
 		})
-		const component = result0.components && result0.components.find((c) => c.instanceId === unprotectString(env.ingestDevice._id))
+		const component =
+			result0.components && result0.components.find((c) => c.instanceId === unprotectString(env.ingestDevice._id))
 		expect(component).toMatchObject({
-			status: status2ExternalStatus(expectedStatus0)
+			status: status2ExternalStatus(expectedStatus0),
 		})
 
 		// Change expectedVersions, simulate a major version mismatch
 		PeripheralDevices.update(env.ingestDevice, {
 			$set: {
 				versions: {
-					'test': '1.0.0'
+					test: '1.0.0',
 				},
 				expectedVersions: {
-					'test': '2.0.0'
-				}
-			}
+					test: '2.0.0',
+				},
+			},
 		})
 		const result1: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
@@ -165,19 +171,19 @@ describe('systemStatus', () => {
 		const expectedStatus1 = StatusCode.BAD
 		expect(result1).toMatchObject({
 			status: status2ExternalStatus(expectedStatus1),
-			_status: expectedStatus1
+			_status: expectedStatus1,
 		})
 
 		// Change expectedVersions, simulate a minor version mismatch
 		PeripheralDevices.update(env.ingestDevice, {
 			$set: {
 				versions: {
-					'test': '1.0.0'
+					test: '1.0.0',
 				},
 				expectedVersions: {
-					'test': '1.1.0'
-				}
-			}
+					test: '1.1.0',
+				},
+			},
 		})
 		const result2: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
@@ -185,19 +191,19 @@ describe('systemStatus', () => {
 		const expectedStatus2 = StatusCode.WARNING_MAJOR
 		expect(result2).toMatchObject({
 			status: status2ExternalStatus(expectedStatus2),
-			_status: expectedStatus2
+			_status: expectedStatus2,
 		})
 
 		// Change expectedVersions, simulate a minor version mismatch
 		PeripheralDevices.update(env.ingestDevice, {
 			$set: {
 				versions: {
-					'test': '1.0.0'
+					test: '1.0.0',
 				},
 				expectedVersions: {
-					'test': '1.0.1'
-				}
-			}
+					test: '1.0.1',
+				},
+			},
 		})
 		const result3: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
@@ -205,19 +211,19 @@ describe('systemStatus', () => {
 		const expectedStatus3 = StatusCode.WARNING_MINOR
 		expect(result3).toMatchObject({
 			status: status2ExternalStatus(expectedStatus3),
-			_status: expectedStatus3
+			_status: expectedStatus3,
 		})
 
 		// Change expectedVersions, simulate a version match
 		PeripheralDevices.update(env.ingestDevice, {
 			$set: {
 				versions: {
-					'test': '1.0.0'
+					test: '1.0.0',
 				},
 				expectedVersions: {
-					'test': '1.0.0'
-				}
-			}
+					test: '1.0.0',
+				},
+			},
 		})
 		const result4: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 
@@ -225,7 +231,7 @@ describe('systemStatus', () => {
 		const expectedStatus4 = StatusCode.GOOD
 		expect(result4).toMatchObject({
 			status: status2ExternalStatus(expectedStatus4),
-			_status: expectedStatus4
+			_status: expectedStatus4,
 		})
 	})
 })

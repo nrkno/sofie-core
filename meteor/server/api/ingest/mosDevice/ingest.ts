@@ -8,9 +8,18 @@ import {
 	getPartIdFromMosStory,
 	getSegmentExternalId,
 	fixIllegalObject,
-	parseMosString
+	parseMosString,
 } from './lib'
-import { literal, asyncCollectionUpdate, waitForPromiseAll, protectString, unprotectString } from '../../../../lib/lib'
+import {
+	literal,
+	asyncCollectionUpdate,
+	waitForPromiseAll,
+	protectString,
+	unprotectString,
+	waitForPromise,
+	getCurrentTime,
+	normalizeArray,
+} from '../../../../lib/lib'
 import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
@@ -18,18 +27,22 @@ import {
 	RundownSyncFunctionPriority,
 	handleUpdatedRundownInner,
 	handleUpdatedPartInner,
-	updateSegmentsFromIngestData
+	updateSegmentsFromIngestData,
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
 	saveRundownCache,
 	loadCachedIngestSegment,
-	loadIngestDataCachePart
+	loadIngestDataCachePart,
+	LocalIngestRundown,
+	LocalIngestSegment,
+	LocalIngestPart,
+	updateIngestRundownWithData,
 } from '../ingestCache'
 import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { Segments } from '../../../../lib/collections/Segments'
+import { Segments, Segment } from '../../../../lib/collections/Segments'
 import { loadShowStyleBlueprints } from '../../blueprints/cache'
 import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
@@ -37,39 +50,49 @@ import { logger } from '../../../../lib/logging'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Parts, PartId } from '../../../../lib/collections/Parts'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 import { Settings } from '../../../../lib/Settings'
 
 interface AnnotatedIngestPart {
 	externalId: string
 	partId: PartId
 	segmentName: string
-	ingest: IngestPart
+	ingest: LocalIngestPart
 }
-function storiesToIngestParts (
+function storiesToIngestParts(
 	rundownId: RundownId,
 	stories: MOS.IMOSStory[],
-	undefinedPayload: boolean
+	undefinedPayload: boolean,
+	existingIngestParts: AnnotatedIngestPart[]
 ): (AnnotatedIngestPart | null)[] {
+	const existingIngestPartsMap = normalizeArray(existingIngestParts, 'externalId')
+
 	return _.map(stories, (s, i) => {
 		if (!s) return null
 
+		const externalId = parseMosString(s.ID)
+		const existingIngestPart = existingIngestPartsMap[externalId]
+
 		const name = s.Slug ? parseMosString(s.Slug) : ''
 		return {
-			externalId: parseMosString(s.ID),
+			externalId: externalId,
 			partId: getPartIdFromMosStory(rundownId, s.ID),
 			segmentName: name.split(';')[0],
-			ingest: literal<IngestPart>({
+			ingest: literal<LocalIngestPart>({
 				externalId: parseMosString(s.ID),
 				name: name,
 				rank: i,
-				payload: undefinedPayload ? undefined : {}
-			})
+				payload: undefinedPayload ? undefined : {},
+				modified: existingIngestPart ? existingIngestPart.ingest.modified : getCurrentTime(),
+			}),
 		}
 	})
 }
-function groupIngestParts (parts: AnnotatedIngestPart[]): { name: string; parts: IngestPart[] }[] {
-	const groupedStories: { name: string; parts: IngestPart[] }[] = []
-	_.each(parts, s => {
+/** Group IngestParts together into something that could be Segments */
+function groupIngestParts(parts: AnnotatedIngestPart[]): { name: string; parts: LocalIngestPart[] }[] {
+	const groupedStories: { name: string; parts: LocalIngestPart[] }[] = []
+	_.each(parts, (s) => {
 		const lastSegment = _.last(groupedStories)
 		if (lastSegment && lastSegment.name === s.segmentName) {
 			lastSegment.parts.push(s.ingest)
@@ -79,7 +102,7 @@ function groupIngestParts (parts: AnnotatedIngestPart[]): { name: string; parts:
 	})
 
 	// Ensure ranks are correct
-	_.each(groupedStories, group => {
+	_.each(groupedStories, (group) => {
 		for (let i = 0; i < group.parts.length; i++) {
 			group.parts[i].rank = i
 		}
@@ -87,21 +110,22 @@ function groupIngestParts (parts: AnnotatedIngestPart[]): { name: string; parts:
 
 	return groupedStories
 }
-function groupedPartsToSegments (
+function groupedPartsToSegments(
 	rundownId: RundownId,
-	groupedParts: { name: string; parts: IngestPart[] }[]
-): IngestSegment[] {
-	return _.map(groupedParts, (grp, i) =>
-		literal<IngestSegment>({
+	groupedParts: { name: string; parts: LocalIngestPart[] }[]
+): LocalIngestSegment[] {
+	return _.map(groupedParts, (grp, i) => {
+		return literal<LocalIngestSegment>({
 			externalId: getSegmentExternalId(rundownId, grp.parts[0]),
 			name: grp.name,
 			rank: i,
-			parts: grp.parts
+			parts: grp.parts,
+			modified: Math.max(...grp.parts.map((p) => p.modified)), // pick the latest
 		})
-	)
+	})
 }
 
-export function handleMosRundownData (
+export function handleMosRundownData(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	createFresh: boolean
@@ -115,26 +139,26 @@ export function handleMosRundownData (
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
 	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
-		const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh))
+		const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh, []))
 		const groupedStories = groupIngestParts(parts)
 
 		// If this is a reload of a RO, then use cached data to make the change more seamless
 		if (!createFresh) {
-			const partIds = _.map(parts, p => p.partId)
+			const partIds = _.map(parts, (p) => p.partId)
 			const partCache = IngestDataCache.find({
 				rundownId: rundownId,
 				partId: { $in: partIds },
-				type: IngestCacheType.PART
+				type: IngestCacheType.PART,
 			}).fetch()
 
 			const partCacheMap: { [id: string]: IngestPart } = {}
-			_.each(partCache, p => {
+			_.each(partCache, (p) => {
 				if (p.partId) {
 					partCacheMap[unprotectString(p.partId)] = p.data as IngestPart
 				}
 			})
 
-			_.each(parts, s => {
+			_.each(parts, (s) => {
 				const cached = partCacheMap[unprotectString(s.partId)]
 				if (cached) {
 					s.ingest.payload = cached.payload
@@ -144,12 +168,13 @@ export function handleMosRundownData (
 
 		const ingestSegments = groupedPartsToSegments(rundownId, groupedStories)
 
-		const ingestRundown = literal<IngestRundown>({
+		const ingestRundown = literal<LocalIngestRundown>({
 			externalId: parseMosString(mosRunningOrder.ID),
 			name: parseMosString(mosRunningOrder.Slug),
 			type: 'mos',
 			segments: ingestSegments,
-			payload: mosRunningOrder
+			payload: mosRunningOrder,
+			modified: getCurrentTime(),
 		})
 
 		handleUpdatedRundownInner(
@@ -161,7 +186,7 @@ export function handleMosRundownData (
 		)
 	})
 }
-export function handleMosRundownMetadata (
+export function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ) {
@@ -187,6 +212,7 @@ export function handleMosRundownMetadata (
 		// Load the cached RO Data
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
+		ingestRundown.modified = getCurrentTime()
 		// TODO - verify this doesn't lose data, it was doing more work before
 
 		// TODO - make this more lightweight?
@@ -194,7 +220,7 @@ export function handleMosRundownMetadata (
 	})
 }
 
-export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
+export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
 	fixIllegalObject(story)
 	// @ts-ignore
 	// logger.debug(story)
@@ -227,16 +253,18 @@ export function handleMosFullStory (peripheralDevice: PeripheralDevice, story: M
 			unprotectString(cachedPartData.segmentId)
 		)
 
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 		const ingestPart: IngestPart = cachedPartData.data
 		// TODO - can the name change during a fullStory? If so then we need to be sure to update the segment groupings too
 		// ingestPart.name = story.Slug ? parseMosString(story.Slug) : ''
 		ingestPart.payload = story
 
 		// Update db with the full story:
-		handleUpdatedPartInner(studio, playlist, rundown, ingestSegment.externalId, ingestPart)
+		handleUpdatedPartInner(cache, studio, playlist, rundown, ingestSegment.externalId, ingestPart)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function handleMosDeleteStory (
+export function handleMosDeleteStory(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	stories: Array<MOS.MosString128>
@@ -256,13 +284,13 @@ export function handleMosDeleteStory (
 
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
-		const ingestPartIds = _.map(ingestParts, part => part.externalId)
+		const ingestPartIds = _.map(ingestParts, (part) => part.externalId)
 
 		const storyIds = _.map(stories, parseMosString)
 
 		logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`)
 
-		const missingIds = _.filter(storyIds, id => ingestPartIds.indexOf(id) === -1)
+		const missingIds = _.filter(storyIds, (id) => ingestPartIds.indexOf(id) === -1)
 		if (missingIds.length > 0) {
 			throw new Meteor.Error(
 				404,
@@ -270,31 +298,35 @@ export function handleMosDeleteStory (
 			)
 		}
 
-		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
-		if (filteredParts.length === ingestParts.length) return // Nothing was removed
+		const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
+			const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
+			// if (filteredParts.length === ingestParts.length) return // Nothing was removed
+			logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
+			return filteredParts
+		})
 
-		logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
-
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
-		UpdateNext.ensureNextPartIsValid(playlist)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
 
-function getAnnotatedIngestParts (ingestRundown: IngestRundown): AnnotatedIngestPart[] {
+function getAnnotatedIngestParts(ingestRundown: LocalIngestRundown): AnnotatedIngestPart[] {
 	const ingestParts: AnnotatedIngestPart[] = []
-	_.each(ingestRundown.segments, s => {
-		_.each(s.parts, p => {
+	_.each(ingestRundown.segments, (s) => {
+		_.each(s.parts, (p) => {
 			ingestParts.push({
 				externalId: p.externalId,
 				partId: protectString(''), // Not used
 				segmentName: s.name,
-				ingest: p
+				ingest: p,
 			})
 		})
 	})
 	return ingestParts
 }
-export function handleInsertParts (
+export function handleInsertParts(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
@@ -319,42 +351,44 @@ export function handleInsertParts (
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 		const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
-		const insertIndex = (
-			!insertBeforePartExternalId ? // insert last
-				ingestParts.length :
-				ingestParts.findIndex(p => p.externalId === insertBeforePartExternalId)
-		)
+		const insertIndex = !insertBeforePartExternalId // insert last
+			? ingestParts.length
+			: ingestParts.findIndex((p) => p.externalId === insertBeforePartExternalId)
 		if (insertIndex === -1) {
 			throw new Meteor.Error(404, `Part ${insertBeforePartExternalId} in rundown ${rundown.externalId} not found`)
 		}
 
-		const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true))
+		const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true, ingestParts))
+		const newPartIds = _.map(newParts, (part) => part.externalId)
 
-		if (removePrevious) {
-			ingestParts.splice(insertIndex, 1) // Replace the previous part with new parts
-		}
+		const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
+			if (removePrevious) {
+				ingestParts.splice(insertIndex, 1) // Replace the previous part with new parts
+			}
 
-		const newPartIds = _.map(newParts, part => part.externalId)
-		const collidingPartIds = _.map(
-			_.filter(ingestParts, part => newPartIds.indexOf(part.externalId) !== -1),
-			part => part.externalId
-		)
-		if (collidingPartIds.length > 0) {
-			throw new Meteor.Error(
-				500,
-				`Parts ${collidingPartIds.join(', ')} already exist in rundown ${rundown.externalId}`
+			const collidingPartIds = _.map(
+				_.filter(ingestParts, (part) => newPartIds.indexOf(part.externalId) !== -1),
+				(part) => part.externalId
 			)
-		}
+			if (collidingPartIds.length > 0) {
+				throw new Meteor.Error(
+					500,
+					`Parts ${collidingPartIds.join(', ')} already exist in rundown ${rundown.externalId}`
+				)
+			}
+			// Update parts list
+			ingestParts.splice(insertIndex, 0, ...newParts)
 
-		// Update parts list
-		ingestParts.splice(insertIndex, 0, ...newParts)
+			return ingestParts
+		})
 
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
-
-		UpdateNext.afterInsertParts(playlist, newPartIds, removePrevious)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
+		UpdateNext.afterInsertParts(cache, playlist, newPartIds, removePrevious)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function handleSwapStories (
+export function handleSwapStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	story0: MOS.MosString128,
@@ -383,25 +417,29 @@ export function handleSwapStories (
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
 		const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
-		const story0Index = ingestParts.findIndex(p => p.externalId === story0Str)
-		if (story0Index === -1) {
-			throw new Meteor.Error(404, `Story ${story0} not found in rundown ${parseMosString(runningOrderMosId)}`)
-		}
-		const story1Index = ingestParts.findIndex(p => p.externalId === story1Str)
-		if (story1Index === -1) {
-			throw new Meteor.Error(404, `Story ${story1} not found in rundown ${parseMosString(runningOrderMosId)}`)
-		}
+		const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
+			const story0Index = ingestParts.findIndex((p) => p.externalId === story0Str)
+			if (story0Index === -1) {
+				throw new Meteor.Error(404, `Story ${story0} not found in rundown ${parseMosString(runningOrderMosId)}`)
+			}
+			const story1Index = ingestParts.findIndex((p) => p.externalId === story1Str)
+			if (story1Index === -1) {
+				throw new Meteor.Error(404, `Story ${story1} not found in rundown ${parseMosString(runningOrderMosId)}`)
+			}
+			const tmp = ingestParts[story0Index]
+			ingestParts[story0Index] = ingestParts[story1Index]
+			ingestParts[story1Index] = tmp
 
-		const tmp = ingestParts[story0Index]
-		ingestParts[story0Index] = ingestParts[story1Index]
-		ingestParts[story1Index] = tmp
+			return ingestParts
+		})
 
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, ingestParts)
-
-		UpdateNext.ensureNextPartIsValid(playlist)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
-export function handleMoveStories (
+export function handleMoveStories(
 	peripheralDevice: PeripheralDevice,
 	runningOrderMosId: MOS.MosString128,
 	insertBeforeStoryId: MOS.MosString128 | null,
@@ -422,71 +460,126 @@ export function handleMoveStories (
 
 		// Get story data
 		const storyIds = _.map(stories, parseMosString)
-		const movingParts = _.sortBy(ingestParts.filter(p => storyIds.indexOf(p.externalId) !== -1), p =>
-			storyIds.indexOf(p.externalId)
-		)
 
-		// Ensure all stories to move were found
-		const movingIds = _.map(movingParts, p => p.externalId)
-		const missingIds = _.filter(storyIds, id => movingIds.indexOf(id) === -1)
-		if (missingIds.length > 0) {
-			throw new Meteor.Error(
-				404,
-				`Parts ${missingIds.join(', ')} were not found in rundown ${rundown.externalId}`
+		const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
+			// Extract the parts-to-be-moved:
+			const movingParts = _.sortBy(
+				ingestParts.filter((p) => storyIds.indexOf(p.externalId) !== -1),
+				(p) => storyIds.indexOf(p.externalId)
 			)
-		}
+			const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
 
-		const filteredParts = ingestParts.filter(p => storyIds.indexOf(p.externalId) === -1)
+			// Ensure all stories to move were found
+			const movingIds = _.map(movingParts, (p) => p.externalId)
+			const missingIds = _.filter(storyIds, (id) => movingIds.indexOf(id) === -1)
+			if (missingIds.length > 0) {
+				throw new Meteor.Error(
+					404,
+					`Parts ${missingIds.join(', ')} were not found in rundown ${rundown.externalId}`
+				)
+			}
 
-		// Find insert point
-		const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
-		const insertIndex = (
-			!insertBeforePartExternalId ? // insert last
-				filteredParts.length :
-				filteredParts.findIndex(p => p.externalId === insertBeforePartExternalId)
-		)
-		if (insertIndex === -1) {
-			throw new Meteor.Error(404, `Part ${insertBeforeStoryId} was not found in rundown ${rundown.externalId}`)
-		}
+			// Find insert point
+			const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
+			const insertIndex = !insertBeforePartExternalId // insert last
+				? filteredParts.length
+				: filteredParts.findIndex((p) => p.externalId === insertBeforePartExternalId)
+			if (insertIndex === -1) {
+				throw new Meteor.Error(
+					404,
+					`Part ${insertBeforeStoryId} was not found in rundown ${rundown.externalId}`
+				)
+			}
 
-		// Reinsert parts
-		filteredParts.splice(insertIndex, 0, ...movingParts)
+			// Reinsert parts
+			filteredParts.splice(insertIndex, 0, ...movingParts)
 
-		diffAndApplyChanges(studio, playlist, rundown, ingestRundown, filteredParts)
+			return filteredParts
+		})
 
-		UpdateNext.ensureNextPartIsValid(playlist)
+		const cache = waitForPromise(initCacheForRundownPlaylist(playlist)) // todo: change this
+		diffAndApplyChanges(cache, studio, playlist, rundown, ingestRundown, newIngestSegments)
+		UpdateNext.ensureNextPartIsValid(cache, playlist)
+		waitForPromise(cache.saveAllToDatabase())
 	})
 }
+/** Takes a list of ingestParts, modify it, then output them grouped together into ingestSegments, keeping track of the modified property */
+function makeChangeToIngestParts(
+	rundown: Rundown,
+	ingestParts: AnnotatedIngestPart[],
+	modifyFunction: (ingestParts: AnnotatedIngestPart[]) => AnnotatedIngestPart[]
+): LocalIngestSegment[] {
+	const referenceIngestSegments = groupPartsIntoIngestSegments(rundown, ingestParts)
 
-function diffAndApplyChanges (
+	const modifiedParts = modifyFunction(ingestParts)
+
+	// Compare to reference, to make sure that ingestSegment.modified is updated in case of a change
+	const newIngestSegments = groupPartsIntoIngestSegments(rundown, modifiedParts)
+	_.each(newIngestSegments, (ingestSegment) => {
+		if (!ingestSegment.modified) {
+			ingestSegment.modified = getCurrentTime()
+		} else {
+			const ref = referenceIngestSegments.find((s) => s.externalId === ingestSegment.externalId)
+			if (ref) {
+				if (ref.parts.length === ingestSegment.parts.length) {
+					// A part has been added, or removed
+					ingestSegment.modified = getCurrentTime()
+				} else {
+					// No obvious change.
+					// (If an individual part has been updated, the segment.modified property has already been updated anyway)
+				}
+			} else {
+				// The reference doesn't exist (can happen for example if a segment has been merged, or split into two)
+				ingestSegment.modified = getCurrentTime()
+			}
+		}
+	})
+	return newIngestSegments
+}
+function groupPartsIntoIngestSegments(rundown: Rundown, newIngestParts: AnnotatedIngestPart[]): LocalIngestSegment[] {
+	// Group the parts and make them into Segments:
+	const newGroupedParts = groupIngestParts(newIngestParts)
+	const newIngestSegments = groupedPartsToSegments(rundown._id, newGroupedParts)
+
+	return newIngestSegments
+}
+
+function diffAndApplyChanges(
+	cache: CacheForRundownPlaylist,
 	studio: Studio,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
-	ingestRundown: IngestRundown,
-	ingestParts: AnnotatedIngestPart[]
+	oldIngestRundown: LocalIngestRundown,
+	newIngestSegments: LocalIngestSegment[]
+	// newIngestParts: AnnotatedIngestPart[]
 ) {
-	// Save the new parts list
-	const groupedParts = groupIngestParts(ingestParts)
-	const ingestSegments = groupedPartsToSegments(rundown._id, groupedParts)
+	// Fetch all existing segments:
+	const oldSegments = cache.Segments.findFetch({ rundownId: rundown._id })
 
-	const oldSegmentEntries = compileSegmentEntries(ingestRundown.segments)
-	const newSegmentEntries = compileSegmentEntries(ingestSegments)
-	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries)
+	const oldSegmentEntries = compileSegmentEntries(oldIngestRundown.segments)
+	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
+	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
 	// Check if operation affect currently playing Part:
-	const { currentPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
 	if (playlist.active && currentPartInstance) {
-		const currentPart = _.find(ingestParts, (ingestPart) => {
-			const partId = getPartId(rundown._id, ingestPart.externalId)
-			return partId === currentPartInstance.part._id
+		let currentPart: LocalIngestPart | undefined = undefined
+		_.find(newIngestSegments, (ingestSegment) => {
+			currentPart = _.find(ingestSegment.parts, (ingestPart) => {
+				const partId = getPartId(rundown._id, ingestPart.externalId)
+				return partId === currentPartInstance.part._id
+			})
+			if (currentPart) return true // break
 		})
 		if (!currentPart) {
 			// Looks like the currently playing part has been removed.
-			logger.warn(`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing!`)
+			logger.warn(
+				`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`
+			)
 			if (Settings.allowUnsyncedSegments) {
-				ServerRundownAPI.unsyncSegment(currentPartInstance.part.segmentId)
+				ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, currentPartInstance.part.segmentId)
 			} else {
-				ServerRundownAPI.unsyncRundown(rundown._id)
+				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 			}
 			return
 		} else {
@@ -495,28 +588,22 @@ function diffAndApplyChanges (
 		}
 	}
 
-
 	// Save new cache
-	const newIngestRundown = _.clone(ingestRundown)
-	newIngestRundown.segments = ingestSegments
+	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
 	saveRundownCache(rundown._id, newIngestRundown)
 
 	// Update segment ranks:
-	let ps: Array<Promise<any>> = []
 	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
-		ps.push(
-			asyncCollectionUpdate(
-				Segments,
-				{
-					rundownId: rundown._id,
-					_id: getSegmentId(rundown._id, segmentExternalId)
+		cache.Segments.update(
+			{
+				rundownId: rundown._id,
+				_id: getSegmentId(rundown._id, segmentExternalId),
+			},
+			{
+				$set: {
+					_rank: newRank,
 				},
-				{
-					$set: {
-						_rank: newRank
-					}
-				}
-			)
+			}
 		)
 	})
 	// Updated segments that has had their segment.externalId changed:
@@ -526,72 +613,60 @@ function diffAndApplyChanges (
 
 		// Move over those parts to the new segmentId.
 		// These parts will be orphaned temporarily, but will be picked up inside of updateSegmentsFromIngestData later
-		ps.push(
-			asyncCollectionUpdate(
-				Parts,
-				{
-					rundownId: rundown._id,
-					segmentId: oldSegmentId
+		cache.Parts.update(
+			{
+				rundownId: rundown._id,
+				segmentId: oldSegmentId,
+			},
+			{
+				$set: {
+					segmentId: newSegmentId,
 				},
-				{
-					$set: {
-						segmentId: newSegmentId
-					}
-				},
-				{
-					multi: true
-				}
-			)
+			}
 		)
-		ps.push(
-			asyncCollectionUpdate(
-				PartInstances,
-				{
-					rundownId: rundown._id,
-					segmentId: oldSegmentId
+
+		cache.PartInstances.update(
+			{
+				rundownId: rundown._id,
+				segmentId: oldSegmentId,
+			},
+			{
+				$set: {
+					segmentId: newSegmentId,
+					'part.segmentId': newSegmentId,
 				},
-				{
-					$set: {
-						segmentId: newSegmentId,
-						'part.segmentId': newSegmentId
-					}
-				},
-				{
-					multi: true
-				}
-			)
+			}
 		)
 	})
-
-	waitForPromiseAll(ps)
 
 	// Remove old segments
 	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
 		getSegmentId(rundown._id, segmentExternalId)
 	)
-	removeSegments(rundown, removedSegmentIds)
+	removeSegments(cache, rundown._id, removedSegmentIds)
 
 	// Create/Update segments
 	updateSegmentsFromIngestData(
+		cache,
 		studio,
 		playlist,
 		rundown,
-		_.sortBy([
-			..._.values(segmentDiff.added),
-			..._.values(segmentDiff.changed)
-		], se => se.rank)
+		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
 	)
 }
 
 export interface SegmentEntries {
-	[segmentExternalId: string]: IngestSegment
+	[segmentExternalId: string]: LocalIngestSegment
 }
-export function compileSegmentEntries (ingestSegments: IngestSegment[]): SegmentEntries {
+export function compileSegmentEntries(ingestSegments: LocalIngestSegment[]): SegmentEntries {
 	let segmentEntries: SegmentEntries = {}
 
-	_.each(ingestSegments, (ingestSegment: IngestSegment, rank: number) => {
+	_.each(ingestSegments, (ingestSegment: LocalIngestSegment, rank: number) => {
 		if (segmentEntries[ingestSegment.externalId]) {
-			throw new Meteor.Error(500, `compileSegmentEntries: Non-unique segment external ID: "${ingestSegment.externalId}"`)
+			throw new Meteor.Error(
+				500,
+				`compileSegmentEntries: Non-unique segment external ID: "${ingestSegment.externalId}"`
+			)
 		}
 		segmentEntries[ingestSegment.externalId] = _.clone(ingestSegment)
 	})
@@ -599,20 +674,23 @@ export function compileSegmentEntries (ingestSegments: IngestSegment[]): Segment
 	return segmentEntries
 }
 export interface DiffSegmentEntries {
-	added: {[segmentExternalId: string]: IngestSegment}
-	changed: {[segmentExternalId: string]: IngestSegment}
-	removed: {[segmentExternalId: string]: IngestSegment}
-	unchanged: {[segmentExternalId: string]: IngestSegment}
+	added: { [segmentExternalId: string]: LocalIngestSegment }
+	changed: { [segmentExternalId: string]: LocalIngestSegment }
+	removed: { [segmentExternalId: string]: LocalIngestSegment }
+	unchanged: { [segmentExternalId: string]: LocalIngestSegment }
 
-	// The objects present below are also present in the collections above
+	// Note: The objects present below are also present in the collections above
+
 	/** Reference to segments which only had their ranks updated */
-	onlyRankChanged: {[segmentExternalId: string]: number} // contains the new rank
+	onlyRankChanged: { [segmentExternalId: string]: number } // contains the new rank
+
 	/** Reference to segments which has been REMOVED, but it looks like there is an ADDED segment that is closely related to the removed one */
-	onlyExternalIdChanged: {[segmentExternalId: string]: string} // contains the new externalId
+	onlyExternalIdChanged: { [removedSegmentExternalId: string]: string } // contains the added segment's externalId
 }
-export function diffSegmentEntries (
+export function diffSegmentEntries(
 	oldSegmentEntries: SegmentEntries,
-	newSegmentEntries: SegmentEntries
+	newSegmentEntries: SegmentEntries,
+	oldSegments: Segment[] | null
 ): DiffSegmentEntries {
 	const diff: DiffSegmentEntries = {
 		added: {},
@@ -623,34 +701,43 @@ export function diffSegmentEntries (
 		onlyRankChanged: {},
 		onlyExternalIdChanged: {},
 	}
+	const oldSegmentMap: { [externalId: string]: Segment } | null =
+		oldSegments === null ? null : normalizeArray(oldSegments, 'externalId')
+
 	_.each(newSegmentEntries, (newSegmentEntry, segmentExternalId) => {
 		const oldSegmentEntry = oldSegmentEntries[segmentExternalId] as IngestSegment | undefined
+		let oldSegment: Segment | undefined
+		if (oldSegmentMap) {
+			oldSegment = oldSegmentMap[newSegmentEntry.externalId]
+			if (!oldSegment) {
+				// Segment has been added
+				diff.added[segmentExternalId] = newSegmentEntry
+				return
+			}
+		}
 		if (oldSegmentEntry) {
+			const modifiedIsEqual = oldSegment ? newSegmentEntry.modified === oldSegment.externalModified : true
+			// deep compare:
+			const ingestContentIsEqual = _.isEqual(_.omit(newSegmentEntry, 'rank'), _.omit(oldSegmentEntry, 'rank'))
+			const rankIsEqual = oldSegment
+				? newSegmentEntry.rank === oldSegment._rank
+				: newSegmentEntry.rank === oldSegmentEntry.rank
 
-			// Deep compare
-			if (_.isEqual(newSegmentEntry, oldSegmentEntry)) {
+			// Compare the modified timestamps:
+			if (modifiedIsEqual && ingestContentIsEqual && rankIsEqual) {
 				diff.unchanged[segmentExternalId] = newSegmentEntry
 			} else {
-				// The segments are not equal
+				// Something has changed
+				diff.changed[segmentExternalId] = newSegmentEntry
 
 				// Check if it's only the rank that has changed:
-				if (
-					newSegmentEntry.rank !== oldSegmentEntry.rank &&
-					_.isEqual(
-						_.omit(newSegmentEntry, 'rank'),
-						_.omit(oldSegmentEntry, 'rank')
-					)
-				) {
-					// Only the rank changed
+				if (ingestContentIsEqual && !rankIsEqual) {
 					diff.onlyRankChanged[segmentExternalId] = newSegmentEntry.rank
 				}
-				diff.changed[segmentExternalId] = newSegmentEntry
 			}
-
 		} else {
 			// Segment has been added
 			diff.added[segmentExternalId] = newSegmentEntry
-
 		}
 	})
 
@@ -663,7 +750,6 @@ export function diffSegmentEntries (
 
 	// Handle when the externalId has change
 	_.each(diff.removed, (segmentEntry, segmentExternalId) => {
-
 		// try finding "it" in the added, using name
 		let newSegmentEntry = _.find(diff.added, (se) => se.name === segmentEntry.name)
 		if (!newSegmentEntry) {
@@ -671,7 +757,7 @@ export function diffSegmentEntries (
 			newSegmentEntry = _.find(diff.added, (se) => {
 				let found = false
 				_.each(segmentEntry.parts, (part) => {
-					if (found || _.find(se.parts, p => p.externalId === part.externalId)) {
+					if (found || _.find(se.parts, (p) => p.externalId === part.externalId)) {
 						found = true
 					}
 				})

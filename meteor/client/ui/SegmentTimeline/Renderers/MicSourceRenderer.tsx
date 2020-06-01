@@ -13,184 +13,210 @@ import { getElementWidth } from '../../../utils/dimensions'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
-interface IProps extends ICustomLayerItemProps {
-}
-interface IState {
-}
+interface IProps extends ICustomLayerItemProps {}
+interface IState {}
 
-export const MicSourceRenderer = translate()(class MicSourceRenderer extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export const MicSourceRenderer = translate()(
+	class MicSourceRenderer extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+		itemPosition: number
+		itemWidth: number
+		itemElement: HTMLElement | null
+		lineItem: HTMLElement
+		linePosition: number
+		leftLabel: HTMLSpanElement
+		rightLabel: HTMLSpanElement
 
-	itemPosition: number
-	itemWidth: number
-	itemElement: HTMLElement | null
-	lineItem: HTMLElement
-	linePosition: number
-	leftLabel: HTMLSpanElement
-	rightLabel: HTMLSpanElement
+		readTime: number
 
-	readTime: number
+		private _forceSizingRecheck: boolean
 
-	private _forceSizingRecheck: boolean
-
-	constructor (props: IProps & InjectedTranslateProps) {
-		super(props)
-	}
-
-	repositionLine = () => {
-		this.lineItem.style.left = this.linePosition + 'px'
-	}
-
-	refreshLine = () => {
-		if (this.itemElement) {
-			this.itemPosition = this.itemElement.offsetLeft
-			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
-			let scriptReadTime = 0
-			if (content && content.sourceDuration) {
-				scriptReadTime = content.sourceDuration * this.props.timeScale
-				this.readTime = content.sourceDuration
-			} else {
-				scriptReadTime = getElementWidth(this.itemElement)
-			}
-
-			if (this.itemPosition + scriptReadTime !== this.linePosition) {
-				this.linePosition = Math.min(this.itemPosition + scriptReadTime, this.props.partDuration * this.props.timeScale)
-				this.repositionLine()
-			}
-		}
-	}
-
-	setLeftLabelRef = (e: HTMLSpanElement) => {
-		this.leftLabel = e
-	}
-
-	setRightLabelRef = (e: HTMLSpanElement) => {
-		this.rightLabel = e
-	}
-
-	componentDidMount () {
-		// Create line element
-		this.lineItem = document.createElement('div')
-		this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line')
-		this.updateAnchoredElsWidths()
-		if (this.props.itemElement) {
-			this.itemElement = this.props.itemElement
-			this.itemElement.parentNode && this.itemElement.parentNode.parentNode &&
-				this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
-			this.refreshLine()
-		}
-	}
-
-	updateAnchoredElsWidths = () => {
-		const leftLabelWidth = getElementWidth(this.leftLabel)
-		const rightLabelWidth = getElementWidth(this.rightLabel)
-
-		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
-	}
-
-	componentDidUpdate (prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
-		let _forceSizingRecheck = false
-
-		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
-			super.componentDidUpdate(prevProps, prevState)
+		constructor(props: IProps & InjectedTranslateProps) {
+			super(props)
 		}
 
-		if ((prevProps.partDuration !== this.props.partDuration) ||
-			(prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint) ||
-			(prevProps.piece.renderedDuration !== this.props.piece.renderedDuration) ||
-			(prevProps.piece.instance.piece.playoutDuration !== this.props.piece.instance.piece.playoutDuration) ||
-			!_.isEqual(prevProps.piece.instance.piece.userDuration, this.props.piece.instance.piece.userDuration) ||
-			!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable)
-		) {
-			_forceSizingRecheck = true
+		repositionLine = () => {
+			this.lineItem.style.left = this.linePosition + 'px'
 		}
 
-		// Move the line element
-		if (this.itemElement !== this.props.itemElement) {
+		refreshLine = () => {
 			if (this.itemElement) {
-				this.lineItem.remove()
+				this.itemPosition = this.itemElement.offsetLeft
+				const content = this.props.piece.instance.piece.content as ScriptContent | undefined
+				let scriptReadTime = 0
+				if (content && content.sourceDuration) {
+					scriptReadTime = content.sourceDuration * this.props.timeScale
+					this.readTime = content.sourceDuration
+				} else {
+					scriptReadTime = getElementWidth(this.itemElement)
+				}
+
+				if (this.itemPosition + scriptReadTime !== this.linePosition) {
+					this.linePosition = Math.min(
+						this.itemPosition + scriptReadTime,
+						this.props.partDuration * this.props.timeScale
+					)
+					this.repositionLine()
+				}
 			}
-			this.itemElement = this.props.itemElement
-			if (this.itemElement) {
-				this.itemElement.parentNode && this.itemElement.parentNode.parentNode
-					&& this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
-				this._forceSizingRecheck = true
-			}
 		}
 
-		const content = this.props.piece.instance.piece.content as ScriptContent | undefined
-		if (content && content.sourceDuration && content.sourceDuration !== this.readTime) {
-			_forceSizingRecheck = true
+		setLeftLabelRef = (e: HTMLSpanElement) => {
+			this.leftLabel = e
 		}
 
-		if (_forceSizingRecheck) {
-			this.refreshLine()
+		setRightLabelRef = (e: HTMLSpanElement) => {
+			this.rightLabel = e
 		}
 
-		if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
+		componentDidMount() {
+			// Create line element
+			this.lineItem = document.createElement('div')
+			this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line')
 			this.updateAnchoredElsWidths()
-		}
-	}
-
-	componentWillUnmount () {
-		// Remove the line element
-		this.lineItem.remove()
-	}
-
-	render () {
-		const { t } = this.props
-		let labelItems = (this.props.piece.instance.piece.name || '').split('||')
-		let begin = labelItems[0] || ''
-		let end = labelItems[1] || ''
-
-		// function shorten (str: string, maxLen: number, separator: string = ' ') {
-		// 	if (str.length <= maxLen) return str
-		// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
-		// }
-
-		const content = this.props.piece.instance.piece.content as ScriptContent | undefined
-		let startOfScript = (content && content.fullScript) || ''
-		let cutLength = startOfScript.length
-		if (startOfScript.length > SCRIPT_PART_LENGTH) {
-			startOfScript = startOfScript.substring(0, startOfScript.substr(0, SCRIPT_PART_LENGTH).lastIndexOf(' '))
-			cutLength = startOfScript.length
-		}
-		let endOfScript = (content && content.fullScript) || ''
-		if (endOfScript.length > SCRIPT_PART_LENGTH) {
-			endOfScript = endOfScript.substring(endOfScript.indexOf(' ', Math.max(cutLength, endOfScript.length - SCRIPT_PART_LENGTH)), endOfScript.length)
+			if (this.props.itemElement) {
+				this.itemElement = this.props.itemElement
+				this.itemElement.parentNode &&
+					this.itemElement.parentNode.parentNode &&
+					this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
+				this.refreshLine()
+			}
 		}
 
-		const breakScript = !!(content && content.fullScript && content.fullScript.length > BREAK_SCRIPT_BREAKPOINT)
+		updateAnchoredElsWidths = () => {
+			const leftLabelWidth = getElementWidth(this.leftLabel)
+			const rightLabelWidth = getElementWidth(this.rightLabel)
 
-		return <React.Fragment>
-			<span className='segment-timeline__piece__label first-words overflow-label' ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
-				{begin}
-			</span>
-			<span className='segment-timeline__piece__label right-side' ref={this.setRightLabelRef} style={this.getItemLabelOffsetRight()}>
-				<span className='segment-timeline__piece__label last-words'>{end}</span>
-				{this.renderInfiniteIcon()}
-				{this.renderOverflowTimeLabel()}
-			</span>
-			<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
-				<div className={'segment-timeline__mini-inspector ' + this.props.typeClass + ' segment-timeline__mini-inspector--pop-down'} style={this.getFloatingInspectorStyle()}>
-					<div>
-						{content && content.fullScript ?
-							breakScript ?
-								<React.Fragment>
-									<span className='mini-inspector__full-text text-broken'>{startOfScript + '\u2026'}</span>
-									<span className='mini-inspector__full-text text-broken text-end'>{'\u2026' + endOfScript}</span>
-								</React.Fragment>
-								: <span className='mini-inspector__full-text'>{content.fullScript}</span>
-							: <span className='mini-inspector__system'>{t('Script is empty')}</span>
-						}
-					</div>
-					{content && content.lastModified ?
-						<div className='mini-inspector__footer'>
-							<span className='mini-inspector__changed'><Moment date={content.lastModified} calendar={true} /></span>
+			this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
+		}
+
+		componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+			let _forceSizingRecheck = false
+
+			if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
+				super.componentDidUpdate(prevProps, prevState)
+			}
+
+			if (
+				prevProps.partDuration !== this.props.partDuration ||
+				prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint ||
+				prevProps.piece.renderedDuration !== this.props.piece.renderedDuration ||
+				prevProps.piece.instance.piece.playoutDuration !== this.props.piece.instance.piece.playoutDuration ||
+				!_.isEqual(prevProps.piece.instance.piece.userDuration, this.props.piece.instance.piece.userDuration) ||
+				!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable)
+			) {
+				_forceSizingRecheck = true
+			}
+
+			// Move the line element
+			if (this.itemElement !== this.props.itemElement) {
+				if (this.itemElement) {
+					this.lineItem.remove()
+				}
+				this.itemElement = this.props.itemElement
+				if (this.itemElement) {
+					this.itemElement.parentNode &&
+						this.itemElement.parentNode.parentNode &&
+						this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
+					this._forceSizingRecheck = true
+				}
+			}
+
+			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
+			if (content && content.sourceDuration && content.sourceDuration !== this.readTime) {
+				_forceSizingRecheck = true
+			}
+
+			if (_forceSizingRecheck) {
+				this.refreshLine()
+			}
+
+			if (this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name) {
+				this.updateAnchoredElsWidths()
+			}
+		}
+
+		componentWillUnmount() {
+			// Remove the line element
+			this.lineItem.remove()
+		}
+
+		render() {
+			const { t } = this.props
+			let labelItems = (this.props.piece.instance.piece.name || '').split('||')
+			let begin = labelItems[0] || ''
+			let end = labelItems[1] || ''
+
+			// function shorten (str: string, maxLen: number, separator: string = ' ') {
+			// 	if (str.length <= maxLen) return str
+			// 	return str.substr(0, str.substr(0, maxLen).lastIndexOf(separator))
+			// }
+
+			const content = this.props.piece.instance.piece.content as ScriptContent | undefined
+			let startOfScript = (content && content.fullScript) || ''
+			let cutLength = startOfScript.length
+			if (startOfScript.length > SCRIPT_PART_LENGTH) {
+				startOfScript = startOfScript.substring(0, startOfScript.substr(0, SCRIPT_PART_LENGTH).lastIndexOf(' '))
+				cutLength = startOfScript.length
+			}
+			let endOfScript = (content && content.fullScript) || ''
+			if (endOfScript.length > SCRIPT_PART_LENGTH) {
+				endOfScript = endOfScript.substring(
+					endOfScript.indexOf(' ', Math.max(cutLength, endOfScript.length - SCRIPT_PART_LENGTH)),
+					endOfScript.length
+				)
+			}
+
+			const breakScript = !!(content && content.fullScript && content.fullScript.length > BREAK_SCRIPT_BREAKPOINT)
+
+			return (
+				<React.Fragment>
+					<span
+						className="segment-timeline__piece__label first-words overflow-label"
+						ref={this.setLeftLabelRef}
+						style={this.getItemLabelOffsetLeft()}>
+						{begin}
+					</span>
+					<span
+						className="segment-timeline__piece__label right-side"
+						ref={this.setRightLabelRef}
+						style={this.getItemLabelOffsetRight()}>
+						<span className="segment-timeline__piece__label last-words">{end}</span>
+						{this.renderInfiniteIcon()}
+						{this.renderOverflowTimeLabel()}
+					</span>
+					<FloatingInspector shown={this.props.showMiniInspector && this.props.itemElement !== undefined}>
+						<div
+							className={
+								'segment-timeline__mini-inspector ' +
+								this.props.typeClass +
+								' segment-timeline__mini-inspector--pop-down'
+							}
+							style={this.getFloatingInspectorStyle()}>
+							<div>
+								{content && content.fullScript ? (
+									breakScript ? (
+										<React.Fragment>
+											<span className="mini-inspector__full-text text-broken">{startOfScript + '\u2026'}</span>
+											<span className="mini-inspector__full-text text-broken text-end">{'\u2026' + endOfScript}</span>
+										</React.Fragment>
+									) : (
+										<span className="mini-inspector__full-text">{content.fullScript}</span>
+									)
+								) : (
+									<span className="mini-inspector__system">{t('Script is empty')}</span>
+								)}
+							</div>
+							{content && content.lastModified ? (
+								<div className="mini-inspector__footer">
+									<span className="mini-inspector__changed">
+										<Moment date={content.lastModified} calendar={true} />
+									</span>
+								</div>
+							) : null}
 						</div>
-						: null
-					}
-				</div>
-			</FloatingInspector>
-		</React.Fragment>
+					</FloatingInspector>
+				</React.Fragment>
+			)
+		}
 	}
-})
+)

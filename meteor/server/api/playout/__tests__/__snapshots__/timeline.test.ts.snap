@@ -19,6 +19,21 @@ Array [
     "studioId": "mockStudio10",
   },
   Object {
+    "_id": "mockStudio10_statObj",
+    "content": Object {
+      "deviceType": 0,
+      "objCount": 3,
+      "type": "nothing",
+    },
+    "enable": Object {
+      "start": 0,
+    },
+    "id": "statObj",
+    "layer": "__stat",
+    "objectType": "stat",
+    "studioId": "mockStudio10",
+  },
+  Object {
     "_id": "mockStudio10_part_group_randomId11002_part0_0_randomId11004",
     "children": Array [],
     "content": Object {
@@ -58,21 +73,6 @@ Array [
     "objectType": "rundown",
     "studioId": "mockStudio10",
   },
-  Object {
-    "_id": "mockStudio10_statObj",
-    "content": Object {
-      "deviceType": 0,
-      "objCount": 3,
-      "type": "nothing",
-    },
-    "enable": Object {
-      "start": 0,
-    },
-    "id": "statObj",
-    "layer": "__stat",
-    "objectType": "stat",
-    "studioId": "mockStudio10",
-  },
 ]
 `;
 
@@ -92,6 +92,21 @@ Array [
     "id": "playlist_randomId11002_status",
     "layer": "rundown_status",
     "objectType": "rundown",
+    "studioId": "mockStudio10",
+  },
+  Object {
+    "_id": "mockStudio10_statObj",
+    "content": Object {
+      "deviceType": 0,
+      "objCount": 3,
+      "type": "nothing",
+    },
+    "enable": Object {
+      "start": 0,
+    },
+    "id": "statObj",
+    "layer": "__stat",
+    "objectType": "stat",
     "studioId": "mockStudio10",
   },
   Object {
@@ -133,21 +148,6 @@ Array [
     "inGroup": "part_group_randomId11002_part0_0_randomId11004",
     "layer": "group_first_object",
     "objectType": "rundown",
-    "studioId": "mockStudio10",
-  },
-  Object {
-    "_id": "mockStudio10_statObj",
-    "content": Object {
-      "deviceType": 0,
-      "objCount": 3,
-      "type": "nothing",
-    },
-    "enable": Object {
-      "start": 0,
-    },
-    "id": "statObj",
-    "layer": "__stat",
-    "objectType": "stat",
     "studioId": "mockStudio10",
   },
 ]

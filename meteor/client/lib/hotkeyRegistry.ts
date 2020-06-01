@@ -7,7 +7,7 @@ export enum HotkeyAssignmentType {
 	GLOBAL_ADLIB = 'global_adlib',
 	ADLIB = 'adlib',
 	CUSTOM_LABEL = 'custom_label',
-	RUNTIME_ARGUMENT = 'runtime_argument'
+	RUNTIME_ARGUMENT = 'runtime_argument',
 }
 
 export interface IHotkeyAssignment {
@@ -39,17 +39,20 @@ export function registerHotkey(
 ) {
 	const id = combo + (tag ? '_' + tag : '')
 
-	RegisteredHotkeys.upsert(id, literal<IHotkeyAssignmentDB>({
-		_id: id,
-		tag,
-		combo,
-		label,
-		type,
-		sourceLayer,
-		willQueue,
-		eventHandler,
-		eventHandlerArguments
-	}))
+	RegisteredHotkeys.upsert(
+		id,
+		literal<IHotkeyAssignmentDB>({
+			_id: id,
+			tag,
+			combo,
+			label,
+			type,
+			sourceLayer,
+			willQueue,
+			eventHandler,
+			eventHandlerArguments,
+		})
+	)
 }
 
 window['RegisteredHotkeys'] = RegisteredHotkeys

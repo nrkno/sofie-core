@@ -9,8 +9,8 @@ meteorPublish(PubSub.blueprints, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
-			code: 0
-		}
+			code: 0,
+		},
 	}
 	if (BlueprintsSecurity.allowReadAccess(selector, token, this)) {
 		return Blueprints.find(selector, modifier)

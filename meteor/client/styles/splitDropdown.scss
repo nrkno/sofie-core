@@ -2,7 +2,7 @@
 	position: relative;
 	padding-top: 0;
 	padding-bottom: 0;
-	&.expco-expanded  {
+	&.expco-expanded {
 		z-index: 2;
 	}
 
@@ -43,11 +43,10 @@
 			font-weight: 300;
 		}
 	}
-	
 
 	.expco-header {
 		text-transform: uppercase;
-		font-size: .8em;
+		font-size: 0.8em;
 		font-weight: bold;
 		padding: 12px 10px 4px 10px;
 		color: #999;

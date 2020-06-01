@@ -2,12 +2,10 @@ import { testInFiber } from '../../__mocks__/helpers/jest'
 import { transformTimeline } from '../timeline'
 import { TimelineObjGeneric, TimelineObjType, TimelineObjRundown } from '../collections/Timeline'
 import { protectString } from '../lib'
-import { TSR } from 'tv-automation-sofie-blueprints-integration';
-
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
 describe('lib/timeline', () => {
 	testInFiber('transformTimeline', () => {
-
 		const timeline: TimelineObjRundown[] = [
 			{
 				_id: protectString('0'),
@@ -15,12 +13,12 @@ describe('lib/timeline', () => {
 				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
-					start: 0
+					start: 0,
 				},
 				content: {
-					deviceType: TSR.DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT,
 				},
-				layer: 'L1'
+				layer: 'L1',
 			},
 			{
 				_id: protectString('child0'),
@@ -28,13 +26,13 @@ describe('lib/timeline', () => {
 				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
-					start: 0
+					start: 0,
 				},
 				content: {
-					deviceType: TSR.DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT,
 				},
 				layer: 'L1',
-				inGroup: 'group0'
+				inGroup: 'group0',
 			},
 			{
 				_id: protectString('child1'),
@@ -42,13 +40,13 @@ describe('lib/timeline', () => {
 				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
-					start: 0
+					start: 0,
 				},
 				content: {
-					deviceType: TSR.DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT,
 				},
 				layer: 'L1',
-				inGroup: 'group0'
+				inGroup: 'group0',
 			},
 			{
 				_id: protectString('group0'),
@@ -56,13 +54,13 @@ describe('lib/timeline', () => {
 				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
-					start: 0
+					start: 0,
 				},
 				content: {
-					deviceType: TSR.DeviceType.ABSTRACT
+					deviceType: TSR.DeviceType.ABSTRACT,
 				},
 				layer: 'L1',
-				isGroup: true
+				isGroup: true,
 			},
 			{
 				_id: protectString('2'),
@@ -70,15 +68,15 @@ describe('lib/timeline', () => {
 				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
-					start: 0
+					start: 0,
 				},
 				content: {
 					callBack: 'partPlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',
-						partId: 'myPart0'
+						partId: 'myPart0',
 					},
-					callBackStopped: 'partPlaybackStopped'
+					callBackStopped: 'partPlaybackStopped',
 				},
 				layer: 'L1',
 				// @ts-ignore
@@ -90,15 +88,15 @@ describe('lib/timeline', () => {
 				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
-					start: 0
+					start: 0,
 				},
 				content: {
 					callBack: 'piecePlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',
-						pieceId: 'myPiece0'
+						pieceId: 'myPiece0',
 					},
-					callBackStopped: 'piecePlaybackStopped'
+					callBackStopped: 'piecePlaybackStopped',
 				},
 				layer: 'L1',
 				// @ts-ignore
@@ -110,7 +108,7 @@ describe('lib/timeline', () => {
 		expect(transformedTimeline).toHaveLength(4)
 
 		expect(transformedTimeline[0]).toMatchObject({
-			id: '0'
+			id: '0',
 		})
 		expect(transformedTimeline[3]).toMatchObject({
 			id: 'group0',
@@ -123,10 +121,10 @@ describe('lib/timeline', () => {
 				callBack: 'partPlaybackStarted',
 				callBackData: {
 					rundownId: 'myRundown0',
-					partId: 'myPart0'
+					partId: 'myPart0',
 				},
-				callBackStopped: 'partPlaybackStopped'
-			}
+				callBackStopped: 'partPlaybackStopped',
+			},
 		})
 		expect(transformedTimeline[2]).toMatchObject({
 			id: '3',
@@ -134,10 +132,10 @@ describe('lib/timeline', () => {
 				callBack: 'piecePlaybackStarted',
 				callBackData: {
 					rundownId: 'myRundown0',
-					pieceId: 'myPiece0'
+					pieceId: 'myPiece0',
 				},
-				callBackStopped: 'piecePlaybackStopped'
-			}
+				callBackStopped: 'piecePlaybackStopped',
+			},
 		})
 	})
 	testInFiber('missing id', () => {
@@ -150,7 +148,7 @@ describe('lib/timeline', () => {
 					objectType: TimelineObjType.RUNDOWN,
 					enable: { start: 0 },
 					content: { deviceType: TSR.DeviceType.ABSTRACT },
-					layer: 'L1'
+					layer: 'L1',
 				},
 			] as TimelineObjGeneric[])
 		}).toThrowError(/missing id/)

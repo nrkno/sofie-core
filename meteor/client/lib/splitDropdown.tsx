@@ -16,39 +16,43 @@ interface IState {
 }
 
 export class SplitDropdown extends React.Component<IProps, IState> {
-	constructor (props: IProps) {
+	constructor(props: IProps) {
 		super(props)
 
 		this.state = {
-			expanded: false
+			expanded: false,
 		}
 	}
 
 	toggleExpco = () => {
 		this.setState({
-			expanded: !this.state.expanded
+			expanded: !this.state.expanded,
 		})
 	}
 
-	getSelected () {
+	getSelected() {
 		return (
-			this.props.elements.find(element => (element as React.ReactElement<{}>).key === this.props.selectedKey) ||
-			<div className='expco-item'></div>
+			this.props.elements.find((element) => (element as React.ReactElement<{}>).key === this.props.selectedKey) || (
+				<div className="expco-item"></div>
+			)
 		)
 	}
 
-	render () {
+	render() {
 		return (
-			<div className={ClassNames('expco focusable subtle split-dropdown', {
-				'expco-expanded': this.state.expanded
-			}, this.props.className)}>
+			<div
+				className={ClassNames(
+					'expco focusable subtle split-dropdown',
+					{
+						'expco-expanded': this.state.expanded,
+					},
+					this.props.className
+				)}>
 				<div className={ClassNames('expco-title focusable-main')}>{this.getSelected()}</div>
-				<a className='action-btn right expco-expand subtle' onClick={this.toggleExpco}>
+				<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
 					<FontAwesomeIcon icon={faChevronUp} />
 				</a>
-				<div className='expco-body bd'>
-					{this.props.elements}
-				</div>
+				<div className="expco-body bd">{this.props.elements}</div>
 			</div>
 		)
 	}

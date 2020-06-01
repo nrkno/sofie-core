@@ -27,7 +27,8 @@ import {
 	partial,
 	partialExceptId,
 	escapeHtml,
-	protectString
+	protectString,
+	mongoFindOptions,
 } from '../lib'
 import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -35,7 +36,6 @@ import { TSR } from 'tv-automation-sofie-blueprints-integration'
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
 describe('lib/lib', () => {
-
 	testInFiber('getHash', () => {
 		const h0 = getHash('abc')
 		const h1 = getHash('abcd')
@@ -47,17 +47,21 @@ describe('lib/lib', () => {
 	testInFiber('MeteorPromiseCall', () => {
 		// set up method:
 		Meteor.methods({
-			'myMethod': (value: any) => {
+			myMethod: (value: any) => {
 				// Do an async operation, to ensure that asynchronous operations work:
-				const v = waitForPromise(new Promise(resolve => {
-					setTimeout(() => {
-						resolve(value)
-					}, 10)
-				}))
+				const v = waitForPromise(
+					new Promise((resolve) => {
+						setTimeout(() => {
+							resolve(value)
+						}, 10)
+					})
+				)
 				return v
-			}
+			},
 		})
-		const pValue: any = MeteorPromiseCall('myMethod', 'myValue').catch(e => { throw e })
+		const pValue: any = MeteorPromiseCall('myMethod', 'myValue').catch((e) => {
+			throw e
+		})
 		expect(pValue).toHaveProperty('then') // be a promise
 		const value = waitForPromise(pValue)
 		expect(value).toEqual('myValue')
@@ -67,40 +71,39 @@ describe('lib/lib', () => {
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
 	})
 	testInFiber('saveIntoDb', () => {
-
 		Timeline.insert({
 			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
-				start: 0
+				start: 0,
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
 			studioId: protectString('myStudio'),
-			classes: ['abc'] // to be removed
+			classes: ['abc'], // to be removed
 		})
 		Timeline.insert({
 			_id: protectString('abc2'),
 			id: 'abc2',
 			enable: {
-				start: 0
+				start: 0,
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio')
+			studioId: protectString('myStudio'),
 		})
 		Timeline.insert({
 			_id: protectString('abc10'),
 			id: 'abc10',
 			enable: {
-				start: 0
+				start: 0,
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio2')
+			studioId: protectString('myStudio2'),
 		})
 
 		const options = {
@@ -111,50 +114,66 @@ describe('lib/lib', () => {
 			// insert: jest.fn((o) => o),
 			// update: jest.fn((id, o,) => { return undefined }),
 			// remove: jest.fn((o) => { return undefined }),
-			afterInsert: jest.fn((o) => { return undefined }),
-			afterUpdate: jest.fn((o) => { return undefined }),
-			afterRemove: jest.fn((o) => { return undefined }),
+			afterInsert: jest.fn((o) => {
+				return undefined
+			}),
+			afterUpdate: jest.fn((o) => {
+				return undefined
+			}),
+			afterRemove: jest.fn((o) => {
+				return undefined
+			}),
 		}
 
-		const changes = saveIntoDb(Timeline, {
-			studioId: protectString('myStudio')
-		}, [
+		const changes = saveIntoDb(
+			Timeline,
 			{
-				_id: protectString('abc'),
-				id: 'abc',
-				enable: {
-					start: 0
-				},
-				layer: 'L2', // changed property
-				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio')
+				studioId: protectString('myStudio'),
 			},
-			{ // insert object
-				_id: protectString('abc3'),
-				id: 'abc3',
-				enable: {
-					start: 0
+			[
+				{
+					_id: protectString('abc'),
+					id: 'abc',
+					enable: {
+						start: 0,
+					},
+					layer: 'L2', // changed property
+					content: { deviceType: TSR.DeviceType.ABSTRACT },
+					objectType: TimelineObjType.MANUAL,
+					studioId: protectString('myStudio'),
 				},
-				layer: 'L1',
-				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio')
-			}
-			// remove abc2
-		], options)
+				{
+					// insert object
+					_id: protectString('abc3'),
+					id: 'abc3',
+					enable: {
+						start: 0,
+					},
+					layer: 'L1',
+					content: { deviceType: TSR.DeviceType.ABSTRACT },
+					objectType: TimelineObjType.MANUAL,
+					studioId: protectString('myStudio'),
+				},
+				// remove abc2
+			],
+			options
+		)
 
-		expect(Timeline.find({
-			studioId: protectString('myStudio')
-		}).count()).toEqual(2)
+		expect(
+			Timeline.find({
+				studioId: protectString('myStudio'),
+			}).count()
+		).toEqual(2)
 		const abc = Timeline.findOne(protectString('abc')) as TimelineObjGeneric
 		expect(abc).toBeTruthy()
 		expect(abc.classes).toEqual(undefined)
 		expect(abc.layer).toEqual('L2')
 
-		expect(Timeline.find({
-			studioId: protectString('myStudio2')
-		}).count()).toEqual(1)
+		expect(
+			Timeline.find({
+				studioId: protectString('myStudio2'),
+			}).count()
+		).toEqual(1)
 
 		expect(options.beforeInsert).toHaveBeenCalledTimes(1)
 		expect(options.beforeUpdate).toHaveBeenCalledTimes(1)
@@ -170,46 +189,59 @@ describe('lib/lib', () => {
 		expect(changes).toMatchObject({
 			added: 1,
 			updated: 1,
-			removed: 1
+			removed: 1,
 		})
-		expect(sumChanges({
-			added: 1,
-			updated: 2,
-			removed: 3
-		},changes)).toMatchObject({
+		expect(
+			sumChanges(
+				{
+					added: 1,
+					updated: 2,
+					removed: 3,
+				},
+				changes
+			)
+		).toMatchObject({
 			added: 2,
 			updated: 3,
-			removed: 4
+			removed: 4,
 		})
 	})
 	testInFiber('anythingChanged', () => {
-		expect(anythingChanged({
-			added: 0,
-			updated: 0,
-			removed: 0,
-		})).toBeFalsy()
-		expect(anythingChanged({
-			added: 1,
-			updated: 0,
-			removed: 0,
-		})).toBeTruthy()
-		expect(anythingChanged({
-			added: 0,
-			updated: 9,
-			removed: 0,
-		})).toBeTruthy()
-		expect(anythingChanged({
-			added: 0,
-			updated: 0,
-			removed: 547,
-		})).toBeTruthy()
+		expect(
+			anythingChanged({
+				added: 0,
+				updated: 0,
+				removed: 0,
+			})
+		).toBeFalsy()
+		expect(
+			anythingChanged({
+				added: 1,
+				updated: 0,
+				removed: 0,
+			})
+		).toBeTruthy()
+		expect(
+			anythingChanged({
+				added: 0,
+				updated: 9,
+				removed: 0,
+			})
+		).toBeTruthy()
+		expect(
+			anythingChanged({
+				added: 0,
+				updated: 0,
+				removed: 547,
+			})
+		).toBeTruthy()
 	})
 	testInFiber('literal', () => {
 		const obj = literal<TimelineObjGeneric>({
 			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
-				start: 0
+				start: 0,
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
@@ -220,7 +252,7 @@ describe('lib/lib', () => {
 			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
-				start: 0
+				start: 0,
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
@@ -234,17 +266,21 @@ describe('lib/lib', () => {
 		class MyClass {
 			public publ: string
 			private priv: string
-			constructor (from) {
-				Object.keys(from).forEach(key => {
+			constructor(from) {
+				Object.keys(from).forEach((key) => {
 					this[key] = from[key]
 				})
 			}
-			getPriv () { return this.priv }
-			getPubl () { return this.publ }
+			getPriv() {
+				return this.priv
+			}
+			getPubl() {
+				return this.publ
+			}
 		}
 		const doc = applyClassToDocument(MyClass, {
 			priv: 'aaa',
-			publ: 'bbb'
+			publ: 'bbb',
 		})
 		expect(doc.getPriv()).toEqual('aaa')
 		expect(doc.getPubl()).toEqual('bbb')
@@ -261,38 +297,45 @@ describe('lib/lib', () => {
 		expect(formatDateTime(1556194064374)).toMatch(/2019-04-\d{2} \d{2}:\d{2}:\d{2}/)
 	})
 	testInFiber('removeNullyProperties', () => {
-		expect(removeNullyProperties({
-			a: 1,
-			b: 2,
-			c: null,
-			e: undefined,
-			f: {
+		expect(
+			removeNullyProperties({
 				a: 1,
 				b: 2,
 				c: null,
-				e: undefined
-			}
-		})).toEqual({
+				e: undefined,
+				f: {
+					a: 1,
+					b: 2,
+					c: null,
+					e: undefined,
+				},
+			})
+		).toEqual({
 			a: 1,
 			b: 2,
 			e: undefined,
 			f: {
 				a: 1,
 				b: 2,
-				e: undefined
-			}
+				e: undefined,
+			},
 		})
 	})
 	testInFiber('objectPathGet', () => {
-		expect(objectPathGet({
-			a: 1,
-			b: {
-				c: 1,
-				d: {
-					e: 2
-				}
-			}
-		}, 'b.d.e')).toEqual(2)
+		expect(
+			objectPathGet(
+				{
+					a: 1,
+					b: {
+						c: 1,
+						d: {
+							e: 2,
+						},
+					},
+				},
+				'b.d.e'
+			)
+		).toEqual(2)
 	})
 	testInFiber('objectPathSet', () => {
 		const o: any = {
@@ -300,9 +343,9 @@ describe('lib/lib', () => {
 			b: {
 				c: 1,
 				d: {
-					e: 2
-				}
-			}
+					e: 2,
+				},
+			},
 		}
 		objectPathSet(o, 'b.d.f', 42)
 		expect(o.b.d.f).toEqual(42)
@@ -313,9 +356,9 @@ describe('lib/lib', () => {
 			b: {
 				c: '1',
 				d: {
-					e: 2
-				}
-			}
+					e: 2,
+				},
+			},
 		}
 		expect(stringifyObjects(o)).toEqual(stringifyObjects(o))
 	})
@@ -335,7 +378,7 @@ describe('lib/lib', () => {
 		rateLimitAndDoItLater('test', f0, 10)
 		rateLimitAndDoItLater('test', f0, 10)
 		expect(f0).toHaveBeenCalledTimes(1)
-		waitForPromise(new Promise(resolve => setTimeout(resolve, 100)))
+		waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
 		expect(f0).toHaveBeenCalledTimes(4)
 	})
 	testInFiber('rateLimitIgnore', () => {
@@ -345,7 +388,7 @@ describe('lib/lib', () => {
 		rateLimitIgnore('test', f0, 10)
 		rateLimitIgnore('test', f0, 10)
 		expect(f0).toHaveBeenCalledTimes(1)
-		waitForPromise(new Promise(resolve => setTimeout(resolve, 100)))
+		waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
 		expect(f0).toHaveBeenCalledTimes(2)
 	})
 	testInFiber('mongowhere', () => {
@@ -359,32 +402,32 @@ describe('lib/lib', () => {
 		MyCollection.insert({
 			_id: protectString('id0'),
 			name: 'abc',
-			rank: 0
+			rank: 0,
 		})
 		MyCollection.insert({
 			_id: protectString('id1'),
 			name: 'abc',
-			rank: 1
+			rank: 1,
 		})
 		MyCollection.insert({
 			_id: protectString('id2'),
 			name: 'abcd',
-			rank: 2
+			rank: 2,
 		})
 		MyCollection.insert({
 			_id: protectString('id3'),
 			name: 'abcd',
-			rank: 3
+			rank: 3,
 		})
 		MyCollection.insert({
 			_id: protectString('id4'),
 			name: 'xyz',
-			rank: 4
+			rank: 4,
 		})
 		MyCollection.insert({
 			_id: protectString('id5'),
 			name: 'xyz',
-			rank: 5
+			rank: 5,
 		})
 
 		expect(MyCollection.find().fetch()).toHaveLength(6)
@@ -401,11 +444,9 @@ describe('lib/lib', () => {
 
 		expect(MyCollection.find({ rank: { $lt: 3 } }).fetch()).toHaveLength(3)
 		expect(MyCollection.find({ rank: { $lte: 3 } }).fetch()).toHaveLength(4)
-
 	})
 	testInFiber('getRank', () => {
-
-		const objs: {_rank: number}[] = [
+		const objs: { _rank: number }[] = [
 			{ _rank: 0 },
 			{ _rank: 10 },
 			{ _rank: 20 },
@@ -440,17 +481,16 @@ describe('lib/lib', () => {
 		// Insert three:
 		expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
 		expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
-
 	})
 	testInFiber('partial', () => {
 		const o = {
 			a: 1,
 			b: 'asdf',
 			c: {
-				d: 1
+				d: 1,
 			},
 			e: null,
-			f: undefined
+			f: undefined,
 		}
 		expect(partial(o)).toEqual(o) // The function only affects typings
 	})
@@ -460,7 +500,7 @@ describe('lib/lib', () => {
 			a: 1,
 			b: 'asdf',
 			c: {
-				d: 1
+				d: 1,
 			},
 			e: null,
 			f: undefined,
@@ -468,7 +508,6 @@ describe('lib/lib', () => {
 		expect(partialExceptId(o)).toEqual(o) // The function only affects typings
 	})
 	testInFiber('formatDateTime', () => {
-
 		if (process.platform === 'win32') {
 			// Due to a bug in how timezones are handled in Windows & Node, we just have to skip these tests when running tests locally..
 			expect(0).toEqual(0)
@@ -484,8 +523,176 @@ describe('lib/lib', () => {
 		expect(formatDateTime(2579299344070)).toBe('2051-09-26 00:02:24')
 	})
 	testInFiber('escapeHtml', () => {
-		expect(escapeHtml(`<div>Hello & goodbye! Please use '"'-signs!</div>`))
-		.toBe(`&lt;div&gt;Hello &amp; goodbye! Please use &#039;&quot;&#039;-signs!&lt;/div&gt;`)
+		expect(escapeHtml(`<div>Hello & goodbye! Please use '"'-signs!</div>`)).toBe(
+			`&lt;div&gt;Hello &amp; goodbye! Please use &#039;&quot;&#039;-signs!&lt;/div&gt;`
+		)
+	})
 
+	describe('mongoFindOptions', () => {
+		const rawDocs = [1, 2, 3, 4, 5, 6, 7]
+
+		test('nothing', () => {
+			expect(mongoFindOptions(rawDocs)).toEqual(rawDocs)
+			expect(mongoFindOptions(rawDocs, {})).toEqual(rawDocs)
+		})
+		test('range', () => {
+			expect(mongoFindOptions(rawDocs, { limit: 4 })).toEqual([1, 2, 3, 4])
+			expect(mongoFindOptions(rawDocs, { skip: 4 })).toEqual([5, 6, 7])
+			expect(mongoFindOptions(rawDocs, { skip: 2, limit: 3 })).toEqual([3, 4, 5])
+		})
+		test('transform', () => {
+			expect(() => mongoFindOptions(rawDocs, { transform: () => 1 })).toThrowError(
+				'options.transform not implemented'
+			)
+		})
+
+		const rawDocs2 = [
+			{
+				_id: 1,
+				val: 'a',
+				val2: 'c',
+			},
+			{
+				_id: 2,
+				val: 'x',
+				val2: 'c',
+			},
+			{
+				_id: 3,
+				val: 'n',
+				val2: 'b',
+			},
+		]
+
+		test('fields', () => {
+			expect(() => mongoFindOptions(rawDocs, { fields: { val: 0, val2: 1 } })).toThrowError(
+				'options.fields cannot contain both include and exclude rules'
+			)
+			expect(() => mongoFindOptions(rawDocs, { fields: { _id: 0, val2: 1 } })).not.toThrowError()
+			expect(() => mongoFindOptions(rawDocs, { fields: { _id: 1, val: 0 } })).not.toThrowError()
+
+			expect(mongoFindOptions(rawDocs2, { fields: { val: 0 } })).toEqual([
+				{
+					_id: 1,
+					val2: 'c',
+				},
+				{
+					_id: 2,
+					val2: 'c',
+				},
+				{
+					_id: 3,
+					val2: 'b',
+				},
+			])
+			expect(mongoFindOptions(rawDocs2, { fields: { val: 0, _id: 0 } })).toEqual([
+				{
+					val2: 'c',
+				},
+				{
+					val2: 'c',
+				},
+				{
+					val2: 'b',
+				},
+			])
+			expect(mongoFindOptions(rawDocs2, { fields: { val: 1 } })).toEqual([
+				{
+					_id: 1,
+					val: 'a',
+				},
+				{
+					_id: 2,
+					val: 'x',
+				},
+				{
+					_id: 3,
+					val: 'n',
+				},
+			])
+			expect(mongoFindOptions(rawDocs2, { fields: { val: 1, _id: 0 } })).toEqual([
+				{
+					val: 'a',
+				},
+				{
+					val: 'x',
+				},
+				{
+					val: 'n',
+				},
+			])
+		})
+
+		test('fields', () => {
+			expect(mongoFindOptions(rawDocs2, { sort: { val: 1 } })).toEqual([
+				{
+					_id: 1,
+					val: 'a',
+					val2: 'c',
+				},
+				{
+					_id: 3,
+					val: 'n',
+					val2: 'b',
+				},
+				{
+					_id: 2,
+					val: 'x',
+					val2: 'c',
+				},
+			])
+			expect(mongoFindOptions(rawDocs2, { sort: { val: -1 } })).toEqual([
+				{
+					_id: 2,
+					val: 'x',
+					val2: 'c',
+				},
+				{
+					_id: 3,
+					val: 'n',
+					val2: 'b',
+				},
+				{
+					_id: 1,
+					val: 'a',
+					val2: 'c',
+				},
+			])
+
+			expect(mongoFindOptions(rawDocs2, { sort: { val2: 1, val: 1 } })).toEqual([
+				{
+					_id: 3,
+					val: 'n',
+					val2: 'b',
+				},
+				{
+					_id: 1,
+					val: 'a',
+					val2: 'c',
+				},
+				{
+					_id: 2,
+					val: 'x',
+					val2: 'c',
+				},
+			])
+			expect(mongoFindOptions(rawDocs2, { sort: { val2: 1, val: -1 } })).toEqual([
+				{
+					_id: 3,
+					val: 'n',
+					val2: 'b',
+				},
+				{
+					_id: 2,
+					val: 'x',
+					val2: 'c',
+				},
+				{
+					_id: 1,
+					val: 'a',
+					val2: 'c',
+				},
+			])
+		})
 	})
 })

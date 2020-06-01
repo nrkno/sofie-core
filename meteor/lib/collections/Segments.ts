@@ -17,6 +17,8 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	_rank: number
 	/** ID of the source object in the gateway */
 	externalId: string
+	/** Timestamp when the externalData was last modified */
+	externalModified: number
 	/** The rundown this segment belongs to */
 	rundownId: RundownId
 
@@ -35,6 +37,7 @@ export class Segment implements DBSegment {
 	public _id: SegmentId
 	public _rank: number
 	public externalId: string
+	public externalModified: number
 	public rundownId: RundownId
 	public name: string
 	public metaData?: { [key: string]: any }
@@ -46,35 +49,42 @@ export class Segment implements DBSegment {
 	public unsyncedTime?: Time
 	public identifier?: string
 
-	constructor (document: DBSegment) {
+	constructor(document: DBSegment) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
-	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
+	getParts(selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return Parts.find(
-			_.extend({
-				rundownId: this.rundownId,
-				segmentId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this.rundownId,
+					segmentId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
 }
 
 // export const Segments = createMongoCollection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
-export const Segments: TransformedCollection<Segment, DBSegment>
-	= createMongoCollection<Segment>('segments', { transform: (doc) => applyClassToDocument(Segment, doc) })
+export const Segments: TransformedCollection<Segment, DBSegment> = createMongoCollection<Segment>('segments', {
+	transform: (doc) => applyClassToDocument(Segment, doc),
+})
 registerCollection('Segments', Segments)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({
 			rundownId: 1,
-			_rank: 1
+			_rank: 1,
 		})
 	}
 })

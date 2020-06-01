@@ -12,6 +12,7 @@ import { ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { getCurrentTime } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { FindOptions } from '../../../lib/typings/meteor'
 
 export namespace reactiveData {
 	// export function getRRundownId (rundownId: RundownId): ReactiveVar<RundownId | undefined> {
@@ -28,14 +29,20 @@ export namespace reactiveData {
 	// 	return rVar
 	// }
 
-	export function getRRundowns (playlistId: RundownPlaylistId | undefined): ReactiveVar<Rundown[]> {
+	export function getRRundowns(
+		playlistId: RundownPlaylistId | undefined,
+		options?: FindOptions
+	): ReactiveVar<Rundown[]> {
 		const rVar = new ReactiveVar<Rundown[]>([])
 
 		Tracker.autorun(() => {
 			if (playlistId) {
-				const rundowns = Rundowns.find({
-					playlistId: playlistId
-				}).fetch()
+				const rundowns = Rundowns.find(
+					{
+						playlistId: playlistId,
+					},
+					options
+				).fetch()
 				rVar.set(rundowns)
 			} else {
 				rVar.set([])
@@ -84,15 +91,18 @@ export namespace reactiveData {
 
 	// export function getRPieces (rundownIds: RundownId[]): ReactiveVar<Piece[]>
 	// export function getRPieces (rundownId: RundownId): ReactiveVar<Piece[]>
-	export function getRPieces (playlistId: RundownPlaylistId): ReactiveVar<Piece[]> {
+	export function getRPieces(playlistId: RundownPlaylistId, options?: FindOptions): ReactiveVar<Piece[]> {
 		const rVar = new ReactiveVar<Piece[]>([])
 
 		const rRundowns = getRRundowns(playlistId)
 		Tracker.autorun(() => {
-			const rundownIds = rRundowns.get().map(r => r._id)
-			const slis = Pieces.find({
-				rundownId: { $in: rundownIds }
-			}).fetch()
+			const rundownIds = rRundowns.get().map((r) => r._id)
+			const slis = Pieces.find(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				options
+			).fetch()
 			rVar.set(slis)
 		})
 		return rVar
@@ -117,17 +127,20 @@ export namespace reactiveData {
 	// 	return rVar
 	// }
 
-	export function getRPeripheralDevices (studioId: StudioId): ReactiveVar<PeripheralDevice[]> {
+	export function getRPeripheralDevices(studioId: StudioId, options?: FindOptions): ReactiveVar<PeripheralDevice[]> {
 		const rVar = new ReactiveVar<PeripheralDevice[]>([])
 
 		Tracker.autorun(() => {
 			const allDevices: PeripheralDevice[] = []
-			const peripheralDevices = PeripheralDevices.find({
-				studioId: studioId
-			}).fetch()
+			const peripheralDevices = PeripheralDevices.find(
+				{
+					studioId: studioId,
+				},
+				options
+			).fetch()
 			allDevices.splice(allDevices.length, 0, ...peripheralDevices)
 			peripheralDevices.forEach((i) => {
-				const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }).fetch()
+				const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }, options).fetch()
 				allDevices.splice(allDevices.length, 0, ...subDevices)
 			})
 			rVar.set(allDevices)
@@ -136,22 +149,28 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getUnsentExternalMessageCount (studioId: StudioId, playlistId: RundownPlaylistId): ReactiveVar<number> {
+	export function getUnsentExternalMessageCount(
+		studioId: StudioId,
+		playlistId: RundownPlaylistId
+	): ReactiveVar<number> {
 		const rVar = new ReactiveVar<number>(0)
 
 		Tracker.autorun(() => {
 			const rundowns = Rundowns.find({ playlistId }).fetch()
 			let now = getCurrentTime()
-			const unsentMessages = ExternalMessageQueue.find({
-				expires: { $gt: now },
-				studioId: { $eq: studioId },
-				rundownId: { $in: rundowns.map(i => i._id) },
-				sent: { $not: { $gt: 0 } },
-				tryCount: { $not: { $lt: 1 } }
-			}, {
-				limit: 10
-			}).fetch()
-			rVar.set(unsentMessages.length)
+			const unsentMessages = ExternalMessageQueue.find(
+				{
+					expires: { $gt: now },
+					studioId: { $eq: studioId },
+					rundownId: { $in: rundowns.map((i) => i._id) },
+					sent: { $not: { $gt: 0 } },
+					tryCount: { $not: { $lt: 1 } },
+				},
+				{
+					limit: 10,
+				}
+			).count()
+			rVar.set(unsentMessages)
 		})
 
 		return rVar

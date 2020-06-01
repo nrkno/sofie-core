@@ -35,6 +35,7 @@ jobs:
           root: .
           paths:
             - .
+
   tests:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.6.1.4
@@ -44,13 +45,22 @@ jobs:
           name: Run tests and send coverage
           command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci
           no_output_timeout: 60m
+  lint:
+    docker:
+      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+    steps:
+      - checkout
+      - run:
+          name: Typecheck and lint code
+          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci:lint
+          no_output_timeout: 60m
+
   publish-tag:
     docker:
-      - image: circleci/buildpack-deps@sha256:aa2e64cdcf48b7f2b0a245c6d890bc6421fd4e8a84957881b9c9abb8ff86daaf
+      - image: circleci/buildpack-deps:buster
     steps:
       - setup_remote_docker:
-          # docker_layer_caching: true
-          version: 18.06.0-ce
+          version: 19.03.8
       - attach_workspace:
           at: .
       - run:
@@ -78,11 +88,10 @@ jobs:
              fi
   publish-branch:
     docker:
-      - image: circleci/buildpack-deps@sha256:aa2e64cdcf48b7f2b0a245c6d890bc6421fd4e8a84957881b9c9abb8ff86daaf
+      - image: circleci/buildpack-deps:buster
     steps:
       - setup_remote_docker:
-          # docker_layer_caching: true
-          version: 18.06.0-ce
+          version: 19.03.8
       - attach_workspace:
           at: .
       - run:
@@ -114,6 +123,12 @@ workflows:
   build-test-publish:
     jobs:
       - build:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+      - lint:
           filters:
             tags:
               only: /v.*/

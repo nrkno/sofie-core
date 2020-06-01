@@ -15,11 +15,11 @@ export interface ISettings {
 	 * into timecodes and timecode-like strings and interpret timecode user input
 	 * Default: 25
 	 */
-	frameRate: number,
+	frameRate: number
 	/** Should the Rundown view User Interface default all segments to "collapsed" state? Default: false */
-	defaultToCollapsedSegments: boolean,
+	defaultToCollapsedSegments: boolean
 	/* Should the segment in the Rundown view automatically rewind after it stops being live? Default: false */
-	autoRewindLeavingSegment: boolean,
+	autoRewindLeavingSegment: boolean
 	/** Should the Current and Next segments be automatically made expanded (uncollapsed)? Default: false */
 	autoExpandCurrentNextSegment: boolean
 	/** Disable blur border in RundownView */
@@ -53,10 +53,10 @@ const DEFAULT_SETTINGS: ISettings = {
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	allowUnsyncedSegments: false,
-	'defaultDisplayDuration': 3000,
-	'allowUnsafeResets': false,
-	'showKeyboardMap': true,
-	'keyboardMapLayout': KeyboardLayouts.Names.STANDARD_102_TKL
+	defaultDisplayDuration: 3000,
+	allowUnsafeResets: false,
+	showKeyboardMap: true,
+	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

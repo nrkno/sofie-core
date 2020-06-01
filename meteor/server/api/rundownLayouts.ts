@@ -2,7 +2,12 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
-import { RundownLayouts, RundownLayoutType, RundownLayoutBase, RundownLayoutId } from '../../lib/collections/RundownLayouts'
+import {
+	RundownLayouts,
+	RundownLayoutType,
+	RundownLayoutBase,
+	RundownLayoutId,
+} from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
 import { RundownLayoutSecurity } from '../security/rundownLayouts'
 import { ServerResponse, IncomingMessage } from 'http'
@@ -12,7 +17,7 @@ import { BlueprintId } from '../../lib/collections/Blueprints'
 import { MethodContext } from '../../lib/api/methods'
 import { PickerPOST, PickerGET } from './http'
 
-export function createRundownLayout (
+export function createRundownLayout(
 	name: string,
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
@@ -22,23 +27,25 @@ export function createRundownLayout (
 	exposeAsShelf?: boolean
 ) {
 	const id: RundownLayoutId = getRandomId()
-	RundownLayouts.insert(literal<RundownLayoutBase>({
-		_id: id,
-		name,
-		showStyleBaseId,
-		blueprintId,
-		filters: [],
-		type,
-		userId,
-		exposeAsStandalone: !!exposeAsStandalone,
-		exposeAsShelf: !!exposeAsShelf,
-		icon: '',
-		iconColor: '#ffffff'
-	}))
+	RundownLayouts.insert(
+		literal<RundownLayoutBase>({
+			_id: id,
+			name,
+			showStyleBaseId,
+			blueprintId,
+			filters: [],
+			type,
+			userId,
+			exposeAsStandalone: !!exposeAsStandalone,
+			exposeAsShelf: !!exposeAsShelf,
+			icon: '',
+			iconColor: '#ffffff',
+		})
+	)
 	return id
 }
 
-export function removeRundownLayout (layoutId: RundownLayoutId) {
+export function removeRundownLayout(layoutId: RundownLayoutId) {
 	RundownLayouts.remove(layoutId)
 }
 
@@ -57,7 +64,8 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 		const body = (req as any).body
 		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
 
-		if (typeof body !== 'string' || body.length < 10) throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
+		if (typeof body !== 'string' || body.length < 10)
+			throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
 
 		const layout = JSON.parse(body) as RundownLayoutBase
 		check(layout._id, Match.Optional(String))
@@ -107,7 +115,7 @@ PickerGET.route('/shelfLayouts/download/:id', (params, req: IncomingMessage, res
 	res.end(content)
 })
 
-function apiCreateRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
+function apiCreateRundownLayout(name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
 	check(name, String)
 	check(type, String)
 	check(showStyleBaseId, String)
@@ -116,7 +124,7 @@ function apiCreateRundownLayout (name: string, type: RundownLayoutType, showStyl
 
 	return createRundownLayout(name, type, showStyleBaseId, undefined, this.connection.userId)
 }
-function apiRemoveRundownLayout (id: RundownLayoutId) {
+function apiRemoveRundownLayout(id: RundownLayoutId) {
 	check(id, String)
 
 	if (!RundownLayoutSecurity.allowWriteAccess(this.connection.userId)) throw new Meteor.Error(403, 'Access denied')
@@ -124,15 +132,20 @@ function apiRemoveRundownLayout (id: RundownLayoutId) {
 }
 
 class ServerRundownLayoutsAPI implements NewRundownLayoutsAPI {
-	createRundownLayout (name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
+	createRundownLayout(name: string, type: RundownLayoutType, showStyleBaseId: ShowStyleBaseId) {
 		const that = this
 		return makePromise(() => apiCreateRundownLayout.apply(that, [name, type, showStyleBaseId]))
 	}
-	removeRundownLayout (rundownLayoutId: RundownLayoutId) {
+	removeRundownLayout(rundownLayoutId: RundownLayoutId) {
 		const that = this
 		return makePromise(() => apiRemoveRundownLayout.apply(that, [rundownLayoutId]))
 	}
 }
-registerClassToMeteorMethods(RundownLayoutsAPIMethods, ServerRundownLayoutsAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
-	return fcn.apply(methodContext, args)
-})
+registerClassToMeteorMethods(
+	RundownLayoutsAPIMethods,
+	ServerRundownLayoutsAPI,
+	false,
+	(methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {
+		return fcn.apply(methodContext, args)
+	}
+)

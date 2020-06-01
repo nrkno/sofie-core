@@ -8,7 +8,7 @@ import {
 	IBlueprintPieceDB,
 	PieceLifespan,
 	BaseContent,
-	Timeline
+	Timeline,
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
@@ -23,10 +23,6 @@ export interface PieceGeneric extends InternalIBlueprintPieceGeneric {
 	_id: PieceId
 	/** ID of the source object in MOS */
 	externalId: string
-	/** The rundown this piece belongs to */
-	rundownId: RundownId
-	/** The Part this piece belongs to */
-	partId?: PartId
 
 	/** Playback availability status */
 	status: RundownAPI.PieceStatusCode
@@ -41,7 +37,7 @@ export interface PieceGeneric extends InternalIBlueprintPieceGeneric {
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId
 	/** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
-	dynamicallyInserted?: boolean,
+	dynamicallyInserted?: boolean
 	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
@@ -53,7 +49,17 @@ export interface PieceGeneric extends InternalIBlueprintPieceGeneric {
 	extendOnHold?: boolean
 }
 
-export interface Piece extends PieceGeneric, ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
+/** A Single item in a Part: script, VT, cameras */
+export interface RundownPieceGeneric extends PieceGeneric {
+	/** The rundown this piece belongs to */
+	rundownId: RundownId
+	/** The Part this piece belongs to */
+	partId?: PartId
+}
+
+export interface Piece
+	extends RundownPieceGeneric,
+		ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
 	// -----------------------------------------------------------------------
 
 	partId: PartId
@@ -80,14 +86,13 @@ export interface Piece extends PieceGeneric, ProtectedStringProperties<Omit<IBlu
 	overflows?: boolean
 }
 
-export const Pieces: TransformedCollection<Piece, Piece>
-	= createMongoCollection<Piece>('pieces')
+export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Pieces._ensureIndex({
 			rundownId: 1,
-			partId: 1
+			partId: 1,
 		})
 	}
 })

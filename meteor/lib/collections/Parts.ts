@@ -4,7 +4,14 @@ import { Rundowns, Rundown, RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
 import { AdLibPieces } from './AdLibPieces'
 import { Segments, SegmentId } from './Segments'
-import { applyClassToDocument, Time, registerCollection, normalizeArray, ProtectedString, ProtectedStringProperties } from '../lib'
+import {
+	applyClassToDocument,
+	Time,
+	registerCollection,
+	normalizeArray,
+	ProtectedString,
+	ProtectedStringProperties,
+} from '../lib'
 import { RundownAPI } from '../api/rundown'
 import { checkPieceContentStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
@@ -68,6 +75,8 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	runtimeArguments?: BlueprintRuntimeArguments
 	/** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
 	dirty?: boolean
+	/** Human readable unqiue identifier of the part */
+	identifier?: string
 	canCombineQueue?: boolean
 }
 export interface PartTimings extends IBlueprintPartDBTimings {
@@ -76,7 +85,6 @@ export interface PartTimings extends IBlueprintPartDBTimings {
 }
 
 export class Part implements DBPart {
-
 	// From IBlueprintPart:
 	public externalId: string
 	public title: string
@@ -126,63 +134,80 @@ export class Part implements DBPart {
 	public dynamicallyInserted?: boolean
 	public runtimeArguments?: BlueprintRuntimeArguments
 	public dirty?: boolean
+	public identifier?: string
 
-	constructor (document: DBPart) {
+	constructor(document: DBPart) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
-	getRundown () {
+	getRundown() {
 		return Rundowns.findOne(this.rundownId)
 	}
-	getSegment () {
+	getSegment() {
 		return Segments.findOne(this.segmentId)
 	}
-	getPieces (selector?: MongoSelector<Piece>, options?: FindOptions) {
+	getPieces(selector?: MongoSelector<Piece>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return Pieces.find(
-			_.extend({
-				rundownId: this.rundownId,
-				partId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this.rundownId,
+					partId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
-	getAllPieces () {
+	getAllPieces() {
 		return this.getPieces()
 	}
 
-	getAdLibPieces (selector?: MongoSelector<Piece>, options?: FindOptions) {
+	getAdLibPieces(selector?: MongoSelector<Piece>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(
-			_.extend({
-				rundownId: this.rundownId,
-				partId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1, name: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this.rundownId,
+					partId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1, name: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
-	getAllAdLibPieces () {
+	getAllAdLibPieces() {
 		return this.getAdLibPieces()
 	}
-	getInvalidReasonNotes (): Array<PartNote> {
-		return this.invalidReason ? [
-			{
-				type: NoteType.WARNING,
-				message: this.invalidReason.title + (this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
-				origin: {
-					name: this.title,
-				}
-			}
-		] : []
+	getInvalidReasonNotes(): Array<PartNote> {
+		return this.invalidReason
+			? [
+					{
+						type: NoteType.WARNING,
+						message:
+							this.invalidReason.title +
+							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
+						origin: {
+							name: this.title,
+						},
+					},
+			  ]
+			: []
 	}
-	getMinimumReactiveNotes (studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
+	getMinimumReactiveNotes(studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
 		let notes: Array<PartNote> = []
 		notes = notes.concat(this.notes || [])
 
@@ -194,63 +219,67 @@ export class Part implements DBPart {
 			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
 				const part = partLookup[piece.sourceLayerId]
 				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
-				if (st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING || st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN) {
+				if (
+					st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+					st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
+				) {
 					notes.push({
 						type: NoteType.WARNING,
 						origin: {
 							name: 'Media Check',
-							pieceId: piece._id
+							pieceId: piece._id,
 						},
-						message: st.message || ''
+						message: st.message || '',
 					})
 				}
 			}
 		})
 		return notes
 	}
-	getLastTake () {
+	getLastTake() {
 		if (!this.timings) return undefined
 
 		if (!this.timings.take || this.timings.take.length === 0) return undefined
 
 		return this.timings.take[this.timings.take.length - 1]
 	}
-	getLastStartedPlayback () {
+	getLastStartedPlayback() {
 		if (!this.timings) return undefined
 
 		if (!this.timings.startedPlayback || this.timings.startedPlayback.length === 0) return undefined
 
 		return this.timings.startedPlayback[this.timings.startedPlayback.length - 1]
 	}
-	getLastPlayOffset () {
+	getLastPlayOffset() {
 		if (!this.timings) return undefined
 
 		if (!this.timings.playOffset || this.timings.playOffset.length === 0) return undefined
 
 		return this.timings.playOffset[this.timings.playOffset.length - 1]
 	}
-	isPlayable () {
+	isPlayable() {
 		return isPartPlayable(this)
 	}
 }
 
-export function isPartPlayable (part: DBPart) {
+export function isPartPlayable(part: DBPart) {
 	return !part.invalid && !part.floated
 }
 
-export const Parts: TransformedCollection<Part, DBPart>
-	= createMongoCollection<Part>('parts', { transform: (doc) => applyClassToDocument(Part, doc) })
+export const Parts: TransformedCollection<Part, DBPart> = createMongoCollection<Part>('parts', {
+	transform: (doc) => applyClassToDocument(Part, doc),
+})
 registerCollection('Parts', Parts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Parts._ensureIndex({
 			rundownId: 1,
 			segmentId: 1,
-			_rank: 1
+			_rank: 1,
 		})
 		Parts._ensureIndex({
 			rundownId: 1,
-			_rank: 1
+			_rank: 1,
 		})
 	}
 })

@@ -17,7 +17,7 @@ import { ShowStyleBaseId } from './ShowStyleBases'
  */
 export enum RundownLayoutType {
 	RUNDOWN_LAYOUT = 'rundown_layout',
-	DASHBOARD_LAYOUT = 'dashboard_layout'
+	DASHBOARD_LAYOUT = 'dashboard_layout',
 }
 
 /**
@@ -29,14 +29,13 @@ export enum RundownLayoutType {
 export enum PieceDisplayStyle {
 	LIST = 'list',
 	BUTTONS = 'buttons',
-	OFFTUBE_LIST = 'offtube_list'
 }
 
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
-	KEYBOARD_PREVIEW = 'keyboard_preview'
+	KEYBOARD_PREVIEW = 'keyboard_preview',
 }
 
 export interface RundownLayoutElementBase {
@@ -55,7 +54,7 @@ export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 export enum RundownLayoutAdLibRegionRole {
 	QUEUE = 'queue',
 	TAKE = 'take',
-	PROGRAM = 'program'
+	PROGRAM = 'program',
 }
 
 export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
@@ -173,8 +172,8 @@ export enum ActionButtonType {
 	DEACTIVATE = 'deactivate',
 	RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
-								// and then click on whatever adlib you would like
-	KLAR_ON_AIR = 'klar_on_air'
+	// and then click on whatever adlib you would like
+	KLAR_ON_AIR = 'klar_on_air',
 }
 
 export interface DashboardLayoutActionButton {
@@ -188,14 +187,14 @@ export interface DashboardLayoutActionButton {
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
-	// TODO: Interface to be defined later
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>
-	= createMongoCollection<RundownLayoutBase>('rundownLayouts')
+export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase> = createMongoCollection<
+	RundownLayoutBase
+>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -206,7 +205,7 @@ Meteor.startup(() => {
 		// 	mediaId: 1
 		// })
 		RundownLayouts._ensureIndex({
-			showStyleBaseId: 1
+			showStyleBaseId: 1,
 		})
 	}
 })

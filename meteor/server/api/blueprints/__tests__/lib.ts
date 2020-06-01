@@ -2,11 +2,7 @@ import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofi
 import { literal, protectString } from '../../../../lib/lib'
 import { Blueprint } from '../../../../lib/collections/Blueprints'
 
-export function generateFakeBlueprint (
-	id: string,
-	type?: BlueprintManifestType,
-	codeFcn?: () => SomeBlueprintManifest
-) {
+export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, codeFcn?: () => SomeBlueprintManifest) {
 	return literal<Blueprint>({
 		_id: protectString(id),
 		name: 'Fake blueprint',

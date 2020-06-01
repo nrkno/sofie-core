@@ -10,17 +10,17 @@ import * as _ from 'underscore'
  */
 function createPhysicalLayout(shortForm: string[]): PhysicalLayout {
 	return shortForm.map((row) => {
-		return _.compact(row.split(',').map((keyPosition) => {
-			const args = keyPosition.split(':')
-			return args[0] ? {
-				code: args[1] ? args[1] : args[0],
-				width: args[1] ?
-					args[0] === 'X' ?
-						-1 :
-						parseFloat(args[0]) :
-					3
-			} : undefined
-		}))
+		return _.compact(
+			row.split(',').map((keyPosition) => {
+				const args = keyPosition.split(':')
+				return args[0]
+					? {
+							code: args[1] ? args[1] : args[0],
+							width: args[1] ? (args[0] === 'X' ? -1 : parseFloat(args[0])) : 3,
+					  }
+					: undefined
+			})
+		)
 	})
 }
 
@@ -73,6 +73,6 @@ export namespace KeyboardLayouts {
 	}
 
 	export enum Names {
-		STANDARD_102_TKL = 'STANDARD_102_TKL'
+		STANDARD_102_TKL = 'STANDARD_102_TKL',
 	}
 }

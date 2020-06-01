@@ -2,7 +2,20 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
-import { Time, applyClassToDocument, registerCollection, normalizeArray, makePromise, getCurrentTime, asyncCollectionFindFetch, waitForPromise, normalizeArrayFunc, mongoWhere, ProtectedString, unprotectString } from '../lib'
+import {
+	Time,
+	applyClassToDocument,
+	registerCollection,
+	normalizeArray,
+	makePromise,
+	getCurrentTime,
+	asyncCollectionFindFetch,
+	waitForPromise,
+	normalizeArrayFunc,
+	mongoWhere,
+	ProtectedString,
+	unprotectString,
+} from '../lib'
 import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
@@ -74,16 +87,16 @@ export interface DBRundownPlaylist {
 }
 
 export interface RundownPlaylistPlayoutData {
-	rundownPlaylist: RundownPlaylist,
+	rundownPlaylist: RundownPlaylist
 	/** Ordered array of the Rundowns in a Playlist */
-	rundowns: Rundown[],
-	rundownsMap: { [key: string]: Rundown },
+	rundowns: Rundown[]
+	rundownsMap: { [key: string]: Rundown }
 	/** Ordered array of the Segments in a Playlist */
-	segments: Segment[],
-	segmentsMap: { [key: string]: Segment},
+	segments: Segment[]
+	segmentsMap: { [key: string]: Segment }
 	/** Ordered array of the Parts in a Playlist */
-	parts: Part[],
-	partsMap: { [key: string]: Part },
+	parts: Part[]
+	partsMap: { [key: string]: Part }
 	pieces: Piece[]
 
 	currentPartInstance: PartInstance | undefined
@@ -119,42 +132,54 @@ export class RundownPlaylist implements DBRundownPlaylist {
 
 	public previousPersistentState?: TimelinePersistentState
 
-	constructor (document: DBRundownPlaylist) {
+	constructor(document: DBRundownPlaylist) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
 	/** Returns all Rundowns in the RundownPlaylist */
-	getRundowns (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Rundown[] {
+	getRundowns(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Rundown[] {
 		return Rundowns.find(
-			_.extend({
-				playlistId: this._id
-			}, selector),
-			_.extend({
-				sort: {
-					_rank: 1,
-					_id: 1
-				}
-			}, options)
+			_.extend(
+				{
+					playlistId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: {
+						_rank: 1,
+						_id: 1,
+					},
+				},
+				options
+			)
 		).fetch()
 	}
 	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
-	getRundownIDs (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): RundownId[] {
-		return this.getRundowns(selector, _.extend({
-			sort: {
-				_rank: 1,
-				_id: 1
-			},
-			fields: {
-				_rank: 1,
-				_id: 1
-			}
-		}, options)).map(i => i._id)
+	getRundownIDs(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): RundownId[] {
+		return this.getRundowns(
+			selector,
+			_.extend(
+				{
+					sort: {
+						_rank: 1,
+						_id: 1,
+					},
+					fields: {
+						_rank: 1,
+						_id: 1,
+					},
+				},
+				options
+			)
+		).map((i) => i._id)
 	}
-	getRundownsMap (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
+	getRundownsMap(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
 	}
-	touch () {
+	touch() {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		if (getCurrentTime() - this.modified > 3600 * 1000) {
 			const m = getCurrentTime()
@@ -163,264 +188,233 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		}
 	}
 	/** Remove this RundownPlaylist and all its contents */
-	remove () {
+	removeTOBEREMOVED() {
 		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
 		const allRundowns = this.getRundowns()
-		allRundowns.forEach(i => i.remove())
+		allRundowns.forEach((i) => i.removeTOBEREMOVED())
 
 		RundownPlaylists.remove(this._id)
 	}
 	/** Return the studio for this RundownPlaylist */
-	getStudio (): Studio {
-		if (!this.studioId) throw new Meteor.Error(500,'Rundown is not in a studio!')
+	getStudio(): Studio {
+		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
 		let studio = Studios.findOne(this.studioId)
 		if (studio) {
 			return studio
-
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
 	/** Returns all segments in their correct order for this RundownPlaylist */
-	getSegments (selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Segment[] {
+	getSegments(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Segment[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_rank: 1,
-				playlistId: 1
-			}
+				playlistId: 1,
+			},
 		})
-		const segments = Segments.find(_.extend({
-			rundownId: {
-				$in: rundowns.map(i => i._id)
-			}
-		}, selector), _.extend({
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		}, options)).fetch()
+		const segments = Segments.find(
+			_.extend(
+				{
+					rundownId: {
+						$in: rundowns.map((i) => i._id),
+					},
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: {
+						rundownId: 1,
+						_rank: 1,
+					},
+				},
+				options
+			)
+		).fetch()
 		return RundownPlaylist._sortSegments(segments, rundowns)
 	}
-	getAllOrderedParts () {
+	getAllOrderedParts() {
 		const { parts } = this.getSegmentsAndPartsSync()
 		return parts
 	}
-	getUnorderedParts (selector?: MongoSelector<DBRundownPlaylist>): Part[] {
+	getUnorderedParts(selector?: MongoSelector<DBPart>, options?: FindOptions): Part[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_id: 1,
 				_rank: 1,
-				name: 1
-			}
+				name: 1,
+			},
 		})
-		const parts = Parts.find(_.extend({
-			rundownId: {
-				$in: rundowns.map(i => i._id)
+		const parts = Parts.find(
+			{
+				...selector,
+				rundownId: {
+					$in: rundowns.map((i) => i._id),
+				},
+			},
+			{
+				...options,
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
 			}
-		}, selector), {
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		}).fetch()
+		).fetch()
 		return parts
 	}
 	/**
 	 * Return ordered lists of all Segments and Parts of the rundowns
 	 */
-	async getSegmentsAndParts (rundowns0?: DBRundown[]): Promise<{ segments: Segment[], parts: Part[] }> {
+	async getSegmentsAndParts(rundowns0?: DBRundown[]): Promise<{ segments: Segment[]; parts: Part[] }> {
 		let rundowns = rundowns0
 		if (!rundowns) {
 			rundowns = this.getRundowns(undefined, {
 				fields: {
 					_id: 1,
 					_rank: 1,
-					name: 1
-				}
+					name: 1,
+				},
 			})
 		}
-		const rundownIds = rundowns.map(i => i._id)
+		const rundownIds = rundowns.map((i) => i._id)
 
-		const pSegments = asyncCollectionFindFetch(Segments, {
-			rundownId: {
-				$in: rundownIds
+		const pSegments = asyncCollectionFindFetch(
+			Segments,
+			{
+				rundownId: {
+					$in: rundownIds,
+				},
+			},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
 			}
-		}, {
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		})
+		)
 
-		const pParts = asyncCollectionFindFetch(Parts, {
-			rundownId: {
-				$in: rundownIds
+		const pParts = asyncCollectionFindFetch(
+			Parts,
+			{
+				rundownId: {
+					$in: rundownIds,
+				},
+			},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
 			}
-		}, {
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		})
+		)
 
 		const segments = RundownPlaylist._sortSegments(await pSegments, rundowns)
 		return {
 			segments: segments,
-			parts: RundownPlaylist._sortPartsInner(await pParts, segments)
+			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
 		}
 	}
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
-	getSegmentsAndPartsSync (): { segments: Segment[], parts: Part[] } {
-
+	getSegmentsAndPartsSync(
+		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
+		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>
+	): { segments: Segment[]; parts: Part[] } {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_rank: 1,
-				playlistId: 1
-			}
+				playlistId: 1,
+			},
 		})
-		const segments = Segments.find({
-			rundownId: {
-				$in: rundowns.map(i => i._id)
+		const segments = Segments.find(
+			{
+				rundownId: {
+					$in: rundowns.map((i) => i._id),
+				},
+				...segmentsQuery,
+			},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
 			}
-		}, {
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		}).fetch()
+		).fetch()
 
-		const parts = Parts.find({
-			rundownId: {
-				$in: rundowns.map(i => i._id)
+		const parts = Parts.find(
+			{
+				rundownId: {
+					$in: rundowns.map((i) => i._id),
+				},
+				...partsQuery,
+			},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
 			}
-		}, {
-			sort: {
-				rundownId: 1,
-				_rank: 1
-			}
-		}).fetch()
+		).fetch()
 
 		const sortedSegments = RundownPlaylist._sortSegments(segments, rundowns)
 		return {
 			segments: sortedSegments,
-			parts: RundownPlaylist._sortPartsInner(parts, segments)
+			parts: RundownPlaylist._sortPartsInner(parts, segments),
 		}
 	}
-	getSelectedPartInstances (rundownIds0?: RundownId[]) {
+	getSelectedPartInstances(rundownIds0?: RundownId[]) {
 		let rundownIds = rundownIds0
 		if (!rundownIds) {
 			rundownIds = this.getRundownIDs()
 		}
 
-		const ids = _.compact([
-			this.currentPartInstanceId,
-			this.previousPartInstanceId,
-			this.nextPartInstanceId
-		])
-		const instances = ids.length > 0 ? PartInstances.find({
-			rundownId: { $in: rundownIds },
-			_id: { $in: ids },
-			reset: { $ne: true }
-		}).fetch() : []
+		const ids = _.compact([this.currentPartInstanceId, this.previousPartInstanceId, this.nextPartInstanceId])
+		const instances =
+			ids.length > 0
+				? PartInstances.find({
+						rundownId: { $in: rundownIds },
+						_id: { $in: ids },
+						reset: { $ne: true },
+				  }).fetch()
+				: []
 
 		return {
-			currentPartInstance: instances.find(inst => inst._id === this.currentPartInstanceId),
-			nextPartInstance: instances.find(inst => inst._id === this.nextPartInstanceId),
-			previousPartInstance: instances.find(inst => inst._id === this.previousPartInstanceId)
+			currentPartInstance: instances.find((inst) => inst._id === this.currentPartInstanceId),
+			nextPartInstance: instances.find((inst) => inst._id === this.nextPartInstanceId),
+			previousPartInstance: instances.find((inst) => inst._id === this.previousPartInstanceId),
 		}
 	}
-	getAllPartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getAllPartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
 		const rundownIds = this.getRundownIDs()
 
 		selector = selector || {}
 		options = options || {}
 		return PartInstances.find(
-			_.extend({
-				rundownId: { $in: rundownIds },
-			}, selector),
-			_.extend({
-				sort: { takeCount: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { takeCount: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
-	getActivePartInstances (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
 		const newSelector = {
 			...selector,
-			reset: { $ne: true }
+			reset: { $ne: true },
 		}
 		return this.getAllPartInstances(newSelector, options)
 	}
-	getActivePartInstancesMap (selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstancesMap(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
 		const instances = this.getActivePartInstances(selector, options)
-		return normalizeArrayFunc(instances, i => unprotectString(i.part._id))
-	}
-	fetchAllPlayoutData (): RundownPlaylistPlayoutData {
-		const rundowns = Rundowns.find({ playlistId: this._id }, {
-			sort: {
-				_rank: 1
-			}
-		}).fetch()
-		const rundownIds = rundowns.map(i => i._id)
-
-		const partInstanceIds = _.compact([
-			this.currentPartInstanceId,
-			this.previousPartInstanceId,
-			this.nextPartInstanceId
-		])
-
-		const pSegmentsAndParts = this.getSegmentsAndParts(rundowns)
-		const pPieces = asyncCollectionFindFetch(Pieces, { rundownId: { $in: rundownIds } })
-		const pSelectedInstancePieces = asyncCollectionFindFetch(PieceInstances, {
-			rundownId: { $in: rundownIds },
-			partInstanceId: { $in: partInstanceIds }
-		})
-		const pSelectedPartInstances = makePromise(() => this.getSelectedPartInstances(rundownIds))
-
-		// Do fetches in parallell:
-		const segmentsAndParts = waitForPromise(pSegmentsAndParts)
-		const pieces = waitForPromise(pPieces)
-		const selectedPartInstances = waitForPromise(pSelectedPartInstances)
-		const selectedInstancePieces = waitForPromise(pSelectedInstancePieces)
-
-		// Force to use preloaded pieces when possible
-		_.each(segmentsAndParts.parts, part => {
-			part.getAllPieces = () => {
-				return _.map(_.filter(pieces, (piece) => {
-					return (
-						piece.partId === part._id
-					)
-				}), (part) => {
-					return _.clone(part)
-				})
-			}
-		})
-		_.each(_.values(selectedPartInstances), partInstance => {
-			if (partInstance) {
-				partInstance.getAllPieceInstances = () => {
-					return _.map(_.filter(selectedInstancePieces, (piece) => {
-						return (
-							piece.partInstanceId === partInstance._id
-						)
-					}), (piece) => {
-						return _.clone(piece)
-					})
-				}
-			}
-		})
-
-		return {
-			rundownPlaylist: this,
-			rundowns,
-			rundownsMap: normalizeArray(rundowns, '_id'),
-			segments: segmentsAndParts.segments,
-			segmentsMap: normalizeArray(segmentsAndParts.segments, '_id'),
-			parts: segmentsAndParts.parts,
-			partsMap: normalizeArray(segmentsAndParts.parts, '_id'),
-			pieces,
-			...selectedPartInstances,
-			selectedInstancePieces
-		}
+		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
 
-	static _sortSegments (segments: Segment[], rundowns: DBRundown[]) {
+	static _sortSegments(segments: Segment[], rundowns: DBRundown[]) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
 			if (a.rundownId === b.rundownId) {
@@ -432,12 +426,12 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			}
 		})
 	}
-	static _sortParts (parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
+	static _sortParts(parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
 		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))
 	}
-	static _sortPartsInner<P extends DBPart> (parts: P[], sortedSegments: DBSegment[]): P[] {
-		const segmentRanks: {[segmentId: string]: number} = {}
-		_.each(sortedSegments, (segment, i) => segmentRanks[unprotectString(segment._id)] = i)
+	static _sortPartsInner<P extends DBPart>(parts: P[], sortedSegments: DBSegment[]): P[] {
+		const segmentRanks: { [segmentId: string]: number } = {}
+		_.each(sortedSegments, (segment, i) => (segmentRanks[unprotectString(segment._id)] = i))
 
 		return parts.sort((a, b) => {
 			if (a.segmentId === b.segmentId) {
@@ -450,16 +444,68 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 	}
 
-	getAllStoredNotes (): Array<TrackedNote> {
-		const rundownNotes: RundownNote[] = _.flatten(_.compact(this.getRundowns().map(r => r.notes)))
+	getAllStoredNotes(): Array<GenericNote & { rank: number }> {
+		const rundownNotes: RundownNote[] = _.flatten(
+			_.compact(
+				this.getRundowns(
+					{},
+					{
+						fields: {
+							notes: 1,
+						},
+					}
+				).map((r) => r.notes)
+			)
+		)
 
 		let notes: Array<TrackedNote> = []
-		notes = notes.concat(rundownNotes.map(note => _.extend(note, { rank: 0 })))
+		notes = notes.concat(rundownNotes.map((note) => _.extend(note, { rank: 0 })))
 
-		const segments = this.getSegments()
-		const parts = this.getUnorderedParts()
+		const segmentNotes = _.object(
+			this.getSegments(
+				{},
+				{
+					fields: {
+						rank: 1,
+						notes: 1,
+					},
+				}
+			).map((segment) => [
+				segment._id,
+				{
+					rank: segment._rank,
+					notes: segment.notes,
+				},
+			])
+		) as { [key: string]: { notes: GenericNote[]; rank: number } }
 
-		notes = notes.concat(getAllNotesForSegmentAndParts(segments, parts))
+		this.getUnorderedParts(
+			{},
+			{
+				fields: {
+					segmentId: 1,
+					notes: 1,
+				},
+			}
+		).map((part) => {
+			if (part.notes) {
+				const segmentNote = segmentNotes[unprotectString(part.segmentId)]
+				if (segmentNote) {
+					return segmentNote.notes.concat(part.notes)
+				}
+			}
+		})
+		notes = notes.concat(
+			_.flatten(
+				_.map(_.values(segmentNotes), (o) => {
+					return o.notes.map((note) =>
+						_.extend(note, {
+							rank: o.rank,
+						})
+					)
+				})
+			)
+		)
 
 		return notes
 	}
@@ -468,41 +514,49 @@ export class RundownPlaylist implements DBRundownPlaylist {
 export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part[]): Array<TrackedNote> {
 	let notes: Array<TrackedNote> = []
 
-	const segmentNotes = _.object<{ [key: string ]: { notes: TrackedNote[], rank: number } }>(segments.map(segment => [ segment._id, {
-		rank: segment._rank,
-		notes: segment.notes
-	} ]))
-	parts.map(part => {
+	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number } }>(
+		segments.map((segment) => [
+			segment._id,
+			{
+				rank: segment._rank,
+				notes: segment.notes,
+			},
+		])
+	)
+	parts.map((part) => {
 		const newNotes = (part.notes || []).concat(part.getInvalidReasonNotes())
 		if (newNotes.length > 0) {
 			const segNotes = segmentNotes[unprotectString(part.segmentId)]
 			if (segNotes) {
-				segNotes.notes.push(...newNotes.map(n => ({
-					...n,
-					rank: segNotes.rank,
-					origin: {
-						...n.origin,
-						segmentId: (part.segmentId),
-						partId: (part._id),
-						rundownId: (part.rundownId),
-					}
-				})))
+				segNotes.notes.push(
+					...newNotes.map((n) => ({
+						...n,
+						rank: segNotes.rank,
+						origin: {
+							...n.origin,
+							segmentId: part.segmentId,
+							partId: part._id,
+							rundownId: part.rundownId,
+						},
+					}))
+				)
 			}
 		}
 	})
-	notes = notes.concat(_.flatten(_.map(segmentNotes, o => o.notes)))
+	notes = notes.concat(_.flatten(_.map(segmentNotes, (o) => o.notes)))
 
 	return notes
 }
 
-export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist>
-= createMongoCollection<RundownPlaylist>('rundownPlaylists', { transform: (doc) => applyClassToDocument(RundownPlaylist, doc) })
+export const RundownPlaylists: TransformedCollection<RundownPlaylist, DBRundownPlaylist> = createMongoCollection<
+	RundownPlaylist
+>('rundownPlaylists', { transform: (doc) => applyClassToDocument(RundownPlaylist, doc) })
 registerCollection('RundownPlaylists', RundownPlaylists)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RundownPlaylists._ensureIndex({
 			studioId: 1,
-			active: 1
+			active: 1,
 		})
 	}
 })

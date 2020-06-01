@@ -7,12 +7,7 @@ interface IPropsHeader {
 }
 
 export class FloatingInspector extends React.Component<IPropsHeader> {
-
-	render () {
-		return this.props.shown ?
-				<Escape to='document'>
-					{this.props.children}
-				</Escape>
-			: null
+	render() {
+		return this.props.shown ? <Escape to="document">{this.props.children}</Escape> : null
 	}
 }

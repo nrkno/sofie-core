@@ -4,5 +4,5 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 1.3.0 (Release 15)
 addMigrationSteps('1.3.0', [
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.3.0'),
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.3.0'),
 ])

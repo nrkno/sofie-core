@@ -21,8 +21,8 @@ addMigrationSteps('1.2.0', [
 			if (system && system.storePath === 'undefined') {
 				setCoreSystemStorePath(undefined)
 			}
-		}
+		},
 	},
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.2.0'),
-	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.1')
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.2.0'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.0.1'),
 ])

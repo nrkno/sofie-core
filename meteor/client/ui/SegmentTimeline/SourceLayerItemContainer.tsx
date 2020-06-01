@@ -4,19 +4,18 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime, unprotectObject } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import {
+	SourceLayerType,
+	VTContent,
+	LiveSpeakContent,
+	getPieceGroupId,
+} from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
 import { Meteor } from 'meteor/meteor'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import {
-	ISourceLayerUi,
-	IOutputLayerUi,
-	SegmentUi,
-	PartUi,
-	PieceUi
-} from './SegmentTimelineContainer'
+import { ISourceLayerUi, IOutputLayerUi, SegmentUi, PartUi, PieceUi } from './SegmentTimelineContainer'
 import { Tracker } from 'meteor/tracker'
 import { PubSub } from '../../../lib/api/pubsub'
 
@@ -54,43 +53,45 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 	private overrides: Partial<IPropsHeader>
 	private destroyed: boolean
 
-	updateMediaObjectSubscription () {
+	updateMediaObjectSubscription() {
 		if (this.destroyed) return
 
 		if (this.props.piece && this.props.piece.sourceLayer) {
 			const piece = this.props.piece
 			let objId: string | undefined = undefined
 
-			if (piece.instance.piece.content) {
-				switch (this.props.piece.sourceLayer.type) {
-					case SourceLayerType.VT:
-						objId = (piece.instance.piece.content as VTContent).fileName.toUpperCase()
-						break
-					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
-						break
-				}
+			switch (this.props.piece.sourceLayer.type) {
+				case SourceLayerType.VT:
+					objId = piece.instance.piece.content
+						? (piece.instance.piece.content as VTContent).fileName.toUpperCase()
+						: undefined
+					break
+				case SourceLayerType.LIVE_SPEAK:
+					objId = piece.instance.piece.content
+						? (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
+						: undefined
+					break
 			}
 
 			if (objId && objId !== this.objId) {
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
 				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
-					mediaId: this.objId
+					mediaId: this.objId,
 				})
 			}
 		} else {
-			console.error('One of the Piece\'s is invalid:', this.props.piece)
+			console.error("One of the Piece's is invalid:", this.props.piece)
 		}
 	}
 
-	shouldDataTrackerUpdate (prevProps: IPropsHeader): boolean {
+	shouldDataTrackerUpdate(prevProps: IPropsHeader): boolean {
 		if (this.props.piece !== prevProps.piece) return true
 		if (this.props.isLiveLine !== prevProps.isLiveLine) return true
 		return false
 	}
 
-	updateDataTracker () {
+	updateDataTracker() {
 		if (this.destroyed) return
 
 		this.statusComp = this.autorun(() => {
@@ -98,56 +99,13 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 			this.overrides = {}
 			const overrides = this.overrides
 
-			// console.log(`${this.props.piece._id}: running data tracker`)
-
-			if (props.isLiveLine) {
-				// Check in Timeline collection for any changes to the related object
-				// TODO - this query appears to be unable to load any data
-				let timelineObj = Timeline.findOne({ id: getPieceGroupId(unprotectObject(props.piece.instance.piece)) })
-
-				if (timelineObj) {
-					// Deep clone the required bits
-					const origPiece = (overrides.piece || props.piece) as PieceUi
-					const pieceCopy = {
-						...(overrides.piece || props.piece),
-						instance: {
-							...origPiece.instance,
-							piece: {
-								...origPiece.instance.piece,
-								enable: timelineObj.enable
-							}
-						}
-					}
-
-					if (_.isNumber(timelineObj.enable.start)) { // this is a normal absolute trigger value
-						pieceCopy.renderedInPoint = timelineObj.enable.start
-					} else if (timelineObj.enable.start === 'now') { // this is a special absolute trigger value
-						if (props.part && props.part.instance.part.startedPlayback && props.part.instance.part.getLastStartedPlayback()) {
-							pieceCopy.renderedInPoint = getCurrentTime() - (props.part.instance.part.getLastStartedPlayback() || 0)
-						} else {
-							pieceCopy.renderedInPoint = 0
-						}
-					} else {
-						pieceCopy.renderedInPoint = 0
-					}
-
-					if (typeof timelineObj.enable.duration === 'number' && !pieceCopy.cropped) {
-						pieceCopy.renderedDuration = (
-							timelineObj.enable.duration !== 0 ?
-							timelineObj.enable.duration :
-							(props.partDuration - (pieceCopy.renderedInPoint || 0))
-						) || null
-					}
-					// console.log(segmentCopy.renderedDuration)
-
-					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
-				}
-			}
-
 			// Check item status
 			if (props.piece.sourceLayer) {
-
-				const { metadata, status, contentDuration } = checkPieceContentStatus(props.piece.instance.piece, props.piece.sourceLayer, props.playlist.getStudio().settings)
+				const { metadata, status, contentDuration } = checkPieceContentStatus(
+					props.piece.instance.piece,
+					props.piece.sourceLayer,
+					props.playlist.getStudio().settings
+				)
 				if (status !== props.piece.instance.piece.status || metadata) {
 					// Deep clone the required bits
 					const origPiece = (overrides.piece || props.piece) as PieceUi
@@ -157,10 +115,10 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 							...origPiece.instance,
 							piece: {
 								...origPiece.instance.piece,
-								status: status
-							}
+								status: status,
+							},
 						},
-						contentMetaData: metadata
+						contentMetaData: metadata,
 					}
 
 					if (
@@ -181,14 +139,14 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 		})
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 			this.updateDataTracker()
 		})
 	}
 
-	componentDidUpdate (prevProps: IPropsHeader) {
+	componentDidUpdate(prevProps: IPropsHeader) {
 		Meteor.defer(() => {
 			this.updateMediaObjectSubscription()
 		})
@@ -198,14 +156,12 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 		}
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this.destroyed = true
 		super.componentWillUnmount()
 	}
 
-	render () {
-		return (
-			<SourceLayerItem {...this.props} {...this.overrides} />
-		)
+	render() {
+		return <SourceLayerItem {...this.props} {...this.overrides} />
 	}
 }

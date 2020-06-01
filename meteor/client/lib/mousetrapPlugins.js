@@ -1,39 +1,38 @@
 import { mousetrapHelper } from './mousetrapHelper'
+;(function(Mousetrap) {
+	var _globalCallbacks = {}
+	var _originalStopCallback = Mousetrap.prototype.stopCallback
 
-(function (Mousetrap) {
-	var _globalCallbacks = {};
-	var _originalStopCallback = Mousetrap.prototype.stopCallback;
-
-	Mousetrap.prototype.stopCallback = function (e, element, combo, sequence) {
-		var self = this;
+	Mousetrap.prototype.stopCallback = function(e, element, combo, sequence) {
+		var self = this
 
 		if (self.paused) {
-			return true;
+			return true
 		}
 
 		if (_globalCallbacks[combo] || _globalCallbacks[sequence]) {
-			return false;
+			return false
 		}
 
-		return _originalStopCallback.call(self, e, element, combo);
-	};
+		return _originalStopCallback.call(self, e, element, combo)
+	}
 
-	Mousetrap.prototype.bindGlobal = function (keys, callback, action) {
-		var self = this;
-		self.bind(keys, callback, action);
+	Mousetrap.prototype.bindGlobal = function(keys, callback, action) {
+		var self = this
+		self.bind(keys, callback, action)
 
 		if (keys instanceof Array) {
 			for (var i = 0; i < keys.length; i++) {
-				_globalCallbacks[keys[i]] = true;
+				_globalCallbacks[keys[i]] = true
 			}
-			return;
+			return
 		}
 
-		_globalCallbacks[keys] = true;
-	};
+		_globalCallbacks[keys] = true
+	}
 
-	Mousetrap.init();
-})(Mousetrap);
+	Mousetrap.init()
+})(Mousetrap)
 
 // Disabled ESC key as get out of jail feature
 // (function (Mousetrap) {
@@ -101,13 +100,13 @@ import { mousetrapHelper } from './mousetrapHelper'
 // })(Mousetrap);
 
 // Disable default browser action for alt keys - focus window menu
-(function () {
-	Mousetrap.init();
+;(function() {
+	Mousetrap.init()
 
 	function preventDefault(e) {
-		e.preventDefault();
+		e.preventDefault()
 	}
 
-	Mousetrap.bind('alt', preventDefault, 'keydown');
-	Mousetrap.bind('alt', preventDefault, 'keyup');
-})(Mousetrap);
+	Mousetrap.bind('alt', preventDefault, 'keydown')
+	Mousetrap.bind('alt', preventDefault, 'keyup')
+})(Mousetrap)

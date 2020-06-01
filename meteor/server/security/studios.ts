@@ -2,12 +2,11 @@ import { Studio, Studios } from '../../lib/collections/Studios'
 import { rejectFields } from './lib'
 
 export namespace StudiosSecurity {
-	export function allowReadAccess (selector: object, token: string, context: any) {
-
+	export function allowReadAccess(selector: object, token: string, context: any) {
 		return true
 		// TODO: implement some security here
 	}
-	export function allowWriteAccess () {
+	export function allowWriteAccess() {
 		// TODO
 	}
 }
@@ -15,15 +14,13 @@ export namespace StudiosSecurity {
 
 // Setup rules:
 Studios.allow({
-	insert (userId: string, doc: Studio): boolean {
+	insert(userId: string, doc: Studio): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
-		return rejectFields(fields, [
-			'_id'
-		])
+	update(userId, doc, fields, modifier) {
+		return rejectFields(fields, ['_id'])
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })

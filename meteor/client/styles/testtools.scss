@@ -1,11 +1,10 @@
-
 .testtools-timeline {
 	height: calc(100vh - 220px);
 	width: calc(100vw - 300px);
 	position: fixed;
 	top: 220px;
 	overflow-x: scroll;
-	
+
 	.testtools-timeline-layer-label {
 		position: sticky;
 		left: 0;
@@ -42,5 +41,11 @@
 		position: absolute;
 		top: 0px;
 		z-index: 999;
+	}
+}
+
+.testtools-timelinetable {
+	& > tbody > tr {
+		border-bottom: 1px solid #000;
 	}
 }

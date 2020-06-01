@@ -18,108 +18,122 @@ interface IRecordingViewProps {
 		}
 	}
 }
-interface IRecordingViewState {
-}
+interface IRecordingViewState {}
 interface IRecordingViewTrackedProps {
 	studio: Studio | undefined
 	file: RecordedFile | undefined
 	log: UserActionsLogItem[]
 }
 
-const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewState, IRecordingViewTrackedProps>((props: IRecordingViewProps) => {
-	const file = RecordedFiles.findOne({}, { sort: { startedAt: -1 } })
+const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewState, IRecordingViewTrackedProps>(
+	(props: IRecordingViewProps) => {
+		const file = RecordedFiles.findOne({}, { sort: { startedAt: -1 } })
 
-	return {
-		studio: Studios.findOne(),
-		file,
-		log: file ?
-			UserActionsLog.find({
-				timestamp: {
-					$gte: file.startedAt,
-					$lt: file.stoppedAt,
-				}
-			}, { sort: { timestamp: 1 } }).fetch() :
-			[]
-	}
-})(class RecordingView extends MeteorReactComponent<Translated<IRecordingViewProps & IRecordingViewTrackedProps>, IRecordingViewState> {
-
-	private userActionsLogSub: Meteor.SubscriptionHandle
-	private videoPlayer: HTMLVideoElement
-
-	componentWillMount () {
-		if (this.props.match && this.props.match.params) {
-			// Subscribe to data:
-			this.subscribe(PubSub.recordedFiles, {
-				studioId: this.props.match.params.studioId,
-				_id: this.props.match.params.recordingId
-			})
-			this.subscribe(PubSub.studios, {
-				_id: this.props.match.params.studioId
-			})
+		return {
+			studio: Studios.findOne(),
+			file,
+			log: file
+				? UserActionsLog.find(
+						{
+							timestamp: {
+								$gte: file.startedAt,
+								$lt: file.stoppedAt,
+							},
+						},
+						{ sort: { timestamp: 1 } }
+				  ).fetch()
+				: [],
 		}
 	}
+)(
+	class RecordingView extends MeteorReactComponent<
+		Translated<IRecordingViewProps & IRecordingViewTrackedProps>,
+		IRecordingViewState
+	> {
+		private userActionsLogSub: Meteor.SubscriptionHandle
+		private videoPlayer: HTMLVideoElement
 
-	componentDidUpdate () {
-		if (this.props.file && this.props.file.stoppedAt) {
-			if (this.userActionsLogSub) {
-				this.userActionsLogSub.stop()
+		componentWillMount() {
+			if (this.props.match && this.props.match.params) {
+				// Subscribe to data:
+				this.subscribe(PubSub.recordedFiles, {
+					studioId: this.props.match.params.studioId,
+					_id: this.props.match.params.recordingId,
+				})
+				this.subscribe(PubSub.studios, {
+					_id: this.props.match.params.studioId,
+				})
 			}
-			this.userActionsLogSub = this.subscribe(PubSub.userActionsLog, {
-				timestamp: {
-					$gte: this.props.file.startedAt,
-					$lt: this.props.file.stoppedAt,
-				}
-			})
-		}
-	}
-
-	setPlayerRef = (el: HTMLVideoElement) => {
-		this.videoPlayer = el
-	}
-
-	seekToTime = (time: number) => {
-		this.videoPlayer.currentTime = time / 1000
-	}
-
-	renderRecordingView (file: RecordedFile, studio: Studio) {
-		const { t } = this.props
-
-		if (!file) return null
-
-		let urlPrefix = ''
-		if (studio) urlPrefix = objectPath.get(studio, 'testToolsConfig.recordings.urlPrefix', '')
-		if (urlPrefix === '') {
-			return <p>{t('A required setting is not configured')}</p>
 		}
 
-		return <React.Fragment>
-			<header className='mvs'>
-				<h1>{file.name}</h1>
-			</header>
-			<div className='mod mvl'>
-				{ file.stoppedAt
-					? <video width='960' height='540' controls ref={this.setPlayerRef}>
-						<source src={`${urlPrefix}${file.path}`} type='video/mp4' />
-						{t('Your browser does not support video playback')}
-					</video>
-					: t('Recording still in progress')
+		componentDidUpdate() {
+			if (this.props.file && this.props.file.stoppedAt) {
+				if (this.userActionsLogSub) {
+					this.userActionsLogSub.stop()
 				}
-			</div>
-			<div className='mod mvl'>
-				<UserActionsList logItems={this.props.log} onItemClick={(item) => this.seekToTime(item.timestamp - file.startedAt)} />
-			</div>
-		</React.Fragment>
-	}
+				this.userActionsLogSub = this.subscribe(PubSub.userActionsLog, {
+					timestamp: {
+						$gte: this.props.file.startedAt,
+						$lt: this.props.file.stoppedAt,
+					},
+				})
+			}
+		}
 
-	render () {
-		const { file, studio } = this.props
+		setPlayerRef = (el: HTMLVideoElement) => {
+			this.videoPlayer = el
+		}
 
-		return <div className='mtl gutter'>
-			{ (file && studio) ? this.renderRecordingView(file, studio) : (
-				<p>File not found</p>
-			)}
-		</div>
+		seekToTime = (time: number) => {
+			this.videoPlayer.currentTime = time / 1000
+		}
+
+		renderRecordingView(file: RecordedFile, studio: Studio) {
+			const { t } = this.props
+
+			if (!file) return null
+
+			let urlPrefix = ''
+			if (studio) urlPrefix = objectPath.get(studio, 'testToolsConfig.recordings.urlPrefix', '')
+			if (urlPrefix === '') {
+				return <p>{t('A required setting is not configured')}</p>
+			}
+
+			return (
+				<React.Fragment>
+					<header className="mvs">
+						<h1>{file.name}</h1>
+					</header>
+					<div className="mod mvl">
+						{file.stoppedAt ? (
+							<video width="960" height="540" controls ref={this.setPlayerRef}>
+								<source src={`${urlPrefix}${file.path}`} type="video/mp4" />
+								{t('Your browser does not support video playback')}
+							</video>
+						) : (
+							t('Recording still in progress')
+						)}
+					</div>
+					<div className="mod mvl">
+						<UserActionsList
+							logItems={this.props.log}
+							onItemClick={(item) => this.seekToTime(item.timestamp - file.startedAt)}
+						/>
+					</div>
+				</React.Fragment>
+			)
+		}
+
+		render() {
+			const { file, studio } = this.props
+
+			return (
+				<div className="mtl gutter">
+					{file && studio ? this.renderRecordingView(file, studio) : <p>File not found</p>}
+				</div>
+			)
+		}
 	}
-})
+)
 
 export { RecordingView }

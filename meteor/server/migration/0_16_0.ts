@@ -1,7 +1,4 @@
-import {
-	ensureCollectionProperty,
-	setExpectedVersion
-} from './lib'
+import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { addMigrationSteps } from './databaseMigration'
 import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import * as _ from 'underscore'
@@ -30,13 +27,15 @@ addMigrationSteps('0.16.0', [
 				setCoreSystemStorePath(input.storePath)
 			}
 		},
-		input: [{
-			label: 'File path for persistant storage',
-			description: 'Enter the file path for the persistant storage (example "/opt/coredisk")',
-			inputType: 'text',
-			attribute: 'storePath'
-		}]
+		input: [
+			{
+				label: 'File path for persistant storage',
+				description: 'Enter the file path for the persistant storage (example "/opt/coredisk")',
+				inputType: 'text',
+				attribute: 'storePath',
+			},
+		],
 	},
 
-	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.1.1')
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.1.1'),
 ])
