@@ -43,12 +43,12 @@
     "watch-types": "npm run check-types -- --watch"
   },
   "dependencies": {
-    "@babel/runtime": "^7.10.1",
+    "@babel/runtime": "^7.10.2",
     "@fortawesome/fontawesome": "^1.1.8",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/fontawesome-svg-core": "^1.2.28",
     "@fortawesome/free-solid-svg-icons": "^5.13.0",
-    "@fortawesome/react-fontawesome": "0.1.9",
+    "@fortawesome/react-fontawesome": "^0.1.9",
     "@nrk/core-icons": "^9.2.1",
     "@popperjs/core": "^2.0.0",
     "@slack/client": "^5.0.2",
@@ -59,10 +59,10 @@
     "core-js": "^3.6.5",
     "fast-clone": "^1.5.13",
     "html-entities": "^1.3.1",
-    "i18next": "^19.4.4",
+    "i18next": "^19.4.5",
     "i18next-browser-languagedetector": "^4.2.0",
     "i18next-xhr-backend": "^3.2.2",
-    "immutability-helper": "^3.0.1",
+    "immutability-helper": "^3.1.1",
     "indexof": "0.0.1",
     "lottie-web": "^5.6.10",
     "meteor-node-stubs": "^1.0.0",
@@ -73,14 +73,14 @@
     "object-path": "^0.11.4",
     "prop-types": "^15.7.2",
     "query-string": "^6.12.1",
-    "rc-tooltip": "^4.2.0",
+    "rc-tooltip": "^4.2.1",
     "react": "^16.13.1",
     "react-bootstrap": "^1.0.1",
     "react-circular-progressbar": "^2.0.3",
     "react-contextmenu": "^2.13.0",
     "react-datepicker": "^2.16.0",
-    "react-dnd": "^7.4.1",
-    "react-dnd-html5-backend": "^7.4.4",
+    "react-dnd": "^11.1.3",
+    "react-dnd-html5-backend": "^11.1.3",
     "react-dom": "^16.13.1",
     "react-escape": "0.0.8",
     "react-hotkeys": "^2.0.0",
@@ -112,7 +112,7 @@
     "@types/jest": "^25.2.3",
     "@types/meteor": "1.4.47",
     "@types/mousetrap": "^1.6.3",
-    "@types/node": "^14.0.5",
+    "@types/node": "^14.0.6",
     "@types/prop-types": "^15.7.3",
     "@types/react": "^16.9.35",
     "@types/react-circular-progressbar": "^1.1.0",
@@ -125,15 +125,15 @@
     "@types/winston": "^2.4.4",
     "@types/xml2json": "^0.11.0",
     "@types/xmldom": "^0.1.29",
-    "@welldone-software/why-did-you-render": "^4.2.2",
+    "@welldone-software/why-did-you-render": "^4.2.5",
     "codecov": "^3.7.0",
     "ejson": "^2.2.0",
     "fibers-npm": "npm:fibers@4.0.3",
-    "husky": "^3.1.0",
+    "husky": "^4.2.5",
     "i18next-conv": "^10.0.2",
     "i18next-extract-gettext": "^3.2.1",
     "jest": "^26.0.1",
-    "lint-staged": "^9.5.0",
+    "lint-staged": "^10.2.7",
     "meteor-babel": "^7.9.0",
     "meteor-promise": "0.8.7",
     "mock-http": "^1.1.0",
@@ -143,14 +143,14 @@
     "simple-git": "^2.5.0",
     "sinon": "^9.0.2",
     "standard-version": "^8.0.0",
-    "ts-jest": "^26.0.0",
+    "ts-jest": "^26.1.0",
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.1.0",
     "typedoc": "^0.17.7",
     "typescript": "~3.8.3",
-    "xmldom": "^0.1.27",
-    "typescript-tslint-plugin": "^0.5.5"
+    "typescript-tslint-plugin": "^0.5.5",
+    "xmldom": "^0.3.0"
   },
   "husky": {
     "hooks": {
@@ -159,12 +159,10 @@
   },
   "lint-staged": {
     "*.{js,css,json,md,scss}": [
-      "prettier --write",
-      "git add"
+      "prettier --write"
     ],
     "*.{ts,tsx}": [
-      "npm run lintfix --",
-      "git add"
+      "npm run lintfix --"
     ]
   },
   "meteor": {
