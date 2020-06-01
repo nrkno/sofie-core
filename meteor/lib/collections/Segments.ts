@@ -47,6 +47,7 @@ export class Segment implements DBSegment {
 	public isHidden?: boolean
 	public unsynced?: boolean
 	public unsyncedTime?: Time
+	public identifier?: string
 
 	constructor (document: DBSegment) {
 		_.each(_.keys(document), (key) => {

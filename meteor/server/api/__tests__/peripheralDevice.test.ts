@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 
-import { PeripheralDevice, SpreadsheetDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
 import { Segment, Segments, SegmentId } from '../../../lib/collections/Segments'
@@ -16,6 +16,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { setLoggerLevel } from '../../../server/api/logger'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { IngestDeviceSettings, IngestDeviceSecretSettings } from '../../../lib/collections/PeripheralDeviceSettings/ingestDevice';
 
 describe('test peripheralDevice general API methods', () => {
 
@@ -292,9 +293,9 @@ describe('test peripheralDevice general API methods', () => {
 			type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
 		}})
 		Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
-		let deviceWithAccessToken = PeripheralDevices.findOne(device._id)
+		let deviceWithAccessToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		expect(deviceWithAccessToken).toBeTruthy()
-		expect((deviceWithAccessToken as SpreadsheetDevice).accessTokenUrl).toBe('http://auth.url/')
+		expect((deviceWithAccessToken).accessTokenUrl).toBe('http://auth.url/')
 
 		PeripheralDevices.update(device._id, { $set: {
 			type: PeripheralDeviceAPI.DeviceType.MOS
@@ -316,12 +317,12 @@ describe('test peripheralDevice general API methods', () => {
 		}})
 
 		Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-		let deviceWithSecretToken = PeripheralDevices.findOne(device._id)
+		let deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
 		// console.log(deviceWithSecretToken)
 		expect(deviceWithSecretToken).toBeTruthy()
-		expect((deviceWithSecretToken as SpreadsheetDevice).accessTokenUrl).toBe('')
-		expect((deviceWithSecretToken as SpreadsheetDevice).secretSettings!.accessToken).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-		expect((deviceWithSecretToken as SpreadsheetDevice).settings!.secretAccessToken).toBe(true)
+		expect(deviceWithSecretToken.accessTokenUrl).toBe('')
+		expect((deviceWithSecretToken.secretSettings as IngestDeviceSecretSettings).accessToken).toBe('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+		expect((deviceWithSecretToken.settings as IngestDeviceSettings).secretAccessToken).toBe(true)
 	})
 
 	testInFiber('uninitialize', () => {
