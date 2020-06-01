@@ -5,9 +5,9 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
 import { SplitRole } from '../SegmentTimeline/Renderers/SplitsSourceRenderer'
 import { literal } from '../../../lib/lib'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
 
 interface SplitSubItem {
 	_id: string
@@ -17,7 +17,7 @@ interface SplitSubItem {
 }
 
 interface IProps {
-	piece: AdLibPieceUi
+	piece: PieceGeneric
 }
 
 const DEFAULT_POSITIONS = [

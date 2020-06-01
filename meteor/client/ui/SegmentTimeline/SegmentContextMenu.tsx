@@ -3,14 +3,12 @@ import Escape from 'react-escape'
 import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId, Segment } from '../../../lib/collections/Segments'
-import * as i18next from 'i18next'
 import { Settings } from '../../../lib/Settings'
 
 interface IProps {
@@ -94,7 +92,7 @@ export const SegmentContextMenu = withTranslation()(
 		}
 
 		menuItemResyncSegment = (
-			t: (key: string | string[], options?: i18next.TranslationOptions<object> | undefined) => any,
+			t: (key: string | string[], options?: unknown | undefined) => any,
 			segment: SegmentUi | null
 		) => {
 			if (segment && segment.unsynced) {

@@ -1,16 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { Segment } from '../../../lib/collections/Segments'
-import { Part } from '../../../lib/collections/Parts'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
+import { Rundowns } from '../../../lib/collections/Rundowns'
+import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
 import {
 	DragSource,
 	DropTarget,
@@ -20,30 +13,15 @@ import {
 	DropTargetMonitor,
 	ConnectDragPreview,
 } from 'react-dnd'
-
-import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { Spinner } from '../../lib/Spinner'
+import { faBars } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { Random } from 'meteor/random'
-import { literal, getCurrentTime, unprotectString, partial } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
-import {
-	IAdLibPanelProps,
-	IAdLibPanelTrackedProps,
-	fetchAndFilter,
-	AdLibPieceUi,
-	matchFilter,
-	AdLibPanelToolbar,
-} from './AdLibPanel'
+import { literal, unprotectString, partial } from '../../../lib/lib'
 import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { getUnfinishedPieceInstancesReactive, DashboardPanelInner, dashboardElementPosition } from './DashboardPanel'
@@ -52,15 +30,14 @@ import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PieceInstanceId, PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
 import { ContextMenuTrigger } from 'react-contextmenu'
-
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstances } from '../../../lib/collections/PartInstances'
 
 const HOTKEY_GROUP = 'BucketPanel'
 

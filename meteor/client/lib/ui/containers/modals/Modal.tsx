@@ -1,8 +1,6 @@
 import * as React from 'react'
-import * as CoreIcons from '@nrk/core-icons/jsx'
+import CoreIcons from '@nrk/core-icons/jsx'
 import * as Escape from 'react-escape'
-import ClassNames from 'classnames'
-import * as VelocityReact from 'velocity-react'
 import { mousetrapHelper } from '../../../mousetrapHelper'
 
 export interface IModalAttributes {
@@ -88,7 +86,7 @@ export class Modal extends React.Component<IModalAttributes> {
 								<div className="flex-col horizontal-align-right vertical-align-middle">
 									<p>
 										<button className="action-btn" onClick={this.handleDiscard}>
-											<CoreIcons id="nrk-close" />
+											<CoreIcons.NrkClose />
 										</button>
 									</p>
 								</div>

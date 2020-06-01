@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
-import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -26,12 +26,18 @@ interface IGenericDeviceSettingsComponentState {
 	showDeleteConfirm: boolean
 	editedObjects: EditId[]
 }
+
+interface IGenericDeviceSettingsComponentProps {
+	device: PeripheralDevice
+	subDevices?: PeripheralDevice[]
+}
+
 export const GenericDeviceSettingsComponent = withTranslation()(
 	class GenericDeviceSettingsComponent extends React.Component<
-		Translated<IGenericDeviceSettingsComponentState>,
+		Translated<IGenericDeviceSettingsComponentProps>,
 		IGenericDeviceSettingsComponentState
 	> {
-		constructor(props: Translated<IGenericDeviceSettingsComponentState>) {
+		constructor(props: Translated<IGenericDeviceSettingsComponentProps>) {
 			super(props)
 			this.state = {
 				deleteConfirmItemPath: undefined,

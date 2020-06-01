@@ -283,10 +283,11 @@ export function translateWithTracker<IProps, IState, TrackedProps>(
 	autorunFunction: (props: IProps, state?: IState) => TrackedProps,
 	checkUpdate?:
 		| ((data: any, props: IProps, nextProps: IProps) => boolean)
-		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean)
+		| ((data: any, props: IProps, nextProps: IProps, state: IState, nextState: IState) => boolean),
+	queueTrackerUpdates?: boolean
 ) {
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
-		const inner = withTracker(autorunFunction, checkUpdate)(WrappedComponent) as new (
+		const inner = withTracker(autorunFunction, checkUpdate, queueTrackerUpdates)(WrappedComponent) as new (
 			props: IProps & WithTranslation
 		) => React.Component<IProps & WithTranslation, IState, any>
 		return withTranslation()(inner)

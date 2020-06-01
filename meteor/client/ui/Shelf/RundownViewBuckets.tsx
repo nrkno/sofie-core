@@ -8,10 +8,10 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { ClientAPI } from '../../../lib/api/client'
 
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import * as Escape from 'react-escape'
-import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faBars } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { unprotectString, partial, literal } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getElementDocumentOffset } from '../../utils/positions'
@@ -41,7 +41,7 @@ interface IState {
 	localBuckets: Bucket[]
 }
 
-export const RundownViewBuckets = translate()(
+export const RundownViewBuckets = withTranslation()(
 	class RundownViewBuckets extends React.Component<Translated<IBucketsProps>, IState> {
 		private _mouseLast: {
 			x: number

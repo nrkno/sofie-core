@@ -114,10 +114,13 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 	}
 
 	checkFullScreen() {
-		// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 		return (
+			document.fullscreen ||
+			// @ts-ignore
 			document.fullScreen ||
+			// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 			document.mozFullScreen ||
+			// @ts-ignore
 			document.webkitIsFullScreen ||
 			Math.abs(screen.height - window.innerHeight) < 10 ||
 			false
