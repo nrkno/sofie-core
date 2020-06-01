@@ -100,13 +100,13 @@ class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState>
 								placeholder={t('Password')}
 								name='password'
 							/>
-							<button type='submit' className='btn btn-primary'>Sign In</button>
+							<button type='submit' className='btn btn-primary'>{t('Login Now')}</button>
 							<Link className='selectable right mas' to='/reset' >{t('Lost password?')}</Link>
 						</form>
 					</div>
 					<div className='mas'>
 						<Link className='selectable' to='/signup'>
-							<button className='btn'>{t('Create new account')}</button>
+							<button className='btn'>{t('Create New Account')}</button>
 						</Link>
 					</div>
 					<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>

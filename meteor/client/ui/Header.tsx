@@ -14,7 +14,7 @@ import { UserId } from '../../lib/collections/Users'
 import { Settings } from '../../lib/Settings'
 
 interface IPropsHeader {
-	userId: UserId | null
+	user: boolean
 	allowConfigure?: boolean
 	allowTesting?: boolean
 	allowDeveloper?: boolean
@@ -117,8 +117,8 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 								{ this.props.allowTesting && <NavLink to='/testTools' activeClassName='active'>{t('Test Tools')}</NavLink> }
 								<NavLink to='/status' activeClassName='active'>{t('Status')}</NavLink>
 								{ this.props.allowConfigure && <NavLink to='/settings' activeClassName='active'>{t('Settings')}</NavLink> }
-								{ (Settings.enableUserAccounts && this.props.userId) && <NavLink to='/account' activeClassName='active'>{t('Account')}</NavLink>}
-								{ (Settings.enableUserAccounts && this.props.userId) && <NavLink to='/' activeClassName='active' onClick={this.handleLogout}>{t('Logout')}</NavLink> }
+								{ (Settings.enableUserAccounts && this.props.user) && <NavLink to='/account' activeClassName='active'>{t('Account')}</NavLink>}
+								{ (Settings.enableUserAccounts && this.props.user) && <NavLink to='/' activeClassName='active' onClick={this.handleLogout}>{t('Logout')}</NavLink> }
 							</nav>
 						</div>
 					</div>

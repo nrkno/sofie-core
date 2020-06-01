@@ -13,7 +13,7 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 	getSegmentPartNotes (rundownIds: RundownId[]): Promise<(PartNote & { rank: number; })[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
 		rundownIds.forEach(rundownId => {
-			if (!RundownReadAccess.rundownContent(rundownId, this)) {
+			if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
 				throw new Meteor.Error(401, 'Invalid access creditials for Segment Parts Notes')
 			}
 		})
@@ -22,7 +22,7 @@ class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownN
 	getMediaObjectIssues (rundownIds: RundownId[]): Promise<IMediaObjectIssue[]> {
 		triggerWriteAccessBecauseNoCheckNecessary()
 		rundownIds.forEach(rundownId => {
-			if (!RundownReadAccess.rundownContent(rundownId, this)) {
+			if (!RundownReadAccess.rundownContent({ rundownId }, this)) {
 				throw new Meteor.Error(401, 'Invalid access creditials for Media Object Issues')
 			}
 		})

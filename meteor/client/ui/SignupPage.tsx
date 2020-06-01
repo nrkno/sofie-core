@@ -212,11 +212,11 @@ class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageStat
 					</div>
 				</form>
 				<div className='flex-row-center container pills'>
-					<button className='btn' onClick={() => this.props.history.push('/')}>{t('Sign In')}</button>
+					<button className='btn' onClick={() => this.props.history.push('/')}>{t('Go back to Login')}</button>
 					<button
 						className='btn btn-primary'
 						onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.createAccount(e)}
-					>{t('Create new Account')}</button>
+					>{t('Create New Account')}</button>
 				</div>
 				<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
 					<p>{this.state.error ? this.state.error : ''}&nbsp;</p>

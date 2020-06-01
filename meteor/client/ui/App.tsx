@@ -43,7 +43,7 @@ import { SignupPage } from './SignupPage'
 import { RequestResetPage } from './RequestResetPage'
 import { ResetPage } from './ResetPage'
 import { AccountPage } from './AccountPage'
-import { getUserId, UserId } from '../../lib/collections/Users'
+import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -56,7 +56,7 @@ const WINDOW_START_HOUR = 3
 const WINDOW_END_HOUR = 5
 
 interface iAppProps extends InjectedI18nProps {
-	userId: UserId | null
+	user: User | null
 }
 interface IAppState {
 	allowStudio: boolean
@@ -69,9 +69,9 @@ interface IAppState {
 
 // App component - represents the whole app
 export const App = translateWithTracker(() => {
-	const userId = getUserId() // just for reactivity
+	const user = getUser() // just for reactivity
 	meteorSubscribe(PubSub.organization, {})
-	return { userId }
+	return { user }
 })(class App extends MeteorReactComponent<Translated<iAppProps>, IAppState> {
 	private lastStart = 0
 
@@ -119,7 +119,7 @@ export const App = translateWithTracker(() => {
 			return <Route {...args} render={(props) => <Component {...props} />}/>
 		} else {
 			return <Route {...args} render={(props) => (
-				this.props.userId
+				this.props.user
 					? <Component {...props} />
 					: <Redirect to='/' />
 			)}/>
@@ -147,12 +147,6 @@ export const App = translateWithTracker(() => {
 
 		// Global subscription of the currently logged in user:
 		this.subscribe(PubSub.loggedInUser, {})
-		this.autorun(() => {
-			// Set state just to force a re-render of the whole app when the user-data has arrived:
-			this.setState({
-				subscriptionsReady: this.subscriptionsReady() // reactive
-			})
-		})
 
 		m.locale(i18n.language)
 		document.documentElement.lang = i18n.language
@@ -165,7 +159,7 @@ export const App = translateWithTracker(() => {
 	}
 
 	componentDidUpdate () {
-		if (Settings.enableUserAccounts && this.props.userId) {
+		if (Settings.enableUserAccounts && this.props.user) {
 			const roles = {
 				allowConfigure: getAllowConfigure(),
 				allowStudio: getAllowStudio(),
@@ -182,7 +176,7 @@ export const App = translateWithTracker(() => {
 			<Router>
 				<div className='container-fluid'>
 					{/* Header switch - render the usual header for all pages but the rundown view */}
-					{(!Settings.enableUserAccounts || this.props.userId) && <ErrorBoundary>
+					{(!Settings.enableUserAccounts || this.props.user) && <ErrorBoundary>
 						<Switch>
 							<Route path='/rundown/:playlistId' component={NullComponent} />
 							<Route path='/countdowns/:studioId/presenter' component={NullComponent} />
@@ -191,7 +185,7 @@ export const App = translateWithTracker(() => {
 							<Route path='/prompter/:studioId' component={NullComponent} />
 							<Route path='/' render={(props) => <Header
 								{...props}
-								userId={this.props.userId}
+								user={this.props.user ? true : false}
 								allowConfigure={this.state.allowConfigure}
 								allowTesting={this.state.allowTesting}
 								allowDeveloper={this.state.allowDeveloper}
