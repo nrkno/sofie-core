@@ -1,6 +1,4 @@
-import {
-	setExpectedVersion
-} from './lib'
+import { setExpectedVersion } from './lib'
 import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'

@@ -1,10 +1,9 @@
-	   /** Stream Deck Original, button size 72px */
+/** Stream Deck Original, button size 72px */
 @media screen and (width: 360px) and (height: 216px),
-	   /** Stream Deck XL, button size 96px */
-	   screen and (width: 768px) and (height: 384px),
-	   /** Stream Deck Mini, button size 80px */
-	   screen and (width: 240px) and (height: 160px) {
-
+	/** Stream Deck XL,
+	button size 96px */ screen and (width: 768px) and (height: 384px),
+	/** Stream Deck Mini,
+	button size 80px */ screen and (width: 240px) and (height: 160px) {
 	#render-target > .container-fluid > .rundown-view {
 		background: #000;
 
@@ -51,7 +50,12 @@
 		background: #000;
 	}
 
-	#render-target > .container-fluid > .rundown-view__shelf.dark.full-viewport > .rundown-view__shelf__contents > .rundown-view__shelf__contents__pane > .dashboard {
+	#render-target
+		> .container-fluid
+		> .rundown-view__shelf.dark.full-viewport
+		> .rundown-view__shelf__contents
+		> .rundown-view__shelf__contents__pane
+		> .dashboard {
 		top: 0;
 		left: 0;
 		bottom: 0;
@@ -88,7 +92,12 @@
 
 /** Stream Deck Original */
 @media screen and (width: 360px) and (height: 216px) {
-	#render-target > .container-fluid > .rundown-view__shelf.dark.full-viewport > .rundown-view__shelf__contents > .rundown-view__shelf__contents__pane > .dashboard {
+	#render-target
+		> .container-fluid
+		> .rundown-view__shelf.dark.full-viewport
+		> .rundown-view__shelf__contents
+		> .rundown-view__shelf__contents__pane
+		> .dashboard {
 		--dashboard-button-grid-width: 1.5em;
 		--dashboard-button-grid-height: 1.5em;
 		--dashboard-panel-margin-width: 0em;
@@ -105,7 +114,12 @@
 
 /** Stream Deck XL */
 @media screen and (width: 768px) and (height: 384px) {
-	#render-target > .container-fluid > .rundown-view__shelf.dark.full-viewport > .rundown-view__shelf__contents > .rundown-view__shelf__contents__pane > .dashboard {
+	#render-target
+		> .container-fluid
+		> .rundown-view__shelf.dark.full-viewport
+		> .rundown-view__shelf__contents
+		> .rundown-view__shelf__contents__pane
+		> .dashboard {
 		--dashboard-button-grid-width: 2.007em;
 		--dashboard-button-grid-height: 2.007em;
 		--dashboard-panel-margin-width: 0em;
@@ -122,7 +136,12 @@
 
 /** Stream Deck Mini */
 @media screen and (width: 240px) and (height: 160px) {
-	#render-target > .container-fluid > .rundown-view__shelf.dark.full-viewport > .rundown-view__shelf__contents > .rundown-view__shelf__contents__pane > .dashboard {
+	#render-target
+		> .container-fluid
+		> .rundown-view__shelf.dark.full-viewport
+		> .rundown-view__shelf__contents
+		> .rundown-view__shelf__contents__pane
+		> .dashboard {
 		--dashboard-button-grid-width: 1.669em;
 		--dashboard-button-grid-height: 1.669em;
 		--dashboard-panel-margin-width: 0em;

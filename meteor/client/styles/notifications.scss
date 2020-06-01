@@ -2,341 +2,338 @@
 @import '_variables';
 
 .notification-pop-ups {
-    position: fixed;
-    top: 4rem;
-    right: 4.6875rem;
-    bottom: 0;
-    width: 25rem;
-    z-index: 1000;
-    color: #000;
-    mask-image: linear-gradient(to bottom, black 0, black 60%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 0, black 60%, transparent 100%);
-    padding: 0 0.625rem;
-    overflow: hidden;
-    pointer-events: none;
-    max-height: 1000px;
+	position: fixed;
+	top: 4rem;
+	right: 4.6875rem;
+	bottom: 0;
+	width: 25rem;
+	z-index: 1000;
+	color: #000;
+	mask-image: linear-gradient(to bottom, black 0, black 60%, transparent 100%);
+	-webkit-mask-image: linear-gradient(to bottom, black 0, black 60%, transparent 100%);
+	padding: 0 0.625rem;
+	overflow: hidden;
+	pointer-events: none;
+	max-height: 1000px;
 
-    .notification-pop-up {
-        font-size: 0.9em;
-        background: #fff;
-        border-radius: 3px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
-        margin-bottom: 3px;
-        display: flex;
-        flex-direction: row;
-        overflow: hidden;
-        pointer-events: auto;
+	.notification-pop-up {
+		font-size: 0.9em;
+		background: #fff;
+		border-radius: 3px;
+		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+		margin-bottom: 3px;
+		display: flex;
+		flex-direction: row;
+		overflow: hidden;
+		pointer-events: auto;
 
-        &:first-child {
-            margin-top: 0.9375rem;
-        }
+		&:first-child {
+			margin-top: 0.9375rem;
+		}
 
-        &:last-child {
-            margin-bottom: 0.9375rem;
-        }
+		&:last-child {
+			margin-bottom: 0.9375rem;
+		}
 
-        > .notification-pop-up__header {
-            display: block;
-            flex: 0;
-            min-width: 2.5rem;
-            background: $color-status-minor-warning;
-            color: $color-status-minor-warning-text;
+		> .notification-pop-up__header {
+			display: block;
+			flex: 0;
+			min-width: 2.5rem;
+			background: $color-status-minor-warning;
+			color: $color-status-minor-warning-text;
 
-            text-align: center;
-            padding-top: 0.625rem;
-        }
+			text-align: center;
+			padding-top: 0.625rem;
+		}
 
-        &.warning {
-            > .notification-pop-up__header {
-                background: $color-status-warning;
-                color: #000;
-            }
-        }
+		&.warning {
+			> .notification-pop-up__header {
+				background: $color-status-warning;
+				color: #000;
+			}
+		}
 
-        &.critical {
-            > .notification-pop-up__header {
-                background: $color-status-fatal;
-                color: $color-status-warning;
-            }
-        }
+		&.critical {
+			> .notification-pop-up__header {
+				background: $color-status-fatal;
+				color: $color-status-warning;
+			}
+		}
 
-        &.notice {
-            > .notification-pop-up__header {
-                background: dodgerblue;
-                color: #fff;
-            }
-        }
+		&.notice {
+			> .notification-pop-up__header {
+				background: dodgerblue;
+				color: #fff;
+			}
+		}
 
-        &.tip {
-            > .notification-pop-up__header {
-                background: $color-status-good;
-                color: $color-status-minor-warning;
-            }
-        }
+		&.tip {
+			> .notification-pop-up__header {
+				background: $color-status-good;
+				color: $color-status-minor-warning;
+			}
+		}
 
-        > .notification-pop-up__contents {
-            flex: 1;
-            padding: 0.625rem 0.9375rem;
-            cursor: default;
+		> .notification-pop-up__contents {
+			flex: 1;
+			padding: 0.625rem 0.9375rem;
+			cursor: default;
 
-            > .notification-pop-up__actions {
-                text-align: right;
-                margin-top: 0.5em;
-            }
-        }
+			> .notification-pop-up__actions {
+				text-align: right;
+				margin-top: 0.5em;
+			}
+		}
 
-        &.has-default-action {
-            > .notification-pop-up__contents {
-                cursor: pointer;
-                
-                &:hover {
-                    text-decoration: underline;
-                }
-            }
-        }
+		&.has-default-action {
+			> .notification-pop-up__contents {
+				cursor: pointer;
 
-        > .notification-pop-up__dismiss {
-            flex: 0;
-            min-width: 2.5rem;
-            padding: 0.625rem 0.625rem 0;
+				&:hover {
+					text-decoration: underline;
+				}
+			}
+		}
 
-            > .notification-pop-up__dismiss__button {
-                display: block;
-                background: none;
-                border: none;
-                margin: 0;
-                padding: 0;
-                font-size: 0.7rem;
-            }
-        }
-    }
+		> .notification-pop-up__dismiss {
+			flex: 0;
+			min-width: 2.5rem;
+			padding: 0.625rem 0.625rem 0;
+
+			> .notification-pop-up__dismiss__button {
+				display: block;
+				background: none;
+				border: none;
+				margin: 0;
+				padding: 0;
+				font-size: 0.7rem;
+			}
+		}
+	}
 }
 
 .notifications__toggle-button {
-    position: fixed;
-    right: 5px;
-    top: 4.5em;
-    z-index: 310;
-    text-align: left;
-    cursor: pointer;
+	position: fixed;
+	right: 5px;
+	top: 4.5em;
+	z-index: 310;
+	text-align: left;
+	cursor: pointer;
 
-    > svg {
-        position: absolute;
-        width: #{$fullscreen-controls__button--radius / 2};
-        height: #{$fullscreen-controls__button--radius / 2};
-        top: 50%;
-        right: 0;
-        transform: translate(-50%, -53%);
-        transition: 0.5s all ease-in-out;
+	> svg {
+		position: absolute;
+		width: #{$fullscreen-controls__button--radius / 2};
+		height: #{$fullscreen-controls__button--radius / 2};
+		top: 50%;
+		right: 0;
+		transform: translate(-50%, -53%);
+		transition: 0.5s all ease-in-out;
 
-        > path {
-            stroke: rgb(255, 255, 255);
-            transition: 0.5s all linear;
-        }
-    }
+		> path {
+			stroke: rgb(255, 255, 255);
+			transition: 0.5s all linear;
+		}
+	}
 
-    &.has-items {
-        > svg {
-            transform: translate(-80%, -53%);
+	&.has-items {
+		> svg {
+			transform: translate(-80%, -53%);
 
-            > path {
-                stroke: rgb(255, 255, 0);
-            }
-        }
-    }
+			> path {
+				stroke: rgb(255, 255, 0);
+			}
+		}
+	}
 
-    .notifications__toggle-button__count {
-        display: block;
-        position: absolute;
+	.notifications__toggle-button__count {
+		display: block;
+		position: absolute;
 
-        right: 6%;
-        top: 50%;
-        transform: translate(0, -50%);
-        width: #{$fullscreen-controls__button--radius / 2.86};
-        text-align: center;
-        font-size: 0.8em;
-        font-weight: 500;
+		right: 6%;
+		top: 50%;
+		transform: translate(0, -50%);
+		width: #{$fullscreen-controls__button--radius / 2.86};
+		text-align: center;
+		font-size: 0.8em;
+		font-weight: 500;
 
-        opacity: 0;
-        transition: 0.2s opacity ease-in 0s;
-    }
-    
-    &.has-items {
-        .notifications__toggle-button__count {
-            opacity: 1;
-            transition: 0.2s opacity ease-out 0.4s;
-        }
-    }
+		opacity: 0;
+		transition: 0.2s opacity ease-in 0s;
+	}
+
+	&.has-items {
+		.notifications__toggle-button__count {
+			opacity: 1;
+			transition: 0.2s opacity ease-out 0.4s;
+		}
+	}
 }
 
 .running-order {
-    .notifications__toggle-button.status-bar__controls__button--open {
-        > svg {
-            > path {
-                stroke: #fff;
-            }
-        }
-    }
+	.notifications__toggle-button.status-bar__controls__button--open {
+		> svg {
+			> path {
+				stroke: #fff;
+			}
+		}
+	}
 }
 
 .notification-center-panel {
-    position: fixed;
-    background: #fff;
-    color: #000;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: calc(#{$notification-center-width} + 4.6875rem);
-    z-index: 290;
+	position: fixed;
+	background: #fff;
+	color: #000;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: calc(#{$notification-center-width} + 4.6875rem);
+	z-index: 290;
 
-    &::before {
-        content: ' ';
-        display: block;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: -0.625rem;
-        width: 0.625rem;
-        background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 100%);
-    }
+	&::before {
+		content: ' ';
+		display: block;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: -0.625rem;
+		width: 0.625rem;
+		background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.15) 100%);
+	}
 
-    .notification-pop-ups__empty-list {
-        margin-top: 1.5em;
-        margin-left: 1em;
-    }
+	.notification-pop-ups__empty-list {
+		margin-top: 1.5em;
+		margin-left: 1em;
+	}
 
-    .notification-pop-ups {
-        position: absolute;
-        top: ‭3.6875‬rem;
-        left: 0;
-        bottom: 0;
-        overflow: auto;
-        width: calc(#{$notification-center-width} + 10px);
-        pointer-events: auto;
+	.notification-pop-ups {
+		position: absolute;
+		top: ‭3.6875‬rem;
+		left: 0;
+		bottom: 0;
+		overflow: auto;
+		width: calc(#{$notification-center-width} + 10px);
+		pointer-events: auto;
 
-        mask-image: none;
-        -webkit-mask-image: none;
+		mask-image: none;
+		-webkit-mask-image: none;
 
-        .notification-pop-up {
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-        }
+		.notification-pop-up {
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+		}
 
-        &::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-        &::-webkit-scrollbar-button {
-            width: 0px;
-            height: 0px;
-        }
-        &::-webkit-scrollbar-thumb {
-            background: #666666;
-            border: 3px solid #fff;
-            border-radius: 50px;
-        }
-        &::-webkit-scrollbar-thumb:hover {
-            background: #e1e1e1;
-        }
-        &::-webkit-scrollbar-thumb:active {
-            background: #808080;
-        }
-        &::-webkit-scrollbar-track {
-            background: #cccccc;
-            border: 3px solid #fff;
-            border-radius: 50px;
-        }
-        &::-webkit-scrollbar-track:hover {
-            background: #ffffff;
-        }
-        &::-webkit-scrollbar-track:active {
-            background: #ffffff;
-        }
-        &::-webkit-scrollbar-corner {
-            background: transparent;
-        }
-    }
+		&::-webkit-scrollbar {
+			width: 10px;
+			height: 10px;
+		}
+		&::-webkit-scrollbar-button {
+			width: 0px;
+			height: 0px;
+		}
+		&::-webkit-scrollbar-thumb {
+			background: #666666;
+			border: 3px solid #fff;
+			border-radius: 50px;
+		}
+		&::-webkit-scrollbar-thumb:hover {
+			background: #e1e1e1;
+		}
+		&::-webkit-scrollbar-thumb:active {
+			background: #808080;
+		}
+		&::-webkit-scrollbar-track {
+			background: #cccccc;
+			border: 3px solid #fff;
+			border-radius: 50px;
+		}
+		&::-webkit-scrollbar-track:hover {
+			background: #ffffff;
+		}
+		&::-webkit-scrollbar-track:active {
+			background: #ffffff;
+		}
+		&::-webkit-scrollbar-corner {
+			background: transparent;
+		}
+	}
 }
 
 .rundown-view .notification-center-panel {
-    background: #eee;
-    color: #000;
-    top: 4rem;
+	background: #eee;
+	color: #000;
+	top: 4rem;
 
-    &::before {
-        content: ' ';
-        display: block;
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: -0.625rem;
-        width: 0.625rem;
-        background: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.7) 100%);
-    }
+	&::before {
+		content: ' ';
+		display: block;
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		left: -0.625rem;
+		width: 0.625rem;
+		background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+	}
 
-    .notification-pop-ups {
-        top: 0;
+	.notification-pop-ups {
+		top: 0;
 
-        .notification-pop-up {
+		.notification-pop-up {
+			@keyframes highlight {
+				0% {
+					background-color: rgb(206, 240, 255);
+				}
+				100% {
+					background-color: #fff;
+				}
+			}
 
-            @keyframes highlight {
-                0% {
-                    background-color: rgb(206, 240, 255);
-                }
-                100% {
-                    background-color: #fff;
-                }
-            }
-
-            &.is-highlighted {
-                animation-name: highlight;
-                animation-duration: 2s;
-                animation-delay: 1.5s;
-                animation-iteration-count: 1;
-                animation-fill-mode: both;
-                animation-direction: normal;
-            }
-        }
-    }
+			&.is-highlighted {
+				animation-name: highlight;
+				animation-duration: 2s;
+				animation-delay: 1.5s;
+				animation-iteration-count: 1;
+				animation-fill-mode: both;
+				animation-direction: normal;
+			}
+		}
+	}
 }
 
-
 .rundown-view + .notification-pop-ups {
-    transition: 1s right ease-out;
-    
+	transition: 1s right ease-out;
 }
 
 .rundown-view.notification-center-open + .notification-pop-ups {
-    right: 460px;
-    transition: 1s right ease-out;
+	right: 460px;
+	transition: 1s right ease-out;
 }
 
 @media screen and (max-width: 1600px) {
-    .notification-center-panel {
-        width: calc(25vw + 4.6875rem) !important;
+	.notification-center-panel {
+		width: calc(25vw + 4.6875rem) !important;
 
-        .notification-pop-ups {
-            width: calc(25vw + 0.625rem) !important;
-        }
-    }
+		.notification-pop-ups {
+			width: calc(25vw + 0.625rem) !important;
+		}
+	}
 
-    .rundown-view {
-        &.notification-center-open {
-            padding-right: calc(#{$statusbar-width} + 25vw) !important;
-            > .header .rundown-overview {
-                padding-right: calc(#{$statusbar-width} + 25vw + 1.5em) !important;
-            }
-        }
-    }
+	.rundown-view {
+		&.notification-center-open {
+			padding-right: calc(#{$statusbar-width} + 25vw) !important;
+			> .header .rundown-overview {
+				padding-right: calc(#{$statusbar-width} + 25vw + 1.5em) !important;
+			}
+		}
+	}
 
-    .rundown-view.notification-center-open + .notification-pop-ups {
-        right: calc(25vw + 85px);
-    }
+	.rundown-view.notification-center-open + .notification-pop-ups {
+		right: calc(25vw + 85px);
+	}
 }
 
 @media screen and (max-width: 1023px) {
-    .container-fluid > .notification-pop-ups {
-        .notification-pop-up.persistent {
-            display: none !important;
-        }
-    }
+	.container-fluid > .notification-pop-ups {
+		.notification-pop-up.persistent {
+			display: none !important;
+		}
+	}
 }

@@ -7,7 +7,7 @@ import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/
 import { MongoSelector } from '../../lib/typings/meteor'
 
 export namespace ExpectedMediaItemsSecurity {
-	export function allowReadAccess (selector: MongoSelector<ExpectedMediaItem> | any, token: string, context: any) {
+	export function allowReadAccess(selector: MongoSelector<ExpectedMediaItem> | any, token: string, context: any) {
 		check(selector, Object)
 		if (selector.mediaFlowId) {
 			check(selector.mediaFlowId, Object)
@@ -18,7 +18,7 @@ export namespace ExpectedMediaItemsSecurity {
 
 		let mediaManagerDevice = PeripheralDevices.findOne({
 			type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-			token: token
+			token: token,
 		})
 
 		if (!mediaManagerDevice) return false
@@ -26,12 +26,10 @@ export namespace ExpectedMediaItemsSecurity {
 		mediaManagerDevice.studioId = getStudioIdFromDevice(mediaManagerDevice)
 
 		if (mediaManagerDevice && token) {
-
 			// mediaManagerDevice.settings
 
 			return mediaManagerDevice
 		} else {
-
 			// TODO: implement access logic here
 			// use context.userId
 
@@ -39,22 +37,22 @@ export namespace ExpectedMediaItemsSecurity {
 			return true
 		}
 	}
-	export function allowWriteAccess () {
+	export function allowWriteAccess() {
 		// TODO
 	}
 }
 // Setup rules:
 
 ExpectedMediaItems.allow({
-	insert (userId: string, doc: ExpectedMediaItem): boolean {
+	insert(userId: string, doc: ExpectedMediaItem): boolean {
 		return false
 	},
 
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
 
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })

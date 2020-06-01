@@ -30,7 +30,10 @@ export function getShowStyleCompound(showStyleVariantId: ShowStyleVariantId): Sh
 	return createShowStyleCompound(showStyleBase, showStyleVariant)
 }
 
-export function createShowStyleCompound(showStyleBase: ShowStyleBase, showStyleVariant: ShowStyleVariant): ShowStyleCompound | undefined {
+export function createShowStyleCompound(
+	showStyleBase: ShowStyleBase,
+	showStyleVariant: ShowStyleVariant
+): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
 	let configs: { [id: string]: IConfigItem } = {}
@@ -65,8 +68,9 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 		})
 	}
 }
-export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant>
-	= createMongoCollection<ShowStyleVariant>('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
+export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant> = createMongoCollection<
+	ShowStyleVariant
+>('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
 Meteor.startup(() => {
 	if (Meteor.isServer) {

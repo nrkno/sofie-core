@@ -1,10 +1,7 @@
 import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
 import { Pieces, Piece } from './collections/Pieces'
-import {
-	IOutputLayer,
-	ISourceLayer
-} from 'tv-automation-sofie-blueprints-integration'
+import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from './lib'
 import { DBSegment } from './collections/Segments'
 import { PartId } from './collections/Parts'
@@ -38,7 +35,7 @@ export interface IOutputLayerExtended extends IOutputLayer {
 	/** Is this output layer used in this segment */
 	used: boolean
 	/** Source layers that will be used by this output layer */
-	sourceLayers: Array<ISourceLayerExtended>,
+	sourceLayers: Array<ISourceLayerExtended>
 }
 export interface ISourceLayerExtended extends ISourceLayer {
 	/** Pieces present on this source layer */
@@ -69,17 +66,20 @@ export interface PieceExtended {
 	maxLabelWidth?: number
 }
 
-export function getPieceInstancesForPartInstance (partInstance: PartInstance) {
+export function getPieceInstancesForPartInstance(partInstance: PartInstance) {
 	if (partInstance.isTemporary || partInstance.isScratch) {
 		return Pieces.find({
-			partId: partInstance.part._id
-		}).map(p => wrapPieceToTemporaryInstance(p, partInstance._id))
+			partId: partInstance.part._id,
+		}).map((p) => wrapPieceToTemporaryInstance(p, partInstance._id))
 	} else {
 		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
 	}
 }
 
-export function offsetTimelineEnableExpression (val: SuperTimeline.Expression | undefined, offset: string | number | undefined) {
+export function offsetTimelineEnableExpression(
+	val: SuperTimeline.Expression | undefined,
+	offset: string | number | undefined
+) {
 	if (offset === undefined) {
 		return val
 	} else {
@@ -94,17 +94,18 @@ export function offsetTimelineEnableExpression (val: SuperTimeline.Expression | 
 			return literal<SuperTimeline.ExpressionObj>({
 				l: val || 0,
 				o: '+',
-				r: offset
+				r: offset,
 			})
 		} else if (val === undefined) {
 			return offset
-		} else { // Unreachable fallback case
+		} else {
+			// Unreachable fallback case
 			return val
 		}
 	}
 }
 
-export function calculatePieceTimelineEnable (piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
+export function calculatePieceTimelineEnable(piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
 	let duration: SuperTimeline.Expression | undefined
 	let end: SuperTimeline.Expression | undefined
 	if (piece.playoutDuration !== undefined) {
@@ -121,9 +122,9 @@ export function calculatePieceTimelineEnable (piece: Piece, offset?: number): Su
 	if ((end !== undefined || piece.enable.end !== undefined) && piece.enable.start === undefined) {
 		return {
 			end: end !== undefined ? end : offsetTimelineEnableExpression(piece.enable.end, offset),
-			duration: duration
+			duration: duration,
 		}
-	// Otherwise, if we have a start, then use that with either the end or duration
+		// Otherwise, if we have a start, then use that with either the end or duration
 	} else if (piece.enable.start !== undefined) {
 		let enable = literal<SuperTimeline.TimelineEnable>({})
 
@@ -149,8 +150,6 @@ export function calculatePieceTimelineEnable (piece: Piece, offset?: number): Su
 		}
 	}
 }
-
-
 
 // 1 reactivelly listen to data changes
 /*

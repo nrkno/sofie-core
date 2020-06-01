@@ -9,7 +9,7 @@ const message1: CoreSystem.ServiceMessage = {
 	criticality: CoreSystem.Criticality.CRITICAL,
 	message: 'Something is wrong that should have been right',
 	sender: 'ola',
-	timestamp: new Date()
+	timestamp: new Date(),
 }
 
 const message2: CoreSystem.ServiceMessage = {
@@ -17,7 +17,7 @@ const message2: CoreSystem.ServiceMessage = {
 	criticality: CoreSystem.Criticality.WARNING,
 	message: 'Something is rotten in the state of Denmark',
 	sender: 'ola',
-	timestamp: new Date()
+	timestamp: new Date(),
 }
 
 const fakeCoreSystem: CoreSystem.ICoreSystem = {
@@ -27,11 +27,11 @@ const fakeCoreSystem: CoreSystem.ICoreSystem = {
 	version: '3',
 	previousVersion: null,
 	serviceMessages: {},
-	storePath: '/dev/null'
+	storePath: '/dev/null',
 }
 
 describe('Service messages internal API', () => {
-	const mockedGetCoreSystem: jest.Mock<typeof CoreSystem.getCoreSystem > = CoreSystem.getCoreSystem as any
+	const mockedGetCoreSystem: jest.Mock<typeof CoreSystem.getCoreSystem> = CoreSystem.getCoreSystem as any
 
 	describe('readAllMessages', () => {
 		it('should throw when core system object cant be accessed', () => {
@@ -103,7 +103,7 @@ describe('Service messages internal API', () => {
 
 		it('should set isUpdate flag true when message with given id exists in system already', () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
-				serviceMessages: {}
+				serviceMessages: {},
 			})
 			cs.serviceMessages[message1.id] = message1
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
@@ -116,7 +116,7 @@ describe('Service messages internal API', () => {
 
 		it('should set isUpdate flag false when message does not already exist in system', () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
-				serviceMessages: {}
+				serviceMessages: {},
 			})
 			cs.serviceMessages[message1.id] = message1
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
@@ -130,7 +130,7 @@ describe('Service messages internal API', () => {
 			const expected = {}
 			expected[message2.id] = message2
 			const cs = Object.assign({}, fakeCoreSystem, {
-				serviceMessages: {}
+				serviceMessages: {},
 			})
 			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
 
@@ -145,7 +145,7 @@ describe('Service messages internal API', () => {
 			expected[message1.id] = message1
 			expected[message2.id] = message2
 			const cs = Object.assign({}, fakeCoreSystem, {
-				serviceMessages: {}
+				serviceMessages: {},
 			})
 			cs.serviceMessages[message1.id] = message1
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
@@ -155,19 +155,21 @@ describe('Service messages internal API', () => {
 			spy.mockRestore()
 		})
 
-		 it('should throw when message cant be written', () => {
-			 const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'update').mockImplementation(() => {
-				 throw new Error('lol')
-			 })
-			 const cs = Object.assign({}, fakeCoreSystem, {
-				serviceMessages: {}
+		it('should throw when message cant be written', () => {
+			const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'update').mockImplementation(() => {
+				throw new Error('lol')
+			})
+			const cs = Object.assign({}, fakeCoreSystem, {
+				serviceMessages: {},
 			})
 			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
 
-			expect(() => { writeMessage(message2) }).toThrow()
+			expect(() => {
+				writeMessage(message2)
+			}).toThrow()
 
 			spyGetCoreSystem.mockRestore()
 			spyUpdate.mockRestore()
-		 })
+		})
 	})
 })

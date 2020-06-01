@@ -22,13 +22,15 @@ export interface BucketAdLib extends IBlueprintAdLibPiece {
 	importVersions: RundownImportVersions // TODO - is this good?
 }
 
-export const BucketAdLibs: TransformedCollection<BucketAdLib, BucketAdLib> = createMongoCollection<BucketAdLib>('bucketAdlibs')
+export const BucketAdLibs: TransformedCollection<BucketAdLib, BucketAdLib> = createMongoCollection<BucketAdLib>(
+	'bucketAdlibs'
+)
 registerCollection('BucketAdLibs', BucketAdLibs)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		BucketAdLibs._ensureIndex({
 			bucketId: 1,
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })

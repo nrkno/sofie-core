@@ -9,18 +9,19 @@ import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
 import { MethodContext } from '../../lib/api/methods'
 
-export function saveEvaluation (methodContext: MethodContext, evaluation: EvaluationBase): void {
-	Evaluations.insert(_.extend(evaluation, {
-		userId: methodContext.userId,
-		timestamp: getCurrentTime(),
-	}))
+export function saveEvaluation(methodContext: MethodContext, evaluation: EvaluationBase): void {
+	Evaluations.insert(
+		_.extend(evaluation, {
+			userId: methodContext.userId,
+			timestamp: getCurrentTime(),
+		})
+	)
 	logger.info({
 		message: 'evaluation',
-		evaluation: evaluation
+		evaluation: evaluation,
 	})
 
 	Meteor.defer(() => {
-
 		let studio = Studios.findOne(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
@@ -56,17 +57,18 @@ export function saveEvaluation (methodContext: MethodContext, evaluation: Evalua
 				let playlist = RundownPlaylists.findOne(evaluation.playlistId)
 				let hostUrl = studio.settings.sofieUrl
 
-				slackMessage += (
+				slackMessage +=
 					'rundown ' +
-					(
-						hostUrl && playlist ?
-						('*<' + hostUrl + '/rundown/' + playlist._id + '|' + playlist.name + '>*') :
-						(playlist && playlist.name || 'N/A')
-					) +
-					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') + '\n' +
-					evaluationMessage + '\n' +
-					'_' + evaluationProducer + '_'
-				)
+					(hostUrl && playlist
+						? '*<' + hostUrl + '/rundown/' + playlist._id + '|' + playlist.name + '>*'
+						: (playlist && playlist.name) || 'N/A') +
+					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') +
+					'\n' +
+					evaluationMessage +
+					'\n' +
+					'_' +
+					evaluationProducer +
+					'_'
 
 				_.each(webhookUrls, (webhookUrl) => {
 					sendSlackMessageToWebhookSync(slackMessage, webhookUrl)

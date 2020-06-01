@@ -39,10 +39,10 @@ export enum PubSub {
 	mediaWorkFlowSteps = 'mediaWorkFlowSteps',
 	rundownLayouts = 'rundownLayouts',
 	buckets = 'buckets',
-	bucketAdLibPieces = 'bucketAdLibPieces'
+	bucketAdLibPieces = 'bucketAdLibPieces',
 }
 
-export function meteorSubscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
+export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
 	if (Meteor.isClient) {
 		return Meteor.subscribe(name, ...args)
 	} else throw new Meteor.Error(500, 'meteorSubscribe is only available client-side')

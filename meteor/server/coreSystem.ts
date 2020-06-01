@@ -8,15 +8,11 @@ import {
 	parseRange,
 	stripVersion,
 	VersionRange,
-	GENESIS_SYSTEM_VERSION
+	GENESIS_SYSTEM_VERSION,
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime, unprotectString } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import {
-	CURRENT_SYSTEM_VERSION,
-	prepareMigration,
-	runMigration
-} from './migration/databaseMigration'
+import { CURRENT_SYSTEM_VERSION, prepareMigration, runMigration } from './migration/databaseMigration'
 import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
@@ -26,13 +22,13 @@ import { logger } from './logging'
 import * as semver from 'semver'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants, createShowStyleCompound } from '../lib/collections/ShowStyleVariants'
-import { syncFunction } from './codeControl';
+import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 
 export { PackageInfo }
 
-function initializeCoreSystem () {
+function initializeCoreSystem() {
 	let system = getCoreSystem()
 	if (!system) {
 		// At this point, we probably have a system that is as fresh as it gets
@@ -45,16 +41,12 @@ function initializeCoreSystem () {
 			version: version,
 			previousVersion: null,
 			storePath: '', // to be filled in later
-			serviceMessages: {}
+			serviceMessages: {},
 		})
 
 		// Check what migration has to provide:
 		let migration = prepareMigration(true)
-		if (
-			migration.migrationNeeded &&
-			migration.manualStepCount === 0 &&
-			migration.chunks.length <= 1
-		) {
+		if (migration.migrationNeeded && migration.manualStepCount === 0 && migration.chunks.length <= 1) {
 			// Since we've determined that the migration can be done automatically, and we have a fresh system, just do the migration automatically:
 			runMigration(migration.chunks, migration.hash, [])
 		}
@@ -65,7 +57,7 @@ function initializeCoreSystem () {
 	systemCursor.observeChanges({
 		added: checkDatabaseVersions,
 		changed: checkDatabaseVersions,
-		removed: checkDatabaseVersions
+		removed: checkDatabaseVersions,
 	})
 
 	const observeBlueprintChanges = () => {
@@ -77,46 +69,48 @@ function initializeCoreSystem () {
 	blueprintsCursor.observeChanges({
 		added: observeBlueprintChanges,
 		changed: observeBlueprintChanges,
-		removed: observeBlueprintChanges
+		removed: observeBlueprintChanges,
 	})
 
 	const studiosCursor = Studios.find({})
 	studiosCursor.observeChanges({
 		added: queueCheckBlueprintsConfig,
 		changed: queueCheckBlueprintsConfig,
-		removed: queueCheckBlueprintsConfig
+		removed: queueCheckBlueprintsConfig,
 	})
 
 	const showStyleBaseCursor = ShowStyleBases.find({})
 	showStyleBaseCursor.observeChanges({
 		added: queueCheckBlueprintsConfig,
 		changed: queueCheckBlueprintsConfig,
-		removed: queueCheckBlueprintsConfig
+		removed: queueCheckBlueprintsConfig,
 	})
 
 	const showStyleVariantCursor = ShowStyleVariants.find({})
 	showStyleVariantCursor.observeChanges({
 		added: queueCheckBlueprintsConfig,
 		changed: queueCheckBlueprintsConfig,
-		removed: queueCheckBlueprintsConfig
+		removed: queueCheckBlueprintsConfig,
 	})
 
 	checkDatabaseVersions()
 }
 
 let lastDatabaseVersionBlueprintIds: { [id: string]: true } = {}
-function checkDatabaseVersions () {
+function checkDatabaseVersions() {
 	// Core system
 
 	let databaseSystem = getCoreSystem()
 	if (!databaseSystem) {
 		setSystemStatus('databaseVersion', { statusCode: StatusCode.BAD, messages: ['Database not set up'] })
 	} else {
-
 		let dbVersion = databaseSystem.version ? parseVersion(databaseSystem.version) : null
 		let currentVersion = parseVersion(CURRENT_SYSTEM_VERSION)
 
-		setSystemStatus('databaseVersion', checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database'))
+		setSystemStatus(
+			'databaseVersion',
+			checkDatabaseVersion(currentVersion, dbVersion, 'to fix, run migration', 'core', 'system database')
+		)
 
 		// Blueprints:
 		let blueprintIds: { [id: string]: true } = {}
@@ -134,18 +128,19 @@ function checkDatabaseVersions () {
 					messages: string[]
 				} = {
 					statusCode: StatusCode.BAD,
-					messages: []
+					messages: [],
 				}
 
 				let studioIds: { [studioId: string]: true } = {}
 				ShowStyleBases.find({
-					blueprintId: blueprint._id
+					blueprintId: blueprint._id,
 				}).forEach((showStyleBase) => {
-
 					if (o.statusCode === StatusCode.GOOD) {
 						o = checkDatabaseVersion(
 							blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-							parseRange(blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)] || '0.0.0'),
+							parseRange(
+								blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)] || '0.0.0'
+							),
 							'to fix, run migration',
 							'blueprint.blueprintVersion',
 							`databaseVersion.showStyle[${showStyleBase._id}]`
@@ -154,15 +149,18 @@ function checkDatabaseVersions () {
 
 					// TODO - is this correct for the current relationships? What about studio blueprints?
 					Studios.find({
-						supportedShowStyleBase: showStyleBase._id
+						supportedShowStyleBase: showStyleBase._id,
 					}).forEach((studio) => {
-						if (!studioIds[unprotectString(studio._id)]) { // only run once per blueprint and studio
+						if (!studioIds[unprotectString(studio._id)]) {
+							// only run once per blueprint and studio
 							studioIds[unprotectString(studio._id)] = true
 
 							if (o.statusCode === StatusCode.GOOD) {
 								o = checkDatabaseVersion(
 									blueprint.blueprintVersion ? parseVersion(blueprint.blueprintVersion) : null,
-									parseRange(blueprint.databaseVersion.studio[unprotectString(studio._id)] || '0.0.0'),
+									parseRange(
+										blueprint.databaseVersion.studio[unprotectString(studio._id)] || '0.0.0'
+									),
 									'to fix, run migration',
 									'blueprint.blueprintVersion',
 									`databaseVersion.studio[${studio._id}]`
@@ -188,90 +186,90 @@ function checkDatabaseVersions () {
  * @param currentVersion
  * @param dbVersion
  */
-function checkDatabaseVersion (
+function checkDatabaseVersion(
 	currentVersion: Version | null,
 	expectVersion: VersionRange | null,
 	fixMessage: string,
 	meName: string,
 	theyName: string
-): { statusCode: StatusCode, messages: string[] } {
-
+): { statusCode: StatusCode; messages: string[] } {
 	if (currentVersion) currentVersion = semver.clean(currentVersion)
 
 	if (expectVersion) {
 		if (currentVersion) {
-
 			if (semver.satisfies(currentVersion, expectVersion)) {
 				return {
 					statusCode: StatusCode.GOOD,
-					messages: [`${meName} version: ${currentVersion}`]
+					messages: [`${meName} version: ${currentVersion}`],
 				}
 			} else {
-
 				const currentV = new semver.SemVer(currentVersion, { includePrerelease: true })
 
 				try {
 					const expectV = new semver.SemVer(stripVersion(expectVersion), { includePrerelease: true })
 
-					const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
+					const message =
+						`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version of ${theyName}: "${expectVersion}"` +
+						(fixMessage ? ` (${fixMessage})` : '')
 
 					if (!expectV || !currentV) {
 						return {
 							statusCode: StatusCode.BAD,
-							messages: [message]
+							messages: [message],
 						}
 					} else if (expectV.major !== currentV.major) {
 						return {
 							statusCode: StatusCode.BAD,
-							messages: [message]
+							messages: [message],
 						}
 					} else if (expectV.minor !== currentV.minor) {
 						return {
 							statusCode: StatusCode.WARNING_MAJOR,
-							messages: [message]
+							messages: [message],
 						}
 					} else if (expectV.patch !== currentV.patch) {
 						return {
 							statusCode: StatusCode.WARNING_MINOR,
-							messages: [message]
+							messages: [message],
 						}
 					} else if (!_.isEqual(expectV.prerelease, currentV.prerelease)) {
 						return {
 							statusCode: StatusCode.WARNING_MINOR,
-							messages: [message]
+							messages: [message],
 						}
 					} else {
 						return {
 							statusCode: StatusCode.BAD,
-							messages: [message]
+							messages: [message],
 						}
 					}
 					// the expectedVersion may be a proper range, in which case the new semver.SemVer will throw an error, even though the semver.satisfies check would work.
 				} catch (e) {
-					const message = `Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version range of ${theyName}: "${expectVersion}"` + (fixMessage ? ` (${fixMessage})` : '')
+					const message =
+						`Version mismatch: ${meName} version: "${currentVersion}" does not satisfy expected version range of ${theyName}: "${expectVersion}"` +
+						(fixMessage ? ` (${fixMessage})` : '')
 
 					return {
 						statusCode: StatusCode.BAD,
-						messages: [message]
+						messages: [message],
 					}
 				}
 			}
-
 		} else {
 			return {
 				statusCode: StatusCode.FATAL,
-				messages: [`Current ${meName} version missing (when comparing with ${theyName})`]
+				messages: [`Current ${meName} version missing (when comparing with ${theyName})`],
 			}
 		}
 	} else {
 		return {
 			statusCode: StatusCode.FATAL,
-			messages: [`Expected ${theyName} version missing (when comparing with ${meName})`]
+			messages: [`Expected ${theyName} version missing (when comparing with ${meName})`],
 		}
 	}
 }
 
-function checkBlueprintCompability (blueprint: Blueprint) {
+function checkBlueprintCompability(blueprint: Blueprint) {
 	if (!PackageInfo.dependencies) throw new Meteor.Error(500, `Package.dependencies not set`)
 
 	let systemStatusId = 'blueprintCompability_' + blueprint._id
@@ -290,10 +288,12 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 		'blueprint.TSRVersion',
 		'core.timeline-state-resolver-types'
 	)
-	let coreStatus: {
-		statusCode: StatusCode;
-		messages: string[];
-	} | undefined = undefined
+	let coreStatus:
+		| {
+				statusCode: StatusCode
+				messages: string[]
+		  }
+		| undefined = undefined
 	if (blueprint.minimumCoreVersion) {
 		coreStatus = checkDatabaseVersion(
 			parseVersion(CURRENT_SYSTEM_VERSION),
@@ -316,13 +316,13 @@ function checkBlueprintCompability (blueprint: Blueprint) {
 	} else {
 		setSystemStatus(systemStatusId, {
 			statusCode: StatusCode.GOOD,
-			messages: ['Versions match']
+			messages: ['Versions match'],
 		})
 	}
 }
 
 let checkBlueprintsConfigTimeout: number | undefined
-function queueCheckBlueprintsConfig () {
+function queueCheckBlueprintsConfig() {
 	const RATE_LIMIT = 10000
 
 	// We want to rate limit this. It doesn't matter if it is delayed, so lets do that to keep it simple
@@ -336,11 +336,11 @@ function queueCheckBlueprintsConfig () {
 }
 
 let lastBlueprintConfigIds: { [id: string]: true } = {}
-const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig () {
+const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 	let blueprintIds: { [id: string]: true } = {}
 
 	// Studios
-	_.each(Studios.find({}).fetch(), studio => {
+	_.each(Studios.find({}).fetch(), (studio) => {
 		const blueprint = Blueprints.findOne(studio.blueprintId)
 		if (!blueprint) return
 
@@ -351,17 +351,17 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig () {
 	})
 
 	// ShowStyles
-	_.each(ShowStyleBases.find({}).fetch(), showBase => {
+	_.each(ShowStyleBases.find({}).fetch(), (showBase) => {
 		const blueprint = Blueprints.findOne(showBase.blueprintId)
 		if (!blueprint || !blueprint.showStyleConfigManifest) return
 
 		const variants = ShowStyleVariants.find({
-			showStyleBaseId: showBase._id
+			showStyleBaseId: showBase._id,
 		}).fetch()
 
 		const allDiffs: string[] = []
 
-		_.each(variants, variant => {
+		_.each(variants, (variant) => {
 			const compound = createShowStyleCompound(showBase, variant)
 			if (!compound) return
 
@@ -383,28 +383,27 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig () {
 	})
 	lastBlueprintConfigIds = blueprintIds
 })
-function setBlueprintConfigStatus (systemStatusId: string, diff: string[], studioId?: StudioId) {
+function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
 		setSystemStatus(systemStatusId, {
 			studioId: studioId,
 			statusCode: StatusCode.WARNING_MAJOR,
-			messages: [`Config is missing required fields: ${diff.join(', ')}`]
+			messages: [`Config is missing required fields: ${diff.join(', ')}`],
 		})
 	} else {
 		setSystemStatus(systemStatusId, {
 			studioId: studioId,
 			statusCode: StatusCode.GOOD,
-			messages: ['Config is valid']
+			messages: ['Config is valid'],
 		})
 	}
 }
 
-export function getRelevantSystemVersions (): { [name: string]: string } {
+export function getRelevantSystemVersions(): { [name: string]: string } {
 	const versions: { [name: string]: string } = {}
 
 	let dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
-
 		let names = _.keys(dependencies)
 		// Omit system libraries
 		let omitNames = [
@@ -468,7 +467,7 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 			return omitNames.indexOf(name) === -1
 		})
 
-		let sanitizeVersion = v => {
+		let sanitizeVersion = (v) => {
 			if (v.match(/git/i)) {
 				return '0.0.0'
 			} else {
@@ -480,12 +479,12 @@ export function getRelevantSystemVersions (): { [name: string]: string } {
 			versions[name] = sanitizeVersion(dependencies[name])
 		})
 		versions['core'] = PackageInfo.versionExtended || PackageInfo.version // package version
-		versions['timeline-state-resolver-types'] = BlueprintIntegrationPackageInfo.dependencies['timeline-state-resolver-types']
-
+		versions['timeline-state-resolver-types'] =
+			BlueprintIntegrationPackageInfo.dependencies['timeline-state-resolver-types']
 	} else logger.error(`Core package dependencies missing`)
 	return versions
 }
-function startupMessage () {
+function startupMessage() {
 	if (!Meteor.isTest) {
 		console.log('process started') // This is a message all Sofie processes log upon startup
 	}
@@ -499,7 +498,6 @@ function startupMessage () {
 	_.each(versions, (version, name) => {
 		logger.info(`Core package ${name} version: "${version}"`)
 	})
-
 }
 
 Meteor.startup(() => {

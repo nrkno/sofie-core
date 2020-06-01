@@ -33,9 +33,7 @@ describe('codeControl rundown', () => {
 		}, 50)
 
 		jest.advanceTimersByTime(350)
-		expect(res).toEqual([
-			'result yo ingest0',
-		])
+		expect(res).toEqual(['result yo ingest0'])
 
 		jest.advanceTimersByTime(300)
 		expect(res).toEqual([
@@ -84,16 +82,11 @@ describe('codeControl', () => {
 
 		jest.advanceTimersByTime(350)
 		// only first task should complete
-		expect(res).toEqual([
-			'result yo run0',
-		])
+		expect(res).toEqual(['result yo run0'])
 
 		jest.advanceTimersByTime(300)
 		// both tasks should complete
-		expect(res).toEqual([
-			'result yo run0',
-			'result yo run0',
-		])
+		expect(res).toEqual(['result yo run0', 'result yo run0'])
 	})
 
 	testInFiber('syncFunction, 2 queues', () => {
@@ -109,27 +102,13 @@ describe('codeControl', () => {
 		}, 10)
 
 		jest.advanceTimersByTime(350)
-		expect(res).toEqual([
-			'result yo run0',
-		])
+		expect(res).toEqual(['result yo run0'])
 		jest.advanceTimersByTime(300)
-		expect(res).toEqual([
-			'result yo run0',
-			'result yo run0',
-		])
+		expect(res).toEqual(['result yo run0', 'result yo run0'])
 		jest.advanceTimersByTime(300)
-		expect(res).toEqual([
-			'result yo run0',
-			'result yo run0',
-			'result yo run1',
-		])
+		expect(res).toEqual(['result yo run0', 'result yo run0', 'result yo run1'])
 		jest.advanceTimersByTime(300)
-		expect(res).toEqual([
-			'result yo run0',
-			'result yo run0',
-			'result yo run1',
-			'result yo run1',
-		])
+		expect(res).toEqual(['result yo run0', 'result yo run0', 'result yo run1', 'result yo run1'])
 
 		// Run them in parallell, the 2 queues should kick in now:
 		res.length = 0
@@ -150,18 +129,10 @@ describe('codeControl', () => {
 		expect(ps).toHaveLength(4)
 
 		jest.advanceTimersByTime(350)
-		expect(res).toMatchObject([
-			'result yo run0',
-			'result yo run1'
-		])
+		expect(res).toMatchObject(['result yo run0', 'result yo run1'])
 
 		jest.advanceTimersByTime(300)
-		expect(res).toMatchObject([
-			'result yo run0',
-			'result yo run1',
-			'result yo run0',
-			'result yo run1'
-		])
+		expect(res).toMatchObject(['result yo run0', 'result yo run1', 'result yo run0', 'result yo run1'])
 	})
 	testInFiber('takesALongTimeIgnore, 2 queues', () => {
 		// Running in two parallel queues, run0 and run1:
@@ -206,14 +177,7 @@ describe('codeControl', () => {
 		jest.advanceTimersByTime(600)
 		waitForPromiseAll(ps)
 
-		expect(res).toMatchObject([
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			undefined
-		])
+		expect(res).toMatchObject([undefined, undefined, undefined, undefined, undefined, undefined])
 	})
 	describe('waitTime', () => {
 		let $nowOriginal
@@ -222,10 +186,10 @@ describe('codeControl', () => {
 			let mockTime = 0
 			$nowOriginal = Date.now
 			$setTimeoutOriginal = Meteor.setTimeout
-			Date.now = function () {
+			Date.now = function() {
 				return mockTime
 			}
-			Meteor.setTimeout = function (fnc, delay) {
+			Meteor.setTimeout = function(fnc, delay) {
 				return $setTimeoutOriginal(() => {
 					mockTime += delay
 					fnc()
@@ -255,7 +219,6 @@ describe('codeControl', () => {
 		})
 	})
 	testInFiber('syncFunction, anonymous', async () => {
-
 		// Make sure that anonymous syncFunctions work
 		const fcn0 = syncFunction(() => {
 			waitTime(300 - 5)
@@ -283,15 +246,9 @@ describe('codeControl', () => {
 		await runAllTimers()
 		waitForPromiseAll(ps)
 
-		expect(res).toMatchObject([
-			'a',
-			'b',
-			'a',
-			'b'
-		])
+		expect(res).toMatchObject(['a', 'b', 'a', 'b'])
 	})
 	testInFiber('syncFunction, anonymous with arguments', async () => {
-
 		const fcn = syncFunction((a: number) => {
 			waitTime(300 - 5)
 			return a
@@ -315,12 +272,7 @@ describe('codeControl', () => {
 		await runAllTimers()
 		waitForPromiseAll(ps)
 
-		expect(res).toMatchObject([
-			1,
-			2,
-			3,
-			1
-		])
+		expect(res).toMatchObject([1, 2, 3, 1])
 	})
 	describe('timeouts', () => {
 		beforeEach(() => {
@@ -333,11 +285,14 @@ describe('codeControl', () => {
 			useNextTickDefer()
 		})
 		testInFiber('syncFunction, too long running', () => {
-
-			const neverEnding = syncFunction(() => {
-				waitTime(1000) // 1s, is too long and should cause a timeout
-				return 'a'
-			}, undefined, 500) // a timeout of 500 ms
+			const neverEnding = syncFunction(
+				() => {
+					waitTime(1000) // 1s, is too long and should cause a timeout
+					return 'a'
+				},
+				undefined,
+				500
+			) // a timeout of 500 ms
 
 			tic()
 

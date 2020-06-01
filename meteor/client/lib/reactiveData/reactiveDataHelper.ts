@@ -8,25 +8,34 @@ import { getHash } from '../../../lib/lib'
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
 
-	function cacheId (...params): string {
+	function cacheId(...params): string {
 		return params.join('_')
 	}
 
-	export function simpleObjCompare (objA, objB) {
+	export function simpleObjCompare(objA, objB) {
 		if (objA === objB) {
 			return true
 		} else if (objA && objB) {
-			return (JSON.stringify(objA) === JSON.stringify(objB))
+			return JSON.stringify(objA) === JSON.stringify(objB)
 		} else {
 			return false
 		}
 	}
 
-	export function memoizeRVar<T, A0> (computation: (a0: A0) => ReactiveVar<T>, ...labels): ((a0: A0) => ReactiveVar<T>)
-	export function memoizeRVar<T, A0, A1> (computation: (a0: A0, a1: A1) => ReactiveVar<T>, ...labels): ((a0: A0, a1: A1) => ReactiveVar<T>)
-	export function memoizeRVar<T, A0, A1, A2> (computation: (a0: A0, a1: A1, a2: A2) => ReactiveVar<T>, ...labels): ((a0: A0, a1: A1, a2: A2) => ReactiveVar<T>)
-	export function memoizeRVar<T> (computation: (...params) => ReactiveVar<T>, ...labels): ((...params) => ReactiveVar<T>) {
-		return function (...params): ReactiveVar<T> {
+	export function memoizeRVar<T, A0>(computation: (a0: A0) => ReactiveVar<T>, ...labels): (a0: A0) => ReactiveVar<T>
+	export function memoizeRVar<T, A0, A1>(
+		computation: (a0: A0, a1: A1) => ReactiveVar<T>,
+		...labels
+	): (a0: A0, a1: A1) => ReactiveVar<T>
+	export function memoizeRVar<T, A0, A1, A2>(
+		computation: (a0: A0, a1: A1, a2: A2) => ReactiveVar<T>,
+		...labels
+	): (a0: A0, a1: A1, a2: A2) => ReactiveVar<T>
+	export function memoizeRVar<T>(
+		computation: (...params) => ReactiveVar<T>,
+		...labels
+	): (...params) => ReactiveVar<T> {
+		return function(...params): ReactiveVar<T> {
 			const cId = cacheId(computation.name, ...labels, ...params)
 			if (rVarCache[cId]) {
 				return rVarCache[cId]
@@ -46,8 +55,8 @@ const isolatedAutorunsMem: {
 	}
 } = {}
 
-export function memoizedIsolatedAutorun<T> (fnc: (...params) => T, functionName: string, ...params): T {
-	function hashFncAndParams (fName: string, p: any): string {
+export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: string, ...params): T {
+	function hashFncAndParams(fName: string, p: any): string {
 		return fName + '_' + JSON.stringify(p)
 	}
 
@@ -71,7 +80,7 @@ export function memoizedIsolatedAutorun<T> (fnc: (...params) => T, functionName:
 
 				isolatedAutorunsMem[fId] = {
 					dependancy: dep,
-					value: result
+					value: result,
 				}
 				// console.log(`${fId}: Tracker.autorun`, params, result)
 			})
@@ -100,23 +109,26 @@ export abstract class WithManagedTracker {
 	private _autoruns: Tracker.Computation[] = []
 	private _subs: Meteor.SubscriptionHandle[] = []
 
-	stop () {
+	stop() {
 		this._autoruns.forEach((comp) => comp.stop())
 		setTimeout(() => {
 			this._subs.forEach((comp) => comp.stop())
 		}, 2000) // wait for a couple of seconds, before unsubscribing
 	}
 
-	protected subscribe (sub: PubSub, ...args: any[]) {
+	protected subscribe(sub: PubSub, ...args: any[]) {
 		this._subs.push(Meteor.subscribe(sub, ...args))
 	}
 
-	protected autorun (func: (comp: Tracker.Computation) => void, options?: { onError: Function | undefined } | undefined): Tracker.Computation {
-		return Tracker.nonreactive(() => {
+	protected autorun(
+		func: (comp: Tracker.Computation) => void,
+		options?: { onError: Function | undefined } | undefined
+	): Tracker.Computation {
+		return (Tracker.nonreactive(() => {
 			const comp = Tracker.autorun(func, options)
 			this._autoruns.push(comp)
 			return comp
-		}) as any as Tracker.Computation
+		}) as any) as Tracker.Computation
 	}
 }
 

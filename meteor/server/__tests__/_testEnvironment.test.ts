@@ -35,25 +35,24 @@ import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { isInFiber } from '../../__mocks__/Fibers'
 
 describe('Basic test of test environment', () => {
-
 	testInFiber('Check that tests will run in fibers correctly', () => {
 		// This code runs in a fiber
 		expect(isInFiber()).toBeTruthy()
 
-		const val = asynchronousFibersFunction(1,2,3)
+		const val = asynchronousFibersFunction(1, 2, 3)
 		expect(val).toEqual(1 + 2 + 3)
 
 		let p = Promise.resolve()
-		.then(() => {
-			expect(isInFiber()).toBeTruthy()
-			return 'a'
-		})
-		.then(val => {
-			return new Promise((resolve) => {
+			.then(() => {
 				expect(isInFiber()).toBeTruthy()
-				resolve(val)
+				return 'a'
 			})
-		})
+			.then((val) => {
+				return new Promise((resolve) => {
+					expect(isInFiber()).toBeTruthy()
+					resolve(val)
+				})
+			})
 		expect(waitForPromise(p)).toEqual('a')
 	})
 	test('Test Meteor Random mock', () => {
@@ -61,7 +60,6 @@ describe('Basic test of test environment', () => {
 		expect(tempTestRandom()).toEqual('superRandom')
 	})
 	test('Verify Mock collections', () => {
-
 		// @ts-ignore
 		expect(AdLibPieces._isMock).toBeTruthy()
 		// @ts-ignore
@@ -116,42 +114,50 @@ describe('Basic test of test environment', () => {
 		expect(UserActionsLog._isMock).toBeTruthy()
 	})
 	test('Test Mock collection data', () => {
-
 		expect(Studios.find().fetch()).toHaveLength(0)
 
-		MongoMock.mockSetData<DBStudio>(Studios, [{
-			_id: protectString('abc'),
-			name: 'abc',
-			mappings: {},
-			supportedShowStyleBase: [],
-			config: [],
-			settings: { mediaPreviewsUrl: '',sofieUrl: '' },
-			_rundownVersionHash: 'abc'
-		},{
-			_id: protectString('def'),
-			name: 'def',
-			mappings: {},
-			supportedShowStyleBase: [],
-			config: [],
-			settings: { mediaPreviewsUrl: '',sofieUrl: '' },
-			_rundownVersionHash: 'def'
-		}])
+		MongoMock.mockSetData<DBStudio>(Studios, [
+			{
+				_id: protectString('abc'),
+				name: 'abc',
+				mappings: {},
+				supportedShowStyleBase: [],
+				config: [],
+				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
+				_rundownVersionHash: 'abc',
+			},
+			{
+				_id: protectString('def'),
+				name: 'def',
+				mappings: {},
+				supportedShowStyleBase: [],
+				config: [],
+				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
+				_rundownVersionHash: 'def',
+			},
+		])
 
 		expect(Studios.find().fetch()).toHaveLength(2)
 
-		expect(Studios.findOne({
-			_id: protectString('def')
-		})).toMatchObject({
-			_id: 'def'
+		expect(
+			Studios.findOne({
+				_id: protectString('def'),
+			})
+		).toMatchObject({
+			_id: 'def',
 		})
-		Studios.update(protectString('abc'), {$set: {
-			_rundownVersionHash: 'myHash'
-		}})
+		Studios.update(protectString('abc'), {
+			$set: {
+				_rundownVersionHash: 'myHash',
+			},
+		})
 
-		expect(Studios.findOne({
-			name: 'abc'
-		})).toMatchObject({
-			_rundownVersionHash: 'myHash'
+		expect(
+			Studios.findOne({
+				name: 'abc',
+			})
+		).toMatchObject({
+			_rundownVersionHash: 'myHash',
 		})
 
 		Studios.remove(protectString('def'))
@@ -167,8 +173,8 @@ describe('Basic test of test environment', () => {
 			mappings: {},
 			supportedShowStyleBase: [],
 			config: [],
-			settings: { mediaPreviewsUrl: '',sofieUrl: '' },
-			_rundownVersionHash: 'xyz'
+			settings: { mediaPreviewsUrl: '', sofieUrl: '' },
+			_rundownVersionHash: 'xyz',
 		})
 		expect(Studios.find().fetch()).toHaveLength(2)
 
@@ -178,7 +184,6 @@ describe('Basic test of test environment', () => {
 		expect(Studios.find().fetch()).toHaveLength(0)
 	})
 	testInFiber('Promises in fibers', () => {
-
 		let p = new Promise((resolve) => {
 			setTimeout(() => {
 				resolve('yup')
@@ -191,7 +196,7 @@ describe('Basic test of test environment', () => {
 	})
 })
 
-function asynchronousFibersFunction (a: number, b: number, c: number): number {
+function asynchronousFibersFunction(a: number, b: number, c: number): number {
 	const val = innerAsynchronousFiberFunction(a, b) + c
 	return val
 }
@@ -202,6 +207,6 @@ const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {
 	}, 10)
 })
 
-export function tempTestRandom () {
+export function tempTestRandom() {
 	return Random.id()
 }

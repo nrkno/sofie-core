@@ -4,8 +4,8 @@ import { registerCollection, ProtectedStringProperties, Omit, ProtectedString } 
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintActionManifest } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
-import { PartId } from './Parts';
-import { RundownId } from './Rundowns';
+import { PartId } from './Parts'
+import { RundownId } from './Rundowns'
 
 /** A string, identifying an AdLibActionId */
 export type AdLibActionId = ProtectedString<'AdLibActionId'>
@@ -19,15 +19,16 @@ export interface AdLibAction extends AdLibActionCommon {
 	partId: PartId
 }
 
-export const AdLibActions: TransformedCollection<AdLibAction, AdLibAction>
-	= createMongoCollection<AdLibAction>('adLibActions')
+export const AdLibActions: TransformedCollection<AdLibAction, AdLibAction> = createMongoCollection<AdLibAction>(
+	'adLibActions'
+)
 registerCollection('AdLibActions', AdLibActions)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		AdLibActions._ensureIndex({
 			rundownId: 1,
 			partId: 1,
-			_rank: 1
+			_rank: 1,
 		})
 	}
 })

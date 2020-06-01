@@ -14,7 +14,7 @@ interface WriteStatus {
  *
  * @throws if messages cant be read due to a technical problem
  */
-function readAllMessages (): Array<ServiceMessage> {
+function readAllMessages(): Array<ServiceMessage> {
 	const coreSystem = getCoreSystem()
 	if (!coreSystem || !coreSystem.serviceMessages) {
 		logger.error('coreSystem.serviceMessages doesnt exist. ServiceMessages API wont work.')
@@ -36,7 +36,7 @@ function readAllMessages (): Array<ServiceMessage> {
  *
  * @throws when a message can't be written
  */
-function writeMessage (message: ServiceMessage): WriteStatus {
+function writeMessage(message: ServiceMessage): WriteStatus {
 	const coreSystem = getCoreSystem()
 	if (!coreSystem || !coreSystem.serviceMessages) {
 		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')
@@ -55,7 +55,7 @@ function writeMessage (message: ServiceMessage): WriteStatus {
 	}
 }
 
-function deleteMessage (id: string): ServiceMessage {
+function deleteMessage(id: string): ServiceMessage {
 	const coreSystem = getCoreSystem()
 	if (!coreSystem || !coreSystem.serviceMessages) {
 		throw new Error('coreSystem.serviceMessages is not available. Database not migrated?')

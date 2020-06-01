@@ -1,4 +1,4 @@
-@import "_variables";
+@import '_variables';
 
 .gutter.has-statusbar {
 	margin-right: $statusbar-width;
@@ -6,6 +6,6 @@
 
 @media only screen and (min-width: 1200px) {
 	.gutter.has-statusbar {
-    	margin-right: 45px;
+		margin-right: 45px;
 	}
 }

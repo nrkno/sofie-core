@@ -25,15 +25,16 @@ export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	bucketId?: BucketId
 }
 
-export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece>
-	= createMongoCollection<AdLibPiece>('adLibPieces')
+export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece> = createMongoCollection<AdLibPiece>(
+	'adLibPieces'
+)
 registerCollection('AdLibPieces', AdLibPieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		AdLibPieces._ensureIndex({
 			rundownId: 1,
 			partId: 1,
-			_rank: 1
+			_rank: 1,
 		})
 	}
 })

@@ -1,40 +1,44 @@
 .afterbroadcastform-container {
-    text-align: center;
+	text-align: center;
 
-    .afterbroadcastform {
-        text-align: left;
-        margin-right: auto;
-        margin-left: auto;
-        display: inline-block;
-        h2 {
-            margin-left: 0em;
-        }
-        p {
-            margin: 0em;
-        }
-        .question {
-            margin: 1em 0 0 0;
-            textarea {
-                width: 50em;
-                height: 20em;
-            }
-        }
-        button {
-            margin-top: 2.5em;
-        }
+	.afterbroadcastform {
+		text-align: left;
+		margin-right: auto;
+		margin-left: auto;
+		display: inline-block;
+		h2 {
+			margin-left: 0em;
+		}
+		p {
+			margin: 0em;
+		}
+		.question {
+			margin: 1em 0 0 0;
+			textarea {
+				width: 50em;
+				height: 20em;
+			}
+		}
+		button {
+			margin-top: 2.5em;
+		}
 
-        input, textarea, select {
-            padding: 5px;
-            border: 1px solid #000;
-            background: #fff;
-        }
+		input,
+		textarea,
+		select {
+			padding: 5px;
+			border: 1px solid #000;
+			background: #fff;
+		}
 
-        &:not(:focus-within) {
-            input, textarea, select {
-                background: #505253;
-                color: #fff;
-                border: 1px solid #19191a;
-            }
-        }
-    }
+		&:not(:focus-within) {
+			input,
+			textarea,
+			select {
+				background: #505253;
+				color: #fff;
+				border: 1px solid #19191a;
+			}
+		}
+	}
 }

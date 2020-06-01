@@ -22,5 +22,4 @@ export interface ShowStyle {
 	/** The name of the blueprint which is the post-process step to run on a segment after any part has changed */
 	postProcessBlueprint: string
 }
-export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle>
-	= createMongoCollection<ShowStyle>('showStyles')
+export const ShowStyles: TransformedCollection<ShowStyle, ShowStyle> = createMongoCollection<ShowStyle>('showStyles')
