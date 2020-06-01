@@ -9,7 +9,7 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { ClientAPI } from '../../../lib/api/client'
 
 import { withTranslation } from 'react-i18next'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { unprotectString, partial, literal } from '../../../lib/lib'
@@ -21,7 +21,6 @@ import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 import { MeteorCall } from '../../../lib/api/methods'
-import { DropTarget } from 'react-dnd'
 import update from 'immutability-helper'
 
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
