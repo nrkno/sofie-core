@@ -215,10 +215,12 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 	let code = blueprintFcn.toString()
 	_.each(constants, (newConstant, constant) => {
 		if (typeof newConstant === 'string') {
-			newConstant = newConstant.replace(/^\^/, '') || '0.0.0' // fix the version, the same way the bleprint does it
-
-			code = code.replace(new RegExp(constant, 'g'), newConstant)
+			newConstant = `'${newConstant.replace(/^\^/, '') || '0.0.0'}'` // fix the version, the same way the bleprint does it
+		} else {
+			newConstant = `${newConstant}`
 		}
+
+		code = code.replace(new RegExp(constant, 'g'), newConstant)
 	})
 	return `{default: (${code})()}`
 }

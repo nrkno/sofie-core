@@ -622,18 +622,18 @@ describe('Test blueprint api context', () => {
 
 				expect(() => context.queuePart({} as any, [])).toThrowError('New part must contain at least one piece')
 
-				// @ts-ignore
 				expect(() =>
 					context.queuePart(
+						// @ts-ignore
 						{
 							floated: true,
 						},
 						[{}]
 					)
 				).toThrowError('Cannot queue a part which is not playable')
-				// @ts-ignore
 				expect(() =>
 					context.queuePart(
+						// @ts-ignore
 						{
 							invalid: true,
 						},
