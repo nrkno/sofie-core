@@ -77,7 +77,7 @@ import {
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces } from '../postProcess'
-import { StudioContext, NotesContext, ShowStyleContext } from './context'
+import { StudioContext, NotesContext, ShowStyleContext, EventContext } from './context'
 import { setNextPart, getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 
@@ -90,7 +90,7 @@ export enum ActionPartChange {
 }
 
 /** Actions */
-export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext {
+export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
 	private readonly cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
@@ -149,6 +149,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	// 	})
 	// 	return res
 	// }
+
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
 
 	getPartInstance(part: 'current' | 'next'): IBlueprintPartInstance | undefined {
 		const partInstanceId = this._getPartInstanceId(part)
@@ -266,6 +270,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			adlibPreroll: 0,
 			toBeQueued: false,
 			expectedPlayoutItems: [],
+			adlibAutoNext: false,
+			adlibAutoNextOverlap: 0,
+			adlibDisableOutTransition: false,
 		}
 		// Compile a list of the keys which are allowed to be changed, and filter the submission to those
 		const allowedKeys = _.keys(IBlueprintPieceSample)

@@ -209,14 +209,16 @@ export function setupMockShowStyleVariant(
 }
 
 export function packageBlueprint<T extends BlueprintManifestBase>(
-	constants: { [constant: string]: string },
+	constants: { [constant: string]: string | number },
 	blueprintFcn: () => T
 ): string {
 	let code = blueprintFcn.toString()
 	_.each(constants, (newConstant, constant) => {
-		newConstant = newConstant.replace(/^\^/, '') || '0.0.0' // fix the version, the same way the bleprint does it
+		if (typeof newConstant === 'string') {
+			newConstant = newConstant.replace(/^\^/, '') || '0.0.0' // fix the version, the same way the bleprint does it
 
-		code = code.replace(new RegExp(constant, 'g'), newConstant)
+			code = code.replace(new RegExp(constant, 'g'), newConstant)
+		}
 	})
 	return `{default: (${code})()}`
 }
