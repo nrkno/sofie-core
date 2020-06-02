@@ -227,10 +227,14 @@ export enum RundownViewKbdShortcuts {
 	RUNDOWN_RESET_RUNDOWN = 'shift+escape',
 	RUNDOWN_TOGGLE_SHELF = 'tab',
 	ADLIB_QUEUE_MODIFIER = 'shift',
-	RUNDOWN_NEXT_FORWARD = 'shift+ArrowRight',
-	RUNDOWN_NEXT_DOWN = 'shift+ArrowDown',
-	RUNDOWN_NEXT_BACK = 'shift+ArrowLeft',
-	RUNDOWN_NEXT_UP = 'shift+ArrowUp',
+	RUNDOWN_NEXT_FORWARD = 'shift+right',
+	RUNDOWN_NEXT_DOWN = 'shift+down',
+	RUNDOWN_NEXT_BACK = 'shift+left',
+	RUNDOWN_NEXT_UP = 'shift+up',
+	RUNDOWN_NEXT_FORWARD2 = 'shift+ArrowRight',
+	RUNDOWN_NEXT_DOWN2 = 'shift+ArrowDown',
+	RUNDOWN_NEXT_BACK2 = 'shift+ArrowLeft',
+	RUNDOWN_NEXT_UP2 = 'shift+ArrowUp',
 	// RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
 	RUNDOWN_LOG_ERROR	= 'shift+backspace',
@@ -432,6 +436,29 @@ const RundownHeader = translate()(class extends React.Component<Translated<IRund
 				},
 				{
 					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_BACK,
+					up: this.keyMoveNextBack,
+					label: t('Move Next backwards'),
+					global: true
+				},{
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_FORWARD2,
+					up: this.keyMoveNextForward,
+					label: t('Move Next forwards'),
+					global: true
+				},
+				{
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_DOWN2,
+					up: this.keyMoveNextDown,
+					label: t('Move Next to the following segment'),
+					global: true
+				},
+				{
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_UP2,
+					up: this.keyMoveNextUp,
+					label: t('Move Next to the previous segment'),
+					global: true
+				},
+				{
+					key: RundownViewKbdShortcuts.RUNDOWN_NEXT_BACK2,
 					up: this.keyMoveNextBack,
 					label: t('Move Next backwards'),
 					global: true
