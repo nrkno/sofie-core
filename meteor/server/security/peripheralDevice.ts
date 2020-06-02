@@ -61,9 +61,8 @@ export namespace PeripheralDeviceContentWriteAccess {
 	} {
 		triggerWriteAccess()
 		check(deviceId, String)
-
 		const device = PeripheralDevices.findOne(deviceId)
-		if (!cred0.userId && device) {
+		if (Settings.enableUserAccounts && (!cred0.userId && device)) {
 			// External = from an external device. For backwards compability, this extra procedure is done:
 			if (device.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
