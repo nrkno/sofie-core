@@ -1,9 +1,9 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
-import { Rundowns, Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Part, Parts, DBPart, PartId } from '../../../lib/collections/Parts'
-import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
+import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
+import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	Time,
@@ -24,8 +24,8 @@ import {
 	isStringOrProtectedString,
 	getRandomId,
 } from '../../../lib/lib'
-import { Timeline, TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
-import { Segments, Segment, SegmentId } from '../../../lib/collections/Segments'
+import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
@@ -543,13 +543,13 @@ export namespace ServerPlayoutAPI {
 
 			// Setup the parts for the HOLD we are starting
 			if (playlist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {
-				// const previousPartInstance = rundownData.previousPartInstance
-				if (!previousPartInstance) throw new Meteor.Error(404, 'previousPart not found!')
-				// const currentPartInstance = rundownData.currentPartInstance
-				if (!currentPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
+				const holdFromPartInstance = currentPartInstance
+				if (!holdFromPartInstance) throw new Meteor.Error(404, 'previousPart not found!')
+				const holdToPartInstance = nextPartInstance
+				if (!holdToPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
 
 				// Make a copy of any item which is flagged as an 'infinite' extension
-				const itemsToCopy = cache.PieceInstances.findFetch({ partInstanceId: previousPartInstance._id }).filter(
+				const itemsToCopy = cache.PieceInstances.findFetch({ partInstanceId: holdFromPartInstance._id }).filter(
 					(i) => i.piece.extendOnHold
 				)
 				itemsToCopy.forEach((instance) => {
@@ -578,7 +578,7 @@ export namespace ServerPlayoutAPI {
 
 					// TODO-PartInstance - temporary piece extension, pending new data flow
 					const newPieceTmp: Piece = clone(instance.piece)
-					newPieceTmp.partId = currentPartInstance.part._id
+					newPieceTmp.partId = holdToPartInstance.part._id
 					newPieceTmp.enable = { start: 0 }
 					const contentTmp = newPieceTmp.content as VTContent
 					if (contentTmp.fileName && contentTmp.sourceDuration && instance.piece.startedPlayback) {
@@ -598,11 +598,11 @@ export namespace ServerPlayoutAPI {
 					const newInstance = literal<PieceInstance>({
 						_id: protectString<PieceInstanceId>(instance._id + '_hold'),
 						rundownId: instance.rundownId,
-						partInstanceId: currentPartInstance._id,
+						partInstanceId: holdToPartInstance._id,
 						piece: {
 							...clone(instance.piece),
 							_id: newPieceTmp._id,
-							partId: currentPartInstance.part._id,
+							partId: holdToPartInstance.part._id,
 							enable: { start: 0 },
 							dynamicallyInserted: true,
 						},
@@ -919,7 +919,7 @@ export namespace ServerPlayoutAPI {
 				throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
 			}
 
-			RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
+			cache.RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
 
 			updateTimeline(cache, playlist.studioId)
 
@@ -941,7 +941,7 @@ export namespace ServerPlayoutAPI {
 			playlist = cache.RundownPlaylists.findOne(playlist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
-			Rundowns.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.NONE } })
+			cache.RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.NONE } })
 
 			updateTimeline(cache, playlist.studioId)
 			waitForPromise(cache.saveAllToDatabase())
@@ -964,7 +964,7 @@ export namespace ServerPlayoutAPI {
 			if (!currentPartInstance)
 				throw new Meteor.Error(404, `PartInstance "${playlist.currentPartInstanceId}" not found!`)
 
-			const rundown = Rundowns.findOne(currentPartInstance.rundownId)
+			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
 			const showStyleBase = rundown.getShowStyleBase()
 
@@ -1266,7 +1266,7 @@ export namespace ServerPlayoutAPI {
 					}
 
 					// Load the latest data and complete the take
-					const rundownPlaylist = RundownPlaylists.findOne(rundown.playlistId)
+					const rundownPlaylist = cache.RundownPlaylists.findOne(rundown.playlistId)
 					if (!rundownPlaylist)
 						throw new Meteor.Error(
 							404,
@@ -1426,7 +1426,7 @@ export namespace ServerPlayoutAPI {
 						if (newExpectedDuration !== undefined) {
 							console.log(`Cropping PieceInstance "${pieceInstance._id}" to ${newExpectedDuration}`)
 
-							PieceInstances.update(
+							cache.PieceInstances.update(
 								{
 									_id: pieceInstance._id,
 								},
@@ -1440,7 +1440,7 @@ export namespace ServerPlayoutAPI {
 							)
 
 							// TODO-PartInstance - pending new data flow
-							Pieces.update(
+							cache.Pieces.update(
 								{
 									_id: pieceInstance.piece._id,
 								},
