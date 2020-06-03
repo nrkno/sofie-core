@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { LookaheadMode, Timeline as TimelineTypes, OnGenerateTimelineObj } from 'tv-automation-sofie-blueprints-integration'
+import { LookaheadMode, Timeline as TimelineTypes, OnGenerateTimelineObj, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { RundownData, Rundown } from '../../../lib/collections/Rundowns'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, fixTimelineId, TimelineObjType } from '../../../lib/collections/Timeline'
@@ -9,6 +9,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { getOrderedPiece } from './pieces'
 import { clone, literal, getCurrentTime } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
+import { string } from 'prop-types'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -339,7 +340,7 @@ function findObjectsForPart (rundownData: RundownData, layer: string, timeOrdere
 					return false
 				}
 				// Skip pieces which have definitelyEnded, as they will not be present on the timeline
-				return !(p.definitelyEnded && p.definitelyEnded < getCurrentTime())
+				return !((p.definitelyEnded && p.definitelyEnded < getCurrentTime()) || (p.definitelyEnded && p.userDuration && typeof p.userDuration.end === 'string' && p.infiniteMode === PieceLifespan.Normal && p.originalInfiniteMode && p.originalInfiniteMode > PieceLifespan.Normal))
 			})
 
 			let allowTransition = false
