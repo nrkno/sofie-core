@@ -221,6 +221,38 @@ export namespace ServerPlayoutAdLibAPI {
 						Pieces.remove({ _id: piece._id })
 					}
 				})
+
+				/** HACK: Remove when adlib actions exist */
+				if (adLibPiece.additionalPieces) {
+					adLibPiece.additionalPieces.forEach(adlib => {
+						const extraPiece = convertAdLibToPiece({ ...adLibPiece, ...adlib }, part!, queue, pieceStart)
+						Pieces.insert(extraPiece)
+
+						const pieces = Pieces.find({
+							_id: { $ne: extraPiece._id },
+							partId
+						})
+
+						const adlibPieceSourceLayer = showStyle.sourceLayers.find((layer) => layer._id === extraPiece.sourceLayerId)
+						if (!adlibPieceSourceLayer) throw new Meteor.Error(`Could not find source layer "${extraPiece.sourceLayerId}" for piece with Id "${extraPiece._id}"`)
+
+						pieces.forEach(piece => {
+							const sourceLayer = showStyle.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
+							if (!sourceLayer) throw new Meteor.Error(`Could not find source layer "${piece.sourceLayerId}" for piece with Id "${piece._id}"`)
+
+							if (
+								extraPiece.sourceLayerId === piece.sourceLayerId ||
+								(
+									sourceLayer.exclusiveGroup &&
+									adlibPieceSourceLayer.exclusiveGroup &&
+									sourceLayer.exclusiveGroup === adlibPieceSourceLayer.exclusiveGroup
+								)
+							) {
+								Pieces.remove({ _id: piece._id })
+							}
+						})
+					})
+				}
 			}
 
 			// Copy across adlib-preroll and other properties needed on the part
