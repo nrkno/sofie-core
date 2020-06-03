@@ -121,7 +121,7 @@ export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	render() {
 		const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
-		return connectDropTarget(connectDragSource(super.render()))
+		return connectDropTarget(connectDragSource(super.render())) as JSX.Element
 	}
 }
 
@@ -147,5 +147,5 @@ export const BucketPieceButton = translateWithTracker<
 			connectDragPreview: connect.dragPreview(),
 			isDragging: monitor.isDragging(),
 		}))(BucketPieceButtonBase)
-	)
+	) as any
 )
