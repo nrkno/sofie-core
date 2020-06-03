@@ -54,7 +54,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			}
 		}
 
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			this.subscribe(
 				PubSub.rundownPlaylists,
 				_.extend(
@@ -89,9 +89,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 					})
 				}
 			})
-		}
 
-		componentDidMount() {
 			document.body.classList.add('dark', 'vertical-overflow-only')
 		}
 

@@ -67,7 +67,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 					.valueOf(),
 			}
 		}
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
@@ -275,7 +275,7 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 		Translated<IRundownSelectProps & IRundownSelectTrackedProps>,
 		IRundownSelectState
 	> {
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 
 			this.subscribe(PubSub.rundownPlaylists, {})

@@ -52,7 +52,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 					.valueOf(),
 			}
 		}
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.updateSubscription()
 		}

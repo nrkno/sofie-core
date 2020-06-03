@@ -68,7 +68,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 			}
 		}
 
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			if (this.props.match && this.props.match.params) {
 				// Subscribe to data:
 				this.subscribe(PubSub.recordedFiles, {

@@ -761,7 +761,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			}
 		}
 
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.rundowns, {
 				playlistId: this.props.playlist._id,
 			})

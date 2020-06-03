@@ -69,7 +69,7 @@ interface IStatusProps {
 	match?: any
 }
 class Status extends MeteorReactComponent<Translated<IStatusProps>> {
-	UNSAFE_componentWillMount() {
+	componentDidMount() {
 		// Subscribe to data:
 
 		this.subscribe(PubSub.peripheralDevices, {})

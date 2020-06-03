@@ -425,7 +425,7 @@ interface ISettingsProps {
 	match?: any
 }
 class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
-	UNSAFE_componentWillMount() {
+	componentDidMount() {
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})
 		this.subscribe(PubSub.studios, {})

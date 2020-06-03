@@ -198,11 +198,12 @@ export const RundownSystemStatus = translateWithTracker(
 			}
 		}
 
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
 				studioId: this.props.studio._id,
 			})
 		}
+
 		componentWillUnmount() {
 			super.componentWillUnmount()
 

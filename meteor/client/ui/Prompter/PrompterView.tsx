@@ -94,7 +94,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this._controller = new PrompterControlManager(this)
 	}
 
-	UNSAFE_componentWillMount() {
+	componentDidMount() {
 		if (this.props.studioId) {
 			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId,
@@ -126,9 +126,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				})
 			}
 		})
-	}
 
-	componentDidMount() {
 		document.body.classList.add(
 			'dark',
 			'xdark',
@@ -433,10 +431,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			this.state = {
 				subsReady: false,
 			}
-		}
-
-		UNSAFE_componentWillMount() {
-			super.componentWillUnmount()
 		}
 
 		componentDidMount() {

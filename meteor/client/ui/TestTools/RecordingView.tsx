@@ -53,7 +53,7 @@ const RecordingView = translateWithTracker<IRecordingViewProps, IRecordingViewSt
 		private userActionsLogSub: Meteor.SubscriptionHandle
 		private videoPlayer: HTMLVideoElement
 
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			if (this.props.match && this.props.match.params) {
 				// Subscribe to data:
 				this.subscribe(PubSub.recordedFiles, {

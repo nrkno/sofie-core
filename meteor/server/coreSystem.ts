@@ -440,7 +440,6 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 			'query-string',
 			'rc-tooltip',
 			'react',
-			'react-bootstrap',
 			'react-circular-progressbar',
 			'react-contextmenu',
 			'react-datepicker',

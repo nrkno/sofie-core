@@ -258,7 +258,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			return !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 		}
 
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.segments, {
 				_id: this.props.segmentId,
 			})
@@ -293,9 +293,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				})
 			})
 			SpeechSynthesiser.init()
-		}
 
-		componentDidMount() {
 			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (this.isLiveSegment === true) {
 				this.onFollowLiveLine(true, {})

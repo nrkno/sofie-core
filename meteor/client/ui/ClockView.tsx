@@ -141,7 +141,7 @@ const ClockComponent = withTranslation()(
 				WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>,
 				RundownOverviewState
 			> {
-				UNSAFE_componentWillMount() {
+				componentDidMount() {
 					this.autorun(() => {
 						let playlist = RundownPlaylists.findOne(this.props.playlistId)
 						if (this.props.playlist) {

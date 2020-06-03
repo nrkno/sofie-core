@@ -45,7 +45,7 @@ const ExternalMessages = translateWithTracker<
 				studioId: undefined,
 			}
 		}
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.studios, {})
 		}
 		onClickStudio = (studio) => {
@@ -148,7 +148,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			}
 		}
 
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.updateSubscription()
 		}

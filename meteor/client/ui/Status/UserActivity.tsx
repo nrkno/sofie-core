@@ -118,7 +118,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 					.valueOf(),
 			}
 		}
-		UNSAFE_componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
