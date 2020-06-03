@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
 
-import Lottie from 'react-lottie'
+import { Lottie } from '@crello/react-lottie'
 
 interface IProps {
 	inAnimation?: any
@@ -26,8 +26,8 @@ export class LottieButton extends React.Component<IProps, IState> {
 		},
 	}
 
-	overAnimation: object | undefined
-	outAnimation: object | undefined
+	overAnimation: { animationData: object } & object
+	outAnimation: { animationData: object } & object
 
 	constructor(props: IProps) {
 		super(props)
@@ -74,11 +74,7 @@ export class LottieButton extends React.Component<IProps, IState> {
 				style={{ position: 'relative' }}
 				onClick={this.onClick}
 				tabIndex={0}>
-				<Lottie
-					options={this.state.hover ? this.overAnimation : this.outAnimation}
-					isStopped={false}
-					isPaused={false}
-				/>
+				<Lottie config={this.state.hover ? this.overAnimation : this.outAnimation} />
 				{this.props.children}
 				<div
 					style={{ position: 'absolute', top: '0', left: '0', right: '0', bottom: '0' }}

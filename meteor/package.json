@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.10.2",
+    "@crello/react-lottie": "0.0.9",
     "@fortawesome/fontawesome": "^1.1.8",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/fontawesome-svg-core": "^1.2.28",
@@ -86,7 +87,6 @@
     "react-hotkeys": "^2.0.0",
     "react-i18next": "^11.5.0",
     "react-intersection-observer": "^8.26.2",
-    "react-lottie": "^1.2.3",
     "react-moment": "^0.9.7",
     "react-popper": "^2.1.0",
     "react-router-dom": "^5.2.0",

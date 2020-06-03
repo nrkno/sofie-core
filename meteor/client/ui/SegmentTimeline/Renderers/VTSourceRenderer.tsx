@@ -11,7 +11,7 @@ import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
 
-import Lottie from 'react-lottie'
+import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
@@ -330,11 +330,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					{this.begin && this.end === '' && vtContent && vtContent.loop && (
 						<div className="segment-timeline__piece__label label-icon label-loop-icon">
 							<Lottie
-								options={defaultOptions}
-								width={24}
-								height={24}
-								isStopped={!this.props.showMiniInspector}
-								isPaused={false}
+								config={defaultOptions}
+								width="24px"
+								height="24px"
+								playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
 							/>
 						</div>
 					)}
@@ -347,11 +346,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					{this.end && vtContent && vtContent.loop && (
 						<div className="segment-timeline__piece__label label-icon label-loop-icon">
 							<Lottie
-								options={defaultOptions}
-								width={24}
-								height={24}
-								isStopped={!this.props.showMiniInspector}
-								isPaused={false}
+								config={defaultOptions}
+								width="24px"
+								height="24px"
+								playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
 							/>
 						</div>
 					)}
