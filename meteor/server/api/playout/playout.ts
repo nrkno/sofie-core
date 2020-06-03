@@ -1426,7 +1426,7 @@ export namespace ServerPlayoutAPI {
 						if (newExpectedDuration !== undefined) {
 							console.log(`Cropping PieceInstance "${pieceInstance._id}" to ${newExpectedDuration}`)
 
-							PieceInstances.update(
+							cache.PieceInstances.update(
 								{
 									_id: pieceInstance._id,
 								},
@@ -1440,7 +1440,7 @@ export namespace ServerPlayoutAPI {
 							)
 
 							// TODO-PartInstance - pending new data flow
-							Pieces.update(
+							cache.Pieces.update(
 								{
 									_id: pieceInstance.piece._id,
 								},
