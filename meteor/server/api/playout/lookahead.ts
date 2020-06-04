@@ -47,7 +47,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 	}
 
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
-		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
+		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD || LookaheadMode.RETAIN ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadMaxSearchDistance = mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0 ? mapping.lookaheadMaxSearchDistance : undefined
 		const lookaheadObjs = findLookaheadForlayer(rundownData, layerId, mapping.lookahead, lookaheadTargetObjects, lookaheadMaxSearchDistance)
 
@@ -75,7 +75,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
 			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
-			const singleFutureObj = mapping.lookahead !== LookaheadMode.WHEN_CLEAR
+			const singleFutureObj = mapping.lookahead === LookaheadMode.WHEN_CLEAR
 			if (singleFutureObj && i !== 0) {
 				return
 			}
@@ -86,7 +86,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			// And this allows multiple futures to be timed in a way that allows them to co-exist
 
 			// Prioritise so that the earlier ones are higher, decreasing within the range 'reserved' for lookahead
-			const priority = singleFutureObj ? LOOKAHEAD_OBJ_PRIORITY : futurePriorityScale * (futureObjCount - i)
+			const priority = singleFutureObj ? LOOKAHEAD_OBJ_PRIORITY : mapping.lookahead === LookaheadMode.RETAIN ? futurePriorityScale * entry.distanceFromCurrentPart : futurePriorityScale * (futureObjCount - i)
 			mutateAndPushObject(entry.obj, `future${i}`, enable, mapping, priority)
 		})
 	})
@@ -105,6 +105,7 @@ interface PartInfoWithPieces extends PartInfo {
 export interface LookaheadObjectEntry {
 	obj: TimelineObjRundown
 	partId: string
+	distanceFromCurrentPart: number
 }
 
 export interface LookaheadResult {
@@ -146,7 +147,7 @@ export function findLookaheadForlayer (
 				fixTimelineId(obj)
 				return {
 					timed: [], // TODO - is this correct?
-					future: [{ obj: obj as TimelineObjRundown, partId: piece.partId }]
+					future: [{ obj: obj as TimelineObjRundown, partId: piece.partId, distanceFromCurrentPart: 1 }]
 				}
 			}
 		}
@@ -220,7 +221,7 @@ export function findLookaheadForlayer (
 	const partId = startingPartOnLayer.partId
 	const startingPartIsFuture = startingPartOnLayer.partId !== activeRundown.currentPartId
 	findObjectsForPart(rundownData, layer, timeOrderedPartsWithPieces, startingPartOnLayerIndex, startingPartOnLayer)
-		.forEach(o => (startingPartIsFuture ? res.future : res.timed).push({ obj: o, partId: partId }))
+		.forEach(o => (startingPartIsFuture ? res.future : res.timed).push({ obj: o, partId: partId, distanceFromCurrentPart: startingPartOnLayerIndex - currentPartIndex + 1 }))
 
 	// Loop over future parts until we have enough objects, or run out of parts
 	let nextPartOnLayerIndex = startingPartOnLayerIndex
@@ -231,7 +232,7 @@ export function findLookaheadForlayer (
 			const nextPartOnLayer = timeOrderedPartsWithPieces[nextPartOnLayerIndex]
 			const partId = nextPartOnLayer.partId
 			findObjectsForPart(rundownData, layer, timeOrderedPartsWithPieces, nextPartOnLayerIndex, nextPartOnLayer)
-				.forEach(o => res.future.push({ obj: o, partId: partId }))
+				.forEach(o => res.future.push({ obj: o, partId: partId, distanceFromCurrentPart: nextPartOnLayerIndex - currentPartIndex + 1 }))
 		}
 	}
 
