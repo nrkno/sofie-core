@@ -20,7 +20,7 @@ import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../l
 const blueprintCache: { [id: string]: Cache } = {}
 interface Cache {
 	modified: number
-	fcn: SomeBlueprintManifest
+	manifest: SomeBlueprintManifest
 }
 
 export interface WrappedSystemBlueprint {
@@ -151,7 +151,7 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 	}
 
 	if (cached) {
-		return cached.fcn
+		return cached.manifest
 	} else {
 		const vm = new VM({
 			sandbox: {
@@ -180,6 +180,10 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 			}
 		})
 
+		blueprintCache[unprotectString(blueprint._id)] = {
+			manifest,
+			modified: blueprint.modified,
+		}
 		return manifest
 	}
 }
