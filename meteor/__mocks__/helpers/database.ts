@@ -218,7 +218,7 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 
 		code = code.replace(new RegExp(constant, 'g'), _.isString(newConstant) ? `'${newConstant}'` : newConstant)
 	})
-	return `{default: (${code})()}`
+	return `({default: (${code})()})`
 }
 export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blueprint {
 	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
