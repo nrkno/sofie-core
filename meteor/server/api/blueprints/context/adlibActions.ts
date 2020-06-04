@@ -16,6 +16,7 @@ import {
 	normalizeArray,
 	literal,
 	getRandomId,
+	omit,
 } from '../../../../lib/lib'
 import { DBPart, PartId, Part } from '../../../../lib/collections/Parts'
 import { check, Match } from 'meteor/check'
@@ -81,6 +82,8 @@ import { StudioContext, NotesContext, ShowStyleContext, EventContext } from './c
 import { setNextPart, getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
+import { clone } from '../../../../lib/lib'
+import { Piece } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -89,6 +92,30 @@ export enum ActionPartChange {
 	/** Inserted/updated a piece which requires a blueprint call to reset */
 	MARK_DIRTY = 2,
 }
+
+const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
+	externalId: '',
+	enable: { start: 0 },
+	virtual: false,
+	continuesRefId: '',
+	isTransition: false,
+	extendOnHold: false,
+	name: '',
+	metaData: {},
+	sourceLayerId: '',
+	outputLayerId: '',
+	content: {},
+	transitions: {},
+	infiniteMode: PieceLifespan.Normal,
+	adlibPreroll: 0,
+	toBeQueued: false,
+	expectedPlayoutItems: [],
+	adlibAutoNext: false,
+	adlibAutoNextOverlap: 0,
+	adlibDisableOutTransition: false,
+}
+// Compile a list of the keys which are allowed to be set
+const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample)
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
@@ -162,7 +189,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		}
 
 		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
-		return _.clone(unprotectObject(partInstance))
+		return clone(unprotectObject(partInstance))
 	}
 	getPieceInstances(part: 'current' | 'next'): IBlueprintPieceInstance[] {
 		const partInstanceId = this._getPartInstanceId(part)
@@ -171,7 +198,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		}
 
 		const pieceInstances = this.cache.PieceInstances.findFetch({ partInstanceId })
-		return pieceInstances.map((piece) => _.clone(unprotectObject(piece)))
+		return pieceInstances.map((piece) => clone(unprotectObject(piece)))
 	}
 	getResolvedPieceInstances(part: 'current' | 'next'): IBlueprintResolvedPieceInstance[] {
 		const partInstanceId = this._getPartInstanceId(part)
@@ -185,7 +212,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		}
 
 		const resolvedInstances = getResolvedPieces(this.cache, partInstance)
-		return resolvedInstances.map((piece) => _.clone(unprotectObject(piece)))
+		return resolvedInstances.map((piece) => clone(unprotectObject(piece)))
 	}
 
 	findLastPieceOnLayer(
@@ -217,7 +244,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			query
 		)
 
-		return _.clone(unprotectObject(lastPieceInstance))
+		return clone(unprotectObject(lastPieceInstance))
 	}
 	insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): IBlueprintPieceInstance {
 		const partInstanceId = this._getPartInstanceId(part)
@@ -242,13 +269,16 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error(`Piece with id "${rawPiece._id}" already exists`)
 		}
 
+		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, ['_id'].concat(IBlueprintPieceSampleKeys))
+
 		const piece = postProcessPieces(
 			this,
-			[rawPiece],
+			[trimmedPiece],
 			this.getShowStyleBase().blueprintId,
 			partInstance.rundownId,
 			partInstance.part._id,
-			part === 'current'
+			part === 'current',
+			true
 		)[0]
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
@@ -267,34 +297,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return _.clone(unprotectObject(newPieceInstance))
+		return clone(unprotectObject(newPieceInstance))
 	}
 	updatePieceInstance(pieceInstanceId: string, piece: Partial<OmitId<IBlueprintPiece>>): IBlueprintPieceInstance {
-		const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
-			externalId: '',
-			enable: { start: 0 },
-			virtual: false,
-			continuesRefId: '',
-			isTransition: false,
-			extendOnHold: false,
-			name: '',
-			metaData: {},
-			sourceLayerId: '',
-			outputLayerId: '',
-			content: {},
-			transitions: {},
-			infiniteMode: PieceLifespan.Normal,
-			adlibPreroll: 0,
-			toBeQueued: false,
-			expectedPlayoutItems: [],
-			adlibAutoNext: false,
-			adlibAutoNextOverlap: 0,
-			adlibDisableOutTransition: false,
-		}
-		// Compile a list of the keys which are allowed to be changed, and filter the submission to those
-		const allowedKeys = _.keys(IBlueprintPieceSample)
-
-		const trimmedPiece = _.pick(piece, allowedKeys)
+		// filter the submission to the allowed ones
+		const trimmedPiece: IBlueprintPiece = _.pick(piece, IBlueprintPieceSampleKeys)
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error('Some valid properties must be defined')
 		}
@@ -324,21 +331,20 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			$unset: {},
 		}
 
-		Object.keys(trimmedPiece).forEach((k) => {
-			const val = trimmedPiece[k]
+		for (const [k, val] of Object.entries(trimmedPiece)) {
 			if (val === undefined) {
 				update.$unset[`piece.${k}`] = val
 			} else {
 				update.$set[`piece.${k}`] = val
 			}
-		})
+		}
 
 		this.cache.PieceInstances.update(pieceInstance._id, update)
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
 
-		return _.clone(unprotectObject(this.cache.PieceInstances.findOne(pieceInstance._id)!))
+		return clone(unprotectObject(this.cache.PieceInstances.findOne(pieceInstance._id)!))
 	}
 	queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): IBlueprintPartInstance {
 		const currentPartInstance = this.rundownPlaylist.currentPartInstanceId
@@ -404,7 +410,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
 
-		return _.clone(unprotectObject(newPartInstance))
+		return clone(unprotectObject(newPartInstance))
 	}
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
 		if (sourceLayerIds.length == 0) {

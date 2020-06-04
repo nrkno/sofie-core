@@ -354,7 +354,9 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		}
 
-		return cache.PieceInstances.findOne(query, {
+		// Note: This does not want to use the cache, as we want to search as far back as we can
+		// TODO - will this cause problems?
+		return PieceInstances.findOne(query, {
 			sort: {
 				'piece.startedPlayback': -1,
 			},
