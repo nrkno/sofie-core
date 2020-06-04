@@ -335,7 +335,7 @@ describe('Test blueprint api context', () => {
 					},
 				})
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId0 })
-				expect(context.findLastPieceOnLayer(sourceLayerIds[0], false, true)).toBeUndefined()
+				expect(context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })).toBeUndefined()
 
 				// Insert another more recent piece that is played
 				const pieceId1: PieceInstanceId = getRandomId()
@@ -358,7 +358,7 @@ describe('Test blueprint api context', () => {
 					},
 				})
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId1 })
-				expect(context.findLastPieceOnLayer(sourceLayerIds[0], false, true)).toBeUndefined()
+				expect(context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })).toBeUndefined()
 			})
 
 			testInFiber('excludeCurrentPart', () => {
@@ -418,7 +418,83 @@ describe('Test blueprint api context', () => {
 
 				// Check it
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId1 })
-				expect(context.findLastPieceOnLayer(sourceLayerIds[0], true)).toMatchObject({ _id: pieceId0 })
+				expect(context.findLastPieceOnLayer(sourceLayerIds[0], { excludeCurrentPart: true })).toMatchObject({
+					_id: pieceId0,
+				})
+			})
+
+			testInFiber('pieceMetaDataFilter', () => {
+				const { context, cache, rundown, playlist } = getActionExecutionContext()
+
+				const partInstances = cache.PartInstances.findFetch({})
+				expect(partInstances).toHaveLength(5)
+
+				playlist.currentPartInstanceId = partInstances[2]._id
+
+				const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
+				expect(sourceLayerIds).toHaveLength(2)
+
+				// No playback has begun, so nothing should happen
+				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
+				expect(context.findLastPieceOnLayer(sourceLayerIds[1])).toBeUndefined()
+
+				// Insert a couple of pieces that are played
+				const pieceId0: PieceInstanceId = getRandomId()
+				cache.PieceInstances.insert({
+					_id: pieceId0,
+					rundownId: rundown._id,
+					partInstanceId: partInstances[0]._id,
+					piece: {
+						_id: getRandomId(),
+						partId: partInstances[0].part._id,
+						rundownId: rundown._id,
+						externalId: '',
+						name: 'abc',
+						sourceLayerId: sourceLayerIds[0],
+						outputLayerId: '',
+						status: -1,
+						enable: { start: 0 },
+						startedPlayback: 1000,
+						dynamicallyInserted: true,
+					},
+				})
+				const pieceId1: PieceInstanceId = getRandomId()
+				cache.PieceInstances.insert({
+					_id: pieceId1,
+					rundownId: rundown._id,
+					partInstanceId: partInstances[2]._id,
+					piece: {
+						_id: getRandomId(),
+						partId: partInstances[2].part._id,
+						rundownId: rundown._id,
+						externalId: '',
+						name: 'abc',
+						sourceLayerId: sourceLayerIds[0],
+						outputLayerId: '',
+						status: -1,
+						enable: { start: 0 },
+						startedPlayback: 2000,
+						dynamicallyInserted: true,
+						metaData: {
+							prop1: 'hello',
+							prop2: '5',
+						},
+					},
+				})
+
+				// Check it
+				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId1 })
+				expect(context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: {} })).toMatchObject({
+					_id: pieceId1,
+				})
+				expect(
+					context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: { prop1: 'hello' } })
+				).toMatchObject({ _id: pieceId1 })
+				expect(
+					context.findLastPieceOnLayer(sourceLayerIds[0], {
+						pieceMetaDataFilter: { prop1: { $ne: 'hello' } },
+					})
+				).toMatchObject({ _id: pieceId0 })
 			})
 		})
 

@@ -80,6 +80,7 @@ import { postProcessPieces } from '../postProcess'
 import { StudioContext, NotesContext, ShowStyleContext, EventContext } from './context'
 import { setNextPart, getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
+import { MongoQuery } from '../../../../lib/typings/meteor'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -189,15 +190,31 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 	findLastPieceOnLayer(
 		sourceLayerId: string,
-		excludeCurrentPart?: boolean,
-		originalOnly?: boolean
+		options?: {
+			excludeCurrentPart?: boolean
+			originalOnly?: boolean
+			pieceMetaDataFilter?: any
+		}
 	): IBlueprintPieceInstance | undefined {
+		const query: MongoQuery<PieceInstance> = {}
+		if (options && options.pieceMetaDataFilter) {
+			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+				// TODO do we need better validation here?
+				// It should be pretty safe as we are working with the cache version (for now)
+				query[`piece.metaData.${key}`] = value
+			}
+		}
+
+		if (options && options.excludeCurrentPart && this.rundownPlaylist.currentPartInstanceId) {
+			query['partInstanceId'] = { $ne: this.rundownPlaylist.currentPartInstanceId }
+		}
+
 		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(
 			this.cache,
 			this.rundownPlaylist,
 			sourceLayerId,
-			originalOnly || false,
-			excludeCurrentPart || false
+			(options && options.originalOnly) || false,
+			query
 		)
 
 		return _.clone(unprotectObject(lastPieceInstance))

@@ -32,6 +32,7 @@ import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/col
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -316,8 +317,7 @@ export namespace ServerPlayoutAdLibAPI {
 				cache,
 				playlist,
 				sourceLayer._id,
-				sourceLayer.stickyOriginalOnly || false,
-				false
+				sourceLayer.stickyOriginalOnly || false
 			)
 
 			if (lastPieceInstance) {
@@ -334,11 +334,12 @@ export namespace ServerPlayoutAdLibAPI {
 		rundownPlaylist: RundownPlaylist,
 		sourceLayerId: string,
 		originalOnly: boolean,
-		excludeCurrentPart: boolean
+		customQuery?: MongoQuery<PieceInstance>
 	) {
 		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 
 		const query = {
+			...customQuery,
 			rundownId: { $in: rundownIds },
 			'piece.sourceLayerId': sourceLayerId,
 			'piece.startedPlayback': {
@@ -346,13 +347,9 @@ export namespace ServerPlayoutAdLibAPI {
 			},
 		}
 
-		if (excludeCurrentPart && rundownPlaylist.currentPartInstanceId) {
-			query['partInstanceId'] = { $ne: rundownPlaylist.currentPartInstanceId }
-		}
-
 		if (originalOnly) {
 			// Ignore adlibs if using original only
-			query['pieces.dynamicallyInserted'] = {
+			query['piece.dynamicallyInserted'] = {
 				$ne: true,
 			}
 		}
