@@ -23,7 +23,7 @@
     "cov": "meteor npm run unitcov && meteor npm run cov-open",
     "send-coverage": "codecov",
     "test-i": "npm run integration-test",
-    "license-validate": "legally -r --filter MIT --filter BSD --filter ISC --filter Apache --filter Unlicense --plain --border ascii",
+    "license-validate": "node ../scripts/checkLicenses.js -r --filter MIT --filter BSD --filter ISC --filter Apache --filter Unlicense --plain --border ascii",
     "lint": "tslint --project tsconfig.json --config tslint.json",
     "lintfix": "npm run lint --fix",
     "quickformat": "(prettier \"__mocks__/**\" --write || true) && (prettier \"lib/**\" --write || true) && (prettier \"server/**\" --write || true) && (prettier \"client/**\" --write || true) && (prettier \"*.json\" --write || true) && (prettier \"*.js\" --write || true) && (prettier \"*.md\" --write || true)",
