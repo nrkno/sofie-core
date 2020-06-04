@@ -333,7 +333,7 @@ export const AdLibRegionPanel = translateWithTracker<Translated<IAdLibPanelProps
 		return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
 	}) : undefined
 	const layer = thumbnailPiece && props.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id)
-	const { metadata } = thumbnailPiece ? checkPieceContentStatus(thumbnailPiece, props	.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id), studio.settings) : { metadata: null }
+	const { metadata } = thumbnailPiece ? checkPieceContentStatus(thumbnailPiece, props.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id), studio.settings) : { metadata: null }
 	return Object.assign({}, fetchAndFilter(props), {
 		studio: studio,
 		unfinishedPieces,
