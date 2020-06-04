@@ -886,6 +886,30 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						mutateUpdateValue={(v) => (v === undefined || v.length === 0) ? undefined : v.split(',').map(i => i.trim())} />
 				</label>
 			</div>
+			<div className='mod mvs mhs'>
+				<label className='field'>
+				{t('Thumbnail Source Layers')}
+				</label>
+				<EditAttribute
+					modifiedClassName='bghl'
+					attribute={`filters.${index}.thumbnailSourceLayerIds`}
+					obj={item}
+					type='checkbox'
+					collection={RundownLayouts}
+					className='mod mas'
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0) ? false : true }
+					mutateUpdateValue={(v) => undefined } />
+				<EditAttribute
+					modifiedClassName='bghl'
+					attribute={`filters.${index}.thumbnailSourceLayerIds`}
+					obj={item}
+					options={this.props.showStyleBase.sourceLayers.map(l => { return { name: l.name, value: l._id } })}
+					type='multiselect'
+					label={t('Thumbnail Disabled')}
+					collection={RundownLayouts}
+					className='input text-input input-l dropdown'
+					mutateUpdateValue={v => v && v.length > 0 ? v : undefined} />
+			</div>
 			{isDashboardLayout &&
 				<React.Fragment>
 					<div className='mod mvs mhs'>

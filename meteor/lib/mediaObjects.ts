@@ -3,7 +3,8 @@ import {
 	VTContent,
 	SourceLayerType,
 	ISourceLayer,
-	IBlueprintPieceGeneric
+	IBlueprintPieceGeneric,
+	GraphicsContent
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
@@ -106,6 +107,11 @@ export function getMediaObjectMediaId (piece: IBlueprintPieceGeneric, sourceLaye
 				return (piece.content as VTContent).fileName.toUpperCase()
 			}
 			return undefined
+		case SourceLayerType.GRAPHICS:
+			if (piece.content && piece.content.fileName) {
+				return (piece.content as GraphicsContent).fileName.toUpperCase()
+			}
+			return undefined
 	}
 	return undefined
 }
@@ -122,123 +128,138 @@ export function checkPieceContentStatus (piece: IBlueprintPieceGeneric, sourceLa
 		switch (sourceLayer.type) {
 			case SourceLayerType.VT:
 			case SourceLayerType.LIVE_SPEAK:
-			// case SourceLayerType.TRANSITION:
-				const fileName = getMediaObjectMediaId(piece, sourceLayer)
-				const displayName = piece.name
-				const messages: Array<string> = []
+				{
+				// case SourceLayerType.TRANSITION:
+					const fileName = getMediaObjectMediaId(piece, sourceLayer)
+					const displayName = piece.name
+					const messages: Array<string> = []
 				// If the fileName is not set...
-				if (!fileName) {
-					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-					messages.push(t('Source is not set'))
-				} else {
-					const mediaObject = MediaObjects.findOne({
-						mediaId: fileName
-					})
-					// If media object not found, then...
-					if (!mediaObject) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-						messages.push(t('Source is missing', { fileName: displayName }))
-						// All VT content should have at least two streams
+					if (!fileName) {
+						newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+						messages.push(t('Source is not set'))
 					} else {
-						newStatus = RundownAPI.PieceStatusCode.OK
+						const mediaObject = MediaObjects.findOne({
+							mediaId: fileName
+						})
+					// If media object not found, then...
+						if (!mediaObject) {
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							messages.push(t('Source is missing', { fileName: displayName }))
+						// All VT content should have at least two streams
+						} else {
+							newStatus = RundownAPI.PieceStatusCode.OK
 
 						// Do a format check:
-						if (mediaObject.mediainfo) {
-							if (mediaObject.mediainfo.streams) {
-								if (mediaObject.mediainfo.streams.length < 2) {
-									newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-									messages.push(t('Source doesn\'t have audio & video', { fileName: displayName }))
-								}
-								const formats = getAcceptedFormats(settings)
-								const audioConfig = settings ? settings.supportedAudioStreams : ''
-								const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
+							if (mediaObject.mediainfo) {
+								if (mediaObject.mediainfo.streams) {
+									if (mediaObject.mediainfo.streams.length < 2) {
+										newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+										messages.push(t('Source doesn\'t have audio & video', { fileName: displayName }))
+									}
+									const formats = getAcceptedFormats(settings)
+									const audioConfig = settings ? settings.supportedAudioStreams : ''
+									const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
 
-								let timebase: number = 0
-								let audioStreams: number = 0
-								let isStereo: boolean = false
+									let timebase: number = 0
+									let audioStreams: number = 0
+									let isStereo: boolean = false
 
 								// check the streams for resolution info
-								for (const stream of mediaObject.mediainfo.streams) {
-									if (stream.width && stream.height) {
-										if (stream.codec.time_base) {
-											const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-											timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
-										}
+									for (const stream of mediaObject.mediainfo.streams) {
+										if (stream.width && stream.height) {
+											if (stream.codec.time_base) {
+												const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
+												timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
+											}
 
 										// found the video stream, get it's duration convert to milliseconds and send it upwards
-										if (stream.duration) {
-											contentDuration = (parseFloat(stream.duration) || 0) * 1000
-										}
+											if (stream.duration) {
+												contentDuration = (parseFloat(stream.duration) || 0) * 1000
+											}
 
-										const format = buildFormatString(mediaObject.mediainfo, stream)
-										if (!acceptFormat(format, formats)) {
-											messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
-										}
-									} else if (stream.codec.type === 'audio') {
+											const format = buildFormatString(mediaObject.mediainfo, stream)
+											if (!acceptFormat(format, formats)) {
+												messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
+											}
+										} else if (stream.codec.type === 'audio') {
 										// this is the first (and hopefully last) track of audio, and has 2 channels
-										if (audioStreams === 0 && stream.channels === 2) {
-											isStereo = true
+											if (audioStreams === 0 && stream.channels === 2) {
+												isStereo = true
+											}
+											audioStreams++
 										}
-										audioStreams++
 									}
-								}
-								if (timebase) {
-									mediaObject.mediainfo.timebase = timebase
-								}
-								if (audioConfig && (!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))) {
-									messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
-								}
-								if (timebase) {
+									if (timebase) {
+										mediaObject.mediainfo.timebase = timebase
+									}
+									if (audioConfig && (!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))) {
+										messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
+									}
+									if (timebase) {
 
 									// check for black/freeze frames
-									const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TranslationFunction<any, object, string>) => {
-										if (arr.length === 1) {
-											const frames = Math.round(arr[0].duration * 1000 / timebase)
-											if (arr[0].start === 0) {
-												messages.push(t('Clip starts with {{frames}} {{type}} frame', { frames, type, count: frames }))
-											} else if (
+										const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TranslationFunction<any, object, string>) => {
+											if (arr.length === 1) {
+												const frames = Math.round(arr[0].duration * 1000 / timebase)
+												if (arr[0].start === 0) {
+													messages.push(t('Clip starts with {{frames}} {{type}} frame', { frames, type, count: frames }))
+												} else if (
 												mediaObject.mediainfo &&
 												mediaObject.mediainfo.format &&
 												arr[0].end === Number(mediaObject.mediainfo.format.duration)
 											) {
-												messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
-											} else {
-												messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
-											}
-										} else if (arr.length > 0) {
-											const dur = arr
+													messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
+												} else {
+													messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
+												}
+											} else if (arr.length > 0) {
+												const dur = arr
 												.map(b => b.duration)
 												.reduce((a, b) => a + b, 0)
-											const frames = Math.round(dur * 1000 / timebase)
-											messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
+												const frames = Math.round(dur * 1000 / timebase)
+												messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
+											}
+										}
+										if (mediaObject.mediainfo.blacks) {
+											addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
+										}
+										if (mediaObject.mediainfo.freezes) {
+											addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
 										}
 									}
-									if (mediaObject.mediainfo.blacks) {
-										addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
-									}
-									if (mediaObject.mediainfo.freezes) {
-										addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
-									}
 								}
+
+
+							} else {
+								messages.push(t('Clip is being ingested', { fileName: displayName }))
+								newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							}
 
-
-						} else {
-							messages.push(t('Clip is being ingested', { fileName: displayName }))
-							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
+							metadata = mediaObject
 						}
+					}
 
-						metadata = mediaObject
+					if (messages.length) {
+						if (newStatus === RundownAPI.PieceStatusCode.OK) {
+							newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
+						}
+						message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
+					}
+					break
+				}
+			case SourceLayerType.GRAPHICS:
+				{
+					const fileName = getMediaObjectMediaId(piece, sourceLayer)
+					if (fileName) {
+						const mediaObject = MediaObjects.findOne({
+							mediaId: fileName
+						})
+						if (mediaObject) {
+							newStatus = RundownAPI.PieceStatusCode.OK
+							metadata = mediaObject
+						}
 					}
 				}
-
-				if (messages.length) {
-					if (newStatus === RundownAPI.PieceStatusCode.OK) {
-						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-					}
-					message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
-				}
-				break
 		}
 	}
 

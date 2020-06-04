@@ -9,7 +9,7 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
-import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
+import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent, SplitsContent, GraphicsContent } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
@@ -94,6 +94,9 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						break
 					case SourceLayerType.TRANSITION:
 						fileName = (piece.content as VTContent).fileName
+						break
+					case SourceLayerType.GRAPHICS:
+						fileName = (piece.content as GraphicsContent).fileName
 						break
 				}
 				objId = fileName ? fileName.toUpperCase() : undefined

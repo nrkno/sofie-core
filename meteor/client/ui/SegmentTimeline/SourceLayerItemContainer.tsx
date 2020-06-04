@@ -4,7 +4,7 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime } from '../../../lib/lib'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId, GraphicsContent } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
@@ -72,6 +72,9 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 						break
 					case SourceLayerType.TRANSITION:
 						fileName = (piece.content as VTContent).fileName
+						break
+					case SourceLayerType.GRAPHICS:
+						fileName = (piece.content as GraphicsContent).fileName
 						break
 				}
 				objId = fileName ? fileName.toUpperCase() : undefined
@@ -148,7 +151,7 @@ export const SourceLayerItemContainer = class extends MeteorReactComponent<IProp
 
 					pieceCopy.status = status
 					pieceCopy.contentMetaData = metadata
-					
+
 					if (
 						pieceCopy.content &&
 						pieceCopy.content.sourceDuration === undefined &&
