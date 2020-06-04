@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import moment from 'moment'
-import { SaferEval } from 'safer-eval'
+import { VM } from 'vm2'
 import { logger } from '../../logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
@@ -153,16 +153,15 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 	if (cached) {
 		return cached.fcn
 	} else {
-		// Inject some commonly used libraries, so that they don't have to be bundled into the blueprints
-		const context = {
-			_,
-			moment,
-		}
+		const vm = new VM({
+			sandbox: {
+				_,
+				moment,
+			},
+		})
 
-		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(
-			blueprint.code
-		)
-		let manifest = entry.default
+		const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
+		const manifest: SomeBlueprintManifest = entry.default
 
 		// Wrap the functions, to emit better errors
 		_.each(_.keys(manifest), (key) => {

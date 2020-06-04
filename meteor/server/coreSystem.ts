@@ -455,7 +455,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 			'react-router-dom',
 			'react-timer-hoc',
 			'react-popper',
-			'safer-eval',
+			'vm2',
 			'semver',
 			'timecode',
 			'soap',
