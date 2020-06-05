@@ -461,51 +461,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		let notes: Array<TrackedNote> = []
 		notes = notes.concat(rundownNotes.map((note) => _.extend(note, { rank: 0 })))
 
-		const segmentNotes = _.object(
-			this.getSegments(
-				{},
-				{
-					fields: {
-						rank: 1,
-						notes: 1,
-					},
-				}
-			).map((segment) => [
-				segment._id,
-				{
-					rank: segment._rank,
-					notes: segment.notes,
-				},
-			])
-		) as { [key: string]: { notes: GenericNote[]; rank: number } }
+		const segments = this.getSegments()
+		const parts = this.getUnorderedParts()
 
-		this.getUnorderedParts(
-			{},
-			{
-				fields: {
-					segmentId: 1,
-					notes: 1,
-				},
-			}
-		).map((part) => {
-			if (part.notes) {
-				const segmentNote = segmentNotes[unprotectString(part.segmentId)]
-				if (segmentNote) {
-					return segmentNote.notes.concat(part.notes)
-				}
-			}
-		})
-		notes = notes.concat(
-			_.flatten(
-				_.map(_.values(segmentNotes), (o) => {
-					return o.notes.map((note) =>
-						_.extend(note, {
-							rank: o.rank,
-						})
-					)
-				})
-			)
-		)
+		notes = notes.concat(getAllNotesForSegmentAndParts(segments, parts))
 
 		return notes
 	}
