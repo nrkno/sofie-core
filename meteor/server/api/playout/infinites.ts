@@ -27,9 +27,7 @@ export function updateSourceLayerInfinitesAfterPartInner (rundown: Rundown, prev
 
 	let ps: Array<Promise<any>> = []
 
-	const allPieces = (
-		Pieces.find({ rundownId: rundown._id }).fetch()
-	).filter(p => !p.definitelyEnded || p.definitelyEnded > getCurrentTime())
+	const allPieces = Pieces.find({ rundownId: rundown._id }).fetch()
 
 	const pPartsToProcess = makePromise(() => rundown.getParts())
 
