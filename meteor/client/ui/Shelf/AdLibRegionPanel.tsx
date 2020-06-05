@@ -41,8 +41,8 @@ interface IAdLibRegionPanelTrackedProps {
 	nextPieces: {
 		[key: string]: Piece[]
 	}
-	metadata: MediaObject | null
-	thumbnailPiece: Piece
+	metadata?: MediaObject
+	thumbnailPiece?: Piece
 	layer?: ISourceLayer
 }
 
@@ -243,9 +243,9 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 		prospectivePieces = Pieces.find({
 			rundownId: rundownId,
 			// dynamicallyInserted: true,
-			// startedPlayback: {
-			// 	$exists: true
-			// },
+			startedPlayback: {
+				$exists: true
+			},
 			$and: [
 				{
 					$or: [{
@@ -287,7 +287,7 @@ export function getUnfinishedPiecesReactive (rundownId: string, currentPartId: s
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((piece) => {
 			if (piece.definitelyEnded) return false
-			// if (piece.startedPlayback === undefined && piece.continuesRefId === undefined) return false
+			if (piece.startedPlayback === undefined && piece.continuesRefId === undefined) return false
 			if (piece.stoppedPlayback) return false
 
 			let duration: number | undefined =
@@ -333,14 +333,14 @@ export const AdLibRegionPanel = translateWithTracker<Translated<IAdLibPanelProps
 		return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
 	}) : undefined
 	const layer = thumbnailPiece && props.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id)
-	const { metadata } = thumbnailPiece ? checkPieceContentStatus(thumbnailPiece, props.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id), studio.settings) : { metadata: null }
+	const { metadata } = thumbnailPiece ? checkPieceContentStatus(thumbnailPiece, props.showStyleBase.sourceLayers.find(layer => thumbnailPiece.sourceLayerId === layer._id), studio.settings) : { metadata: undefined }
 	return Object.assign({}, fetchAndFilter(props), {
-		studio: studio,
+		studio,
 		unfinishedPieces,
 		nextPieces,
-		metadata,
 		thumbnailPiece,
-		layer
+		layer,
+		metadata: metadata ? metadata : undefined
 	})
 }, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 	return !_.isEqual(props, nextProps)
