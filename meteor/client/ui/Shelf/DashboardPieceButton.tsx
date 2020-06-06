@@ -184,7 +184,7 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						this.renderSplits(isOfftubeList) :
 						null
 				}
-				<span className='dashboard-panel__panel__button__label'>{isOfftubeList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.item.name}</span>
+				<span className='dashboard-panel__panel__button__label'>{this.props.item.name}</span>
 			</div>
 		)
 	}
