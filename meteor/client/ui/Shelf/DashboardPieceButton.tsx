@@ -185,9 +185,9 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 						null
 				}
 				<span className='dashboard-panel__panel__button__label'>
-					{isOfftubeList && this.props.item.name.indexOf('\n - ') !== -1 ? this.props.item.name.split('\n - ').map(line => {
+					{isOfftubeList && this.props.item.name.indexOf('\n - ') !== -1 ? this.props.item.name.split('\n - ').map((line, i) => {
 						return (
-							<span>{line}<br/></span>
+							<span key={i}>{line}<br/></span>
 						)
 					}) : this.props.item.name}
 				</span>
