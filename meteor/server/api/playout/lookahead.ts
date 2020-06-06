@@ -75,7 +75,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
 			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
-			const singleFutureObj = mapping.lookahead !== LookaheadMode.WHEN_CLEAR
+			const singleFutureObj = mapping.lookahead !== LookaheadMode.WHEN_CLEAR && mapping.lookahead !== LookaheadMode.RETAIN
 			// const singleFutureObj = mapping.lookahead !== LookaheadMode.PRELOAD // TODO - this really does feel like it should be !== PRELOAD
 			if (singleFutureObj && i !== 0) {
 				return
