@@ -334,15 +334,26 @@ $dashboard-button-height: 5.625em;
 			border: 2px solid transparent;
 
 			> .dashboard-panel__panel__button__sub-label {
-				font-size: 22px;
-				top: auto;
+				font-size: 20px;
+				position: static;
+				order: 3;
+				word-break: keep-all;
+				margin: auto 4px;
+			}
+
+			> .dashboard-panel__panel__button__label {
+				position: static;
+				flex: 1 1 auto;
+				margin: auto 4px;
 			}
 
 			&.vt, &.live-speak, &.transition, &.splits {
 				> .dashboard-panel__panel__button__label {
-					left: 75px;
+					margin-left: 75px;
+					line-height: 1em;
+					word-break: break-word;
 				}
-			} 
+			}
 
 			> .dashboard-panel__panel__button__thumbnail {
 				height: 100%;
@@ -350,7 +361,7 @@ $dashboard-button-height: 5.625em;
 			}
 
 			> .video-preview {
-				position: relative;
+				position: absolute;
 				overflow: hidden;
 				background: #000;
 				height: 100%;
