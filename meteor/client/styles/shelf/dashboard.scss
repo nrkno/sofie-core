@@ -346,13 +346,20 @@ $dashboard-button-height: 5.625em;
 			> .dashboard-panel__panel__button__label {
 				position: static;
 				flex: 1 1 auto;
-				margin: auto 4px;
+				margin: 1px 4px 0 4px;
+				line-height: 1em;
+				
+				span {
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					display: block;
+				}
 			}
 
 			&.vt, &.live-speak, &.transition, &.splits {
 				> .dashboard-panel__panel__button__label {
 					margin-left: 75px;
-					line-height: 1em;
 					word-break: break-word;
 				}
 			}
