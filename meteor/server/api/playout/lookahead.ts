@@ -76,6 +76,7 @@ export function getLookeaheadObjects (rundownData: RundownData, studio: Studio):
 
 			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
 			const singleFutureObj = mapping.lookahead !== LookaheadMode.WHEN_CLEAR
+			// const singleFutureObj = mapping.lookahead !== LookaheadMode.PRELOAD // TODO - this really does feel like it should be !== PRELOAD
 			if (singleFutureObj && i !== 0) {
 				return
 			}
@@ -188,6 +189,15 @@ export function findLookaheadForlayer (
 		}
 	}
 
+	// Retain can prioritise looking forward over backwards
+	if (mode === LookaheadMode.RETAIN && startingPartOnLayer && lookaheadMaxSearchDistance !== undefined) {
+		const res = findLookaheadForlayerHelper(activeRundown, rundownData, layer, lookaheadTargetObjects, timeOrderedPartsWithPieces, startingPartOnLayer, startingPartOnLayerIndex)
+		// If anything was found, then we shall use it
+		if (res.future.length > 0) {
+			return res
+		}
+	}
+
 	// If set to retain, then look backwards.
 	// This sets the previous usage of the layer as the current part. This lets the algorithm include the object even though it has already played and finished
 	if (mode === LookaheadMode.RETAIN) {
@@ -212,6 +222,18 @@ export function findLookaheadForlayer (
 		return { timed: [], future: [] }
 	}
 
+	return findLookaheadForlayerHelper(activeRundown, rundownData, layer, lookaheadTargetObjects, timeOrderedPartsWithPieces, startingPartOnLayer, startingPartOnLayerIndex)
+}
+
+function findLookaheadForlayerHelper (
+	activeRundown: Rundown,
+	rundownData: RundownData,
+	layer: string,
+	lookaheadTargetObjects: number,
+	timeOrderedPartsWithPieces: PartInfoWithPieces[],
+	startingPartOnLayer: PartInfoWithPieces,
+	startingPartOnLayerIndex: number
+) {
 	const res: LookaheadResult = {
 		timed: [],
 		future: []
