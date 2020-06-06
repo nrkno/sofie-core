@@ -61,5 +61,9 @@
 		&.next {
 			border: 3px solid var(--general-next-color);
 		}
+
+		&.has-preview {
+			background: black;
+		}
 	}
 }
