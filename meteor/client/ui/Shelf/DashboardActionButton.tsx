@@ -34,6 +34,21 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		}
 	}
 
+	isToggled () {
+		const { button } = this.props
+		switch (button.type) {
+			case ActionButtonType.KLAR_ON_AIR:
+				return this.props.rundown.rehearsal || this.props.rundown.active
+			default:
+				return false
+		}
+	}
+
+	getLabel () {
+		const { button } = this.props
+		return this.isToggled() && button.labelToggled && button.labelToggled.length > 0 ? button.labelToggled : button.label
+	}
+
 	render () {
 		const { button } = this.props
 
@@ -79,7 +94,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 						onMouseUp={(e) => this.props.onButtonUp(button, e)}
 						data-obj-id={button.type}
 						>
-						<span className='dashboard-panel__panel__button__label'>{button.label}</span>
+						<span className='dashboard-panel__panel__button__label'>{this.getLabel()}</span>
 					</div>
 				</div>
 			</div>

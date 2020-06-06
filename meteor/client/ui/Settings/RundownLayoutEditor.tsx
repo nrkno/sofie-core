@@ -104,7 +104,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					x: 0,
 					y: 0,
 					width: 3,
-					height: 3
+					height: 3,
+					labelToggled: ''
 				})
 			}
 		})
@@ -236,6 +237,18 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							<EditAttribute
 								modifiedClassName='bghl'
 								attribute={`actionButtons.${index}.label`}
+								obj={item}
+								type='text'
+								collection={RundownLayouts}
+								className='input text-input input-l' />
+						</label>
+					</div>
+					<div className='mod mvs mhs'>
+						<label className='field'>
+							{t('Toggled Label')}
+							<EditAttribute
+								modifiedClassName='bghl'
+								attribute={`actionButtons.${index}.labelToggled`}
 								obj={item}
 								type='text'
 								collection={RundownLayouts}
