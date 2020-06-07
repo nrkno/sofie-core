@@ -32,7 +32,8 @@ import {
   BrowserRouter as Router,
   Route,
   Switch,
-  Redirect
+  Redirect,
+  RouteComponentProps
 } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
@@ -55,7 +56,7 @@ const LAST_RESTART_LATENCY = 3 * 60 * 60 * 1000
 const WINDOW_START_HOUR = 3
 const WINDOW_END_HOUR = 5
 
-interface iAppProps extends InjectedI18nProps {
+interface iAppProps extends InjectedI18nProps, RouteComponentProps {
 	user: User | null
 }
 interface IAppState {
@@ -65,6 +66,7 @@ interface IAppState {
 	allowDeveloper: boolean
 	allowService: boolean
 	subscriptionsReady: boolean
+	requestedRoute?: string
 }
 
 // App component - represents the whole app
@@ -79,6 +81,7 @@ export const App = translateWithTracker(() => {
 		super(props)
 
 		const params = queryStringParse(location.search)
+		let requestedRoute: string = ''
 
 		if (params['studio']) 	setAllowStudio(params['studio'] === '1')
 		if (params['configure']) setAllowConfigure(params['configure'] === '1')
@@ -102,13 +105,20 @@ export const App = translateWithTracker(() => {
 			}
 		}
 
+		if (Settings.enableUserAccounts && !this.props.user) {
+			if(window.location.pathname !== '/') {
+				requestedRoute = window.location.pathname
+			}
+		}
+
 		this.state = {
 			allowStudio: getAllowStudio(),
 			allowConfigure: getAllowConfigure(),
 			allowTesting: getAllowTesting(),
 			allowDeveloper: getAllowDeveloper(),
 			allowService: getAllowService(),
-			subscriptionsReady: false
+			subscriptionsReady: false,
+			requestedRoute
 		}
 
 		this.lastStart = Date.now()
@@ -196,7 +206,7 @@ export const App = translateWithTracker(() => {
 					<ErrorBoundary>
 						<Switch>
 							{Settings.enableUserAccounts ? [
-								<Route key='0' exact path='/' component={(props) => <LoginPage {...props}/>} />,
+								<Route key='0' exact path='/' component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute}/>} />,
 								<Route key='1' exact path='/login' component={() => <Redirect to='/'/>}/>,
 								<Route key='2' exact path='/signup' component={SignupPage} />,
 								<Route key='3' exact path='/reset' component={RequestResetPage} />,

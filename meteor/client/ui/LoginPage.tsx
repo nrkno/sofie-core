@@ -11,7 +11,7 @@ import { getUser } from '../../lib/collections/Users'
 
 
 interface ILoginPageProps extends RouteComponentProps {
-
+	requestedRoute: string
 }
 
 interface ILoginPageState {
@@ -23,7 +23,11 @@ interface ILoginPageState {
 
 export const LoginPage = translateWithTracker((props: ILoginPageProps) => {
 	const user = getUser()
-	if (user) props.history.push('/rundowns')
+	if (user) {
+		props.requestedRoute 
+			? props.history.push(props.requestedRoute) 
+			: props.history.push('/rundowns')
+	}
 	return {}
 })(
 class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState> {
