@@ -539,7 +539,7 @@ export const SegmentTimelineContainer = translate()(
 
 					let newLivePosition =
 						isExpectedToPlay && virtualStartedPlayback
-							? e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
+							? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
 							: partOffset + lastTakeOffset
 
 					if (lastStartedPlayback && simulationPercentage < 1) {
