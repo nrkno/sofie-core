@@ -111,7 +111,6 @@ export namespace RundownTiming {
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
 // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
-const DEFAULT_DURATION = 3000
 
 /**
  * RundownTimingProvider properties.
@@ -348,7 +347,9 @@ export const RundownTimingProvider = withTracker<
 							Math.max(
 								0,
 								this.displayDurationGroups[partInstance.part.displayDurationGroup],
-								partInstance.part.gap ? MINIMAL_NONZERO_DURATION : this.props.defaultDuration || DEFAULT_DURATION
+								partInstance.part.gap
+									? MINIMAL_NONZERO_DURATION
+									: this.props.defaultDuration || Settings.defaultDisplayDuration
 							)
 						memberOfDisplayDurationGroup = true
 					}
@@ -374,7 +375,7 @@ export const RundownTimingProvider = withTracker<
 							partInstance.part.duration ||
 							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
 							this.props.defaultDuration ||
-							DEFAULT_DURATION
+							Settings.defaultDisplayDuration
 						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 					} else {
@@ -385,7 +386,7 @@ export const RundownTimingProvider = withTracker<
 								displayDurationFromGroup ||
 								partInstance.part.expectedDuration ||
 								this.props.defaultDuration ||
-								DEFAULT_DURATION
+								Settings.defaultDisplayDuration
 						)
 						partDisplayDurationNoPlayback = partDisplayDuration
 						this.partPlayed[unprotectString(partInstance.part._id)] = (partInstance.part.duration || 0) - playOffset
@@ -430,7 +431,7 @@ export const RundownTimingProvider = withTracker<
 
 					// Handle invalid parts by overriding the values to preset values for Invalid parts
 					if (partInstance.part.invalid && !partInstance.part.gap) {
-						partDisplayDuration = this.props.defaultDuration || DEFAULT_DURATION
+						partDisplayDuration = this.props.defaultDuration || Settings.defaultDisplayDuration
 						this.partPlayed[unprotectString(partInstance.part._id)] = 0
 					}
 
