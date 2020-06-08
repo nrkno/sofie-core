@@ -483,6 +483,7 @@ export const RundownViewBuckets = translate()(
 											playlist={playlist}
 											showStyleBase={showStyleBase}
 											shouldQueue={shouldQueue}
+											hotkeyGroup={bucket.name.replace(/\W/, '_')}
 											bucket={bucket}
 											editableName={this.state.editedNameId === bucket._id}
 											onNameChanged={(e, name) => this.finishRenameBucket(e, bucket, name)}
