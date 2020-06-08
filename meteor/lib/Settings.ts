@@ -30,6 +30,7 @@ export interface ISettings {
 	allowGrabbingTimeline: boolean
 	/** Allow Segments to become unsynced, rather than the entire rundown */
 	allowUnsyncedSegments: boolean
+	/** Default duration to use to render parts when no duration is provided */
 	defaultDisplayDuration: number
 	// Allow resets while a rundown is on-air
 	allowUnsafeResets: boolean
