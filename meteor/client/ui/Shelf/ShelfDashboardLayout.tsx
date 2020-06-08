@@ -44,7 +44,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
 								selectedPiece={undefined}
-								hotkeyGroup={panel.name.replace(/ /, '_')}
 							/>
 						) : (
 							<DashboardPanel
@@ -59,7 +58,6 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								studioMode={props.studioMode}
 								shouldQueue={props.shouldQueue}
 								selectedPiece={undefined}
-								hotkeyGroup={panel.name.replace(/ /, '_')}
 							/>
 						)
 					) : RundownLayoutsAPI.isExternalFrame(panel) ? (
@@ -83,6 +81,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							selectedPiece={undefined}
+							hotkeyGroup={panel.name.replace(/\W/, '_')}
 						/>
 					) : (
 						undefined
