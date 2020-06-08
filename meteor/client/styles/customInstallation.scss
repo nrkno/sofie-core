@@ -48,6 +48,10 @@ body.tv2 {
 		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
 		grid-template-rows: [header] 1.8em [main-view] auto [zoom-area] auto [end];
 
+		.segment-timeline__title__label.identifier::before {
+			display: none;
+		}
+
 		.segment-timeline__liveline {
 			bottom: 0;
 
