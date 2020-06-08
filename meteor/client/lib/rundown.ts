@@ -5,7 +5,6 @@ import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import { SourceLayerType, getPieceGroupId, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import {
-	DEFAULT_DISPLAY_DURATION,
 	SegmentExtended,
 	PartExtended,
 	getPieceInstancesForPartInstance,
@@ -36,7 +35,7 @@ export namespace RundownUtils {
 				(part.instance.part.duration ||
 					part.instance.part.expectedDuration ||
 					part.renderedDuration ||
-					(display ? DEFAULT_DISPLAY_DURATION : 0))
+					(display ? Settings.defaultDisplayDuration : 0))
 			)
 		}, 0)
 	}
@@ -449,8 +448,8 @@ export namespace RundownUtils {
 					}
 				})
 
-				// use the expectedDuration and fallback to the DEFAULT_DISPLAY_DURATION for the part
-				partE.renderedDuration = partE.instance.part.expectedDuration || DEFAULT_DISPLAY_DURATION // furthestDuration
+				// use the expectedDuration and fallback to the default display duration for the part
+				partE.renderedDuration = partE.instance.part.expectedDuration || Settings.defaultDisplayDuration // furthestDuration
 
 				// displayDuration groups are sets of Parts that share their expectedDurations.
 				// If a member of the group has a displayDuration > 0, this displayDuration is used as the renderedDuration of a part.

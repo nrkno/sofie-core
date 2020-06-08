@@ -42,7 +42,6 @@ import { RundownUtils } from '../lib/rundown'
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
-import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode, getAllowConfigure, getAllowService } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
@@ -2224,7 +2223,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (this.state.subsReady) {
 				if (this.props.playlist && this.props.studio && this.props.showStyleBase && !this.props.onlyShelf) {
 					return (
-						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={DEFAULT_DISPLAY_DURATION}>
+						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<div
 								className={ClassNames('rundown-view', {
 									'notification-center-open': this.state.isNotificationsCenterOpen,

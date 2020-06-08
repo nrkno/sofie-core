@@ -29,6 +29,8 @@ export interface ISettings {
 	allowGrabbingTimeline: boolean
 	/** Allow Segments to become unsynced, rather than the entire rundown */
 	allowUnsyncedSegments: boolean
+	/** Default duration to use to render parts when no duration is provided */
+	defaultDisplayDuration: number
 }
 
 export let Settings: ISettings
@@ -45,6 +47,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	allowUnsyncedSegments: false,
+	defaultDisplayDuration: 3000
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
