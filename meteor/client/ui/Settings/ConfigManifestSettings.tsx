@@ -91,7 +91,7 @@ function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2,
 		case ConfigManifestEntryType.JSON:
 			return <EditAttribute
 				modifiedClassName='bghl'
-				invalidClassName='error'
+				invalidClassName='warn'
 				attribute={attribute}
 				obj={object}
 				type='json'
