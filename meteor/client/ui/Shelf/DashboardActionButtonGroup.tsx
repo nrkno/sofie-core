@@ -41,11 +41,11 @@ export const DashboardActionButtonGroup = translate()(
 			if (this.props.studioMode) {
 				if (this.props.playlist.active) {
 					doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-						MeteorCall.userAction.take(e, this.props.playlist._id)
+						MeteorCall.userAction.deactivate(e, this.props.playlist._id)
 					)
 				} else {
 					doUserAction(t, e, UserAction.RESET_AND_ACTIVATE_RUNDOWN_PLAYLIST, (e) =>
-						MeteorCall.userAction.take(e, this.props.playlist._id)
+						MeteorCall.userAction.resetAndActivate(e, this.props.playlist._id)
 					)
 					doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, this.props.playlist._id))
 				}
