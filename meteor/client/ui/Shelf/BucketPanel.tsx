@@ -39,8 +39,6 @@ import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 
-const HOTKEY_GROUP = 'BucketPanel'
-
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
 		let size = {
@@ -148,6 +146,7 @@ export interface IBucketPanelProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
+	hotkeyGroup: string
 	editableName?: boolean
 	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: BucketId, atIndex: number) => void

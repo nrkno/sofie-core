@@ -37,6 +37,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								filter={panel}
 								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								hotkeyGroup={panel.name.replace(/\W/, '_')}
 								playlist={props.playlist}
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
@@ -50,6 +51,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 								filter={panel}
 								visible={!(panel as DashboardLayoutFilter).hide}
 								registerHotkeys={(panel as DashboardLayoutFilter).assignHotKeys}
+								hotkeyGroup={panel.name.replace(/\W/, '_')}
 								playlist={props.playlist}
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
