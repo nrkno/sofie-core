@@ -480,11 +480,7 @@ export const SegmentTimelinePart = translate()(
 					if (part.instance.part.duration) {
 						return part.instance.part.duration
 					} else {
-						return (
-							currentTime -
-							(part.instance.part.getLastStartedPlayback() || 0) +
-							(part.instance.part.getLastPlayOffset() || 0)
-						)
+						return currentTime - (part.instance.part.getLastStartedPlayback() || 0)
 					}
 				} else {
 					return 0
