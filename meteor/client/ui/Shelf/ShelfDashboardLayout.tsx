@@ -11,6 +11,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { BucketPanel } from './BucketPanel'
 import { unprotectString } from '../../../lib/lib'
+import { AdLibRegionPanel } from './AdLibRegionPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -64,6 +65,20 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							layout={rundownLayout}
 							visible={true}
 							playlist={props.playlist}
+						/>
+					) : RundownLayoutsAPI.isAdLibRegion(panel) ? (
+						<AdLibRegionPanel
+							key={panel._id}
+							includeGlobalAdLibs={true}
+							filter={RundownLayoutsAPI.adLibRegionToFilter(panel)}
+							panel={panel}
+							adlibRank={panel.adlibRank}
+							layout={rundownLayout}
+							visible={true}
+							playlist={props.playlist}
+							showStyleBase={props.showStyleBase}
+							studioMode={props.studioMode}
+							selectedPiece={undefined}
 						/>
 					) : (
 						undefined
