@@ -871,7 +871,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 								item.toBeQueued || false,
 								this.onToggleAdLib,
 								[item, false],
-								HOTKEY_GROUP
+								this.props.hotkeyGroup
 							)
 						}
 

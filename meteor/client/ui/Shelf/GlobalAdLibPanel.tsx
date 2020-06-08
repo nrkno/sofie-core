@@ -398,7 +398,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
 			RegisteredHotkeys.remove({
-				tag: HOTKEY_GROUP,
+				tag: this.props.hotkeyGroup,
 			})
 			this.usedHotkeys.length = 0
 		}
@@ -436,7 +436,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 								item.toBeQueued || false,
 								this.onToggleAdLib,
 								[item, false],
-								HOTKEY_GROUP
+								this.props.hotkeyGroup
 							)
 						}
 
@@ -464,7 +464,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 									item.toBeQueued || false,
 									this.onToggleAdLib,
 									[item, true],
-									HOTKEY_GROUP
+									this.props.hotkeyGroup
 								)
 							}
 						}
@@ -522,7 +522,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							false,
 							this.onToggleSticky,
 							[sourceLayer._id],
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 					})
 				})
