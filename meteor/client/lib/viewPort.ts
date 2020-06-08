@@ -90,7 +90,7 @@ export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnim
 	return Promise.reject('Could not find part')
 }
 
-export const HEADER_HEIGHT = 54 // was: 150
+export const HEADER_HEIGHT = 150
 export const HEADER_MARGIN = 15
 
 export function scrollToSegment(
