@@ -25,8 +25,8 @@
     "test-i": "npm run integration-test",
     "license-validate": "node-license-validator -p -d --allow-licenses MIT BSD BSD-3-Clause ISC Apache Public-Domain 'Public Domain' Unlicense WTFPL CC-BY-4.0 --allow-packages cycle @fortawesome/fontawesome-common-types",
     "lint": "tslint --project tsconfig.test.json --config tslint.json",
-    "lintfix": "npm run lint --fix",
-    "quickformat": "(prettier \"__mocks__/**\" --write || true) && (prettier \"lib/**\" --write || true) && (prettier \"server/**\" --write || true) && (prettier \"client/**\" --write || true) && (prettier \"*.json\" --write || true) && (prettier \"*.js\" --write || true) && (prettier \"*.md\" --write || true)",
+    "lintfix": "npm run lint -- --fix",
+    "quickformat": "prettier \"__mocks__/**\" --write ; prettier \"lib/**\" --write ; prettier \"server/**\" --write ; prettier \"client/**\" --write ; prettier \"*.json\" --write ; prettier \"*.js\" --write ; prettier \"*.md\" --write",
     "i18n-extract-pot": "i18next-extract-gettext --files=\"{./client/ui/**/*.+(ts|tsx),./lib/mediaObjects.ts}\" --output=i18n/template.pot",
     "i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-nn & npm run i18n-compile-json-sv",
     "i18n-compile-json-nb": "i18next-conv -l nb -s i18n/nb.po -t public/locales/nb/translations.json --skipUntranslated",
@@ -149,15 +149,5 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
-  },
-  "lint-staged": {
-    "*.{js,css,json,md,scss}": [
-      "prettier --write",
-      "git add"
-    ],
-    "*.{ts,tsx}": [
-      "npm run lintfix --",
-      "git add"
-    ]
   }
 }
