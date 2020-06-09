@@ -37,6 +37,7 @@ import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { Settings } from '../../lib/Settings'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -206,7 +207,7 @@ export function resetRundownPlaylist(rundownPlaylistId: RundownPlaylistId): Clie
 	check(rundownPlaylistId, String)
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (playlist.active && !playlist.rehearsal) {
+	if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
@@ -221,7 +222,7 @@ export function resetAndActivate(
 	check(rundownPlaylistId, String)
 	let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (playlist.active && !playlist.rehearsal) {
+	if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
