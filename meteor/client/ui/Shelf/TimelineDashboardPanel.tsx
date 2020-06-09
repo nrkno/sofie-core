@@ -21,8 +21,8 @@ import {
 	DashboardPanelInner,
 	dashboardElementPosition,
 	getUnfinishedPieceInstancesReactive,
-	IDashboardPanelProps,
 	IDashboardPanelTrackedProps,
+	IDashboardPanelProps,
 } from './DashboardPanel'
 import { PieceInstanceId, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { unprotectString, protectString } from '../../../lib/lib'
@@ -42,14 +42,12 @@ export const TimelineDashboardPanel = translateWithTracker<
 	IState,
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
 >(
-	(
-		props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps & IDashboardPanelProps & IDashboardPanelTrackedProps>
-	) => {
+	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
 			unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
-			nextPieces: getNextPiecesReactive(props.playlist.currentPartInstanceId),
+			nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId),
 		}
 	}
 )(
