@@ -32,8 +32,8 @@ export interface ISettings {
 	allowUnsyncedSegments: boolean
 	/** Default duration to use to render parts when no duration is provided */
 	defaultDisplayDuration: number
-	// Allow resets while a rundown is on-air
-	allowUnsafeResets: boolean
+	/** Allow resets while a rundown is on-air */
+	allowRundownResetOnAir: boolean
 	// Show keyboard map in AdLib Shelf
 	showKeyboardMap: boolean
 	// Keyboard map layout (what physical layout to use for the keyboard)
@@ -55,7 +55,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowGrabbingTimeline: true,
 	allowUnsyncedSegments: false,
 	defaultDisplayDuration: 3000,
-	allowUnsafeResets: false,
+	allowRundownResetOnAir: false,
 	showKeyboardMap: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 }

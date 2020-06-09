@@ -1046,7 +1046,7 @@ const RundownHeader = translate()(
 					}
 				)
 			}
-			if (this.props.playlist.active && !this.props.playlist.rehearsal) {
+			if (this.props.playlist.active && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 				// The rundown is active and not in rehersal
 				doModalDialog({
 					title: this.props.playlist.name,
@@ -1157,7 +1157,11 @@ const RundownHeader = translate()(
 									) : null}
 									{this.props.playlist.active ? <MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem> : null}
 									{this.props.playlist.active ? <MenuItem onClick={(e) => this.hold(e)}>{t('Hold')}</MenuItem> : null}
-									{!(this.props.playlist.active && !this.props.playlist.rehearsal) ? (
+									{!(
+										this.props.playlist.active &&
+										!this.props.playlist.rehearsal &&
+										!Settings.allowRundownResetOnAir
+									) ? (
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>{t('Reload ENPS Data')}</MenuItem>
