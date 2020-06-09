@@ -12,6 +12,7 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { BucketPanel } from './BucketPanel'
 import { unprotectString } from '../../../lib/lib'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
+import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -82,6 +83,14 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							studioMode={props.studioMode}
 							selectedPiece={undefined}
 							hotkeyGroup={panel.name.replace(/\W/, '_')}
+						/>
+					) : RundownLayoutsAPI.isKeyboardMap(panel) ? (
+						<KeyboardPreviewPanel
+							key={panel._id}
+							visible={true}
+							showStyleBase={props.showStyleBase}
+							layout={rundownLayout}
+							panel={panel}
 						/>
 					) : (
 						undefined
