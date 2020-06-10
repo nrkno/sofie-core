@@ -134,6 +134,18 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 					className="input text-input input-l"
 				/>
 			)
+		case ConfigManifestEntryType.JSON:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					invalidClassName="error"
+					attribute={attribute}
+					obj={object}
+					type="json"
+					collection={collection}
+					className="input text-input input-l"
+				/>
+			)
 		case ConfigManifestEntryType.SELECT:
 			const selectFromOptions = item as ConfigManifestEntrySelectFromOptions<true | false>
 			return (
