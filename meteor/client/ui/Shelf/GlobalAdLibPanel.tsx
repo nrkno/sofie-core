@@ -42,6 +42,7 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
+import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -349,40 +350,26 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		let rundownAdLibItems = RundownBaselineAdLibPieces.find(
-			{ rundownId: currentRundown._id },
-			{ sort: { sourceLayerId: 1, _rank: 1 } }
+			{
+				rundownId: currentRundown._id,
+			},
+			{
+				sort: {
+					sourceLayerId: 1,
+					_rank: 1,
+				},
+			}
 		).fetch()
-		rundownAdLibItems.forEach((item) => {
-			// automatically assign hotkeys based on adLibItem index
+		rundownAdLibs = rundownAdLibItems.map((item) => {
 			const uiAdLib: AdLibPieceUi = _.clone(item)
 			uiAdLib.isGlobal = true
 
-			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
-			if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-				const sourceHotKeyUseLayerId =
-					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
-				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-					uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
-					// add one to the usage hash table
-					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
-				}
-			}
-
-			if (sourceLayer && sourceLayer.isHidden) {
-				uiAdLib.isHidden = true
-			}
-
-			// always add them to the list
-			rundownAdLibs.push(uiAdLib)
+			return uiAdLib
 		})
 
-		const globalAdLibActions = AdLibActions.find(
+		const globalAdLibActions = RundownBaselineAdLibActions.find(
 			{
 				rundownId: currentRundown._id,
-				partId: {
-					$exists: false,
-				},
 			},
 			{
 				sort: { _rank: 1 },
@@ -418,7 +405,27 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				})
 			})
 
-		rundownAdLibs = rundownAdLibs.concat(globalAdLibActions)
+		rundownAdLibs = rundownAdLibs.concat(globalAdLibActions).sort((a, b) => a._rank - b._rank)
+
+		rundownAdLibs.forEach((uiAdLib) => {
+			// automatically assign hotkeys based on adLibItem index
+			let sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
+			if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
+				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+				const sourceHotKeyUseLayerId =
+					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || uiAdLib.sourceLayerId
+				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+					uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
+					// add one to the usage hash table
+					sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+				}
+			}
+
+			if (sourceLayer && sourceLayer.isHidden) {
+				uiAdLib.isHidden = true
+			}
+			return uiAdLib
+		})
 	}
 
 	return {

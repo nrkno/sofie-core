@@ -51,6 +51,10 @@ import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibActionCommon, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 import { ShelfTabs } from './Shelf'
+import {
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibAction,
+} from '../../../lib/collections/RundownBaselineAdLibActions'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -422,7 +426,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isSticky?: boolean
 	isAction?: boolean
 	isClearSourceLayer?: boolean
-	adlibAction?: AdLibAction
+	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 }
 
 export interface AdlibSegmentUi extends DBSegment {
@@ -761,7 +765,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 
 					const globalAdLibActions = memoizedIsolatedAutorun(
 						(rundownIds, partIds) =>
-							AdLibActions.find(
+							RundownBaselineAdLibActions.find(
 								{
 									rundownId: {
 										$in: rundownIds,

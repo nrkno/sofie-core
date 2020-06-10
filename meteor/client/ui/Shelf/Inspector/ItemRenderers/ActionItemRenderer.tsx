@@ -10,7 +10,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
-import { AdLibAction } from '../../../../../lib/collections/AdLibActions'
+import { AdLibAction, AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
 import { createMongoCollection } from '../../../../../lib/collections/lib'
 import { TransformedCollection } from '../../../../../lib/typings/meteor'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
@@ -19,6 +19,9 @@ import { Spinner } from '../../../../lib/Spinner'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { RundownViewEvents } from '../../../RundownView'
+import { RundownBaselineAdLibAction } from '../../../../../lib/collections/RundownBaselineAdLibActions'
+import { ProtectedString } from '../../../../../lib/lib'
+import { PartId } from '../../../../../lib/collections/Parts'
 
 export { isActionItem }
 
@@ -31,7 +34,9 @@ export interface ITrackedProps {
 	targetAction: TransformedAdLibAction | undefined
 }
 
-export interface TransformedAdLibAction extends AdLibAction {
+export interface TransformedAdLibAction extends AdLibActionCommon {
+	_id: ProtectedString<any>
+	partId?: PartId | undefined
 	transformedUserData: {
 		[key: string]: any
 	}
