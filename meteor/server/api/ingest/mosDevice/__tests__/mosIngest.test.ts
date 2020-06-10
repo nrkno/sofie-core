@@ -16,6 +16,7 @@ import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../../../lib/api/methods'
+import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
 
 jest.mock('../../updateNext')
 
@@ -341,6 +342,15 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Pieces.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
+
+		// Clean up after ourselves:
+		const partsToRemove = Parts.find({ externalId: 'ro1;s1;newPart1' }).fetch()
+		Parts.remove({ _id: { $in: partsToRemove.map(p => p._id) } })
+		IngestDataCache.remove({
+			rundownId: rundown._id,
+			type: IngestCacheType.PART,
+			partId: { $in: partsToRemove.map(p => p._id) }
+		})
 	})
 
 	testInFiber('mosRoStoryInsert: New segment', () => {
@@ -349,8 +359,6 @@ describe('Test recieved mos ingest payloads', () => {
 		const rundowns = playlist.getRundowns()
 		expect(rundowns).toHaveLength(1)
 		const rundown = rundowns[0]
-
-		Parts.remove({ externalId: 'ro1;s1;newPart1' })
 
 		const newPartData = mockRO.newItem('ro1;s1b;newPart1', 'SEGMENT1B;new1')
 

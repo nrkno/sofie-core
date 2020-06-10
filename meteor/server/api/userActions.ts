@@ -8,7 +8,7 @@ import {
 	RundownId,
 	Rundown
 } from '../../lib/collections/Rundowns'
-import { getCurrentTime, getHash, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, Omit, makePromise } from '../../lib/lib'
 import {
 	Parts, Part, PartId
 } from '../../lib/collections/Parts'
@@ -20,7 +20,7 @@ import {
 } from '../../lib/collections/Evaluations'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -50,9 +50,15 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { syncFunction } from '../codeControl'
+import { getShowStyleCompound, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
+import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
+import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
+import { ServerPlayoutAdLibAPI } from './playout/adlib'
+import { BucketsAPI } from './buckets'
+import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 
 let MINIMUM_TAKE_SPAN = 1000
-export function setMinimumTakeSpan (span: number) {
+export function setMinimumTakeSpan(span: number) {
 	// Used in tests
 	MINIMUM_TAKE_SPAN = span
 }
@@ -157,7 +163,7 @@ export function setNextSegment (
 		const partsInSegment = nextSegment.getParts()
 		const firstValidPartInSegment = _.find(partsInSegment, p => p.isPlayable())
 
-		if (!firstValidPartInSegment)return ClientAPI.responseError('Segment contains no valid parts')
+		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 
 		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		if (
@@ -286,6 +292,7 @@ export function disableNextPiece (context: MethodContext, rundownPlaylistId: Run
 }
 export function togglePartArgument (context: MethodContext, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string) {
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 		return ClientAPI.responseError(`Part-arguments can't be toggled while Rundown is in Hold mode!`)
 	}
@@ -436,14 +443,14 @@ export function activateHold (context: MethodContext, rundownPlaylistId: Rundown
 		)
 	}
 }
-export function userSaveEvaluation (context: MethodContext, methodContext: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
+export function userSaveEvaluation (context: MethodContext, evaluation: EvaluationBase): ClientAPI.ClientResponse<void> {
 	return ClientAPI.responseSuccess(
-		saveEvaluation(methodContext, evaluation)
+		saveEvaluation(context, evaluation)
 	)
 }
-export function userStoreRundownSnapshot (context: MethodContext, methodContext: MethodContext, playlistId: RundownPlaylistId, reason: string) {
+export function userStoreRundownSnapshot (context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
 	return ClientAPI.responseSuccess(
-		storeRundownPlaylistSnapshot(methodContext, playlistId, reason)
+		storeRundownPlaylistSnapshot(context, playlistId, reason)
 	)
 }
 export function removeRundownPlaylist (context: MethodContext, playlistId: RundownPlaylistId) {
@@ -472,6 +479,14 @@ export function resyncRundown (context: MethodContext, rundownId: RundownId) {
 
 	return ClientAPI.responseSuccess(
 		ServerRundownAPI.resyncRundown(context, rundown._id)
+	)
+}
+export function resyncSegment(context: MethodContext, segmentId: SegmentId) {
+	let segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.resyncSegment(context, segmentId)
 	)
 }
 export function recordStop (context: MethodContext, studioId: StudioId) {
@@ -503,10 +518,10 @@ export function recordStart (context: MethodContext, studioId: StudioId, fileNam
 	if (active) return ClientAPI.responseError(`There is already an active recording in studio "${studioId}"!`)
 
 	const config = getStudioConfig(studio)
-	if (!config.recordings.channelIndex)	return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
-	if (!config.recordings.deviceId)		return ClientAPI.responseError(`Cannot start recording due to a missing setting: "device".`)
-	if (!config.recordings.decklinkDevice)	return ClientAPI.responseError(`Cannot start recording due to a missing setting: "decklink".`)
-	if (!config.recordings.channelIndex)	return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
+	if (!config.recordings.channelIndex) return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
+	if (!config.recordings.deviceId) return ClientAPI.responseError(`Cannot start recording due to a missing setting: "device".`)
+	if (!config.recordings.decklinkDevice) return ClientAPI.responseError(`Cannot start recording due to a missing setting: "decklink".`)
+	if (!config.recordings.channelIndex) return ClientAPI.responseError(`Cannot start recording due to a missing setting: "channel".`)
 
 	return ClientAPI.responseSuccess(
 		ServerTestToolsAPI.recordStart(context, studioId, fileName)
@@ -544,6 +559,49 @@ export function mediaAbortAllWorkflows (context: MethodContext) {
 		MediaManagerAPI.abortAllWorkflows(context, access.organizationId)
 	)
 }
+export function bucketsRemoveBucket(id: BucketId) {
+	return ClientAPI.responseSuccess(
+		BucketsAPI.removeBucket(id)
+	)
+}
+export function bucketsModifyBucket(id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
+	check(id, String)
+	check(bucket, Object)
+
+	return ClientAPI.responseSuccess(
+		BucketsAPI.modifyBucket(id, bucket)
+	)
+}
+export function bucketsEmptyBucket(id: BucketId) {
+	check(id, String)
+
+	return ClientAPI.responseSuccess(
+		BucketsAPI.emptyBucket(id)
+	)
+}
+export function bucketsCreateNewBucket(name: string, studioId: StudioId, userId: string | null) {
+	check(name, String)
+	check(studioId, String)
+
+	return ClientAPI.responseSuccess(
+		BucketsAPI.createNewBucket(name, studioId, userId)
+	)
+}
+export function bucketsRemoveBucketAdLib(id: PieceId) {
+	check(id, String)
+
+	return ClientAPI.responseSuccess(
+		BucketsAPI.removeBucketAdLib(id)
+	)
+}
+export function bucketsModifyBucketAdLib(id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
+	check(id, String)
+	check(adlib, Object)
+
+	return ClientAPI.responseSuccess(
+		BucketsAPI.modifyBucketAdLib(id, adlib)
+	)
+}
 export function regenerateRundownPlaylist (context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
 
@@ -558,11 +616,50 @@ export function regenerateRundownPlaylist (context: MethodContext, rundownPlayli
 	)
 }
 
+export function bucketAdlibImport(studioId: StudioId, showStyleVariantId: ShowStyleVariantId, bucketId: BucketId, ingestItem: IngestAdlib) {
+	check(studioId, String)
+	check(showStyleVariantId, String)
+	check(bucketId, String)
+	// TODO - validate IngestAdlib
+
+	const studio = Studios.findOne(studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+	const showStyleCompound = getShowStyleCompound(showStyleVariantId)
+	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
+
+	if (studio.supportedShowStyleBase.indexOf(showStyleCompound._id) === -1) {
+		throw new Meteor.Error(500, `ShowStyle Variant "${showStyleVariantId}" not supported by studio "${studioId}"`)
+	}
+
+	const bucket = Buckets.findOne(bucketId)
+	if (!bucket) throw new Meteor.Error(404, `Bucket "${bucketId}" not found`)
+
+	updateBucketAdlibFromIngestData(showStyleCompound, studio, bucketId, ingestItem)
+
+	return ClientAPI.responseSuccess(undefined)
+}
+
+export function bucketAdlibStart(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: PieceId, queue?: boolean) {
+	check(rundownPlaylistId, String)
+	check(partInstanceId, String)
+	check(bucketAdlibId, String)
+
+	let rundown = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	if (!rundown.active) return ClientAPI.responseError(`The Rundown isn't active, please activate it before starting an AdLib!`)
+	if (rundown.holdState === RundownHoldState.ACTIVE || rundown.holdState === RundownHoldState.PENDING) {
+		return ClientAPI.responseError(`Can't start AdLibPiece when the Rundown is in Hold mode!`)
+	}
+
+	return ClientAPI.responseSuccess(
+		ServerPlayoutAdLibAPI.startBucketAdlibPiece(rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+	)
+}
+
 let restartToken: string | undefined = undefined
 
 export function generateRestartToken (context: MethodContext) {
 	SystemWriteAccess.system(context)
-
 	restartToken = getHash('restart_' + getCurrentTime())
 	return ClientAPI.responseSuccess(
 		restartToken
@@ -650,14 +747,20 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI{
 	sourceLayerStickyPieceStart (_userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
 		return makePromise(() => sourceLayerStickyPieceStart(this, rundownPlaylistId, sourceLayerId))
 	}
+	bucketAdlibImport(_userEvent: string, studioId: StudioId, showStyleVariantId: ShowStyleVariantId, bucketId: BucketId, ingestItem: IngestAdlib) {
+		return makePromise(() => bucketAdlibImport(studioId, showStyleVariantId, bucketId, ingestItem))
+	}
+	bucketAdlibStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: PieceId, queue?: boolean) {
+		return makePromise(() => bucketAdlibStart(rundownPlaylistId, partInstanceId, bucketAdlibId, queue))
+	}
 	activateHold (_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return makePromise(() => activateHold(this, rundownPlaylistId, undo))
 	}
 	saveEvaluation (_userEvent: string, evaluation: EvaluationBase) {
-		return makePromise(() => userSaveEvaluation(this, this, evaluation))
+		return makePromise(() => userSaveEvaluation(this, evaluation))
 	}
 	storeRundownSnapshot (_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
-		return makePromise(() => userStoreRundownSnapshot(this, this, playlistId, reason))
+		return makePromise(() => userStoreRundownSnapshot(this, playlistId, reason))
 	}
 	removeRundownPlaylist (_userEvent: string, playlistId: RundownPlaylistId) {
 		return makePromise(() => removeRundownPlaylist(this, playlistId))
@@ -670,6 +773,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI{
 	}
 	resyncRundown (_userEvent: string, rundownId: RundownId) {
 		return makePromise(() => resyncRundown(this, rundownId))
+	}
+	resyncSegment (_userEvent: string, segmentId: SegmentId) {
+		return makePromise(() => resyncSegment(this, segmentId))
 	}
 	recordStop (_userEvent: string, studioId: StudioId) {
 		return makePromise(() => recordStop(this, studioId))
@@ -709,6 +815,24 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI{
 	}
 	guiBlurred (_userEvent: string, _viewInfo: any[]) {
 		return makePromise(() => noop(this))
+	}
+	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
+		return makePromise(() => bucketsRemoveBucket(id))
+	}
+	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
+		return makePromise(() => bucketsModifyBucket(id, bucket))
+	}
+	bucketsEmptyBucket(_userEvent: string, id: BucketId) {
+		return makePromise(() => bucketsEmptyBucket(id))
+	}
+	bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
+		return makePromise(() => bucketsCreateNewBucket(name, studioId, userId))
+	}
+	bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
+		return makePromise(() => bucketsRemoveBucketAdLib(id))
+	}
+	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
+		return makePromise(() => bucketsModifyBucketAdLib(id, bucketAdlib))
 	}
 }
 registerClassToMeteorMethods(UserActionAPIMethods, ServerUserActionAPI, false, (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => {

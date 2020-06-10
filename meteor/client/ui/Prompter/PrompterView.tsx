@@ -22,8 +22,7 @@ import { PartInstanceId } from '../../../lib/collections/PartInstances'
 interface PrompterConfig {
 	mirror?: boolean
 	mirrorv?: boolean
-
-	mode?: PrompterConfigMode | string
+	mode?: Array<PrompterConfigMode | string | undefined>
 	controlMode?: string
 	followTake?: boolean
 	fontSize?: number
@@ -36,7 +35,8 @@ interface PrompterConfig {
 export enum PrompterConfigMode {
 	MOUSE = 'mouse',
 	KEYBOARD = 'keyboard',
-	SHUTTLEKEYBOARD = 'shuttlekeyboard'
+	SHUTTLEKEYBOARD = 'shuttlekeyboard',
+	JOYCON = 'joycon'
 }
 interface IProps {
 	match?: {
@@ -80,7 +80,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.configOptions = {
 			mirror:				firstIfArray(queryParams['mirror']) === '1',
 			mirrorv:			firstIfArray(queryParams['mirrorv']) === '1',
-			mode:				firstIfArray(queryParams['mode']) || undefined,
+			mode:				new Array().concat(queryParams['mode']) ,
 			controlMode:		firstIfArray(queryParams['controlmode']) || undefined,
 			followTake:			(queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
 			fontSize:			parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
@@ -91,6 +91,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			showScroll:			(queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1')
 		}
 
+		
 		this._controller = new PrompterControlManager(this)
 	}
 

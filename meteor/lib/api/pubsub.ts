@@ -37,7 +37,9 @@ export enum PubSub {
 	rundownLayouts = 'rundownLayouts',
 	loggedInUser = 'loggedInUser',
 	usersInOrganization = 'usersInOrganization',
-	organization = 'organization'
+	organization = 'organization',
+	buckets = 'buckets',
+	bucketAdLibPieces = 'bucketAdLibPieces'
 }
 
 export function meteorSubscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

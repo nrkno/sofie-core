@@ -1,8 +1,4 @@
-import { getCurrentTime, protectString, getRandomId } from '../../lib/lib'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { makePlaylistFromRundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
-import { Random } from 'meteor/random'
+
 import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'

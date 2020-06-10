@@ -84,7 +84,8 @@ describe('Expected Media Items', () => {
 			externalId: '',
 			metaData: {},
 			name: '',
-			rundownId: rdId
+			rundownId: rdId,
+			externalModified: 1
 		}))
 		Parts.insert(literal<DBPart>({
 			_id: protectString(rdId + '_' + mockPart0),

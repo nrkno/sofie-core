@@ -16,8 +16,9 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
-import { doUserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
+import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 const Tooltip = require('rc-tooltip')
 
 interface IMediaManagerStatusProps {
@@ -35,40 +36,6 @@ interface IMediaManagerStatusTrackedProps {
 interface IMediaManagerStatusState {
 	expanded: {
 		[mediaWorkFlowId: string]: boolean
-	}
-}
-
-namespace MediaManagerAPI {
-	export enum WorkFlowSource {
-		EXPECTED_MEDIA_ITEM = 'expected_media_item',
-		SOURCE_STORAGE_REMOVE = 'source_storage_remove',
-		LOCAL_MEDIA_ITEM = 'local_media_item',
-		TARGET_STORAGE_REMOVE = 'local_storage_remove'
-	}
-
-	export enum MediaFlowType {
-		WATCH_FOLDER = 'watch_folder',
-		LOCAL_INGEST = 'local_ingest',
-		EXPECTED_ITEMS = 'expected_items'
-	}
-
-	export enum WorkStepStatus {
-		IDLE = 'idle',
-		WORKING = 'working',
-		DONE = 'done',
-		ERROR = 'error',
-		CANCELED = 'canceled',
-		SKIPPED = 'skipped',
-		BLOCKED = 'blocked'
-	}
-
-	export enum WorkStepAction {
-		COPY = 'copy',
-		DELETE = 'delete',
-		SCAN = 'scan',
-		GENERATE_PREVIEW = 'generate_preview',
-		GENERATE_THUMBNAIL = 'generate_thumbnail',
-		GENERATE_METADATA = 'generate_metadata'
 	}
 }
 
@@ -331,19 +298,19 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		})
 	}
 	actionRestart = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, 'Restarting Media Workflow', (e) => MeteorCall.userAction.mediaRestartWorkflow(e, workflow._id))
+		doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaRestartWorkflow(e, workflow._id))
 	}
 	actionAbort = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, 'Aborting Media Workflow ', (e) => MeteorCall.userAction.mediaAbortWorkflow(e, workflow._id))
+		doUserAction(this.props.t, event, UserAction.ABORT_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaAbortWorkflow(e, workflow._id))
 	}
 	actionPrioritize = (event: React.MouseEvent<HTMLElement>, workflow: MediaWorkFlowUi) => {
-		doUserAction(this.props.t, event, 'Prioritizing Media Workflow', (e) => MeteorCall.userAction.mediaPrioritizeWorkflow(e, workflow._id))
+		doUserAction(this.props.t, event, UserAction.PRIORITIZE_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaPrioritizeWorkflow(e, workflow._id))
 	}
 	actionRestartAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, 'Restarting Media Workflow', (e) => MeteorCall.userAction.mediaRestartAllWorkflows(e, ))
+		doUserAction(this.props.t, event, UserAction.RESTART_MEDIA_WORKFLOW, (e) => MeteorCall.userAction.mediaRestartAllWorkflows(e, ))
 	}
 	actionAbortAll = (event: React.MouseEvent<HTMLElement>) => {
-		doUserAction(this.props.t, event, 'Aborting all Media Workflows', (e) => MeteorCall.userAction.mediaAbortAllWorkflows(e, ))
+		doUserAction(this.props.t, event, UserAction.ABORT_ALL_MEDIA_WORKFLOWS, (e) => MeteorCall.userAction.mediaAbortAllWorkflows(e, ))
 	}
 
 	renderWorkFlows () {

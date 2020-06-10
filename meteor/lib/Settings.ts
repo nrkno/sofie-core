@@ -29,6 +29,8 @@ export interface ISettings {
 	allowGrabbingTimeline: boolean
 	/** If true, enables security measures, access control and user accounts. */
 	enableUserAccounts: boolean
+	/** Allow Segments to become unsynced, rather than the entire rundown */
+	allowUnsyncedSegments: boolean
 }
 
 export let Settings: ISettings
@@ -44,7 +46,8 @@ const DEFAULT_SETTINGS: ISettings = {
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
-	enableUserAccounts: true
+	enableUserAccounts: true,
+	allowUnsyncedSegments: false
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

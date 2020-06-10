@@ -10,9 +10,9 @@ import { onElementResize, offElementResize } from '../../lib/resizeObserver'
 // We're cheating a little: Fontface
 declare class FontFace {
 	loaded: Promise<FontFace>
-	constructor (font: string, url: string, options: object)
+	constructor(font: string, url: string, options: object)
 
-	load (): void
+	load(): void
 }
 
 const LABEL_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
@@ -37,8 +37,8 @@ let gridFont: any | undefined = undefined
 let gridFontAvailable: boolean = false
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
-	canvasElement: HTMLCanvasElement
-	parentElement: HTMLDivElement
+	canvasElement: HTMLCanvasElement | null
+	parentElement: HTMLDivElement | null
 	ctx: CanvasRenderingContext2D | null
 
 	width: number
@@ -60,7 +60,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	longLineColor: string = LONG_LINE_GRID_COLOR
 
 	contextResize = _.throttle((parentElementWidth: number, parentElementHeight: number) => {
-		if (this.ctx) {
+		if (this.ctx && this.canvasElement) {
 			let devicePixelRatio = window.devicePixelRatio || 1
 
 			let backingStoreRatio = (this.ctx as any).webkitBackingStorePixelRatio ||
@@ -108,16 +108,22 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	onCanvasResize = (entries: ResizeObserverEntry[]) => {
-		if (entries && entries[0] && entries[0].contentBoxSize && entries[0].contentBoxSize.width !== undefined) {
-			this.contextResize(entries[0].contentBoxSize!.width, entries[0].contentBoxSize!.height)
-		} else if (entries && entries[0] && entries[0].contentRect && entries[0].contentRect.width !== undefined) {
-			this.contextResize(entries[0].contentRect!.width, entries[0].contentRect!.height)
-		} else {
+		let box: DOMRectReadOnly | undefined
+
+		if (entries && entries.length && entries[0].contentBoxSize !== undefined && entries[0].contentBoxSize!.width !== undefined) {
+			box = entries[0].contentBoxSize
+		} else if (entries && entries.length && entries[0].contentRect !== undefined && entries[0].contentRect!.width !== undefined) {
+			box = entries[0].contentRect
+		}
+
+		if (box && box.width !== undefined) {
+			this.contextResize(box.width, box.height)
+		} else if (this.parentElement) {
 			this.contextResize(getElementWidth(this.parentElement), getElementHeight(this.parentElement))
 		}
 	}
 
-	ring (value, ringMax) {
+	ring(value, ringMax) {
 		return (value < 0) ? (ringMax + (value % ringMax)) : value % ringMax
 	}
 
@@ -239,7 +245,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	render () {
+	render() {
 		return (
 			<div className='segment-timeline__timeline-grid' ref={this.setParentRef}>
 				<canvas className='segment-timeline__timeline-grid__canvas' ref={this.setCanvasRef}></canvas>
@@ -247,60 +253,70 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		)
 	}
 
-	componentDidMount () {
-		// console.log('TimelineGrid mounted, render the grid & attach resize notifiers')
-		this.ctx = this.canvasElement.getContext('2d', {
-			// alpha: false
-		})
-		if (this.ctx) {
-			const parentWidth = getElementWidth(this.parentElement)
-			const parentHeight = getElementHeight(this.parentElement)
-			this.contextResize(parentWidth, parentHeight)
+	initialize() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.ctx = this.canvasElement.getContext('2d', {
+				// alpha: false
+			})
+			if (this.ctx) {
+				const parentWidth = getElementWidth(this.parentElement)
+				const parentHeight = getElementHeight(this.parentElement)
+				this.contextResize(parentWidth, parentHeight)
 
-			// $(window).on('resize', this.onCanvasResize)
-			this._resizeObserver = onElementResize(this.parentElement, this.onCanvasResize)
+				// $(window).on('resize', this.onCanvasResize)
+				this._resizeObserver = onElementResize(this.parentElement, this.onCanvasResize)
 
-			if (!gridFont && typeof FontFace !== 'undefined') {
+				if (!gridFont && typeof FontFace !== 'undefined') {
 
-				gridFont = new FontFace('GridTimecodeFont', LABEL_FONT_URL, {
-					style: 'normal',
-					weight: 100
-				})
-				gridFont.load()
-				gridFont.loaded.then((fontFace) => {
-					// console.log('Grid font loaded: ' + fontFace.status)
-					gridFontAvailable = true
-					window.requestAnimationFrame(() => {
-						this.repaint()
+					gridFont = new FontFace('GridTimecodeFont', LABEL_FONT_URL, {
+						style: 'normal',
+						weight: 100
 					})
-				}).catch(err => console.log(err))
-				document['fonts'].add(gridFont)
-			} else if (gridFont && !gridFontAvailable) {
-				gridFont.loaded.then((fontFace) => {
-					window.requestAnimationFrame(() => {
-						this.repaint()
+					gridFont.load()
+					gridFont.loaded.then((fontFace) => {
+						// console.log('Grid font loaded: ' + fontFace.status)
+						gridFontAvailable = true
+						window.requestAnimationFrame(() => {
+							this.repaint()
+						})
+					}).catch(err => console.log(err))
+					document['fonts'].add(gridFont)
+				} else if (gridFont && !gridFontAvailable) {
+					gridFont.loaded.then((fontFace) => {
+						window.requestAnimationFrame(() => {
+							this.repaint()
+						})
 					})
-				})
-			}
+				}
 
-			if (this.props.onResize) {
-				this.props.onResize([parentWidth || 1, parentHeight || 1])
+				if (this.props.onResize) {
+					this.props.onResize([parentWidth || 1, parentHeight || 1])
+				}
 			}
 		}
 	}
 
-	shouldComponentUpdate (nextProps, nextState) {
+	componentDidMount() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.initialize()
+		}
+	}
+
+	shouldComponentUpdate(nextProps, nextState) {
 		if ((nextProps.timeScale !== this.props.timeScale) || (nextProps.scrollLeft !== this.props.scrollLeft)) {
 			return true
 		}
 		return false
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.initialize()
+		}
 		this.requestRepaint()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		// console.log('Detach resize notifiers')
 
 		// $(window).off('resize', this.onCanvasResize)

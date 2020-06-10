@@ -275,7 +275,7 @@ function createSystemSnapshot (studioId: StudioId | null, organizationId: Organi
 			organizationId: organizationId
 		}
 	}
-	const blueprints 		= Blueprints		.find(queryBlueprints).fetch()
+	const blueprints = Blueprints.find(queryBlueprints).fetch()
 
 	const deviceCommands = PeripheralDeviceCommands.find({
 		deviceId: { $in: _.map(devices, device => device._id) }
@@ -313,7 +313,7 @@ function createDebugSnapshot (studioId: StudioId, organizationId: OrganizationId
 	logger.info(`Generating Debug snapshot "${snapshotId}" for studio "${studioId}"`)
 
 	const studio = Studios.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404,`Studio ${studioId} not found`)
+	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} not found`)
 
 	let systemSnapshot = createSystemSnapshot(studioId, organizationId)
 
@@ -341,7 +341,7 @@ function createDebugSnapshot (studioId: StudioId, organizationId: OrganizationId
 			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS
 		) {
 			let startTime = getCurrentTime()
-			let deviceSnapshot = ServerPeripheralDeviceAPI.executeFunction(device._id,'getSnapshot')
+			let deviceSnapshot = ServerPeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
 
 			deviceSnaphots.push({
 				deviceId: device._id,
@@ -374,7 +374,7 @@ function createDebugSnapshot (studioId: StudioId, organizationId: OrganizationId
 }
 
 // Setup endpoints:
-function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot: SnapshotBase})) {
+function handleResponse(response: ServerResponse, snapshotFcn: (() => { snapshot: SnapshotBase })) {
 
 	try {
 		let s: any = snapshotFcn()
@@ -383,8 +383,8 @@ function handleResponse (response: ServerResponse, snapshotFcn: (() => {snapshot
 
 		let content = (
 			_.isString(s) ?
-			s :
-			JSON.stringify(s, null, 4)
+				s :
+				JSON.stringify(s, null, 4)
 		)
 		response.statusCode = 200
 		response.end(content)
@@ -457,7 +457,7 @@ function retreiveSnapshot (snapshotId: SnapshotId, cred0: Credentials): AnySnaps
 
 	return readSnapshot
 }
-function restoreFromSnapshot (snapshot: AnySnapshot) {
+function restoreFromSnapshot(snapshot: AnySnapshot) {
 	// Determine what kind of snapshot
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
@@ -490,7 +490,7 @@ function restoreFromSnapshot (snapshot: AnySnapshot) {
 	}
 }
 
-function restoreFromDeprecatedRundownSnapshot (snapshot0: DeprecatedRundownSnapshot) {
+function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapshot) {
 	// Convert the Rundown snaphost into a rundown playlist
 	// This is somewhat of a hack, it's just to be able to import older snapshots into the system
 
@@ -507,7 +507,7 @@ function restoreFromDeprecatedRundownSnapshot (snapshot0: DeprecatedRundownSnaps
 
 	return restoreFromRundownPlaylistSnapshot(snapshot)
 }
-function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) {
+function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
 	const oldPlaylistId = snapshot.playlistId
 
@@ -628,14 +628,14 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	// Apply the updates of any properties to any document
 	function updateItemIds<T extends {
 		_id: ProtectedString<any>,
-		rundownId: RundownId,
+		rundownId?: RundownId,
 		partId?: PartId,
 		segmentId?: SegmentId,
 		infiniteId?: PieceId,
 		enable?: TSR.Timeline.TimelineEnable,
 		part?: T,
 		piece?: T
-	}> (objs: T[], updateId: boolean): T[] {
+	}>(objs: T[], updateId: boolean): T[] {
 		const updateIds = (obj: T) => {
 			if (obj.rundownId) {
 				obj.rundownId = rundownIdMap[unprotectString(obj.rundownId)]
@@ -679,7 +679,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 	}
 
 
-	saveIntoDb(RundownPlaylists, { _id: playlistId }, [ snapshot.playlist ])
+	saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist])
 	saveIntoDb(Rundowns, { playlistId }, snapshot.rundowns)
 	saveIntoDb(IngestDataCache, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.ingestData, true))
 	// saveIntoDb(UserActionsLog, {}, snapshot.userActions)
@@ -697,7 +697,7 @@ function restoreFromRundownPlaylistSnapshot (snapshot: RundownPlaylistSnapshot) 
 
 	logger.info(`Restore done`)
 }
-function restoreFromSystemSnapshot (snapshot: SystemSnapshot) {
+function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 	logger.info(`Restoring from system snapshot "${snapshot.snapshot.name}"`)
 	let studioId = snapshot.studioId
 

@@ -1,7 +1,5 @@
 {
 	"extends": "./tsconfig.json",
-	"exclude": [
-		"node_modules",
-		"**/.coverage/**/*"
-	]
+	"exclude": ["node_modules", "**/.coverage/**/*"],
+	"include": ["node_modules/@types", "client", "lib", "server", "__mocks__"]
 }

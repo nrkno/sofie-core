@@ -151,7 +151,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		}
 	})
 
-	afterUpdateTimeline(cache, studio, savedTimelineObjs)
+	afterUpdateTimeline(cache, studio._id, savedTimelineObjs)
 
 	logger.debug('updateTimeline done!')
 }
@@ -162,12 +162,12 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
  * @param studioId id of the studio to update
  */
-export function afterUpdateTimeline(cache: CacheForStudio, studio: Studio, timelineObjs?: Array<TimelineObjGeneric>) {
+export function afterUpdateTimeline(cache: CacheForStudio, studioId: StudioId, timelineObjs?: Array<TimelineObjGeneric>) {
 
 	// logger.info('afterUpdateTimeline')
 	if (!timelineObjs) {
 		timelineObjs = cache.Timeline.findFetch({
-			studioId: studio._id,
+			studioId: studioId,
 			objectType: { $ne: TimelineObjType.STAT }
 		})
 	}
@@ -186,7 +186,7 @@ export function afterUpdateTimeline(cache: CacheForStudio, studio: Studio, timel
 	let statObj: TimelineObjStat = {
 		id: 'statObj',
 		_id: protectString(''), // set later
-		studioId: studio._id,
+		studioId: studioId,
 		objectType: TimelineObjType.STAT,
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
@@ -438,12 +438,18 @@ function buildTimelineObjsForRundown(cache: CacheForRundownPlaylist, baselineIte
 
 
 	// Fetch the nextPart first, because that affects how the currentPart will be treated
-	// We may be at the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
-	if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.nextPartInstanceId}" not found!`)
-
-	if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.currentPartInstanceId}" not found!`)
-
-	if (!previousPartInstance) logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
+	if (activePlaylist.nextPartInstanceId) {
+		// We may be at the end of a show, where there is no next part
+		if (!nextPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.nextPartInstanceId}" not found!`)
+	}
+	if (activePlaylist.currentPartInstanceId) {
+		// We may be before the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
+		if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${activePlaylist.currentPartInstanceId}" not found!`)
+	}
+	if (activePlaylist.previousPartInstanceId) {
+		// We may be at the beginning of a show, where there is no previous part
+		if (!previousPartInstance) logger.warning(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
+	}
 
 	if (baselineItems) {
 		timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(baselineItems))
@@ -597,7 +603,7 @@ function buildTimelineObjsForRundown(cache: CacheForRundownPlaylist, baselineIte
 
 			let toSkipIds = currentPieces.filter(i => i.piece.infiniteId).map(i => i.piece.infiniteId)
 
-			let nextPieceInstances = cache.PieceInstances.findFetch({ pieceInstanceId: nextPartInstance._id })
+			let nextPieceInstances = cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
 			nextPieceInstances = nextPieceInstances.filter(i => !i.piece.infiniteId || toSkipIds.indexOf(i.piece.infiniteId) === -1)
 
 			const groupClasses: string[] = ['next_part']

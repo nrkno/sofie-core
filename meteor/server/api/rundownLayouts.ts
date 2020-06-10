@@ -59,7 +59,6 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 		check(layout._id, Match.Optional(String))
 		check(layout.name, String)
 		check(layout.filters, Array)
-		check(layout.showStyleBaseId, String)
 		check(layout.type, String)
 
 		layout.showStyleBaseId = showStyleBase._id
@@ -70,7 +69,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''
-		logger.error('Shlf Layout restore failed: ' + e)
+		logger.error('Shelf Layout restore failed: ' + e)
 	}
 
 	res.end(content)

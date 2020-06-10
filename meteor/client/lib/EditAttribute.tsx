@@ -102,10 +102,14 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		this.handleUpdateButDontSave(newValue)
 		this.updateValue(newValue)
 	}
-	handleUpdateButDontSave (newValue) {
+	handleUpdateEditing (newValue) {
+		this.handleUpdateButDontSave(newValue, true)
+		this.updateValue(newValue)
+	}
+	handleUpdateButDontSave (newValue, editing=false) {
 		this.setState({
 			value: newValue,
-			editing: false
+			editing
 		})
 	}
 	handleDiscard () {
@@ -277,7 +281,7 @@ const EditAttributeInt = wrapEditAttribute(class EditAttributeInt extends EditAt
 	handleChange (event) {
 		// this.handleEdit(this.getValue(event))
 		let v = this.getValue(event)
-		_.isNaN(v) ? this.handleUpdateButDontSave(v) : this.handleUpdate(v)
+		_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
 	}
 	handleBlur (event) {
 		let v = this.getValue(event)
@@ -285,7 +289,7 @@ const EditAttributeInt = wrapEditAttribute(class EditAttributeInt extends EditAt
 	}
 	getEditAttributeNumber () {
 		let val = this.getEditAttribute()
-		if (_.isNaN(val)) val = 'NaN'
+		if (_.isNaN(val)) val = ''
 		return val
 	}
 	render () {
@@ -315,7 +319,7 @@ const EditAttributeFloat = wrapEditAttribute(class EditAttributeFloat extends Ed
 	handleChange (event) {
 		// this.handleEdit(this.getValue(event))
 		let v = this.getValue(event)
-		_.isNaN(v) ? this.handleUpdateButDontSave(v) : this.handleUpdate(v)
+		_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
 	}
 	handleBlur (event) {
 		let v = this.getValue(event)
@@ -323,7 +327,7 @@ const EditAttributeFloat = wrapEditAttribute(class EditAttributeFloat extends Ed
 	}
 	getEditAttributeNumber () {
 		let val = this.getEditAttribute()
-		if (_.isNaN(val)) val = 'NaN'
+		if (_.isNaN(val)) val = ''
 		return val
 	}
 	render () {
@@ -452,10 +456,17 @@ const EditAttributeDropdown = wrapEditAttribute(class EditAttributeDropdown exte
 
 				for (let key in this.props.options) {
 					let val = this.props.options[key]
-					options.push({
-						name: key + ': ' + val,
-						value: val
-					})
+					if (Array.isArray(val)) {
+						options.push({
+							name: key,
+							value: val
+						})
+					} else {
+						options.push({
+							name: key + ': ' + val,
+							value: val
+						})
+					}
 				}
 			}
 
@@ -464,6 +475,9 @@ const EditAttributeDropdown = wrapEditAttribute(class EditAttributeDropdown exte
 		if (addOptionForCurrentValue) {
 			let currentValue = this.getAttribute()
 			let currentOption = _.find(options, (o) => {
+				if	(Array.isArray(o.value)) {
+					return _.contains(o.value, currentValue)
+				}
 				return o.value === currentValue
 			})
 			if (!currentOption) {
@@ -489,7 +503,13 @@ const EditAttributeDropdown = wrapEditAttribute(class EditAttributeDropdown exte
 				value={this.getAttributeText()}
 				onChange={this.handleChange}
 			>
-				{this.getOptions(true).map((o) => (
+				{this.getOptions(true).map((o, j) => (
+					Array.isArray(o.value) ?
+					<optgroup key={j} label={o.name}>
+						{o.value.map((v, i) => (
+							<option key={i} value={v + ''}>{v}</option>
+						))}
+					</optgroup> :
 					<option key={o.i} value={o.value + ''}>{o.name}</option>
 				))}
 			</select>
@@ -506,7 +526,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(class EditAttributeMultiSelec
 		this.handleUpdate(event.selectedValues)
 	}
 	getOptions () {
-		let options: _.Dictionary<string> = {}
+		let options: _.Dictionary<string | string[]> = {}
 
 		if (Array.isArray(this.props.options)) {
 			// is it an enum?
@@ -519,7 +539,6 @@ const EditAttributeMultiSelect = wrapEditAttribute(class EditAttributeMultiSelec
 				}
 			}
 		} else if (typeof this.props.options === 'object') {
-
 			// Is options an enum?
 			let keys = Object.keys(this.props.options)
 			let first = this.props.options[keys[0]]
@@ -535,7 +554,11 @@ const EditAttributeMultiSelect = wrapEditAttribute(class EditAttributeMultiSelec
 			} else {
 				for (let key in this.props.options) {
 					let val = this.props.options[key]
-					options[val] = key + ': ' + val
+					if (Array.isArray(val)) {
+						options[key] = val
+					} else {
+						options[val] = key + ': ' + val
+					}
 				}
 			}
 
