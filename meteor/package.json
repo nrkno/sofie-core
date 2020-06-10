@@ -149,15 +149,5 @@
     "hooks": {
       "pre-commit": "lint-staged"
     }
-  },
-  "lint-staged": {
-    "*.{js,css,json,md,scss}": [
-      "prettier --write",
-      "git add"
-    ],
-    "*.{ts,tsx}": [
-      "npm run lintfix --",
-      "git add"
-    ]
   }
 }

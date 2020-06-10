@@ -90,7 +90,7 @@ export enum ActionPartChange {
 }
 
 /** Actions */
-export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext {
+export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
 	private readonly cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
@@ -149,6 +149,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	// 	})
 	// 	return res
 	// }
+
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
 
 	getPartInstance(part: 'current' | 'next'): IBlueprintPartInstance | undefined {
 		const partInstanceId = this._getPartInstanceId(part)
