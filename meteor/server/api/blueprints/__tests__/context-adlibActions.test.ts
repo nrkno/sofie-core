@@ -293,7 +293,10 @@ describe('Test blueprint api context', () => {
 
 		describe('findLastPieceOnLayer', () => {
 			testInFiber('invalid parameters', () => {
-				const { context } = getActionExecutionContext()
+				const { context, cache } = getActionExecutionContext()
+
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
 
 				// @ts-ignore
 				expect(context.findLastPieceOnLayer()).toBeUndefined()
@@ -303,6 +306,9 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('basic and original only', () => {
 				const { context, cache, rundown, playlist } = getActionExecutionContext()
+
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
 
 				const partInstances = cache.PartInstances.findFetch({})
 				expect(partInstances).toHaveLength(5)
@@ -334,6 +340,9 @@ describe('Test blueprint api context', () => {
 						dynamicallyInserted: true,
 					},
 				})
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
+
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId0 })
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })).toBeUndefined()
 
@@ -357,12 +366,18 @@ describe('Test blueprint api context', () => {
 						dynamicallyInserted: true,
 					},
 				})
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
+
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId1 })
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })).toBeUndefined()
 			})
 
 			testInFiber('excludeCurrentPart', () => {
 				const { context, cache, rundown, playlist } = getActionExecutionContext()
+
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
 
 				const partInstances = cache.PartInstances.findFetch({})
 				expect(partInstances).toHaveLength(5)
@@ -415,6 +430,8 @@ describe('Test blueprint api context', () => {
 						dynamicallyInserted: true,
 					},
 				})
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
 
 				// Check it
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId1 })
@@ -425,6 +442,9 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('pieceMetaDataFilter', () => {
 				const { context, cache, rundown, playlist } = getActionExecutionContext()
+				
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
 
 				const partInstances = cache.PartInstances.findFetch({})
 				expect(partInstances).toHaveLength(5)
@@ -481,6 +501,8 @@ describe('Test blueprint api context', () => {
 						},
 					},
 				})
+				// We need to push changes back to 'mongo' for these tests
+				waitForPromise(cache.saveAllToDatabase())
 
 				// Check it
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId1 })
@@ -552,6 +574,7 @@ describe('Test blueprint api context', () => {
 					'mockBlueprint1',
 					partInstance.rundownId,
 					partInstance.part._id,
+					true,
 					true
 				)
 				expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(1)
