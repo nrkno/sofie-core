@@ -98,8 +98,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					mediaId: this.objId,
 				})
 			}
-		} else {
-			console.error("One of the Piece's is invalid:", this.props.adLibListItem)
 		}
 	}
 
@@ -184,14 +182,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					width: isList
 						? 'calc(100% - 8px)'
 						: this.props.widthScale
-						? //@ts-ignore: widthScale is in a weird state between a number and something else
-						  //		      because of the optional generic type argument
-						  this.props.widthScale * DEFAULT_BUTTON_WIDTH + 'em'
+						? (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'
 						: undefined,
 					height:
 						!isList && this.props.heightScale
-							? //@ts-ignore
-							  this.props.heightScale * DEFAULT_BUTTON_HEIGHT + 'em'
+							? (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
 				onClick={(e) =>

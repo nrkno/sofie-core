@@ -432,12 +432,22 @@ export const ExternalFramePanel = translate()(
 						}
 					})
 				}
-
-				const event = new CustomEvent<{}>(MOSEvents.dragleave, {
-					cancelable: false,
-				})
-				window.dispatchEvent(event)
 			}
+			// else if (
+			// 	e.dataTransfer.items.length === 0 &&
+			// 	e.dataTransfer.types.length === 0 &&
+			// 	e.dataTransfer.files.length === 0
+			// ) {
+			// 	// there are no items, no data types and no files, this is probably a cross-frame drag-and-drop
+			// 	// let's try and ask the plugin for some content maybe?
+			// 	console.log('Requesting an object because of a dubious drop event')
+			// 	this.sendMOSMessage(createMosItemRequest())
+			// }
+
+			const event = new CustomEvent<{}>(MOSEvents.dragleave, {
+				cancelable: false,
+			})
+			window.dispatchEvent(event)
 		}
 
 		registerHandlers = () => {

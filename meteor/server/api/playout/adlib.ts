@@ -65,8 +65,8 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!rundown) throw new Meteor.Error(404, `Rundown "${partInstance.rundownId}" not found!`)
 
 			const showStyleBase = rundown.getShowStyleBase() // todo: database
-			const sourceL = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
-			if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS)
+			const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
+			if (sourceLayer && sourceLayer.type !== SourceLayerType.GRAPHICS)
 				throw new Meteor.Error(
 					403,
 					`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS item!`
@@ -529,10 +529,9 @@ export namespace ServerPlayoutAdLibAPI {
 				throw new Meteor.Error(403, `Buckete AdLib-pieces can not be used in combination with hold!`)
 			}
 
+			const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
 			if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId)
 				throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
-
-			const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
 
 			const currentPartInstance = cache.PartInstances.findOne(rundownPlaylist.currentPartInstanceId)
 			if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
@@ -556,6 +555,8 @@ export namespace ServerPlayoutAdLibAPI {
 
 			const newPieceInstance = convertAdLibToPieceInstance(bucketAdlib, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
+
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 }

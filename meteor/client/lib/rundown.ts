@@ -7,6 +7,7 @@ import {
 	SourceLayerType,
 	getPieceGroupId,
 	PieceLifespan,
+	IBlueprintActionManifest,
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 } from 'tv-automation-sofie-blueprints-integration'

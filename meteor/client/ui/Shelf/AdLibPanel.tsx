@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
@@ -18,7 +19,7 @@ import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
@@ -26,8 +27,8 @@ import {
 	IBlueprintAdLibPiece,
 	IBlueprintAdLibPieceDB,
 	IBlueprintPieceDB,
-	SomeContent,
 	IBlueprintActionManifestDisplayContent,
+	SomeContent,
 } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -47,8 +48,9 @@ import { PartInstance, PartInstances } from '../../../lib/collections/PartInstan
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibActionCommon, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
+import { ShelfTabs } from './Shelf'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -331,7 +333,6 @@ const AdLibListView = translate()(
 						{this.renderRundownAdLibs()}
 						{this.renderSegments()}
 					</table>
-					<ShelfInspector selected={selected} />
 				</div>
 			)
 		}
@@ -419,9 +420,11 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isGlobal?: boolean
 	isHidden?: boolean
 	isSticky?: boolean
+	isAction?: boolean
 	isFunction?: boolean
 	isClearSourceLayer?: boolean
 	userData?: any
+	adlibAction?: AdLibAction
 }
 
 export interface AdlibSegmentUi extends DBSegment {
@@ -935,6 +938,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			}
 
 			this.refreshKeyboardHotkeys()
+
+			window.addEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 		}
 
 		componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
@@ -957,6 +962,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
 
 			this.usedHotkeys.length = 0
+
+			window.removeEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 		}
 
 		refreshKeyboardHotkeys() {
@@ -999,6 +1006,44 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						}
 					}
 				})
+			}
+		}
+
+		onRevealInShelf = (e: CustomEvent) => {
+			const pieceId = e.detail && e.detail.pieceId
+			let found = false
+			if (pieceId) {
+				const index = this.props.rundownBaselineAdLibs.findIndex((piece) => piece._id === pieceId)
+
+				if (index >= 0) {
+					found = true
+				} else {
+					this.props.uiSegments.forEach((segment) => {
+						const index = segment.pieces.findIndex((piece) => piece._id === pieceId)
+						if (index >= 0) {
+							found = true
+						}
+					})
+				}
+
+				if (found) {
+					window.dispatchEvent(
+						new CustomEvent(RundownViewEvents.switchShelfTab, {
+							detail: {
+								tab: this.props.filter ? `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.filter._id}` : ShelfTabs.ADLIB,
+							},
+						})
+					)
+
+					Meteor.setTimeout(() => {
+						const el = document.querySelector(`.adlib-panel__list-view__list__segment__item[data-obj-id="${pieceId}"]`)
+						if (el) {
+							el.scrollIntoView({
+								behavior: 'smooth',
+							})
+						}
+					}, 100)
+				}
 			}
 		}
 
@@ -1050,7 +1095,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			}
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				if (adlibPiece.isFunction) {
+				if (adlibPiece.isAction) {
 					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
 						MeteorCall.userAction.executeAction(
 							e,
@@ -1059,7 +1104,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							adlibPiece.userData
 						)
 					)
-				} else if (!adlibPiece.isGlobal && !adlibPiece.isFunction) {
+				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
 					doUserAction(t, e, UserAction.START_ADLIB, (e) =>
 						MeteorCall.userAction.segmentAdLibPieceStart(
 							e,
@@ -1163,7 +1208,11 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 					return <Spinner />
 				} else {
 					return (
-						<div className="adlib-panel super-dark">
+						<div
+							className="adlib-panel super-dark"
+							data-tab-id={
+								this.props.filter ? `${ShelfTabs.ADLIB_LAYOUT_FILTER}_${this.props.filter._id}` : ShelfTabs.ADLIB
+							}>
 							{this.props.uiSegments.length > 30 && (
 								<ul className="adlib-panel__segments">{this.renderSegmentList()}</ul>
 							)}

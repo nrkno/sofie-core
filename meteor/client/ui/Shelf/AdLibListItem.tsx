@@ -36,8 +36,8 @@ export interface IAdLibListItem extends PieceGeneric {
 interface IListViewItemProps {
 	adLibListItem: IAdLibListItem
 	selected: boolean
-	layer: ISourceLayer
-	outputLayer?: IOutputLayer
+	layer: ISourceLayer | undefined
+	outputLayer: IOutputLayer | undefined
 	onSelectAdLib: (aSLine: PieceGeneric) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	playlist: RundownPlaylist

@@ -16,13 +16,10 @@ export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	disabled: false
 
 	/** Rundown this AdLib belongs to */
-	rundownId?: RundownId
+	rundownId: RundownId
 
 	/** Part this AdLib belongs to */
 	partId?: PartId
-
-	/** Bucket this AdLib belongs to */
-	bucketId?: BucketId
 }
 
 export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece> = createMongoCollection<AdLibPiece>(

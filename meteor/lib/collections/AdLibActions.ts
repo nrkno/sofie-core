@@ -16,7 +16,7 @@ export interface AdLibActionCommon extends ProtectedStringProperties<IBlueprintA
 
 export interface AdLibAction extends AdLibActionCommon {
 	_id: AdLibActionId
-	partId: PartId
+	partId?: PartId
 }
 
 export const AdLibActions: TransformedCollection<AdLibAction, AdLibAction> = createMongoCollection<AdLibAction>(

@@ -158,6 +158,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			max-height: 100%;
 			overflow-y: auto;
 			overflow-x: hidden;
+			grid-column: 1 / 3;
 
 			&.adlib-panel__list-view__list__table--header {
 				position: relative;
