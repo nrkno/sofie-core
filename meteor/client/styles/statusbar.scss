@@ -130,6 +130,15 @@
 			margin-bottom: 0.2rem;
 			font-size: 0.9em;
 		}
+
+		&.status-bar__controls__label--fullscreen {
+			transition: 1s opacity;
+			opacity: 1;
+
+			@media screen and (display-mode: fullscreen) {
+				opacity: 0;
+			}
+		}
 	}
 }
 
