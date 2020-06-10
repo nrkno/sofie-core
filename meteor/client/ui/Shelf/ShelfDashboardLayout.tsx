@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, DashboardLayoutFilter, RundownLayouts } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { DashboardPanel } from './DashboardPanel'
@@ -11,6 +11,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { BucketPanel } from './BucketPanel'
 import { unprotectString } from '../../../lib/lib'
+import { PartCountdownPanel } from './PartCountdownPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
@@ -64,6 +65,14 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							layout={rundownLayout}
 							visible={true}
 							playlist={props.playlist}
+						/>
+					) : RundownLayoutsAPI.isPartCountdown(panel) ? (
+						<PartCountdownPanel
+							key={panel._id}
+							panel={panel}
+							layout={rundownLayout}
+							playlist={props.playlist}
+							visible={true}
 						/>
 					) : (
 						undefined

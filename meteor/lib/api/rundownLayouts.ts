@@ -10,6 +10,7 @@ import {
 	RundownLayoutExternalFrame,
 	RundownLayoutAdLibRegion,
 	PieceDisplayStyle,
+	RundownLayoutPartCountdown,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -47,6 +48,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isAdLibRegion(element: RundownLayoutElementBase): element is RundownLayoutAdLibRegion {
 		return element.type === RundownLayoutElementType.ADLIB_REGION
+	}
+
+	export function isPartCountdown (element: RundownLayoutElementBase): element is RundownLayoutPartCountdown {
+		return element.type === RundownLayoutElementType.PART_COUNTDOWN
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {

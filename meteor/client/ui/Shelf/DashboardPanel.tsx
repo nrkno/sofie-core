@@ -623,7 +623,10 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartInstanceId | null) {
+export function getUnfinishedPieceInstancesReactive(
+	currentPartInstanceId: PartInstanceId | null,
+	adlib: boolean = true
+) {
 	let prospectivePieces: PieceInstance[] = []
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
@@ -655,9 +658,13 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 			'piece.playoutDuration': {
 				$exists: false,
 			},
-			'piece.adLibSourceId': {
-				$exists: true,
-			},
+			...(adlib
+				? {
+						'piece.adLibSourceId': {
+							$exists: true,
+						},
+				  }
+				: {}),
 			$or: [
 				{
 					'piece.userDuration': {
@@ -703,7 +710,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	// Convert to array of ids as that is all that is needed
 	const unfinishedPieceInstances: { [adlibId: string]: PieceInstance[] } = {}
 	_.each(
-		_.groupBy(prospectivePieces, (piece) => piece.piece.adLibSourceId),
+		_.groupBy(prospectivePieces, (piece) => (adlib ? piece.piece.adLibSourceId : piece.piece._id)),
 		(grp, id) => (unfinishedPieceInstances[id] = _.map(grp, (instance) => instance))
 	)
 
