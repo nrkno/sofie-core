@@ -2,7 +2,6 @@ import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import { MouseIshController } from './mouse-ish-device'
 import { ControllerAbstract } from './lib'
 import { ShuttleKeyboardController } from './shuttle-keyboard-device'
-import { JoyconController } from './joycon-device'
 import * as _ from 'underscore'
 import { KeyboardController } from './keyboard-device'
 
