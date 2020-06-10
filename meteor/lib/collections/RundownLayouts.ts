@@ -18,7 +18,7 @@ import { UserId } from './Users'
  */
 export enum RundownLayoutType {
 	RUNDOWN_LAYOUT = 'rundown_layout',
-	DASHBOARD_LAYOUT = 'dashboard_layout'
+	DASHBOARD_LAYOUT = 'dashboard_layout',
 }
 
 /**
@@ -29,13 +29,13 @@ export enum RundownLayoutType {
  */
 export enum PieceDisplayStyle {
 	LIST = 'list',
-	BUTTONS = 'buttons'
+	BUTTONS = 'buttons',
 }
 
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
-	ADLIB_REGION = 'adlib_region'
+	ADLIB_REGION = 'adlib_region',
 }
 
 export interface RundownLayoutElementBase {
@@ -54,7 +54,7 @@ export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 export enum RundownLayoutAdLibRegionRole {
 	QUEUE = 'queue',
 	TAKE = 'take',
-	PROGRAM = 'program'
+	PROGRAM = 'program',
 }
 
 export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
@@ -156,7 +156,7 @@ export enum ActionButtonType {
 	ACTIVATE_REHEARSAL = 'activate_rehearsal',
 	DEACTIVATE = 'deactivate',
 	RESET_RUNDOWN = 'reset_rundown',
-	QUEUE_ADLIB = 'queue_adlib' // The idea for it is that you would be able to press and hold this button
+	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
 	// and then click on whatever adlib you would like
 }
 
@@ -176,8 +176,9 @@ export interface DashboardLayout extends RundownLayoutBase {
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>
-	= createMongoCollection<RundownLayoutBase>('rundownLayouts')
+export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase> = createMongoCollection<
+	RundownLayoutBase
+>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -188,7 +189,7 @@ Meteor.startup(() => {
 		// 	mediaId: 1
 		// })
 		RundownLayouts._ensureIndex({
-			showStyleBaseId: 1
+			showStyleBaseId: 1,
 		})
 	}
 })

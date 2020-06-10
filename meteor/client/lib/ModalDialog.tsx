@@ -8,11 +8,7 @@ import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
 import { translate } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
-import {
-	EditAttribute,
-	EditAttributeType,
-	EditAttributeBase
-} from './EditAttribute'
+import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
 
 interface IModalDialogAttributes {
 	show?: boolean
@@ -22,7 +18,7 @@ interface IModalDialogAttributes {
 	onAccept?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	onDiscard?: (e: SomeEvent, inputResult: ModalInputResult) => void
-	inputs?: {[attribute: string]: ModalInput}
+	inputs?: { [attribute: string]: ModalInput }
 	warning?: boolean
 	actions?: ModalAction[]
 	className?: string
@@ -40,26 +36,26 @@ interface ModalAction {
 	classNames?: string
 }
 type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
-export type ModalInputResult = {[attribute: string]: any}
+export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
 export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	boundKeys: Array<string> = []
 
 	private inputResult: ModalInputResult = {}
 
-	constructor (args: IModalDialogAttributes) {
+	constructor(args: IModalDialogAttributes) {
 		super(args)
 	}
 
-	componentDidMount () {
+	componentDidMount() {
 		this.bindKeys()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
 		this.bindKeys()
 	}
 
@@ -129,92 +125,108 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	updatedInput = (edit: EditAttributeBase, newValue: any) => {
 		this.inputResult[edit.props.attribute || ''] = newValue
 	}
-	render () {
-		return this.props.show ?
-					<Escape to='viewport'>
-						<VelocityReact.VelocityTransitionGroup enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }} runOnMount={true}>
-							<div className='glass-pane'>
-								<div className='glass-pane-content'>
-									<VelocityReact.VelocityTransitionGroup enter={{ animation: {
+	render() {
+		return this.props.show ? (
+			<Escape to="viewport">
+				<VelocityReact.VelocityTransitionGroup
+					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
+					runOnMount={true}>
+					<div className="glass-pane">
+						<div className="glass-pane-content">
+							<VelocityReact.VelocityTransitionGroup
+								enter={{
+									animation: {
 										translateY: [0, 100],
-										opacity: [1, 0]
-									}, easing: 'spring', duration: 250 }} runOnMount={true}>
-										<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''}>
-											<div className={'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'}>
-												<div className='flex-col c12'>
-													<h2>
-														{this.props.title}
-													</h2>
-												</div>
-												<div className='flex-col horizontal-align-right vertical-align-middle'>
-													<p>
-														<button className='action-btn' onClick={this.handleDiscard}>
-															<CoreIcons id='nrk-close' />
+										opacity: [1, 0],
+									},
+									easing: 'spring',
+									duration: 250,
+								}}
+								runOnMount={true}>
+								<dialog open={true} className={'border-box overlay-m ' + this.props.className || ''}>
+									<div
+										className={
+											'flex-row ' + (this.props.warning ? 'warn' : 'info') + ' vertical-align-stretch tight-s'
+										}>
+										<div className="flex-col c12">
+											<h2>{this.props.title}</h2>
+										</div>
+										<div className="flex-col horizontal-align-right vertical-align-middle">
+											<p>
+												<button className="action-btn" onClick={this.handleDiscard}>
+													<CoreIcons id="nrk-close" />
+												</button>
+											</p>
+										</div>
+									</div>
+									<div className="title-box-content">{this.props.children}</div>
+									{this.props.inputs ? (
+										<div className="title-box-inputs">
+											{_.map(this.props.inputs, (input: ModalInput, attribute: string) => {
+												if (this.inputResult[attribute] === undefined) this.inputResult[attribute] = input.defaultValue
+
+												return (
+													<div className="title-box-input" key={attribute}>
+														{input.text}
+														<EditAttribute
+															type={input.type}
+															label={input.label}
+															options={input.options}
+															overrideDisplayValue={input.defaultValue}
+															attribute={attribute}
+															updateFunction={this.updatedInput}
+														/>
+													</div>
+												)
+											})}
+										</div>
+									) : null}
+									<div
+										className={ClassNames('mod', {
+											alright: !this.props.secondaryText,
+										})}>
+										{this.props.secondaryText && (
+											<button className="btn btn-secondary" onClick={this.handleSecondary}>
+												{this.props.secondaryText}
+											</button>
+										)}
+										{_.compact(
+											_.map(this.props.actions || [], (action: ModalAction, i) => {
+												if (action) {
+													return (
+														<button
+															key={i}
+															className={ClassNames(
+																'btn right',
+																{
+																	'btn-secondary': !(action.classNames || '').match(/btn-/),
+																},
+																action.classNames
+															)}
+															onClick={(e) => this.handleAction(e, action.on)}>
+															{action.label}
 														</button>
-													</p>
-												</div>
-											</div>
-											<div className='title-box-content'>
-												{this.props.children}
-											</div>
-											{
-												this.props.inputs ?
-												<div className='title-box-inputs'>
-													{
-														_.map(this.props.inputs, (input: ModalInput, attribute: string) => {
-
-															if (this.inputResult[attribute] === undefined) this.inputResult[attribute] = input.defaultValue
-
-															return (<div className='title-box-input' key={attribute}>
-																{input.text}
-																<EditAttribute
-																	type={input.type}
-																	label={input.label}
-																	options={input.options}
-																	overrideDisplayValue={input.defaultValue}
-																	attribute={attribute}
-																	updateFunction={this.updatedInput}
-																/>
-															</div>)
-														})
-													}
-												</div> : null
-											}
-											<div className={ClassNames('mod', {
-												'alright': !this.props.secondaryText
-											})}>
-												{
-													this.props.secondaryText &&
-													<button className='btn btn-secondary' onClick={this.handleSecondary}>{this.props.secondaryText}</button>
+													)
 												}
-												{
-													_.compact(_.map(this.props.actions || [], (action: ModalAction, i) => {
-														if (action) {
-															return <button
-																key={i}
-																className={ClassNames('btn right', {
-																	'btn-secondary': !(action.classNames || '').match(/btn-/)
-																}, action.classNames)}
-																onClick={e => this.handleAction(e, action.on)}
-															>
-																{action.label}
-															</button>
-														}
-														return undefined
-													}))
-												}
-												<button className={ClassNames('btn btn-primary', {
-													'right': this.props.secondaryText !== undefined,
-													'btn-warn': this.props.warning
-												})} onClick={this.handleAccept}>{this.props.acceptText}</button>
-											</div>
-										</dialog>
-									</VelocityReact.VelocityTransitionGroup>
-								</div>
-							</div>
-						</VelocityReact.VelocityTransitionGroup>
-					</Escape>
-				: null
+												return undefined
+											})
+										)}
+										<button
+											className={ClassNames('btn btn-primary', {
+												right: this.props.secondaryText !== undefined,
+												'btn-warn': this.props.warning,
+											})}
+											onClick={this.handleAccept}>
+											{this.props.acceptText}
+										</button>
+									</div>
+								</dialog>
+							</VelocityReact.VelocityTransitionGroup>
+						</div>
+					</div>
+				</VelocityReact.VelocityTransitionGroup>
+			</Escape>
+		) : null
 	}
 
 	private preventDefault = (e: KeyboardEvent) => {
@@ -227,7 +239,7 @@ export interface ModalDialogQueueItem {
 	/** The title of the dialog box  */
 	title: string
 	/** The message / body of the dialog box */
-	message: string | JSX.Element | Array<JSX.Element >
+	message: string | JSX.Element | Array<JSX.Element>
 	/** Label of the Yes/Accept button */
 	yes?: string
 	/** Label of the NO/Cancel button */
@@ -241,37 +253,38 @@ export interface ModalDialogQueueItem {
 	/** Callback when user does secondary action (for example hits escape) */
 	onSecondary?: (e: SomeEvent, inputResult: ModalInputResult) => void
 	/** Customomize input fields */
-	inputs?: {[attribute: string]: ModalInput}
+	inputs?: { [attribute: string]: ModalInput }
 	actions?: ModalAction[]
 	/** Is a critical decition/information */
 	warning?: boolean
-
 }
-interface IModalDialogGlobalContainerProps {
-}
+interface IModalDialogGlobalContainerProps {}
 interface IModalDialogGlobalContainerState {
 	queue: Array<ModalDialogQueueItem>
 }
 
-class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialogGlobalContainerProps>, IModalDialogGlobalContainerState> {
-	constructor (props: Translated<IModalDialogGlobalContainerProps>) {
+class ModalDialogGlobalContainer0 extends React.Component<
+	Translated<IModalDialogGlobalContainerProps>,
+	IModalDialogGlobalContainerState
+> {
+	constructor(props: Translated<IModalDialogGlobalContainerProps>) {
 		super(props)
 		if (modalDialogGlobalContainerSingleton) {
 			logger.warn('modalDialogGlobalContainerSingleton called more than once!')
 		}
 		modalDialogGlobalContainerSingleton = this
 		this.state = {
-			queue: []
+			queue: [],
 		}
 	}
-	public addQueue (q: ModalDialogQueueItem) {
+	public addQueue(q: ModalDialogQueueItem) {
 		let queue = this.state.queue
 		queue.push(q)
 		this.setState({
-			queue
+			queue,
 		})
 	}
-	public queueHasItems (): boolean {
+	public queueHasItems(): boolean {
 		return this.state.queue.length > 0
 	}
 	onAccept = (e: SomeEvent, inputResult: ModalInputResult) => {
@@ -293,7 +306,6 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		}
 	}
 	onSecondary = (e: SomeEvent, inputResult: ModalInputResult) => {
-
 		let queue = this.state.queue
 		let onQueue = queue.pop()
 		if (onQueue) {
@@ -315,14 +327,10 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 		let lines = (str || '').split('\n')
 
 		return _.map(lines, (str: string, i) => {
-			return (
-				<p key={i}>
-					{str.trim()}
-				</p>
-			)
+			return <p key={i}>{str.trim()}</p>
 		})
 	}
-	render () {
+	render() {
 		const { t } = this.props
 		let onQueue = _.first(this.state.queue)
 
@@ -330,30 +338,25 @@ class ModalDialogGlobalContainer0 extends React.Component<Translated<IModalDialo
 			let actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
 				return {
 					...action,
-					on: (e, inputResult) => this.onAction(e, inputResult, action.on)
+					on: (e, inputResult) => this.onAction(e, inputResult, action.on),
 				}
 			})
 			return (
-			<ModalDialog
-				key				= {this.state.queue.length}
-				title			= {onQueue.title}
-				acceptText		= {onQueue.yes || t('Yes')}
-				secondaryText	= {onQueue.no || (!onQueue.acceptOnly ? t('No') : undefined)}
-				onAccept		= {this.onAccept}
-				onDiscard		= {this.onDiscard}
-				onSecondary		= {this.onSecondary}
-				inputs			= {onQueue.inputs}
-				actions			= {actions}
-				show			= {true}
-				warning			= {onQueue.warning}
-			>
-				{
-					_.isString(onQueue.message) ?
-					this.renderString(onQueue.message) :
-					onQueue.message
-				}
-			</ModalDialog>)
-
+				<ModalDialog
+					key={this.state.queue.length}
+					title={onQueue.title}
+					acceptText={onQueue.yes || t('Yes')}
+					secondaryText={onQueue.no || (!onQueue.acceptOnly ? t('No') : undefined)}
+					onAccept={this.onAccept}
+					onDiscard={this.onDiscard}
+					onSecondary={this.onSecondary}
+					inputs={onQueue.inputs}
+					actions={actions}
+					show={true}
+					warning={onQueue.warning}>
+					{_.isString(onQueue.message) ? this.renderString(onQueue.message) : onQueue.message}
+				</ModalDialog>
+			)
 		} else return null
 	}
 }
@@ -371,7 +374,7 @@ let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0
  * 		},
  * 	})
  */
-export function doModalDialog (q: ModalDialogQueueItem) {
+export function doModalDialog(q: ModalDialogQueueItem) {
 	if (modalDialogGlobalContainerSingleton) {
 		modalDialogGlobalContainerSingleton.addQueue(q)
 	} else {
@@ -381,7 +384,7 @@ export function doModalDialog (q: ModalDialogQueueItem) {
 /**
  * Return true if there's any modal currently showing
  */
-export function isModalShowing (): boolean {
+export function isModalShowing(): boolean {
 	if (modalDialogGlobalContainerSingleton) {
 		return modalDialogGlobalContainerSingleton.queueHasItems()
 	}

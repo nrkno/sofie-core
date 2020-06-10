@@ -1,9 +1,5 @@
 import * as _ from 'underscore'
-import {
-	VTContent,
-	SourceLayerType,
-	ISourceLayer
-} from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
@@ -14,16 +10,16 @@ import { InternalIBlueprintPieceGeneric } from './collections/Pieces'
  * Take properties from the mediainfo / medistream and transform into a
  * formatted string
  */
-export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): string {
+export function buildFormatString(mediainfo: MediaInfo, stream: MediaStream): string {
 	let format = `${stream.width || 0}x${stream.height || 0}`
 	switch (mediainfo.field_order) {
-		case FieldOrder.Progressive :
+		case FieldOrder.Progressive:
 			format += 'p'
 			break
-		case FieldOrder.Unknown :
+		case FieldOrder.Unknown:
 			format += '?'
 			break
-		default :
+		default:
 			format += 'i'
 			break
 	}
@@ -34,13 +30,13 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
 		format += fps
 	}
 	switch (mediainfo.field_order) {
-		case FieldOrder.BFF :
+		case FieldOrder.BFF:
 			format += 'bff'
 			break
-		case FieldOrder.TFF :
+		case FieldOrder.TFF:
 			format += 'tff'
 			break
-		default :
+		default:
 			break
 	}
 
@@ -53,12 +49,11 @@ export function buildFormatString (mediainfo: MediaInfo, stream: MediaStream): s
  * parameter in the source format. If any of them are not the same: fail for that
  * accepted resolution and move to the next accepted resolution.
  */
-export function acceptFormat (format: string, formats: Array<Array<string>>): boolean {
+export function acceptFormat(format: string, formats: Array<Array<string>>): boolean {
 	const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)
 	if (!match) return false // ingested format string is invalid
 
-	const mediaFormat = match
-		.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
+	const mediaFormat = match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 	for (const format of formats) {
 		let failed = false
 		for (const param in format) {
@@ -81,12 +76,12 @@ export function acceptFormat (format: string, formats: Array<Array<string>>): bo
  * 	[undefined, undefined, i, 5000, tff]
  * ]
  */
-export function getAcceptedFormats (settings: IStudioSettings | undefined): Array<Array<string>> {
+export function getAcceptedFormats(settings: IStudioSettings | undefined): Array<Array<string>> {
 	const formatsConfigField = settings ? settings.supportedMediaFormats : ''
-	const formatsString: string = (formatsConfigField && formatsConfigField !== '' ? formatsConfigField : '1920x1080i5000') + ''
-	return _.compact(formatsString
-		.split(',')
-		.map((res) => {
+	const formatsString: string =
+		(formatsConfigField && formatsConfigField !== '' ? formatsConfigField : '1920x1080i5000') + ''
+	return _.compact(
+		formatsString.split(',').map((res) => {
 			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res.trim())
 			if (match) {
 				return match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
@@ -94,10 +89,11 @@ export function getAcceptedFormats (settings: IStudioSettings | undefined): Arra
 				// specified format string was invalid
 				return false
 			}
-		}))
+		})
+	)
 }
 
-export function getMediaObjectMediaId (piece: InternalIBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId(piece: InternalIBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
@@ -109,7 +105,12 @@ export function getMediaObjectMediaId (piece: InternalIBlueprintPieceGeneric, so
 	return undefined
 }
 
-export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, sourceLayer: ISourceLayer | undefined, settings: IStudioSettings | undefined, t?: i18next.TranslationFunction<any, object, string>) {
+export function checkPieceContentStatus(
+	piece: InternalIBlueprintPieceGeneric,
+	sourceLayer: ISourceLayer | undefined,
+	settings: IStudioSettings | undefined,
+	t?: i18next.TranslationFunction<any, object, string>
+) {
 	t = t || ((s: string, options?: _.Dictionary<any>) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options))
 	let newStatus: RundownAPI.PieceStatusCode = RundownAPI.PieceStatusCode.UNKNOWN
 	let metadata: MediaObject | null = null
@@ -130,7 +131,7 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 					messages.push(t('Source is not set'))
 				} else {
 					const mediaObject = MediaObjects.findOne({
-						mediaId: fileName
+						mediaId: fileName,
 					})
 					// If media object not found, then...
 					if (!mediaObject) {
@@ -145,11 +146,13 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 							if (mediaObject.mediainfo.streams) {
 								if (mediaObject.mediainfo.streams.length < 2) {
 									newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-									messages.push(t('Source doesn\'t have audio & video', { fileName: displayName }))
+									messages.push(t("Source doesn't have audio & video", { fileName: displayName }))
 								}
 								const formats = getAcceptedFormats(settings)
 								const audioConfig = settings ? settings.supportedAudioStreams : ''
-								const expectedAudioStreams = audioConfig ? new Set<string>(audioConfig.split(',').map(v => v.trim())) : new Set<string>()
+								const expectedAudioStreams = audioConfig
+									? new Set<string>(audioConfig.split(',').map((v) => v.trim()))
+									: new Set<string>()
 
 								let timebase: number = 0
 								let audioStreams: number = 0
@@ -159,13 +162,18 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 								for (const stream of mediaObject.mediainfo.streams) {
 									if (stream.width && stream.height) {
 										if (stream.codec.time_base) {
-											const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec.time_base) as RegExpExecArray
-											timebase = 1000 * Number(formattedTimebase[1]) / Number(formattedTimebase[2])
+											const formattedTimebase = /(\d+)\/(\d+)/.exec(
+												stream.codec.time_base
+											) as RegExpExecArray
+											timebase =
+												(1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
 										}
 
 										const format = buildFormatString(mediaObject.mediainfo, stream)
 										if (!acceptFormat(format, formats)) {
-											messages.push(t('Source format ({{format}}) is not in accepted formats', { format }))
+											messages.push(
+												t('Source format ({{format}}) is not in accepted formats', { format })
+											)
 										}
 									} else if (stream.codec.type === 'audio') {
 										// this is the first (and hopefully last) track of audio, and has 2 channels
@@ -178,32 +186,61 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 								if (timebase) {
 									mediaObject.mediainfo.timebase = timebase
 								}
-								if (audioConfig && (!expectedAudioStreams.has(audioStreams.toString()) || (isStereo && !expectedAudioStreams.has('stereo')))) {
+								if (
+									audioConfig &&
+									(!expectedAudioStreams.has(audioStreams.toString()) ||
+										(isStereo && !expectedAudioStreams.has('stereo')))
+								) {
 									messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
 								}
 								if (timebase) {
-
 									// check for black/freeze frames
-									const addFrameWarning = (arr: Array<Anomaly>, type: string, t: i18next.TranslationFunction<any, object, string>) => {
+									const addFrameWarning = (
+										arr: Array<Anomaly>,
+										type: string,
+										t: i18next.TranslationFunction<any, object, string>
+									) => {
 										if (arr.length === 1) {
-											const frames = Math.round(arr[0].duration * 1000 / timebase)
+											const frames = Math.round((arr[0].duration * 1000) / timebase)
 											if (arr[0].start === 0) {
-												messages.push(t('Clip starts with {{frames}} {{type}} frame', { frames, type, count: frames }))
+												messages.push(
+													t('Clip starts with {{frames}} {{type}} frame', {
+														frames,
+														type,
+														count: frames,
+													})
+												)
 											} else if (
 												mediaObject.mediainfo &&
 												mediaObject.mediainfo.format &&
 												arr[0].end === Number(mediaObject.mediainfo.format.duration)
 											) {
-												messages.push(t('Clip ends with {{frames}} {{type}} frame', { frames, type, count: frames }))
+												messages.push(
+													t('Clip ends with {{frames}} {{type}} frame', {
+														frames,
+														type,
+														count: frames,
+													})
+												)
 											} else {
-												messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
+												messages.push(
+													t('{{frames}} {{type}} frame detected in clip.', {
+														frames,
+														type,
+														count: frames,
+													})
+												)
 											}
 										} else if (arr.length > 0) {
-											const dur = arr
-												.map(b => b.duration)
-												.reduce((a, b) => a + b, 0)
-											const frames = Math.round(dur * 1000 / timebase)
-											messages.push(t('{{frames}} {{type}} frame detected in clip.', { frames, type, count: frames }))
+											const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
+											const frames = Math.round((dur * 1000) / timebase)
+											messages.push(
+												t('{{frames}} {{type}} frame detected in clip.', {
+													frames,
+													type,
+													count: frames,
+												})
+											)
 										}
 									}
 									if (mediaObject.mediainfo.blacks) {
@@ -214,8 +251,6 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 									}
 								}
 							}
-
-
 						} else {
 							messages.push(t('Clip is being ingested', { fileName: displayName }))
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
@@ -229,7 +264,10 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 					if (newStatus === RundownAPI.PieceStatusCode.OK) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 					}
-					message = t('{{displayName}}: {{messages}}', { displayName: displayName, messages: messages.join(', ') })
+					message = t('{{displayName}}: {{messages}}', {
+						displayName: displayName,
+						messages: messages.join(', '),
+					})
 				}
 				break
 		}
@@ -239,6 +277,6 @@ export function checkPieceContentStatus (piece: InternalIBlueprintPieceGeneric, 
 		status: newStatus,
 		metadata: metadata,
 		message: message,
-		contentDuration: contentDuration
+		contentDuration: contentDuration,
 	}
 }

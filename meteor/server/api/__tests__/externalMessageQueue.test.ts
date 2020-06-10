@@ -2,24 +2,17 @@ import { Meteor } from 'meteor/meteor'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { queueExternalMessages } from '../ExternalMessageQueue'
 import { ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessageQueue'
-import {
-	ExternalMessageQueue,
-	ExternalMessageQueueObj
-} from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
 	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
-	ExternalMessageQueueObjSlack
+	ExternalMessageQueueObjSlack,
 } from 'tv-automation-sofie-blueprints-integration'
 import { testInFiber, runAllTimers, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment
-} from '../../../__mocks__/helpers/database'
-import {
-	getCurrentTime, protectString
-} from '../../../lib/lib'
+import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { getCurrentTime, protectString } from '../../../lib/lib'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { sendSOAPMessage } from '../integration/soap'
 import { sendSlackMessageToWebhook } from '../integration/slack'
@@ -28,7 +21,6 @@ import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 // import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue static methods', () => {
-
 	let studioEnv = setupDefaultStudioEnvironment()
 	let rundown: Rundown
 	beforeAll(async () => {
@@ -45,7 +37,7 @@ describe('Test external message queue static methods', () => {
 				currentPartInstanceId: protectString('part_now'),
 				nextPartInstanceId: protectString('partNext'),
 				previousPartInstanceId: null,
-				active: true
+				active: true,
 			})
 			Rundowns.insert({
 				_id: protectString('rundown_1'),
@@ -65,9 +57,9 @@ describe('Test external message queue static methods', () => {
 					showStyleBase: 'wobble',
 					showStyleVariant: 'jelly',
 					blueprint: 'on',
-					core: 'plate'
+					core: 'plate',
 				},
-				dataSource: 'frank'
+				dataSource: 'frank',
 			})
 			rundown = Rundowns.findOne() as Rundown
 		})
@@ -85,7 +77,7 @@ describe('Test external message queue static methods', () => {
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ slackMessage ])
+		queueExternalMessages(rundown, [slackMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
@@ -125,7 +117,6 @@ describe('Test external message queue static methods', () => {
 		}
 	})
 
-
 	testInFiber('retry', () => {
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
@@ -133,11 +124,11 @@ describe('Test external message queue static methods', () => {
 		Meteor.call(ExternalMessageQueueAPIMethods.retry, message._id)
 
 		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
-	 	expect(message).toBeTruthy()
+		expect(message).toBeTruthy()
 		expect(message).toMatchObject({
 			hold: false,
 			manualRetry: true,
-			errorFatal: false
+			errorFatal: false,
 		})
 	})
 
@@ -151,7 +142,6 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('setRunMessageQueue', () => {
-
 		Meteor.call(ExternalMessageQueueAPIMethods.setRunMessageQueue, false, (err: Error) => {
 			expect(err).toBeFalsy()
 		})
@@ -172,7 +162,6 @@ describe('Test external message queue static methods', () => {
 })
 
 describe('Test sending messages to mocked endpoints', () => {
-
 	jest.useFakeTimers()
 
 	let studioEnv = setupDefaultStudioEnvironment()
@@ -196,7 +185,7 @@ describe('Test sending messages to mocked endpoints', () => {
 				currentPartInstanceId: protectString('part_now'),
 				nextPartInstanceId: protectString('partNext'),
 				previousPartInstanceId: null,
-				active: true
+				active: true,
 			})
 			Rundowns.insert({
 				_id: protectString('rundown_1'),
@@ -216,9 +205,9 @@ describe('Test sending messages to mocked endpoints', () => {
 					showStyleBase: 'wobble',
 					showStyleVariant: 'jelly',
 					blueprint: 'on',
-					core: 'plate'
+					core: 'plate',
 				},
-				dataSource: 'frank'
+				dataSource: 'frank',
 			})
 			rundown = Rundowns.findOne() as Rundown
 
@@ -237,7 +226,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ slackMessage ])
+		queueExternalMessages(rundown, [slackMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
 		await runAllTimers()
@@ -254,7 +243,6 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(ExternalMessageQueue.findOne()).toBeFalsy()
 	})
 	describe('failing to send a message and retrying', () => {
-
 		let message: ExternalMessageQueueObj
 
 		afterAll(() => {
@@ -271,11 +259,11 @@ describe('Test sending messages to mocked endpoints', () => {
 				type: IBlueprintExternalMessageQueueType.SLACK,
 				receiver: 'fred',
 				message: 'whats error doc?',
-				retryUntil: getCurrentTime() + 1000000
+				retryUntil: getCurrentTime() + 1000000,
 			}
 			expect(rundown).toBeTruthy()
 			const sendTime = getCurrentTime()
-			queueExternalMessages(rundown, [ slackMessage ])
+			queueExternalMessages(rundown, [slackMessage])
 
 			expect(ExternalMessageQueue.findOne()).toBeTruthy()
 			await runAllTimers()
@@ -308,9 +296,11 @@ describe('Test sending messages to mocked endpoints', () => {
 			// setLoggerLevel('debug')
 			// Reset the last try clock
 			const sendTime = getCurrentTime()
-			ExternalMessageQueue.update(message._id, { $set: {
-				lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0
-			} })
+			ExternalMessageQueue.update(message._id, {
+				$set: {
+					lastTry: message.lastTry ? message.lastTry - 1.2 * 60 * 1000 : 0,
+				},
+			})
 			await runAllTimers()
 			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
 
@@ -331,9 +321,11 @@ describe('Test sending messages to mocked endpoints', () => {
 			expect(message).toBeTruthy()
 			expect(message.hold).toBe(true)
 
-			ExternalMessageQueue.update(message._id, { $set: {
-				lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0
-			} })
+			ExternalMessageQueue.update(message._id, {
+				$set: {
+					lastTry: message.lastTry ? message.lastTry - 1.2 * 60 * 1000 : 0,
+				},
+			})
 			await runAllTimers()
 			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
 
@@ -346,10 +338,12 @@ describe('Test sending messages to mocked endpoints', () => {
 		testInFiber('does not retry after retryUntil time', async () => {
 			// setLoggerLevel('debug')
 
-			ExternalMessageQueue.update(message._id, { $set: {
-				lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0,
-				retryUntil: getCurrentTime() - 10
-			} })
+			ExternalMessageQueue.update(message._id, {
+				$set: {
+					lastTry: message.lastTry ? message.lastTry - 1.2 * 60 * 1000 : 0,
+					retryUntil: getCurrentTime() - 10,
+				},
+			})
 			await runAllTimers()
 			expect(sendSlackMessageToWebhook).toHaveBeenCalledTimes(3)
 		})
@@ -377,14 +371,15 @@ describe('Test sending messages to mocked endpoints', () => {
 			expect(message.tryCount).toBe(3)
 			expect(message.sent).toBeUndefined()
 		})
-
 	})
 
 	testInFiber('send a soap-type message', async () => {
 		// setLoggerLevel('debug')
-		expect(ExternalMessageQueue.findOne({
-			type: IBlueprintExternalMessageQueueType.SOAP
-		})).toBeFalsy()
+		expect(
+			ExternalMessageQueue.findOne({
+				type: IBlueprintExternalMessageQueueType.SOAP,
+			})
+		).toBeFalsy()
 		expect(sendSOAPMessage).toHaveBeenCalledTimes(0)
 
 		const soapMessage: ExternalMessageQueueObjSOAP = {
@@ -393,16 +388,18 @@ describe('Test sending messages to mocked endpoints', () => {
 			message: {
 				fcn: 'CallMeMaybe',
 				clip_key: {},
-				clip: {}
-			}
+				clip: {},
+			},
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ soapMessage ])
+		queueExternalMessages(rundown, [soapMessage])
 
-		expect(ExternalMessageQueue.findOne({
-			type: IBlueprintExternalMessageQueueType.SOAP
-		})).toBeTruthy()
+		expect(
+			ExternalMessageQueue.findOne({
+				type: IBlueprintExternalMessageQueueType.SOAP,
+			})
+		).toBeTruthy()
 		await runAllTimers()
 		expect(sendSOAPMessage).toHaveBeenCalledTimes(1)
 		await (sendSOAPMessage as jest.Mock).mock.results[0].value
@@ -413,11 +410,12 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(message.tryCount).toBe(1)
 		Meteor.call(ExternalMessageQueueAPIMethods.remove, message._id)
 
-		expect(ExternalMessageQueue.findOne({
-			type: IBlueprintExternalMessageQueueType.SOAP
-		})).toBeFalsy()
+		expect(
+			ExternalMessageQueue.findOne({
+				type: IBlueprintExternalMessageQueueType.SOAP,
+			})
+		).toBeFalsy()
 	})
-
 
 	testInFiber('fail to send a soap message', async () => {
 		// setLoggerLevel('debug')
@@ -429,12 +427,12 @@ describe('Test sending messages to mocked endpoints', () => {
 			message: {
 				fcn: 'CallMeMaybe error',
 				clip_key: {},
-				clip: {}
-			}
+				clip: {},
+			},
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ soapMessage ])
+		queueExternalMessages(rundown, [soapMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
 		await runAllTimers()
@@ -471,12 +469,12 @@ describe('Test sending messages to mocked endpoints', () => {
 			message: {
 				fcn: 'CallMeMaybe fatal',
 				clip_key: {},
-				clip: {}
-			}
+				clip: {},
+			},
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ soapMessage ])
+		queueExternalMessages(rundown, [soapMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
 		await runAllTimers()
@@ -499,9 +497,11 @@ describe('Test sending messages to mocked endpoints', () => {
 		expect(message.sent).toBeUndefined()
 
 		// Reset the last try clock
-		ExternalMessageQueue.update(message._id, { $set: {
-			lastTry: message.lastTry ? message.lastTry - (1.2 * 60 * 1000) : 0
-		} })
+		ExternalMessageQueue.update(message._id, {
+			$set: {
+				lastTry: message.lastTry ? message.lastTry - 1.2 * 60 * 1000 : 0,
+			},
+		})
 		await runAllTimers()
 		// Does not send again - error is fatal
 		expect(sendSOAPMessage).toHaveBeenCalledTimes(3)
@@ -518,17 +518,17 @@ describe('Test sending messages to mocked endpoints', () => {
 			type: IBlueprintExternalMessageQueueType.RABBIT_MQ,
 			receiver: {
 				host: 'roger',
-				topic: 'the rabbit'
+				topic: 'the rabbit',
 			},
 			message: {
 				routingKey: 'toMyDoor',
-				message: 'what\'s up doc?',
-				headers: {}
-			}
+				message: "what's up doc?",
+				headers: {},
+			},
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ rabbitMessage ])
+		queueExternalMessages(rundown, [rabbitMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
 		await runAllTimers()
@@ -555,17 +555,17 @@ describe('Test sending messages to mocked endpoints', () => {
 			type: IBlueprintExternalMessageQueueType.RABBIT_MQ,
 			receiver: {
 				host: 'roger',
-				topic: 'the rabbit'
+				topic: 'the rabbit',
 			},
 			message: {
 				routingKey: 'toMyDoor',
-				message: 'what\'s error doc?',
-				headers: {}
-			}
+				message: "what's error doc?",
+				headers: {},
+			},
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ rabbitMessage ])
+		queueExternalMessages(rundown, [rabbitMessage])
 
 		expect(ExternalMessageQueue.findOne()).toBeTruthy()
 		await runAllTimers()
@@ -599,18 +599,21 @@ describe('Test sending messages to mocked endpoints', () => {
 		const slackMessage: ExternalMessageQueueObjSlack = {
 			type: IBlueprintExternalMessageQueueType.SLACK,
 			receiver: 'fred',
-			message: 'what\'s up doc?',
+			message: "what's up doc?",
 		}
 		expect(rundown).toBeTruthy()
 		const sendTime = getCurrentTime()
-		queueExternalMessages(rundown, [ slackMessage ])
+		queueExternalMessages(rundown, [slackMessage])
 
 		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.expires).toBeGreaterThan(getCurrentTime())
 
-		ExternalMessageQueue.update(message._id, { $set : {
-			expires: getCurrentTime() - 365 * 24 * 3600 * 1000 }}) // so last year!
+		ExternalMessageQueue.update(message._id, {
+			$set: {
+				expires: getCurrentTime() - 365 * 24 * 3600 * 1000,
+			},
+		}) // so last year!
 		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.expires).toBeLessThan(getCurrentTime())

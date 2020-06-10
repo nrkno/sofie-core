@@ -7,10 +7,10 @@ import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 
-meteorPublish(PubSub.rundownPlaylists, function (selector0, token) {
+meteorPublish(PubSub.rundownPlaylists, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	const modifier = {
-		fields: {}
+		fields: {},
 	}
 	if (
 		NoSecurityReadAccess.any() ||

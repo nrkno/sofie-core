@@ -2,7 +2,11 @@ import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
+import {
+	setupDefaultStudioEnvironment,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+} from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { Timeline } from '../../../../lib/collections/Timeline'
@@ -12,10 +16,13 @@ import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/R
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { protectString, waitForPromise } from '../../../../lib/lib'
 import { MethodContext } from '../../../../lib/api/methods'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist, initCacheForRundownPlaylistFromStudio } from '../../../DatabaseCaches'
+import {
+	initCacheForNoRundownPlaylist,
+	initCacheForRundownPlaylist,
+	initCacheForRundownPlaylistFromStudio,
+} from '../../../DatabaseCaches'
 
 const DEFAULT_CONTEXT: MethodContext = {}
-
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
@@ -30,10 +37,7 @@ describe('Timeline', () => {
 		}).toThrowError(/not found/i)
 	})
 	testInFiber('Basic rundown', () => {
-		const {
-			rundownId: rundownId0,
-			playlistId: playlistId0
-		} = setupDefaultRundownPlaylist(env)
+		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
 		expect(rundownId0).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
 
@@ -50,7 +54,7 @@ describe('Timeline', () => {
 
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
-			rehearsal: false
+			rehearsal: false,
 		})
 
 		{
@@ -103,7 +107,7 @@ describe('Timeline', () => {
 			expect(getPlaylist0()).toMatchObject({
 				active: false,
 				currentPartInstanceId: null,
-				nextPartInstanceId: null
+				nextPartInstanceId: null,
 			})
 		}
 

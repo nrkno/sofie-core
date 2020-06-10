@@ -12,11 +12,11 @@ import { waitForPromise } from '../../../lib/lib'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
-		'debug_playlistRunBlueprints': (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
+		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
 			check(rundownPlaylistId, String)
 			IngestActions.regenerateRundownPlaylist(rundownPlaylistId, purgeExisting)
 		},
-		'debug_updateTimeline': (studioId: StudioId) => {
+		debug_updateTimeline: (studioId: StudioId) => {
 			check(studioId, String)
 
 			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
@@ -30,6 +30,6 @@ if (!Settings.enableUserAccounts) {
 				updateTimeline(cache, studioId)
 				waitForPromise(cache.saveAllToDatabase())
 			}
-		}
+		},
 	})
 }

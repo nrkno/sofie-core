@@ -14,11 +14,17 @@ import { triggerWriteAccess } from './lib/securityVerify'
 
 type PeripheralDeviceContent = { deviceId: PeripheralDeviceId }
 export namespace PeripheralDeviceReadAccess {
-	export function peripheralDevice (selector: MongoQuery<{_id: PeripheralDeviceId}>, cred: Credentials | ResolvedCredentials): boolean {
+	export function peripheralDevice(
+		selector: MongoQuery<{ _id: PeripheralDeviceId }>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		return peripheralDeviceContent({ deviceId: selector._id }, cred)
 	}
 	/** Handles read access for all peripheraldevice content (commands, mediaWorkFlows, etc..) */
-	export function peripheralDeviceContent (selector: MongoQuery<PeripheralDeviceContent>, cred: Credentials | ResolvedCredentials): boolean {
+	export function peripheralDeviceContent(
+		selector: MongoQuery<PeripheralDeviceContent>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.deviceId) throw new Meteor.Error(400, 'selector must contain deviceId')
@@ -32,13 +38,13 @@ export namespace PeripheralDeviceReadAccess {
 export namespace PeripheralDeviceContentWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export function executeFunction (cred0: Credentials, deviceId: PeripheralDeviceId) {
+	export function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId) {
 		return anyContent(cred0, deviceId)
 	}
-	export function peripheralDevice (cred0: Credentials, deviceId: PeripheralDeviceId) {
+	export function peripheralDevice(cred0: Credentials, deviceId: PeripheralDeviceId) {
 		return anyContent(cred0, deviceId)
 	}
-	export function mediaWorkFlow (cred0: Credentials, existingWorkFlow: MediaWorkFlow | MediaWorkFlowId) {
+	export function mediaWorkFlow(cred0: Credentials, existingWorkFlow: MediaWorkFlow | MediaWorkFlowId) {
 		triggerWriteAccess()
 		if (existingWorkFlow && isProtectedString(existingWorkFlow)) {
 			const workFlowId = existingWorkFlow
@@ -49,20 +55,20 @@ export namespace PeripheralDeviceContentWriteAccess {
 		return { ...anyContent(cred0, existingWorkFlow.deviceId), mediaWorkFlow: existingWorkFlow }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent (
+	export function anyContent(
 		cred0: Credentials,
 		deviceId: PeripheralDeviceId
 	): {
-		userId: UserId | null,
-		organizationId: OrganizationId | null,
-		deviceId: PeripheralDeviceId,
-		device: PeripheralDevice | null,
+		userId: UserId | null
+		organizationId: OrganizationId | null
+		deviceId: PeripheralDeviceId
+		device: PeripheralDevice | null
 		cred: ResolvedCredentials | Credentials
 	} {
 		triggerWriteAccess()
 		check(deviceId, String)
 		const device = PeripheralDevices.findOne(deviceId)
-		if (Settings.enableUserAccounts && (!cred0.userId && device)) {
+		if (Settings.enableUserAccounts && !cred0.userId && device) {
 			// External = from an external device. For backwards compability, this extra procedure is done:
 			if (device.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
@@ -75,14 +81,11 @@ export namespace PeripheralDeviceContentWriteAccess {
 				organizationId: null,
 				deviceId: deviceId,
 				device: device || null,
-				cred: cred0
+				cred: cred0,
 			}
 		}
 		const cred = resolveCredentials(cred0)
-		const access = allowAccessToPeripheralDeviceContent(
-			cred,
-			deviceId
-		)
+		const access = allowAccessToPeripheralDeviceContent(cred, deviceId)
 		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 		if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
 
@@ -91,7 +94,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 			organizationId: cred.organization ? cred.organization._id : null,
 			deviceId: deviceId,
 			device: access.document,
-			cred: cred
+			cred: cred,
 		}
 	}
 }

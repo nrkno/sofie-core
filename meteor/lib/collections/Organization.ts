@@ -33,6 +33,7 @@ export interface NewOrganization {
 	broadcastMediums: string[]
 }
 
-export const Organizations: TransformedCollection<Organization, DBOrganization>
-	= createMongoCollection<DBOrganization>('organizations')
+export const Organizations: TransformedCollection<Organization, DBOrganization> = createMongoCollection<DBOrganization>(
+	'organizations'
+)
 registerCollection('Organizations', Organizations)

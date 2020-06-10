@@ -7,7 +7,7 @@ import { FieldNames } from '../../../lib/typings/meteor'
  * @param fieldNames
  * @param allowFields
  */
-export function allowOnlyFields<T> (_doc: T, fieldNames: FieldNames<T>, allowFields: FieldNames<T>): boolean {
+export function allowOnlyFields<T>(_doc: T, fieldNames: FieldNames<T>, allowFields: FieldNames<T>): boolean {
 	// Note: _doc is only included to set the type T in this generic function
 	let allow: boolean = true
 	_.find(fieldNames, (field) => {
@@ -24,7 +24,7 @@ export function allowOnlyFields<T> (_doc: T, fieldNames: FieldNames<T>, allowFie
  * @param fieldNames
  * @param rejectFields
  */
-export function rejectFields<T> (_doc: T, fieldNames: FieldNames<T>, rejectFields: FieldNames<T>): boolean {
+export function rejectFields<T>(_doc: T, fieldNames: FieldNames<T>, rejectFields: FieldNames<T>): boolean {
 	// Note: _doc is only included to set the type T in this generic function
 	let allow: boolean = true
 	_.find(fieldNames, (field) => {
@@ -41,7 +41,7 @@ export function rejectFields<T> (_doc: T, fieldNames: FieldNames<T>, rejectField
 // console.log(rejectFields(['_id', 'name'], ['_id']) === false, '_id not allowed')
 // console.log(rejectFields(['name'], ['_id']) === true, 'should be ok')
 
-export function logNotAllowed (area: string, reason: string): false {
+export function logNotAllowed(area: string, reason: string): false {
 	logger.warn(`Not allowed access to ${area}: ${reason}`)
 	return false
 }

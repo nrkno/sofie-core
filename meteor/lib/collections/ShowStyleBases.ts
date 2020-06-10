@@ -7,7 +7,7 @@ import {
 	IBlueprintShowStyleBase,
 	IOutputLayer,
 	ISourceLayer,
-	IBlueprintRuntimeArgumentsItem
+	IBlueprintRuntimeArgumentsItem,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
@@ -47,15 +47,16 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
 	public _rundownVersionHash: string
 
-	constructor (document: DBShowStyleBase) {
+	constructor(document: DBShowStyleBase) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
 }
 
-export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase>
-	= createMongoCollection<ShowStyleBase>('showStyleBases', { transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
+export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBase> = createMongoCollection<
+	ShowStyleBase
+>('showStyleBases', { transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
 registerCollection('ShowStyleBases', ShowStyleBases)
 
 Meteor.startup(() => {

@@ -20,7 +20,6 @@ import { NewUserAPI, UserAPIMethods } from './user'
 import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 
-
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
 	[key: string]: (...args: any[]) => Promise<any>
@@ -46,24 +45,24 @@ interface IMeteorCall {
 	rundownNotifications: RundownNotificationsAPI
 }
 export const MeteorCall: IMeteorCall = {
-	blueprint:			makeMethods(BlueprintAPIMethods),
-	client:				makeMethods(ClientAPIMethods),
-	externalMessages:	makeMethods(ExternalMessageQueueAPIMethods),
-	manualPlayout:		makeMethods(ManualPlayoutAPIMethods),
-	migration:			makeMethods(MigrationAPIMethods),
-	peripheralDevice:	makeMethods(PeripheralDeviceAPIMethods),
-	playout:			makeMethods(PlayoutAPIMethods),
-	rundown:			makeMethods(RundownAPIMethods),
-	rundownLayout:		makeMethods(RundownLayoutsAPIMethods),
-	snapshot:			makeMethods(SnapshotAPIMethods),
-	showstyles:			makeMethods(ShowStylesAPIMethods),
-	studio:				makeMethods(StudiosAPIMethods),
-	systemStatus:		makeMethods(SystemStatusAPIMethods),
-	testTools:			makeMethods(TestToolsAPIMethods),
-	user: 				makeMethods(UserAPIMethods),
-	userAction:			makeMethods(UserActionAPIMethods),
-	organization:		makeMethods(OrganizationAPIMethods),
-	rundownNotifications:	makeMethods(RundownNotificationsAPIMethods)
+	blueprint: makeMethods(BlueprintAPIMethods),
+	client: makeMethods(ClientAPIMethods),
+	externalMessages: makeMethods(ExternalMessageQueueAPIMethods),
+	manualPlayout: makeMethods(ManualPlayoutAPIMethods),
+	migration: makeMethods(MigrationAPIMethods),
+	peripheralDevice: makeMethods(PeripheralDeviceAPIMethods),
+	playout: makeMethods(PlayoutAPIMethods),
+	rundown: makeMethods(RundownAPIMethods),
+	rundownLayout: makeMethods(RundownLayoutsAPIMethods),
+	snapshot: makeMethods(SnapshotAPIMethods),
+	showstyles: makeMethods(ShowStylesAPIMethods),
+	studio: makeMethods(StudiosAPIMethods),
+	systemStatus: makeMethods(SystemStatusAPIMethods),
+	testTools: makeMethods(TestToolsAPIMethods),
+	user: makeMethods(UserAPIMethods),
+	userAction: makeMethods(UserActionAPIMethods),
+	organization: makeMethods(OrganizationAPIMethods),
+	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
 }
 function makeMethods(methods: object): any {
 	const o = {}

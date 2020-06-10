@@ -1,5 +1,10 @@
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { allowAccessToCoreSystem, allowAccessToStudio, allowAccessToShowStyleBase, allowAccessToRundown } from './lib/security'
+import {
+	allowAccessToCoreSystem,
+	allowAccessToStudio,
+	allowAccessToShowStyleBase,
+	allowAccessToRundown,
+} from './lib/security'
 import { logNotAllowed, allowOnlyFields, rejectFields } from './lib/lib'
 import { Users } from '../../lib/collections/Users'
 import { Organizations } from '../../lib/collections/Organization'
@@ -39,26 +44,24 @@ import { SystemReadAccess } from './system'
 
 // Owned by System:
 CoreSystem.allow({
-	insert (): boolean {
+	insert(): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		const access = allowAccessToCoreSystem({ userId: userId })
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
-		return allowOnlyFields(doc, fields, [
-			'support', 'systemInfo', 'name'
-		])
+		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name'])
 	},
-	remove () {
+	remove() {
 		return false
-	}
+	},
 })
 Users.allow({
-	insert (userId, doc) {
+	insert(userId, doc) {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
-		const access = SystemReadAccess.currentUser(userId, { userId, })
+	update(userId, doc, fields, modifier) {
+		const access = SystemReadAccess.currentUser(userId, { userId })
 		if (!access) return logNotAllowed('CurrentUser', '')
 		return rejectFields(doc, fields, [
 			'_id',
@@ -67,206 +70,198 @@ Users.allow({
 			'emails',
 			'profile',
 			'organizationId',
-			'superAdmin'
+			'superAdmin',
 		])
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 
 // Owned by Organization:
 Organizations.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 
 UserActionsLog.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 Evaluations.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return true
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 Snapshots.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return allowOnlyFields(doc, fields, ['comment'])
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 Blueprints.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return allowOnlyFields(doc, fields, ['name'])
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 // Owned by Studio:
 RundownPlaylists.allow({
-	insert (userId, doc: RundownPlaylist): boolean {
+	insert(userId, doc: RundownPlaylist): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		// return true // tmp!
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 Studios.allow({
-	insert (userId, doc: Studio): boolean {
+	insert(userId, doc: Studio): boolean {
 		const access = allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.insert) return logNotAllowed('Studio', access.reason)
 		return true
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		const access = allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Studio', access.reason)
-		return rejectFields(doc, fields, [
-			'_id'
-		])
+		return rejectFields(doc, fields, ['_id'])
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		const access = allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.remove) return logNotAllowed('Studio', access.reason)
 		return true
-	}
+	},
 })
 
-
 ExternalMessageQueue.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 
 RecordedFiles.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		// return true // tmp!
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 MediaObjects.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		// return true // tmp!
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 Timeline.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 
 // Owned by showStyle:
 ShowStyleBases.allow({
-	insert (): boolean {
+	insert(): boolean {
 		return false
 	},
-	update (userId, doc, fields) {
+	update(userId, doc, fields) {
 		const access = allowAccessToShowStyleBase({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
-		return rejectFields(doc, fields, [
-			'_id'
-		])
+		return rejectFields(doc, fields, ['_id'])
 	},
-	remove () {
+	remove() {
 		return false
-	}
+	},
 })
 ShowStyleVariants.allow({
-	insert (): boolean {
+	insert(): boolean {
 		return false
 	},
-	update (userId, doc, fields) {
+	update(userId, doc, fields) {
 		const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 
-		return rejectFields(doc, fields, [
-			'showStyleBaseId'
-		])
+		return rejectFields(doc, fields, ['showStyleBaseId'])
 	},
-	remove () {
+	remove() {
 		return false
-	}
+	},
 })
 RundownLayouts.allow({
-	insert (): boolean {
+	insert(): boolean {
 		return false
 	},
-	update (userId, doc, fields) {
+	update(userId, doc, fields) {
 		const access = allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
 		return rejectFields(doc, fields, ['_id', 'showStyleBaseId'])
 	},
-	remove () {
+	remove() {
 		return false
-	}
+	},
 })
-
 
 // Owned by PeripheralDevice
 PeripheralDevices.allow({
-	insert (userId, doc: PeripheralDevice): boolean {
+	insert(userId, doc: PeripheralDevice): boolean {
 		return true
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return rejectFields(doc, fields, [
 			'type',
 			'parentDeviceId',
@@ -283,59 +278,59 @@ PeripheralDevices.allow({
 		])
 	},
 
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 
 PeripheralDeviceCommands.allow({
-	insert (userId, doc: PeripheralDeviceCommand): boolean {
+	insert(userId, doc: PeripheralDeviceCommand): boolean {
 		return true // TODO
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return true // TODO
-	}
+	},
 })
 
 // Media work flows:
 MediaWorkFlowSteps.allow({
-	insert (userId, doc: MediaWorkFlowStep): boolean {
+	insert(userId, doc: MediaWorkFlowStep): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 MediaWorkFlows.allow({
-	insert (userId, doc: MediaWorkFlow): boolean {
+	insert(userId, doc: MediaWorkFlow): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })
 
 // Owned By Rundown:
 Rundowns.allow({
-	insert (): boolean {
+	insert(): boolean {
 		return false
 	},
-	update () {
+	update() {
 		// return true // tmp!
 		return false
 	},
-	remove () {
+	remove() {
 		return false
-	}
+	},
 })
 
 // ----------------------------------------------------------------------------
@@ -345,133 +340,130 @@ Rundowns.allow({
 // Collections security set up:
 
 Segments.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
-
 
 Parts.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 PartInstances.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 Pieces.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 PieceInstances.allow({
-	insert (userId, doc: PieceInstance): boolean {
+	insert(userId, doc: PieceInstance): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 AdLibPieces.allow({
-	insert (userId, doc): boolean {
+	insert(userId, doc): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 RundownBaselineAdLibPieces.allow({
-	insert (userId, doc: RundownBaselineAdLibItem): boolean {
+	insert(userId, doc: RundownBaselineAdLibItem): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 IngestDataCache.allow({
-	insert (userId, doc: IngestDataCacheObj): boolean {
+	insert(userId, doc: IngestDataCacheObj): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 AsRunLog.allow({
-	insert (userId, doc: AsRunLogEvent): boolean {
+	insert(userId, doc: AsRunLogEvent): boolean {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	update (userId, doc) {
+	update(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return rundownContentAllowWrite(userId, doc)
-	}
+	},
 })
 
-
 ExpectedMediaItems.allow({
-	insert (): boolean {
+	insert(): boolean {
 		return false
 	},
 
-	update () {
+	update() {
 		return false
 	},
 
-	remove () {
+	remove() {
 		return false
-	}
+	},
 })
 
 ExpectedPlayoutItems.allow({
-	insert (): boolean {
+	insert(): boolean {
 		return false
 	},
 
-	update () {
+	update() {
 		return false
 	},
 
-	remove () {
+	remove() {
 		return false
-	}
+	},
 })
-

@@ -9,7 +9,7 @@ import * as _ from 'underscore'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 
-export function saveEvaluation (methodContext: MethodContext, evaluation: EvaluationBase): void {
+export function saveEvaluation(methodContext: MethodContext, evaluation: EvaluationBase): void {
 	const allowedCred = OrganizationContentWriteAccess.evaluation({ userId: methodContext.userId })
 
 	Evaluations.insert({
@@ -21,11 +21,10 @@ export function saveEvaluation (methodContext: MethodContext, evaluation: Evalua
 	})
 	logger.info({
 		message: 'evaluation',
-		evaluation: evaluation
+		evaluation: evaluation,
 	})
 
 	Meteor.defer(() => {
-
 		let studio = Studios.findOne(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
@@ -61,17 +60,18 @@ export function saveEvaluation (methodContext: MethodContext, evaluation: Evalua
 				let playlist = RundownPlaylists.findOne(evaluation.playlistId)
 				let hostUrl = studio.settings.sofieUrl
 
-				slackMessage += (
+				slackMessage +=
 					'rundown ' +
-					(
-						hostUrl && playlist ?
-						('*<' + hostUrl + '/rundown/' + playlist._id + '|' + playlist.name + '>*') :
-						(playlist && playlist.name || 'N/A')
-					) +
-					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') + '\n' +
-					evaluationMessage + '\n' +
-					'_' + evaluationProducer + '_'
-				)
+					(hostUrl && playlist
+						? '*<' + hostUrl + '/rundown/' + playlist._id + '|' + playlist.name + '>*'
+						: (playlist && playlist.name) || 'N/A') +
+					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') +
+					'\n' +
+					evaluationMessage +
+					'\n' +
+					'_' +
+					evaluationProducer +
+					'_'
 
 				_.each(webhookUrls, (webhookUrl) => {
 					sendSlackMessageToWebhookSync(slackMessage, webhookUrl)

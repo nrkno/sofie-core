@@ -2,10 +2,10 @@ import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 
 export interface NewShowStylesAPI {
-	insertShowStyleBase (): Promise<ShowStyleBaseId>
-	insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariantId>
-	removeShowStyleBase (showStyleBaseId: ShowStyleBaseId): Promise<void>
-	removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId): Promise<void>
+	insertShowStyleBase(): Promise<ShowStyleBaseId>
+	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariantId>
+	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
+	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId): Promise<void>
 }
 
 export enum ShowStylesAPIMethods {

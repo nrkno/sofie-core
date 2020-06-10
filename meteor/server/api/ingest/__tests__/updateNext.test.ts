@@ -19,9 +19,10 @@ require('../../peripheralDevice.ts') // include in order to create the Meteor me
 
 const rundownId: RundownId = protectString('mock_ro')
 const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')
-function createMockRO () {
+function createMockRO() {
 	const existing = Rundowns.findOne(rundownId)
-	if (existing) wrapWithCacheForRundownPlaylistFromRundown(existing._id, (cache) => removeRundownFromCache(cache, existing))
+	if (existing)
+		wrapWithCacheForRundownPlaylistFromRundown(existing._id, (cache) => removeRundownFromCache(cache, existing))
 
 	RundownPlaylists.insert({
 		_id: rundownPlaylistId,
@@ -34,7 +35,7 @@ function createMockRO () {
 		currentPartInstanceId: null,
 		nextPartInstanceId: null,
 		previousPartInstanceId: null,
-		active: true
+		active: true,
 	})
 
 	Rundowns.insert({
@@ -50,45 +51,49 @@ function createMockRO () {
 		modified: 0,
 		importVersions: {} as any,
 		playlistId: rundownPlaylistId,
-		_rank: 0
+		_rank: 0,
 	})
 
-	saveIntoDb(Segments, {
-		rundownId: rundownId
-	}, [
-		literal<DBSegment>({
-			_id: protectString('mock_segment1'),
-			_rank: 1,
-			externalId: 's1',
+	saveIntoDb(
+		Segments,
+		{
 			rundownId: rundownId,
-			name: 'Segment1',
-			externalModified: 1
-		}),
-		literal<DBSegment>({
-			_id: protectString('mock_segment2'),
-			_rank: 2,
-			externalId: 's2',
-			rundownId: rundownId,
-			name: 'Segment2',
-			externalModified: 1
-		}),
-		literal<DBSegment>({
-			_id: protectString('mock_segment3'),
-			_rank: 3,
-			externalId: 's3',
-			rundownId: rundownId,
-			name: 'Segment3',
-			externalModified: 1
-		}),
-		literal<DBSegment>({
-			_id: protectString('mock_segment4'),
-			_rank: 4,
-			externalId: 's4',
-			rundownId: rundownId,
-			name: 'Segment4',
-			externalModified: 1
-		})
-	])
+		},
+		[
+			literal<DBSegment>({
+				_id: protectString('mock_segment1'),
+				_rank: 1,
+				externalId: 's1',
+				rundownId: rundownId,
+				name: 'Segment1',
+				externalModified: 1,
+			}),
+			literal<DBSegment>({
+				_id: protectString('mock_segment2'),
+				_rank: 2,
+				externalId: 's2',
+				rundownId: rundownId,
+				name: 'Segment2',
+				externalModified: 1,
+			}),
+			literal<DBSegment>({
+				_id: protectString('mock_segment3'),
+				_rank: 3,
+				externalId: 's3',
+				rundownId: rundownId,
+				name: 'Segment3',
+				externalModified: 1,
+			}),
+			literal<DBSegment>({
+				_id: protectString('mock_segment4'),
+				_rank: 4,
+				externalId: 's4',
+				rundownId: rundownId,
+				name: 'Segment4',
+				externalModified: 1,
+			}),
+		]
+	)
 
 	const rawInstances = [
 		// Segment 1
@@ -104,8 +109,8 @@ function createMockRO () {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p1',
 				title: 'Part 1',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 		literal<DBPartInstance>({
 			_id: protectString('mock_part_instance2'),
@@ -119,8 +124,8 @@ function createMockRO () {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p2',
 				title: 'Part 2',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 		literal<DBPartInstance>({
 			_id: protectString('mock_part_instance3'),
@@ -134,8 +139,8 @@ function createMockRO () {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p3',
 				title: 'Part 3',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 		// Segment 2
 		literal<DBPartInstance>({
@@ -150,8 +155,8 @@ function createMockRO () {
 				segmentId: protectString('mock_segment2'),
 				externalId: 'p4',
 				title: 'Part 4',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 		literal<DBPartInstance>({
 			_id: protectString('mock_part_instance5'),
@@ -165,8 +170,8 @@ function createMockRO () {
 				segmentId: protectString('mock_segment2'),
 				externalId: 'p5',
 				title: 'Part 5',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 		// Segment 3
 		literal<DBPartInstance>({
@@ -181,8 +186,8 @@ function createMockRO () {
 				segmentId: protectString('mock_segment3'),
 				externalId: 'p6',
 				title: 'Part 6',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 		// Segment 4
 		literal<DBPartInstance>({
@@ -197,8 +202,8 @@ function createMockRO () {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'p7',
 				title: 'Part 7',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 		literal<DBPartInstance>({
 			_id: protectString('mock_part_instance8'),
@@ -213,8 +218,8 @@ function createMockRO () {
 				externalId: 'p8',
 				title: 'Part 8',
 				typeVariant: '',
-				floated: true
-			})
+				floated: true,
+			}),
 		}),
 		literal<DBPartInstance>({
 			_id: protectString('mock_part_instance9'),
@@ -228,23 +233,30 @@ function createMockRO () {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'p9',
 				title: 'Part 9',
-				typeVariant: ''
-			})
+				typeVariant: '',
+			}),
 		}),
 	]
 
-	saveIntoDb(PartInstances, {
-		rundownId: rundownId
-	}, rawInstances)
-	saveIntoDb(Parts, {
-		rundownId: rundownId
-	}, rawInstances.map(i => i.part))
+	saveIntoDb(
+		PartInstances,
+		{
+			rundownId: rundownId,
+		},
+		rawInstances
+	)
+	saveIntoDb(
+		Parts,
+		{
+			rundownId: rundownId,
+		},
+		rawInstances.map((i) => i.part)
+	)
 
 	return rundownId
 }
 
 describe('Test mos update next part helpers', () => {
-
 	beforeAll(async () => {
 		// const env = setupDefaultStudioEnvironment()
 		await runInFiber(createMockRO)
@@ -253,20 +265,26 @@ describe('Test mos update next part helpers', () => {
 		jest.clearAllMocks()
 	})
 
-	function resetPartIds (currentPartInstanceId: string | null, nextPartInstanceId: string | null, nextPartManual?: boolean) {
-		RundownPlaylists.update(rundownPlaylistId, { $set: {
-			nextPartInstanceId: protectString(nextPartInstanceId),
-			currentPartInstanceId: protectString(currentPartInstanceId),
-			previousPartInstanceId: null,
-			nextPartManual: nextPartManual || false,
-		}})
+	function resetPartIds(
+		currentPartInstanceId: string | null,
+		nextPartInstanceId: string | null,
+		nextPartManual?: boolean
+	) {
+		RundownPlaylists.update(rundownPlaylistId, {
+			$set: {
+				nextPartInstanceId: protectString(nextPartInstanceId),
+				currentPartInstanceId: protectString(currentPartInstanceId),
+				previousPartInstanceId: null,
+				nextPartManual: nextPartManual || false,
+			},
+		})
 	}
-	function getRundownPlaylist () {
+	function getRundownPlaylist() {
 		const playlist = RundownPlaylists.findOne(rundownPlaylistId) as RundownPlaylist
 		expect(playlist).toBeTruthy()
 		return playlist
 	}
-	function ensureNextPartIsValid () {
+	function ensureNextPartIsValid() {
 		const playlist = getRundownPlaylist()
 		return wrapWithCacheForRundownPlaylist(playlist, (cache) => {
 			UpdateNext.ensureNextPartIsValid(cache, playlist)
@@ -286,7 +304,11 @@ describe('Test mos update next part helpers', () => {
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part4' })
+		)
 
 		// expectNextPartId('mock_part4')
 	})
@@ -310,8 +332,11 @@ describe('Test mos update next part helpers', () => {
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part1' }))
-
+		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part1' })
+		)
 	})
 	testInFiber('ensureNextPartIsValid: Ensure correct part doesnt change', () => {
 		resetPartIds('mock_part_instance3', 'mock_part_instance4')
@@ -333,16 +358,23 @@ describe('Test mos update next part helpers', () => {
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part4' })
+		)
 	})
 	testInFiber('ensureNextPartIsValid: Ensure manual but missing part does change', () => {
 		resetPartIds('mock_part_instance3', 'fake_part', true)
 
 		ensureNextPartIsValid()
 
-
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part4' })
+		)
 	})
 	testInFiber('ensureNextPartIsValid: Ensure manual but floated part does change', () => {
 		resetPartIds('mock_part_instance7', 'mock_part_instance8', true)
@@ -350,7 +382,11 @@ describe('Test mos update next part helpers', () => {
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part9' }))
+		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part9' })
+		)
 	})
 	testInFiber('ensureNextPartIsValid: Ensure floated part does change', () => {
 		resetPartIds('mock_part_instance7', 'mock_part_instance8', false)
@@ -358,7 +394,11 @@ describe('Test mos update next part helpers', () => {
 		ensureNextPartIsValid()
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledTimes(1)
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part9' }))
+		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part9' })
+		)
 	})
 
 	testInFiber('afterInsertParts: Did not remove previous', () => {
@@ -373,18 +413,24 @@ describe('Test mos update next part helpers', () => {
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		ensureMock.mockClear()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, null as any, false))
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			UpdateNext.afterInsertParts(cache, playlist, null as any, false)
+		)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		ensureMock.mockClear()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, ['p3'], false))
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			UpdateNext.afterInsertParts(cache, playlist, ['p3'], false)
+		)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		// Try again with the next manually set
 		resetPartIds('fake_part', 'not_real_either', true)
 
 		ensureMock.mockClear()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, null as any, false))
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			UpdateNext.afterInsertParts(cache, playlist, null as any, false)
+		)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		expect(setNextPartInner).not.toHaveBeenCalled()
@@ -396,10 +442,16 @@ describe('Test mos update next part helpers', () => {
 		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, ['p4', 'p5'], true))
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			UpdateNext.afterInsertParts(cache, playlist, ['p4', 'p5'], true)
+		)
 		expect(ensureMock).not.toHaveBeenCalled()
 
-		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ _id: rundownPlaylistId }), expect.objectContaining({ _id: 'mock_part4' }))
+		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ _id: rundownPlaylistId }),
+			expect.objectContaining({ _id: 'mock_part4' })
+		)
 	})
 
 	testInFiber('afterInsertParts: Next part no longer exists, missing new parts', () => {
@@ -408,7 +460,9 @@ describe('Test mos update next part helpers', () => {
 		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, ['p99'], true))
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			UpdateNext.afterInsertParts(cache, playlist, ['p99'], true)
+		)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
@@ -419,7 +473,9 @@ describe('Test mos update next part helpers', () => {
 		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, ['p3', 'p4'], true))
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			UpdateNext.afterInsertParts(cache, playlist, ['p3', 'p4'], true)
+		)
 		expect(ensureMock).not.toHaveBeenCalled()
 		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
@@ -430,9 +486,10 @@ describe('Test mos update next part helpers', () => {
 		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, ['p4', 'p5'], true))
+		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
+			UpdateNext.afterInsertParts(cache, playlist, ['p4', 'p5'], true)
+		)
 		expect(ensureMock).not.toHaveBeenCalled()
 		expect(setNextPartInner).not.toHaveBeenCalled()
 	})
-
 })

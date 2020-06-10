@@ -14,29 +14,31 @@ import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 
-export function insertStudio (context: MethodContext, newId?: StudioId): StudioId {
+export function insertStudio(context: MethodContext, newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
 
 	const access = OrganizationContentWriteAccess.studio(context)
 
-	let id = Studios.insert(literal<DBStudio>({
-		_id: newId || getRandomId(),
-		name: 'New Studio',
-		organizationId: access.organizationId,
-		// blueprintId?: BlueprintId
-		mappings: {},
-		supportedShowStyleBase: [],
-		config: [],
-		// testToolsConfig?: ITestToolsConfig
-		settings: {
-			mediaPreviewsUrl: '',
-			sofieUrl: ''
-		},
-		_rundownVersionHash: ''
-	}))
+	let id = Studios.insert(
+		literal<DBStudio>({
+			_id: newId || getRandomId(),
+			name: 'New Studio',
+			organizationId: access.organizationId,
+			// blueprintId?: BlueprintId
+			mappings: {},
+			supportedShowStyleBase: [],
+			config: [],
+			// testToolsConfig?: ITestToolsConfig
+			settings: {
+				mediaPreviewsUrl: '',
+				sofieUrl: '',
+			},
+			_rundownVersionHash: '',
+		})
+	)
 	return id
 }
-export function removeStudio (context: MethodContext, studioId: StudioId): void {
+export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	check(studioId, String)
 	const access = OrganizationContentWriteAccess.studio(context, studioId)
 	const studio = access.studio
@@ -44,13 +46,22 @@ export function removeStudio (context: MethodContext, studioId: StudioId): void 
 
 	// allowed to remove?
 	const rundown = Rundowns.findOne({ studioId: studio._id })
-	if (rundown) throw new Meteor.Error(404, `Can't remove studio "${studioId}", because the rundown "${rundown._id}" is in it.`)
+	if (rundown)
+		throw new Meteor.Error(404, `Can't remove studio "${studioId}", because the rundown "${rundown._id}" is in it.`)
 
 	const playlist = RundownPlaylists.findOne({ studioId: studio._id })
-	if (playlist) throw new Meteor.Error(404, `Can't remove studio "${studioId}", because the rundownPlaylist "${playlist._id}" is in it.`)
+	if (playlist)
+		throw new Meteor.Error(
+			404,
+			`Can't remove studio "${studioId}", because the rundownPlaylist "${playlist._id}" is in it.`
+		)
 
 	const peripheralDevice = PeripheralDevices.findOne({ studioId: studio._id })
-	if (peripheralDevice) throw new Meteor.Error(404, `Can't remoce studio "${studioId}", because the peripheralDevice "${peripheralDevice._id}" is in it.`)
+	if (peripheralDevice)
+		throw new Meteor.Error(
+			404,
+			`Can't remoce studio "${studioId}", because the peripheralDevice "${peripheralDevice._id}" is in it.`
+		)
 
 	Studios.remove(studio._id)
 	Studios.remove({ studioId: studio._id })
@@ -61,10 +72,10 @@ export function removeStudio (context: MethodContext, studioId: StudioId): void 
 }
 
 class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {
-	insertStudio () {
+	insertStudio() {
 		return makePromise(() => insertStudio(this))
 	}
-	removeStudio (studioId: StudioId) {
+	removeStudio(studioId: StudioId) {
 		return makePromise(() => removeStudio(this, studioId))
 	}
 }

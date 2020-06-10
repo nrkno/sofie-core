@@ -3,10 +3,10 @@ import { Fiber, runInFiber } from './Fibers'
 
 let controllableDefer: boolean = false
 
-export function useControllableDefer () {
+export function useControllableDefer() {
 	controllableDefer = true
 }
-export function useNextTickDefer () {
+export function useNextTickDefer() {
 	controllableDefer = false
 }
 
@@ -14,7 +14,8 @@ namespace Meteor {
 	export interface Settings {
 		public: {
 			[id: string]: any
-		}, [id: string]: any
+		}
+		[id: string]: any
 	}
 
 	export interface UserEmail {
@@ -40,11 +41,11 @@ namespace Meteor {
 	}
 
 	export interface SubscriptionHandle {
-		stop (): void
-		ready (): boolean
+		stop(): void
+		ready(): boolean
 	}
 	export interface LiveQueryHandle {
-		stop (): void
+		stop(): void
 	}
 }
 const orgSetTimeout = setTimeout
@@ -54,19 +55,34 @@ const orgClearInterval = clearInterval
 
 const $ = {
 	Error,
-	get setTimeout (): Function { return setTimeout },
-	get setInterval (): Function { return setInterval },
-	get clearTimeout (): Function { return clearTimeout },
-	get clearInterval (): Function { return clearInterval },
+	get setTimeout(): Function {
+		return setTimeout
+	},
+	get setInterval(): Function {
+		return setInterval
+	},
+	get clearTimeout(): Function {
+		return clearTimeout
+	},
+	get clearInterval(): Function {
+		return clearInterval
+	},
 
-	get orgSetTimeout (): Function { return orgSetTimeout },
-	get orgSetInterval (): Function { return orgSetInterval },
-	get orgClearTimeout (): Function { return orgClearTimeout },
-	get orgClearInterval (): Function { return orgClearInterval },
+	get orgSetTimeout(): Function {
+		return orgSetTimeout
+	},
+	get orgSetInterval(): Function {
+		return orgSetInterval
+	},
+	get orgClearTimeout(): Function {
+		return orgClearTimeout
+	},
+	get orgClearInterval(): Function {
+		return orgClearInterval
+	},
 }
 
 export namespace MeteorMock {
-
 	export let isTest: boolean = true
 
 	export let isClient: boolean = false
@@ -77,29 +93,29 @@ export namespace MeteorMock {
 
 	export let settings: any = {}
 
-	export let mockMethods: {[name: string]: Function} = {}
+	export let mockMethods: { [name: string]: Function } = {}
 	export let mockUser: Meteor.User | undefined = undefined
 	export let mockStartupFunctions: Function[] = []
 
 	export let absolutePath = process.cwd()
 
-	export function user (): Meteor.User | undefined {
+	export function user(): Meteor.User | undefined {
 		return mockUser
 	}
-	export function userId (): string | undefined {
+	export function userId(): string | undefined {
 		return mockUser ? mockUser._id : undefined
 	}
-	function getMethodContext () {
+	function getMethodContext() {
 		return {
 			userId: mockUser ? mockUser._id : undefined,
 			connection: {
-				clientAddress: '1.1.1.1'
-			}
+				clientAddress: '1.1.1.1',
+			},
 		}
 	}
 	export class Error {
 		private _stack?: string
-		constructor (public error: number, public reason?: string) {
+		constructor(public error: number, public reason?: string) {
 			const e = new $.Error('')
 			let stack: string = e.stack || ''
 
@@ -111,38 +127,37 @@ export namespace MeteorMock {
 			this._stack = stack
 			// console.log(this._stack)
 		}
-		get name () {
+		get name() {
 			return this.toString()
 		}
-		get message () {
+		get message() {
 			return this.toString()
 		}
-		get details () {
+		get details() {
 			return undefined
 		}
-		get errorType () {
+		get errorType() {
 			return 'Meteor.Error'
 		}
-		get isClientSafe () {
+		get isClientSafe() {
 			return false
 		}
-		get stack () {
+		get stack() {
 			return this._stack
 		}
-		toString () {
+		toString() {
 			return `[${this.error}] ${this.reason}` // TODO: This should be changed to "${this.reason} [${this.error}]"
 		}
 	}
-	export function methods (methods: {[name: string]: Function}) {
+	export function methods(methods: { [name: string]: Function }) {
 		Object.assign(mockMethods, methods)
 	}
-	export function call (methodName: string, ...args: any[]) {
-
+	export function call(methodName: string, ...args: any[]) {
 		const fcn: Function = mockMethods[methodName]
 		if (!fcn) {
 			console.log(methodName)
 			console.log(mockMethods)
-			console.log((new Error(1)).stack)
+			console.log(new Error(1).stack)
 			throw new Error(404, `Method '${methodName}' not found`)
 		}
 
@@ -154,65 +169,65 @@ export namespace MeteorMock {
 				try {
 					const result = fcn.call(getMethodContext(), ...args)
 					Promise.resolve(result)
-					.then(result => {
-						callback(undefined, result)
-					})
-					.catch(e => {
-						callback(e)
-					})
+						.then((result) => {
+							callback(undefined, result)
+						})
+						.catch((e) => {
+							callback(e)
+						})
 				} catch (e) {
 					callback(e)
 				}
 			})
 		} else {
-			return waitForPromise(Promise.resolve(
-				fcn.call(getMethodContext(), ...args)
-			))
+			return waitForPromise(Promise.resolve(fcn.call(getMethodContext(), ...args)))
 		}
-
 	}
-	export function apply (methodName: string, args: any[], options?: {
-		wait?: boolean;
-		onResultReceived?: Function;
-		returnStubValue?: boolean;
-		throwStubExceptions?: boolean;
-	}, asyncCallback?: Function): any {
+	export function apply(
+		methodName: string,
+		args: any[],
+		options?: {
+			wait?: boolean
+			onResultReceived?: Function
+			returnStubValue?: boolean
+			throwStubExceptions?: boolean
+		},
+		asyncCallback?: Function
+	): any {
 		// ?
 		mockMethods[methodName].call(getMethodContext(), ...args)
 	}
-	export function absoluteUrl (path?: string): string {
+	export function absoluteUrl(path?: string): string {
 		return path + '' // todo
 	}
-	export function setTimeout (fcn: Function, time: number): number {
-
-		return $.setTimeout(() => {
+	export function setTimeout(fcn: Function, time: number): number {
+		return ($.setTimeout(() => {
 			runInFiber(fcn).catch(console.error)
-		}, time) as any as number
+		}, time) as any) as number
 	}
-	export function clearTimeout (timer: number) {
+	export function clearTimeout(timer: number) {
 		$.clearTimeout(timer)
 	}
-	export function setInterval (fcn: Function, time: number): number {
-		return $.setInterval(() => {
+	export function setInterval(fcn: Function, time: number): number {
+		return ($.setInterval(() => {
 			runInFiber(fcn).catch(console.error)
-		}, time) as any as number
+		}, time) as any) as number
 	}
-	export function clearInterval (timer: number) {
+	export function clearInterval(timer: number) {
 		$.clearInterval(timer)
 	}
-	export function defer (fcn: Function) {
+	export function defer(fcn: Function) {
 		return (controllableDefer ? $.setTimeout : $.orgSetTimeout)(() => {
 			runInFiber(fcn).catch(console.error)
 		}, 0)
 	}
 
-	export function startup (fcn: Function): void {
+	export function startup(fcn: Function): void {
 		mockStartupFunctions.push(fcn)
 	}
 
-	export function wrapAsync (fcn: Function, context?: Object): any {
+	export function wrapAsync(fcn: Function, context?: Object): any {
 		return (...args: any[]) => {
-
 			const fiber = Fiber.current
 			if (!fiber) throw new Error(500, `It appears that wrapAsync isn't running in a fiber`)
 
@@ -230,9 +245,8 @@ export namespace MeteorMock {
 		}
 	}
 
-	export function bindEnvironment (fcn: Function): any {
+	export function bindEnvironment(fcn: Function): any {
 		return (...args: any[]) => {
-
 			// Don't know how to implement in mock?
 
 			const fiber = Fiber.current
@@ -256,31 +270,34 @@ export namespace MeteorMock {
 	/**
 	 * Run the Meteor.startup() functions
 	 */
-	export function mockRunMeteorStartup () {
-		_.each(mockStartupFunctions, fcn => {
+	export function mockRunMeteorStartup() {
+		_.each(mockStartupFunctions, (fcn) => {
 			fcn()
 		})
 	}
-	export function mockLoginUser (user: Meteor.User) {
+	export function mockLoginUser(user: Meteor.User) {
 		mockUser = user
 	}
-	export function mockSetUsersCollection (usersCollection) {
+	export function mockSetUsersCollection(usersCollection) {
 		users = usersCollection
 	}
 
 	// locally defined function here, so there are no import to the rest of the code
-	const waitForPromise: <T>(p: Promise<T>) => T = wrapAsync(function waitForPromises<T> (p: Promise<T>, cb: (err: any | null, result?: any) => T) {
+	const waitForPromise: <T>(p: Promise<T>) => T = wrapAsync(function waitForPromises<T>(
+		p: Promise<T>,
+		cb: (err: any | null, result?: any) => T
+	) {
 		Promise.resolve(p)
-		.then((result) => {
-			cb(null, result)
-		})
-		.catch((e) => {
-			cb(e)
-		})
+			.then((result) => {
+				cb(null, result)
+			})
+			.catch((e) => {
+				cb(e)
+			})
 	})
 }
-export function setup () {
+export function setup() {
 	return {
-		Meteor: MeteorMock
+		Meteor: MeteorMock,
 	}
 }

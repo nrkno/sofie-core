@@ -5,7 +5,11 @@ import { StudioId, Studios, Studio } from '../../lib/collections/Studios'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import * as _ from 'underscore'
 import { logNotAllowed, rejectFields } from './lib/lib'
-import { ExternalMessageQueue, ExternalMessageQueueObjId, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
+import {
+	ExternalMessageQueue,
+	ExternalMessageQueueObjId,
+	ExternalMessageQueueObj,
+} from '../../lib/collections/ExternalMessageQueue'
 import { RecordedFiles, RecordedFileId, RecordedFile } from '../../lib/collections/RecordedFiles'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
@@ -18,11 +22,14 @@ import { isProtectedString } from '../../lib/lib'
 
 type StudioContent = { studioId: StudioId }
 export namespace StudioReadAccess {
-	export function studio (selector: MongoQuery<{_id: StudioId}>, cred: Credentials | ResolvedCredentials): boolean {
+	export function studio(selector: MongoQuery<{ _id: StudioId }>, cred: Credentials | ResolvedCredentials): boolean {
 		return studioContent({ studioId: selector._id }, cred)
 	}
 	/** Handles read access for all studioId content */
-	export function studioContent (selector: MongoQuery<StudioContent>, cred: Credentials | ResolvedCredentials): boolean {
+	export function studioContent(
+		selector: MongoQuery<StudioContent>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.studioId) throw new Meteor.Error(400, 'selector must contain studioId')
@@ -36,7 +43,7 @@ export namespace StudioReadAccess {
 export namespace StudioContentWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export function rundownPlaylist (cred0: Credentials, existingPlaylist: RundownPlaylist | RundownPlaylistId) {
+	export function rundownPlaylist(cred0: Credentials, existingPlaylist: RundownPlaylist | RundownPlaylistId) {
 		triggerWriteAccess()
 		if (existingPlaylist && isProtectedString(existingPlaylist)) {
 			const playlistId = existingPlaylist
@@ -46,16 +53,16 @@ export namespace StudioContentWriteAccess {
 		}
 		return { ...anyContent(cred0, existingPlaylist.studioId), playlist: existingPlaylist }
 	}
-	export function dataFromSnapshot (cred0: Credentials, studioId: StudioId) {
+	export function dataFromSnapshot(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function recordedFiles (cred0: Credentials, studioId: StudioId) {
+	export function recordedFiles(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function timeline (cred0: Credentials, studioId: StudioId) {
+	export function timeline(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function recordedFile (cred0: Credentials, existingFile: RecordedFile | RecordedFileId) {
+	export function recordedFile(cred0: Credentials, existingFile: RecordedFile | RecordedFileId) {
 		triggerWriteAccess()
 		if (existingFile && isProtectedString(existingFile)) {
 			const fileId = existingFile
@@ -65,10 +72,13 @@ export namespace StudioContentWriteAccess {
 		}
 		return { ...anyContent(cred0, existingFile.studioId), file: existingFile }
 	}
-	export function baseline (cred0: Credentials, studioId: StudioId) {
+	export function baseline(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function externalMessage (cred0: Credentials, existingMessage: ExternalMessageQueueObj | ExternalMessageQueueObjId) {
+	export function externalMessage(
+		cred0: Credentials,
+		existingMessage: ExternalMessageQueueObj | ExternalMessageQueueObjId
+	) {
 		triggerWriteAccess()
 		if (existingMessage && isProtectedString(existingMessage)) {
 			const messageId = existingMessage
@@ -79,14 +89,14 @@ export namespace StudioContentWriteAccess {
 		return { ...anyContent(cred0, existingMessage.studioId), message: existingMessage }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent (
+	export function anyContent(
 		cred0: Credentials,
 		studioId: StudioId
 	): {
-		userId: UserId | null,
-		organizationId: OrganizationId | null,
-		studioId: StudioId | null,
-		studio: Studio | null,
+		userId: UserId | null
+		organizationId: OrganizationId | null
+		studioId: StudioId | null
+		studio: Studio | null
 		cred: ResolvedCredentials | Credentials
 	} {
 		triggerWriteAccess()
@@ -96,7 +106,7 @@ export namespace StudioContentWriteAccess {
 				organizationId: null,
 				studioId: studioId,
 				studio: Studios.findOne(studioId) || null,
-				cred: cred0
+				cred: cred0,
 			}
 		}
 		const cred = resolveCredentials(cred0)
@@ -110,11 +120,11 @@ export namespace StudioContentWriteAccess {
 			organizationId: cred.organization._id,
 			studioId: studioId,
 			studio: access.document,
-			cred: cred
+			cred: cred,
 		}
 	}
 }
-function studioContentAllowWrite (userId, doc: StudioContent): boolean {
+function studioContentAllowWrite(userId, doc: StudioContent): boolean {
 	const access = allowAccessToStudio({ userId: userId }, doc.studioId)
 	if (!access.update) return logNotAllowed('Studio content', access.reason)
 	return true

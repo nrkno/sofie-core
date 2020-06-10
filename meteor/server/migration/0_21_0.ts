@@ -12,14 +12,14 @@ addMigrationSteps('0.21.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const styles = ShowStyleBases.find().fetch()
-			const invalid = _.find(styles, s => _.find(s.runtimeArguments || [], ra => ra._id === undefined))
+			const invalid = _.find(styles, (s) => _.find(s.runtimeArguments || [], (ra) => ra._id === undefined))
 			if (invalid) return 'ShowStyle RuntimeArguments need an id set'
 			return false
 		},
 		migrate: () => {
 			const styles = ShowStyleBases.find().fetch()
 
-			_.each(styles, ss => {
+			_.each(styles, (ss) => {
 				_.each(ss.runtimeArguments || [], (ra, i) => {
 					if (ra._id === undefined) {
 						ra._id = Random.id()
@@ -27,13 +27,16 @@ addMigrationSteps('0.21.0', [
 						let upd = {}
 						upd[`runtimeArguments.${i}`] = ra
 
-						ShowStyleBases.update({
-							_id: ss._id,
-						}, { $set: upd })
+						ShowStyleBases.update(
+							{
+								_id: ss._id,
+							},
+							{ $set: upd }
+						)
 					}
 				})
 			})
-		}
+		},
 	},
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '0.16.0'),
 	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '0.5.1'),

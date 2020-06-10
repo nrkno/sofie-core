@@ -28,25 +28,18 @@ PickerGET.route('/health/:token/:studioId', (params, req: IncomingMessage, res: 
 	let status = getSystemStatus({ token: params.token }, protectString(params.studioId))
 	health(status, res)
 })
-function health (status: StatusResponse, res: ServerResponse) {
+function health(status: StatusResponse, res: ServerResponse) {
 	res.setHeader('Content-Type', 'application/json')
 	let content = ''
 
-	res.statusCode = (
-			(
-			status.status === 'OK' ||
-			status.status === 'WARNING'
-		) ?
-		200 :
-		500
-	)
+	res.statusCode = status.status === 'OK' || status.status === 'WARNING' ? 200 : 500
 
 	content = JSON.stringify(status)
 	res.end(content)
 }
 
 class ServerSystemStatusAPI extends MethodContextAPI implements NewSystemStatusAPI {
-	getSystemStatus () {
+	getSystemStatus() {
 		return makePromise(() => getSystemStatus(this))
 	}
 }

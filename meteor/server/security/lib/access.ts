@@ -18,7 +18,7 @@ export interface Access<T> {
 	// The document in question
 	document: T | null
 }
-export function allAccess<T> (document: T | null, reason?: string): Access<T> {
+export function allAccess<T>(document: T | null, reason?: string): Access<T> {
 	return {
 		read: true,
 		insert: true,
@@ -28,13 +28,16 @@ export function allAccess<T> (document: T | null, reason?: string): Access<T> {
 		playout: true,
 		configure: true,
 		reason: reason || '',
-		document: document
+		document: document,
 	}
 }
-export function noAccess (reason: string): Access<any> {
+export function noAccess(reason: string): Access<any> {
 	return combineAccess({}, allAccess(null, reason))
 }
-export function combineAccess<T> (access0: Access<T> | { reason?: string, document?: null }, access1: Access<T>): Access<T> {
+export function combineAccess<T>(
+	access0: Access<T> | { reason?: string; document?: null },
+	access1: Access<T>
+): Access<T> {
 	const a: any = {}
 	_.each(_.keys(access0).concat(_.keys(access1)), (key) => {
 		a[key] = access0[key] && access1[key]

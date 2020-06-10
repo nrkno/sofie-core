@@ -11,19 +11,19 @@ import { resolveCredentials } from '../security/lib/credentials'
 import { logNotAllowed } from '../../server/security/lib/lib'
 import { UserProfile } from '../../lib/collections/Users'
 
-export function createUser (email: string, password: string, profile: UserProfile) {
+export function createUser(email: string, password: string, profile: UserProfile) {
 	triggerWriteAccessBecauseNoCheckNecessary()
 	const id = Accounts.createUser({
 		email: email,
 		password: password,
-		profile: profile
+		profile: profile,
 	})
 	if (!id) throw new Meteor.Error(500, 'Error creating user account')
 	/** @todo - Enable once user emails have been setup */
 	// Accounts.sendVerificationEmail(id, email)
 }
 
-export function removeUser (context: MethodContext) {
+export function removeUser(context: MethodContext) {
 	triggerWriteAccess()
 	if (!context.userId) throw new Meteor.Error(403, `Not logged in`)
 	const access = SystemReadAccess.currentUser(context.userId, context)
@@ -33,13 +33,12 @@ export function removeUser (context: MethodContext) {
 }
 
 class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
-	createUser (email: string, password: string, profile: UserProfile) {
+	createUser(email: string, password: string, profile: UserProfile) {
 		return makePromise(() => createUser(email, password, profile))
 	}
-	removeUser () {
+	removeUser() {
 		return makePromise(() => removeUser(this))
 	}
 }
-
 
 registerClassToMeteorMethods(UserAPIMethods, ServerUserAPI, false)

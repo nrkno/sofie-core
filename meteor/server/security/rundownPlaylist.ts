@@ -11,14 +11,19 @@ import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 
-
 type RundownPlaylistContent = { playlistId: RundownPlaylistId }
 export namespace RundownPlaylistReadAccess {
-	export function rundownPlaylist (selector: MongoQuery<{ _id: RundownPlaylistId }>, cred: Credentials | ResolvedCredentials): boolean {
+	export function rundownPlaylist(
+		selector: MongoQuery<{ _id: RundownPlaylistId }>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		return rundownPlaylistContent({ playlistId: selector._id }, cred)
 	}
 	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
-	export function rundownPlaylistContent (selector: MongoQuery<RundownPlaylistContent>, cred: Credentials | ResolvedCredentials): boolean {
+	export function rundownPlaylistContent(
+		selector: MongoQuery<RundownPlaylistContent>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		triggerWriteAccess()
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
@@ -31,7 +36,7 @@ export namespace RundownPlaylistReadAccess {
 	}
 }
 export namespace RundownPlaylistContentWriteAccess {
-	export function rundown (cred0: Credentials, existingRundown: Rundown | RundownId) {
+	export function rundown(cred0: Credentials, existingRundown: Rundown | RundownId) {
 		triggerWriteAccess()
 		if (existingRundown && isProtectedString(existingRundown)) {
 			const rundownId = existingRundown
@@ -41,18 +46,18 @@ export namespace RundownPlaylistContentWriteAccess {
 		}
 		return { ...anyContent(cred0, existingRundown.playlistId), rundown: existingRundown }
 	}
-	export function playout (cred0: Credentials, playlistId: RundownPlaylistId) {
-		return anyContent(cred0,playlistId)
+	export function playout(cred0: Credentials, playlistId: RundownPlaylistId) {
+		return anyContent(cred0, playlistId)
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent (
+	export function anyContent(
 		cred0: Credentials,
 		playlistId: RundownPlaylistId
 	): {
-		userId: UserId | null,
-		organizationId: OrganizationId | null,
-		studioId: RundownPlaylistId | null,
-		playlist: RundownPlaylist | null,
+		userId: UserId | null
+		organizationId: OrganizationId | null
+		studioId: RundownPlaylistId | null
+		playlist: RundownPlaylist | null
 		cred: ResolvedCredentials | Credentials
 	} {
 		triggerWriteAccess()
@@ -62,7 +67,7 @@ export namespace RundownPlaylistContentWriteAccess {
 				organizationId: null,
 				studioId: playlistId,
 				playlist: RundownPlaylists.findOne(playlistId) || null,
-				cred: cred0
+				cred: cred0,
 			}
 		}
 		const cred = resolveCredentials(cred0)
@@ -76,7 +81,7 @@ export namespace RundownPlaylistContentWriteAccess {
 			organizationId: cred.organization._id,
 			studioId: playlistId,
 			playlist: access.document,
-			cred: cred
+			cred: cred,
 		}
 	}
 }

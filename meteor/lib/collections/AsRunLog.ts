@@ -1,10 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, Omit, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintAsRunLogEvent,
-	IBlueprintAsRunLogEventContent
-} from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintAsRunLogEvent, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { StudioId } from './Studios'
@@ -16,18 +13,10 @@ import { TimelineObjId } from './Timeline'
 export type AsRunLogEventBase = Omit<
 	ProtectedStringProperties<
 		IBlueprintAsRunLogEvent,
-		'rundownId' |
-		'studioId' |
-		'segmentId' |
-		'partInstanceId' |
-		'pieceInstanceId' |
-		'timelineObjectId'
+		'rundownId' | 'studioId' | 'segmentId' | 'partInstanceId' | 'pieceInstanceId' | 'timelineObjectId'
 	>,
-	'_id' |
-	'timestamp' |
-	'rehersal'
+	'_id' | 'timestamp' | 'rehersal'
 >
-
 
 /** A string, identifying a AsRunLogEvent */
 export type AsRunLogEventId = ProtectedString<'AsRunLogEventId'>
@@ -37,7 +26,7 @@ export interface AsRunLogEvent extends AsRunLogEventBase {
 	/** Timestamp of the event */
 	timestamp: Time
 	/** If the event was done in rehersal */
-	rehersal: boolean,
+	rehersal: boolean
 
 	rundownId: RundownId
 	studioId: StudioId
@@ -47,17 +36,18 @@ export interface AsRunLogEvent extends AsRunLogEventBase {
 	timelineObjectId?: TimelineObjId
 }
 
-export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent>
-	= createMongoCollection<AsRunLogEvent>('asRunLog')
+export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent> = createMongoCollection<AsRunLogEvent>(
+	'asRunLog'
+)
 registerCollection('AsRunLog', AsRunLog)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		AsRunLog._ensureIndex({
-			rundownId: 1
+			rundownId: 1,
 		})
 		AsRunLog._ensureIndex({
-			timestamp: 1
+			timestamp: 1,
 		})
 	}
 })

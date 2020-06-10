@@ -13,28 +13,29 @@ export interface UserActionsLogItem {
 
 	organizationId: OrganizationId | null
 	/** The user from which the action originated */
-	userId: UserId | null,
+	userId: UserId | null
 	/** The cliend address (IP-address) of the requester */
-	clientAddress: string,
-	timestamp: Time,
-	method: string,
-	args: string,
-	context: string,
-	success?: boolean,
-	doneTime?: Time,
-	executionTime?: Time,
+	clientAddress: string
+	timestamp: Time
+	method: string
+	args: string
+	context: string
+	success?: boolean
+	doneTime?: Time
+	executionTime?: Time
 	errorMessage?: string
 }
 
-export const UserActionsLog: TransformedCollection<UserActionsLogItem, UserActionsLogItem>
-	= createMongoCollection<UserActionsLogItem>('userActionsLog')
+export const UserActionsLog: TransformedCollection<UserActionsLogItem, UserActionsLogItem> = createMongoCollection<
+	UserActionsLogItem
+>('userActionsLog')
 registerCollection('UserActionsLog', UserActionsLog)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		UserActionsLog._ensureIndex({
 			organizationId: 1,
-			timestamp: 1
+			timestamp: 1,
 		})
 	}
 })

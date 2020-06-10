@@ -14,62 +14,94 @@ import { MethodContextAPI } from '../../../lib/api/methods'
 import { Settings } from '../../../lib/Settings'
 
 class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
-
-	rundownPrepareForBroadcast (playlistId: RundownPlaylistId) {
+	rundownPrepareForBroadcast(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.prepareRundownPlaylistForBroadcast(this, playlistId))
 	}
-	rundownResetRundown (playlistId: RundownPlaylistId) {
+	rundownResetRundown(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.resetRundownPlaylist(this, playlistId))
 	}
-	rundownResetAndActivate (playlistId: RundownPlaylistId, rehearsal?: boolean) {
+	rundownResetAndActivate(playlistId: RundownPlaylistId, rehearsal?: boolean) {
 		return makePromise(() => ServerPlayoutAPI.resetAndActivateRundownPlaylist(this, playlistId, rehearsal))
 	}
-	rundownActivate (playlistId: RundownPlaylistId, rehearsal: boolean) {
+	rundownActivate(playlistId: RundownPlaylistId, rehearsal: boolean) {
 		return makePromise(() => ServerPlayoutAPI.activateRundownPlaylist(this, playlistId, rehearsal))
 	}
-	rundownDeactivate (playlistId: RundownPlaylistId) {
+	rundownDeactivate(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.deactivateRundownPlaylist(this, playlistId))
 	}
-	reloadRundownPlaylistData (playlistId: RundownPlaylistId) {
+	reloadRundownPlaylistData(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.reloadRundownPlaylistData(this, playlistId))
 	}
-	pieceTakeNow (playlistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
-		return makePromise(() => ServerPlayoutAPI.pieceTakeNow(this, playlistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy))
+	pieceTakeNow(
+		playlistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
+	) {
+		return makePromise(() =>
+			ServerPlayoutAPI.pieceTakeNow(this, playlistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
+		)
 	}
-	rundownTake (playlistId: RundownPlaylistId) {
+	rundownTake(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.takeNextPart(this, playlistId))
 	}
-	rundownTogglePartArgument (playlistId: RundownPlaylistId, partInstanceId: PartInstanceId, property: string, value: string) {
-		return makePromise(() => ServerPlayoutAPI.rundownTogglePartArgument(this, playlistId, partInstanceId, property, value))
+	rundownTogglePartArgument(
+		playlistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		property: string,
+		value: string
+	) {
+		return makePromise(() =>
+			ServerPlayoutAPI.rundownTogglePartArgument(this, playlistId, partInstanceId, property, value)
+		)
 	}
-	rundownSetNext (playlistId: RundownPlaylistId, partId: PartId, timeOffset?: number | undefined) {
+	rundownSetNext(playlistId: RundownPlaylistId, partId: PartId, timeOffset?: number | undefined) {
 		return makePromise(() => ServerPlayoutAPI.setNextPart(this, playlistId, partId, true, timeOffset))
 	}
-	rundownMoveNext (playlistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
+	rundownMoveNext(playlistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
 		return makePromise(() => ServerPlayoutAPI.moveNextPart(this, playlistId, horisontalDelta, verticalDelta, true))
 	}
-	rundownActivateHold (playlistId: RundownPlaylistId) {
+	rundownActivateHold(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.activateHold(this, playlistId))
 	}
-	rundownDisableNextPiece (rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+	rundownDisableNextPiece(rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return makePromise(() => ServerPlayoutAPI.disableNextPiece(this, rundownPlaylistId, undo))
 	}
-	segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceId: PieceId, queue: boolean) {
-		return makePromise(() => ServerPlayoutAPI.segmentAdLibPieceStart(this, rundownPlaylistId, partInstanceId, pieceId, queue))
+	segmentAdLibPieceStart(
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		pieceId: PieceId,
+		queue: boolean
+	) {
+		return makePromise(() =>
+			ServerPlayoutAPI.segmentAdLibPieceStart(this, rundownPlaylistId, partInstanceId, pieceId, queue)
+		)
 	}
-	rundownBaselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceId: PieceId, queue: boolean) {
-		return makePromise(() => ServerPlayoutAPI.rundownBaselineAdLibPieceStart(this, rundownPlaylistId, partInstanceId, pieceId, queue))
+	rundownBaselineAdLibPieceStart(
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		pieceId: PieceId,
+		queue: boolean
+	) {
+		return makePromise(() =>
+			ServerPlayoutAPI.rundownBaselineAdLibPieceStart(this, rundownPlaylistId, partInstanceId, pieceId, queue)
+		)
 	}
-	sourceLayerOnPartStop (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, sourceLayerIds: string[]) {
-		return makePromise(() => ServerPlayoutAPI.sourceLayerOnPartStop(this, rundownPlaylistId, partInstanceId, sourceLayerIds))
+	sourceLayerOnPartStop(
+		rundownPlaylistId: RundownPlaylistId,
+		partInstanceId: PartInstanceId,
+		sourceLayerIds: string[]
+	) {
+		return makePromise(() =>
+			ServerPlayoutAPI.sourceLayerOnPartStop(this, rundownPlaylistId, partInstanceId, sourceLayerIds)
+		)
 	}
-	sourceLayerStickyPieceStart (playlistId: RundownPlaylistId, sourceLayerId: string) {
+	sourceLayerStickyPieceStart(playlistId: RundownPlaylistId, sourceLayerId: string) {
 		return makePromise(() => ServerPlayoutAPI.sourceLayerStickyPieceStart(this, playlistId, sourceLayerId))
 	}
-	updateStudioBaseline (studioId: StudioId) {
+	updateStudioBaseline(studioId: StudioId) {
 		return makePromise(() => ServerPlayoutAPI.updateStudioBaseline(this, studioId))
 	}
-	shouldUpdateStudioBaseline (studioId: StudioId) {
+	shouldUpdateStudioBaseline(studioId: StudioId) {
 		return makePromise(() => ServerPlayoutAPI.shouldUpdateStudioBaseline(this, studioId))
 	}
 }
@@ -78,7 +110,7 @@ registerClassToMeteorMethods(PlayoutAPIMethods, ServerPlayoutAPIClass, false)
 if (!Settings.enableUserAccounts) {
 	// Temporary methods
 	Meteor.methods({
-		'debug__printTime': () => {
+		debug__printTime: () => {
 			let now = getCurrentTime()
 			logger.debug(new Date(now))
 			return now

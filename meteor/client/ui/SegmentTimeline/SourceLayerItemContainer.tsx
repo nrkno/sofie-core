@@ -4,19 +4,18 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
 import { getCurrentTime, unprotectObject } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { SourceLayerType, VTContent, LiveSpeakContent, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
+import {
+	SourceLayerType,
+	VTContent,
+	LiveSpeakContent,
+	getPieceGroupId,
+} from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 // @ts-ignore Meteor package not recognized by Typescript
 import { ComputedField } from 'meteor/peerlibrary:computed-field'
 import { Meteor } from 'meteor/meteor'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import {
-	ISourceLayerUi,
-	IOutputLayerUi,
-	SegmentUi,
-	PartUi,
-	PieceUi
-} from './SegmentTimelineContainer'
+import { ISourceLayerUi, IOutputLayerUi, SegmentUi, PartUi, PieceUi } from './SegmentTimelineContainer'
 import { Tracker } from 'meteor/tracker'
 import { PubSub } from '../../../lib/api/pubsub'
 
@@ -63,14 +62,14 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 
 			switch (this.props.piece.sourceLayer.type) {
 				case SourceLayerType.VT:
-					objId = piece.instance.piece.content ?
-						(piece.instance.piece.content as VTContent).fileName.toUpperCase() :
-						undefined
+					objId = piece.instance.piece.content
+						? (piece.instance.piece.content as VTContent).fileName.toUpperCase()
+						: undefined
 					break
 				case SourceLayerType.LIVE_SPEAK:
-					objId = piece.instance.piece.content ?
-						(piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase() :
-						undefined
+					objId = piece.instance.piece.content
+						? (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
+						: undefined
 					break
 			}
 
@@ -78,11 +77,11 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 				this.objId = objId
 				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
-					mediaId: this.objId
+					mediaId: this.objId,
 				})
 			}
 		} else {
-			console.error('One of the Piece\'s is invalid:', this.props.piece)
+			console.error("One of the Piece's is invalid:", this.props.piece)
 		}
 	}
 
@@ -102,8 +101,11 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 
 			// Check item status
 			if (props.piece.sourceLayer) {
-
-				const { metadata, status, contentDuration } = checkPieceContentStatus(props.piece.instance.piece, props.piece.sourceLayer, props.playlist.getStudio().settings)
+				const { metadata, status, contentDuration } = checkPieceContentStatus(
+					props.piece.instance.piece,
+					props.piece.sourceLayer,
+					props.playlist.getStudio().settings
+				)
 				if (status !== props.piece.instance.piece.status || metadata) {
 					// Deep clone the required bits
 					const origPiece = (overrides.piece || props.piece) as PieceUi
@@ -113,10 +115,10 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 							...origPiece.instance,
 							piece: {
 								...origPiece.instance.piece,
-								status: status
-							}
+								status: status,
+							},
 						},
-						contentMetaData: metadata
+						contentMetaData: metadata,
 					}
 
 					if (
@@ -160,8 +162,6 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 	}
 
 	render() {
-		return (
-			<SourceLayerItem {...this.props} {...this.overrides} />
-		)
+		return <SourceLayerItem {...this.props} {...this.overrides} />
 	}
 }

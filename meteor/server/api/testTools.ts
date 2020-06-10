@@ -2,7 +2,15 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { RecordedFiles, RecordedFile, RecordedFileId } from '../../lib/collections/RecordedFiles'
 import { Studios, Studio, ITestToolsConfig, MappingExt, StudioId } from '../../lib/collections/Studios'
-import { getCurrentTime, literal, waitForPromise, getHash, getRandomId, protectString, makePromise } from '../../lib/lib'
+import {
+	getCurrentTime,
+	literal,
+	waitForPromise,
+	getHash,
+	getRandomId,
+	protectString,
+	makePromise,
+} from '../../lib/lib'
 import { NewTestToolsAPI, TestToolsAPIMethods } from '../../lib/api/testTools'
 import { registerClassToMeteorMethods } from '../methods'
 import * as moment from 'moment'
@@ -16,7 +24,6 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { initCacheForRundownPlaylistFromStudio } from '../DatabaseCaches'
 
-
 const deleteRequest = promisify(request.delete)
 
 // TODO: Allow arbitrary layers:
@@ -25,20 +32,21 @@ const layerInput = '_internal_ccg_record_input'
 
 const defaultConfig = {
 	channelFormat: TSR.ChannelFormat.HD_1080I5000,
-	prefix: ''
+	prefix: '',
 }
-export function getStudioConfig (studio: Studio): ITestToolsConfig {
+export function getStudioConfig(studio: Studio): ITestToolsConfig {
 	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
 	if (!config.recordings) config.recordings = defaultConfig
 	return config
 }
 
-export function generateRecordingTimelineObjs (studio: Studio, recording: RecordedFile): TimelineObjRecording[] {
+export function generateRecordingTimelineObjs(studio: Studio, recording: RecordedFile): TimelineObjRecording[] {
 	if (!studio) throw new Meteor.Error(404, `Studio was not defined!`)
 	if (!recording) throw new Meteor.Error(404, `Recording was not defined!`)
 
 	const config = getStudioConfig(studio)
-	if (!config.recordings.decklinkDevice) throw new Meteor.Error(500, `Recording decklink for Studio "${studio._id}" not defined!`)
+	if (!config.recordings.decklinkDevice)
+		throw new Meteor.Error(500, `Recording decklink for Studio "${studio._id}" not defined!`)
 
 	if (!studio.mappings[layerInput] || !studio.mappings[layerRecord]) {
 		throw new Meteor.Error(500, `Recording layer mappings in Studio "${studio._id}" not defined!`)
@@ -46,7 +54,7 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 
 	const IDs = {
 		record: getHash(recording._id + layerRecord),
-		input: getHash(recording._id + layerInput)
+		input: getHash(recording._id + layerInput),
 	}
 
 	return setTimelineId([
@@ -65,9 +73,10 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 				deviceType: TSR.DeviceType.CASPARCG,
 				type: TSR.TimelineContentTypeCasparCg.RECORD,
 				file: recording.path,
-				encoderOptions: '-f mp4 -vcodec libx264 -preset ultrafast -tune fastdecode -crf 25 -acodec aac -b:a 192k'
+				encoderOptions:
+					'-f mp4 -vcodec libx264 -preset ultrafast -tune fastdecode -crf 25 -acodec aac -b:a 192k',
 				// This looks fine, but may need refinement
-			}
+			},
 		}),
 		literal<TSR.TimelineObjCCGInput & TimelineObjRecording>({
 			id: IDs.input,
@@ -82,9 +91,9 @@ export function generateRecordingTimelineObjs (studio: Studio, recording: Record
 				type: TSR.TimelineContentTypeCasparCg.INPUT,
 				inputType: 'decklink',
 				device: config.recordings.decklinkDevice,
-				deviceFormat: config.recordings.channelFormat
-			}
-		})
+				deviceFormat: config.recordings.channelFormat,
+			},
+		}),
 	])
 }
 
@@ -92,19 +101,22 @@ export namespace ServerTestToolsAPI {
 	/**
 	 * Stop a currently running recording
 	 */
-	export function recordStop (context: MethodContext, studioId: StudioId) {
+	export function recordStop(context: MethodContext, studioId: StudioId) {
 		check(studioId, String)
 		checkAccessAndGetStudio(context, studioId)
 
 		const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
-		const updated = cache.RecordedFiles.update({
-			studioId: studioId,
-			stoppedAt: { $exists: false }
-		}, {
-			$set: {
-				stoppedAt: getCurrentTime()
+		const updated = cache.RecordedFiles.update(
+			{
+				studioId: studioId,
+				stoppedAt: { $exists: false },
+			},
+			{
+				$set: {
+					stoppedAt: getCurrentTime(),
+				},
 			}
-		})
+		)
 
 		if (updated === 0) throw new Meteor.Error(404, `No active recording for "${studioId}" was found!`)
 
@@ -113,7 +125,7 @@ export namespace ServerTestToolsAPI {
 		waitForPromise(cache.saveAllToDatabase())
 	}
 
-	export function recordStart (context: MethodContext, studioId: StudioId, name: string) {
+	export function recordStart(context: MethodContext, studioId: StudioId, name: string) {
 		check(studioId, String)
 		check(name, String)
 
@@ -122,17 +134,21 @@ export namespace ServerTestToolsAPI {
 
 		const active = cache.RecordedFiles.findOne({
 			studioId: studioId,
-			stoppedAt: { $exists: false }
+			stoppedAt: { $exists: false },
 		})
 		if (active) throw new Meteor.Error(404, `An active recording for "${studioId}" was found!`)
 
 		if (name === '') name = moment(getCurrentTime()).format('YYYY-MM-DD HH:mm:ss')
 
 		const config = getStudioConfig(studio)
-		if (!config.recordings.channelIndex) throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
-		if (!config.recordings.deviceId) throw new Meteor.Error(500, `Recording device for Studio "${studio._id}" not defined!`)
-		if (!config.recordings.decklinkDevice) throw new Meteor.Error(500, `Recording decklink for Studio "${studio._id}" not defined!`)
-		if (!config.recordings.channelIndex) throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
+		if (!config.recordings.channelIndex)
+			throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
+		if (!config.recordings.deviceId)
+			throw new Meteor.Error(500, `Recording device for Studio "${studio._id}" not defined!`)
+		if (!config.recordings.decklinkDevice)
+			throw new Meteor.Error(500, `Recording decklink for Studio "${studio._id}" not defined!`)
+		if (!config.recordings.channelIndex)
+			throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
 
 		// Ensure the layer mappings in the db are correct
 		const setter: any = {}
@@ -142,7 +158,7 @@ export namespace ServerTestToolsAPI {
 			channel: config.recordings.channelIndex,
 			layer: 10,
 			lookahead: LookaheadMode.NONE,
-			internal: true
+			internal: true,
 		})
 		setter['mappings.' + layerRecord] = literal<TSR.MappingCasparCG & MappingExt>({
 			device: TSR.DeviceType.CASPARCG,
@@ -150,7 +166,7 @@ export namespace ServerTestToolsAPI {
 			channel: config.recordings.channelIndex,
 			layer: 0,
 			lookahead: LookaheadMode.NONE,
-			internal: true
+			internal: true,
 		})
 		cache.Studios.update(studio._id, { $set: setter })
 
@@ -163,7 +179,7 @@ export namespace ServerTestToolsAPI {
 			modified: getCurrentTime(),
 			startedAt: getCurrentTime(),
 			name: name,
-			path: path
+			path: path,
 		})
 
 		updateTimeline(cache, studioId)
@@ -171,7 +187,7 @@ export namespace ServerTestToolsAPI {
 		waitForPromise(cache.saveAllToDatabase())
 	}
 
-	export function recordDelete (context: MethodContext, fileId: RecordedFileId) {
+	export function recordDelete(context: MethodContext, fileId: RecordedFileId) {
 		check(fileId, String)
 
 		const access = StudioContentWriteAccess.recordedFile(context, fileId)
@@ -182,7 +198,8 @@ export namespace ServerTestToolsAPI {
 		if (!studio) throw new Meteor.Error(404, `Studio "${file.studioId}" was not found!`)
 
 		const config = getStudioConfig(studio)
-		if (!config.recordings.urlPrefix) throw new Meteor.Error(500, `URL prefix for Studio "${studio._id}" not defined!`)
+		if (!config.recordings.urlPrefix)
+			throw new Meteor.Error(500, `URL prefix for Studio "${studio._id}" not defined!`)
 
 		const res = waitForPromise(deleteRequest({ uri: config.recordings.urlPrefix + file.path }))
 
@@ -194,20 +211,20 @@ export namespace ServerTestToolsAPI {
 		RecordedFiles.remove(fileId)
 	}
 }
-function checkAccessAndGetStudio (context: MethodContext, studioId: StudioId): Studio {
+function checkAccessAndGetStudio(context: MethodContext, studioId: StudioId): Studio {
 	const access = StudioContentWriteAccess.recordedFiles(context, studioId)
 	const studio = access.studio
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 	return studio
 }
 class ServerTestToolsAPIClass extends MethodContextAPI implements NewTestToolsAPI {
-	recordStop (studioId: StudioId) {
+	recordStop(studioId: StudioId) {
 		return makePromise(() => ServerTestToolsAPI.recordStop(this, studioId))
 	}
-	recordStart (studioId: StudioId, name: string) {
+	recordStart(studioId: StudioId, name: string) {
 		return makePromise(() => ServerTestToolsAPI.recordStart(this, studioId, name))
 	}
-	recordDelete (fileId: RecordedFileId) {
+	recordDelete(fileId: RecordedFileId) {
 		return makePromise(() => ServerTestToolsAPI.recordDelete(this, fileId))
 	}
 }

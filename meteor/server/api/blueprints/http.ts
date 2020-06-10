@@ -18,28 +18,22 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 
 	let content = ''
 	try {
-
 		const blueprintId = params.blueprintId
 		const url = parseUrl(req.url || '', true)
 		const force = url.query.force === '1' || url.query.force === 'true'
 
 		const blueprintNames = url.query['name'] || undefined
-		const blueprintName: string | undefined = (
-			_.isArray(blueprintNames) ?
-			blueprintNames[0] :
-			blueprintNames
-		)
+		const blueprintName: string | undefined = _.isArray(blueprintNames) ? blueprintNames[0] : blueprintNames
 
 		check(blueprintId, String)
 		check(blueprintName, Match.Maybe(String))
 
-		const userId = req.headers.authorization
-			? req.headers.authorization.split(' ')[1]
-			: ''
+		const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
 		const body = (req as any).body as string | undefined
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
-		if (!_.isString(body) || body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+		if (!_.isString(body) || body.length < 10)
+			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
 		uploadBlueprint(
 			{ userId: protectString(userId) },
@@ -83,10 +77,8 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {
 			try {
-				const userId = req.headers.authorization
-					? req.headers.authorization.split(' ')[1]
-					: ''
-				uploadBlueprint({userId: protectString(userId)}, protectString<BlueprintId>(id), collection[id], id)
+				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
+				uploadBlueprint({ userId: protectString(userId) }, protectString<BlueprintId>(id), collection[id], id)
 			} catch (e) {
 				logger.error('Blueprint restore failed: ' + e)
 				errors.push(e)
@@ -103,7 +95,6 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 		} else {
 			res.statusCode = 200
 		}
-
 	} catch (e) {
 		res.statusCode = 500
 		content = e + ''

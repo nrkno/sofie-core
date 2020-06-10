@@ -10,7 +10,6 @@ import { RundownId } from './Rundowns'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 
-
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
 	GROUP = 'group',
@@ -47,7 +46,7 @@ export enum TimelineObjType {
 	/** Objects controlling manual playback */
 	MANUAL = 'manual',
 	/** "Magic object", used to calculate a hash of the timeline */
-	STAT = 'stat'
+	STAT = 'stat',
 }
 export interface TimelineObjStat extends TimelineObjGeneric {
 	objectType: TimelineObjType.STAT
@@ -80,7 +79,8 @@ export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true
 }
-export interface TimelineObjPartAbstract extends TimelineObjRundown { // used for sending callbacks
+export interface TimelineObjPartAbstract extends TimelineObjRundown {
+	// used for sending callbacks
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
@@ -92,23 +92,24 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown { // used fo
 		}
 	}
 }
-export interface TimelineObjPieceAbstract extends TimelineObjRundown { // used for sending callbacks
+export interface TimelineObjPieceAbstract extends TimelineObjRundown {
+	// used for sending callbacks
 	content: {
 		deviceType: TSR.DeviceType.ABSTRACT
 		type: 'callback'
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
-			rundownId: RundownId,
-			pieceInstanceId: PieceInstanceId,
+			rundownId: RundownId
+			pieceInstanceId: PieceInstanceId
 			dynamicallyInserted?: boolean
 		}
 	}
 }
 
-export function getTimelineId (obj: TimelineObjGeneric): TimelineObjId
-export function getTimelineId (studioId: StudioId, id: string): TimelineObjId
-export function getTimelineId (objOrStudioId: TimelineObjGeneric | StudioId, id?: string): TimelineObjId {
+export function getTimelineId(obj: TimelineObjGeneric): TimelineObjId
+export function getTimelineId(studioId: StudioId, id: string): TimelineObjId
+export function getTimelineId(objOrStudioId: TimelineObjGeneric | StudioId, id?: string): TimelineObjId {
 	if (isProtectedString(objOrStudioId)) {
 		if (!objOrStudioId) throw new Meteor.Error(500, `Parameter studioId missing`)
 		if (!id) throw new Meteor.Error(500, `Parameter id missing`)
@@ -126,13 +127,13 @@ export function getTimelineId (objOrStudioId: TimelineObjGeneric | StudioId, id?
 		return protectString(obj.studioId + '_' + obj.id)
 	}
 }
-export function setTimelineId<T extends TimelineObjGeneric> (objs: Array<T>): Array<T> {
-	return _.map(objs, obj => {
+export function setTimelineId<T extends TimelineObjGeneric>(objs: Array<T>): Array<T> {
+	return _.map(objs, (obj) => {
 		obj._id = getTimelineId(obj)
 		return obj
 	})
 }
-export function fixTimelineId (obj: TimelineObjectCoreExt) {
+export function fixTimelineId(obj: TimelineObjectCoreExt) {
 	// Temporary workaround, to handle old _id:s in the db. We might want to add a warning in this, and later remove it.
 
 	const o: any = obj
@@ -144,13 +145,14 @@ export function fixTimelineId (obj: TimelineObjectCoreExt) {
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric>
-	= createMongoCollection<TimelineObjGeneric>('timeline')
+export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric> = createMongoCollection<
+	TimelineObjGeneric
+>('timeline')
 registerCollection('Timeline', Timeline)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })

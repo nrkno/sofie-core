@@ -40,7 +40,7 @@ export interface StatusResponseBase {
 		// statusCode: StatusCode,
 		statusCodeString: string
 		messages: Array<string>
-		versions: {[component: string]: string}
+		versions: { [component: string]: string }
 	}
 	_status: StatusCode
 }
@@ -52,8 +52,8 @@ export interface Component extends StatusResponseBase {
 }
 
 export interface NewSystemStatusAPI {
-	getSystemStatus (): Promise<StatusResponse>
+	getSystemStatus(): Promise<StatusResponse>
 }
 export enum SystemStatusAPIMethods {
-	'getSystemStatus' = 'systemStatus.getSystemStatus'
+	'getSystemStatus' = 'systemStatus.getSystemStatus',
 }

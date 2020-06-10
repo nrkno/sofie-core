@@ -14,10 +14,10 @@ import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 
-meteorPublish(PubSub.studios, function (selector0, token) {
+meteorPublish(PubSub.studios, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	const modifier: FindOptions<DBStudio> = {
-		fields: {}
+		fields: {},
 	}
 	if (
 		NoSecurityReadAccess.any() ||
@@ -28,19 +28,17 @@ meteorPublish(PubSub.studios, function (selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, token) {
-
+meteorPublish(PubSub.studioOfDevice, function(deviceId: PeripheralDeviceId, token) {
 	if (PeripheralDeviceReadAccess.peripheralDevice({ _id: deviceId }, { userId: this.userId, token })) {
-
 		let peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
 		const modifier: FindOptions<DBStudio> = {
-			fields: {}
+			fields: {},
 		}
 		let selector = {
-			_id: peripheralDevice.studioId
+			_id: peripheralDevice.studioId,
 		}
 		if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 			return Studios.find(selector, modifier)
@@ -49,20 +47,20 @@ meteorPublish(PubSub.studioOfDevice, function (deviceId: PeripheralDeviceId, tok
 	return null
 })
 
-meteorPublish(PubSub.externalMessageQueue, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.externalMessageQueue, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<ExternalMessageQueueObj> = {
-		fields: {}
+		fields: {},
 	}
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 		return ExternalMessageQueue.find(selector, modifier)
 	}
 	return null
 })
-meteorPublish(PubSub.recordedFiles, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.recordedFiles, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<RecordedFile> = {
-		fields: {}
+		fields: {},
 	}
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 		return RecordedFiles.find(selector, modifier)
@@ -70,13 +68,13 @@ meteorPublish(PubSub.recordedFiles, function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.mediaObjects, function (studioId, selector, token) {
+meteorPublish(PubSub.mediaObjects, function(studioId, selector, token) {
 	if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 	selector = selector || {}
 	check(studioId, String)
 	check(selector, Object)
 	const modifier: FindOptions<RecordedFile> = {
-		fields: {}
+		fields: {},
 	}
 	selector.studioId = studioId
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
@@ -84,10 +82,10 @@ meteorPublish(PubSub.mediaObjects, function (studioId, selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.timeline, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.timeline, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<TimelineObjGeneric> = {
-		fields: {}
+		fields: {},
 	}
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 		return Timeline.find(selector, modifier)

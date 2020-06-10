@@ -26,7 +26,7 @@ export interface Blueprint {
 	databaseVersion: {
 		showStyle: {
 			[showStyleBaseId: string]: string
-		},
+		}
 		studio: {
 			[studioId: string]: string
 		}
@@ -38,13 +38,12 @@ export interface Blueprint {
 	minimumCoreVersion: string
 }
 
-export const Blueprints: TransformedCollection<Blueprint, Blueprint>
-	= createMongoCollection<Blueprint>('blueprints')
+export const Blueprints: TransformedCollection<Blueprint, Blueprint> = createMongoCollection<Blueprint>('blueprints')
 registerCollection('Blueprints', Blueprints)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Blueprints._ensureIndex({
-			organizationId: 1
+			organizationId: 1,
 		})
 	}
 })

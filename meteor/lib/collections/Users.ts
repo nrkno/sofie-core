@@ -20,15 +20,15 @@ export interface DBUser {
 		password: {
 			bcrypt: string
 		}
-	},
+	}
 	username: string
 	emails: [
 		{
 			address: string
 			verified: boolean
 		}
-	],
-	profile: UserProfile,
+	]
+	profile: UserProfile
 	organizationId: OrganizationId
 	roles: UserRole[]
 	superAdmin?: boolean
@@ -42,7 +42,7 @@ export enum UserRoleType {
 	/** Can access and modify the settings */
 	CONFIGURATOR = 'configurator',
 	/** Can enable devloper features including test tools */
-	DEVELOPER = 'developer'
+	DEVELOPER = 'developer',
 }
 
 export type User = DBUser // to be replaced by a class somet ime later?
@@ -54,17 +54,16 @@ registerCollection('Users', Users)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Users._ensureIndex({
-			organizationId: 1
+			organizationId: 1,
 		})
 	}
 })
 
-
 /** Returns the currently logged in user, or null if not logged in */
-export function getUser (): DBUser | null {
+export function getUser(): DBUser | null {
 	const user = Meteor.user() as any
 	return user
 }
-export function getUserId (): UserId | null {
-	return Meteor.userId() as any || null
+export function getUserId(): UserId | null {
+	return (Meteor.userId() as any) || null
 }

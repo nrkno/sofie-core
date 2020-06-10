@@ -14,11 +14,17 @@ import { isProtectedString } from '../../lib/lib'
 
 type ShowStyleContent = { showStyleBaseId: ShowStyleBaseId }
 export namespace ShowStyleReadAccess {
-	export function showStyleBase (selector: MongoQuery<{_id: ShowStyleBaseId}>, cred: Credentials | ResolvedCredentials): boolean {
+	export function showStyleBase(
+		selector: MongoQuery<{ _id: ShowStyleBaseId }>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		return showStyleBaseContent({ showStyleBaseId: selector._id }, cred)
 	}
 	/** Handles read access for all studioId content */
-	export function showStyleBaseContent (selector: MongoQuery<ShowStyleContent>, cred: Credentials | ResolvedCredentials): boolean {
+	export function showStyleBaseContent(
+		selector: MongoQuery<ShowStyleContent>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.showStyleBaseId) throw new Meteor.Error(400, 'selector must contain showStyleBaseId')
@@ -28,7 +34,10 @@ export namespace ShowStyleReadAccess {
 
 		return true
 	}
-	export function showStyleVariant (selector: MongoQuery<{_id: ShowStyleVariantId}>, cred: Credentials | ResolvedCredentials): boolean {
+	export function showStyleVariant(
+		selector: MongoQuery<{ _id: ShowStyleVariantId }>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector._id) throw new Meteor.Error(400, 'selector must contain _id')
@@ -42,7 +51,7 @@ export namespace ShowStyleReadAccess {
 export namespace ShowStyleContentWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export function showStyleVariant (cred0: Credentials, existingVariant: ShowStyleVariant | ShowStyleVariantId) {
+	export function showStyleVariant(cred0: Credentials, existingVariant: ShowStyleVariant | ShowStyleVariantId) {
 		triggerWriteAccess()
 		if (existingVariant && isProtectedString(existingVariant)) {
 			const variantId = existingVariant
@@ -52,7 +61,7 @@ export namespace ShowStyleContentWriteAccess {
 		}
 		return { ...anyContent(cred0, existingVariant.showStyleBaseId), showStyleVariant: existingVariant }
 	}
-	export function rundownLayout (cred0: Credentials, existingLayout: RundownLayoutBase | RundownLayoutId) {
+	export function rundownLayout(cred0: Credentials, existingLayout: RundownLayoutBase | RundownLayoutId) {
 		triggerWriteAccess()
 		if (existingLayout && isProtectedString(existingLayout)) {
 			const layoutId = existingLayout
@@ -63,14 +72,14 @@ export namespace ShowStyleContentWriteAccess {
 		return { ...anyContent(cred0, existingLayout.showStyleBaseId), rundownLayout: existingLayout }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
-	export function anyContent (
+	export function anyContent(
 		cred0: Credentials,
 		showStyleBaseId: ShowStyleBaseId
 	): {
-		userId: UserId | null,
-		organizationId: OrganizationId | null,
-		showStyleBaseId: ShowStyleBaseId | null,
-		showStyleBase: ShowStyleBase | null,
+		userId: UserId | null
+		organizationId: OrganizationId | null
+		showStyleBaseId: ShowStyleBaseId | null
+		showStyleBase: ShowStyleBase | null
 		cred: ResolvedCredentials | Credentials
 	} {
 		triggerWriteAccess()
@@ -80,7 +89,7 @@ export namespace ShowStyleContentWriteAccess {
 				organizationId: null,
 				showStyleBaseId: showStyleBaseId,
 				showStyleBase: ShowStyleBases.findOne(showStyleBaseId) || null,
-				cred: cred0
+				cred: cred0,
 			}
 		}
 		const cred = resolveCredentials(cred0)
@@ -94,7 +103,7 @@ export namespace ShowStyleContentWriteAccess {
 			organizationId: cred.organization._id,
 			showStyleBaseId: showStyleBaseId,
 			showStyleBase: access.document,
-			cred: cred
+			cred: cred,
 		}
 	}
 }

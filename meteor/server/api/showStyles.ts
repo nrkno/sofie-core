@@ -10,25 +10,30 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 
-export function insertShowStyleBase (context: MethodContext): ShowStyleBaseId {
-
+export function insertShowStyleBase(context: MethodContext): ShowStyleBaseId {
 	const access = OrganizationContentWriteAccess.studio(context)
 
-	let id = ShowStyleBases.insert(literal<ShowStyleBase>({
-		_id: getRandomId(),
-		name: 'New show style',
-		organizationId: access.organizationId,
-		blueprintId: protectString(''),
-		outputLayers: [],
-		sourceLayers: [],
-		config: [],
-		runtimeArguments: [],
-		_rundownVersionHash: '',
-	}))
+	let id = ShowStyleBases.insert(
+		literal<ShowStyleBase>({
+			_id: getRandomId(),
+			name: 'New show style',
+			organizationId: access.organizationId,
+			blueprintId: protectString(''),
+			outputLayers: [],
+			sourceLayers: [],
+			config: [],
+			runtimeArguments: [],
+			_rundownVersionHash: '',
+		})
+	)
 	insertShowStyleVariant(context, id, 'Default')
 	return id
 }
-export function insertShowStyleVariant (context: MethodContext, showStyleBaseId: ShowStyleBaseId, name?: string): ShowStyleVariantId {
+export function insertShowStyleVariant(
+	context: MethodContext,
+	showStyleBaseId: ShowStyleBaseId,
+	name?: string
+): ShowStyleVariantId {
 	check(showStyleBaseId, String)
 
 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
@@ -43,7 +48,7 @@ export function insertShowStyleVariant (context: MethodContext, showStyleBaseId:
 		_rundownVersionHash: '',
 	})
 }
-export function removeShowStyleBase (context: MethodContext, showStyleBaseId: ShowStyleBaseId) {
+export function removeShowStyleBase(context: MethodContext, showStyleBaseId: ShowStyleBaseId) {
 	check(showStyleBaseId, String)
 	const access = ShowStyleContentWriteAccess.anyContent(context, showStyleBaseId)
 	const showStyleBase = access.showStyleBase
@@ -51,13 +56,13 @@ export function removeShowStyleBase (context: MethodContext, showStyleBaseId: Sh
 
 	ShowStyleBases.remove(showStyleBase._id)
 	ShowStyleVariants.remove({
-		showStyleBaseId: showStyleBase._id
+		showStyleBaseId: showStyleBase._id,
 	})
 	RundownLayouts.remove({
-		showStyleBaseId: showStyleBase._id
+		showStyleBaseId: showStyleBase._id,
 	})
 }
-export function removeShowStyleVariant (context: MethodContext, showStyleVariantId: ShowStyleVariantId) {
+export function removeShowStyleVariant(context: MethodContext, showStyleVariantId: ShowStyleVariantId) {
 	check(showStyleVariantId, String)
 
 	const access = ShowStyleContentWriteAccess.showStyleVariant(context, showStyleVariantId)
@@ -68,16 +73,16 @@ export function removeShowStyleVariant (context: MethodContext, showStyleVariant
 }
 
 class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
-	insertShowStyleBase () {
+	insertShowStyleBase() {
 		return makePromise(() => insertShowStyleBase(this))
 	}
-	insertShowStyleVariant (showStyleBaseId: ShowStyleBaseId) {
+	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return makePromise(() => insertShowStyleVariant(this, showStyleBaseId))
 	}
-	removeShowStyleBase (showStyleBaseId: ShowStyleBaseId) {
+	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {
 		return makePromise(() => removeShowStyleBase(this, showStyleBaseId))
 	}
-	removeShowStyleVariant (showStyleVariantId: ShowStyleVariantId) {
+	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId) {
 		return makePromise(() => removeShowStyleVariant(this, showStyleVariantId))
 	}
 }

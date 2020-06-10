@@ -9,10 +9,10 @@ import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 
-meteorPublish(PubSub.showStyleBases, function (selector0, token) {
+meteorPublish(PubSub.showStyleBases, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleBase> = {
-		fields: {}
+		fields: {},
 	}
 	if (
 		NoSecurityReadAccess.any() ||
@@ -23,10 +23,10 @@ meteorPublish(PubSub.showStyleBases, function (selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.showStyleVariants, function (selector0, token) {
+meteorPublish(PubSub.showStyleVariants, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<ShowStyleVariant> = {
-		fields: {}
+		fields: {},
 	}
 	if (
 		NoSecurityReadAccess.any() ||
@@ -38,11 +38,10 @@ meteorPublish(PubSub.showStyleVariants, function (selector0, token) {
 	return null
 })
 
-
-meteorPublish(PubSub.rundownLayouts, function (selector0, token) {
+meteorPublish(PubSub.rundownLayouts, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 	const modifier: FindOptions<RundownLayoutBase> = {
-		fields: {}
+		fields: {},
 	}
 	if (ShowStyleReadAccess.showStyleBaseContent(selector, cred)) {
 		return RundownLayouts.find(selector, modifier)

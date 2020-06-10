@@ -5,20 +5,15 @@ import { logger } from '../logging'
 import {
 	ExternalMessageQueue,
 	ExternalMessageQueueObj,
-	ExternalMessageQueueObjId
+	ExternalMessageQueueObjId,
 } from '../../lib/collections/ExternalMessageQueue'
 import {
 	ExternalMessageQueueObjSOAP,
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
-	ExternalMessageQueueObjRabbitMQ
+	ExternalMessageQueueObjRabbitMQ,
 } from 'tv-automation-sofie-blueprints-integration'
-import {
-	getCurrentTime,
-	removeNullyProperties,
-	getRandomId,
-	makePromise
-} from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties, getRandomId, makePromise } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
@@ -30,14 +25,13 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 
-export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
+export function queueExternalMessages(rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	_.each(messages, (message) => {
-
 		// check the output:
-		if (!message) 			throw new Meteor.Error('Falsy result!')
-		if (!message.type) 		throw new Meteor.Error('attribute .type missing!')
-		if (!message.receiver) 	throw new Meteor.Error('attribute .receiver missing!')
-		if (!message.message) 	throw new Meteor.Error('attribute .message missing!')
+		if (!message) throw new Meteor.Error('Falsy result!')
+		if (!message.type) throw new Meteor.Error('attribute .type missing!')
+		if (!message.receiver) throw new Meteor.Error('attribute .receiver missing!')
+		if (!message.message) throw new Meteor.Error('attribute .message missing!')
 
 		// Save the output into the message queue, for later processing:
 		let now = getCurrentTime()
@@ -58,7 +52,8 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 		message2 = removeNullyProperties(message2)
 
 		const playlist = rundown.getRundownPlaylist()
-		if (!playlist.rehearsal) { // Don't save the message when running rehearsals
+		if (!playlist.rehearsal) {
+			// Don't save the message when running rehearsals
 			ExternalMessageQueue.insert(message2)
 
 			triggerdoMessageQueue() // trigger processing of the queue
@@ -70,7 +65,7 @@ let runMessageQueue = true
 let errorOnLastRunCount: number = 0
 
 let triggerdoMessageQueueTimeout: number = 0
-export function triggerdoMessageQueue (time?: number) {
+export function triggerdoMessageQueue(time?: number) {
 	if (!time) time = 1000
 	if (triggerdoMessageQueueTimeout) {
 		Meteor.clearTimeout(triggerdoMessageQueueTimeout)
@@ -85,25 +80,28 @@ export function triggerdoMessageQueue (time?: number) {
 Meteor.startup(() => {
 	triggerdoMessageQueue(5000)
 })
-function doMessageQueue () {
+function doMessageQueue() {
 	// console.log('doMessageQueue', ExternalMessageQueue.find().fetch())
 	let tryInterval = 1 * 60 * 1000 // 1 minute
-	let limit = (errorOnLastRunCount === 0 ? 100 : 5) // if there were errors on last send, don't run too many next time
+	let limit = errorOnLastRunCount === 0 ? 100 : 5 // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
 	try {
 		let now = getCurrentTime()
-		let messagesToSend = ExternalMessageQueue.find({
-			expires: { $gt: now },
-		  lastTry: { $not: { $gt: now - tryInterval } },
-			sent: { $not: { $gt: 0 } },
-			hold: { $not: { $eq: true } },
-			errorFatal: { $not: { $eq: true } },
-		}, {
-			sort: {
-				lastTry: 1
+		let messagesToSend = ExternalMessageQueue.find(
+			{
+				expires: { $gt: now },
+				lastTry: { $not: { $gt: now - tryInterval } },
+				sent: { $not: { $gt: 0 } },
+				hold: { $not: { $eq: true } },
+				errorFatal: { $not: { $eq: true } },
 			},
-			limit: limit
-		}).fetch()
+			{
+				sort: {
+					lastTry: 1,
+				},
+				limit: limit,
+			}
+		).fetch()
 
 		if (messagesToSend.length === limit) probablyHasMoreToSend = true
 
@@ -111,7 +109,7 @@ function doMessageQueue () {
 
 		let ps: Array<Promise<any>> = []
 		// console.log('>>>', now, messagesToSend)
-	 	messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
+		messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
 			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
 		})
 		// console.log('<<<', now, messagesToSend)
@@ -119,11 +117,13 @@ function doMessageQueue () {
 			try {
 				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)
 				msg.manualRetry = false
-				ExternalMessageQueue.update(msg._id, {$set: {
-					tryCount: (msg.tryCount || 0) + 1,
-					lastTry: now,
-					manualRetry: false,
-				}})
+				ExternalMessageQueue.update(msg._id, {
+					$set: {
+						tryCount: (msg.tryCount || 0) + 1,
+						lastTry: now,
+						manualRetry: false,
+					},
+				})
 
 				let p: Promise<any>
 				if (msg.type === IBlueprintExternalMessageQueueType.SOAP) {
@@ -138,81 +138,86 @@ function doMessageQueue () {
 				}
 				ps.push(
 					Promise.resolve(p)
-					.then((result) => {
-
-						ExternalMessageQueue.update(msg._id, {$set: {
-							sent: getCurrentTime(),
-							sentReply: result
-						}})
-						logger.debug(`ExternalMessage sucessfully sent, id: ${msg._id}, type: "${msg.type}"`)
-					})
-					.catch((e) => {
-						logMessageError(msg, e)
-					})
+						.then((result) => {
+							ExternalMessageQueue.update(msg._id, {
+								$set: {
+									sent: getCurrentTime(),
+									sentReply: result,
+								},
+							})
+							logger.debug(`ExternalMessage sucessfully sent, id: ${msg._id}, type: "${msg.type}"`)
+						})
+						.catch((e) => {
+							logMessageError(msg, e)
+						})
 				)
 			} catch (e) {
 				logMessageError(msg, e)
 			}
 		})
 		Promise.all(ps)
-		.then(() => {
-			// all messages have been sent
-			if (probablyHasMoreToSend && errorOnLastRunCount === 0) {
-				// override default timeout
-				triggerdoMessageQueue(1000)
-			}
-		})
-		.catch(error => logger.error(error))
+			.then(() => {
+				// all messages have been sent
+				if (probablyHasMoreToSend && errorOnLastRunCount === 0) {
+					// override default timeout
+					triggerdoMessageQueue(1000)
+				}
+			})
+			.catch((error) => logger.error(error))
 	} catch (e) {
 		logger.error(e)
 	}
 	triggerdoMessageQueue(tryInterval)
 }
-export function logMessageError (msg: ExternalMessageQueueObj, e: any) {
+export function logMessageError(msg: ExternalMessageQueueObj, e: any) {
 	try {
 		errorOnLastRunCount++
 		logger.warn(e || e.reason || e.toString())
-		ExternalMessageQueue.update(msg._id, {$set: {
-			errorMessage: (e['reason'] || e['message'] || e.toString()),
-			errorMessageTime: getCurrentTime()
-		}})
+		ExternalMessageQueue.update(msg._id, {
+			$set: {
+				errorMessage: e['reason'] || e['message'] || e.toString(),
+				errorMessageTime: getCurrentTime(),
+			},
+		})
 	} catch (e) {
 		logger.error(e)
 	}
 }
-export function throwFatalError (msg: ExternalMessageQueueObj, e: Meteor.Error) {
-
-	ExternalMessageQueue.update(msg._id, {$set: {
-		errorFatal: true
-	}})
+export function throwFatalError(msg: ExternalMessageQueueObj, e: Meteor.Error) {
+	ExternalMessageQueue.update(msg._id, {
+		$set: {
+			errorFatal: true,
+		},
+	})
 
 	throw e
 }
 
 let updateExternalMessageQueueStatusTimeout: number = 0
-function updateExternalMessageQueueStatus (): void {
-
+function updateExternalMessageQueueStatus(): void {
 	if (!updateExternalMessageQueueStatusTimeout) {
 		updateExternalMessageQueueStatusTimeout = Meteor.setTimeout(() => {
 			updateExternalMessageQueueStatusTimeout = 0
 
 			const messagesOnQueueCursor = ExternalMessageQueue.find({
 				sent: { $not: { $gt: 0 } },
-				tryCount: { $gt: 3 }
+				tryCount: { $gt: 3 },
 			})
 			const messagesOnQueueCount: number = messagesOnQueueCursor.count()
 			let status: StatusObject = {
-				statusCode: StatusCode.GOOD
+				statusCode: StatusCode.GOOD,
 			}
 			if (messagesOnQueueCount > 0) {
 				const messagesOnQueueExample = messagesOnQueueCursor.fetch()[0]
 				status = {
-					statusCode: (
-						StatusCode.WARNING_MAJOR
-					),
+					statusCode: StatusCode.WARNING_MAJOR,
 					messages: [
-						`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${messagesOnQueueExample.errorMessage}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(messagesOnQueueExample.receiver)}")`
-					]
+						`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${
+							messagesOnQueueExample.errorMessage
+						}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(
+							messagesOnQueueExample.receiver
+						)}")`,
+					],
 				}
 			}
 			setSystemStatus('External Message queue', status)
@@ -222,48 +227,52 @@ function updateExternalMessageQueueStatus (): void {
 
 ExternalMessageQueue.find({
 	sent: { $not: { $gt: 0 } },
-	tryCount: { $gt: 3 }
+	tryCount: { $gt: 3 },
 }).observeChanges({
 	added: updateExternalMessageQueueStatus,
 	changed: updateExternalMessageQueueStatus,
-	removed: updateExternalMessageQueueStatus
+	removed: updateExternalMessageQueueStatus,
 })
 Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
 })
 
-function removeExternalMessage (context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+function removeExternalMessage(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
 	StudioContentWriteAccess.externalMessage(context, messageId)
 
 	ExternalMessageQueue.remove(messageId)
 }
-function toggleHold (context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+function toggleHold(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
 	const access = StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
-	ExternalMessageQueue.update(messageId, {$set: {
-		hold: !m.hold
-	}})
+	ExternalMessageQueue.update(messageId, {
+		$set: {
+			hold: !m.hold,
+		},
+	})
 }
-function retry (context: MethodContext, messageId: ExternalMessageQueueObjId): void {
+function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
 	const access = StudioContentWriteAccess.externalMessage(context, messageId)
 	const m = access.message
 	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
 
 	let tryGap = getCurrentTime() - 1 * 60 * 1000
-	ExternalMessageQueue.update(messageId, {$set: {
-		manualRetry: true,
-		hold: false,
-		errorFatal: false,
-		lastTry: m.lastTry !== undefined && m.lastTry > tryGap ? tryGap : m.lastTry
-	}})
+	ExternalMessageQueue.update(messageId, {
+		$set: {
+			manualRetry: true,
+			hold: false,
+			errorFatal: false,
+			lastTry: m.lastTry !== undefined && m.lastTry > tryGap ? tryGap : m.lastTry,
+		},
+	})
 	triggerdoMessageQueue(1000)
 }
-function setRunMessageQueue (_context: MethodContext, value: boolean): void {
+function setRunMessageQueue(_context: MethodContext, value: boolean): void {
 	check(value, Boolean)
 	triggerWriteAccessBecauseNoCheckNecessary()
 
@@ -275,16 +284,16 @@ function setRunMessageQueue (_context: MethodContext, value: boolean): void {
 }
 
 class ServerExternalMessageQueueAPI extends MethodContextAPI implements NewExternalMessageQueueAPI {
-	remove (messageId: ExternalMessageQueueObjId) {
+	remove(messageId: ExternalMessageQueueObjId) {
 		return makePromise(() => removeExternalMessage(this, messageId))
 	}
-	toggleHold (messageId: ExternalMessageQueueObjId) {
+	toggleHold(messageId: ExternalMessageQueueObjId) {
 		return makePromise(() => toggleHold(this, messageId))
 	}
-	retry (messageId: ExternalMessageQueueObjId) {
+	retry(messageId: ExternalMessageQueueObjId) {
 		return makePromise(() => retry(this, messageId))
 	}
-	setRunMessageQueue (value: boolean) {
+	setRunMessageQueue(value: boolean) {
 		return makePromise(() => setRunMessageQueue(this, value))
 	}
 }

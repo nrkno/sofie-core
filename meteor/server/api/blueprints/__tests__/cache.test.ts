@@ -3,22 +3,31 @@ import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/dat
 import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, protectString } from '../../../../lib/lib'
-import { loadSystemBlueprints, loadStudioBlueprints, loadShowStyleBlueprints, getBlueprintOfRundown, WrappedStudioBlueprint } from '../cache'
+import {
+	loadSystemBlueprints,
+	loadStudioBlueprints,
+	loadShowStyleBlueprints,
+	getBlueprintOfRundown,
+	WrappedStudioBlueprint,
+} from '../cache'
 import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
-import { BlueprintManifestType, BlueprintResultRundown, BlueprintResultSegment } from 'tv-automation-sofie-blueprints-integration'
+import {
+	BlueprintManifestType,
+	BlueprintResultRundown,
+	BlueprintResultSegment,
+} from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { generateFakeBlueprint } from './lib'
 
 describe('Test blueprint cache', () => {
-
 	beforeAll(() => {
 		setupDefaultStudioEnvironment()
 	})
 
 	describe('loadSystemBlueprints', () => {
-		function getCore (): ICoreSystem {
+		function getCore(): ICoreSystem {
 			const core = getCoreSystem() as ICoreSystem
 			expect(core).toBeTruthy()
 			return core
@@ -90,7 +99,7 @@ describe('Test blueprint cache', () => {
 				studioConfigManifest: [],
 				studioMigrations: [],
 				getBaseline: () => [],
-				getShowStyleId: () => null
+				getShowStyleId: () => null,
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -114,7 +123,7 @@ describe('Test blueprint cache', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
-				minimumCoreVersion: '0.0.0'
+				minimumCoreVersion: '0.0.0',
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -126,7 +135,7 @@ describe('Test blueprint cache', () => {
 	})
 
 	describe('loadStudioBlueprints', () => {
-		function getStudio (): Studio {
+		function getStudio(): Studio {
 			const studio = Studios.findOne() as Studio
 			expect(studio).toBeTruthy()
 			return studio
@@ -151,7 +160,9 @@ describe('Test blueprint cache', () => {
 				loadStudioBlueprints(studio)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[404] Blueprint "${studio.blueprintId}" not found! (referenced by Studio \"${studio._id}\")`)
+				expect(e.message).toBe(
+					`[404] Blueprint "${studio.blueprintId}" not found! (referenced by Studio \"${studio._id}\")`
+				)
 			}
 		})
 		testInFiber('Blueprint no type', () => {
@@ -166,7 +177,9 @@ describe('Test blueprint cache', () => {
 				loadStudioBlueprints(studio)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+				)
 			}
 		})
 		testInFiber('Blueprint wrong type', () => {
@@ -181,7 +194,9 @@ describe('Test blueprint cache', () => {
 				loadStudioBlueprints(studio)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+				)
 			}
 		})
 		testInFiber('Blueprint wrong internal type', () => {
@@ -195,7 +210,7 @@ describe('Test blueprint cache', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
-				minimumCoreVersion: '0.0.0'
+				minimumCoreVersion: '0.0.0',
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -205,7 +220,9 @@ describe('Test blueprint cache', () => {
 				loadStudioBlueprints(studio)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+				)
 			}
 		})
 		testInFiber('Blueprint correct type', () => {
@@ -223,7 +240,7 @@ describe('Test blueprint cache', () => {
 				studioConfigManifest: [],
 				studioMigrations: [],
 				getBaseline: () => [],
-				getShowStyleId: () => null
+				getShowStyleId: () => null,
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -232,13 +249,12 @@ describe('Test blueprint cache', () => {
 			const blueprint = loadStudioBlueprints(studio) as WrappedStudioBlueprint
 			expect(blueprint).toBeTruthy()
 
-
 			expect(blueprint.blueprint.blueprintType).toEqual('studio')
 		})
 	})
 
 	describe('loadShowStyleBlueprints', () => {
-		function getShowStyle (): ShowStyleBase {
+		function getShowStyle(): ShowStyleBase {
 			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
 			expect(showStyle).toBeTruthy()
 			return showStyle
@@ -267,7 +283,9 @@ describe('Test blueprint cache', () => {
 				loadShowStyleBlueprints(showStyle)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[404] Blueprint "${showStyle.blueprintId}" not found! (referenced by ShowStyleBase \"${showStyle._id}\")`)
+				expect(e.message).toBe(
+					`[404] Blueprint "${showStyle.blueprintId}" not found! (referenced by ShowStyleBase \"${showStyle._id}\")`
+				)
 			}
 		})
 		testInFiber('Blueprint no type', () => {
@@ -282,7 +300,9 @@ describe('Test blueprint cache', () => {
 				loadShowStyleBlueprints(showStyle)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+				)
 			}
 		})
 		testInFiber('Blueprint wrong type', () => {
@@ -297,7 +317,9 @@ describe('Test blueprint cache', () => {
 				loadShowStyleBlueprints(showStyle)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+				)
 			}
 		})
 		testInFiber('Blueprint wrong internal type', () => {
@@ -311,7 +333,7 @@ describe('Test blueprint cache', () => {
 				blueprintVersion: '0.0.0',
 				integrationVersion: '0.0.0',
 				TSRVersion: '0.0.0',
-				minimumCoreVersion: '0.0.0'
+				minimumCoreVersion: '0.0.0',
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -321,7 +343,9 @@ describe('Test blueprint cache', () => {
 				loadShowStyleBlueprints(showStyle)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+				)
 			}
 		})
 		testInFiber('Blueprint correct type', () => {
@@ -340,8 +364,8 @@ describe('Test blueprint cache', () => {
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
 				getShowStyleVariantId: () => null,
-				getRundown: () => null as any as BlueprintResultRundown,
-				getSegment: () => null as any as BlueprintResultSegment
+				getRundown: () => (null as any) as BlueprintResultRundown,
+				getSegment: () => (null as any) as BlueprintResultSegment,
 			})
 
 			Blueprints.remove(protectString('fake_id'))
@@ -353,22 +377,24 @@ describe('Test blueprint cache', () => {
 	})
 
 	describe('getBlueprintOfRundown', () => {
-		function getRundown () {
-			return new Rundown(literal<DBRundown>({
-				_id: protectString('ro1'),
-				playlistId: protectString('pls0'),
-				_rank: 1,
-				externalId: 'ro1',
-				studioId: protectString('studio0'),
-				showStyleBaseId: protectString(''),
-				showStyleVariantId: protectString('variant0'),
-				peripheralDeviceId: protectString(''),
-				dataSource: '',
-				created: 0,
-				modified: 0,
-				importVersions: {} as any,
-				name: 'test',
-			}))
+		function getRundown() {
+			return new Rundown(
+				literal<DBRundown>({
+					_id: protectString('ro1'),
+					playlistId: protectString('pls0'),
+					_rank: 1,
+					externalId: 'ro1',
+					studioId: protectString('studio0'),
+					showStyleBaseId: protectString(''),
+					showStyleVariantId: protectString('variant0'),
+					peripheralDeviceId: protectString(''),
+					dataSource: '',
+					created: 0,
+					modified: 0,
+					importVersions: {} as any,
+					name: 'test',
+				})
+			)
 		}
 		testInFiber('Missing showStyleBaseId', () => {
 			const rundown = getRundown()
@@ -389,7 +415,9 @@ describe('Test blueprint cache', () => {
 				getBlueprintOfRundown(rundown, true)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[404] ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`)
+				expect(e.message).toBe(
+					`[404] ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`
+				)
 			}
 		})
 		testInFiber('Valid showStyleBase', () => {
@@ -428,6 +456,5 @@ describe('Test blueprint cache', () => {
 				jest.useRealTimers()
 			}
 		})
-
 	})
 })

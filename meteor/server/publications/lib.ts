@@ -9,29 +9,31 @@ import { Settings } from '../../lib/Settings'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
-export const MeteorPublicationSignatures: {[key: string]: string[]} = {}
-export const MeteorPublications: {[key: string]: Function} = {}
+export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
+export const MeteorPublications: { [key: string]: Function } = {}
 
 /**
  * Wrapper around Meteor.publish with stricter typings
  * @param name
  * @param callback
  */
-export function meteorPublish<T extends { _id: ProtectedString<any> }> (name: PubSub, callback: (...args: any[]) => Mongocursor<T> | Mongocursor<T>[] | null) {
-
+export function meteorPublish<T extends { _id: ProtectedString<any> }>(
+	name: PubSub,
+	callback: (...args: any[]) => Mongocursor<T> | Mongocursor<T>[] | null
+) {
 	const signature = extractFunctionSignature(callback)
 	if (signature) MeteorPublicationSignatures[name] = signature
 
 	MeteorPublications[name] = callback
 
-	Meteor.publish(name, function (...args: any[]) {
+	Meteor.publish(name, function(...args: any[]) {
 		return callback.apply(this, args) || []
 	})
 }
 
 export namespace AutoFillSelector {
 	/** Autofill an empty selector {} with organizationId of the current user */
-	export function organizationId (userId: UserId, selector, token: string) {
+	export function organizationId(userId: UserId, selector, token: string) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
 		if (Settings.enableUserAccounts) {
@@ -43,7 +45,7 @@ export namespace AutoFillSelector {
 		return { cred, selector }
 	}
 	/** Autofill an empty selector {} with deviceId of the current user's peripheralDevices */
-	export function deviceId (userId: UserId, selector, token: string) {
+	export function deviceId(userId: UserId, selector, token: string) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
@@ -51,13 +53,12 @@ export namespace AutoFillSelector {
 			if (!selector.deviceId) {
 				cred = resolveCredentials(cred)
 				if (cred.organization) {
-
 					const devices = PeripheralDevices.find({
-						organizationId: cred.organization._id
+						organizationId: cred.organization._id,
 					}).fetch()
 
 					selector = {
-						deviceId: { $in: _.map(devices, (d) => d._id) }
+						deviceId: { $in: _.map(devices, (d) => d._id) },
 					}
 				}
 			}
@@ -65,7 +66,7 @@ export namespace AutoFillSelector {
 		return { cred, selector }
 	}
 	/** Autofill an empty selector {} with showStyleBaseId of the current user's showStyleBases */
-	export function showStyleBaseId (userId: UserId, selector, token: string) {
+	export function showStyleBaseId(userId: UserId, selector, token: string) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 
 		let cred: Credentials | ResolvedCredentials = { userId: userId, token }
@@ -73,13 +74,12 @@ export namespace AutoFillSelector {
 			if (!selector.showStyleBaseId) {
 				cred = resolveCredentials(cred)
 				if (cred.organization) {
-
 					const showStyleBases = ShowStyleBases.find({
-						organizationId: cred.organization._id
+						organizationId: cred.organization._id,
 					}).fetch()
 
 					selector = {
-						showStyleBaseId: { $in: _.map(showStyleBases, (d) => d._id) }
+						showStyleBaseId: { $in: _.map(showStyleBases, (d) => d._id) },
 					}
 				}
 			}
@@ -87,4 +87,3 @@ export namespace AutoFillSelector {
 		return { cred, selector }
 	}
 }
-

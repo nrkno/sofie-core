@@ -4,12 +4,13 @@
 	display: flex;
 	flex-direction: column;
 
-	> .timecode-encoder__top-buttons, > .timecode-encoder__bottom-buttons {
+	> .timecode-encoder__top-buttons,
+	> .timecode-encoder__bottom-buttons {
 		text-align: center;
 
 		> button {
 			background: none;
-			color: #4F4F4F;
+			color: #4f4f4f;
 			border: none;
 			padding: 0 0.33em;
 

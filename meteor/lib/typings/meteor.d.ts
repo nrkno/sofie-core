@@ -109,59 +109,84 @@ export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
 export type MongoQuery<DBInterface> = Mongo.Query<DBInterface> // used for simplified expressions (ie not using $and, $or etc..)
 export type MongoQueryKey<T> = RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
 
-export interface Mongocursor<DBInterface extends { _id: ProtectedString<any>}> extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
-	observe(callbacks: ObserveCallbacks<DBInterface>): Meteor.LiveQueryHandle;
-    observeChanges(callbacks: ObserveChangesCallbacks<DBInterface>): Meteor.LiveQueryHandle;
+export interface Mongocursor<DBInterface extends { _id: ProtectedString<any> }>
+	extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
+	observe(callbacks: ObserveCallbacks<DBInterface>): Meteor.LiveQueryHandle
+	observeChanges(callbacks: ObserveChangesCallbacks<DBInterface>): Meteor.LiveQueryHandle
 }
 export interface ObserveCallbacks<DBInterface> {
-	added?(document: DBInterface): void;
-	addedAt?(document: DBInterface, atIndex: number, before: DBInterface): void;
-	changed?(newDocument: DBInterface, oldDocument: DBInterface): void;
-	changedAt?(newDocument: DBInterface, oldDocument: DBInterface, indexAt: number): void;
-	removed?(oldDocument: DBInterface): void;
-	removedAt?(oldDocument: DBInterface, atIndex: number): void;
-	movedTo?(document: DBInterface, fromIndex: number, toIndex: number, before: Object): void;
+	added?(document: DBInterface): void
+	addedAt?(document: DBInterface, atIndex: number, before: DBInterface): void
+	changed?(newDocument: DBInterface, oldDocument: DBInterface): void
+	changedAt?(newDocument: DBInterface, oldDocument: DBInterface, indexAt: number): void
+	removed?(oldDocument: DBInterface): void
+	removedAt?(oldDocument: DBInterface, atIndex: number): void
+	movedTo?(document: DBInterface, fromIndex: number, toIndex: number, before: Object): void
 }
-export interface ObserveChangesCallbacks<DBInterface extends { _id: ProtectedString<any>}> {
-	added?(id: DBInterface['_id'], fields: Object): void;
-	addedBefore?(id: DBInterface['_id'], fields: Object, before: Object): void;
-	changed?(id: DBInterface['_id'], fields: Object): void;
-	movedBefore?(id: DBInterface['_id'], before: Object): void;
-	removed?(id: DBInterface['_id']): void;
+export interface ObserveChangesCallbacks<DBInterface extends { _id: ProtectedString<any> }> {
+	added?(id: DBInterface['_id'], fields: Object): void
+	addedBefore?(id: DBInterface['_id'], fields: Object, before: Object): void
+	changed?(id: DBInterface['_id'], fields: Object): void
+	movedBefore?(id: DBInterface['_id'], before: Object): void
+	removed?(id: DBInterface['_id']): void
 }
 export type FieldNames<DBInterface> = (keyof DBInterface)[]
 
-export interface TransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any>}> {
-	allow (options: {
+export interface TransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
+	allow(options: {
 		insert?: (userId: UserId, doc: DBInterface) => boolean
 		update?: (userId: UserId, doc: DBInterface, fieldNames: FieldNames<DBInterface>, modifier: any) => boolean
 		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
-	deny (options: {
+	deny(options: {
 		insert?: (userId: UserId, doc: DBInterface) => boolean
 		update?: (userId: UserId, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
 		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
-	find (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: FindOptions<DBInterface>): Mongocursor<Class>
-	findOne (selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], options?: Omit<FindOptions<DBInterface>, 'limit'>): Class | undefined
-	insert (doc: DBInterface, callback?: Function): DBInterface['_id']
-	rawCollection (): any
-	rawDatabase (): any
-	remove (selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], callback?: Function): number
-	update (selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], modifier: MongoModifier<DBInterface>, options?: UpdateOptions, callback?: Function): number
-	upsert (selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], modifier: MongoModifier<DBInterface>, options?: UpsertOptions, callback?: Function): {
-		numberAffected?: number; insertedId?: DBInterface['_id']
+	find(
+		selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): Mongocursor<Class>
+	findOne(
+		selector?: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
+		options?: Omit<FindOptions<DBInterface>, 'limit'>
+	): Class | undefined
+	insert(doc: DBInterface, callback?: Function): DBInterface['_id']
+	rawCollection(): any
+	rawDatabase(): any
+	remove(selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], callback?: Function): number
+	update(
+		selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpdateOptions,
+		callback?: Function
+	): number
+	upsert(
+		selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpsertOptions,
+		callback?: Function
+	): {
+		numberAffected?: number
+		insertedId?: DBInterface['_id']
 	}
-	_ensureIndex (keys: IndexSpecifier<DBInterface> | string, options?: {
-		[key: string]: any
-	}): void
-	_dropIndex (keys: {
-		[key: string]: number | string
-	} | string): void
+	_ensureIndex(
+		keys: IndexSpecifier<DBInterface> | string,
+		options?: {
+			[key: string]: any
+		}
+	): void
+	_dropIndex(
+		keys:
+			| {
+					[key: string]: number | string
+			  }
+			| string
+	): void
 }
 
 export interface MeteorError {

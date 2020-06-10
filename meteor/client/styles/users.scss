@@ -1,17 +1,19 @@
-@import "_variables";
+@import '_variables';
 
 .center-page {
 	align-items: center;
 	display: flex;
 	flex-direction: column;
 	position: fixed;
-	top: 0; bottom: 0;
+	top: 0;
+	bottom: 0;
 	justify-content: center;
 	width: 100vw;
 
 	.header .badge .sofie-logo {
 		margin: 0 auto;
-		height: 8em; width: 8em;
+		height: 8em;
+		width: 8em;
 	}
 	.page {
 		min-width: 25vw;
@@ -29,9 +31,16 @@
 	.error-msg-active {
 		opacity: 1;
 	}
-	a, a:visited {color: #000}
-	p {margin: 0;}
-	li {list-style: none;}
+	a,
+	a:visited {
+		color: #000;
+	}
+	p {
+		margin: 0;
+	}
+	li {
+		list-style: none;
+	}
 	button {
 		/* Rule to add space between buttons on smaller screens */
 		display: block;
@@ -53,6 +62,8 @@
 
 @media screen and (max-width: 1400px) {
 	.center-page {
-		> .frow {flex-direction: column;}
+		> .frow {
+			flex-direction: column;
+		}
 	}
 }

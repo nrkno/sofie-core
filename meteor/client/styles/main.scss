@@ -1,6 +1,4 @@
-
 /* SASS statring point. Import styles from here on: */
-
 
 /* body {
 	user-select: none;
@@ -10,9 +8,9 @@ input {
 	user-select: auto;
 } */
 
-@import "_variables";
-@import "_header";
-@import "_colorScheme";
+@import '_variables';
+@import '_header';
+@import '_colorScheme';
 
 /* Don't show visited status, since people will browse around the app a lot */
 a:visited {
@@ -27,12 +25,26 @@ a:visited {
 #render-target {
 	font-weight: 300;
 
-
-	h5, .h5, .text-s, .text-s p, .text-s .mod, .text-s .table, .text-s .action-btn, .switch, .pill, .pills .action-btn, .notification, .tooltip, .btn, .btn-tight {
+	h5,
+	.h5,
+	.text-s,
+	.text-s p,
+	.text-s .mod,
+	.text-s .table,
+	.text-s .action-btn,
+	.switch,
+	.pill,
+	.pills .action-btn,
+	.notification,
+	.tooltip,
+	.btn,
+	.btn-tight {
 		font-weight: 300;
 	}
 
-	p, center, .table {
+	p,
+	center,
+	.table {
 		font-weight: 300;
 	}
 
@@ -44,12 +56,14 @@ a:visited {
 		}
 	}
 
-	.btn, .btn-tight {
+	.btn,
+	.btn-tight {
 		font-weight: 300;
 	}
 
 	input {
-		&::-webkit-input-placeholder, &::placeholder {
+		&::-webkit-input-placeholder,
+		&::placeholder {
 			color: #bbb;
 		}
 	}
@@ -61,8 +75,9 @@ a:visited {
 
 .origo-pulse {
 	vertical-align: top;
-	
-	&.small.left, &.small.right {
+
+	&.small.left,
+	&.small.right {
 		top: 1px;
 	}
 }
@@ -71,7 +86,8 @@ a.selectable {
 	display: block;
 	text-decoration: inherit;
 
-	&:hover, &:active {
+	&:hover,
+	&:active {
 		text-decoration: inherit;
 	}
 }

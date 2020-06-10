@@ -4,19 +4,24 @@ import { Users, UserId } from '../../lib/collections/Users'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Credentials, resolveCredentials } from './lib/credentials'
 import { logNotAllowed, allowOnlyFields } from './lib/lib'
-import { allowAccessToCoreSystem, allowAccessToCurrentUser, allowAccessToOrganization, allowAccessToSystemStatus } from './lib/security'
+import {
+	allowAccessToCoreSystem,
+	allowAccessToCurrentUser,
+	allowAccessToOrganization,
+	allowAccessToSystemStatus,
+} from './lib/security'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 
 export namespace SystemReadAccess {
 	/** Handles read access for all organization content (segments, parts, pieces etc..) */
-	export function coreSystem (cred: Credentials): boolean {
+	export function coreSystem(cred: Credentials): boolean {
 		const access = allowAccessToCoreSystem(cred)
 		if (!access.read) return logNotAllowed('CoreSystem', access.reason)
 
 		return true
 	}
-	export function currentUser (userId: UserId, cred: Credentials): boolean {
+	export function currentUser(userId: UserId, cred: Credentials): boolean {
 		const access = allowAccessToCurrentUser(cred, userId)
 		if (!access.read) return logNotAllowed('Current user', access.reason)
 
@@ -26,7 +31,7 @@ export namespace SystemReadAccess {
 export namespace SystemWriteAccess {
 	// These functions throws if access is not allowed.
 
-	export function coreSystem (cred0: Credentials) {
+	export function coreSystem(cred0: Credentials) {
 		triggerWriteAccess()
 		if (!Settings.enableUserAccounts) return true
 
@@ -38,13 +43,13 @@ export namespace SystemWriteAccess {
 
 		return true
 	}
-	export function migrations (cred0: Credentials) {
+	export function migrations(cred0: Credentials) {
 		return coreSystem(cred0)
 	}
-	export function system (cred0: Credentials) {
+	export function system(cred0: Credentials) {
 		return coreSystem(cred0)
 	}
-	export function systemStatusRead (cred0: Credentials) {
+	export function systemStatusRead(cred0: Credentials) {
 		// For reading only
 		triggerWriteAccess()
 		const access = allowAccessToSystemStatus(cred0)

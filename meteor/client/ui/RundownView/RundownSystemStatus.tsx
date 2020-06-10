@@ -21,41 +21,43 @@ interface IMOSStatusProps {
 	lastUpdate: Time
 }
 
-export const MOSLastUpdateStatus = translate()(class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & InjectedTranslateProps> {
-	_interval: number
+export const MOSLastUpdateStatus = translate()(
+	class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & InjectedTranslateProps> {
+		_interval: number
 
-	componentDidMount () {
-		this._interval = Meteor.setInterval(() => {
-			this.tick()
-		}, 5000)
-	}
+		componentDidMount() {
+			this._interval = Meteor.setInterval(() => {
+				this.tick()
+			}, 5000)
+		}
 
-	componentWillUnmount () {
-		Meteor.clearInterval(this._interval)
-	}
+		componentWillUnmount() {
+			Meteor.clearInterval(this._interval)
+		}
 
-	tick () {
-		this.forceUpdate()
-	}
+		tick() {
+			this.forceUpdate()
+		}
 
-	render () {
-		const { t } = this.props
-		const timeDiff = getCurrentTime() - this.props.lastUpdate
-		return (
-			<span>
-				{ timeDiff < 3000 && t('Just now') }
-				{ timeDiff >= 3000 && timeDiff < 60 * 1000 && t('Less than a minute ago') }
-				{ timeDiff >= 60 * 1000 && timeDiff < 5 * 60 * 1000 && t('Less than five minutes ago') }
-				{ timeDiff >= 5 * 60 * 1000 && timeDiff < 10 * 60 * 1000 && t('Around 10 minutes ago') }
-				{ timeDiff >= 10 * 60 * 1000 && timeDiff < 30 * 60 * 1000 && t('More than 10 minutes ago') }
-				{ timeDiff >= 30 * 60 * 1000 && timeDiff < 2 * 60 * 60 * 1000 && t('More than 30 minutes ago') }
-				{ timeDiff >= 2 * 60 * 60 * 1000 && timeDiff < 5 * 60 * 60 * 1000 && t('More than 2 hours ago') }
-				{ timeDiff >= 5 * 60 * 60 * 1000 && timeDiff < 24 * 60 * 60 * 1000 && t('More than 5 hours ago') }
-				{ timeDiff >= 24 * 60 * 60 * 1000 && t('More than a day ago')}
-			</span>
-		)
+		render() {
+			const { t } = this.props
+			const timeDiff = getCurrentTime() - this.props.lastUpdate
+			return (
+				<span>
+					{timeDiff < 3000 && t('Just now')}
+					{timeDiff >= 3000 && timeDiff < 60 * 1000 && t('Less than a minute ago')}
+					{timeDiff >= 60 * 1000 && timeDiff < 5 * 60 * 1000 && t('Less than five minutes ago')}
+					{timeDiff >= 5 * 60 * 1000 && timeDiff < 10 * 60 * 1000 && t('Around 10 minutes ago')}
+					{timeDiff >= 10 * 60 * 1000 && timeDiff < 30 * 60 * 1000 && t('More than 10 minutes ago')}
+					{timeDiff >= 30 * 60 * 1000 && timeDiff < 2 * 60 * 60 * 1000 && t('More than 30 minutes ago')}
+					{timeDiff >= 2 * 60 * 60 * 1000 && timeDiff < 5 * 60 * 60 * 1000 && t('More than 2 hours ago')}
+					{timeDiff >= 5 * 60 * 60 * 1000 && timeDiff < 24 * 60 * 60 * 1000 && t('More than 5 hours ago')}
+					{timeDiff >= 24 * 60 * 60 * 1000 && t('More than a day ago')}
+				</span>
+			)
+		}
 	}
-})
+)
 
 interface IProps {
 	studio: Studio
@@ -85,19 +87,19 @@ interface ITrackedProps {
 	playoutDevices: OnLineOffLineList
 }
 
-function diffOnLineOffLineList (prevList: OnLineOffLineList, list: OnLineOffLineList): OnLineOffLineList {
+function diffOnLineOffLineList(prevList: OnLineOffLineList, list: OnLineOffLineList): OnLineOffLineList {
 	const diff: OnLineOffLineList = {
 		onLine: [],
-		offLine: []
+		offLine: [],
 	}
 
 	list.onLine.forEach((i) => {
-		if (!prevList.onLine.find(j => j._id === i._id)) {
+		if (!prevList.onLine.find((j) => j._id === i._id)) {
 			diff.onLine.push(i)
 		}
 	})
 	list.offLine.forEach((i) => {
-		if (!prevList.offLine.find(j => j._id === i._id)) {
+		if (!prevList.offLine.find((j) => j._id === i._id)) {
 			diff.offLine.push(i)
 		}
 	})
@@ -105,271 +107,292 @@ function diffOnLineOffLineList (prevList: OnLineOffLineList, list: OnLineOffLine
 	return diff
 }
 
-export const RundownSystemStatus = translateWithTracker((props: IProps) => {
-	let attachedDevices: PeripheralDevice[] = []
+export const RundownSystemStatus = translateWithTracker(
+	(props: IProps) => {
+		let attachedDevices: PeripheralDevice[] = []
 
-	const parentDevices = PeripheralDevices.find({
-		studioId: props.studio._id
-	}).fetch()
-	attachedDevices = attachedDevices.concat(parentDevices)
+		const parentDevices = PeripheralDevices.find({
+			studioId: props.studio._id,
+		}).fetch()
+		attachedDevices = attachedDevices.concat(parentDevices)
 
-	const subDevices = PeripheralDevices.find({
-		parentDeviceId: { $in: _.pluck(parentDevices, '_id') }
-	}).fetch()
-	attachedDevices = attachedDevices.concat(subDevices)
+		const subDevices = PeripheralDevices.find({
+			parentDeviceId: { $in: _.pluck(parentDevices, '_id') },
+		}).fetch()
+		attachedDevices = attachedDevices.concat(subDevices)
 
-	let ingestDevices = attachedDevices.filter(i => (
-		i.category === PeripheralDeviceAPI.DeviceCategory.INGEST ||
-		i.category === PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
-	))
-	let playoutDevices = attachedDevices.filter(i => (
-		i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
-	))
+		let ingestDevices = attachedDevices.filter(
+			(i) =>
+				i.category === PeripheralDeviceAPI.DeviceCategory.INGEST ||
+				i.category === PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
+		)
+		let playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
-	const [
-		ingest,
-		playout
-	] = _.map([ingestDevices, playoutDevices], (devices) => {
-		const status = _.reduce(devices.filter(i => !i.ignore), (memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
-			if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
-				return device.status.statusCode
-			} else if (!device.connected) {
-				return PeripheralDeviceAPI.StatusCode.FATAL
-			} else {
-				return memo
+		const [ingest, playout] = _.map([ingestDevices, playoutDevices], (devices) => {
+			const status = _.reduce(
+				devices.filter((i) => !i.ignore),
+				(memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
+					if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
+						return device.status.statusCode
+					} else if (!device.connected) {
+						return PeripheralDeviceAPI.StatusCode.FATAL
+					} else {
+						return memo
+					}
+				},
+				PeripheralDeviceAPI.StatusCode.UNKNOWN
+			)
+			const onlineOffline: OnLineOffLineList = {
+				onLine: devices.filter(
+					(device) => device.connected && device.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR
+				),
+				offLine: devices.filter(
+					(device) => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR
+				),
 			}
-		}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
-		const onlineOffline: OnLineOffLineList = {
-			onLine: devices.filter(device => device.connected && device.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
-			offLine: devices.filter(device => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
-		}
-		const lastUpdate = _.reduce(devices, (memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
-		return {
-			status: status,
-			lastUpdate: lastUpdate,
-			onlineOffline: onlineOffline
-		}
-	})
-
-	const notes: Array<TrackedNote> = props.playlist.getAllStoredNotes()
-
-	return {
-		notes,
-
-		mosStatus: ingest.status,
-		mosDevices: ingest.onlineOffline,
-		mosLastUpdate: ingest.lastUpdate,
-
-		playoutStatus: playout.status,
-		playoutDevices: playout.onlineOffline
-	}
-}, (data, props: IProps, nextProps: IProps) => {
-	if (props.playlist._id === nextProps.playlist._id && props.studio._id === nextProps.studio._id) return false
-	return true
-})(class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-	private notificationTimeout: number
-	private STATE_CHANGE_NOTIFICATION_DURATION = 7000
-
-	constructor (props: Translated<IProps & ITrackedProps>) {
-		super(props)
-
-		this.state = {
-			mosDiff: {
-				onLine: [],
-				offLine: props.mosDevices.offLine
-			},
-			playoutDiff: {
-				onLine: [],
-				offLine: props.playoutDevices.offLine
-			},
-			displayNotes: false,
-			forceHideNotification: false,
-			displayNotification: false
-		}
-	}
-
-	componentWillMount () {
-		this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
-			studioId: this.props.studio._id
+			const lastUpdate = _.reduce(devices, (memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
+			return {
+				status: status,
+				lastUpdate: lastUpdate,
+				onlineOffline: onlineOffline,
+			}
 		})
+
+		const notes: Array<TrackedNote> = props.playlist.getAllStoredNotes()
+
+		return {
+			notes,
+
+			mosStatus: ingest.status,
+			mosDevices: ingest.onlineOffline,
+			mosLastUpdate: ingest.lastUpdate,
+
+			playoutStatus: playout.status,
+			playoutDevices: playout.onlineOffline,
+		}
+	},
+	(data, props: IProps, nextProps: IProps) => {
+		if (props.playlist._id === nextProps.playlist._id && props.studio._id === nextProps.studio._id) return false
+		return true
 	}
-	componentWillUnmount () {
-		super.componentWillUnmount()
+)(
+	class RundownSystemStatus extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+		private notificationTimeout: number
+		private STATE_CHANGE_NOTIFICATION_DURATION = 7000
 
-		if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
-	}
+		constructor(props: Translated<IProps & ITrackedProps>) {
+			super(props)
 
-	componentDidUpdate (prevProps: IProps & ITrackedProps) {
-		if (prevProps !== this.props) {
-			if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
-
-			const mosDiff = diffOnLineOffLineList(prevProps.mosDevices, this.props.mosDevices)
-			const playoutDiff = diffOnLineOffLineList(prevProps.playoutDevices, this.props.playoutDevices)
-
-			this.setState({
-				mosDiff,
-				playoutDiff,
+			this.state = {
+				mosDiff: {
+					onLine: [],
+					offLine: props.mosDevices.offLine,
+				},
+				playoutDiff: {
+					onLine: [],
+					offLine: props.playoutDevices.offLine,
+				},
+				displayNotes: false,
 				forceHideNotification: false,
-				displayNotification: mosDiff.offLine.length !== 0 || playoutDiff.offLine.length !== 0 || mosDiff.onLine.length !== 0 || playoutDiff.onLine.length !== 0
-			})
-
-			this.notificationTimeout = Meteor.setTimeout(() => {
-				this.setState({
-					displayNotification: false
-				})
-			}, this.STATE_CHANGE_NOTIFICATION_DURATION)
+				displayNotification: false,
+			}
 		}
 
-	}
-	clickNote (e, note: TrackedNote) {
-		e.preventDefault()
+		componentWillMount() {
+			this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
+				studioId: this.props.studio._id,
+			})
+		}
+		componentWillUnmount() {
+			super.componentWillUnmount()
 
-		let segmentId = note.origin.segmentId
+			if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
+		}
 
-		if (!segmentId) {
-			if (note.origin.partId) {
-				let part = Parts.findOne(note.origin.partId)
-				if (part) {
-					segmentId = part.segmentId
+		componentDidUpdate(prevProps: IProps & ITrackedProps) {
+			if (prevProps !== this.props) {
+				if (this.notificationTimeout) Meteor.clearTimeout(this.notificationTimeout)
+
+				const mosDiff = diffOnLineOffLineList(prevProps.mosDevices, this.props.mosDevices)
+				const playoutDiff = diffOnLineOffLineList(prevProps.playoutDevices, this.props.playoutDevices)
+
+				this.setState({
+					mosDiff,
+					playoutDiff,
+					forceHideNotification: false,
+					displayNotification:
+						mosDiff.offLine.length !== 0 ||
+						playoutDiff.offLine.length !== 0 ||
+						mosDiff.onLine.length !== 0 ||
+						playoutDiff.onLine.length !== 0,
+				})
+
+				this.notificationTimeout = Meteor.setTimeout(() => {
+					this.setState({
+						displayNotification: false,
+					})
+				}, this.STATE_CHANGE_NOTIFICATION_DURATION)
+			}
+		}
+		clickNote(e, note: TrackedNote) {
+			e.preventDefault()
+
+			let segmentId = note.origin.segmentId
+
+			if (!segmentId) {
+				if (note.origin.partId) {
+					let part = Parts.findOne(note.origin.partId)
+					if (part) {
+						segmentId = part.segmentId
+					}
 				}
 			}
+			if (segmentId) {
+				scrollToSegment(segmentId).catch(console.error)
+			}
 		}
-		if (segmentId) {
-			scrollToSegment(segmentId).catch(console.error)
+		clickNotes() {
+			this.setState({
+				displayNotes: !this.state.displayNotes,
+			})
 		}
-	}
-	clickNotes () {
-		this.setState({
-			displayNotes: !this.state.displayNotes
-		})
-	}
-	forceHideNotification = () => {
-		this.setState({
-			forceHideNotification: true
-		})
-	}
-	render () {
-		const { t } = this.props
-		const playoutDevicesIssues = this.props.playoutDevices.offLine.filter(dev => dev.connected)
-		const mosDevicesIssues = this.props.mosDevices.offLine.filter(dev => dev.connected)
-		const mosDisconnected = this.props.mosDevices.offLine.filter(dev => !dev.connected)
-		const playoutDisconnected = this.props.playoutDevices.offLine.filter(dev => !dev.connected)
+		forceHideNotification = () => {
+			this.setState({
+				forceHideNotification: true,
+			})
+		}
+		render() {
+			const { t } = this.props
+			const playoutDevicesIssues = this.props.playoutDevices.offLine.filter((dev) => dev.connected)
+			const mosDevicesIssues = this.props.mosDevices.offLine.filter((dev) => dev.connected)
+			const mosDisconnected = this.props.mosDevices.offLine.filter((dev) => !dev.connected)
+			const playoutDisconnected = this.props.playoutDevices.offLine.filter((dev) => !dev.connected)
 
-		return (
-			<div className='rundown-system-status'>
-				<div className='rundown-system-status__indicators'>
-					{
-						this.props.notes.length > 0 ?
-						<div onClick={e => this.clickNotes()} className={ClassNames('note-icon', 'warning', this.state.displayNotes ? 'display' : '')}>
-							<img className='icon' src='/icons/warning_icon.svg' />
-							<div className='count'>
-								{this.props.notes.length}
-							</div>
+			return (
+				<div className="rundown-system-status">
+					<div className="rundown-system-status__indicators">
+						{this.props.notes.length > 0 ? (
+							<div
+								onClick={(e) => this.clickNotes()}
+								className={ClassNames('note-icon', 'warning', this.state.displayNotes ? 'display' : '')}>
+								<img className="icon" src="/icons/warning_icon.svg" />
+								<div className="count">{this.props.notes.length}</div>
 
-							<div className='notes-tooltip'>
-								<table>
-									<tbody>
-									{
-										_.map(this.props.notes, (note, key) => {
-											return (
-												<tr key={key}>
-													<th className='notes-tooltip__header'>
-														<img className='icon' src='/icons/warning_icon.svg' />
-														{(
-															note.type === NoteType.WARNING ? 'Warning: ' :
-															note.type === NoteType.ERROR ? 'Error: ' :
-															''
-														)}
-													</th>
-													<td className='notes-tooltip__source'>{note.origin.name}</td>
-													<td className='notes-tooltip__message'>
-														<a href='#' onClick={e => this.clickNote(e, note)}>{note.message}</a>
-													</td>
-												</tr>
-											)
-										})
-									}
-									</tbody>
-								</table>
+								<div className="notes-tooltip">
+									<table>
+										<tbody>
+											{_.map(this.props.notes, (note, key) => {
+												return (
+													<tr key={key}>
+														<th className="notes-tooltip__header">
+															<img className="icon" src="/icons/warning_icon.svg" />
+															{note.type === NoteType.WARNING
+																? 'Warning: '
+																: note.type === NoteType.ERROR
+																? 'Error: '
+																: ''}
+														</th>
+														<td className="notes-tooltip__source">{note.origin.name}</td>
+														<td className="notes-tooltip__message">
+															<a href="#" onClick={(e) => this.clickNote(e, note)}>
+																{note.message}
+															</a>
+														</td>
+													</tr>
+												)
+											})}
+										</tbody>
+									</table>
+								</div>
 							</div>
-						</div> : null
-					}
-					<div className={ClassNames('indicator', 'mos', {
-						'good': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.GOOD,
-						'minor': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-						'major': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-						'bad': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.BAD,
-						'fatal': this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
-					})}>
-						<div className='indicator__tooltip'>
-							<h4>{t('MOS Connection')}</h4>
-							<div>
-								<h5>{t('Last update')}</h5>
-								<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />
-							</div>
-							<div>
-								{
-									this.props.mosDevices.offLine.length > 0 ?
+						) : null}
+						<div
+							className={ClassNames('indicator', 'mos', {
+								good: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.GOOD,
+								minor: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+								major: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
+								bad: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.BAD,
+								fatal: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
+							})}>
+							<div className="indicator__tooltip">
+								<h4>{t('MOS Connection')}</h4>
+								<div>
+									<h5>{t('Last update')}</h5>
+									<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />
+								</div>
+								<div>
+									{this.props.mosDevices.offLine.length > 0 ? (
 										<React.Fragment>
-											{mosDisconnected.length ? <React.Fragment>
-												<h5>{t('Off-line devices')}</h5>
-												<ul>
-													{ mosDisconnected.map((device) => {
-														return <li key={unprotectString(device._id)}>{device.name}</li>
-													})}
-												</ul>
-											</React.Fragment> : null}
-											{mosDevicesIssues.length ? <React.Fragment>
-												<h5>{t('Devices with issues')}</h5>
-												<ul>
-													{mosDevicesIssues.map((device) => {
-														return <li key={unprotectString(device._id)}>{device.name}</li>
-													})}
-												</ul>
-											</React.Fragment> : null}
-										</React.Fragment> :
+											{mosDisconnected.length ? (
+												<React.Fragment>
+													<h5>{t('Off-line devices')}</h5>
+													<ul>
+														{mosDisconnected.map((device) => {
+															return <li key={unprotectString(device._id)}>{device.name}</li>
+														})}
+													</ul>
+												</React.Fragment>
+											) : null}
+											{mosDevicesIssues.length ? (
+												<React.Fragment>
+													<h5>{t('Devices with issues')}</h5>
+													<ul>
+														{mosDevicesIssues.map((device) => {
+															return <li key={unprotectString(device._id)}>{device.name}</li>
+														})}
+													</ul>
+												</React.Fragment>
+											) : null}
+										</React.Fragment>
+									) : (
 										<span>{t('All connections working correctly')}</span>
-								}
+									)}
+								</div>
 							</div>
 						</div>
-					</div>
-					<div className={ClassNames('indicator', 'playout', {
-						'good': this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.GOOD,
-						'minor': this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
-						'major': this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
-						'bad': this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.BAD,
-						'fatal': this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.FATAL,
-					})}>
-						<div className='indicator__tooltip'>
-							<h4>{t('Play-out')}</h4>
-							<div>
-								{
-									this.props.playoutDevices.offLine.length > 0 ?
+						<div
+							className={ClassNames('indicator', 'playout', {
+								good: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.GOOD,
+								minor: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.WARNING_MINOR,
+								major: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.WARNING_MAJOR,
+								bad: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.BAD,
+								fatal: this.props.playoutStatus === PeripheralDeviceAPI.StatusCode.FATAL,
+							})}>
+							<div className="indicator__tooltip">
+								<h4>{t('Play-out')}</h4>
+								<div>
+									{this.props.playoutDevices.offLine.length > 0 ? (
 										<React.Fragment>
-											{playoutDisconnected.length ? <React.Fragment>
-												<h5>{t('Off-line devices')}</h5>
-												<ul>
-													{playoutDisconnected.map((device) => {
-														return <li key={unprotectString(device._id)}>{device.name}</li>
-													})}
-												</ul>
-											</React.Fragment> : null}
-											{playoutDevicesIssues.length ? <React.Fragment>
-												<h5>{t('Devices with issues')}</h5>
-												<ul>
-													{playoutDevicesIssues.map((device) => {
-														return <li key={unprotectString(device._id)}>{device.name}</li>
-													})}
-												</ul>
-											</React.Fragment> : null}
-										</React.Fragment> :
+											{playoutDisconnected.length ? (
+												<React.Fragment>
+													<h5>{t('Off-line devices')}</h5>
+													<ul>
+														{playoutDisconnected.map((device) => {
+															return <li key={unprotectString(device._id)}>{device.name}</li>
+														})}
+													</ul>
+												</React.Fragment>
+											) : null}
+											{playoutDevicesIssues.length ? (
+												<React.Fragment>
+													<h5>{t('Devices with issues')}</h5>
+													<ul>
+														{playoutDevicesIssues.map((device) => {
+															return <li key={unprotectString(device._id)}>{device.name}</li>
+														})}
+													</ul>
+												</React.Fragment>
+											) : null}
+										</React.Fragment>
+									) : (
 										<span>{t('All devices working correctly')}</span>
-								}
+									)}
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		)
+			)
+		}
 	}
-})
+)

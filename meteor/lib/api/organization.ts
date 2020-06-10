@@ -1,8 +1,8 @@
 import { OrganizationId, NewOrganization } from '../../lib/collections/Organization'
 
 export interface NewOrganizationAPI {
-	insertOrganization (organization: NewOrganization): Promise<OrganizationId>
-	removeOrganization (): Promise<void>
+	insertOrganization(organization: NewOrganization): Promise<OrganizationId>
+	removeOrganization(): Promise<void>
 }
 
 export enum OrganizationAPIMethods {

@@ -21,9 +21,9 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
 
-meteorPublish(PubSub.rundowns, function (selector0, token: string) {
+meteorPublish(PubSub.rundowns, function(selector0, token: string) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = { fields: {} }
 	if (
 		NoSecurityReadAccess.any() ||
@@ -35,10 +35,10 @@ meteorPublish(PubSub.rundowns, function (selector0, token: string) {
 	}
 	return null
 })
-meteorPublish(PubSub.segments, function (selector: MongoQuery<DBSegment>, token?: string) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.segments, function(selector: MongoQuery<DBSegment>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBSegment> = {
-		fields: {}
+		fields: {},
 	}
 	if (
 		NoSecurityReadAccess.any() ||
@@ -50,10 +50,10 @@ meteorPublish(PubSub.segments, function (selector: MongoQuery<DBSegment>, token?
 	return null
 })
 
-meteorPublish(PubSub.parts, function (selector: MongoQuery<DBPart>, token?: string) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.parts, function(selector: MongoQuery<DBPart>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPart> = {
-		fields: {}
+		fields: {},
 	}
 	if (
 		(selector.rundownId && RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) ||
@@ -63,10 +63,10 @@ meteorPublish(PubSub.parts, function (selector: MongoQuery<DBPart>, token?: stri
 	}
 	return null
 })
-meteorPublish(PubSub.partInstances, function (selector: MongoQuery<PartInstance>, token?: string) {
+meteorPublish(PubSub.partInstances, function(selector: MongoQuery<PartInstance>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
-		fields: {}
+		fields: {},
 	}
 
 	// Enforce only not-reset
@@ -78,10 +78,10 @@ meteorPublish(PubSub.partInstances, function (selector: MongoQuery<PartInstance>
 	return null
 })
 
-meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: string) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.pieces, function(selector: MongoQuery<Piece>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Piece> = {
-		fields: {}
+		fields: {},
 	}
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return Pieces.find(selector, modifier)
@@ -89,14 +89,14 @@ meteorPublish(PubSub.pieces, function (selector: MongoQuery<Piece>, token?: stri
 	return null
 })
 
-meteorPublish(PubSub.piecesSimple, function (selector: MongoQuery<Piece>, token?: string) {
+meteorPublish(PubSub.piecesSimple, function(selector: MongoQuery<Piece>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Piece> = {
 		fields: {
-			timings: 0
+			timings: 0,
 			// we kind-of need to know the contents, unfortunately
 			// content: 0
-		}
+		},
 	}
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return Pieces.find(selector, modifier)
@@ -104,20 +104,20 @@ meteorPublish(PubSub.piecesSimple, function (selector: MongoQuery<Piece>, token?
 	return null
 })
 
-meteorPublish(PubSub.adLibPieces, function (selector: MongoQuery<AdLibPiece>, token?: string) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.adLibPieces, function(selector: MongoQuery<AdLibPiece>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibPiece> = {
-		fields: {}
+		fields: {},
 	}
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return AdLibPieces.find(selector, modifier)
 	}
 	return null
 })
-meteorPublish(PubSub.pieceInstances, function (selector: MongoQuery<PieceInstance>, token?: string) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.pieceInstances, function(selector: MongoQuery<PieceInstance>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
-		fields: {}
+		fields: {},
 	}
 
 	// Enforce only not-reset
@@ -129,13 +129,13 @@ meteorPublish(PubSub.pieceInstances, function (selector: MongoQuery<PieceInstanc
 	return null
 })
 
-meteorPublish(PubSub.pieceInstancesSimple, function (selector: MongoQuery<PieceInstance>, token?: string) {
+meteorPublish(PubSub.pieceInstancesSimple, function(selector: MongoQuery<PieceInstance>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
 			// we kind-of need to know the contents, unfortunately
 			// content: 0,
-		}
+		},
 	}
 
 	// Enforce only not-reset
@@ -146,54 +146,61 @@ meteorPublish(PubSub.pieceInstancesSimple, function (selector: MongoQuery<PieceI
 	}
 	return null
 })
-meteorPublish(PubSub.asRunLog, function (selector: MongoQuery<AsRunLogEvent>, token?: string) {
+meteorPublish(PubSub.asRunLog, function(selector: MongoQuery<AsRunLogEvent>, token?: string) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return AsRunLog.find(selector)
 	}
 	return null
 })
-meteorPublish(PubSub.expectedMediaItems, function (selector: MongoQuery<ExpectedMediaItem>, token?: string) {
+meteorPublish(PubSub.expectedMediaItems, function(selector: MongoQuery<ExpectedMediaItem>, token?: string) {
 	const allowed = RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token })
 	if (!allowed) {
 		return null
 	} else if (allowed === true) {
 		return ExpectedMediaItems.find(selector)
 	} else if (typeof allowed === 'object') {
-		return ExpectedMediaItems.find(_.extend(selector, {
-			studioId: allowed.studioId
-		}))
+		return ExpectedMediaItems.find(
+			_.extend(selector, {
+				studioId: allowed.studioId,
+			})
+		)
 	}
 	return null
 })
-meteorPublish(PubSub.expectedPlayoutItems, function (selector: MongoQuery<ExpectedPlayoutItem>, token?: string) {
+meteorPublish(PubSub.expectedPlayoutItems, function(selector: MongoQuery<ExpectedPlayoutItem>, token?: string) {
 	const allowed = RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token })
 	if (!allowed) {
 		return null
 	} else if (allowed === true) {
 		return ExpectedPlayoutItems.find(selector)
 	} else if (typeof allowed === 'object') {
-		return ExpectedPlayoutItems.find(_.extend(selector, {
-			studioId: allowed.studioId
-		}))
+		return ExpectedPlayoutItems.find(
+			_.extend(selector, {
+				studioId: allowed.studioId,
+			})
+		)
 	}
 	return null
 })
 // Note: this publication is for dev purposes only:
-meteorPublish(PubSub.ingestDataCache, function (selector: MongoQuery<IngestDataCacheObjBase>, token?: string) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.ingestDataCache, function(selector: MongoQuery<IngestDataCacheObjBase>, token?: string) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<IngestDataCacheObj> = {
-		fields: {}
+		fields: {},
 	}
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return IngestDataCache.find(selector, modifier)
 	}
 	return null
 })
-meteorPublish(PubSub.rundownBaselineAdLibPieces, function (selector: MongoQuery<RundownBaselineAdLibItem>, token?: string) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.rundownBaselineAdLibPieces, function(
+	selector: MongoQuery<RundownBaselineAdLibItem>,
+	token?: string
+) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<RundownBaselineAdLibItem> = {
-		fields: {}
+		fields: {},
 	}
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return RundownBaselineAdLibPieces.find(selector, modifier)

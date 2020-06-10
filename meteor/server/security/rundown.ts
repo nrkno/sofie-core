@@ -17,11 +17,17 @@ import { Settings } from '../../lib/Settings'
 
 type RundownContent = { rundownId: RundownId }
 export namespace RundownReadAccess {
-	export function rundown (selector: MongoQuery<{_id: RundownId}>, cred: Credentials | ResolvedCredentials): boolean {
+	export function rundown(
+		selector: MongoQuery<{ _id: RundownId }>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		return rundownContent({ rundownId: selector._id }, cred)
 	}
 	/** Handles read access for all rundown content (segments, parts, pieces etc..) */
-	export function rundownContent (selector: MongoQuery<RundownContent>, cred: Credentials | ResolvedCredentials): boolean {
+	export function rundownContent(
+		selector: MongoQuery<RundownContent>,
+		cred: Credentials | ResolvedCredentials
+	): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.rundownId) throw new Meteor.Error(400, 'selector must contain rundownId')
@@ -31,20 +37,20 @@ export namespace RundownReadAccess {
 
 		return true
 	}
-	export function segments (selector: MongoQuery<{ _id: SegmentId }>, cred: Credentials): boolean {
+	export function segments(selector: MongoQuery<{ _id: SegmentId }>, cred: Credentials): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector._id) throw new Meteor.Error(400, 'selector must contain _id')
 
 		const segments = Segments.find(selector).fetch()
-		const rundownIds = _.uniq(_.map(segments, s => s.rundownId))
+		const rundownIds = _.uniq(_.map(segments, (s) => s.rundownId))
 
 		const access = allowAccessToRundown(cred, { $in: rundownIds })
 		if (!access.read) return logNotAllowed('Segments', access.reason)
 
 		return true
 	}
-	export function pieces (selector: MongoQuery<{ rundownId: RundownId }>, cred: Credentials): boolean {
+	export function pieces(selector: MongoQuery<{ rundownId: RundownId }>, cred: Credentials): boolean {
 		check(selector, Object)
 		if (!Settings.enableUserAccounts) return true
 		if (!selector.rundownId) throw new Meteor.Error(400, 'selector must contain rundownId')
@@ -54,7 +60,7 @@ export namespace RundownReadAccess {
 
 		return true
 	}
-	export function expectedMediaItems (selector: Mongo.Query<ExpectedMediaItem> | any, cred: Credentials) {
+	export function expectedMediaItems(selector: Mongo.Query<ExpectedMediaItem> | any, cred: Credentials) {
 		check(selector, Object)
 		if (selector.mediaFlowId) {
 			check(selector.mediaFlowId, Object)
@@ -64,7 +70,7 @@ export namespace RundownReadAccess {
 
 		let mediaManagerDevice = PeripheralDevices.findOne({
 			type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-			token: cred.token
+			token: cred.token,
 		})
 
 		if (!mediaManagerDevice) return false
@@ -72,12 +78,10 @@ export namespace RundownReadAccess {
 		mediaManagerDevice.studioId = getStudioIdFromDevice(mediaManagerDevice)
 
 		if (mediaManagerDevice && cred.token) {
-
 			// mediaManagerDevice.settings
 
 			return mediaManagerDevice
 		} else {
-
 			// TODO: implement access logic here
 			// use context.userId
 
@@ -85,7 +89,7 @@ export namespace RundownReadAccess {
 			return true
 		}
 	}
-	export function expectedPlayoutItems (selector: Mongo.Query<ExpectedPlayoutItem> | any, cred: Credentials) {
+	export function expectedPlayoutItems(selector: Mongo.Query<ExpectedPlayoutItem> | any, cred: Credentials) {
 		check(selector, Object)
 		check(selector.studioId, String)
 
@@ -93,7 +97,7 @@ export namespace RundownReadAccess {
 
 		let playoutDevice = PeripheralDevices.findOne({
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-			token: cred.token
+			token: cred.token,
 		})
 		if (!playoutDevice) return false
 
@@ -108,7 +112,7 @@ export namespace RundownReadAccess {
 		}
 	}
 }
-export function rundownContentAllowWrite (userId, doc: RundownContent): boolean {
+export function rundownContentAllowWrite(userId, doc: RundownContent): boolean {
 	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true

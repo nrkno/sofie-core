@@ -12,12 +12,17 @@ const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
  * Supports Page-up / Page-down keys
  */
 export class ShuttleKeyboardController extends ControllerAbstract {
-
 	private _destroyed: boolean = false
 	private _prompterView: PrompterViewInner
 
 	private static readonly _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
-	private static readonly _speedStepMap = [...ShuttleKeyboardController._speedMap.slice(1).reverse().map(i => i * -1), ...ShuttleKeyboardController._speedMap.slice()]
+	private static readonly _speedStepMap = [
+		...ShuttleKeyboardController._speedMap
+			.slice(1)
+			.reverse()
+			.map((i) => i * -1),
+		...ShuttleKeyboardController._speedMap.slice(),
+	]
 	private static readonly SPEEDMAP_NEUTRAL_POSITION = 7
 
 	private _updateSpeedHandle: number | null = null
@@ -25,15 +30,15 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 	private _lastSpeedMapPosition = ShuttleKeyboardController.SPEEDMAP_NEUTRAL_POSITION
 	private _currentPosition = 0
 
-	constructor (view: PrompterViewInner) {
+	constructor(view: PrompterViewInner) {
 		super(view)
 
 		this._prompterView = view
 	}
-	public destroy () {
+	public destroy() {
 		this._destroyed = true
 	}
-	public onKeyDown (e: KeyboardEvent) {
+	public onKeyDown(e: KeyboardEvent) {
 		let speed = -1
 		let newSpeedStep = this._lastSpeedMapPosition
 		let inverse = false
@@ -71,7 +76,10 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			switch (e.key) {
 				case '-':
 					newSpeedStep--
-					newSpeedStep = Math.max(0, Math.min(newSpeedStep, ShuttleKeyboardController._speedStepMap.length - 1))
+					newSpeedStep = Math.max(
+						0,
+						Math.min(newSpeedStep, ShuttleKeyboardController._speedStepMap.length - 1)
+					)
 					this._lastSpeedMapPosition = newSpeedStep
 					speed = ShuttleKeyboardController._speedStepMap[this._lastSpeedMapPosition]
 					if (speed < 0) {
@@ -81,7 +89,10 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 					break
 				case '+':
 					newSpeedStep++
-					newSpeedStep = Math.max(0, Math.min(newSpeedStep, ShuttleKeyboardController._speedStepMap.length - 1))
+					newSpeedStep = Math.max(
+						0,
+						Math.min(newSpeedStep, ShuttleKeyboardController._speedStepMap.length - 1)
+					)
 					this._lastSpeedMapPosition = newSpeedStep
 					speed = ShuttleKeyboardController._speedStepMap[this._lastSpeedMapPosition]
 					if (speed < 0) {
@@ -143,25 +154,24 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			}
 		}
 
-
 		// update flag for comparison on next iteration
 		this._lastSpeed = speed
 		this._updateScrollPosition()
 	}
-	public onKeyUp (e: KeyboardEvent) {
+	public onKeyUp(e: KeyboardEvent) {
 		// Nothing
 	}
-	public onMouseKeyDown (e: MouseEvent) {
+	public onMouseKeyDown(e: MouseEvent) {
 		// Nothing
 	}
-	public onMouseKeyUp (e: MouseEvent) {
+	public onMouseKeyUp(e: MouseEvent) {
 		// Nothing
 	}
-	public onWheel (e: WheelEvent) {
+	public onWheel(e: WheelEvent) {
 		// Nothing
 	}
 
-	private _updateScrollPosition () {
+	private _updateScrollPosition() {
 		if (this._updateSpeedHandle !== null) return
 		this._updateSpeedHandle = null
 

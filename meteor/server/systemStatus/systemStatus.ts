@@ -33,7 +33,7 @@ export enum StatusCode {
 	/** Operation affected, possible to recover */
 	BAD = 4,
 	/** Operation affected, not possible to recover without manual interference */
-	FATAL = 5
+	FATAL = 5,
 }
 export interface StatusObject {
 	studioId?: StudioId
@@ -55,7 +55,7 @@ export interface StatusObjectInternal {
  * Returns system status
  * @param studioId (Optional) If provided, limits the status to what's affecting the studio
  */
-export function getSystemStatus (cred0: Credentials, studioId?: StudioId): StatusResponse {
+export function getSystemStatus(cred0: Credentials, studioId?: StudioId): StatusResponse {
 	let checks: Array<CheckObj> = []
 
 	SystemWriteAccess.systemStatusRead(cred0)
@@ -67,13 +67,16 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 			status: status2ExternalStatus(status.statusCode),
 			updated: new Date(status.timestamp).toISOString(),
 			_status: status.statusCode,
-			errors: _.map(status.messages || [], (m): CheckError => {
-				return {
-					type: 'message',
-					time: new Date(m.timestamp).toISOString(),
-					message: m.message
+			errors: _.map(
+				status.messages || [],
+				(m): CheckError => {
+					return {
+						type: 'message',
+						time: new Date(m.timestamp).toISOString(),
+						message: m.message,
+					}
 				}
-			})
+			),
 		})
 	})
 
@@ -88,7 +91,7 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 			// this _internal is set later
 			statusCodeString: StatusCode[StatusCode.UNKNOWN],
 			messages: [],
-			versions: {}
+			versions: {},
 		},
 		checks: checks,
 	}
@@ -112,14 +115,12 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 		}
 	}
 	_.each(devices, (device: PeripheralDevice) => {
-
 		let deviceStatus: StatusCode = device.status.statusCode
 		let deviceStatusMessages: Array<string> = device.status.messages || []
 
 		let checks: Array<CheckObj> = []
 
 		if (deviceStatus === StatusCode.GOOD) {
-
 			if (device.expectedVersions) {
 				if (!device.versions) device.versions = {}
 				let deviceVersions = device.versions
@@ -151,7 +152,12 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 						} else if (version0 && expectedVersion0 && version0.minor < expectedVersion0.minor) {
 							statusCode = StatusCode.WARNING_MAJOR
 							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (minor version differ)`
-						} else if (version0 && expectedVersion0 && version0.minor <= expectedVersion0.minor && version0.patch < expectedVersion0.patch) {
+						} else if (
+							version0 &&
+							expectedVersion0 &&
+							version0.minor <= expectedVersion0.minor &&
+							version0.patch < expectedVersion0.patch
+						) {
 							statusCode = StatusCode.WARNING_MINOR
 							message = `${libraryName}: Expected version ${expectedVersionStr}, got ${versionStr} (patch version differ)`
 						}
@@ -164,13 +170,16 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 						status: status2ExternalStatus(statusCode),
 						updated: new Date(device.lastSeen).toISOString(),
 						_status: statusCode,
-						errors: _.map(messages, (message: string): CheckError => {
-							return {
-								type: 'version-differ',
-								time: new Date(device.lastSeen).toISOString(),
-								message: message
+						errors: _.map(
+							messages,
+							(message: string): CheckError => {
+								return {
+									type: 'version-differ',
+									time: new Date(device.lastSeen).toISOString(),
+									message: message,
+								}
 							}
-						})
+						),
 					})
 				})
 			}
@@ -187,9 +196,9 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 				// statusCode: deviceStatus,
 				statusCodeString: StatusCode[deviceStatus],
 				messages: deviceStatusMessages,
-				versions: device.versions || {}
+				versions: device.versions || {},
 			},
-			checks: checks
+			checks: checks,
 		}
 		if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
 			so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
@@ -203,7 +212,6 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 
 		if (!statusObj.components) statusObj.components = []
 		statusObj.components.push(so)
-
 	})
 
 	let systemStatus: StatusCode = setStatus(statusObj)
@@ -211,19 +219,19 @@ export function getSystemStatus (cred0: Credentials, studioId?: StudioId): Statu
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
 		messages: collectMesages(statusObj),
-		versions: getRelevantSystemVersions()
+		versions: getRelevantSystemVersions(),
 	}
 	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 
 	return statusObj
 }
-export function setSystemStatus (type: string, status: StatusObject) {
+export function setSystemStatus(type: string, status: StatusObject) {
 	let systemStatus: StatusObjectInternal = systemStatuses[type]
 	if (!systemStatus) {
 		systemStatus = {
 			statusCode: StatusCode.UNKNOWN,
 			timestamp: 0,
-			messages: []
+			messages: [],
 		}
 		systemStatuses[type] = systemStatus
 	}
@@ -239,28 +247,27 @@ export function setSystemStatus (type: string, status: StatusObject) {
 	}> = []
 	if (status.messages) {
 		_.each(status.messages, (message) => {
-			let m = _.find(systemStatus.messages, m => m.message === message)
+			let m = _.find(systemStatus.messages, (m) => m.message === message)
 			if (m) {
 				messages.push(m)
 			} else {
 				messages.push({
 					message: message,
-					timestamp: getCurrentTime()
+					timestamp: getCurrentTime(),
 				})
 			}
 		})
 	}
 	systemStatus.messages = messages
 }
-export function removeSystemStatus (type: string) {
+export function removeSystemStatus(type: string) {
 	delete systemStatuses[type]
 }
 /** Random id for this running instance of core */
 const instanceId: SystemInstanceId = getRandomId()
 /** Map of surrent system statuses */
-const systemStatuses: {[key: string]: StatusObjectInternal} = {}
-function setStatus (statusObj: StatusResponse): StatusCode {
-
+const systemStatuses: { [key: string]: StatusObjectInternal } = {}
+function setStatus(statusObj: StatusResponse): StatusCode {
 	let s: StatusCode = statusObj._status
 
 	if (statusObj.checks) {
@@ -278,7 +285,7 @@ function setStatus (statusObj: StatusResponse): StatusCode {
 	statusObj._status = s
 	return s
 }
-function collectMesages (statusObj: StatusResponse): Array<string> {
+function collectMesages(statusObj: StatusResponse): Array<string> {
 	let allMessages: Array<string> = []
 
 	if (statusObj._internal) {
@@ -288,18 +295,15 @@ function collectMesages (statusObj: StatusResponse): Array<string> {
 	}
 	if (statusObj.checks) {
 		_.each(statusObj.checks, (check: CheckObj) => {
-
 			if (check._status !== StatusCode.GOOD && check.errors) {
 				_.each(check.errors, (errMsg) => {
 					allMessages.push(`check ${check.description}: ${errMsg.message}`)
 				})
 			}
-
 		})
 	}
 	if (statusObj.components) {
 		_.each(statusObj.components, (component: StatusResponse) => {
-
 			let messages = collectMesages(component)
 
 			_.each(messages, (msg) => {
@@ -309,18 +313,12 @@ function collectMesages (statusObj: StatusResponse): Array<string> {
 	}
 	return allMessages
 }
-export function status2ExternalStatus (statusCode: StatusCode): ExternalStatus {
+export function status2ExternalStatus(statusCode: StatusCode): ExternalStatus {
 	if (statusCode === StatusCode.GOOD) {
 		return 'OK'
-	} else if (
-		statusCode === StatusCode.WARNING_MINOR ||
-		statusCode === StatusCode.WARNING_MAJOR
-	) {
+	} else if (statusCode === StatusCode.WARNING_MINOR || statusCode === StatusCode.WARNING_MAJOR) {
 		return 'WARNING'
-	} else if (
-		statusCode === StatusCode.BAD ||
-		statusCode === StatusCode.FATAL
-	) {
+	} else if (statusCode === StatusCode.BAD || statusCode === StatusCode.FATAL) {
 		return 'FAIL'
 	}
 	return 'UNDEFINED'

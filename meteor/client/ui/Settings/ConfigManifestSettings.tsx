@@ -3,18 +3,26 @@ import * as ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
 const Tooltip = require('rc-tooltip')
-import {
-	Studio,
-	Studios,
-	MappingsExt,
-	StudioId
-} from '../../../lib/collections/Studios'
+import { Studio, Studios, MappingsExt, StudioId } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ConfigManifestEntry, ConfigManifestEntryType, IConfigItem, BasicConfigManifestEntry, ConfigManifestEntryEnum, ConfigItemValue, ConfigManifestEntryTable, TableConfigItemValue, ConfigManifestEntrySourceLayers, ConfigManifestEntryLayerMappings, SourceLayerType, ConfigManifestEntrySelectFromOptions } from 'tv-automation-sofie-blueprints-integration'
+import {
+	ConfigManifestEntry,
+	ConfigManifestEntryType,
+	IConfigItem,
+	BasicConfigManifestEntry,
+	ConfigManifestEntryEnum,
+	ConfigItemValue,
+	ConfigManifestEntryTable,
+	TableConfigItemValue,
+	ConfigManifestEntrySourceLayers,
+	ConfigManifestEntryLayerMappings,
+	SourceLayerType,
+	ConfigManifestEntrySelectFromOptions,
+} from 'tv-automation-sofie-blueprints-integration'
 import { literal, DBObj, KeysByType, ProtectedString } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
@@ -23,14 +31,27 @@ import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteo
 import { Meteor } from 'meteor/meteor'
 import { getHelpMode } from '../../lib/localStorage'
 import { Random } from 'meteor/random'
-import { faDownload, faTrash, faPencilAlt, faCheck, faPlus, faUpload, faSort, faSortUp, faSortDown } from '@fortawesome/fontawesome-free-solid'
+import {
+	faDownload,
+	faTrash,
+	faPencilAlt,
+	faCheck,
+	faPlus,
+	faUpload,
+	faSort,
+	faSortUp,
+	faSortDown,
+} from '@fortawesome/fontawesome-free-solid'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
-function filterSourceLayers (select: ConfigManifestEntrySourceLayers<true | false>, layers: Array<{name: string, value: string, type: SourceLayerType}>) {
+function filterSourceLayers(
+	select: ConfigManifestEntrySourceLayers<true | false>,
+	layers: Array<{ name: string; value: string; type: SourceLayerType }>
+) {
 	if (select.filters && select.filters.sourceLayerTypes) {
 		const sourceLayerTypes = select.filters.sourceLayerTypes
-		return _.filter(layers, layer => {
+		return _.filter(layers, (layer) => {
 			return sourceLayerTypes.includes(layer.type)
 		})
 	} else {
@@ -38,96 +59,124 @@ function filterSourceLayers (select: ConfigManifestEntrySourceLayers<true | fals
 	}
 }
 
-function filterLayerMappings (select: ConfigManifestEntryLayerMappings<true | false>, mappings: {[key: string]: MappingsExt}) {
+function filterLayerMappings(
+	select: ConfigManifestEntryLayerMappings<true | false>,
+	mappings: { [key: string]: MappingsExt }
+) {
 	if (select.filters && select.filters.deviceTypes) {
 		const deviceTypes = select.filters.deviceTypes
-		return _.mapObject(mappings, studioMappings => {
-			return Object.keys(_.pick(studioMappings, mapping => {
-				return deviceTypes.includes(mapping.device)
-			}))
+		return _.mapObject(mappings, (studioMappings) => {
+			return Object.keys(
+				_.pick(studioMappings, (mapping) => {
+					return deviceTypes.includes(mapping.device)
+				})
+			)
 		})
 	} else {
-		return _.mapObject(mappings, studioMappings => {
+		return _.mapObject(mappings, (studioMappings) => {
 			return Object.keys(studioMappings)
 		})
 	}
 }
 
-function getEditAttribute<DBInterface extends { _id: ProtectedString<any>}, DocClass extends DBInterface> (
+function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	object: DBInterface, item: BasicConfigManifestEntry, attribute: string,
-	layerMappings?: {[key: string]: MappingsExt},
-	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>) {
+	object: DBInterface,
+	item: BasicConfigManifestEntry,
+	attribute: string,
+	layerMappings?: { [key: string]: MappingsExt },
+	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
+) {
 	switch (item.type) {
 		case ConfigManifestEntryType.STRING:
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type='text'
-				collection={collection}
-				className='input text-input input-l' />
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="text"
+					collection={collection}
+					className="input text-input input-l"
+				/>
+			)
 		case ConfigManifestEntryType.NUMBER:
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type='int'
-				collection={collection}
-				className='input text-input input-m' />
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="int"
+					collection={collection}
+					className="input text-input input-m"
+				/>
+			)
 		case ConfigManifestEntryType.BOOLEAN:
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type='checkbox'
-				collection={collection}
-				className='input' />
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="checkbox"
+					collection={collection}
+					className="input"
+				/>
+			)
 		case ConfigManifestEntryType.ENUM:
 			const item2 = item as ConfigManifestEntryEnum
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type='dropdown'
-				options={item2.options || []}
-				collection={collection}
-				className='input text-input input-l' />
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="dropdown"
+					options={item2.options || []}
+					collection={collection}
+					className="input text-input input-l"
+				/>
+			)
 		case ConfigManifestEntryType.SELECT:
 			const selectFromOptions = item as ConfigManifestEntrySelectFromOptions<true | false>
-			return <EditAttribute
-				modifiedClassName='bghl'
-				attribute={attribute}
-				obj={object}
-				type={selectFromOptions.multiple ? 'multiselect' : 'dropdown'}
-				options={ selectFromOptions.options }
-				collection={collection}
-				className='input text-input dropdown input-l' />
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type={selectFromOptions.multiple ? 'multiselect' : 'dropdown'}
+					options={selectFromOptions.options}
+					collection={collection}
+					className="input text-input dropdown input-l"
+				/>
+			)
 		case ConfigManifestEntryType.SOURCE_LAYERS:
 			const selectSourceLayer = item as ConfigManifestEntrySourceLayers<true | false>
 			if (sourceLayers) {
-				return <EditAttribute
-					modifiedClassName='bghl'
-					attribute={attribute}
-					obj={object}
-					type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
-					options={filterSourceLayers(selectSourceLayer, sourceLayers)}
-					collection={collection}
-					className='input text-input dropdown input-l'
-				/>
+				return (
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={attribute}
+						obj={object}
+						type={selectSourceLayer.multiple ? 'multiselect' : 'dropdown'}
+						options={filterSourceLayers(selectSourceLayer, sourceLayers)}
+						collection={collection}
+						className="input text-input dropdown input-l"
+					/>
+				)
 			}
 			break
 		case ConfigManifestEntryType.LAYER_MAPPINGS:
-			const selectLayerMappings = item as ConfigManifestEntryLayerMappings <true | false>
+			const selectLayerMappings = item as ConfigManifestEntryLayerMappings<true | false>
 			if (layerMappings) {
-				return <EditAttribute
-					modifiedClassName='bghl'
-					attribute={attribute}
-					obj={object}
-					type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
-					options={filterLayerMappings(selectLayerMappings, layerMappings)}
-					collection={collection}
-					className='input text-input dropdown input-l' />
+				return (
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute={attribute}
+						obj={object}
+						type={selectLayerMappings.multiple ? 'multiselect' : 'dropdown'}
+						options={filterLayerMappings(selectLayerMappings, layerMappings)}
+						collection={collection}
+						className="input text-input dropdown input-l"
+					/>
+				)
 			}
 			break
 		default:
@@ -135,15 +184,19 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any>}, DocC
 	}
 }
 
-interface IConfigManifestSettingsProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface> {
+interface IConfigManifestSettingsProps<
+	TCol extends TransformedCollection<DocClass, DBInterface>,
+	DBInterface extends { _id: ProtectedString<any> },
+	DocClass extends DBInterface
+> {
 	manifest: ConfigManifestEntry[]
 
 	collection: TCol
 	object: DBInterface
 	configPath: KeysByType<DBInterface, Array<IConfigItem>>
 
-	layerMappings?: {[key: string]: MappingsExt}
-	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>
+	layerMappings?: { [key: string]: MappingsExt }
+	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 
 	subPanel?: boolean
 }
@@ -156,15 +209,19 @@ interface IConfigManifestSettingsState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 
-interface IConfigManifestTableProps<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends { _id: ProtectedString<any> }, DocClass extends DBInterface> {
+interface IConfigManifestTableProps<
+	TCol extends TransformedCollection<DocClass, DBInterface>,
+	DBInterface extends { _id: ProtectedString<any> },
+	DocClass extends DBInterface
+> {
 	item: ConfigManifestEntryTable
 	baseAttribute: string
 
 	collection: TCol
 	object: DBInterface
 
-	layerMappings?: {[key: string]: MappingsExt}
-	sourceLayers?: Array<{name: string, value: string, type: SourceLayerType}>
+	layerMappings?: { [key: string]: MappingsExt }
+	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
 
 	subPanel?: boolean
 }
@@ -174,43 +231,48 @@ interface IConfigManifestTableState {
 	sortOrder: 'asc' | 'desc'
 }
 
-export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends DBObj, DocClass extends DBInterface>
-	extends React.Component<Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>, IConfigManifestTableState> {
-
-	constructor (props: Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>) {
+export class ConfigManifestTable<
+	TCol extends TransformedCollection<DocClass, DBInterface>,
+	DBInterface extends DBObj,
+	DocClass extends DBInterface
+> extends React.Component<
+	Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>,
+	IConfigManifestTableState
+> {
+	constructor(props: Translated<IConfigManifestTableProps<TCol, DBInterface, DocClass>>) {
 		super(props)
 
 		this.state = {
 			uploadFileKey: Date.now(),
 			sortColumn: -1,
-			sortOrder: 'asc'
+			sortOrder: 'asc',
 		}
 	}
 
-	updateObject (obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
+	updateObject(obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
 		this.props.collection.update(obj._id, updateObj)
 	}
 
-	removeRow (id: string, baseAttribute: string) {
+	removeRow(id: string, baseAttribute: string) {
 		const m: any = {}
 		m[baseAttribute] = {
-			_id: id
+			_id: id,
 		}
 		this.updateObject(this.props.object, { $pull: m })
 	}
 
-	addRow (configEntry: ConfigManifestEntryTable, baseAttribute: string) {
+	addRow(configEntry: ConfigManifestEntryTable, baseAttribute: string) {
 		const rowDefault: any = {
-			_id: Random.id()
+			_id: Random.id(),
 		}
-		_.each(configEntry.columns, col => rowDefault[col.id] = col.defaultVal)
+		_.each(configEntry.columns, (col) => (rowDefault[col.id] = col.defaultVal))
 
 		const m: any = {}
 		m[baseAttribute] = rowDefault
 		this.updateObject(this.props.object, { $push: m })
 	}
 
-	exportJSON (configEntry: ConfigManifestEntryTable, vals: any) {
+	exportJSON(configEntry: ConfigManifestEntryTable, vals: any) {
 		const jsonStr = JSON.stringify(vals, undefined, 4)
 
 		const element = document.createElement('a')
@@ -222,7 +284,7 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 		document.body.removeChild(element) // Required for this to work in FireFox
 	}
 
-	importJSON (e: React.ChangeEvent<HTMLInputElement>, configEntry: ConfigManifestEntryTable, baseAttribute: string) {
+	importJSON(e: React.ChangeEvent<HTMLInputElement>, configEntry: ConfigManifestEntryTable, baseAttribute: string) {
 		const { t } = this.props
 
 		const file = e.target.files ? e.target.files[0] : null
@@ -235,7 +297,7 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 			// On file upload
 
 			this.setState({
-				uploadFileKey: Date.now()
+				uploadFileKey: Date.now(),
 			})
 
 			const uploadFileContents = (e2.target as any).result
@@ -248,19 +310,26 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 					throw new Error('Not an array')
 				}
 			} catch (err) {
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }), 'ConfigManifestSettings'))
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }),
+						'ConfigManifestSettings'
+					)
+				)
 				return
 			}
 
 			// Validate the config
 			const conformedConfig: TableConfigItemValue = []
-			_.forEach(newConfig, entry => {
+			_.forEach(newConfig, (entry) => {
 				const newEntry: TableConfigItemValue[0] = {
-					_id: entry._id || Random.id()
+					_id: entry._id || Random.id(),
 				}
 
 				// Ensure all fields are defined
-				_.forEach(configEntry.columns, col => {
+				_.forEach(configEntry.columns, (col) => {
 					newEntry[col.id] = entry[col.id] !== undefined ? entry[col.id] : col.defaultVal
 				})
 				conformedConfig.push(newEntry)
@@ -273,26 +342,26 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 		reader.readAsText(file)
 	}
 
-	sort (columnNumber: number) {
+	sort(columnNumber: number) {
 		if (this.state.sortColumn === columnNumber) {
 			if (this.state.sortOrder === 'asc') {
 				this.setState({
-					sortOrder: 'desc'
+					sortOrder: 'desc',
 				})
 			} else {
 				this.setState({
-					sortColumn: -1
+					sortColumn: -1,
 				})
 			}
 		} else {
 			this.setState({
 				sortColumn: columnNumber,
-				sortOrder: 'asc'
+				sortOrder: 'asc',
 			})
 		}
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 
 		const baseAttribute = this.props.baseAttribute
@@ -329,74 +398,111 @@ export class ConfigManifestTable<TCol extends TransformedCollection<DocClass, DB
 		}
 		return (
 			<div>
-				<div className='settings-studio-sticky-scroller'>
-					<table className='table'>
+				<div className="settings-studio-sticky-scroller">
+					<table className="table">
 						<thead>
 							<tr>
-								{ _.map(configEntry.columns.sort((a, b) => {
-									if (a.rank > b.rank) return 1
-									if (a.rank < b.rank) return -1
+								{_.map(
+									configEntry.columns.sort((a, b) => {
+										if (a.rank > b.rank) return 1
+										if (a.rank < b.rank) return -1
 
-									return 0
-								}), (col, i) => <th key={col.id}>
-									<span title={col.description}>{ col.name} </span>
-									{(col.type === ConfigManifestEntryType.STRING || col.type === ConfigManifestEntryType.NUMBER) &&
-										<button className={ClassNames('action-btn', {
-											disabled: this.state.sortColumn !== i
-										})} onClick={() => this.sort(i)}>
-											<FontAwesomeIcon icon={(this.state.sortColumn === i ? this.state.sortOrder === 'asc' ? faSortUp : faSortDown : faSort)} />
-										</button>
-									}
-								</th>) }
+										return 0
+									}),
+									(col, i) => (
+										<th key={col.id}>
+											<span title={col.description}>{col.name} </span>
+											{(col.type === ConfigManifestEntryType.STRING || col.type === ConfigManifestEntryType.NUMBER) && (
+												<button
+													className={ClassNames('action-btn', {
+														disabled: this.state.sortColumn !== i,
+													})}
+													onClick={() => this.sort(i)}>
+													<FontAwesomeIcon
+														icon={
+															this.state.sortColumn === i
+																? this.state.sortOrder === 'asc'
+																	? faSortUp
+																	: faSortDown
+																: faSort
+														}
+													/>
+												</button>
+											)}
+										</th>
+									)
+								)}
 								<th>&nbsp;</th>
 							</tr>
 						</thead>
 						<tbody>
-						{
-							_.map(vals, (val, i) => <tr key={sortedIndices[i]}>
-								{ _.map(configEntry.columns, col => <td key={col.id}>{
-									getEditAttribute(this.props.collection, this.props.object, col, `${baseAttribute}.${sortedIndices[i]}.${col.id}`, this.props.layerMappings, this.props.sourceLayers)
-								}</td>) }
-								<td>
-									<button className={ClassNames('btn btn-danger', {
-										'btn-tight': this.props.subPanel
-									})} onClick={() => this.removeRow(val._id, baseAttribute)}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-								</td>
-							</tr>)
-						}
+							{_.map(vals, (val, i) => (
+								<tr key={sortedIndices[i]}>
+									{_.map(configEntry.columns, (col) => (
+										<td key={col.id}>
+											{getEditAttribute(
+												this.props.collection,
+												this.props.object,
+												col,
+												`${baseAttribute}.${sortedIndices[i]}.${col.id}`,
+												this.props.layerMappings,
+												this.props.sourceLayers
+											)}
+										</td>
+									))}
+									<td>
+										<button
+											className={ClassNames('btn btn-danger', {
+												'btn-tight': this.props.subPanel,
+											})}
+											onClick={() => this.removeRow(val._id, baseAttribute)}>
+											<FontAwesomeIcon icon={faTrash} />
+										</button>
+									</td>
+								</tr>
+							))}
 						</tbody>
 					</table>
 				</div>
-				<button className={ClassNames('btn btn-primary', {
-					'btn-tight': this.props.subPanel
-				})} onClick={() => this.addRow(configEntry, baseAttribute)}>
+				<button
+					className={ClassNames('btn btn-primary', {
+						'btn-tight': this.props.subPanel,
+					})}
+					onClick={() => this.addRow(configEntry, baseAttribute)}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
-				<button className={ClassNames('btn mlm btn-secondary', {
-					'btn-tight': this.props.subPanel
-				})} onClick={() => this.exportJSON(configEntry, vals)}>
-					<FontAwesomeIcon icon={faDownload} />&nbsp;{ t('Export') }
+				<button
+					className={ClassNames('btn mlm btn-secondary', {
+						'btn-tight': this.props.subPanel,
+					})}
+					onClick={() => this.exportJSON(configEntry, vals)}>
+					<FontAwesomeIcon icon={faDownload} />
+					&nbsp;{t('Export')}
 				</button>
 				<UploadButton
 					className={ClassNames('btn btn-secondary mls', {
-						'btn-tight': this.props.subPanel
+						'btn-tight': this.props.subPanel,
 					})}
-					accept='application/json,.json'
-					onChange={e => this.importJSON(e, configEntry, baseAttribute)}
+					accept="application/json,.json"
+					onChange={(e) => this.importJSON(e, configEntry, baseAttribute)}
 					key={this.state.uploadFileKey}>
-					<FontAwesomeIcon icon={faUpload} />&nbsp;{ t('Import') }
+					<FontAwesomeIcon icon={faUpload} />
+					&nbsp;{t('Import')}
 				</UploadButton>
 			</div>
 		)
 	}
 }
 
-export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass, DBInterface>, DBInterface extends DBObj, DocClass extends DBInterface>
-	extends React.Component<Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>, IConfigManifestSettingsState> {
-
-	constructor (props: Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>) {
+export class ConfigManifestSettings<
+	TCol extends TransformedCollection<DocClass, DBInterface>,
+	DBInterface extends DBObj,
+	DocClass extends DBInterface
+> extends React.Component<
+	Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>,
+	IConfigManifestSettingsState
+> {
+	constructor(props: Translated<IConfigManifestSettingsProps<TCol, DBInterface, DocClass>>) {
 		super(props)
 
 		this.state = {
@@ -405,15 +511,15 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 			showDeleteConfirm: false,
 			deleteConfirmItem: undefined,
 			editedItems: [],
-			uploadFileKey: Date.now()
+			uploadFileKey: Date.now(),
 		}
 	}
 
-	getObjectConfig (): Array<IConfigItem> {
+	getObjectConfig(): Array<IConfigItem> {
 		return this.props.object[this.props.configPath]
 	}
 
-	updateObject (obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
+	updateObject(obj: DBInterface, updateObj: MongoModifier<DBInterface>) {
 		this.props.collection.update(obj._id, updateObj)
 	}
 
@@ -426,7 +532,7 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 		if (index >= 0) {
 			this.state.editedItems.splice(index, 1)
 			this.setState({
-				editedItems: this.state.editedItems
+				editedItems: this.state.editedItems,
 			})
 		}
 	}
@@ -435,21 +541,21 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 		const m: any = {}
 		m[this.props.configPath] = literal<IConfigItem>({
 			_id: item.id,
-			value: item.defaultVal
+			value: item.defaultVal,
 		})
 		this.updateObject(this.props.object, { $push: m })
 	}
 
 	editItem = (item: ConfigManifestEntry) => {
 		// Ensure the item exists, so edit by index works
-		const valIndex = this.getObjectConfig().findIndex(v => v._id === item.id)
+		const valIndex = this.getObjectConfig().findIndex((v) => v._id === item.id)
 
 		if (valIndex === -1) throw new Meteor.Error(500, `Unable to edit an item that doesn't exist`)
 
 		if (this.state.editedItems.indexOf(item.id) < 0) {
 			this.state.editedItems.push(item.id)
 			this.setState({
-				editedItems: this.state.editedItems
+				editedItems: this.state.editedItems,
 			})
 		} else {
 			this.finishEditItem(item)
@@ -462,31 +568,31 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 		this.setState({
 			showAddItem: true,
 			showDeleteConfirm: false,
-			addItemId: options.length > 0 ? options[0].value : undefined
+			addItemId: options.length > 0 ? options[0].value : undefined,
 		})
 	}
 
 	handleConfirmAddItemCancel = (e) => {
 		this.setState({
 			addItemId: undefined,
-			showAddItem: false
+			showAddItem: false,
 		})
 	}
 
 	handleConfirmAddItemAccept = (e) => {
 		if (this.state.addItemId) {
-			const item = this.props.manifest.find(c => c.id === this.state.addItemId)
+			const item = this.props.manifest.find((c) => c.id === this.state.addItemId)
 			const m: any = {}
 			m[this.props.configPath] = literal<IConfigItem>({
 				_id: this.state.addItemId,
-				value: item ? item.defaultVal : ''
+				value: item ? item.defaultVal : '',
 			})
 			this.updateObject(this.props.object, { $push: m })
 		}
 
 		this.setState({
 			addItemId: undefined,
-			showAddItem: false
+			showAddItem: false,
 		})
 	}
 
@@ -494,14 +600,14 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 		this.setState({
 			showAddItem: false,
 			showDeleteConfirm: true,
-			deleteConfirmItem: item
+			deleteConfirmItem: item,
 		})
 	}
 
 	handleConfirmDeleteCancel = (e) => {
 		this.setState({
 			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
+			showDeleteConfirm: false,
 		})
 	}
 
@@ -509,18 +615,18 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 		if (this.state.deleteConfirmItem) {
 			const m: any = {}
 			m[this.props.configPath] = {
-				_id: this.state.deleteConfirmItem.id
+				_id: this.state.deleteConfirmItem.id,
 			}
 			this.updateObject(this.props.object, { $pull: m })
 		}
 
 		this.setState({
 			deleteConfirmItem: undefined,
-			showDeleteConfirm: false
+			showDeleteConfirm: false,
 		})
 	}
 
-	renderConfigValue (item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
+	renderConfigValue(item: ConfigManifestEntry, rawValue: ConfigItemValue | undefined) {
 		const { t } = this.props
 
 		const value = rawValue === undefined ? item.defaultVal : rawValue
@@ -529,171 +635,208 @@ export class ConfigManifestSettings<TCol extends TransformedCollection<DocClass,
 			case ConfigManifestEntryType.BOOLEAN:
 				return value ? t('true') : t('false')
 			case ConfigManifestEntryType.TABLE:
-				return t('{{count}} rows', { count: ((rawValue as any[] || []).length) })
+				return t('{{count}} rows', { count: ((rawValue as any[]) || []).length })
 			case ConfigManifestEntryType.SELECT:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:
-				return _.isArray(value) ?
-				<React.Fragment>
-					<ul className='table-values-list'>
-						{_.map(value as string[] || [], val => <li key={val}>{val}</li>)}
-					</ul>
-				</React.Fragment> :
-				value.toString()
+				return _.isArray(value) ? (
+					<React.Fragment>
+						<ul className="table-values-list">
+							{_.map((value as string[]) || [], (val) => (
+								<li key={val}>{val}</li>
+							))}
+						</ul>
+					</React.Fragment>
+				) : (
+					value.toString()
+				)
 			default:
 				return value.toString()
 		}
 	}
 
-	renderEditableArea (item: ConfigManifestEntry, valIndex: number) {
+	renderEditableArea(item: ConfigManifestEntry, valIndex: number) {
 		const baseAttribute = `config.${valIndex}.value`
 		const { t, collection, object } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
 				const item2 = item as ConfigManifestEntryTable
-				return <ConfigManifestTable t={t} collection={collection} object={object} baseAttribute={baseAttribute} item={item2} layerMappings={this.props.layerMappings} sourceLayers={this.props.sourceLayers} />
+				return (
+					<ConfigManifestTable
+						t={t}
+						collection={collection}
+						object={object}
+						baseAttribute={baseAttribute}
+						item={item2}
+						layerMappings={this.props.layerMappings}
+						sourceLayers={this.props.sourceLayers}
+					/>
+				)
 			case ConfigManifestEntryType.SELECT:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:
 				return (
-					<div className='field'>
+					<div className="field">
 						{t('Value')}
-						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute, this.props.layerMappings, this.props.sourceLayers) }
+						{getEditAttribute(
+							this.props.collection,
+							this.props.object,
+							item as BasicConfigManifestEntry,
+							baseAttribute,
+							this.props.layerMappings,
+							this.props.sourceLayers
+						)}
 					</div>
 				)
 			default:
 				return (
-					<label className='field'>
+					<label className="field">
 						{t('Value')}
-						{ getEditAttribute(this.props.collection, this.props.object, item as BasicConfigManifestEntry, baseAttribute, this.props.layerMappings, this.props.sourceLayers) }
+						{getEditAttribute(
+							this.props.collection,
+							this.props.object,
+							item as BasicConfigManifestEntry,
+							baseAttribute,
+							this.props.layerMappings,
+							this.props.sourceLayers
+						)}
 					</label>
 				)
 		}
 	}
 
-	renderItems () {
+	renderItems() {
 		const { t } = this.props
 
 		const values = this.getObjectConfig()
-		return (
-			this.props.manifest.map((item, index) => {
-				const valIndex = values.findIndex(v => v._id === item.id)
-				if (valIndex === -1 && !item.required) return undefined
+		return this.props.manifest.map((item, index) => {
+			const valIndex = values.findIndex((v) => v._id === item.id)
+			if (valIndex === -1 && !item.required) return undefined
 
-				const configItem = values[valIndex]
+			const configItem = values[valIndex]
 
-				return <React.Fragment key={`${item.id}`}>
-					<tr className={ClassNames({
-						'hl': this.isItemEdited(item)
-					})}>
-						<th className='settings-studio-custom-config-table__name c2'>
-							{item.name}
-						</th>
-						<td className='settings-studio-custom-config-table__value c3'>
-							{ this.renderConfigValue(item, configItem ? configItem.value : undefined)}
+			return (
+				<React.Fragment key={`${item.id}`}>
+					<tr
+						className={ClassNames({
+							hl: this.isItemEdited(item),
+						})}>
+						<th className="settings-studio-custom-config-table__name c2">{item.name}</th>
+						<td className="settings-studio-custom-config-table__value c3">
+							{this.renderConfigValue(item, configItem ? configItem.value : undefined)}
 						</td>
-						<td className='settings-studio-custom-config-table__actions table-item-actions c3'>
-							{
-								configItem ?
+						<td className="settings-studio-custom-config-table__actions table-item-actions c3">
+							{configItem ? (
 								<React.Fragment>
-									<button className='action-btn' onClick={(e) => this.editItem(item)}>
+									<button className="action-btn" onClick={(e) => this.editItem(item)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
-									{
-										!item.required &&
-										<button className='action-btn' onClick={(e) => this.confirmDelete(item)}>
+									{!item.required && (
+										<button className="action-btn" onClick={(e) => this.confirmDelete(item)}>
 											<FontAwesomeIcon icon={faTrash} />
 										</button>
-									}
-								</React.Fragment> :
-								<button className={ClassNames('btn btn-primary', {
-									'btn-tight': this.props.subPanel
-								})} onClick={(e) => this.createItem(item)}>
+									)}
+								</React.Fragment>
+							) : (
+								<button
+									className={ClassNames('btn btn-primary', {
+										'btn-tight': this.props.subPanel,
+									})}
+									onClick={(e) => this.createItem(item)}>
 									<FontAwesomeIcon icon={faPlus} /> {t('Create')}
 								</button>
-
-							}
+							)}
 						</td>
 					</tr>
-					{this.isItemEdited(item) &&
-						<tr className='expando-details hl'>
+					{this.isItemEdited(item) && (
+						<tr className="expando-details hl">
 							<td colSpan={4}>
 								<div>
-									<div className='mod mvs mhs'>
-										<label className='field'>
-											{item.description}
-										</label>
+									<div className="mod mvs mhs">
+										<label className="field">{item.description}</label>
 									</div>
-									<div className='mod mvs mhs'>
-										{ this.renderEditableArea(item, valIndex) }
-									</div>
+									<div className="mod mvs mhs">{this.renderEditableArea(item, valIndex)}</div>
 								</div>
-								<div className='mod alright'>
+								<div className="mod alright">
 									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
 										<FontAwesomeIcon icon={faCheck} />
 									</button>
 								</div>
 							</td>
 						</tr>
-					}
+					)}
 				</React.Fragment>
-			})
-		)
+			)
+		})
 	}
 
-	getAddOptions () {
+	getAddOptions() {
 		let existingIds: string[] = []
-		let addOptions: { value: string, name: string }[] = []
-		existingIds = this.getObjectConfig().map(c => c._id)
-		addOptions = this.props.manifest.map(c => ({ value: c.id, name: c.name }))
+		let addOptions: { value: string; name: string }[] = []
+		existingIds = this.getObjectConfig().map((c) => c._id)
+		addOptions = this.props.manifest.map((c) => ({ value: c.id, name: c.name }))
 
-		return addOptions.filter(o => existingIds.indexOf(o.value) === -1)
+		return addOptions.filter((o) => existingIds.indexOf(o.value) === -1)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 		return (
-			<div className='scroll-x'>
-				<ModalDialog title={t('Add config item')} acceptText={t('Add')}
-					secondaryText={t('Cancel')} show={this.state.showAddItem}
+			<div className="scroll-x">
+				<ModalDialog
+					title={t('Add config item')}
+					acceptText={t('Add')}
+					secondaryText={t('Cancel')}
+					show={this.state.showAddItem}
 					onAccept={(e) => this.handleConfirmAddItemAccept(e)}
 					onSecondary={(e) => this.handleConfirmAddItemCancel(e)}>
-					<div className='mod mvs mhs'>
-						<label className='field'>
+					<div className="mod mvs mhs">
+						<label className="field">
 							{t('Item')}
-							<div className='select focusable'>
+							<div className="select focusable">
 								<EditAttribute
-									modifiedClassName='bghl'
-									type='dropdown'
+									modifiedClassName="bghl"
+									type="dropdown"
 									options={this.getAddOptions()}
 									updateFunction={(e, v) => this.setState({ addItemId: v })}
 									overrideDisplayValue={this.state.addItemId}
-									/>
+								/>
 							</div>
 						</label>
 					</div>
 				</ModalDialog>
-				<ModalDialog title={t('Delete this item?')} acceptText={t('Delete')}
-					secondaryText={t('Cancel')} show={this.state.showDeleteConfirm}
+				<ModalDialog
+					title={t('Delete this item?')}
+					acceptText={t('Delete')}
+					secondaryText={t('Cancel')}
+					show={this.state.showDeleteConfirm}
 					onAccept={(e) => this.handleConfirmDeleteAccept(e)}
 					onSecondary={(e) => this.handleConfirmDeleteCancel(e)}>
-					<p>{t('Are you sure you want to delete this config item "{{configId}}"?',
-						{ configId: (this.state.deleteConfirmItem && this.state.deleteConfirmItem.name) })}</p>
+					<p>
+						{t('Are you sure you want to delete this config item "{{configId}}"?', {
+							configId: this.state.deleteConfirmItem && this.state.deleteConfirmItem.name,
+						})}
+					</p>
 					<p>{t('Please note: This action is irreversible!')}</p>
 				</ModalDialog>
-				{this.props.subPanel ?
-					<h3 className='mhn'>{t('Blueprint Configuration')}</h3>
-					: <h2 className='mhn'>{t('Blueprint Configuration')}</h2> }
-				<table className='table expando settings-studio-custom-config-table'>
-					<tbody>
-						{this.renderItems()}
-					</tbody>
+				{this.props.subPanel ? (
+					<h3 className="mhn">{t('Blueprint Configuration')}</h3>
+				) : (
+					<h2 className="mhn">{t('Blueprint Configuration')}</h2>
+				)}
+				<table className="table expando settings-studio-custom-config-table">
+					<tbody>{this.renderItems()}</tbody>
 				</table>
-				<div className='mod mhs'>
-					<button className={ClassNames('btn btn-primary', {
-						'btn-tight': this.props.subPanel
-					})} onClick={this.addConfigItem}>
-						<Tooltip overlay={t('More settings specific to this studio can be found here')} visible={getHelpMode()} placement='right'>
+				<div className="mod mhs">
+					<button
+						className={ClassNames('btn btn-primary', {
+							'btn-tight': this.props.subPanel,
+						})}
+						onClick={this.addConfigItem}>
+						<Tooltip
+							overlay={t('More settings specific to this studio can be found here')}
+							visible={getHelpMode()}
+							placement="right">
 							<FontAwesomeIcon icon={faPlus} />
 						</Tooltip>
 					</button>

@@ -10,13 +10,14 @@ nav.react-contextmenu {
 	border-radius: 4px;
 	overflow: hidden;
 	overflow-y: auto;
-	box-shadow: 5px 16px 80px 10px rgba(0,0,0,.75);
+	box-shadow: 5px 16px 80px 10px rgba(0, 0, 0, 0.75);
 
 	hr {
 		margin: 0;
 	}
 
-	.react-contextmenu-item, .react-contextmenu-label {
+	.react-contextmenu-item,
+	.react-contextmenu-label {
 		margin: 0;
 		padding: 4px 13px 7px 13px;
 		display: block;
@@ -27,7 +28,7 @@ nav.react-contextmenu {
 	}
 
 	.react-contextmenu-label {
-		color: #49C0FB;
+		color: #49c0fb;
 		background: #3e4041;
 		cursor: default;
 	}
@@ -41,7 +42,7 @@ nav.react-contextmenu {
 
 		&.react-contextmenu-item--selected:not(.react-contextmenu-item--disabled) {
 			background: #313334;
-			color: #FFFFFF;
+			color: #ffffff;
 			text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.3);
 		}
 

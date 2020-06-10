@@ -3,10 +3,7 @@ import { getCurrentTime, protectString, unprotectString, getRandomId, makePromis
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
-import {
-	BlueprintManifestType,
-	SomeBlueprintManifest,
-} from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'
@@ -20,7 +17,11 @@ import { OrganizationId } from '../../../lib/collections/Organization'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
 
-export function insertBlueprint (methodContext: MethodContext, type?: BlueprintManifestType, name?: string): BlueprintId {
+export function insertBlueprint(
+	methodContext: MethodContext,
+	type?: BlueprintManifestType,
+	name?: string
+): BlueprintId {
 	const { organizationId, cred } = OrganizationContentWriteAccess.blueprint(methodContext)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (!cred.user || !cred.user.superAdmin) {
@@ -44,16 +45,16 @@ export function insertBlueprint (methodContext: MethodContext, type?: BlueprintM
 
 		databaseVersion: {
 			studio: {},
-			showStyle: {}
+			showStyle: {},
 		},
 
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
-		minimumCoreVersion: ''
+		minimumCoreVersion: '',
 	})
 }
-export function removeBlueprint (methodContext: MethodContext, blueprintId: BlueprintId) {
+export function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId) {
 	check(blueprintId, String)
 	OrganizationContentWriteAccess.blueprint(methodContext, blueprintId, true)
 	if (!blueprintId) throw new Meteor.Error(404, `Blueprint id "${blueprintId}" was not found`)
@@ -62,7 +63,13 @@ export function removeBlueprint (methodContext: MethodContext, blueprintId: Blue
 	removeSystemStatus('blueprintCompability_' + blueprintId)
 }
 
-export function uploadBlueprint (context: Credentials, blueprintId: BlueprintId, body: string, blueprintName?: string, ignoreIdChange?: boolean): Blueprint {
+export function uploadBlueprint(
+	context: Credentials,
+	blueprintId: BlueprintId,
+	body: string,
+	blueprintName?: string,
+	ignoreIdChange?: boolean
+): Blueprint {
 	check(blueprintId, String)
 	check(body, String)
 	check(blueprintName, Match.Maybe(String))
@@ -75,41 +82,42 @@ export function uploadBlueprint (context: Credentials, blueprintId: BlueprintId,
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
 /** Only to be called from internal functions */
-export function internalUploadBlueprint (
+export function internalUploadBlueprint(
 	blueprintId: BlueprintId,
 	body: string,
 	blueprintName?: string,
-	ignoreIdChange?: boolean,
+	ignoreIdChange?: boolean
 ): Blueprint {
 	const organizationId = null
 	const blueprint = Blueprints.findOne(blueprintId)
 
 	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
-export function innerUploadBlueprint (
+export function innerUploadBlueprint(
 	organizationId: OrganizationId | null,
 	blueprint: Blueprint | undefined,
 	blueprintId: BlueprintId,
 	body: string,
 	blueprintName?: string,
-	ignoreIdChange?: boolean,
+	ignoreIdChange?: boolean
 ): Blueprint {
-
 	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	const newBlueprint: Blueprint = {
 		_id: blueprintId,
 		organizationId: organizationId,
-		name: blueprint ? blueprint.name : (blueprintName || unprotectString(blueprintId)),
+		name: blueprint ? blueprint.name : blueprintName || unprotectString(blueprintId),
 		created: blueprint ? blueprint.created : getCurrentTime(),
 		code: body,
 		modified: getCurrentTime(),
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
-		databaseVersion: blueprint ? blueprint.databaseVersion : {
-			studio: {},
-			showStyle: {}
-		},
+		databaseVersion: blueprint
+			? blueprint.databaseVersion
+			: {
+					studio: {},
+					showStyle: {},
+			  },
 		blueprintId: protectString(''),
 		blueprintVersion: '',
 		integrationVersion: '',
@@ -125,37 +133,45 @@ export function innerUploadBlueprint (
 		throw new Meteor.Error(400, `Blueprint ${blueprintId} failed to parse`)
 	}
 
-	if (!_.isObject(blueprintManifest)) throw new Meteor.Error(400, `Blueprint ${blueprintId} returned a manifest of type ${typeof blueprintManifest}`)
+	if (!_.isObject(blueprintManifest))
+		throw new Meteor.Error(400, `Blueprint ${blueprintId} returned a manifest of type ${typeof blueprintManifest}`)
 
 	if (!_.contains(_.values(BlueprintManifestType), blueprintManifest.blueprintType)) {
-		throw new Meteor.Error(400, `Blueprint ${blueprintId} returned a manifest of unknown blueprintType "${blueprintManifest.blueprintType}"`)
+		throw new Meteor.Error(
+			400,
+			`Blueprint ${blueprintId} returned a manifest of unknown blueprintType "${blueprintManifest.blueprintType}"`
+		)
 	}
 
-	newBlueprint.blueprintId				= protectString(blueprintManifest.blueprintId || '')
-	newBlueprint.blueprintType				= blueprintManifest.blueprintType
-	newBlueprint.blueprintVersion			= blueprintManifest.blueprintVersion
-	newBlueprint.integrationVersion			= blueprintManifest.integrationVersion
-	newBlueprint.TSRVersion					= blueprintManifest.TSRVersion
-	newBlueprint.minimumCoreVersion			= blueprintManifest.minimumCoreVersion
+	newBlueprint.blueprintId = protectString(blueprintManifest.blueprintId || '')
+	newBlueprint.blueprintType = blueprintManifest.blueprintType
+	newBlueprint.blueprintVersion = blueprintManifest.blueprintVersion
+	newBlueprint.integrationVersion = blueprintManifest.integrationVersion
+	newBlueprint.TSRVersion = blueprintManifest.TSRVersion
+	newBlueprint.minimumCoreVersion = blueprintManifest.minimumCoreVersion
 
-	if (
-		blueprint &&
-		blueprint.blueprintType &&
-		blueprint.blueprintType !== newBlueprint.blueprintType
-	) {
-		throw new Meteor.Error(400, `Cannot replace old blueprint (of type "${blueprint.blueprintType}") with new blueprint of type "${newBlueprint.blueprintType}"`)
+	if (blueprint && blueprint.blueprintType && blueprint.blueprintType !== newBlueprint.blueprintType) {
+		throw new Meteor.Error(
+			400,
+			`Cannot replace old blueprint (of type "${blueprint.blueprintType}") with new blueprint of type "${newBlueprint.blueprintType}"`
+		)
 	}
 	if (blueprint && blueprint.blueprintId && blueprint.blueprintId !== newBlueprint.blueprintId) {
 		if (ignoreIdChange) {
-			logger.warn(`Replacing blueprint "${newBlueprint._id}" ("${blueprint.blueprintId}") with new blueprint "${newBlueprint.blueprintId}"`)
+			logger.warn(
+				`Replacing blueprint "${newBlueprint._id}" ("${blueprint.blueprintId}") with new blueprint "${newBlueprint.blueprintId}"`
+			)
 
 			// Force reset migrations
 			newBlueprint.databaseVersion = {
 				showStyle: {},
-				studio: {}
+				studio: {},
 			}
 		} else {
-			throw new Meteor.Error(422, `Cannot replace old blueprint "${newBlueprint._id}" ("${blueprint.blueprintId}") with new blueprint "${newBlueprint.blueprintId}"`)
+			throw new Meteor.Error(
+				422,
+				`Cannot replace old blueprint "${newBlueprint._id}" ("${blueprint.blueprintId}") with new blueprint "${newBlueprint.blueprintId}"`
+			)
 		}
 	}
 
@@ -176,7 +192,7 @@ export function innerUploadBlueprint (
 	return newBlueprint
 }
 
-function assignSystemBlueprint (methodContext: MethodContext, blueprintId?: BlueprintId) {
+function assignSystemBlueprint(methodContext: MethodContext, blueprintId?: BlueprintId) {
 	SystemWriteAccess.coreSystem(methodContext)
 
 	if (blueprintId !== undefined && blueprintId !== null) {
@@ -185,32 +201,37 @@ function assignSystemBlueprint (methodContext: MethodContext, blueprintId?: Blue
 		const blueprint = Blueprints.findOne(blueprintId)
 		if (!blueprint) throw new Meteor.Error(404, 'Blueprint not found')
 
-		if (blueprint.organizationId) OrganizationReadAccess.organizationContent({ organizationId: blueprint.organizationId }, { userId: methodContext.userId })
+		if (blueprint.organizationId)
+			OrganizationReadAccess.organizationContent(
+				{ organizationId: blueprint.organizationId },
+				{ userId: methodContext.userId }
+			)
 
-		if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) throw new Meteor.Error(404, 'Blueprint not of type SYSTEM')
+		if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM)
+			throw new Meteor.Error(404, 'Blueprint not of type SYSTEM')
 
 		CoreSystem.update(SYSTEM_ID, {
 			$set: {
-				blueprintId: blueprintId
-			}
+				blueprintId: blueprintId,
+			},
 		})
 	} else {
 		CoreSystem.update(SYSTEM_ID, {
 			$unset: {
-				blueprintId: 1
-			}
+				blueprintId: 1,
+			},
 		})
 	}
 }
 
 class ServerBlueprintAPI extends MethodContextAPI implements NewBlueprintAPI {
-	insertBlueprint () {
+	insertBlueprint() {
 		return makePromise(() => insertBlueprint(this))
 	}
-	removeBlueprint (blueprintId: BlueprintId) {
+	removeBlueprint(blueprintId: BlueprintId) {
 		return makePromise(() => removeBlueprint(this, blueprintId))
 	}
-	assignSystemBlueprint (blueprintId?: BlueprintId) {
+	assignSystemBlueprint(blueprintId?: BlueprintId) {
 		return makePromise(() => assignSystemBlueprint(this, blueprintId))
 	}
 }

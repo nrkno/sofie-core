@@ -7,12 +7,11 @@ import { RundownId } from './Rundowns'
 import { RundownPlaylistId } from './RundownPlaylists'
 import { OrganizationId } from './Organization'
 
-
 export enum SnapshotType {
 	RUNDOWN = 'rundown', // to be deprecated?
 	RUNDOWNPLAYLIST = 'rundownplaylist',
 	SYSTEM = 'system',
-	DEBUG = 'debug'
+	DEBUG = 'debug',
 }
 /** A string, identifying a Snapshot */
 export type SnapshotId = ProtectedString<'SnapshotId'>
@@ -31,7 +30,6 @@ export interface SnapshotBase {
 }
 
 export interface SnapshotItem extends SnapshotBase {
-
 	fileName: string
 	comment: string
 
@@ -40,7 +38,8 @@ export interface SnapshotItem extends SnapshotBase {
 	playlistId?: RundownPlaylistId
 }
 
-export interface DeprecatedSnapshotRundown extends SnapshotBase { // From the times before rundownPlaylists
+export interface DeprecatedSnapshotRundown extends SnapshotBase {
+	// From the times before rundownPlaylists
 	type: SnapshotType.RUNDOWN
 	studioId: StudioId
 	rundownId: RundownId
@@ -57,14 +56,15 @@ export interface SnapshotDebug extends SnapshotBase {
 	type: SnapshotType.DEBUG
 }
 
-export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem>
-	= createMongoCollection<SnapshotItem>('snapshots')
+export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem> = createMongoCollection<SnapshotItem>(
+	'snapshots'
+)
 registerCollection('Snapshots', Snapshots)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Snapshots._ensureIndex({
-			organizationId: 1
+			organizationId: 1,
 		})
 	}
 })

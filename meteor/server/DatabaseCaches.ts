@@ -1,6 +1,11 @@
 import * as _ from 'underscore'
 import { Rundown, Rundowns, DBRundown, RundownId } from '../lib/collections/Rundowns'
-import { RundownPlaylist, RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylist,
+	RundownPlaylists,
+	DBRundownPlaylist,
+	RundownPlaylistId,
+} from '../lib/collections/RundownPlaylists'
 import { Meteor } from 'meteor/meteor'
 import { DbCacheCollection, isDbCacheCollection } from './DatabaseCache'
 import { Segment, Segments, DBSegment } from '../lib/collections/Segments'
@@ -23,10 +28,10 @@ type DeferredFunction<Cache> = (cache: Cache) => void
 
 /** This cache contains data relevant in a studio */
 export class Cache {
-	private _deferredFunctions: (DeferredFunction<Cache>)[] = []
+	private _deferredFunctions: DeferredFunction<Cache>[] = []
 	private _activeTimeout: number | null = null
 
-	constructor () {
+	constructor() {
 		if (!Meteor.isProduction) {
 			// When this is set up, we expect saveAllToDatabase() to have been called at the end, otherwise something is wrong
 			const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
@@ -36,19 +41,17 @@ export class Cache {
 		}
 	}
 
-	_abortActiveTimeout () {
+	_abortActiveTimeout() {
 		if (this._activeTimeout) {
 			Meteor.clearTimeout(this._activeTimeout)
 		}
 	}
-	_extendWithData (extendFromCache: Cache) {
+	_extendWithData(extendFromCache: Cache) {
 		extendFromCache._abortActiveTimeout()
 
 		_.each(extendFromCache as any, (their, key) => {
 			const our = this[key]
-			if (
-				isDbCacheCollection(their)
-			) {
+			if (isDbCacheCollection(their)) {
 				if (isDbCacheCollection(our)) {
 					our.extendWithData(their)
 				} else {
@@ -57,7 +60,7 @@ export class Cache {
 			}
 		})
 	}
-	async saveAllToDatabase () {
+	async saveAllToDatabase() {
 		this._abortActiveTimeout()
 
 		// shouldn't the deferred functions be executed after updating the db?
@@ -73,7 +76,7 @@ export class Cache {
 		)
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
-	defer (fcn: DeferredFunction<Cache>): void {
+	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
 	}
 }
@@ -87,7 +90,7 @@ export class CacheForStudio extends Cache {
 	RecordedFiles: DbCacheCollection<RecordedFile, RecordedFile>
 	PeripheralDevices: DbCacheCollection<PeripheralDevice, PeripheralDevice>
 
-	constructor (studioId: StudioId) {
+	constructor(studioId: StudioId) {
 		super()
 		this.containsDataFromStudio = studioId
 
@@ -97,14 +100,14 @@ export class CacheForStudio extends Cache {
 		this.RecordedFiles = new DbCacheCollection<RecordedFile, RecordedFile>(RecordedFiles)
 		this.PeripheralDevices = new DbCacheCollection<PeripheralDevice, PeripheralDevice>(PeripheralDevices)
 	}
-	defer (fcn: DeferredFunction<CacheForStudio>) {
+	defer(fcn: DeferredFunction<CacheForStudio>) {
 		return super.defer(fcn)
 	}
 }
-function emptyCacheForStudio (studioId: StudioId): CacheForStudio {
+function emptyCacheForStudio(studioId: StudioId): CacheForStudio {
 	return new CacheForStudio(studioId)
 }
-async function fillCacheForStudioWithData (cache: CacheForStudio, studioId: StudioId, initializeImmediately: boolean) {
+async function fillCacheForStudioWithData(cache: CacheForStudio, studioId: StudioId, initializeImmediately: boolean) {
 	await Promise.all([
 		makePromise(() => cache.RundownPlaylists.prepareInit({ studioId: studioId }, initializeImmediately)),
 		makePromise(() => cache.Studios.prepareInit({ _id: studioId }, initializeImmediately)),
@@ -115,7 +118,7 @@ async function fillCacheForStudioWithData (cache: CacheForStudio, studioId: Stud
 
 	return cache
 }
-export async function initCacheForStudio (studioId: StudioId, initializeImmediately: boolean = true) {
+export async function initCacheForStudio(studioId: StudioId, initializeImmediately: boolean = true) {
 	const cache: CacheForStudio = emptyCacheForStudio(studioId)
 	await fillCacheForStudioWithData(cache, studioId, initializeImmediately)
 
@@ -143,7 +146,7 @@ export class CacheForRundownPlaylist extends CacheForStudio {
 	AdLibPieces: DbCacheCollection<AdLibPiece, AdLibPiece>
 	RundownBaselineAdLibPieces: DbCacheCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
 
-	constructor (studioId: StudioId, playlistId: RundownPlaylistId) {
+	constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super(studioId)
 		this.containsDataFromPlaylist = playlistId
 
@@ -158,57 +161,93 @@ export class CacheForRundownPlaylist extends CacheForStudio {
 		this.RundownBaselineObjs = new DbCacheCollection<RundownBaselineObj, RundownBaselineObj>(RundownBaselineObjs)
 
 		this.AdLibPieces = new DbCacheCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
-		this.RundownBaselineAdLibPieces = new DbCacheCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(RundownBaselineAdLibPieces)
+		this.RundownBaselineAdLibPieces = new DbCacheCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
+			RundownBaselineAdLibPieces
+		)
 	}
-	defer (fcn: DeferredFunction<CacheForRundownPlaylist>) {
+	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
 	}
 }
-function emptyCacheForRundownPlaylist (studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
+function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
 	return new CacheForRundownPlaylist(studioId, playlistId)
 }
-async function fillCacheForRundownPlaylistWithData (cache: CacheForRundownPlaylist, playlist: RundownPlaylist, initializeImmediately: boolean) {
+async function fillCacheForRundownPlaylistWithData(
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	initializeImmediately: boolean
+) {
 	const ps: Promise<any>[] = []
 	cache.Rundowns.prepareInit({ playlistId: playlist._id }, true)
 
 	const rundownsInPlaylist = cache.Rundowns.findFetch()
-	const rundownIds = rundownsInPlaylist.map(r => r._id)
+	const rundownIds = rundownsInPlaylist.map((r) => r._id)
 
 	ps.push(makePromise(() => cache.Segments.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
 	ps.push(makePromise(() => cache.Parts.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
 	ps.push(makePromise(() => cache.Pieces.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
 
-	ps.push(makePromise(() => cache.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
+	ps.push(
+		makePromise(() => cache.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately))
+	)
 
-	ps.push(makePromise(() => cache.PieceInstances.prepareInit(async () => {
+	ps.push(
+		makePromise(() =>
+			cache.PieceInstances.prepareInit(async () => {
+				const selectedPartInstanceIds = _.compact([
+					playlist.currentPartInstanceId,
+					playlist.nextPartInstanceId,
+					playlist.previousPartInstanceId,
+				])
 
-		const selectedPartInstanceIds = _.compact([
-			playlist.currentPartInstanceId,
-			playlist.nextPartInstanceId,
-			playlist.previousPartInstanceId
-		])
+				await cache.PieceInstances.fillWithDataFromDatabase({
+					rundownId: { $in: rundownIds },
+					partInstanceId: { $in: selectedPartInstanceIds },
+				})
+			}, initializeImmediately)
+		)
+	)
 
-		await cache.PieceInstances.fillWithDataFromDatabase({
-			rundownId: { $in: rundownIds },
-			partInstanceId: { $in: selectedPartInstanceIds }
-		})
-	}, initializeImmediately)))
+	ps.push(
+		makePromise(() =>
+			cache.RundownBaselineObjs.prepareInit(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				initializeImmediately
+			)
+		)
+	)
 
-	ps.push(makePromise(() => cache.RundownBaselineObjs.prepareInit({
-		rundownId: { $in: rundownIds },
-	}, initializeImmediately)))
+	ps.push(
+		makePromise(() =>
+			cache.AdLibPieces.prepareInit(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				false
+			)
+		)
+	)
 
-	ps.push(makePromise(() => cache.AdLibPieces.prepareInit({
-		rundownId: { $in: rundownIds },
-	}, false)))
-
-	ps.push(makePromise(() => cache.RundownBaselineAdLibPieces.prepareInit({
-		rundownId: { $in: rundownIds },
-	}, false)))
+	ps.push(
+		makePromise(() =>
+			cache.RundownBaselineAdLibPieces.prepareInit(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				false
+			)
+		)
+	)
 
 	await Promise.all(ps)
 }
-export async function initCacheForRundownPlaylist (playlist: RundownPlaylist, extendFromCache?: CacheForStudio, initializeImmediately: boolean = true): Promise<CacheForRundownPlaylist> {
+export async function initCacheForRundownPlaylist(
+	playlist: RundownPlaylist,
+	extendFromCache?: CacheForStudio,
+	initializeImmediately: boolean = true
+): Promise<CacheForRundownPlaylist> {
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(playlist.studioId, initializeImmediately)
 	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(playlist.studioId, playlist._id)
 	if (extendFromCache) {
@@ -218,7 +257,11 @@ export async function initCacheForRundownPlaylist (playlist: RundownPlaylist, ex
 	return cache
 }
 /** Cache for playout, but there is no playlist playing */
-export async function initCacheForNoRundownPlaylist (studioId: StudioId, extendFromCache?: CacheForStudio, initializeImmediately: boolean = true): Promise<CacheForRundownPlaylist> {
+export async function initCacheForNoRundownPlaylist(
+	studioId: StudioId,
+	extendFromCache?: CacheForStudio,
+	initializeImmediately: boolean = true
+): Promise<CacheForRundownPlaylist> {
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(studioId, initializeImmediately)
 	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''))
 	if (extendFromCache) {
@@ -226,17 +269,17 @@ export async function initCacheForNoRundownPlaylist (studioId: StudioId, extendF
 	}
 	return cache
 }
-export async function initCacheForRundownPlaylistFromRundown (rundownId: RundownId) {
+export async function initCacheForRundownPlaylistFromRundown(rundownId: RundownId) {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)
 	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}" not found!`)
 	return initCacheForRundownPlaylist(playlist)
 }
-export async function initCacheForRundownPlaylistFromStudio (studioId: StudioId) {
+export async function initCacheForRundownPlaylistFromStudio(studioId: StudioId) {
 	const playlist = RundownPlaylists.findOne({
 		studioId: studioId,
-		active: true
+		active: true,
 	})
 	if (!playlist) {
 		return initCacheForNoRundownPlaylist(studioId)
@@ -246,19 +289,28 @@ export async function initCacheForRundownPlaylistFromStudio (studioId: StudioId)
 }
 
 /** Initialize a cache, run the function, then store the cache */
-export function wrapWithCacheForRundownPlaylist<T> (playlist: RundownPlaylist, fcn: (cache: CacheForRundownPlaylist) => T): T {
+export function wrapWithCacheForRundownPlaylist<T>(
+	playlist: RundownPlaylist,
+	fcn: (cache: CacheForRundownPlaylist) => T
+): T {
 	const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 	const r = fcn(cache)
 	waitForPromise(cache.saveAllToDatabase())
 	return r
 }
-export function wrapWithCacheForRundownPlaylistFromRundown<T> (rundownId: RundownId, fcn: (cache: CacheForRundownPlaylist) => T): T {
+export function wrapWithCacheForRundownPlaylistFromRundown<T>(
+	rundownId: RundownId,
+	fcn: (cache: CacheForRundownPlaylist) => T
+): T {
 	const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
 	const r = fcn(cache)
 	waitForPromise(cache.saveAllToDatabase())
 	return r
 }
-export function wrapWithCacheForRundownPlaylistFromStudio<T> (studioId: StudioId, fcn: (cache: CacheForRundownPlaylist) => T): T {
+export function wrapWithCacheForRundownPlaylistFromStudio<T>(
+	studioId: StudioId,
+	fcn: (cache: CacheForRundownPlaylist) => T
+): T {
 	const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
 	const r = fcn(cache)
 	waitForPromise(cache.saveAllToDatabase())

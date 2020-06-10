@@ -1,4 +1,4 @@
-import { createMosAppInfoXmlString } from "../plugin-support"
+import { createMosAppInfoXmlString } from '../plugin-support'
 import * as parser from 'xml2json'
 
 describe('createMosAppInfoXmlString', () => {
@@ -16,7 +16,7 @@ describe('createMosAppInfoXmlString', () => {
 			const nodeNames = Object.keys(doc)
 
 			expect(nodeNames.length).toEqual(1)
-			expect(nodeNames[ 0 ]).toEqual('mos')
+			expect(nodeNames[0]).toEqual('mos')
 		})
 
 		describe('mos node contents', () => {
@@ -52,5 +52,4 @@ describe('createMosAppInfoXmlString', () => {
 			})
 		})
 	})
-
 })
