@@ -1,5 +1,5 @@
 import { RundownId, Rundowns } from './collections/Rundowns'
-import { PartNote } from './api/notes'
+import { PartNote, TrackedNote } from './api/notes'
 import { Segments, Segment } from './collections/Segments'
 import { Parts } from './collections/Parts'
 import { unprotectString, makePromise, waitForPromise, asyncCollectionFindOne } from './lib'
@@ -10,9 +10,10 @@ import { checkPieceContentStatus } from './mediaObjects'
 import { Studios, Studio } from './collections/Studios'
 import { RundownAPI } from './api/rundown'
 import { IMediaObjectIssue } from './api/rundownNotifications'
-export function getSegmentPartNotes(rundownIds: RundownId[]): (PartNote & { rank: number })[] {
-	let notes: Array<PartNote & { rank: number }> = []
+import { getAllNotesForSegmentAndParts } from './collections/RundownPlaylists'
 
+export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
+	let notes: TrackedNote[] = []
 	const segments = Segments.find(
 		{
 			rundownId: {
@@ -29,16 +30,7 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): (PartNote & { rank
 		}
 	).fetch()
 
-	const segmentNotes = _.object(
-		segments.map((segment) => [
-			segment._id,
-			{
-				rank: segment._rank,
-				notes: segment.notes,
-			},
-		])
-	) as { [key: string]: { notes: PartNote[]; rank: number } }
-	Parts.find(
+	const parts = Parts.find(
 		{
 			rundownId: { $in: rundownIds },
 			segmentId: { $in: segments.map((segment) => segment._id) },
@@ -46,31 +38,17 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): (PartNote & { rank
 		{
 			sort: { _rank: 1 },
 			fields: {
+				_id: 1,
 				segmentId: 1,
+				rundownId: 1,
 				notes: 1,
+				title: 1,
+				invalidReason: 1,
 			},
 		}
-	).map((part) => {
-		if (part.notes) {
-			const sn = segmentNotes[unprotectString(part.segmentId)]
-			if (sn) {
-				return sn.notes.concat(part.notes)
-			}
-		}
-	})
-	notes = notes.concat(
-		_.flatten(
-			_.map(_.values(segmentNotes), (o) => {
-				return o.notes.map((note) =>
-					_.extend(note, {
-						rank: o.rank,
-					})
-				)
-			})
-		)
-	)
+	).fetch()
 
-	return notes
+	return getAllNotesForSegmentAndParts(segments, parts)
 }
 
 export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue[] {

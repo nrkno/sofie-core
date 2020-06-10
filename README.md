@@ -29,6 +29,9 @@ cd ../tv-automation-server-core/meteor
 npm link mos-connection
 ```
 
+### Code formatting
+This repository has recently been reformatted using prettier. If you have an existing branch taken before that happened [head here](https://github.com/nrkno/tv-automation-server-core/issues/240) for instructions on how to avoid large merge conflicts.
+
 ## System settings
 
 In order for the system to work properly, it may be neccessary to set up several system properties. These can be set through environement variables - if not present, default values will be used.

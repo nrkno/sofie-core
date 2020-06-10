@@ -1,13 +1,7 @@
-import { literal } from '../../lib/lib'
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
+import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, MediaManagerDevice } from '../../lib/collections/PeripheralDevices'
-import {
-	MediaManagerDeviceSettings,
-	MonitorSettingsType,
-	MonitorSettingsWatcher,
-} from '../../lib/collections/PeripheralDeviceSettings/mediaManager'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 /*
  * **************************************************************************************
@@ -26,17 +20,17 @@ addMigrationSteps('1.9.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const devices = PeripheralDevices.find({}).fetch()
-			let monitors = devices
+			let monitors: any[][] = devices
 				.filter((d) => {
 					d.settings &&
 						d.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER &&
-						(d.settings as MediaManagerDeviceSettings).monitors &&
-						(d.settings as MediaManagerDeviceSettings).monitors
+						(d.settings as any).monitors &&
+						(d.settings as any).monitors
 				})
-				.map((x) => Object.values((x.settings as MediaManagerDeviceSettings).monitors || []))
+				.map((x) => Object.values((x.settings as any).monitors || []))
 			let scannerCount = 0
 			for (let mons of monitors) {
-				scannerCount += mons.filter((m) => m.type === MonitorSettingsType.MEDIA_SCANNER).length
+				scannerCount += mons.filter((m) => m.type === 'mediascanner').length
 			}
 			if (scannerCount > 0) {
 				return `PeripheralDevices contains ${scannerCount} devices that need updating`
@@ -49,23 +43,23 @@ addMigrationSteps('1.9.0', [
 				return (
 					d.settings &&
 					d.type === PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER &&
-					(d.settings as MediaManagerDeviceSettings).monitors &&
-					(d.settings as MediaManagerDeviceSettings).monitors
+					(d.settings as any).monitors &&
+					(d.settings as any).monitors
 				)
-			}) as MediaManagerDevice[]
+			}) as any[]
 			for (let device of devWithMonitor) {
 				const monitors = device.settings!.monitors || {}
 				let mons = Object.keys(monitors)
 				for (let m of mons) {
-					if (monitors[m].type === MonitorSettingsType.MEDIA_SCANNER) {
+					if (monitors[m].type === 'mediascanner') {
 						let currentMon = monitors[m]
-						monitors[m] = literal<MonitorSettingsWatcher>({
-							type: MonitorSettingsType.WATCHER,
+						monitors[m] = {
+							type: 'watcher',
 							storageId: currentMon.storageId,
 							disable: currentMon.disable,
 							scanner: {},
 							retryLimit: 3,
-						})
+						}
 					}
 				}
 				device.settings!.monitors = monitors
