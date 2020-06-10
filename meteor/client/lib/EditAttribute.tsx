@@ -10,6 +10,7 @@ import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import * as classNames from 'classnames'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -25,6 +26,7 @@ export type EditAttributeType =
 	| 'multiselect'
 	| 'colorpicker'
 	| 'iconpicker'
+	| 'json'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 		if (this.props.type === 'text') {
@@ -47,6 +49,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeColorPicker {...this.props} />
 		} else if (this.props.type === 'iconpicker') {
 			return <EditAttributeIconPicker {...this.props} />
+		} else if (this.props.type === 'json') {
+			return <EditAttributeJson {...this.props} />
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -63,6 +67,7 @@ interface IEditAttributeBaseProps {
 	optionsAreNumbers?: boolean
 	className?: string
 	modifiedClassName?: string
+	invalidClassName?: string
 	updateFunction?: (edit: EditAttributeBase, newValue: any) => void
 	overrideDisplayValue?: any
 	label?: string
@@ -682,6 +687,81 @@ const EditAttributeIconPicker = wrapEditAttribute(
 					value={this.getAttribute()}
 					placeholder={this.props.label}
 					onChange={this.handleChange}></IconPicker>
+			)
+		}
+	}
+)
+
+const EditAttributeJson = wrapEditAttribute(
+	class extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+			this.handleBlur = this.handleBlur.bind(this)
+			this.handleEscape = this.handleEscape.bind(this)
+		}
+		isJson(str: string) {
+			try {
+				JSON.parse(str)
+			} catch (err) {
+				return false
+			}
+			return true
+		}
+		handleChange(event) {
+			let v = event.target.value
+			if (this.isJson(v)) {
+				this.handleEdit(v)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+			}
+		}
+		handleBlur(event) {
+			let v = event.target.value
+			if (v === '') {
+				v = '{}'
+			}
+			if (this.isJson(v)) {
+				this.handleUpdate(v)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+				this.setState({
+					valueError: true,
+				})
+			}
+		}
+		handleEscape(event) {
+			let e = event as KeyboardEvent
+			if (e.key === 'Escape') {
+				this.handleDiscard()
+			}
+		}
+		render() {
+			return (
+				<input
+					type="text"
+					className={classNames(
+						'form-control',
+						this.props.className,
+						this.state.valueError && this.props.invalidClassName
+							? this.props.invalidClassName
+							: this.state.editing
+							? this.props.modifiedClassName || ''
+							: ''
+					)}
+					placeholder={this.props.label}
+					value={this.getEditAttribute() || ''}
+					onChange={this.handleChange}
+					onBlur={this.handleBlur}
+					onKeyUp={this.handleEscape}
+				/>
 			)
 		}
 	}
