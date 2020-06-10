@@ -196,7 +196,7 @@ export function postProcessGlobalAdLibActions(
 	return _.map(adlibActions, (action, i) =>
 		literal<RundownBaselineAdLibAction>({
 			...action,
-			actionId: protectString(action.actionId),
+			actionId: action.actionId,
 			_id: protectString(getHash(`${blueprintId}_global_adlib_action_${i}`)),
 			rundownId: protectString(innerContext.rundownId),
 			partId: undefined,
@@ -213,7 +213,7 @@ export function postProcessAdLibActions(
 	return _.map(adlibActions, (action, i) =>
 		literal<AdLibAction>({
 			...action,
-			actionId: protectString(action.actionId),
+			actionId: action.actionId,
 			_id: protectString(getHash(`${blueprintId}_${partId}_adlib_action_${i}`)),
 			rundownId: protectString(innerContext.rundownId),
 			partId: partId,

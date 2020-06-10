@@ -421,9 +421,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 	isHidden?: boolean
 	isSticky?: boolean
 	isAction?: boolean
-	isFunction?: boolean
 	isClearSourceLayer?: boolean
-	userData?: any
 	adlibAction?: AdLibAction
 }
 
@@ -625,7 +623,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 							_id: protectString(`function_${action._id}`),
 							name: action.display.label,
 							status: RundownAPI.PieceStatusCode.UNKNOWN,
-							isFunction: true,
+							isAction: true,
 							expectedDuration: 0,
 							disabled: false,
 							externalId: unprotectString(action._id),
@@ -634,7 +632,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 							outputLayerId,
 							_rank: action.display._rank || 0,
 							content: content,
-							userData: action.userData,
+							adlibAction: action,
 						}),
 					]
 				}),
@@ -792,7 +790,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 										_id: protectString(`function_${action._id}`),
 										name: action.display.label,
 										status: RundownAPI.PieceStatusCode.UNKNOWN,
-										isFunction: true,
+										isAction: true,
 										isGlobal: true,
 										expectedDuration: 0,
 										disabled: false,
@@ -802,7 +800,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 										outputLayerId,
 										_rank: action.display._rank || 0,
 										content: content,
-										userData: action.userData,
+										adlibAction: action,
 									})
 								}),
 						'adLibActions',
@@ -1095,14 +1093,10 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			}
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				if (adlibPiece.isAction) {
+				if (adlibPiece.isAction && adlibPiece.adlibAction) {
+					const action = adlibPiece.adlibAction
 					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
-						MeteorCall.userAction.executeAction(
-							e,
-							this.props.playlist._id,
-							unprotectString(adlibPiece._id),
-							adlibPiece.userData
-						)
+						MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
 					)
 				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
 					doUserAction(t, e, UserAction.START_ADLIB, (e) =>
