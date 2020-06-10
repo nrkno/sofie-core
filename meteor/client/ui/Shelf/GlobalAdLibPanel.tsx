@@ -427,7 +427,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		currentRundown,
 	}
 })(
-	class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class GlobalAdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		usedHotkeys: Array<string> = []
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
@@ -622,15 +622,22 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 				const { t } = this.props
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-					MeteorCall.userAction.baselineAdLibPieceStart(
-						e,
-						this.props.playlist._id,
-						currentPartInstanceId,
-						adlibPiece._id,
-						queue || false
+				if (adlibPiece.isAction && adlibPiece.adlibAction) {
+					const action = adlibPiece.adlibAction
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+						MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
 					)
-				)
+				} else {
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+						MeteorCall.userAction.baselineAdLibPieceStart(
+							e,
+							this.props.playlist._id,
+							currentPartInstanceId,
+							adlibPiece._id,
+							queue || false
+						)
+					)
+				}
 			}
 		}
 
