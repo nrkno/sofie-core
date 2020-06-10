@@ -442,7 +442,7 @@ describe('Test blueprint api context', () => {
 
 			testInFiber('pieceMetaDataFilter', () => {
 				const { context, cache, rundown, playlist } = getActionExecutionContext()
-				
+
 				// We need to push changes back to 'mongo' for these tests
 				waitForPromise(cache.saveAllToDatabase())
 

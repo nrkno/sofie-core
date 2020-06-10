@@ -7,7 +7,7 @@ function chunkWrapAndRun(commands, fileNames) {
 	for (var i = 0; i < fileCount; i = i + 10) {
 		const chunk = fileNames.slice(i, i + 10)
 		const wrappedAndJoined = chunk.map((fileName) => `"${fileName}"`).join(' ')
-		result = result.concat(result.map((command) => `${command} ${wrappedAndJoined}`))
+		result = result.concat(commands.map((command) => `${command} ${wrappedAndJoined}`))
 	}
 	return result
 }
