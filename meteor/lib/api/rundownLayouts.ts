@@ -11,6 +11,7 @@ import {
 	RundownLayoutAdLibRegion,
 	PieceDisplayStyle,
 	RundownLayoutKeyboardPreview,
+	RundownLayoutPartCountdown,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
@@ -52,6 +53,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isKeyboardMap(element: RundownLayoutElementBase): element is RundownLayoutKeyboardPreview {
 		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
+	}
+
+	export function isPartCountdown (element: RundownLayoutElementBase): element is RundownLayoutPartCountdown {
+		return element.type === RundownLayoutElementType.PART_COUNTDOWN
 	}
 
 	export function adLibRegionToFilter(element: RundownLayoutAdLibRegion): RundownLayoutFilterBase {
