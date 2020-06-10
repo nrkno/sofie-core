@@ -1,18 +1,23 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
-import { DefaultEnvironment, setupDefaultStudioEnvironment, setupDefaultRundownPlaylist, packageBlueprint } from '../../../../__mocks__/helpers/database';
-import { ServerPlayoutAPI } from '../playout';
-import { ActionExecutionContext, ActionPartChange } from '../../blueprints/context';
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches';
-import { Rundown, Rundowns, RundownId } from '../../../../lib/collections/Rundowns';
-import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists';
-import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances';
-import { protectString, getCurrentTime, literal } from '../../../../lib/lib';
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases';
-import { Blueprints, BlueprintId } from '../../../../lib/collections/Blueprints';
-import { BLUEPRINT_CACHE_CONTROL } from '../../blueprints/cache';
-import { ShowStyleBlueprintManifest, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration';
+import {
+	DefaultEnvironment,
+	setupDefaultStudioEnvironment,
+	setupDefaultRundownPlaylist,
+	packageBlueprint,
+} from '../../../../__mocks__/helpers/database'
+import { ServerPlayoutAPI } from '../playout'
+import { ActionExecutionContext, ActionPartChange } from '../../blueprints/context'
+import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { Rundown, Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
+import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { protectString, getCurrentTime, literal } from '../../../../lib/lib'
+import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { Blueprints, BlueprintId } from '../../../../lib/collections/Blueprints'
+import { BLUEPRINT_CACHE_CONTROL } from '../../blueprints/cache'
+import { ShowStyleBlueprintManifest, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 
 jest.mock('../../playout/infinites')
 import { updateSourceLayerInfinitesAfterPart } from '../../playout/infinites'
@@ -24,40 +29,39 @@ type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
 
 describe('Playout API', () => {
-
 	describe('executeAction', () => {
 		let env: DefaultEnvironment
 		let playlistId: RundownPlaylistId
 		let rundownId: RundownId
 		let blueprintId: BlueprintId
-		
+
 		beforeEachInFiber(() => {
 			BLUEPRINT_CACHE_CONTROL.disable = true
-			
+
 			env = setupDefaultStudioEnvironment()
-	
+
 			const { playlistId: playlistId0, rundownId: rundownId0 } = setupDefaultRundownPlaylist(env)
 			playlistId = playlistId0
 			rundownId = rundownId0
 
 			ServerPlayoutAPI.activateRundownPlaylist(playlistId, true)
 			ServerPlayoutAPI.takeNextPart(playlistId)
-	
+
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()
 			const showStyle = ShowStyleBases.findOne(rundown.showStyleBaseId) as ShowStyleBase
 			expect(showStyle).toBeTruthy()
-	
-			blueprintId = showStyle.blueprintId 
-	
+
+			blueprintId = showStyle.blueprintId
+
 			updateSourceLayerInfinitesAfterPartMock.mockClear()
 			updateTimelineMock.mockClear()
 		})
-	
+
 		afterEach(() => {
 			BLUEPRINT_CACHE_CONTROL.disable = false
 		})
-		
+
 		testInFiber('invalid parameters', () => {
 			// @ts-ignore
 			expect(() => ServerPlayoutAPI.executeAction(9, '', '')).toThrowError('Match error: Expected string')
@@ -69,27 +73,34 @@ describe('Playout API', () => {
 			const actionId = 'some-action'
 			const userData = { blobby: true }
 
-			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError('ShowStyle blueprint does not support executing actions')
+			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError(
+				'ShowStyle blueprint does not support executing actions'
+			)
 
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
-			
+
 			// Change the blueprint and try again
 			Blueprints.update(blueprintId, {
 				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>({
-						// Constants to into code:
-						BLUEPRINT_TYPE
-					}, function (): any {
-						return {
-							blueprintType: BLUEPRINT_TYPE,
-							executeAction: () => {
-								throw new Error('action execution threw')
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: () => {
+									throw new Error('action execution threw')
+								},
 							}
 						}
-					}),
-				}
+					),
+				},
 			})
-			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError('action execution threw')
+			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError(
+				'action execution threw'
+			)
 
 			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
@@ -103,23 +114,28 @@ describe('Playout API', () => {
 
 			Blueprints.update(blueprintId, {
 				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>({
-						// Constants to into code:
-						BLUEPRINT_TYPE,
-						STATE_NONE,
-						STATE_SAFE,
-						STATE_DIRTY
-					}, function (): any {
-						return {
-							blueprintType: BLUEPRINT_TYPE,
-							executeAction: (context0) => {
-								const context = context0 as ActionExecutionContext
-								if (context.nextPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
-								if (context.currentPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+							STATE_DIRTY,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									if (context.nextPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
+									if (context.currentPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
+								},
 							}
 						}
-					}),
-				}
+					),
+				},
 			})
 
 			const actionId = 'some-action'
@@ -140,25 +156,30 @@ describe('Playout API', () => {
 
 			Blueprints.update(blueprintId, {
 				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>({
-						// Constants to into code:
-						BLUEPRINT_TYPE,
-						STATE_NONE,
-						STATE_SAFE,
-						STATE_DIRTY
-					}, function (): any {
-						return {
-							blueprintType: BLUEPRINT_TYPE,
-							executeAction: (context0) => {
-								const context = context0 as ActionExecutionContext
-								if (context.nextPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
-								if (context.currentPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+							STATE_DIRTY,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									if (context.nextPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
+									if (context.currentPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
 
-								context.nextPartState = STATE_DIRTY
+									context.nextPartState = STATE_DIRTY
+								},
 							}
 						}
-					}),
-				}
+					),
+				},
 			})
 
 			const actionId = 'some-action'
@@ -167,13 +188,15 @@ describe('Playout API', () => {
 
 			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-			
+
 			// Check nextpart is flagged
 			const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 			expect(playlist).toBeTruthy()
 			expect(playlist.nextPartInstanceId).toBeTruthy()
 
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).map(p => p._id)).toEqual([playlist.nextPartInstanceId])
+			expect(PartInstances.find({ rundownId, 'part.dirty': true }).map((p) => p._id)).toEqual([
+				playlist.nextPartInstanceId,
+			])
 		})
 
 		testInFiber('dirty next part - is dynamicallyInserted', () => {
@@ -187,31 +210,36 @@ describe('Playout API', () => {
 			expect(playlist.nextPartInstanceId).toBeTruthy()
 			PartInstances.update(playlist.nextPartInstanceId!, {
 				$set: {
-					'part.dynamicallyInserted': true
-				}
+					'part.dynamicallyInserted': true,
+				},
 			})
 
 			Blueprints.update(blueprintId, {
 				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>({
-						// Constants to into code:
-						BLUEPRINT_TYPE,
-						STATE_NONE,
-						STATE_SAFE,
-						STATE_DIRTY
-					}, function (): any {
-						return {
-							blueprintType: BLUEPRINT_TYPE,
-							executeAction: (context0) => {
-								const context = context0 as ActionExecutionContext
-								if (context.nextPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
-								if (context.currentPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+							STATE_DIRTY,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									if (context.nextPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
+									if (context.currentPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
 
-								context.nextPartState = STATE_DIRTY
+									context.nextPartState = STATE_DIRTY
+								},
 							}
 						}
-					}),
-				}
+					),
+				},
 			})
 
 			const actionId = 'some-action'
@@ -220,7 +248,7 @@ describe('Playout API', () => {
 
 			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-			
+
 			// Check nextpart is flagged
 			expect(PartInstances.find({ rundownId, 'part.dirty': true }).fetch()).toHaveLength(0)
 		})
@@ -233,25 +261,30 @@ describe('Playout API', () => {
 
 			Blueprints.update(blueprintId, {
 				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>({
-						// Constants to into code:
-						BLUEPRINT_TYPE,
-						STATE_NONE,
-						STATE_SAFE,
-						STATE_DIRTY
-					}, function (): any {
-						return {
-							blueprintType: BLUEPRINT_TYPE,
-							executeAction: (context0) => {
-								const context = context0 as ActionExecutionContext
-								if (context.nextPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
-								if (context.currentPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+							STATE_DIRTY,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									if (context.nextPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
+									if (context.currentPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
 
-								context.currentPartState = STATE_DIRTY
+									context.currentPartState = STATE_DIRTY
+								},
 							}
 						}
-					}),
-				}
+					),
+				},
 			})
 
 			const actionId = 'some-action'
@@ -260,13 +293,15 @@ describe('Playout API', () => {
 
 			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-			
+
 			// Check nextpart is flagged
 			const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
 			expect(playlist).toBeTruthy()
 			expect(playlist.currentPartInstanceId).toBeTruthy()
 
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).map(p => p._id)).toEqual([playlist.currentPartInstanceId])
+			expect(PartInstances.find({ rundownId, 'part.dirty': true }).map((p) => p._id)).toEqual([
+				playlist.currentPartInstanceId,
+			])
 		})
 
 		testInFiber('safe next part', () => {
@@ -277,25 +312,30 @@ describe('Playout API', () => {
 
 			Blueprints.update(blueprintId, {
 				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>({
-						// Constants to into code:
-						BLUEPRINT_TYPE,
-						STATE_NONE,
-						STATE_SAFE,
-						STATE_DIRTY
-					}, function (): any {
-						return {
-							blueprintType: BLUEPRINT_TYPE,
-							executeAction: (context0) => {
-								const context = context0 as ActionExecutionContext
-								if (context.nextPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
-								if (context.currentPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+							STATE_DIRTY,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									if (context.nextPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
+									if (context.currentPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
 
-								context.nextPartState = STATE_SAFE
+									context.nextPartState = STATE_SAFE
+								},
 							}
 						}
-					}),
-				}
+					),
+				},
 			})
 
 			const actionId = 'some-action'
@@ -304,7 +344,7 @@ describe('Playout API', () => {
 
 			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-			
+
 			expect(PartInstances.find({ rundownId, 'part.dirty': true }).fetch()).toHaveLength(0)
 		})
 
@@ -316,25 +356,30 @@ describe('Playout API', () => {
 
 			Blueprints.update(blueprintId, {
 				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>({
-						// Constants to into code:
-						BLUEPRINT_TYPE,
-						STATE_NONE,
-						STATE_SAFE,
-						STATE_DIRTY
-					}, function (): any {
-						return {
-							blueprintType: BLUEPRINT_TYPE,
-							executeAction: (context0) => {
-								const context = context0 as ActionExecutionContext
-								if (context.nextPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
-								if (context.currentPartState !== STATE_NONE) throw new Error('nextPartState started wrong')
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+							STATE_DIRTY,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									if (context.nextPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
+									if (context.currentPartState !== STATE_NONE)
+										throw new Error('nextPartState started wrong')
 
-								context.currentPartState = STATE_SAFE
+									context.currentPartState = STATE_SAFE
+								},
 							}
 						}
-					}),
-				}
+					),
+				},
 			})
 
 			const actionId = 'some-action'
@@ -343,7 +388,7 @@ describe('Playout API', () => {
 
 			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-			
+
 			expect(PartInstances.find({ rundownId, 'part.dirty': true }).fetch()).toHaveLength(0)
 		})
 	})

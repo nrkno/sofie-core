@@ -3,13 +3,13 @@ import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/Inges
 // Setup rules:
 
 IngestDataCache.allow({
-	insert (userId: string, doc: IngestDataCacheObj): boolean {
+	insert(userId: string, doc: IngestDataCacheObj): boolean {
 		return false
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return false
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })

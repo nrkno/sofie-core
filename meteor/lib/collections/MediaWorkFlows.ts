@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { PeripheralDeviceId } from './PeripheralDevices'
-import { MediaManagerAPI } from '../api/mediaManager';
+import { MediaManagerAPI } from '../api/mediaManager'
 
 /** A string, identifying a MediaWorkFlow */
 export type MediaWorkFlowId = ProtectedString<'MediaWorkFlowId'>
@@ -33,19 +33,20 @@ export interface MediaWorkFlow {
 	success: boolean
 }
 
-export const MediaWorkFlows: TransformedCollection<MediaWorkFlow, MediaWorkFlow>
-	= createMongoCollection<MediaWorkFlow>('mediaWorkFlows')
+export const MediaWorkFlows: TransformedCollection<MediaWorkFlow, MediaWorkFlow> = createMongoCollection<MediaWorkFlow>(
+	'mediaWorkFlows'
+)
 registerCollection('MediaWorkFlows', MediaWorkFlows)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		MediaWorkFlows._ensureIndex({
 			// TODO: add deviceId: 1,
-			mediaObjectId: 1
+			mediaObjectId: 1,
 		})
 		MediaWorkFlows._ensureIndex({
 			finished: 1,
 			success: 1,
-			priority: 1
+			priority: 1,
 		})
 	}
 })

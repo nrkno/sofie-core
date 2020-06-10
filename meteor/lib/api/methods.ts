@@ -17,7 +17,6 @@ import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 
-
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
 	[key: string]: (...args: any[]) => Promise<any>

@@ -2,23 +2,22 @@ import { createMosObjectXmlStringFromPayload } from '../browser-plugin-data'
 import * as parser from 'xml2json'
 
 const superPayload = {
-	"manifest": "nyheter",
-	"template": {
-		"layer": "super",
-		"name": "01_navn",
-		"event": "take"
+	manifest: 'nyheter',
+	template: {
+		layer: 'super',
+		name: '01_navn',
+		event: 'take',
 	},
-	"metadata": {
-		"templateName": "01 navn",
-		"templateVariant": "Ett navn"
+	metadata: {
+		templateName: '01 navn',
+		templateVariant: 'Ett navn',
 	},
-	"content": {
-		"navn": "Petter Blomkvist",
-		"tittel": "regiondirektør, Entreprenørforeningen",
-		"_valid": true
-	}
+	content: {
+		navn: 'Petter Blomkvist',
+		tittel: 'regiondirektør, Entreprenørforeningen',
+		_valid: true,
+	},
 }
-
 
 describe('createMosObjectXmlStringFromPayload', () => {
 	const result = createMosObjectXmlStringFromPayload(superPayload)

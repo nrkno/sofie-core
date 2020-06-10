@@ -51,13 +51,14 @@ export interface IngestDataCacheObjPart extends IngestDataCacheObjBase {
 }
 export type IngestDataCacheObj = IngestDataCacheObjRundown | IngestDataCacheObjSegment | IngestDataCacheObjPart
 
-export const IngestDataCache: TransformedCollection<IngestDataCacheObj, IngestDataCacheObj>
-	= createMongoCollection<IngestDataCacheObj>('ingestDataCache')
+export const IngestDataCache: TransformedCollection<IngestDataCacheObj, IngestDataCacheObj> = createMongoCollection<
+	IngestDataCacheObj
+>('ingestDataCache')
 registerCollection('IngestDataCache', IngestDataCache)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		IngestDataCache._ensureIndex({
-			rundownId: 1
+			rundownId: 1,
 		})
 	}
 })

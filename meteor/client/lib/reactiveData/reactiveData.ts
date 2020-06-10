@@ -29,14 +29,20 @@ export namespace reactiveData {
 	// 	return rVar
 	// }
 
-	export function getRRundowns (playlistId: RundownPlaylistId | undefined, options?: FindOptions): ReactiveVar<Rundown[]> {
+	export function getRRundowns(
+		playlistId: RundownPlaylistId | undefined,
+		options?: FindOptions
+	): ReactiveVar<Rundown[]> {
 		const rVar = new ReactiveVar<Rundown[]>([])
 
 		Tracker.autorun(() => {
 			if (playlistId) {
-				const rundowns = Rundowns.find({
-					playlistId: playlistId
-				}, options).fetch()
+				const rundowns = Rundowns.find(
+					{
+						playlistId: playlistId,
+					},
+					options
+				).fetch()
 				rVar.set(rundowns)
 			} else {
 				rVar.set([])
@@ -85,15 +91,18 @@ export namespace reactiveData {
 
 	// export function getRPieces (rundownIds: RundownId[]): ReactiveVar<Piece[]>
 	// export function getRPieces (rundownId: RundownId): ReactiveVar<Piece[]>
-	export function getRPieces (playlistId: RundownPlaylistId, options?: FindOptions): ReactiveVar<Piece[]> {
+	export function getRPieces(playlistId: RundownPlaylistId, options?: FindOptions): ReactiveVar<Piece[]> {
 		const rVar = new ReactiveVar<Piece[]>([])
 
 		const rRundowns = getRRundowns(playlistId)
 		Tracker.autorun(() => {
-			const rundownIds = rRundowns.get().map(r => r._id)
-			const slis = Pieces.find({
-				rundownId: { $in: rundownIds }
-			}, options).fetch()
+			const rundownIds = rRundowns.get().map((r) => r._id)
+			const slis = Pieces.find(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				options
+			).fetch()
 			rVar.set(slis)
 		})
 		return rVar
@@ -118,14 +127,17 @@ export namespace reactiveData {
 	// 	return rVar
 	// }
 
-	export function getRPeripheralDevices (studioId: StudioId, options?: FindOptions): ReactiveVar<PeripheralDevice[]> {
+	export function getRPeripheralDevices(studioId: StudioId, options?: FindOptions): ReactiveVar<PeripheralDevice[]> {
 		const rVar = new ReactiveVar<PeripheralDevice[]>([])
 
 		Tracker.autorun(() => {
 			const allDevices: PeripheralDevice[] = []
-			const peripheralDevices = PeripheralDevices.find({
-				studioId: studioId
-			}, options).fetch()
+			const peripheralDevices = PeripheralDevices.find(
+				{
+					studioId: studioId,
+				},
+				options
+			).fetch()
 			allDevices.splice(allDevices.length, 0, ...peripheralDevices)
 			peripheralDevices.forEach((i) => {
 				const subDevices = PeripheralDevices.find({ parentDeviceId: i._id }, options).fetch()
@@ -137,21 +149,27 @@ export namespace reactiveData {
 		return rVar
 	}
 
-	export function getUnsentExternalMessageCount (studioId: StudioId, playlistId: RundownPlaylistId): ReactiveVar<number> {
+	export function getUnsentExternalMessageCount(
+		studioId: StudioId,
+		playlistId: RundownPlaylistId
+	): ReactiveVar<number> {
 		const rVar = new ReactiveVar<number>(0)
 
 		Tracker.autorun(() => {
 			const rundowns = Rundowns.find({ playlistId }).fetch()
 			let now = getCurrentTime()
-			const unsentMessages = ExternalMessageQueue.find({
-				expires: { $gt: now },
-				studioId: { $eq: studioId },
-				rundownId: { $in: rundowns.map(i => i._id) },
-				sent: { $not: { $gt: 0 } },
-				tryCount: { $not: { $lt: 1 } }
-			}, {
-				limit: 10
-			}).count()
+			const unsentMessages = ExternalMessageQueue.find(
+				{
+					expires: { $gt: now },
+					studioId: { $eq: studioId },
+					rundownId: { $in: rundowns.map((i) => i._id) },
+					sent: { $not: { $gt: 0 } },
+					tryCount: { $not: { $lt: 1 } },
+				},
+				{
+					limit: 10,
+				}
+			).count()
 			rVar.set(unsentMessages)
 		})
 

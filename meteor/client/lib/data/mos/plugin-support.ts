@@ -4,14 +4,14 @@ const PackageInfo = require('../../../../package.json')
 
 export enum AckStatus {
 	ACK = 'ACK',
-	Error = 'ERROR'
+	Error = 'ERROR',
 }
 
 export enum UIMetricMode {
 	Contained = 'CONTAINED',
 	NonModal = 'NONMODAL',
 	Toolbar = 'TOOLBAR',
-	ModalDialog = 'MODALDIALOG'
+	ModalDialog = 'MODALDIALOG',
 }
 
 export enum Events {
@@ -20,7 +20,7 @@ export enum Events {
 	/** event is emitted with a very high frequency (60 Hz), to be used sparingly as
 	 * hooking up Components to it will cause a lot of renders
 	 */
-	'dragleave' = 'sofie:dragLeave'
+	'dragleave' = 'sofie:dragLeave',
 }
 
 export interface UIMetric {
@@ -33,49 +33,57 @@ export interface UIMetric {
 }
 
 export function createMosItemRequest() {
-	const doc = objectToXML({
-		ncsItemRequest: {}
-	},
-		'mos')
+	const doc = objectToXML(
+		{
+			ncsItemRequest: {},
+		},
+		'mos'
+	)
 
 	return new XMLSerializer().serializeToString(doc)
 }
 
 export function createMosAckString(status?: AckStatus, statusDescription?: string): string {
-	const doc = objectToXML({
-		ncsAck: {
-			status,
-			statusDescription
-		}
-	},
-		'mos')
+	const doc = objectToXML(
+		{
+			ncsAck: {
+				status,
+				statusDescription,
+			},
+		},
+		'mos'
+	)
 
 	return new XMLSerializer().serializeToString(doc)
 }
 
 export function createMosAppInfoXmlString(uiMetrics?: UIMetric[]): string {
-	const doc = objectToXML({
-		ncsID: 'sofie-core',
-		ncsAppInfo: {
-			ncsInformation: {
-				userID: 'sofie system',
-				runContext: 'BROWSE',
-				software: {
-					manufacturer: 'Sofie Project',
-					product: 'Sofie TV Automation',
-					version: PackageInfo.version || 'UNSTABLE'
+	const doc = objectToXML(
+		{
+			ncsID: 'sofie-core',
+			ncsAppInfo: {
+				ncsInformation: {
+					userID: 'sofie system',
+					runContext: 'BROWSE',
+					software: {
+						manufacturer: 'Sofie Project',
+						product: 'Sofie TV Automation',
+						version: PackageInfo.version || 'UNSTABLE',
+					},
+					uiMetric: uiMetrics
+						? uiMetrics.map((metric, index) => {
+								return Object.assign({}, metric, {
+									_attributes: {
+										num: index.toString(),
+									},
+								})
+						  })
+						: undefined,
 				},
-				uiMetric: uiMetrics ? uiMetrics.map((metric, index) => {
-					return Object.assign({}, metric, {
-						_attributes: {
-							num: index.toString()
-						}
-					})
-				}) : undefined
-			}
-		}
-	},
-		'mos')
+			},
+		},
+		'mos'
+	)
 
 	return new XMLSerializer().serializeToString(doc)
 }

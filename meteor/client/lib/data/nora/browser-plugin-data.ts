@@ -1,5 +1,5 @@
 import { NoraPayload, IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
-import { isArray } from 'util';
+import { isArray } from 'util'
 
 export { createMosObjectXmlStringNoraBluePrintPiece }
 
@@ -10,42 +10,47 @@ function createMosObjectXmlStringNoraBluePrintPiece(piece: IBlueprintPieceGeneri
 
 	const noraPayload = piece.content.payload as NoraPayload
 
-	const doc = objectToXML({
-		ncsItem: {
-			item: {
-				itemSlug: null,
-				objID: piece.externalId,
-				mosExternalMetadata: [{
-					mosSchema: 'http://nora.core.mesosint.nrk.no/mos/content',
-					mosPayload: {
-						metadata: {
-							selection: {
-								design: {
-									id: noraPayload.manifest
+	const doc = objectToXML(
+		{
+			ncsItem: {
+				item: {
+					itemSlug: null,
+					objID: piece.externalId,
+					mosExternalMetadata: [
+						{
+							mosSchema: 'http://nora.core.mesosint.nrk.no/mos/content',
+							mosPayload: {
+								metadata: {
+									selection: {
+										design: {
+											id: noraPayload.manifest,
+										},
+										type: {
+											id: noraPayload.template.layer,
+										},
+										mal: {
+											id: noraPayload.template.name,
+										},
+									},
+									type: noraPayload.template.layer,
+									userContext: {},
 								},
-								type: {
-									id: noraPayload.template.layer
-								},
-								mal: {
-									id: noraPayload.template.name
-								}
+								template: noraPayload.template,
+								content: noraPayload.content,
 							},
-							type: noraPayload.template.layer,
-							userContext: {}
 						},
-						template: noraPayload.template,
-						content: noraPayload.content
-					}
-				}, {
-					mosSchema: 'http://nora.core.mesosint.nrk.no/mos/timing',
-					mosPayload: {
-						timeIn: 0,
-						duration: piece.content.sourceDuration
-					}
-				}]
+						{
+							mosSchema: 'http://nora.core.mesosint.nrk.no/mos/timing',
+							mosPayload: {
+								timeIn: 0,
+								duration: piece.content.sourceDuration,
+							},
+						},
+					],
+				},
 			},
-		}
-	}, 'mos'
+		},
+		'mos'
 	)
 
 	return new XMLSerializer().serializeToString(doc)

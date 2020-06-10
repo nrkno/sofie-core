@@ -5,7 +5,7 @@ import { PieceGeneric } from '../../../../../lib/collections/Pieces'
 import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
-	UIMetricMode as MOSUIMetricMode
+	UIMetricMode as MOSUIMetricMode,
 } from '../../../../lib/data/mos/plugin-support'
 import { IMOSItem } from 'mos-connection'
 import { literal } from '../../../../../lib/lib'
@@ -100,8 +100,8 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 							endx: size.left + size.width,
 							endy: size.top + size.height,
 							mode: MOSUIMetricMode.ModalDialog,
-							canClose: true
-						})
+							canClose: true,
+						}),
 					]
 				}
 			}
@@ -115,13 +115,15 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 	render() {
 		console.log('Item editor render')
 		return React.createElement('iframe', {
-			ref: (element) => { this.iframe = element as HTMLIFrameElement },
+			ref: (element) => {
+				this.iframe = element as HTMLIFrameElement
+			},
 			src: MODULE_BROWSER_URL.href,
 			style: {
 				border: 0,
 				height: 720,
-				width: 1280
-			}
+				width: 1280,
+			},
 		})
 	}
 }

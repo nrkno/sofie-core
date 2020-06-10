@@ -1,4 +1,4 @@
-import { IMOSObject, IMOSItem, MosString128, IMOSScope, MosTime, MosDuration } from "mos-connection";
+import { IMOSObject, IMOSItem, MosString128, IMOSScope, MosTime, MosDuration } from 'mos-connection'
 import { Parser as MosParser } from 'mos-connection/dist/mosModel/Parser'
 import * as MosUtils from 'mos-connection/dist/utils/Utils'
 import * as _ from 'underscore'
@@ -7,7 +7,7 @@ import * as _ from 'underscore'
  * Client side MOS XML to JavaScript object conversion. Not exhaustive, might cut
  * corners to fit specific use cases.
  * Originally developed for use by the Nora editor in the shelf inspector.
- * 
+ *
  * Note that this module relies on a globally available DOMParser, which
  * typically is a browser thing. For server side usage, xml2json is probably
  * what you want :)
@@ -17,12 +17,7 @@ const domparser = new DOMParser()
 
 /** Copied from mos-gateway */
 export function fixMosData(o: any): any {
-	if (
-		_.isObject(o) && (
-			o instanceof MosTime ||
-			o instanceof MosDuration ||
-			o instanceof MosString128
-		)) {
+	if (_.isObject(o) && (o instanceof MosTime || o instanceof MosDuration || o instanceof MosString128)) {
 		return o.toString()
 	}
 	if (_.isArray(o)) {
@@ -66,14 +61,14 @@ export function parseMosPluginMessageXml(xmlString: string): MosPluginMessage | 
 
 export function generateMosPluginItemXml(item: IMOSItem): string {
 	const tmpItem = {
-		...item
+		...item,
 	}
 	if (item.MosExternalMetaData) {
 		tmpItem.MosExternalMetaData = item.MosExternalMetaData.map((md) => {
 			return {
 				mosScope: md.MosScope,
 				mosSchema: md.MosSchema,
-				mosPayload: md.MosPayload
+				mosPayload: md.MosPayload,
 			}
 		}) as any
 	}

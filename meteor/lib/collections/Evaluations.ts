@@ -10,26 +10,27 @@ export type EvaluationId = ProtectedString<'EvaluationId'>
 
 export interface Evaluation extends EvaluationBase {
 	_id: EvaluationId
-	userId: string,
-	timestamp: Time,
+	userId: string
+	timestamp: Time
 }
 export interface EvaluationBase {
-	studioId: StudioId,
-	playlistId: RundownPlaylistId,
+	studioId: StudioId
+	playlistId: RundownPlaylistId
 	answers: {
 		[key: string]: string
-	},
+	}
 	snapshots?: Array<SnapshotId>
 }
 
-export const Evaluations: TransformedCollection<Evaluation, Evaluation>
-	= createMongoCollection<Evaluation>('evaluations')
+export const Evaluations: TransformedCollection<Evaluation, Evaluation> = createMongoCollection<Evaluation>(
+	'evaluations'
+)
 registerCollection('Evaluations', Evaluations)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Evaluations._ensureIndex({
-			timestamp: 1
+			timestamp: 1,
 		})
 	}
 })

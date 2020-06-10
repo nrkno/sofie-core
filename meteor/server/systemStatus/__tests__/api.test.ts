@@ -1,7 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../__mocks__/helpers/database'
+import {
+	setupDefaultStudioEnvironment,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+} from '../../../__mocks__/helpers/database'
 import { getHash, waitForPromise, protectString, literal, unprotectString } from '../../../lib/lib'
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { StatusCode, status2ExternalStatus, setSystemStatus } from '../systemStatus'
@@ -14,7 +18,7 @@ require('../api')
 const PackageInfo = require('../../../package.json')
 
 enum SystemStatusAPIMethods {
-	'getSystemStatus' = 'systemStatus.getSystemStatus'
+	'getSystemStatus' = 'systemStatus.getSystemStatus',
 }
 
 describe('systemStatus API', () => {
@@ -29,19 +33,21 @@ describe('systemStatus API', () => {
 			const res = new MockResponse()
 			const req = new MockRequest({
 				method: 'GET',
-				url: `/health`
+				url: `/health`,
 			})
 
 			route.handler({}, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
-			expect(resStr).toMatchObject(literal<Partial<MockResponseDataString>>({
-				headers: {
-					'content-type': 'application/json'
-				},
-				timedout: false,
-				ended: true
-			}))
+			expect(resStr).toMatchObject(
+				literal<Partial<MockResponseDataString>>({
+					headers: {
+						'content-type': 'application/json',
+					},
+					timedout: false,
+					ended: true,
+				})
+			)
 			return resStr
 		}
 
@@ -54,7 +60,7 @@ describe('systemStatus API', () => {
 			const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 			expect(result0).toMatchObject({
 				status: status2ExternalStatus(expectedStatus0),
-				_status: expectedStatus0
+				_status: expectedStatus0,
 			})
 			expect(result0.checks && result0.checks.length).toBeGreaterThan(0)
 
@@ -68,7 +74,7 @@ describe('systemStatus API', () => {
 			}
 
 			expect(systemHealth).toMatchObject({
-				status: status2ExternalStatus(expectedStatus0)
+				status: status2ExternalStatus(expectedStatus0),
 			})
 		})
 	})
@@ -82,19 +88,21 @@ describe('systemStatus API', () => {
 			const res = new MockResponse()
 			const req = new MockRequest({
 				method: 'GET',
-				url: `/health/${studioId}`
+				url: `/health/${studioId}`,
 			})
 
 			route.handler({ studioId: studioId || '' }, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
-			expect(resStr).toMatchObject(literal<Partial<MockResponseDataString>>({
-				headers: {
-					'content-type': 'application/json'
-				},
-				timedout: false,
-				ended: true
-			}))
+			expect(resStr).toMatchObject(
+				literal<Partial<MockResponseDataString>>({
+					headers: {
+						'content-type': 'application/json',
+					},
+					timedout: false,
+					ended: true,
+				})
+			)
 			return resStr
 		}
 
@@ -104,11 +112,11 @@ describe('systemStatus API', () => {
 			// simulate initialized system
 			setSystemStatus('systemTime', {
 				statusCode: StatusCode.GOOD,
-				messages: [`NTP-time accuracy (standard deviation): ${Math.floor(0 * 10) / 10} ms`]
+				messages: [`NTP-time accuracy (standard deviation): ${Math.floor(0 * 10) / 10} ms`],
 			})
 			setSystemStatus('databaseVersion', {
 				statusCode: StatusCode.GOOD,
-				messages: [`${'databaseVersion'} version: ${PackageInfo.version}`]
+				messages: [`${'databaseVersion'} version: ${PackageInfo.version}`],
 			})
 
 			// The system is initialized, the status will be GOOD
@@ -116,7 +124,7 @@ describe('systemStatus API', () => {
 			const result0: StatusResponse = Meteor.call(SystemStatusAPIMethods.getSystemStatus)
 			expect(result0).toMatchObject({
 				status: status2ExternalStatus(expectedStatus0),
-				_status: expectedStatus0
+				_status: expectedStatus0,
 			})
 			expect(result0.checks && result0.checks.length).toBeGreaterThan(0)
 
@@ -130,9 +138,8 @@ describe('systemStatus API', () => {
 			}
 
 			expect(systemHealth).toMatchObject({
-				status: status2ExternalStatus(expectedStatus0)
+				status: status2ExternalStatus(expectedStatus0),
 			})
 		})
 	})
-
 })

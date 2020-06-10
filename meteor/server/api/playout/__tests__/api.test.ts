@@ -1,7 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
+import {
+	setupDefaultStudioEnvironment,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+} from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -10,35 +14,34 @@ import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { resetRandomId } from '../../../../__mocks__/random'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 
-namespace PlayoutAPI { // Using our own method definition, to catch external API changes
+namespace PlayoutAPI {
+	// Using our own method definition, to catch external API changes
 	export enum methods {
+		'rundownPrepareForBroadcast' = 'playout.rundownPrepareForBroadcast',
+		'rundownResetRundown' = 'playout.rundownResetRundownt',
+		'rundownResetAndActivate' = 'playout.rundownResetAndActivate',
+		'rundownActivate' = 'playout.rundownActivate',
+		'rundownDeactivate' = 'playout.rundownDeactivate',
+		'reloadData' = 'playout.reloadData',
 
-		'rundownPrepareForBroadcast' 		= 'playout.rundownPrepareForBroadcast',
-		'rundownResetRundown' 				= 'playout.rundownResetRundownt',
-		'rundownResetAndActivate' 			= 'playout.rundownResetAndActivate',
-		'rundownActivate' 					= 'playout.rundownActivate',
-		'rundownDeactivate' 				= 'playout.rundownDeactivate',
-		'reloadData' 						= 'playout.reloadData',
+		'updateStudioBaseline' = 'playout.updateStudioBaseline',
+		'shouldUpdateStudioBaseline' = 'playout.shouldUpdateStudioBaseline',
 
-		'updateStudioBaseline'				= 'playout.updateStudioBaseline',
-		'shouldUpdateStudioBaseline'		= 'playout.shouldUpdateStudioBaseline',
-
-		'rundownTake'						= 'playout.rundownTake',
-		'rundownSetNext'					= 'playout.rundownSetNext',
-		'rundownMoveNext'					= 'playout.rundownMoveNext',
-		'rundownActivateHold'				= 'playout.rundownActivateHold',
-		'rundownDisableNextPiece'			= 'playout.rundownDisableNextPiece',
-		'rundownTogglePartArgument'			= 'playout.rundownTogglePartArgument',
+		'rundownTake' = 'playout.rundownTake',
+		'rundownSetNext' = 'playout.rundownSetNext',
+		'rundownMoveNext' = 'playout.rundownMoveNext',
+		'rundownActivateHold' = 'playout.rundownActivateHold',
+		'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
+		'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument',
 		// 'partPlaybackStartedCallback'		= 'playout.partPlaybackStartedCallback',
 		// 'piecePlaybackStartedCallback'		= 'playout.piecePlaybackStartedCallback',
-		'pieceTakeNow'						= 'playout.pieceTakeNow',
-		'segmentAdLibPieceStart'			= 'playout.segmentAdLibPieceStart',
-		'rundownBaselineAdLibPieceStart'	= 'playout.rundownBaselineAdLibPieceStart',
-		'sourceLayerOnPartStop'				= 'playout.sourceLayerOnPartStop',
-		'sourceLayerStickyPieceStart'		= 'playout.sourceLayerStickyPieceStart'
+		'pieceTakeNow' = 'playout.pieceTakeNow',
+		'segmentAdLibPieceStart' = 'playout.segmentAdLibPieceStart',
+		'rundownBaselineAdLibPieceStart' = 'playout.rundownBaselineAdLibPieceStart',
+		'sourceLayerOnPartStop' = 'playout.sourceLayerOnPartStop',
+		'sourceLayerStickyPieceStart' = 'playout.sourceLayerStickyPieceStart',
 	}
 }
-
 
 describe('Playout API', () => {
 	let env: DefaultEnvironment
@@ -46,19 +49,12 @@ describe('Playout API', () => {
 		env = setupDefaultStudioEnvironment()
 	})
 	testInFiber('Basic rundown control', () => {
-		const {
-			rundownId: rundownId0,
-			playlistId: playlistId0
-		} = setupDefaultRundownPlaylist(env)
-		const {
-			rundownId: rundownId1,
-			playlistId: playlistId1
-		} = setupDefaultRundownPlaylist(env)
+		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
+		const { rundownId: rundownId1, playlistId: playlistId1 } = setupDefaultRundownPlaylist(env)
 		expect(rundownId0).toBeTruthy()
 		expect(rundownId1).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
 		expect(playlistId1).toBeTruthy()
-
 
 		const getRundown0 = () => {
 			return Rundowns.findOne(rundownId0) as Rundown
@@ -83,7 +79,7 @@ describe('Playout API', () => {
 
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
-			rehearsal: false
+			rehearsal: false,
 		})
 
 		// Prepare and activate in rehersal:
@@ -103,7 +99,6 @@ describe('Playout API', () => {
 		expect(() => {
 			Meteor.call(PlayoutAPI.methods.rundownActivate, playlistId1, false)
 		}).toThrowError(/only one rundown/i)
-
 
 		{
 			// Take the first Part:
@@ -175,7 +170,7 @@ describe('Playout API', () => {
 			expect(instances[3].part._id).toEqual(parts[parts.length - 1]._id)
 			expect(getPlaylist0()).toMatchObject({
 				currentPartInstanceId: instances[3]._id,
-				nextPartInstanceId: null
+				nextPartInstanceId: null,
 			})
 		}
 
@@ -188,7 +183,7 @@ describe('Playout API', () => {
 			expect(instances[4].part._id).toEqual(parts[parts.length - 2]._id)
 			expect(getPlaylist0()).toMatchObject({
 				currentPartInstanceId: instances[3]._id,
-				nextPartInstanceId: instances[4]._id
+				nextPartInstanceId: instances[4]._id,
 			})
 		}
 		{
@@ -200,7 +195,7 @@ describe('Playout API', () => {
 			expect(instances[4].part._id).toEqual(parts[parts.length - 3]._id)
 			expect(getPlaylist0()).toMatchObject({
 				currentPartInstanceId: instances[3]._id,
-				nextPartInstanceId: instances[4]._id
+				nextPartInstanceId: instances[4]._id,
 			})
 		}
 
@@ -225,7 +220,7 @@ describe('Playout API', () => {
 			expect(getPlaylist0()).toMatchObject({
 				active: false,
 				currentPartInstanceId: null,
-				nextPartInstanceId: null
+				nextPartInstanceId: null,
 			})
 		}
 	})
@@ -233,10 +228,7 @@ describe('Playout API', () => {
 		const nowSpy = jest.spyOn(Date, 'now')
 		nowSpy.mockReturnValue(1000)
 
-		const {
-			rundownId: rundownId0,
-			playlistId: playlistId0
-		} = setupDefaultRundownPlaylist(env)
+		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
 
 		const getRundown0 = () => {
 			return Rundowns.findOne(rundownId0) as Rundown
@@ -256,7 +248,12 @@ describe('Playout API', () => {
 		expect(adLibs).toHaveLength(1)
 
 		expect(() => {
-			Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, parts[0]._id, globalAdLibs[0]._id)
+			Meteor.call(
+				PlayoutAPI.methods.rundownBaselineAdLibPieceStart,
+				playlistId0,
+				parts[0]._id,
+				globalAdLibs[0]._id
+			)
 		}).toThrowError(/active/)
 
 		expect(() => {
@@ -280,7 +277,12 @@ describe('Playout API', () => {
 		{
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
 			expect(() => {
-				Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, instances[0]._id, globalAdLibs[0]._id)
+				Meteor.call(
+					PlayoutAPI.methods.rundownBaselineAdLibPieceStart,
+					playlistId0,
+					instances[0]._id,
+					globalAdLibs[0]._id
+				)
 			}).toThrowError(/currently playing part/)
 		}
 
@@ -300,7 +302,12 @@ describe('Playout API', () => {
 
 		{
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
-			Meteor.call(PlayoutAPI.methods.rundownBaselineAdLibPieceStart, playlistId0, instances[0]._id, globalAdLibs[0]._id)
+			Meteor.call(
+				PlayoutAPI.methods.rundownBaselineAdLibPieceStart,
+				playlistId0,
+				instances[0]._id,
+				globalAdLibs[0]._id
+			)
 			const pieces0 = PieceInstances.find({ partInstanceId: instances[0]._id }).fetch()
 			expect(pieces0).toMatchSnapshot()
 		}

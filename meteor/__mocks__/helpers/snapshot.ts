@@ -14,10 +14,7 @@ type Data = undefined | TimelineObjGeneric | DBRundownPlaylist | DBRundown | DBS
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data
  */
-export function fixSnapshot (
-	data: Data | Array<Data>,
-	sortData?: boolean
-) {
+export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 	if (_.isArray(data)) {
 		let dataArray = _.map(data, fixSnapshot)
 		if (sortData) {
@@ -48,13 +45,8 @@ export function fixSnapshot (
 			if (o.content) {
 				delete o.content['modified']
 				delete o.content['objHash']
-
 			}
-			if (
-				o.metaData &&
-				o.metaData.versions &&
-				o.metaData.versions.core
-			) {
+			if (o.metaData && o.metaData.versions && o.metaData.versions.core) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
 				o.metaData.versions.core = '0.0.0-test'
 			}
@@ -68,44 +60,28 @@ export function fixSnapshot (
 				// re-write the core version so something static, so tests won't fail just because the version has changed
 				o.importVersions.core = '0.0.0-test'
 			}
-		// } else if (isPiece(o)) {
-		// } else if (isPart(o)) {
-		// } else if (isSegment(o)) {
+			// } else if (isPiece(o)) {
+			// } else if (isPart(o)) {
+			// } else if (isSegment(o)) {
 		}
 		return o
 	}
 }
-function isTimelineObj (o): o is TimelineObjGeneric {
+function isTimelineObj(o): o is TimelineObjGeneric {
 	return o.enable && o._id && o.id && o.studioId
 }
-function isPlaylist (o): o is DBRundownPlaylist {
+function isPlaylist(o): o is DBRundownPlaylist {
 	return o._id && _.has(o, 'currentPartInstanceId')
 }
-function isRundown (o): o is DBRundown {
+function isRundown(o): o is DBRundown {
 	return o._id && _.has(o, 'playlistId')
 }
-function isSegment (o): o is DBSegment {
-	return (
-		o._id &&
-		_.has(o, 'rundownId') &&
-		_.has(o, 'externalId') &&
-		_.has(o, 'name')
-	)
+function isSegment(o): o is DBSegment {
+	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'name')
 }
-function isPart (o): o is Part {
-	return (
-		o._id &&
-		_.has(o, 'rundownId') &&
-		_.has(o, 'externalId') &&
-		_.has(o, 'segmentId') &&
-		_.has(o, 'title')
-	)
+function isPart(o): o is Part {
+	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'segmentId') && _.has(o, 'title')
 }
-function isPiece (o): o is Piece {
-	return (
-		o._id &&
-		_.has(o, 'rundownId') &&
-		_.has(o, 'externalId') &&
-		_.has(o, 'partId')
-	)
+function isPiece(o): o is Piece {
+	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'partId')
 }

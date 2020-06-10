@@ -23,7 +23,12 @@ export namespace UIStateStorage {
 	}
 	_cleanUp()
 
-	export function setItem(scope: string, tag: string, value: boolean | BooleanMap | string | number, permament?: boolean) {
+	export function setItem(
+		scope: string,
+		tag: string,
+		value: boolean | BooleanMap | string | number,
+		permament?: boolean
+	) {
 		_collapsedState[scope] = _collapsedState[scope] || {}
 		_collapsedState[scope]['_modified'] = permament ? null : Date.now()
 		_collapsedState[scope][tag] = value
@@ -31,7 +36,9 @@ export namespace UIStateStorage {
 	}
 
 	export function getItemBooleanMap(scope: string, tag: string, defaultValue: BooleanMap): BooleanMap {
-		return typeof (_collapsedState[scope] || {})[tag] === 'object' ? _collapsedState[scope][tag] as BooleanMap : defaultValue
+		return typeof (_collapsedState[scope] || {})[tag] === 'object'
+			? (_collapsedState[scope][tag] as BooleanMap)
+			: defaultValue
 	}
 
 	export function getItemBoolean(scope: string, tag: string, defaultValue: boolean): boolean {
@@ -39,15 +46,25 @@ export namespace UIStateStorage {
 	}
 
 	export function getItemString(scope: string, tag: string, defaultValue: string): string {
-		return typeof (_collapsedState[scope] || {})[tag] === 'string' ? String(_collapsedState[scope][tag]) : defaultValue
+		return typeof (_collapsedState[scope] || {})[tag] === 'string'
+			? String(_collapsedState[scope][tag])
+			: defaultValue
 	}
 
 	export function getItemNumber(scope: string, tag: string, defaultValue: number): number {
-		return typeof (_collapsedState[scope] || {})[tag] === 'number' ? Number(_collapsedState[scope][tag]) : defaultValue
+		return typeof (_collapsedState[scope] || {})[tag] === 'number'
+			? Number(_collapsedState[scope][tag])
+			: defaultValue
 	}
 
-	export function getItem(scope: string, tag: string, defaultValue: boolean | BooleanMap | string | number | undefined): boolean | BooleanMap | string | number | undefined {
-		return (_collapsedState[scope] || {})[tag] !== undefined ? (_collapsedState[scope][tag] || undefined) : defaultValue
+	export function getItem(
+		scope: string,
+		tag: string,
+		defaultValue: boolean | BooleanMap | string | number | undefined
+	): boolean | BooleanMap | string | number | undefined {
+		return (_collapsedState[scope] || {})[tag] !== undefined
+			? _collapsedState[scope][tag] || undefined
+			: defaultValue
 	}
 
 	function _persist() {
@@ -57,7 +74,7 @@ export namespace UIStateStorage {
 	function _cleanUp() {
 		_.each(_collapsedState, (object, key) => {
 			const modified = object['_modified']
-			if (modified === undefined || (Date.now() - Number(modified)) > EXPIRATION_DATE) {
+			if (modified === undefined || Date.now() - Number(modified) > EXPIRATION_DATE) {
 				delete _collapsedState[key]
 			}
 		})

@@ -8,7 +8,7 @@ import {
 	IBlueprintPieceDB,
 	PieceLifespan,
 	BaseContent,
-	Timeline
+	Timeline,
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
@@ -36,7 +36,7 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId
 	/** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
-	dynamicallyInserted?: boolean,
+	dynamicallyInserted?: boolean
 	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
@@ -56,7 +56,9 @@ export interface RundownPieceGeneric extends PieceGeneric {
 	partId?: PartId
 }
 
-export interface Piece extends RundownPieceGeneric, ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
+export interface Piece
+	extends RundownPieceGeneric,
+		ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
 	// -----------------------------------------------------------------------
 
 	partId: PartId
@@ -83,14 +85,13 @@ export interface Piece extends RundownPieceGeneric, ProtectedStringProperties<Om
 	overflows?: boolean
 }
 
-export const Pieces: TransformedCollection<Piece, Piece>
-	= createMongoCollection<Piece>('pieces')
+export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Pieces._ensureIndex({
 			rundownId: 1,
-			partId: 1
+			partId: 1,
 		})
 	}
 })

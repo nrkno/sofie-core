@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 
 let getCurrentTimeReactiveDep = new Tracker.Dependency()
-export function getCurrentTimeReactive (): Time {
+export function getCurrentTimeReactive(): Time {
 	getCurrentTimeReactiveDep.depend()
 	return getCurrentTime()
 }

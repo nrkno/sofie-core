@@ -23,7 +23,7 @@ export enum Criticality {
 	/** Operations will not be affected, but non-critical functions may be affected or the result may be undesirable. */
 	WARNING = 2,
 	/** General information */
-	NOTIFICATION = 3
+	NOTIFICATION = 3,
 }
 
 export interface ServiceMessage {
@@ -81,17 +81,18 @@ export const GENESIS_SYSTEM_VERSION = '0.0.0'
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
-export const CoreSystem: TransformedCollection<ICoreSystem, ICoreSystem>
-	= createMongoCollection<ICoreSystem>('coreSystem')
+export const CoreSystem: TransformedCollection<ICoreSystem, ICoreSystem> = createMongoCollection<ICoreSystem>(
+	'coreSystem'
+)
 registerCollection('CoreSystem', CoreSystem)
 
-export function getCoreSystem (): ICoreSystem | undefined {
+export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)
 }
-export function getCoreSystemCursor () {
+export function getCoreSystemCursor() {
 	return CoreSystem.find(SYSTEM_ID)
 }
-export function setCoreSystemVersion (versionStr: string): string {
+export function setCoreSystemVersion(versionStr: string): string {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 
@@ -100,25 +101,30 @@ export function setCoreSystemVersion (versionStr: string): string {
 	let version = parseVersion(versionStr)
 
 	if (version === versionStr) {
-
 		logger.info(`Updating database version, from "${system.version}" to "${version}".`)
 
 		let previousVersion: string | null = null
 
-		if (system.version && semver.gt(version, system.version)) { // the new version is higher than previous version
+		if (system.version && semver.gt(version, system.version)) {
+			// the new version is higher than previous version
 			previousVersion = system.version
 		}
 
-		CoreSystem.update(system._id, {$set: {
-			version: versionStr,
-			previousVersion: previousVersion
-		}})
+		CoreSystem.update(system._id, {
+			$set: {
+				version: versionStr,
+				previousVersion: previousVersion,
+			},
+		})
 		return versionStr
 	} else {
-		throw new Meteor.Error(500, `Unable to set version. Parsed version differ from expected: "${versionStr}", "${version}"`)
+		throw new Meteor.Error(
+			500,
+			`Unable to set version. Parsed version differ from expected: "${versionStr}", "${version}"`
+		)
 	}
 }
-export function setCoreSystemStorePath (storePath: string | undefined): void {
+export function setCoreSystemStorePath(storePath: string | undefined): void {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
@@ -128,27 +134,31 @@ export function setCoreSystemStorePath (storePath: string | undefined): void {
 	}
 
 	if (!storePath) {
-		CoreSystem.update(system._id, {$unset: {
-			storePath: 1
-		}})
+		CoreSystem.update(system._id, {
+			$unset: {
+				storePath: 1,
+			},
+		})
 	} else {
-		CoreSystem.update(system._id, {$set: {
-			storePath: storePath
-		}})
+		CoreSystem.update(system._id, {
+			$set: {
+				storePath: storePath,
+			},
+		})
 	}
 }
 
 export type Version = string
 export type VersionRange = string
 
-export function stripVersion (v: string): string {
+export function stripVersion(v: string): string {
 	if (v.match(/git/i) || v.match(/http/i)) {
 		return '0.0.0'
 	} else {
-		return v.replace(/[^\d.]/g,'') || '0.0.0'
+		return v.replace(/[^\d.]/g, '') || '0.0.0'
 	}
 }
-export function parseRange (r: string | VersionRange): VersionRange {
+export function parseRange(r: string | VersionRange): VersionRange {
 	if ((r + '').match(/git:\/\//) || (r + '').match(/git\+https:\/\//)) {
 		return '^0.0.0' // anything goes..
 	}
@@ -156,7 +166,7 @@ export function parseRange (r: string | VersionRange): VersionRange {
 	if (!range) throw new Meteor.Error(500, `Invalid range: "${r}"`)
 	return range
 }
-export function parseVersion (v: string | Version): Version {
+export function parseVersion(v: string | Version): Version {
 	if ((v + '').match(/git:\/\//) || (v + '').match(/http/)) {
 		return '0.0.0' // fallback
 	}

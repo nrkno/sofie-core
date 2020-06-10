@@ -27,13 +27,12 @@ interface LeveledLogMethodFixed {
 	(msg: any, meta: any, callback: Winston.LogCallback): LoggerInstanceFixed
 	(msg: any, ...meta: any[]): LoggerInstanceFixed
 }
-let logger: LoggerInstanceFixed = new (Winston.Logger)({
-})
+let logger: LoggerInstanceFixed = new Winston.Logger({})
 
 let leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
 	if (num.length < length) {
-		return '00000000000000000000000000000000000000000'.slice(0,length - num.length) + num
+		return '00000000000000000000000000000000000000000'.slice(0, length - num.length) + num
 	} else {
 		return num
 	}
@@ -43,7 +42,7 @@ if (process.env.LOG_TO_FILE) logToFile = true
 
 let logPath = process.env.LOG_FILE || ''
 
-function safeStringify (o: any): string {
+function safeStringify(o: any): string {
 	try {
 		return JSON.stringify(o) // make single line
 	} catch (e) {
@@ -51,16 +50,21 @@ function safeStringify (o: any): string {
 	}
 }
 if (logToFile || logPath !== '') {
-
 	// console.log(Meteor)
 	if (logPath === '') {
 		let time = new Date()
-		let startDate = time.getFullYear() + '-' +
-			leadingZeros(time.getMonth(),2) + '-' +
-			leadingZeros(time.getDate(),2) + '_' +
-			leadingZeros(time.getHours(),2) + '_' +
-			leadingZeros(time.getMinutes(),2) + '_' +
-			leadingZeros(time.getSeconds(),2)
+		let startDate =
+			time.getFullYear() +
+			'-' +
+			leadingZeros(time.getMonth(), 2) +
+			'-' +
+			leadingZeros(time.getDate(), 2) +
+			'_' +
+			leadingZeros(time.getHours(), 2) +
+			'_' +
+			leadingZeros(time.getMinutes(), 2) +
+			'_' +
+			leadingZeros(time.getSeconds(), 2)
 		let logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'
 		// let logPath = './log/'
@@ -73,13 +77,13 @@ if (logToFile || logPath !== '') {
 	logger.add(Winston.transports.Console, {
 		level: 'verbose',
 		handleExceptions: true,
-		json: false
+		json: false,
 	})
 	logger.add(Winston.transports.File, {
 		level: 'silly',
 		handleExceptions: true,
 		json: true,
-		filename: logPath
+		filename: logPath,
 	})
 	console.log('Logging to ' + logPath)
 } else {
@@ -87,7 +91,7 @@ if (logToFile || logPath !== '') {
 		level: 'silly',
 		handleExceptions: true,
 		json: true,
-		stringify: (obj: any) => safeStringify(obj)
+		stringify: (obj: any) => safeStringify(obj),
 	})
 }
 

@@ -1,11 +1,10 @@
-@import "_colorScheme";
+@import '_colorScheme';
 
 .status-dialog {
 	overflow: visible !important;
 }
 
 .system-status {
-
 	.device-item-container {
 		.children {
 			margin-top: 0.3em;
@@ -19,7 +18,8 @@
 				margin-right: 0;
 			}
 
-			ul, li {
+			ul,
+			li {
 				position: relative;
 			}
 
@@ -29,8 +29,9 @@
 				padding-left: 2.4em;
 			}
 
-			li::before, li::after {
-				content: "";
+			li::before,
+			li::after {
+				content: '';
 				position: absolute;
 				left: -2.4em;
 			}
@@ -140,7 +141,7 @@
 			}
 		}
 	}
-	
+
 	&.device-item__device-status--minor-warning {
 		.pill {
 			background: $color-status-minor-warning;
@@ -176,7 +177,7 @@
 			border: $color-status-bad;
 		}
 	}
-	
+
 	.device-item__device-status-message {
 		margin-top: 0.4em;
 	}
@@ -236,7 +237,7 @@
 
 .media-manager-status {
 	.workflow {
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 3px;
 		position: relative;
 		overflow: hidden;
@@ -258,7 +259,7 @@
 					width: 45px;
 					height: 45px;
 					border-radius: 100%;
-					background: #E0E3E4;
+					background: #e0e3e4;
 					position: absolute;
 
 					&.ok {
@@ -294,7 +295,7 @@
 					}
 
 					&.sub-icon {
-					    top: auto;
+						top: auto;
 						left: auto;
 						right: 0;
 						bottom: 0;
@@ -310,20 +311,20 @@
 					transform: translateY(0%);
 					position: absolute;
 					width: 45px;
-    				height: 45px;
-				}	
+					height: 45px;
+				}
 			}
 
 			> .workflow__header__summary {
 				display: flex;
 				flex-direction: row;
-				flex-wrap: wrap;	
+				flex-wrap: wrap;
 				flex: 1 1;
 			}
 			> .workflow__header__actions {
 				display: flex;
 				flex-direction: row;
-				flex-wrap: wrap;	
+				flex-wrap: wrap;
 				flex: 0 0;
 				margin-left: 0.5em;
 				min-width: 4em;
@@ -336,7 +337,7 @@
 			}
 
 			.workflow__header__expand {
-    			flex: 1 1;
+				flex: 1 1;
 				text-align: center;
 				cursor: pointer;
 
@@ -350,12 +351,14 @@
 				}
 			}
 
-			.workflow__header__name, .workflow__header__status {
+			.workflow__header__name,
+			.workflow__header__status {
 				flex: 1 1;
 			}
 
 			.workflow__header__name {
-				.workflow__header__name__name, .workflow__header__name__comment {
+				.workflow__header__name__name,
+				.workflow__header__name__comment {
 					display: block;
 				}
 				.workflow__header__name__comment {
@@ -423,12 +426,13 @@
 		.workflow__step {
 			display: flex;
 			flex-direction: row;
-			flex-wrap: wrap;	
+			flex-wrap: wrap;
 			flex: 1 1;
 			background: #f9f9f9;
 			border-top: 1px solid #f0f0f0;
 
-			> .workflow__step__action, > .workflow__step__status {
+			> .workflow__step__action,
+			> .workflow__step__status {
 				flex: 1 1;
 			}
 

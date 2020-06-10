@@ -1,4 +1,4 @@
-@import "colorScheme";
+@import 'colorScheme';
 
 .rundown-system-status {
 	position: absolute;
@@ -12,7 +12,7 @@
 
 	.rundown-system-status__message {
 		position: absolute;
-		background: rgba(0,0,0,0.6);
+		background: rgba(0, 0, 0, 0.6);
 		padding: 0.5em;
 		border-radius: 0 0 3px 3px;
 		top: 22px;
@@ -85,7 +85,8 @@
 				}
 
 				> div {
-					& > h5, & > ul {
+					& > h5,
+					& > ul {
 						margin: 10px 0;
 					}
 
@@ -121,10 +122,8 @@
 			margin-left: 5px;
 			margin-right: 5px;
 
-			color: #FFCC00;
+			color: #ffcc00;
 			font-weight: bold;
-
-			
 
 			.icon {
 				display: inline-block;
@@ -144,7 +143,7 @@
 				display: none;
 				padding: 0 10px;
 				transform: translate(-50%, 0);
-				color: #FFF;
+				color: #fff;
 				font-weight: 300;
 				z-index: 50;
 
@@ -167,21 +166,19 @@
 								margin-right: 0.5em;
 							}
 						}
-		
+
 						td {
 							padding-left: 0.5em;
 							padding-right: 0.5em;
 						}
-					}	
+					}
 				}
-
 
 				&:hover {
 					display: block;
 				}
-
 			}
-			
+
 			&.display {
 				.notes-tooltip {
 					display: block;

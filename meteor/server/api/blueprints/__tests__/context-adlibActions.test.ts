@@ -1,9 +1,48 @@
 import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment, setupMockStudio, setupDefaultRundown, DefaultEnvironment, setupDefaultRundownPlaylist } from '../../../../__mocks__/helpers/database'
-import { getHash, literal, protectString, unprotectObject, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
+import {
+	setupDefaultStudioEnvironment,
+	setupMockStudio,
+	setupDefaultRundown,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+} from '../../../../__mocks__/helpers/database'
+import {
+	getHash,
+	literal,
+	protectString,
+	unprotectObject,
+	unprotectString,
+	waitForPromise,
+	getRandomId,
+	getCurrentTime,
+} from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
-import { LookaheadMode, NotesContext as INotesContext, IBlueprintPart, IBlueprintPartDB, IBlueprintAsRunLogEventContent, IBlueprintSegment, IBlueprintSegmentDB, IBlueprintPieceDB, TSR, IBlueprintPartInstance, IBlueprintPieceInstance, IBlueprintPiece } from 'tv-automation-sofie-blueprints-integration'
-import { CommonContext, StudioConfigContext, StudioContext, ShowStyleContext, NotesContext, SegmentContext, PartEventContext, AsRunEventContext, ActionExecutionContext, ActionPartChange } from '../context'
+import {
+	LookaheadMode,
+	NotesContext as INotesContext,
+	IBlueprintPart,
+	IBlueprintPartDB,
+	IBlueprintAsRunLogEventContent,
+	IBlueprintSegment,
+	IBlueprintSegmentDB,
+	IBlueprintPieceDB,
+	TSR,
+	IBlueprintPartInstance,
+	IBlueprintPieceInstance,
+	IBlueprintPiece,
+} from 'tv-automation-sofie-blueprints-integration'
+import {
+	CommonContext,
+	StudioConfigContext,
+	StudioContext,
+	ShowStyleContext,
+	NotesContext,
+	SegmentContext,
+	PartEventContext,
+	AsRunEventContext,
+	ActionExecutionContext,
+	ActionPartChange,
+} from '../context'
 import { ConfigRef } from '../config'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
@@ -12,13 +51,24 @@ import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import { Pieces } from '../../../../lib/collections/Pieces'
-import { wrapPartToTemporaryInstance, PartInstance, PartInstances, unprotectPartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance, ResolvedPieceInstance, PieceInstanceId } from '../../../../lib/collections/PieceInstances'
+import {
+	wrapPartToTemporaryInstance,
+	PartInstance,
+	PartInstances,
+	unprotectPartInstance,
+	PartInstanceId,
+} from '../../../../lib/collections/PartInstances'
+import {
+	PieceInstances,
+	PieceInstance,
+	ResolvedPieceInstance,
+	PieceInstanceId,
+} from '../../../../lib/collections/PieceInstances'
 import { SegmentId } from '../../../../lib/collections/Segments'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches';
-import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists';
-import { testInFiber } from '../../../../__mocks__/helpers/jest';
-import { RundownAPI } from '../../../../lib/api/rundown';
+import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { RundownAPI } from '../../../../lib/api/rundown'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
@@ -42,14 +92,14 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
-import { isTooCloseToAutonext } from '../../playout/lib';
+import { isTooCloseToAutonext } from '../../playout/lib'
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
 const { postProcessPieces: postProcessPiecesOrig } = jest.requireActual('../postProcess')
 
 describe('Test blueprint api context', () => {
-	function generateSparsePieceInstances (rundown: Rundown, cache: CacheForRundownPlaylist) {
+	function generateSparsePieceInstances(rundown: Rundown, cache: CacheForRundownPlaylist) {
 		_.each(rundown.getParts(), (part, i) => {
 			// make into a partInstance
 			cache.PartInstances.insert({
@@ -57,7 +107,7 @@ describe('Test blueprint api context', () => {
 				rundownId: part.rundownId,
 				segmentId: part.segmentId,
 				takeCount: i,
-				part
+				part,
 			})
 
 			const count = ((i + 2) % 4) + 1 // Some consistent randomness
@@ -71,9 +121,9 @@ describe('Test blueprint api context', () => {
 						rundownId: rundown._id,
 						partId: part._id,
 						content: {
-							index: i
-						}
-					}
+							index: i,
+						},
+					},
 				} as any)
 			}
 		})
@@ -111,12 +161,11 @@ describe('Test blueprint api context', () => {
 			playlist,
 			rundown,
 			notesContext,
-			context
+			context,
 		}
 	}
 
 	describe('ActionExecutionContext', () => {
-
 		describe('getPartInstance', () => {
 			testInFiber('invalid parameters', () => {
 				const { context } = getActionExecutionContext()
@@ -134,7 +183,7 @@ describe('Test blueprint api context', () => {
 			testInFiber('valid parameters', () => {
 				const { context, cache, playlist } = getActionExecutionContext()
 
-				const partInstanceIds = cache.PartInstances.findFetch({}).map(pi => pi._id)
+				const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
 				expect(partInstanceIds).toHaveLength(5)
 
 				expect(context.getPartInstance('next')).toBeUndefined()
@@ -169,7 +218,7 @@ describe('Test blueprint api context', () => {
 			testInFiber('valid parameters', () => {
 				const { context, cache, playlist } = getActionExecutionContext()
 
-				const partInstanceIds = cache.PartInstances.findFetch({}).map(pi => pi._id)
+				const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
 				expect(partInstanceIds).toHaveLength(5)
 
 				expect(context.getPieceInstances('next')).toHaveLength(0)
@@ -204,7 +253,7 @@ describe('Test blueprint api context', () => {
 			testInFiber('valid parameters', () => {
 				const { context, cache, playlist } = getActionExecutionContext()
 
-				const partInstanceIds = cache.PartInstances.findFetch({}).map(pi => pi._id)
+				const partInstanceIds = cache.PartInstances.findFetch({}).map((pi) => pi._id)
 				expect(partInstanceIds).toHaveLength(5)
 
 				expect(getResolvedPiecesMock).toHaveBeenCalledTimes(0)
@@ -214,11 +263,13 @@ describe('Test blueprint api context', () => {
 				expect(getResolvedPiecesMock).toHaveBeenCalledTimes(0)
 
 				let mockCalledIds: PartInstanceId[] = []
-				getResolvedPiecesMock.mockImplementation((cache2: CacheForRundownPlaylist, partInstance: PartInstance) => {
-					expect(cache2).toBe(cache)
-					mockCalledIds.push(partInstance._id)
-					return ['abc'] as any as ResolvedPieceInstance[]
-				})
+				getResolvedPiecesMock.mockImplementation(
+					(cache2: CacheForRundownPlaylist, partInstance: PartInstance) => {
+						expect(cache2).toBe(cache)
+						mockCalledIds.push(partInstance._id)
+						return (['abc'] as any) as ResolvedPieceInstance[]
+					}
+				)
 
 				// Check the current part
 				playlist.currentPartInstanceId = partInstanceIds[1]
@@ -256,13 +307,13 @@ describe('Test blueprint api context', () => {
 				const partInstances = cache.PartInstances.findFetch({})
 				expect(partInstances).toHaveLength(5)
 
-				const sourceLayerIds = env.showStyleBase.sourceLayers.map(l => l._id)
+				const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
 				expect(sourceLayerIds).toHaveLength(2)
 
 				// No playback has begun, so nothing should happen
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
 				expect(context.findLastPieceOnLayer(sourceLayerIds[1])).toBeUndefined()
-				
+
 				// Insert a piece that is played
 				const pieceId0: PieceInstanceId = getRandomId()
 				cache.PieceInstances.insert({
@@ -280,12 +331,12 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 1000,
-						dynamicallyInserted: true
-					}
+						dynamicallyInserted: true,
+					},
 				})
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId0 })
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0], false, true)).toBeUndefined()
-				
+
 				// Insert another more recent piece that is played
 				const pieceId1: PieceInstanceId = getRandomId()
 				cache.PieceInstances.insert({
@@ -303,13 +354,13 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 2000,
-						dynamicallyInserted: true
-					}
+						dynamicallyInserted: true,
+					},
 				})
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toMatchObject({ _id: pieceId1 })
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0], false, true)).toBeUndefined()
 			})
-			
+
 			testInFiber('excludeCurrentPart', () => {
 				const { context, cache, rundown, playlist } = getActionExecutionContext()
 
@@ -318,13 +369,13 @@ describe('Test blueprint api context', () => {
 
 				playlist.currentPartInstanceId = partInstances[2]._id
 
-				const sourceLayerIds = env.showStyleBase.sourceLayers.map(l => l._id)
+				const sourceLayerIds = env.showStyleBase.sourceLayers.map((l) => l._id)
 				expect(sourceLayerIds).toHaveLength(2)
 
 				// No playback has begun, so nothing should happen
 				expect(context.findLastPieceOnLayer(sourceLayerIds[0])).toBeUndefined()
 				expect(context.findLastPieceOnLayer(sourceLayerIds[1])).toBeUndefined()
-				
+
 				// Insert a couple of pieces that are played
 				const pieceId0: PieceInstanceId = getRandomId()
 				cache.PieceInstances.insert({
@@ -342,8 +393,8 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 1000,
-						dynamicallyInserted: true
-					}
+						dynamicallyInserted: true,
+					},
 				})
 				const pieceId1: PieceInstanceId = getRandomId()
 				cache.PieceInstances.insert({
@@ -361,8 +412,8 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 2000,
-						dynamicallyInserted: true
-					}
+						dynamicallyInserted: true,
+					},
 				})
 
 				// Check it
@@ -385,16 +436,18 @@ describe('Test blueprint api context', () => {
 				playlist.currentPartInstanceId = partInstance._id
 
 				// @ts-ignore
-				expect(() => context.insertPiece()).toThrowError('Unknown part \"undefined\"')
+				expect(() => context.insertPiece()).toThrowError('Unknown part "undefined"')
 				// @ts-ignore
-				expect(() => context.insertPiece('previous')).toThrowError('Unknown part \"previous\"')
+				expect(() => context.insertPiece('previous')).toThrowError('Unknown part "previous"')
 				// @ts-ignore
 				expect(() => context.insertPiece('next')).toThrowError('Cannot insert piece when no active part')
 
 				expect(postProcessPiecesMock).toHaveBeenCalledTimes(0)
 				expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 
-				postProcessPiecesMock.mockImplementationOnce(() => { throw new Error('Mock process error') })
+				postProcessPiecesMock.mockImplementationOnce(() => {
+					throw new Error('Mock process error')
+				})
 				expect(() => context.insertPiece('current', {} as any)).toThrowError('Mock process error')
 				expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 				expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
@@ -407,57 +460,96 @@ describe('Test blueprint api context', () => {
 				expect(partInstance).toBeTruthy()
 				playlist.currentPartInstanceId = partInstance._id
 
-				postProcessPiecesMock.mockImplementationOnce(() => [{
-					_id: 'fake4'
-				} as any])
+				postProcessPiecesMock.mockImplementationOnce(() => [
+					{
+						_id: 'fake4',
+					} as any,
+				])
 				innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
 
 				const newPieceInstanceId = context.insertPiece('current', { _id: 'input1' } as any)._id
 				expect(newPieceInstanceId).toMatch(/randomId([0-9]+)_part0_0_instance_fake4/)
 				expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
-				expect(postProcessPiecesMock).toHaveBeenCalledWith(expect.anything(), [{ _id: 'input1' }], 'mockBlueprint1', partInstance.rundownId, partInstance.part._id, true)
+				expect(postProcessPiecesMock).toHaveBeenCalledWith(
+					expect.anything(),
+					[{ _id: 'input1' }],
+					'mockBlueprint1',
+					partInstance.rundownId,
+					partInstance.part._id,
+					true
+				)
 				expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(1)
 
 				// check some properties not exposed to the blueprints
-				const newPieceInstance = cache.PieceInstances.findOne(protectString(newPieceInstanceId!)) as PieceInstance
+				const newPieceInstance = cache.PieceInstances.findOne(
+					protectString(newPieceInstanceId!)
+				) as PieceInstance
 				expect(newPieceInstance.piece.dynamicallyInserted).toBeTruthy()
 				expect(newPieceInstance.partInstanceId).toEqual(partInstance._id)
 			})
 		})
-		
+
 		describe('updatePieceInstance', () => {
 			testInFiber('bad parameters', () => {
 				const { context, cache, playlist } = getActionExecutionContext()
-				
+
 				const pieceInstance = cache.PieceInstances.findOne() as PieceInstance
 				expect(pieceInstance).toBeTruthy()
-				const pieceInstanceOther = cache.PieceInstances.findOne({ partInstanceId: { $ne: pieceInstance.partInstanceId }}) as PieceInstance
+				const pieceInstanceOther = cache.PieceInstances.findOne({
+					partInstanceId: { $ne: pieceInstance.partInstanceId },
+				}) as PieceInstance
 				expect(pieceInstanceOther).toBeTruthy()
 
-				expect(() => context.updatePieceInstance('abc', {})).toThrowError('Some valid properties must be defined')
-				expect(() => context.updatePieceInstance('abc', { _id: 'bad', nope: 'ok' } as any)).toThrowError('Some valid properties must be defined')
-				expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError('PieceInstance could not be found')
-				expect(() => context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })).toThrowError('Can only update piece instances in current or next part instance')
-				expect(() => context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })).toThrowError('Can only update piece instances in current or next part instance')
+				expect(() => context.updatePieceInstance('abc', {})).toThrowError(
+					'Some valid properties must be defined'
+				)
+				expect(() => context.updatePieceInstance('abc', { _id: 'bad', nope: 'ok' } as any)).toThrowError(
+					'Some valid properties must be defined'
+				)
+				expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError(
+					'PieceInstance could not be found'
+				)
+				expect(() =>
+					context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })
+				).toThrowError('Can only update piece instances in current or next part instance')
+				expect(() =>
+					context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })
+				).toThrowError('Can only update piece instances in current or next part instance')
 
 				// Set a current part instance
 				playlist.currentPartInstanceId = pieceInstance.partInstanceId
-				expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError('PieceInstance could not be found')
-				expect(context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })).toBeTruthy()
-				expect(() => context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })).toThrowError('Can only update piece instances in current or next part instance')
+				expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError(
+					'PieceInstance could not be found'
+				)
+				expect(
+					context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })
+				).toBeTruthy()
+				expect(() =>
+					context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })
+				).toThrowError('Can only update piece instances in current or next part instance')
 
 				// Set as next part instance
 				playlist.currentPartInstanceId = null
 				playlist.nextPartInstanceId = pieceInstance.partInstanceId
-				expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError('PieceInstance could not be found')
-				expect(context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })).toBeTruthy()
-				expect(() => context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })).toThrowError('Can only update piece instances in current or next part instance')
+				expect(() => context.updatePieceInstance('abc', { sourceLayerId: 'new' })).toThrowError(
+					'PieceInstance could not be found'
+				)
+				expect(
+					context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })
+				).toBeTruthy()
+				expect(() =>
+					context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })
+				).toThrowError('Can only update piece instances in current or next part instance')
 
 				// Set as previous instance
 				playlist.nextPartInstanceId = null
 				playlist.previousPartInstanceId = pieceInstance.partInstanceId
-				expect(() => context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })).toThrowError('Can only update piece instances in current or next part instance')
-				expect(() => context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })).toThrowError('Can only update piece instances in current or next part instance')
+				expect(() =>
+					context.updatePieceInstance(unprotectString(pieceInstance._id), { sourceLayerId: 'new' })
+				).toThrowError('Can only update piece instances in current or next part instance')
+				expect(() =>
+					context.updatePieceInstance(unprotectString(pieceInstanceOther._id), { sourceLayerId: 'new' })
+				).toThrowError('Can only update piece instances in current or next part instance')
 			})
 
 			testInFiber('good', () => {
@@ -469,7 +561,7 @@ describe('Test blueprint api context', () => {
 				playlist.currentPartInstanceId = pieceInstance0.partInstanceId
 
 				// Ensure there are no pending updates already
-				expect(Object.values(cache.PieceInstances.documents).filter(doc => !!doc.updated)).toHaveLength(0)
+				expect(Object.values(cache.PieceInstances.documents).filter((doc) => !!doc.updated)).toHaveLength(0)
 
 				// Update it and expect it to match
 				const pieceInstance0Before = _.clone(pieceInstance0)
@@ -477,29 +569,31 @@ describe('Test blueprint api context', () => {
 					_id: 'sdf', // This will be dropped
 					sourceLayerId: 'new',
 					enable: { start: 99, end: 123 },
-					badProperty: 9 // This will be dropped
+					badProperty: 9, // This will be dropped
 				}
-				expect(context.updatePieceInstance(unprotectString(pieceInstance0._id), pieceInstance0Delta)).toEqual(pieceInstance0)
+				expect(context.updatePieceInstance(unprotectString(pieceInstance0._id), pieceInstance0Delta)).toEqual(
+					pieceInstance0
+				)
 				const pieceInstance0After = {
 					...pieceInstance0Before,
 					piece: {
 						...pieceInstance0Before.piece,
-						..._.omit(pieceInstance0Delta, 'badProperty', '_id')
-					}
+						..._.omit(pieceInstance0Delta, 'badProperty', '_id'),
+					},
 				}
 				expect(pieceInstance0).toEqual(pieceInstance0After)
-				expect(Object.values(cache.PieceInstances.documents).filter(doc => !!doc.updated)).toMatchObject([
+				expect(Object.values(cache.PieceInstances.documents).filter((doc) => !!doc.updated)).toMatchObject([
 					{
 						updated: true,
-						document: { _id: pieceInstance0._id }
-					}
+						document: { _id: pieceInstance0._id },
+					},
 				])
-				
+
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.MARK_DIRTY)
 			})
 		})
-		
+
 		describe('queuePart', () => {
 			beforeEach(() => {
 				postProcessPiecesMock.mockClear()
@@ -521,25 +615,39 @@ describe('Test blueprint api context', () => {
 				// Next part has already been modified
 				context.nextPartState = ActionPartChange.SAFE_CHANGE
 				// @ts-ignore
-				expect(() => context.queuePart('previous')).toThrowError('Cannot queue part when next part has already been modified')
+				expect(() => context.queuePart('previous')).toThrowError(
+					'Cannot queue part when next part has already been modified'
+				)
 				context.nextPartState = ActionPartChange.NONE
-				
+
 				expect(() => context.queuePart({} as any, [])).toThrowError('New part must contain at least one piece')
 
 				// @ts-ignore
-				expect(() => context.queuePart({
-					floated: true
-				}, [{}])).toThrowError('Cannot queue a part which is not playable')
+				expect(() =>
+					context.queuePart(
+						{
+							floated: true,
+						},
+						[{}]
+					)
+				).toThrowError('Cannot queue a part which is not playable')
 				// @ts-ignore
-				expect(() => context.queuePart({
-					invalid: true
-				}, [{}])).toThrowError('Cannot queue a part which is not playable')
+				expect(() =>
+					context.queuePart(
+						{
+							invalid: true,
+						},
+						[{}]
+					)
+				).toThrowError('Cannot queue a part which is not playable')
 
 				expect(postProcessPiecesMock).toHaveBeenCalledTimes(0)
 				expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 				expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
 
-				postProcessPiecesMock.mockImplementationOnce(() => { throw new Error('Mock process error') })
+				postProcessPiecesMock.mockImplementationOnce(() => {
+					throw new Error('Mock process error')
+				})
 				expect(() => context.queuePart({} as any, [{}] as any)).toThrowError('Mock process error')
 				expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
 				expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
@@ -555,11 +663,13 @@ describe('Test blueprint api context', () => {
 					take: [],
 					takeDone: [],
 					takeOut: [],
-					next: []
+					next: [],
 				}
 				expect(isTooCloseToAutonext(partInstance, false)).toBeTruthy()
-				expect(() => context.queuePart({} as any, [{}] as any)).toThrowError('Too close to an autonext to queue a part')
-				
+				expect(() => context.queuePart({} as any, [{}] as any)).toThrowError(
+					'Too close to an autonext to queue a part'
+				)
+
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 			})
@@ -576,7 +686,7 @@ describe('Test blueprint api context', () => {
 					sourceLayerId: 'sl1',
 					outputLayerId: 'o1',
 					externalId: '-',
-					enable: { start: 0 }
+					enable: { start: 0 },
 				}
 				const newPart: IBlueprintPart = {
 					externalId: 'nope',
@@ -607,26 +717,28 @@ describe('Test blueprint api context', () => {
 				expect(newNextPartInstances).toHaveLength(1)
 				// @ts-ignore
 				expect(newNextPartInstances[0].partInstanceId).toEqual(newPartInstance._id)
-				
+
 				expect(context.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 				expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 			})
 		})
-		
+
 		describe('stopPiecesOnLayers', () => {
 			testInFiber('invalid parameters', () => {
 				const { context, cache, playlist } = getActionExecutionContext()
 
-				// Bad instance id				
+				// Bad instance id
 				playlist.currentPartInstanceId = protectString('abc')
-				expect(() => context.stopPiecesOnLayers(['lay1'], 34)).toThrowError('Cannot stop pieceInstances when no current partInstance')
-				
+				expect(() => context.stopPiecesOnLayers(['lay1'], 34)).toThrowError(
+					'Cannot stop pieceInstances when no current partInstance'
+				)
+
 				playlist.currentPartInstanceId = null
 
 				innerStopPiecesMock.mockClear()
 				expect(context.stopPiecesOnLayers(['lay1'], 34)).toEqual([])
 				expect(innerStopPiecesMock).toHaveBeenCalledTimes(0)
-				
+
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 			})
@@ -638,7 +750,7 @@ describe('Test blueprint api context', () => {
 				playlist.currentPartInstanceId = currentPartInstance._id
 
 				innerStopPiecesMock.mockClear()
-				let filter: ((piece: PieceInstance) => boolean) = null as any
+				let filter: (piece: PieceInstance) => boolean = null as any
 				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
 					expect(partInstance).toBe(currentPartInstance)
@@ -655,28 +767,30 @@ describe('Test blueprint api context', () => {
 
 				// Now verify the filter works as intended
 				expect(filter({ piece: { sourceLayerId: 'lay1' } } as any)).toBeTruthy()
-				expect(filter({ piece: { } } as any)).toBeFalsy()
+				expect(filter({ piece: {} } as any)).toBeFalsy()
 				expect(filter({ piece: { sourceLayerId: 'lay2' } } as any)).toBeFalsy()
-				
+
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 			})
 		})
-		
+
 		describe('stopPieceInstances', () => {
 			testInFiber('invalid parameters', () => {
 				const { context, cache, playlist } = getActionExecutionContext()
 
-				// Bad instance id				
+				// Bad instance id
 				playlist.currentPartInstanceId = protectString('abc')
-				expect(() => context.stopPieceInstances(['lay1'], 34)).toThrowError('Cannot stop pieceInstances when no current partInstance')
-				
+				expect(() => context.stopPieceInstances(['lay1'], 34)).toThrowError(
+					'Cannot stop pieceInstances when no current partInstance'
+				)
+
 				playlist.currentPartInstanceId = null
 
 				innerStopPiecesMock.mockClear()
 				expect(context.stopPieceInstances(['lay1'], 34)).toEqual([])
 				expect(innerStopPiecesMock).toHaveBeenCalledTimes(0)
-				
+
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 			})
@@ -688,7 +802,7 @@ describe('Test blueprint api context', () => {
 				playlist.currentPartInstanceId = currentPartInstance._id
 
 				innerStopPiecesMock.mockClear()
-				let filter: ((piece: PieceInstance) => boolean) = null as any
+				let filter: (piece: PieceInstance) => boolean = null as any
 				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
 					expect(partInstance).toBe(currentPartInstance)
@@ -705,13 +819,12 @@ describe('Test blueprint api context', () => {
 
 				// Now verify the filter works as intended
 				expect(filter({ _id: 'lay1' } as any)).toBeTruthy()
-				expect(filter({ } as any)).toBeFalsy()
+				expect(filter({} as any)).toBeFalsy()
 				expect(filter({ id: 'lay2' } as any)).toBeFalsy()
-				
+
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 			})
 		})
 	})
-
 })

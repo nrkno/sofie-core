@@ -9,12 +9,15 @@ import { RundownAPI } from '../../../../../lib/api/rundown'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 
-export default function DefaultItemRenderer(props: { piece: PieceUi | AdLibPieceUi, showStyleBase: ShowStyleBase }): JSX.Element {
-	const piece = RundownUtils.isAdLibPiece(props.piece) ?
-		props.piece as AdLibPieceUi :
-		props.piece.instance.piece as Piece
+export default function DefaultItemRenderer(props: {
+	piece: PieceUi | AdLibPieceUi
+	showStyleBase: ShowStyleBase
+}): JSX.Element {
+	const piece = RundownUtils.isAdLibPiece(props.piece)
+		? (props.piece as AdLibPieceUi)
+		: (props.piece.instance.piece as Piece)
 
-	const layer = props.showStyleBase.sourceLayers.find(layer => layer._id === piece.sourceLayerId)
+	const layer = props.showStyleBase.sourceLayers.find((layer) => layer._id === piece.sourceLayerId)
 
 	return (
 		<>

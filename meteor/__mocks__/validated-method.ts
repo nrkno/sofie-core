@@ -1,4 +1,3 @@
-
 interface Options {
 	name: string // DDP method name
 	mixins: any // Method extensions
@@ -8,29 +7,27 @@ interface Options {
 }
 
 export class ValidatedMethodMock {
-
 	public name: string
 	public mixins: any
 	public validate: Function
 	public applyOptions: any
 	public run: Function
 
-	constructor (options: Options) {
-
-		this.name 			= options.name
-		this.mixins 		= options.mixins
-		this.validate 		= options.validate
-		this.applyOptions 	= options.applyOptions
-		this.run 			= options.run
+	constructor(options: Options) {
+		this.name = options.name
+		this.mixins = options.mixins
+		this.validate = options.validate
+		this.applyOptions = options.applyOptions
+		this.run = options.run
 	}
-	call () {
+	call() {
 		return this.run() // ???
 	}
 }
-export function setup () {
+export function setup() {
 	return {
 		ValidatedMethod: jest.fn((opts) => {
 			return new ValidatedMethodMock(opts)
-		})
+		}),
 	}
 }

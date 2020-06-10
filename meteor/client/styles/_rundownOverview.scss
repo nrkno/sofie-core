@@ -9,7 +9,7 @@
 	position: relative;
 	white-space: nowrap;
 	padding: 0.9em 0;
-    background: $segment-timeline-background-color;
+	background: $segment-timeline-background-color;
 	background-clip: content-box;
 	overflow: hidden;
 
@@ -21,14 +21,14 @@
 			border-left: 1px solid rgba(0, 0, 0, 0.5);
 		}
 	}
-	
+
 	.rundown__overview__segment__part__live-shade {
 		position: absolute;
 		top: 0;
 		left: -1.5em;
 		bottom: 0;
 		padding-left: 0.7em;
-		background: rgba(0,0,0,0.5);
+		background: rgba(0, 0, 0, 0.5);
 		box-sizing: content-box;
 		pointer-events: none;
 	}
@@ -109,7 +109,7 @@
 			overflow: hidden;
 			z-index: 1;
 
-			>.rundown__overview__segment__part__label__duration {
+			> .rundown__overview__segment__part__label__duration {
 				font-weight: 200;
 				margin-left: 0.5em;
 			}

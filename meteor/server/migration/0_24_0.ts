@@ -7,35 +7,34 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 0.24.0 (Release 9)
 addMigrationSteps('0.24.0', [
-	{ // Ensure blueprints have type set
+	{
+		// Ensure blueprints have type set
 		id: 'blueprints have blueprintType',
 		canBeRunAutomatically: true,
 		validate: () => {
 			const blueprintCount = Blueprints.find({
-				$and: [
-					{ code: { $exists: true } },
-					{ code: { $not: { $eq: '' } } },
-				],
-				blueprintType: { $exists: false }
+				$and: [{ code: { $exists: true } }, { code: { $not: { $eq: '' } } }],
+				blueprintType: { $exists: false },
 			}).count()
 			if (blueprintCount > 0) return 'Blueprints need to be migrated to have blueprintType'
 			return false
 		},
 		migrate: () => {
-			Blueprints.update({
-				$and: [
-					{ code: { $exists: true } },
-					{ code: { $not: { $eq: '' } } },
-				],
-				blueprintType: { $exists: false }
-			}, {
-				$set: {
-					blueprintType: BlueprintManifestType.SHOWSTYLE
+			Blueprints.update(
+				{
+					$and: [{ code: { $exists: true } }, { code: { $not: { $eq: '' } } }],
+					blueprintType: { $exists: false },
+				},
+				{
+					$set: {
+						blueprintType: BlueprintManifestType.SHOWSTYLE,
+					},
+				},
+				{
+					multi: true,
 				}
-			}, {
-				multi: true
-			})
-		}
+			)
+		},
 	},
 	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^0.19.0'),
 	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^0.7.0'),

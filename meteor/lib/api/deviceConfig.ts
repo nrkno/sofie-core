@@ -1,6 +1,5 @@
 // @todo: these typings are duplicates from the integration
 
-
 export interface DeviceConfigManifest {
 	deviceConfig: ConfigManifestEntry[]
 	deviceOAuthFlow?: DeviceOAuthFlow
@@ -16,7 +15,6 @@ export interface DeviceOAuthFlow {
 	credentialsURL: string
 }
 
-
 export enum ConfigManifestEntryType {
 	LABEL = 'label',
 	LINK = 'link',
@@ -27,10 +25,14 @@ export enum ConfigManifestEntryType {
 	INT = 'int',
 	TABLE = 'table',
 	OBJECT = 'object',
-	ENUM = 'enum' // @todo: implement
+	ENUM = 'enum', // @todo: implement
 }
 
-export type ConfigManifestEntry = ConfigManifestEntryBase | TableConfigManifestEntry | ConfigManifestEnumEntry | SubDeviceConfigManifestEntry
+export type ConfigManifestEntry =
+	| ConfigManifestEntryBase
+	| TableConfigManifestEntry
+	| ConfigManifestEnumEntry
+	| SubDeviceConfigManifestEntry
 export interface ConfigManifestEntryBase {
 	id: string
 	name: string

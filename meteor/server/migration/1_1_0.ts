@@ -17,5 +17,5 @@ addMigrationSteps('1.1.0', [
 	// },
 
 	ensureCollectionProperty('CoreSystem', {}, 'serviceMessages', {}),
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.1.0')
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.1.0'),
 ])

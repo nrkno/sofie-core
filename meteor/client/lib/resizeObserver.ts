@@ -21,7 +21,10 @@ declare global {
 	}
 }
 
-export function onElementResize(el: HTMLElement, clb: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void) {
+export function onElementResize(
+	el: HTMLElement,
+	clb: (entries: ResizeObserverEntry[], observer: ResizeObserver) => void
+) {
 	const resizeObserver = new ResizeObserver(clb)
 	resizeObserver.observe(el)
 	return resizeObserver

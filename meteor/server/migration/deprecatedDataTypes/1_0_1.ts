@@ -45,8 +45,11 @@ export interface Rundown {
 	notes?: Array<RundownNote>
 	previousPersistentState?: TimelinePersistentState
 }
-export function makePlaylistFromRundown_1_0_0 (rundown0: DBRundown, newPlaylistId?: RundownPlaylistId): DBRundownPlaylist {
-	const rundown = rundown0 as any as Rundown
+export function makePlaylistFromRundown_1_0_0(
+	rundown0: DBRundown,
+	newPlaylistId?: RundownPlaylistId
+): DBRundownPlaylist {
+	const rundown = (rundown0 as any) as Rundown
 	if (!newPlaylistId) newPlaylistId = protectString('pl_' + rundown._id)
 	const playlist = literal<DBRundownPlaylist>({
 		_id: newPlaylistId,
@@ -66,7 +69,7 @@ export function makePlaylistFromRundown_1_0_0 (rundown0: DBRundown, newPlaylistI
 		previousPartInstanceId: null,
 		startedPlayback: rundown.startedPlayback,
 		studioId: rundown.studioId,
-		modified: rundown.modified
+		modified: rundown.modified,
 	})
 	return playlist
 }

@@ -92,7 +92,7 @@ export enum FieldOrder {
 	Unknown = 'unknown',
 	Progressive = 'progressive',
 	TFF = 'tff',
-	BFF = 'bff'
+	BFF = 'bff',
 }
 
 export interface Metadata {
@@ -124,7 +124,7 @@ export interface MediaAttachment {
 
 export enum MediaStreamType {
 	Audio = 'audio',
-	Video = 'video'
+	Video = 'video',
 }
 
 export interface MediaStreamCodec {
@@ -135,8 +135,9 @@ export interface MediaStreamCodec {
 	is_avc?: string
 }
 
-export const MediaObjects: TransformedCollection<MediaObject, MediaObject>
-	= createMongoCollection<MediaObject>('mediaObjects')
+export const MediaObjects: TransformedCollection<MediaObject, MediaObject> = createMongoCollection<MediaObject>(
+	'mediaObjects'
+)
 registerCollection('MediaObjects', MediaObjects)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -144,11 +145,11 @@ Meteor.startup(() => {
 			studioId: 1,
 			collectionId: 1,
 			objId: 1,
-			mediaId: 1
+			mediaId: 1,
 		})
 		MediaObjects._ensureIndex({
 			studioId: 1,
-			mediaId: 1
+			mediaId: 1,
 		})
 	}
 })

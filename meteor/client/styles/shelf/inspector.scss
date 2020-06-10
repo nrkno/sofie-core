@@ -1,6 +1,6 @@
-@import "../colorScheme";
-@import "../itemTypeColors";
-@import "../variables";
+@import '../colorScheme';
+@import '../itemTypeColors';
+@import '../variables';
 
 .shelf-inspector {
 	overflow-y: auto;
@@ -27,8 +27,10 @@
 		width: 100%;
 	}
 
-	input[type="text"], input[type="number"], select {
-		background: #2D2D2D;
+	input[type='text'],
+	input[type='number'],
+	select {
+		background: #2d2d2d;
 		border: 1px solid #424242;
 		box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) inset, 1px 1px 2px rgba(0, 0, 0, 0.2);
 		line-height: 1.8em;
@@ -51,7 +53,7 @@
 
 	.btn {
 		background: $ui-dark-color;
-		border: 1px solid rgba(255,255,255,0.3);
+		border: 1px solid rgba(255, 255, 255, 0.3);
 		padding-left: 8px;
 		padding-right: 8px;
 
@@ -64,8 +66,8 @@
 		position: absolute;
 		display: grid;
 		grid-template:
-			"body"
-			"footer" min-content;
+			'body'
+			'footer' min-content;
 		grid-gap: 5px;
 		top: $inspector-shelf-tabs-height;
 		left: 0;

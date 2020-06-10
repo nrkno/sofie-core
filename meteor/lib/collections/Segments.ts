@@ -49,35 +49,42 @@ export class Segment implements DBSegment {
 	public unsyncedTime?: Time
 	public identifier?: string
 
-	constructor (document: DBSegment) {
+	constructor(document: DBSegment) {
 		_.each(_.keys(document), (key) => {
 			this[key] = document[key]
 		})
 	}
-	getParts (selector?: MongoSelector<DBSegment>, options?: FindOptions) {
+	getParts(selector?: MongoSelector<DBSegment>, options?: FindOptions) {
 		selector = selector || {}
 		options = options || {}
 		return Parts.find(
-			_.extend({
-				rundownId: this.rundownId,
-				segmentId: this._id
-			}, selector),
-			_.extend({
-				sort: { _rank: 1 }
-			}, options)
+			_.extend(
+				{
+					rundownId: this.rundownId,
+					segmentId: this._id,
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: { _rank: 1 },
+				},
+				options
+			)
 		).fetch()
 	}
 }
 
 // export const Segments = createMongoCollection<Segment>('segments', {transform: (doc) => applyClassToDocument(Segment, doc) })
-export const Segments: TransformedCollection<Segment, DBSegment>
-	= createMongoCollection<Segment>('segments', { transform: (doc) => applyClassToDocument(Segment, doc) })
+export const Segments: TransformedCollection<Segment, DBSegment> = createMongoCollection<Segment>('segments', {
+	transform: (doc) => applyClassToDocument(Segment, doc),
+})
 registerCollection('Segments', Segments)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Segments._ensureIndex({
 			rundownId: 1,
-			_rank: 1
+			_rank: 1,
 		})
 	}
 })

@@ -3,11 +3,11 @@ import { SnapshotId } from '../collections/Snapshots'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 
 export interface NewSnapshotAPI {
-	storeSystemSnapshot (studioId: StudioId | null, reason: string): Promise<SnapshotId>
-	storeRundownPlaylist (playlistId: RundownPlaylistId, reason: string): Promise<SnapshotId>
-	storeDebugSnapshot (studioId: StudioId, reason: string): Promise<SnapshotId>
-	restoreSnapshot (snapshotId: SnapshotId): Promise<void>
-	removeSnapshot (snapshotId: SnapshotId): Promise<void>
+	storeSystemSnapshot(studioId: StudioId | null, reason: string): Promise<SnapshotId>
+	storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string): Promise<SnapshotId>
+	storeDebugSnapshot(studioId: StudioId, reason: string): Promise<SnapshotId>
+	restoreSnapshot(snapshotId: SnapshotId): Promise<void>
+	removeSnapshot(snapshotId: SnapshotId): Promise<void>
 }
 
 export enum SnapshotAPIMethods {
@@ -16,5 +16,5 @@ export enum SnapshotAPIMethods {
 	storeDebugSnapshot = 'snapshot.debugSnaphot',
 
 	restoreSnapshot = 'snapshot.restoreSnaphot',
-	removeSnapshot = 'snapshot.removeSnaphot'
+	removeSnapshot = 'snapshot.removeSnaphot',
 }
