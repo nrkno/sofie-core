@@ -102,8 +102,6 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 						mediaId: this.objId,
 					})
 				}
-			} else {
-				console.error("One of the Piece's is invalid:", this.props.adLibListItem)
 			}
 		}
 
