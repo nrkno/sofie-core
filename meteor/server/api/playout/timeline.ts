@@ -151,7 +151,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		}
 	})
 
-	afterUpdateTimeline(cache, studio, savedTimelineObjs)
+	afterUpdateTimeline(cache, studio._id, savedTimelineObjs)
 
 	logger.debug('updateTimeline done!')
 }
@@ -162,12 +162,12 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
  * @param studioId id of the studio to update
  */
-export function afterUpdateTimeline(cache: CacheForStudio, studio: Studio, timelineObjs?: Array<TimelineObjGeneric>) {
+export function afterUpdateTimeline(cache: CacheForStudio, studioId: StudioId, timelineObjs?: Array<TimelineObjGeneric>) {
 
 	// logger.info('afterUpdateTimeline')
 	if (!timelineObjs) {
 		timelineObjs = cache.Timeline.findFetch({
-			studioId: studio._id,
+			studioId: studioId,
 			objectType: { $ne: TimelineObjType.STAT }
 		})
 	}
@@ -186,7 +186,7 @@ export function afterUpdateTimeline(cache: CacheForStudio, studio: Studio, timel
 	let statObj: TimelineObjStat = {
 		id: 'statObj',
 		_id: protectString(''), // set later
-		studioId: studio._id,
+		studioId: studioId,
 		objectType: TimelineObjType.STAT,
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,

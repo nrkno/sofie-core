@@ -3,7 +3,7 @@ import * as React from 'react'
 import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PeripheralDevice, PeripheralDevices, MosParentDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -143,7 +143,7 @@ export const RundownSystemStatus = translateWithTracker((props: IProps) => {
 			onLine: devices.filter(device => device.connected && device.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR),
 			offLine: devices.filter(device => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR)
 		}
-		const lastUpdate = _.reduce(devices, (memo, device: MosParentDevice) => Math.max(device.lastDataReceived || 0, memo), 0)
+		const lastUpdate = _.reduce(devices, (memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
 		return {
 			status: status,
 			lastUpdate: lastUpdate,

@@ -643,6 +643,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							)}
 							{this.props.isAfterLastValidInSegmentAndItsLive && CARRIAGE_RETURN_ICON}
 						</div>
+							{!this.props.relative && this.props.part.instance.part.identifier && <div className='segment-timeline__identifier'>{this.props.part.instance.part.identifier}</div>}
 					</div>
 					{this.props.playlist.nextTimeOffset && this.state.isNext && // This is the off-set line
 						<div className={ClassNames('segment-timeline__part__nextline', {

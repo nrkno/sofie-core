@@ -18,6 +18,7 @@ import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
+import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 const Tooltip = require('rc-tooltip')
 
 interface IMediaManagerStatusProps {
@@ -35,40 +36,6 @@ interface IMediaManagerStatusTrackedProps {
 interface IMediaManagerStatusState {
 	expanded: {
 		[mediaWorkFlowId: string]: boolean
-	}
-}
-
-namespace MediaManagerAPI {
-	export enum WorkFlowSource {
-		EXPECTED_MEDIA_ITEM = 'expected_media_item',
-		SOURCE_STORAGE_REMOVE = 'source_storage_remove',
-		LOCAL_MEDIA_ITEM = 'local_media_item',
-		TARGET_STORAGE_REMOVE = 'local_storage_remove'
-	}
-
-	export enum MediaFlowType {
-		WATCH_FOLDER = 'watch_folder',
-		LOCAL_INGEST = 'local_ingest',
-		EXPECTED_ITEMS = 'expected_items'
-	}
-
-	export enum WorkStepStatus {
-		IDLE = 'idle',
-		WORKING = 'working',
-		DONE = 'done',
-		ERROR = 'error',
-		CANCELED = 'canceled',
-		SKIPPED = 'skipped',
-		BLOCKED = 'blocked'
-	}
-
-	export enum WorkStepAction {
-		COPY = 'copy',
-		DELETE = 'delete',
-		SCAN = 'scan',
-		GENERATE_PREVIEW = 'generate_preview',
-		GENERATE_THUMBNAIL = 'generate_thumbnail',
-		GENERATE_METADATA = 'generate_metadata'
 	}
 }
 

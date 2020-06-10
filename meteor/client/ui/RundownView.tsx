@@ -19,7 +19,7 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../lib/collections/Segments'
 import { Studio, Studios } from '../../lib/collections/Studios'
-import { Part, Parts } from '../../lib/collections/Parts'
+import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
 
@@ -71,6 +71,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
+import { PartInstanceId } from '../../lib/collections/PartInstances'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1054,7 +1055,18 @@ export enum RundownViewEvents {
 	'segmentZoomOn' = 'sofie:segmentZoomOn',
 	'segmentZoomOff' = 'sofie:segmentZoomOff',
 	'revealInShelf' = 'sofie:revealInShelf',
-	'switchShelfTab' = 'sofie:switchShelfTab'
+	'switchShelfTab' = 'sofie:switchShelfTab',
+	'goToPart'			=	'sofie:goToPart',
+	'goToPartInstance'			=	'sofie:goToPartInstance'
+}
+
+export interface IGoToPartEvent {
+	segmentId: SegmentId
+	partId: PartId
+}
+export interface IGoToPartInstanceEvent {
+	segmentId: SegmentId
+	partInstanceId: PartInstanceId
 }
 
 interface ITrackedProps {
