@@ -138,7 +138,7 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 			return (
 				<EditAttribute
 					modifiedClassName="bghl"
-					invalidClassName="error"
+					invalidClassName="warn"
 					attribute={attribute}
 					obj={object}
 					type="json"
