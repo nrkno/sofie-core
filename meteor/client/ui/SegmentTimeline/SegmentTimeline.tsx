@@ -43,6 +43,7 @@ import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { CriticalIcon, WarningIcon } from '../../lib/notificationIcons'
 
 interface IProps {
 	id: string
@@ -786,24 +787,18 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<div className="segment-timeline__title__notes">
 							{criticalNotes > 0 && (
 								<div
-									className="segment-timeline__title__notes__note"
+									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
 									onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.ERROR)}>
-									<img className="icon" src="/icons/warning_icon.svg" />
-									<div>
-										{t('Critical Errors')}:&nbsp;
-										<b>{criticalNotes}</b>
-									</div>
+									<CriticalIcon />
+									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
 								</div>
 							)}
 							{warningNotes > 0 && (
 								<div
-									className="segment-timeline__title__notes__note"
+									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
 									onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.WARNING)}>
-									<img className="icon" src="/icons/warning_icon.svg" />
-									<div>
-										{t('Warnings')}:&nbsp;
-										<b>{warningNotes}</b>
-									</div>
+									<WarningIcon />
+									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
 								</div>
 							)}
 						</div>
