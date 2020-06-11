@@ -18,7 +18,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { PieceStatusIcon } from '../PieceStatusIcon'
 import { RundownAPI } from '../../../../lib/api/rundown'
-import { NoticeLevel } from '../../../lib/notifications/notifications'
+import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { CriticalIcon, WarningIcon } from '../../../lib/notificationIcons'
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
@@ -294,14 +294,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
 
-		const noticeLevel =
-			innerPiece.status !== RundownAPI.PieceStatusCode.OK && innerPiece.status !== RundownAPI.PieceStatusCode.UNKNOWN
-				? innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-					? NoticeLevel.CRITICAL
-					: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-					  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
-					  NoticeLevel.WARNING
-				: null
+		const noticeLevel = getNoticeLevelForPieceStatus(innerPiece.status)
 
 		return (
 			<React.Fragment>

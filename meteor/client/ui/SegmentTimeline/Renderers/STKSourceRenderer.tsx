@@ -19,7 +19,7 @@ import { WithTranslation, withTranslation } from 'react-i18next'
 import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { PieceStatusIcon } from '../PieceStatusIcon'
-import { NoticeLevel } from '../../../lib/notifications/notifications'
+import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 
 export const STKSourceRenderer = withTranslation()(
 	class STKSourceRenderer extends VTSourceRendererBase {
@@ -53,14 +53,7 @@ export const STKSourceRenderer = withTranslation()(
 
 			const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
-			const noticeLevel =
-				innerPiece.status !== RundownAPI.PieceStatusCode.OK && innerPiece.status !== RundownAPI.PieceStatusCode.UNKNOWN
-					? innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-						? NoticeLevel.CRITICAL
-						: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-						  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
-						  NoticeLevel.WARNING
-					: null
+			const noticeLevel = getNoticeLevelForPieceStatus(innerPiece.status)
 
 			return (
 				<React.Fragment>

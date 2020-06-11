@@ -13,7 +13,7 @@ import {
 	ProtectedStringProperties,
 } from '../lib'
 import { RundownAPI } from '../api/rundown'
-import { checkPieceContentStatus } from '../mediaObjects'
+import { checkPieceContentStatus, getNoteTypeForPieceStatus } from '../mediaObjects'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPartDB,
@@ -192,7 +192,7 @@ export class Part implements DBPart {
 		return this.invalidReason
 			? [
 					{
-						type: NoteType.WARNING,
+						type: NoteType.ERROR,
 						message:
 							this.invalidReason.title +
 							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
@@ -215,12 +215,9 @@ export class Part implements DBPart {
 			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
 				const part = partLookup[piece.sourceLayerId]
 				const st = checkPieceContentStatus(piece, part, studio ? studio.settings : undefined)
-				if (
-					st.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
-					st.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
-				) {
+				if (st.status !== RundownAPI.PieceStatusCode.OK && st.status !== RundownAPI.PieceStatusCode.UNKNOWN) {
 					notes.push({
-						type: NoteType.WARNING,
+						type: getNoteTypeForPieceStatus(st.status) || NoteType.WARNING,
 						origin: {
 							name: 'Media Check',
 							pieceId: piece._id,

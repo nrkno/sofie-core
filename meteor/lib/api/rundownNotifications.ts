@@ -13,6 +13,7 @@ export interface IMediaObjectIssue {
 	segmentId: SegmentId
 	pieceId: PieceId
 	name: string
+	segmentName: string
 	status: RundownAPI.PieceStatusCode
 	message: string | null
 }

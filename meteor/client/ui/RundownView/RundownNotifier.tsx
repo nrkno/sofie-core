@@ -8,6 +8,7 @@ import {
 	NotifierHandle,
 	Notification,
 	NoticeLevel,
+	getNoticeLevelForPieceStatus,
 } from '../../lib/notifications/notifications'
 import { RundownAPI, RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
@@ -50,6 +51,7 @@ export interface RONotificationEvent {
 }
 
 const BACKEND_POLL_INTERVAL = 10 * 1000
+const SEGMENT_DELIMITER = ' ⯈ '
 
 class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -150,8 +152,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	stop() {
 		super.stop()
 
-		if (this._rundownImportVersionAndConfigInterval)
-			Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
+		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
 
 		_.forEach(this._mediaStatusComps, (element, key) => element.stop())
 		this._notifier.stop()
@@ -206,11 +207,7 @@ class RundownViewNotifier extends WithManagedTracker {
 													(e) => MeteorCall.userAction.resyncRundownPlaylist(e, playlist._id),
 													(err, reloadResult) => {
 														if (!err && reloadResult) {
-															handleRundownPlaylistReloadResponse(
-																t,
-																playlist,
-																reloadResult
-															)
+															handleRundownPlaylistReloadResponse(t, playlist, reloadResult)
 														}
 													}
 												)
@@ -238,8 +235,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					let rundownNotesId = rundown._id + '_ronotes_'
 					if (rundown.notes) {
 						rundown.notes.forEach((note) => {
-							const rundownNoteId =
-								rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
+							const rundownNoteId = rundownNotesId + note.origin.name + '_' + note.message + '_' + note.type
 							const newNotification = new Notification(
 								rundownNoteId,
 								note.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
@@ -339,13 +335,10 @@ class RundownViewNotifier extends WithManagedTracker {
 																	new Notification(
 																		undefined,
 																		NoticeLevel.WARNING,
-																		t(
-																			'Failed to restart device: "{{deviceName}}": {{errorMessage}}',
-																			{
-																				deviceName: parent.name,
-																				errorMessage: err + '',
-																			}
-																		),
+																		t('Failed to restart device: "{{deviceName}}": {{errorMessage}}', {
+																			deviceName: parent.name,
+																			errorMessage: err + '',
+																		}),
 																		'RundownNotifier'
 																	)
 																)
@@ -433,7 +426,17 @@ class RundownViewNotifier extends WithManagedTracker {
 				let newNotification = new Notification(
 					id,
 					item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
-					(item.origin.name ? item.origin.name + ': ' : '') + item.message,
+					(
+						<>
+							{item.origin.name || item.origin.segmentName ? (
+								<h5>
+									{item.origin.segmentName || item.origin.name}
+									{item.origin.segmentName && item.origin.name ? `${SEGMENT_DELIMITER}${item.origin.name}` : null}
+								</h5>
+							) : null}
+							<div>{item.message || t('There is an unknown problem with the part.')}</div>
+						</>
+					),
 					item.origin.segmentId || 'unknown',
 					getCurrentTime(),
 					true,
@@ -443,7 +446,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							type: 'default',
 						},
 					],
-					item.rank
+					item.rank * 1000
 				)
 				newNotification.on('action', (notification, type, e) => {
 					switch (type) {
@@ -530,6 +533,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					? Segments.findOne(part.segmentId, {
 							fields: {
 								_rank: 1,
+								name: 1,
 							},
 					  })
 					: undefined
@@ -550,6 +554,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							partId: part._id,
 							segmentId: segment._id,
 							segmentRank: segment._rank,
+							segmentName: segment.name,
 							partRank: part._rank,
 							status,
 							message,
@@ -573,8 +578,13 @@ class RundownViewNotifier extends WithManagedTracker {
 				) {
 					newNotification = new Notification(
 						issue.pieceId,
-						NoticeLevel.WARNING,
-						message || 'Media is broken',
+						getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
+						(
+							<>
+								<h5>{`${issue.segmentName}${SEGMENT_DELIMITER}${issue.name}`}</h5>
+								<div>{message || t('There is an unspecified problem with the source.')}</div>
+							</>
+						),
 						issue.segmentId ? issue.segmentId : 'line_' + issue.partId,
 						getCurrentTime(),
 						true,
@@ -632,8 +642,7 @@ class RundownViewNotifier extends WithManagedTracker {
 	private reactiveVersionAndConfigStatus(playlistId: RundownPlaylistId) {
 		const updatePeriod = 30 * 1000 // every 30s
 
-		if (this._rundownImportVersionAndConfigInterval)
-			Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
+		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
 		this._rundownImportVersionAndConfigInterval = playlistId
 			? Meteor.setInterval(() => this.updateVersionAndConfigStatus(playlistId), updatePeriod)
 			: undefined
@@ -685,9 +694,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					newNotification = new Notification(
 						'rundown_importVersions',
 						NoticeLevel.WARNING,
-						t(
-							'The system configuration has been changed since importing this rundown. It might not run correctly'
-						),
+						t('The system configuration has been changed since importing this rundown. It might not run correctly'),
 						`rundownPlaylist_${playlistId}`,
 						getCurrentTime(),
 						true,
@@ -795,9 +802,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						)
 					}
 
-					if (
-						!Notification.isEqual(this._rundownShowStyleConfigStatuses[showStyleErrors.id], newNotification)
-					) {
+					if (!Notification.isEqual(this._rundownShowStyleConfigStatuses[showStyleErrors.id], newNotification)) {
 						if (newNotification) {
 							this._rundownShowStyleConfigStatuses[showStyleErrors.id] = newNotification
 						} else {

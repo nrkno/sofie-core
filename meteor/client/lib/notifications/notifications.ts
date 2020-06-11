@@ -7,6 +7,7 @@ import { EventEmitter } from 'events'
 import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
 import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 /**
  * Priority level for Notifications.
@@ -407,6 +408,17 @@ export class Notification extends EventEmitter {
 	}
 }
 
+export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoticeLevel | null {
+	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
+		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+			? NoticeLevel.CRITICAL
+			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
+			  NoticeLevel.WARNING
+		: null
+}
+
 window['testNotification'] = function() {
 	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', protectString('test')))
 }
+window['notificationCenter'] = NotificationCenter
