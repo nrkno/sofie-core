@@ -28,6 +28,7 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
+import { MongoModifier } from '../../lib/typings/meteor'
 
 export function queueExternalMessages (rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	const playlist = rundown.getRundownPlaylist()
@@ -51,9 +52,17 @@ export function queueExternalMessages (rundown: Rundown, messages: Array<IBluepr
 			if (existingMessage.rundownId !== rundown._id) throw new Meteor.Error(`ExternalMessage ${message._id} is not in the right rundown!`)
 
 			if (!playlist.rehearsal) {
-				ExternalMessageQueue.update(existingMessage._id, { $set: {
-					...omit(message, '_id')
-				}})
+				const m: MongoModifier<ExternalMessageQueueObj> = {
+					$set: {
+						...omit(message, '_id')
+					}
+				}
+				if (message.queueForLaterReason === undefined) {
+					m.$unset = {
+						queueForLaterReason: 1
+					}
+				}
+				ExternalMessageQueue.update(existingMessage._id, m)
 				triggerdoMessageQueue() // trigger processing of the queue
 			}
 		} else {
@@ -113,7 +122,7 @@ function doMessageQueue () {
 			expires: { $gt: now },
 			hold: { $not: { $eq: true } },
 			errorFatal: { $not: { $eq: true } },
-			queueForLater: { $ne: true }
+			queueForLaterReason: { $exists: false }
 		}, {
 			sort: {
 				lastTry: 1

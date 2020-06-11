@@ -38,9 +38,10 @@ export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlue
 
 	/** Type of message */
 	type: IBlueprintExternalMessageQueueType
-	/** If true, the message won't be sent automatically (set in blueprints) */
-	queueForLater?: boolean
-	/** The reason for why the message was queued and not sent */
+	/**
+	 * If set, the message won't be sent automatically.
+	 * Contains the reason for why the message was queued and not sent.
+	 */
 	queueForLaterReason?: string
 	/** Receiver details */
 	receiver: any

@@ -332,7 +332,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return unprotectObjectArray(
 			ExternalMessageQueue.find({
 				rundownId: this._rundown._id,
-				queueForLater: true
+				queueForLaterReason: {$exists: true }
 			}, {
 				sort: {
 					created: 1

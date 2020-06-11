@@ -250,7 +250,7 @@ const ExternalMessagesInStudio = translateWithTracker<IExternalMessagesInStudioP
 					ID: {msg._id}<br/>
 					Created: <MomentFromNow unit='seconds'>{msg.created}</MomentFromNow>
 					{
-						msg.queueForLater ?
+						msg.queueForLaterReason !== undefined ?
 						<div>
 							<b>
 								Queued for later due to: {msg.queueForLaterReason || 'Unknown reason'}
