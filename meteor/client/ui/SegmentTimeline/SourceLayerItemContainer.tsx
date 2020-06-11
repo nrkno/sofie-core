@@ -101,7 +101,7 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 
 			// Check item status
 			if (props.piece.sourceLayer) {
-				const { metadata, status, contentDuration } = checkPieceContentStatus(
+				const { metadata, status, contentDuration, message } = checkPieceContentStatus(
 					props.piece.instance.piece,
 					props.piece.sourceLayer,
 					props.playlist.getStudio().settings
@@ -119,6 +119,7 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 							},
 						},
 						contentMetaData: metadata,
+						message,
 					}
 
 					if (

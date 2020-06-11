@@ -16,6 +16,10 @@ import Lottie from 'react-lottie'
 import * as loopAnimation from './icon-loop.json'
 import { translate, InjectedTranslateProps } from 'react-i18next'
 import { VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { PieceStatusIcon } from '../PieceStatusIcon'
+import { RundownAPI } from '../../../../lib/api/rundown'
+import { NoticeLevel } from '../../../lib/notifications/notifications'
+import { CriticalIcon, WarningIcon } from '../../../lib/notificationIcons'
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
 	scenes?: Array<number>
@@ -251,10 +255,27 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		}
 	}
 
+	renderNotice(noticeLevel: NoticeLevel) {
+		return (
+			<>
+				<div className="segment-timeline__mini-inspector__notice-header">
+					{noticeLevel === NoticeLevel.CRITICAL ? (
+						<CriticalIcon />
+					) : noticeLevel === NoticeLevel.WARNING ? (
+						<WarningIcon />
+					) : null}
+				</div>
+				<div className="segment-timeline__mini-inspector__notice">{this.props.piece.message}</div>
+			</>
+		)
+	}
+
 	render() {
 		const { t } = this.props
 
-		let labelItems = this.props.piece.instance.piece.name.split('||')
+		const innerPiece = this.props.piece.instance.piece
+
+		let labelItems = innerPiece.name.split('||')
 		this.begin = labelItems[0] || ''
 		this.end = labelItems[1] || ''
 
@@ -272,6 +293,15 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
 
 		const realCursorTimePosition = this.props.cursorTimePosition + seek
+
+		const noticeLevel =
+			innerPiece.status !== RundownAPI.PieceStatusCode.OK && innerPiece.status !== RundownAPI.PieceStatusCode.UNKNOWN
+				? innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+					? NoticeLevel.CRITICAL
+					: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+					  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
+					  NoticeLevel.WARNING
+				: null
 
 		return (
 			<React.Fragment>
@@ -321,6 +351,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 					className="segment-timeline__piece__label"
 					ref={this.setLeftLabelRef}
 					style={this.getItemLabelOffsetLeft()}>
+					{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 					<span
 						className={ClassNames('segment-timeline__piece__label', {
 							'overflow-label': this.end !== '',
@@ -387,9 +418,19 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 						</div>
 					) : (
 						<div
-							className={'segment-timeline__mini-inspector ' + this.props.typeClass}
+							className={
+								'segment-timeline__mini-inspector ' +
+								this.props.typeClass +
+								' ' +
+								(noticeLevel === NoticeLevel.CRITICAL
+									? 'segment-timeline__mini-inspector--notice notice-critical'
+									: noticeLevel === NoticeLevel.WARNING
+									? 'segment-timeline__mini-inspector--notice notice-warning'
+									: '')
+							}
 							style={this.getFloatingInspectorStyle()}>
-							<div>
+							{noticeLevel !== null ? this.renderNotice(noticeLevel) : null}
+							<div className="segment-timeline__mini-inspector__properties">
 								<span className="mini-inspector__label">{t('File name')}</span>
 								<span className="mini-inspector__value">{vtContent && vtContent.fileName}</span>
 							</div>

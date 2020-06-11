@@ -1,0 +1,11 @@
+.piece__status-icon {
+	display: inline-block;
+
+	.warning {
+		width: 1em;
+		height: 1em;
+		vertical-align: top;
+		margin-top: -3px;
+		margin-right: 4px;
+	}
+}
