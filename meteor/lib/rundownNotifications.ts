@@ -25,6 +25,8 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 			fields: {
 				_id: 1,
 				_rank: 1,
+				rundownId: 1,
+				name: 1,
 				notes: 1,
 			},
 		}
@@ -39,10 +41,12 @@ export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
 			sort: { _rank: 1 },
 			fields: {
 				_id: 1,
+				_rank: 1,
 				segmentId: 1,
 				rundownId: 1,
 				notes: 1,
 				title: 1,
+				invalid: 1,
 				invalidReason: 1,
 			},
 		}
@@ -119,6 +123,7 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 									rundownId: part.rundownId,
 									segmentId: segment._id,
 									segmentRank: segment._rank,
+									segmentName: segment.name,
 									partId: part._id,
 									partRank: part._rank,
 									pieceId: piece._id,

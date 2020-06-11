@@ -5,6 +5,8 @@ import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly 
 import * as i18next from 'i18next'
 import { IStudioSettings } from './collections/Studios'
 import { InternalIBlueprintPieceGeneric } from './collections/Pieces'
+import { NoticeLevel } from '../client/lib/notifications/notifications'
+import { NoteType } from './api/notes'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -283,4 +285,14 @@ export function checkPieceContentStatus(
 		message: message,
 		contentDuration: contentDuration,
 	}
+}
+
+export function getNoteTypeForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteType | null {
+	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
+		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+			? NoteType.ERROR
+			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
+			  NoteType.WARNING
+		: null
 }

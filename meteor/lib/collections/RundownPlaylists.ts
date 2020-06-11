@@ -473,12 +473,23 @@ export class RundownPlaylist implements DBRundownPlaylist {
 export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part[]): Array<TrackedNote> {
 	let notes: Array<TrackedNote> = []
 
-	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number } }>(
+	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number; name: string } }>(
 		segments.map((segment) => [
 			segment._id,
 			{
 				rank: segment._rank,
-				notes: segment.notes,
+				notes: segment.notes
+					? segment.notes.map((note) => ({
+							...note,
+							origin: {
+								...note.origin,
+								segmentId: segment._id,
+								rundownId: segment.rundownId,
+								name: note.origin.name || segment.name,
+							},
+					  }))
+					: undefined,
+				name: segment.name,
 			},
 		])
 	)
@@ -496,6 +507,8 @@ export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part
 							segmentId: part.segmentId,
 							partId: part._id,
 							rundownId: part.rundownId,
+							segmentName: segNotes.name,
+							name: n.origin.name || part.title,
 						},
 					}))
 				)

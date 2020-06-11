@@ -135,6 +135,9 @@ export namespace reactiveData {
 			const peripheralDevices = PeripheralDevices.find(
 				{
 					studioId: studioId,
+					ignore: {
+						$ne: true,
+					},
 				},
 				options
 			).fetch()

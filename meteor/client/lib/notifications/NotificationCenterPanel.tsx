@@ -6,10 +6,10 @@ import * as Velocity from 'velocity-animate'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from './notifications'
-import { sofieWarningIcon as WarningIcon } from './warningIcon'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from 'react-contextmenu'
 import * as _ from 'underscore'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { CriticalIcon, WarningIcon } from '../notificationIcons'
 
 interface IPopUpProps {
 	item: Notification
@@ -59,7 +59,13 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				})}
 				onClick={defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined}>
 				<div className="notification-pop-up__header">
-					<WarningIcon />
+					{item.status === NoticeLevel.CRITICAL ? (
+						<CriticalIcon />
+					) : item.status === NoticeLevel.WARNING ? (
+						<WarningIcon />
+					) : (
+						<WarningIcon />
+					)}
 				</div>
 				<div className="notification-pop-up__contents">
 					{item.message}

@@ -43,7 +43,11 @@
 			color: $color-status-minor-warning-text;
 
 			text-align: center;
-			padding-top: 0.625rem;
+			padding-top: 0.5rem;
+
+			> svg {
+				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+			}
 		}
 
 		&.warning {
@@ -78,6 +82,12 @@
 			flex: 1;
 			padding: 0.625rem 0.9375rem;
 			cursor: default;
+
+			> h5 {
+				color: inherit;
+				margin: 0 0 0.5em;
+				font-weight: 400 !important;
+			}
 
 			> .notification-pop-up__actions {
 				text-align: right;
@@ -128,19 +138,19 @@
 		right: 0;
 		transform: translate(-50%, -53%);
 		transition: 0.5s all ease-in-out;
-
-		> path {
-			stroke: rgb(255, 255, 255);
-			transition: 0.5s all linear;
-		}
 	}
 
 	&.has-items {
 		> svg {
 			transform: translate(-80%, -53%);
-
+			filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+		}
+	}
+	&:not(.has-items) {
+		> svg {
 			> path {
-				stroke: rgb(255, 255, 0);
+				fill: transparent;
+				outline: #fff;
 			}
 		}
 	}
@@ -171,11 +181,7 @@
 
 .running-order {
 	.notifications__toggle-button.status-bar__controls__button--open {
-		> svg {
-			> path {
-				stroke: #fff;
-			}
-		}
+		// change the icon of the button here
 	}
 }
 
