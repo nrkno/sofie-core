@@ -652,6 +652,8 @@ export function setNextSegment(
 function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	let ps: Array<Promise<any>> = []
 
+	let willNeedToBeFullyReset: boolean = !!part.startedPlayback
+
 	cache.Parts.update(
 		{
 			_id: part._id,
@@ -690,11 +692,14 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	})
 
 	// Remove all pieces that have been dynamically created (such as adLib pieces)
-	cache.Pieces.remove({
+	const removedPiecesCount = cache.Pieces.remove({
 		rundownId: part.rundownId,
 		partId: part._id,
 		dynamicallyInserted: true,
 	})
+	if (removedPiecesCount > 0) {
+		willNeedToBeFullyReset = true
+	}
 
 	// Reset any pieces that were modified by inserted adlibs
 	cache.Pieces.update(
@@ -718,9 +723,11 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	if (isDirty) {
 		waitForPromise(refreshPart(cache, rundown, part))
 	} else {
-		const prevPart = getPreviousPart(cache, part, rundown)
+		if (willNeedToBeFullyReset) {
+			const prevPart = getPreviousPart(cache, part, rundown)
 
-		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
+			updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
+		}
 	}
 }
 export function onPartHasStoppedPlaying(
