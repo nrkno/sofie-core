@@ -47,6 +47,7 @@ import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { rundownContentAllowWrite } from '../security/rundown'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -563,11 +564,12 @@ export function resyncRundown(context: MethodContext, rundownId: RundownId) {
 
 	return ClientAPI.responseSuccess(ServerRundownAPI.resyncRundown(context, rundown._id))
 }
-export function resyncSegment(context: MethodContext, segmentId: SegmentId) {
+export function resyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId) {
+	rundownContentAllowWrite(context.userId, { rundownId })
 	let segment = Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Rundown "${segmentId}" not found!`)
 
-	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segmentId))
+	return ClientAPI.responseSuccess(ServerRundownAPI.resyncSegment(context, segment.rundownId, segmentId))
 }
 export function recordStop(context: MethodContext, studioId: StudioId) {
 	check(studioId, String)
@@ -627,36 +629,45 @@ export function mediaAbortAllWorkflows(context: MethodContext) {
 	const access = OrganizationContentWriteAccess.anyContent(context)
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
 }
-export function bucketsRemoveBucket(id: BucketId) {
-	return ClientAPI.responseSuccess(BucketsAPI.removeBucket(id))
+export function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
+	return ClientAPI.responseSuccess(BucketsAPI.removeBucket(context, id))
 }
-export function bucketsModifyBucket(id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
+export function bucketsModifyBucket(context: MethodContext, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
 	check(id, String)
 	check(bucket, Object)
 
-	return ClientAPI.responseSuccess(BucketsAPI.modifyBucket(id, bucket))
+	return ClientAPI.responseSuccess(BucketsAPI.modifyBucket(context, id, bucket))
 }
-export function bucketsEmptyBucket(id: BucketId) {
+export function bucketsEmptyBucket(context: MethodContext, id: BucketId) {
 	check(id, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.emptyBucket(id))
+	return ClientAPI.responseSuccess(BucketsAPI.emptyBucket(context, id))
 }
-export function bucketsCreateNewBucket(name: string, studioId: StudioId, userId: string | null) {
+export function bucketsCreateNewBucket(
+	context: MethodContext,
+	name: string,
+	studioId: StudioId,
+	userId: string | null
+) {
 	check(name, String)
 	check(studioId, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.createNewBucket(name, studioId, userId))
+	return ClientAPI.responseSuccess(BucketsAPI.createNewBucket(context, name, studioId, userId))
 }
-export function bucketsRemoveBucketAdLib(id: PieceId) {
+export function bucketsRemoveBucketAdLib(context: MethodContext, id: PieceId) {
 	check(id, String)
 
-	return ClientAPI.responseSuccess(BucketsAPI.removeBucketAdLib(id))
+	return ClientAPI.responseSuccess(BucketsAPI.removeBucketAdLib(context, id))
 }
-export function bucketsModifyBucketAdLib(id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
+export function bucketsModifyBucketAdLib(
+	context: MethodContext,
+	id: PieceId,
+	adlib: Partial<Omit<BucketAdLib, '_id'>>
+) {
 	check(id, String)
 	check(adlib, Object)
 
-	return ClientAPI.responseSuccess(BucketsAPI.modifyBucketAdLib(id, adlib))
+	return ClientAPI.responseSuccess(BucketsAPI.modifyBucketAdLib(context, id, adlib))
 }
 export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 	check(rundownPlaylistId, String)
@@ -671,17 +682,19 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 }
 
 export function bucketAdlibImport(
+	context: MethodContext,
 	studioId: StudioId,
 	showStyleVariantId: ShowStyleVariantId,
 	bucketId: BucketId,
 	ingestItem: IngestAdlib
 ) {
+	const { studio } = OrganizationContentWriteAccess.studio(context, studioId)
+
 	check(studioId, String)
 	check(showStyleVariantId, String)
 	check(bucketId, String)
 	// TODO - validate IngestAdlib
 
-	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 	const showStyleCompound = getShowStyleCompound(showStyleVariantId)
 	if (!showStyleCompound) throw new Meteor.Error(404, `ShowStyle Variant "${showStyleVariantId}" not found`)
@@ -699,11 +712,13 @@ export function bucketAdlibImport(
 }
 
 export function bucketAdlibStart(
+	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
 	bucketAdlibId: PieceId,
 	queue?: boolean
 ) {
+	RundownPlaylistContentWriteAccess.playout(context, rundownPlaylistId)
 	check(rundownPlaylistId, String)
 	check(partInstanceId, String)
 	check(bucketAdlibId, String)
@@ -857,7 +872,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		bucketId: BucketId,
 		ingestItem: IngestAdlib
 	) {
-		return makePromise(() => bucketAdlibImport(studioId, showStyleVariantId, bucketId, ingestItem))
+		return makePromise(() => bucketAdlibImport(this, studioId, showStyleVariantId, bucketId, ingestItem))
 	}
 	bucketAdlibStart(
 		_userEvent: string,
@@ -866,7 +881,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		bucketAdlibId: PieceId,
 		queue?: boolean
 	) {
-		return makePromise(() => bucketAdlibStart(rundownPlaylistId, partInstanceId, bucketAdlibId, queue))
+		return makePromise(() => bucketAdlibStart(this, rundownPlaylistId, partInstanceId, bucketAdlibId, queue))
 	}
 	activateHold(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return makePromise(() => activateHold(this, rundownPlaylistId, undo))
@@ -889,8 +904,8 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	resyncRundown(_userEvent: string, rundownId: RundownId) {
 		return makePromise(() => resyncRundown(this, rundownId))
 	}
-	resyncSegment(_userEvent: string, segmentId: SegmentId) {
-		return makePromise(() => resyncSegment(this, segmentId))
+	resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
+		return makePromise(() => resyncSegment(this, rundownId, segmentId))
 	}
 	recordStop(_userEvent: string, studioId: StudioId) {
 		return makePromise(() => recordStop(this, studioId))
@@ -932,22 +947,22 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return makePromise(() => noop(this))
 	}
 	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
-		return makePromise(() => bucketsRemoveBucket(id))
+		return makePromise(() => bucketsRemoveBucket(this, id))
 	}
 	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
-		return makePromise(() => bucketsModifyBucket(id, bucket))
+		return makePromise(() => bucketsModifyBucket(this, id, bucket))
 	}
 	bucketsEmptyBucket(_userEvent: string, id: BucketId) {
-		return makePromise(() => bucketsEmptyBucket(id))
+		return makePromise(() => bucketsEmptyBucket(this, id))
 	}
 	bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
-		return makePromise(() => bucketsCreateNewBucket(name, studioId, userId))
+		return makePromise(() => bucketsCreateNewBucket(this, name, studioId, userId))
 	}
 	bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
-		return makePromise(() => bucketsRemoveBucketAdLib(id))
+		return makePromise(() => bucketsRemoveBucketAdLib(this, id))
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		return makePromise(() => bucketsModifyBucketAdLib(id, bucketAdlib))
+		return makePromise(() => bucketsModifyBucketAdLib(this, id, bucketAdlib))
 	}
 }
 registerClassToMeteorMethods(

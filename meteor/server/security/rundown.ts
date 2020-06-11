@@ -14,6 +14,7 @@ import { PeripheralDevices, getStudioIdFromDevice } from '../../lib/collections/
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
+import { triggerWriteAccess } from './lib/securityVerify'
 
 type RundownContent = { rundownId: RundownId }
 export namespace RundownReadAccess {
@@ -113,6 +114,7 @@ export namespace RundownReadAccess {
 	}
 }
 export function rundownContentAllowWrite(userId, doc: RundownContent): boolean {
+	triggerWriteAccess()
 	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.rundownId)
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true

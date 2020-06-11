@@ -75,6 +75,7 @@ import {
 } from './playout/lib'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
+import { rundownContentAllowWrite } from '../security/rundown'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -602,10 +603,14 @@ export namespace ServerRundownAPI {
 		}
 		return response
 	}
-	export function resyncSegment(context: MethodContext, segmentId: SegmentId): TriggerReloadDataResponse {
+	export function resyncSegment(
+		context: MethodContext,
+		rundownId: RundownId,
+		segmentId: SegmentId
+	): TriggerReloadDataResponse {
 		check(segmentId, String)
 		logger.info('resyncSegment ' + segmentId)
-
+		rundownContentAllowWrite(context.userId, { rundownId })
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
@@ -621,7 +626,8 @@ export namespace ServerRundownAPI {
 
 		return IngestActions.reloadSegment(rundown, segment)
 	}
-	export function unsyncSegment(rundownId: RundownId, segmentId: SegmentId): void {
+	export function unsyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId): void {
+		rundownContentAllowWrite(context.userId, { rundownId })
 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
 		const result = unsyncSegmentInner(cache, rundownId, segmentId)
 		waitForPromise(cache.saveAllToDatabase())
@@ -817,14 +823,14 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	resyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
 	}
-	resyncSegment(segmentId: SegmentId) {
-		return makePromise(() => ServerRundownAPI.resyncSegment(this, segmentId))
+	resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
+		return makePromise(() => ServerRundownAPI.resyncSegment(this, rundownId, segmentId))
 	}
 	unsyncRundown(rundownId: RundownId) {
 		return makePromise(() => ServerRundownAPI.unsyncRundown(this, rundownId))
 	}
 	unsyncSegment(rundownId: RundownId, segmentId: SegmentId) {
-		return makePromise(() => ServerRundownAPI.unsyncSegment(rundownId, segmentId))
+		return makePromise(() => ServerRundownAPI.unsyncSegment(this, rundownId, segmentId))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

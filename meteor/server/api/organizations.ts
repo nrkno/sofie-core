@@ -8,6 +8,8 @@ import { registerClassToMeteorMethods } from '../methods'
 import { Organizations, OrganizationId, DBOrganization, NewOrganization } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { insertStudio } from './studios'
+import { insertShowStyleBase } from './showStyles'
 
 export function insertOrganization(context: MethodContext, organization: NewOrganization) {
 	triggerWriteAccessBecauseNoCheckNecessary()
@@ -23,7 +25,11 @@ export function insertOrganization(context: MethodContext, organization: NewOrga
 			broadcastMediums: organization.broadcastMediums,
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
-		})
+		}),
+		() => {
+			insertStudio({ userId })
+			insertShowStyleBase({ userId })
+		}
 	)
 	Meteor.users.update(userId, { $set: { organizationId: id } })
 	return id

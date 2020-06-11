@@ -50,6 +50,7 @@ import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
+import { Settings } from '../../../lib/Settings'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -151,12 +152,12 @@ const StudioDevices = translate()(
 						</Tooltip>
 					</h2>
 					&nbsp;
-					{!this.props.studioDevices.length ? (
+					{!Settings.enableUserAccounts && !this.props.studioDevices.length ? (
 						<div className="error-notice">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No devices connected')}
 						</div>
 					) : null}
-					{!this.isPlayoutConnected() ? (
+					{!Settings.enableUserAccounts && !this.isPlayoutConnected() ? (
 						<div className="error-notice">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('Playout gateway not connected')}
 						</div>

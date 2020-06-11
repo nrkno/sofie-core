@@ -3,3 +3,4 @@ src/**/*.js
 src/**/*.js.map
 coverage
 settings.json
+public/superfly

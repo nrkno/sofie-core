@@ -356,7 +356,7 @@ export const SegmentTimelineContainer = translate()(
 					if (this.props.segmentui && this.props.segmentui.unsynced) {
 						const { t } = this.props
 						doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
-							MeteorCall.userAction.resyncSegment('', this.props.segmentui!._id)
+							MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
 						)
 					}
 

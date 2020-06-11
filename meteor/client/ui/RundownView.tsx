@@ -1658,6 +1658,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					documentTitle.set(null)
 				}
 			}
+			if (Settings.enableUserAccounts && getAllowStudio() !== this.state.studioMode) {
+				this.setState({ studioMode: getAllowStudio() })
+			}
 		}
 
 		refreshHotkeys = () => {
@@ -1930,10 +1933,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		onResyncSegment = (segmentId: SegmentId, e: any) => {
+		onResyncSegment = (segment: SegmentUi, e: any) => {
 			const { t } = this.props
 			if (this.state.studioMode && this.props.rundownPlaylistId) {
-				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
+				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) =>
+					MeteorCall.userAction.resyncSegment(e, segment.rundownId, segment._id)
+				)
 			}
 		}
 

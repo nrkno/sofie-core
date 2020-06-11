@@ -245,10 +245,10 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		rehearsal: boolean
 	) {
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rehearsal, Boolean)
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 			const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
 
 			const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
@@ -282,10 +282,10 @@ export namespace ServerPlayoutAPI {
 	 */
 	export function reloadRundownPlaylistData(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 		// Reload and reset the Rundown
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rundownPlaylistId, String)
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_INGEST, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 			const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
 
 			const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
@@ -696,11 +696,13 @@ export namespace ServerPlayoutAPI {
 		setManually?: boolean,
 		nextTimeOffset?: number | undefined
 	): ClientAPI.ClientResponse<void> {
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		if (nextPartId) check(nextPartId, String)
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 			const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
 			const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
@@ -745,12 +747,14 @@ export namespace ServerPlayoutAPI {
 		verticalDelta: number,
 		setManually: boolean
 	): PartId | null {
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		check(horizontalDelta, Number)
 		check(verticalDelta, Number)
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 			if (!horizontalDelta && !verticalDelta)
 				throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horizontalDelta}, ${verticalDelta})`)
 
@@ -907,12 +911,12 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 	export function activateHold(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rundownPlaylistId, String)
 		logger.debug('rundownActivateHold')
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 			if (!dbPlaylist.active)
 				throw new Meteor.Error(501, `Rundown Playlist "${rundownPlaylistId}" is not active!`)
 
@@ -972,11 +976,11 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 	export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 		check(rundownPlaylistId, String)
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 			if (!dbPlaylist.currentPartInstanceId) throw new Meteor.Error(401, `No current part!`)
 
 			const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
@@ -1375,11 +1379,11 @@ export namespace ServerPlayoutAPI {
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	) {
+		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(pieceInstanceIdOrPieceIdToCopy, String)
-
-		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
 		return ServerPlayoutAdLibAPI.pieceTakeNow(playlist, partInstanceId, pieceInstanceIdOrPieceIdToCopy)
 	}
@@ -1390,11 +1394,11 @@ export namespace ServerPlayoutAPI {
 		adLibPieceId: PieceId,
 		queue: boolean
 	) {
+		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(adLibPieceId, String)
-
-		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
 		return ServerPlayoutAdLibAPI.segmentAdLibPieceStart(playlist, partInstanceId, adLibPieceId, queue)
 	}
@@ -1405,11 +1409,11 @@ export namespace ServerPlayoutAPI {
 		baselineAdLibPieceId: PieceId,
 		queue: boolean
 	) {
+		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(baselineAdLibPieceId, String)
-
-		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
 		return ServerPlayoutAdLibAPI.rundownBaselineAdLibPieceStart(
 			playlist,
@@ -1423,10 +1427,10 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
 	) {
+		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		check(sourceLayerId, String)
-
-		const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
 		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(playlist, sourceLayerId)
 	}
@@ -1436,6 +1440,9 @@ export namespace ServerPlayoutAPI {
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
 	) {
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 		check(sourceLayerIds, Match.OneOf(String, Array))
@@ -1443,8 +1450,6 @@ export namespace ServerPlayoutAPI {
 		if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 			if (!dbPlaylist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
 			if (dbPlaylist.currentPartInstanceId !== partInstanceId)
 				throw new Meteor.Error(403, `Pieces can be only manipulated in a current part!`)
@@ -1532,12 +1537,13 @@ export namespace ServerPlayoutAPI {
 		property: string,
 		value: string
 	) {
+		// @TODO Check for a better solution to validate security methods
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+
 		check(rundownPlaylistId, String)
 		check(partInstanceId, String)
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
 			if (dbPlaylist.holdState === RundownHoldState.ACTIVE || dbPlaylist.holdState === RundownHoldState.PENDING) {
 				throw new Meteor.Error(403, `Part Arguments can not be toggled when hold is used!`)
 			}
@@ -1670,10 +1676,11 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	export function updateStudioBaseline(context: MethodContext, studioId: StudioId) {
-		check(studioId, String)
-
 		// TODO - should there be a studio lock for activate/deactivate/this?
 		StudioContentWriteAccess.baseline(context, studioId)
+
+		check(studioId, String)
+
 		let cache: CacheForStudio | CacheForRundownPlaylist = waitForPromise(initCacheForStudio(studioId))
 		const activeRundowns = getActiveRundownPlaylistsInStudio(cache, studioId)
 		if (activeRundowns.length === 0) {
