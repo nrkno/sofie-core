@@ -1383,6 +1383,8 @@ export namespace ServerPlayoutAPI {
 				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
 			}
 
+			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
+
 			blueprint.blueprint.executeAction(context, actionId, userData)
 		})
 	}
@@ -1425,7 +1427,9 @@ export namespace ServerPlayoutAPI {
 
 			const notesContext = new NotesContext(
 				`${rundown.name}(${playlist.name})`,
-				`playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${currentPartInstance._id}`,
+				`playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+					currentPartInstance._id
+				},execution=${getRandomId()}`,
 				true
 			)
 			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)

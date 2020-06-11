@@ -390,7 +390,8 @@ export namespace ServerPlayoutAdLibAPI {
 		if (alreadyQueuedPartInstance) {
 			if (rundownPlaylist.currentPartInstanceId !== alreadyQueuedPartInstance._id) {
 				cache.Parts.remove(alreadyQueuedPartInstance.part._id)
-				// cache.PartInstances.remove(alreadyQueuedPartInstance._id)
+				cache.PartInstances.remove(alreadyQueuedPartInstance._id)
+				cache.PieceInstances.remove({ partInstanceId: alreadyQueuedPartInstance._id })
 				afterRemoveParts(cache, currentPartInstance.rundownId, [alreadyQueuedPartInstance.part])
 			}
 		}

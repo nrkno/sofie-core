@@ -184,14 +184,14 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessRundownBaselineItems(context, [])
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [])
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null object', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessRundownBaselineItems(context, [null as any])
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [null as any])
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('some no ids', () => {
@@ -237,7 +237,7 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.compact(_.map(rawObjects, (obj) => obj.id)).concat(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessRundownBaselineItems(context, _.clone(rawObjects))
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), _.clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -310,7 +310,7 @@ describe('Test blueprint post-process', () => {
 			])
 
 			try {
-				postProcessRundownBaselineItems(context, _.clone(rawObjects))
+				postProcessRundownBaselineItems(context, protectString('some-blueprints'), _.clone(rawObjects))
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(

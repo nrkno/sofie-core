@@ -563,7 +563,11 @@ function updateRundownFromIngestData(
 	const baselineObj: RundownBaselineObj = {
 		_id: protectString<RundownBaselineObjId>(Random.id(7)),
 		rundownId: dbRundown._id,
-		objects: postProcessRundownBaselineItems(blueprintRundownContext, rundownRes.baseline),
+		objects: postProcessRundownBaselineItems(
+			blueprintRundownContext,
+			showStyle.base.blueprintId,
+			rundownRes.baseline
+		),
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)

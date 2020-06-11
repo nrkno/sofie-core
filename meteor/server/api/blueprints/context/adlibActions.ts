@@ -77,7 +77,7 @@ import {
 } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
-import { postProcessPieces } from '../postProcess'
+import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { StudioContext, NotesContext, ShowStyleContext, EventContext } from './context'
 import { setNextPart, getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
@@ -326,7 +326,22 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
 
+		if (piece.content && piece.content.timelineObjects) {
+			piece.content.timelineObjects = postProcessTimelineObjects(
+				this,
+				pieceInstance.piece._id,
+				this.getShowStyleBase().blueprintId,
+				piece.content.timelineObjects,
+				true,
+				{}
+			)
+		}
+
 		const update = {
+			$set: {},
+			$unset: {},
+		}
+		const legacyUpdate = {
 			$set: {},
 			$unset: {},
 		}
@@ -334,12 +349,15 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		for (const [k, val] of Object.entries(trimmedPiece)) {
 			if (val === undefined) {
 				update.$unset[`piece.${k}`] = val
+				legacyUpdate.$unset[`${k}`] = val
 			} else {
 				update.$set[`piece.${k}`] = val
+				legacyUpdate.$set[`${k}`] = val
 			}
 		}
 
 		this.cache.PieceInstances.update(pieceInstance._id, update)
+		this.cache.Pieces.update(pieceInstance.piece._id, legacyUpdate)
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
