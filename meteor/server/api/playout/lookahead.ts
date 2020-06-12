@@ -18,7 +18,7 @@ import { orderPieces, PieceResolved } from './pieces'
 import { literal, clone, unprotectString, protectString } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
-import { selectNextPart, getSelectedPartInstancesFromCache } from './lib'
+import { selectNextPart, getSelectedPartInstancesFromCache, getAllOrderedPartsFromCache } from './lib'
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
@@ -106,6 +106,8 @@ export function getLookeaheadObjects(
 		}
 	}
 
+	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
+
 	const orderedPiecesCache = new Map<PartId, PieceResolved[]>()
 
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
@@ -119,6 +121,7 @@ export function getLookeaheadObjects(
 			playlist,
 			partInstancesOnTimeline,
 			previousPartInfo,
+			orderedParts,
 			orderedPiecesCache,
 			layerId,
 			mapping.lookahead,
@@ -186,6 +189,7 @@ function findLookaheadForlayer(
 	playlist: RundownPlaylist,
 	partInstancesOnTimeline: PartInstanceAndPieceInstances[],
 	previousPartInstanceInfo: PartInstanceAndPieceInstances | undefined,
+	orderedParts: Part[],
 	orderedPiecesCache: Map<PartId, PieceResolved[]>,
 	layer: string,
 	mode: LookaheadMode,
@@ -251,15 +255,10 @@ function findLookaheadForlayer(
 
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
 	const nextPartInstance = _.last(partInstancesOnTimeline) || previousPartInstanceInfo || null
-	const nextPart = selectNextPart(playlist, nextPartInstance ? nextPartInstance.part : null, cache.Parts.findFetch())
+	const nextPart = selectNextPart(playlist, nextPartInstance ? nextPartInstance.part : null, orderedParts)
 	const lastPartIndex =
 		nextPart && lookaheadMaxSearchDistance !== undefined ? nextPart.index + lookaheadMaxSearchDistance : undefined
-	const futureParts = nextPart
-		? cache.Parts.findFetch(undefined, {
-				skip: nextPart.index,
-				limit: lastPartIndex ? lastPartIndex - nextPart.index : undefined,
-		  })
-		: []
+	const futureParts = nextPart ? orderedParts.slice(nextPart.index, lastPartIndex ? lastPartIndex : undefined) : []
 	if (futureParts.length === 0) {
 		return res
 	}
