@@ -1430,7 +1430,7 @@ export namespace ServerPlayoutAPI {
 				`playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
 					currentPartInstance._id
 				},execution=${getRandomId()}`,
-				true
+				false
 			)
 			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 
