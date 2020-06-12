@@ -339,8 +339,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 							// transitionDuration?: number | null;
 							// disableOutTransition?: boolean;
 							// expectedDuration?: number;
-							typeVariant: 'abc',
-							// subTypeVariant?: string;
 							// holdMode?: PartHoldMode;
 							// updateStoryStatus?: boolean;
 							// classes?: string[];
@@ -512,7 +510,6 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-		typeVariant: '',
 
 		duration: 20,
 	}
@@ -572,7 +569,6 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
-		typeVariant: '',
 	}
 	Parts.insert(part01)
 
@@ -608,7 +604,6 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
-		typeVariant: '',
 	}
 	Parts.insert(part10)
 
@@ -619,7 +614,6 @@ export function setupDefaultRundown(
 		_rank: 1,
 		externalId: 'MOCK_PART_1_1',
 		title: 'Part 1 1',
-		typeVariant: '',
 	}
 	Parts.insert(part11)
 
@@ -630,7 +624,6 @@ export function setupDefaultRundown(
 		_rank: 2,
 		externalId: 'MOCK_PART_1_2',
 		title: 'Part 1 2',
-		typeVariant: '',
 	}
 	Parts.insert(part12)
 

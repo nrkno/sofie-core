@@ -108,7 +108,6 @@ describe('Expected Media Items', () => {
 				rundownId: rdId,
 				segmentId: protectString(''),
 				title: '',
-				typeVariant: '',
 			})
 		)
 		Pieces.insert(
@@ -151,7 +150,6 @@ describe('Expected Media Items', () => {
 				rundownId: rdId,
 				segmentId: protectString(''),
 				title: '',
-				typeVariant: '',
 			})
 		)
 		Pieces.insert(
