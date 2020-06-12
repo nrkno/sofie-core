@@ -127,7 +127,7 @@ export function postProcessTimelineObjects(
 		if (timelineUniqueIds[obj.id])
 			throw new Meteor.Error(
 				400,
-				`Error in blueprint "${blueprintId}" ids of timelineObjs must be unique! ("${innerContext.unhashId(
+				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${innerContext.unhashId(
 					obj.id
 				)}")`
 			)
