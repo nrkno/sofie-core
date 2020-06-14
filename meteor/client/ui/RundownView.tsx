@@ -98,6 +98,8 @@ import { PartInstanceId } from '../../lib/collections/PartInstances'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
+const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
+
 type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
 
 interface ITimingWarningProps {
@@ -1373,6 +1375,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}> = []
 		private _inspectorShelf: WrappedShelf | null
 		private _segmentZoomOn: boolean = false
+		private _hideNotificationsAfterMount: number | undefined
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
@@ -1578,6 +1581,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
 				themeColor.setAttribute('content', '#000000')
 			}
+
+			// Snooze notifications for a period after mounting the RundownView
+			if (HIDE_NOTIFICATIONS_AFTER_MOUNT) {
+				NotificationCenter.isOpen = true
+				this._hideNotificationsAfterMount = Meteor.setTimeout(() => {
+					NotificationCenter.isOpen = this.state.isNotificationsCenterOpen
+					this._hideNotificationsAfterMount = undefined
+				}, HIDE_NOTIFICATIONS_AFTER_MOUNT)
+			}
+			NotificationCenter.isConcentrationMode = true
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
@@ -1760,6 +1773,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (themeColor) {
 				themeColor.setAttribute('content', themeColor.getAttribute('data-content') || '#ffffff')
 			}
+
+			if (this._hideNotificationsAfterMount) {
+				Meteor.clearTimeout(this._hideNotificationsAfterMount)
+			}
+			NotificationCenter.isConcentrationMode = false
 
 			window.removeEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 			window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop)

@@ -9,6 +9,8 @@ import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { RundownAPI } from '../../../lib/api/rundown'
 
+const CONCENTRATION_MODE_AUTO_SNOOZE = 5000
+
 /**
  * Priority level for Notifications.
  *
@@ -126,9 +128,33 @@ class NotificationCenter0 {
 
 	private _isOpen: boolean = false
 
+	/** In concentration mode, non-Critical notifications will be snoozed automatically */
+	private _isConcentrationMode: boolean = false
+
 	constructor() {
 		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+	}
+
+	get isConcentrationMode(): boolean {
+		return this._isConcentrationMode
+	}
+
+	set isConcentrationMode(value: boolean) {
+		this._isConcentrationMode = value
+
+		if (value)
+			NotificationCenter.snoozeAll(
+				{
+					status: NoticeLevel.TIP,
+				},
+				{
+					status: NoticeLevel.NOTIFICATION,
+				},
+				{
+					status: NoticeLevel.WARNING,
+				}
+			)
 	}
 
 	get isOpen(): boolean {
@@ -174,6 +200,17 @@ class NotificationCenter0 {
 		if (!notice.snoozed && this._isOpen) {
 			notice.snooze()
 		}
+		if (!notice.snoozed && this._isConcentrationMode) {
+			if (notice.status !== NoticeLevel.CRITICAL) {
+				notice.snooze()
+			} else if (!this.willSnooze[id]) {
+				this.willSnooze[id] = true
+				Meteor.setTimeout(() => {
+					delete this.willSnooze[id]
+					notice.snooze()
+				}, CONCENTRATION_MODE_AUTO_SNOOZE)
+			}
+		}
 
 		return {
 			id,
@@ -199,6 +236,8 @@ class NotificationCenter0 {
 		}
 	}
 
+	private willSnooze: { [k: string]: boolean } = {}
+
 	/**
 	 * Get a reactive array of notificaitons in the Notification Center
 	 *
@@ -210,7 +249,23 @@ class NotificationCenter0 {
 
 		return _.flatten(
 			_.map(notifiers, (item, key) => {
-				item.result.forEach((i) => this._isOpen && !i.snoozed && i.snooze())
+				item.result.forEach((i, itemKey) => {
+					if (this._isOpen && !i.snoozed) i.snooze()
+					if (this._isConcentrationMode && !i.snoozed && i.status !== NoticeLevel.CRITICAL) {
+						i.snooze()
+					} else if (
+						this._isConcentrationMode &&
+						!i.snoozed &&
+						i.status === NoticeLevel.CRITICAL &&
+						!this.willSnooze[i.id || `${key}_${itemKey}`]
+					) {
+						this.willSnooze[i.id || `${key}_${itemKey}`] = true
+						Meteor.setTimeout(() => {
+							i.snooze()
+							delete this.willSnooze[i.id || `${key}_${itemKey}`]
+						}, CONCENTRATION_MODE_AUTO_SNOOZE)
+					}
+				})
 				return item.result
 			}).concat(_.map(notifications, (item, key) => item))
 		)
@@ -239,8 +294,18 @@ class NotificationCenter0 {
 	 *
 	 * @memberof NotificationCenter0
 	 */
-	snoozeAll() {
-		const n = this.getNotifications()
+	snoozeAll(...filters: Partial<Notification>[]) {
+		let n = this.getNotifications()
+		if (filters && filters.length) {
+			const matchers = filters.map((filter) => _.matches(filter))
+			n = n.filter((value, index, array) =>
+				_.reduce(
+					matchers.map((m) => m(value, index, array)),
+					(value, memo) => value || memo,
+					false
+				)
+			)
+		}
 		n.forEach((item) => item.snooze())
 	}
 
