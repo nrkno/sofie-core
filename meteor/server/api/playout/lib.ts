@@ -654,6 +654,8 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 
 	let willNeedToBeFullyReset: boolean = !!part.startedPlayback
 
+	const isDirty = part.dirty || false
+
 	cache.Parts.update(
 		{
 			_id: part._id,
@@ -714,8 +716,6 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 			},
 		}
 	)
-
-	let isDirty = part.dirty || false
 
 	const rundown = cache.Rundowns.findOne(part.rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
