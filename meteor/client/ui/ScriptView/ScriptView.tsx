@@ -39,6 +39,7 @@ import { documentTitle } from '../../lib/documentTitle'
 
 import { ScriptViewSegment } from './ScriptViewSegment'
 import { Part } from '../../../lib/collections/Parts'
+import { Piece } from '../../../lib/collections/Pieces'
 
 export interface LayerGroups<T> {
 	primary: T
@@ -84,13 +85,16 @@ interface ScriptViewTrackedProps {
 	playlist?: RundownPlaylist
 	segments: Segment[]
 	parts: Part[]
+	pieces: Piece[]
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
+	activeLayerGroups: OutputGroups<boolean>
 }
+
 export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptViewTrackedProps>(
 	(props: ScriptViewProps) => {
 		let rundownId
@@ -101,10 +105,19 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 		}
 
 		const rundown = Rundowns.findOne(rundownId)
+		let playlist: RundownPlaylist | undefined
 		let segments: Segment[] = []
 		let parts: Part[] = []
+		let pieces: Piece[] = []
 
-		const playlist = RundownPlaylists.findOne(rundown ? rundown.playlistId : undefined)
+		let showStyleBase: ShowStyleBase | undefined
+		let activeLayerGroups: OutputGroups<boolean> = {}
+
+		if (rundown) {
+			showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+			playlist = RundownPlaylists.findOne(rundown.playlistId)
+		}
+
 		let studio: Studio | undefined
 		if (playlist) {
 			studio = Studios.findOne({ _id: playlist.studioId })
@@ -117,6 +130,78 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 			if (segments.length > 0) {
 				parts = segments.map((seg) => seg.getParts()).reduce((acc, val) => acc.concat(val), [])
 			}
+
+			if (parts.length > 0) {
+				pieces = parts.map((part) => part.getAllPieces()).reduce((acc, val) => acc.concat(val), [])
+
+				if (pieces.length > 0 && showStyleBase && studio) {
+					showStyleBase.outputLayers.map((output) => {
+						const layerGroups: LayerGroups<boolean> = {
+							primary: false,
+							overlays: false,
+							audio: false,
+							other: false,
+							adlib: false,
+						}
+
+						let setLayerGroupActive = (type: SourceLayerType) => {
+							switch (type) {
+								case SourceLayerType.SCRIPT:
+									break
+
+								case SourceLayerType.TRANSITION:
+								case SourceLayerType.VT:
+								case SourceLayerType.CAMERA:
+								case SourceLayerType.REMOTE:
+								case SourceLayerType.SPLITS:
+								case SourceLayerType.LIVE_SPEAK:
+									layerGroups.primary = true
+									break
+
+								case SourceLayerType.GRAPHICS:
+								case SourceLayerType.LOWER_THIRD:
+									layerGroups.overlays = true
+									break
+
+								case SourceLayerType.AUDIO:
+								case SourceLayerType.MIC:
+									layerGroups.audio = true
+									break
+
+								default:
+									layerGroups.other = true
+									break
+							}
+						}
+
+						const layerIdtoLayerType = (type: string) => {
+							if (showStyleBase) {
+								const layer = showStyleBase.sourceLayers.find((sl) => sl._id == type)
+
+								if (layer) {
+									return layer.type
+								}
+							}
+
+							return SourceLayerType.UNKNOWN
+						}
+
+						pieces
+							.filter((piece) => piece.outputLayerId == output._id)
+							.map((piece) => {
+								if (piece.metaData && piece.metaData.adlib == true) {
+									layerGroups.adlib = true
+								} else {
+									setLayerGroupActive(layerIdtoLayerType(piece.sourceLayerId))
+								}
+							})
+
+						if (Object.keys(layerGroups).filter((key) => layerGroups[key]).length > 0) {
+							activeLayerGroups[output.name] = layerGroups
+						}
+					})
+				}
+			}
 		}
 
 		const params = queryStringParse(location.search)
@@ -128,9 +213,10 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 			rundown,
 			segments,
 			parts,
+			pieces,
 			playlist,
 			studio: studio,
-			showStyleBase: rundown ? ShowStyleBases.findOne(rundown.showStyleBaseId) : undefined,
+			showStyleBase,
 			rundownLayouts: rundown ? RundownLayouts.find({ showStyleBaseId: rundown.showStyleBaseId }).fetch() : undefined,
 			buckets:
 				(playlist &&
@@ -160,12 +246,11 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 					}).fetch()) ||
 				undefined,
 			rundownLayoutId: protectString((params['layout'] as string) || ''),
+			activeLayerGroups,
 		}
 	}
 )(
 	class ScriptView extends MeteorReactComponent<ScriptViewProps & ScriptViewTrackedProps, ScriptViewState> {
-		private activeLayerGroups = {} as OutputGroups<boolean>
-
 		constructor(props: ScriptViewProps & ScriptViewTrackedProps) {
 			super(props)
 
@@ -279,97 +364,29 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 			}
 		}
 
-		layerGroups(output: IOutputLayer) {
-			const pieces = this.props.parts
-				.map((part) => part.getPieces())
-				.reduce((acc, val) => acc.concat(val), [])
-				.filter((p) => p.outputLayerId == output._id)
+		renderHeaders() {
+			const headersWithPieces = this.props.activeLayerGroups
 
-			const layerGroups: LayerGroups<boolean> = {
-				primary: false,
-				overlays: false,
-				audio: false,
-				other: false,
-				adlib: false,
-			}
-
-			let setLayerGroupActive = (type: SourceLayerType) => {
-				switch (type) {
-					case SourceLayerType.SCRIPT:
-						break
-
-					case SourceLayerType.TRANSITION:
-					case SourceLayerType.VT:
-					case SourceLayerType.CAMERA:
-					case SourceLayerType.REMOTE:
-					case SourceLayerType.SPLITS:
-					case SourceLayerType.LIVE_SPEAK:
-						layerGroups.primary = true
-						break
-
-					case SourceLayerType.GRAPHICS:
-					case SourceLayerType.LOWER_THIRD:
-						layerGroups.overlays = true
-						break
-
-					case SourceLayerType.AUDIO:
-					case SourceLayerType.MIC:
-						layerGroups.audio = true
-						break
-
-					default:
-						layerGroups.other = true
-						break
-				}
-			}
-
-			if (this.props.studio && this.props.showStyleBase) {
-				const layerIdtoLayerType = (type: string) => {
-					if (this.props.showStyleBase) {
-						const layer = this.props.showStyleBase.sourceLayers.find((sl) => sl._id == type)
-
-						if (layer) {
-							return layer.type
-						}
-					}
-
-					return SourceLayerType.UNKNOWN
-				}
-
-				pieces.map((piece) => {
-					if (piece.metaData && piece.metaData.adlib == true) {
-						layerGroups.adlib = true
-					} else {
-						setLayerGroupActive(layerIdtoLayerType(piece.sourceLayerId))
-					}
-				})
-			}
-
-			this.activeLayerGroups[output.name] = layerGroups
-			return layerGroups
-		}
-
-		renderHeaders(output: IOutputLayer) {
-			const headersWithPieces = this.layerGroups(output)
-			const headersToRender = Object.keys(headersWithPieces).filter((key) => headersWithPieces[key])
-
-			if (headersToRender.length > 0) {
-				return headersToRender.map((header, index) => (
-					<div
-						key={output._id + '__' + header}
-						className={
-							'segment-script-view__layergroup__layer ' +
-							(headersToRender.length - 1 == index ? 'last_layer_in_group' : '')
-						}>
-						{index == 0 && (
-							<div className="segment-script-view__output__label">
-								<h3>{output.name}</h3>
+			return Object.keys(this.props.activeLayerGroups).map((header) => {
+				return Object.keys(this.props.activeLayerGroups[header])
+					.filter((layergroup) => this.props.activeLayerGroups[header][layergroup])
+					.map((layerGroup, index, arr) => {
+						return (
+							<div
+								key={header + '__' + layerGroup}
+								className={
+									'segment-script-view__layergroup__layer ' + (arr.length - 1 == index ? 'last_layer_in_group' : '')
+								}>
+								{index == 0 && (
+									<div className="segment-script-view__output__label">
+										<h3>{header}</h3>
+									</div>
+								)}
+								<h4>{layerGroup}</h4>
 							</div>
-						)}
-						<h4>{header}</h4>
-					</div>
-				))
-			}
+						)
+					})
+			})
 
 			//Nothing to render in this output
 			return
@@ -387,8 +404,7 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 									<div className="segment-script-view__layergroup__script">
 										<h4>Script</h4>
 									</div>
-									{this.props.showStyleBase &&
-										this.props.showStyleBase.outputLayers.map((output) => this.renderHeaders(output))}
+									{this.props.showStyleBase && this.renderHeaders()}
 								</div>
 							</div>
 						</div>
@@ -404,8 +420,9 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 										studio={this.props.studio && this.props.studio}
 										showStyleBase={this.props.showStyleBase}
 										playlist={this.props.playlist}
+										pieces={this.props.pieces}
 										isLastSegment={index === this.props.segments.length - 1}
-										activeLayerGroups={this.activeLayerGroups}
+										activeLayerGroups={this.props.activeLayerGroups}
 									/>
 								)
 						)}

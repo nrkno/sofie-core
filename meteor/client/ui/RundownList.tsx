@@ -52,10 +52,10 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 	}
 
-	getEditorRundownLink(rundownPlaylistId: RundownPlaylistId) {
+	getScriptViewRundownLink(rundownPlaylistId: RundownPlaylistId) {
 		// double encoding so that "/" are handled correctly
 		const rundown = Rundowns.findOne({ playlistId: rundownPlaylistId })
-		if (rundown) return '/editor/' + encodeURIComponent(encodeURIComponent(unprotectString(rundown._id)))
+		if (rundown) return '/scriptview/' + encodeURIComponent(encodeURIComponent(unprotectString(rundown._id)))
 
 		return '/'
 	}
@@ -194,9 +194,9 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 							</Tooltip>
 						) : null}
 
-						{/* <Tooltip overlay={t('Open editor')} placement="top"> */}
+						{/* <Tooltip overlay={t('Open editor')} placement="top"> TODO Fix translation */}
 						<Tooltip overlay={'Open in read mode'} placement="top">
-							<Link to={this.getEditorRundownLink(this.props.rundownPlaylist._id)}>
+							<Link to={this.getScriptViewRundownLink(this.props.rundownPlaylist._id)}>
 								<button className="action-btn">
 									<FontAwesomeIcon icon={faBookOpen} />
 								</button>

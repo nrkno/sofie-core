@@ -31,7 +31,7 @@ import { ConnectionStatusNotification } from './ConnectionStatusNotification'
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
-import { ScriptView } from './Editor/ScriptView'
+import { ScriptView } from './ScriptView/ScriptView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 
 interface IAppState {
@@ -157,7 +157,7 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 								exact
 								render={(props) => <RundownView {...props} onlyShelf={true} />}
 							/>
-							<Route path="/editor/:rundownId" component={ScriptView} exact />
+							<Route path="/scriptview/:rundownId" component={ScriptView} exact />
 							<Route path="/activeRundown/:studioId" component={ActiveRundownView} />
 							<Route path="/prompter/:studioId" component={PrompterView} />
 							<Route path="/countdowns/:studioId/presenter" component={ClockView} />

@@ -199,16 +199,18 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			.segment-script-view__layergroup__script {
 				width: $script-piece-size + 1px;
 				display: inline-block;
-
-				border-right-color: $part-start-color;
-				border-right-style: solid;
-				border-right-width: 1px;
 			}
 
 			.segment-script-view__layergroup__layer {
 				width: $layergroup-piece-size;
-				height: 100%;
+
 				display: inline-block;
+			}
+
+			h4 {
+				height: 44px;
+				margin-right: 0;
+
 				border-right-color: $part-start-color;
 				border-right-style: solid;
 				border-right-width: 1px;
@@ -219,6 +221,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 				&:nth-last-child(1) {
 					border-right-width: 0px;
+
+					h4 {
+						border-right-width: 0px;
+					}
 				}
 			}
 		}

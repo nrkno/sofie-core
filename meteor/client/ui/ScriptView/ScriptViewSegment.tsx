@@ -25,6 +25,7 @@ import { Parts } from '../../../lib/collections/Parts'
 
 import { ScriptViewPart } from './ScriptViewPart'
 import { OutputGroups } from './ScriptView'
+import { Piece } from '../../../lib/collections/Pieces'
 
 interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -56,6 +57,7 @@ interface IProps {
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
+	pieces: Piece[]
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onTimeScaleChange?: (timeScaleVal: number) => void
@@ -91,118 +93,66 @@ interface ITrackedProps {
 	autoNextPart: boolean
 	lastValidPartIndex: number | undefined
 }
-export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>(
-	(props: IProps) => {
-		// console.log('PeripheralDevices',PeripheralDevices);
-		// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-		const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
+export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
+	// console.log('PeripheralDevices',PeripheralDevices);
+	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
+	const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
 
-		// console.log(`${props.segmentId}: running tracker`)
+	// console.log(`${props.segmentId}: running tracker`)
 
-		// We need the segment to do anything
-		if (!segment) {
-			return {
-				segmentui: undefined,
-				parts: [],
-				segmentNotes: [],
-				isLiveSegment: false,
-				isNextSegment: false,
-				currentLivePart: undefined,
-				currentNextPart: undefined,
-				hasRemoteItems: false,
-				hasGuestItems: false,
-				hasAlreadyPlayed: false,
-				autoNextPart: false,
-				lastValidPartIndex: undefined,
-			}
-		}
-
-		let o = RundownUtils.getResolvedSegment(props.showStyleBase, props.playlist, segment)
-		let notes: Array<SegmentNote> = []
-		_.each(o.parts, (part) => {
-			notes = notes.concat(
-				part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase),
-				part.instance.part.getInvalidReasonNotes()
-			)
-		})
-		notes = notes.concat(segment.notes || [])
-
-		let lastValidPartIndex = o.parts.length - 1
-
-		for (let i = lastValidPartIndex; i > 0; i--) {
-			if (o.parts[i].instance.part.invalid) {
-				lastValidPartIndex = i - 1
-			} else {
-				break
-			}
-		}
-
+	// We need the segment to do anything
+	if (!segment) {
 		return {
-			segmentui: o.segmentExtended,
-			parts: o.parts,
-			segmentNotes: notes,
-			isLiveSegment: o.isLiveSegment,
-			currentLivePart: o.currentLivePart,
-			currentNextPart: o.currentNextPart,
-			isNextSegment: o.isNextSegment,
-			hasAlreadyPlayed: o.hasAlreadyPlayed,
-			hasRemoteItems: o.hasRemoteItems,
-			hasGuestItems: o.hasGuestItems,
-			autoNextPart: o.autoNextPart,
-			lastValidPartIndex,
+			segmentui: undefined,
+			parts: [],
+			segmentNotes: [],
+			isLiveSegment: false,
+			isNextSegment: false,
+			currentLivePart: undefined,
+			currentNextPart: undefined,
+			hasRemoteItems: false,
+			hasGuestItems: false,
+			hasAlreadyPlayed: false,
+			autoNextPart: false,
+			lastValidPartIndex: undefined,
 		}
-	},
-	(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {
-		// This is a potentailly very dangerous hook into the React component lifecycle. Re-use with caution.
-		// Check obvious primitive changes
-		if (
-			props.onContextMenu !== nextProps.onContextMenu ||
-			props.onSegmentScroll !== nextProps.onSegmentScroll ||
-			props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
-			props.segmentId !== nextProps.segmentId ||
-			props.segmentRef !== nextProps.segmentRef
-		) {
-			return true
-		}
-		// Check rundown changes that are important to the segment
-		if (
-			typeof props.playlist !== typeof nextProps.playlist ||
-			(props.playlist.nextSegmentId !== nextProps.playlist.nextSegmentId &&
-				(props.playlist.nextSegmentId === props.segmentId || nextProps.playlist.nextSegmentId === props.segmentId)) ||
-			((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
-				props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
-				data.parts &&
-				(data.parts.find(
-					(i) =>
-						i.instance._id === props.playlist.currentPartInstanceId ||
-						i.instance._id === nextProps.playlist.currentPartInstanceId
-				) ||
-					data.parts.find(
-						(i) =>
-							i.instance._id === props.playlist.nextPartInstanceId ||
-							i.instance._id === nextProps.playlist.nextPartInstanceId
-					))) ||
-			props.playlist.holdState !== nextProps.playlist.holdState
-		) {
-			return true
-		}
-		// Check studio installation changes that are important to the segment.
-		// We also could investigate just skipping this and requiring a full reload if the studio installation is changed
-		if (
-			typeof props.studio !== typeof nextProps.studio ||
-			!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
-			!_.isEqual(props.studio.config, nextProps.studio.config) ||
-			!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
-			!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
-			!_.isEqual(props.showStyleBase.outputLayers, nextProps.showStyleBase.outputLayers)
-		) {
-			return true
-		}
+	}
 
-		return false
-	},
-	true
-)(
+	let o = RundownUtils.getResolvedSegment(props.showStyleBase, props.playlist, segment)
+	let notes: Array<SegmentNote> = []
+	_.each(o.parts, (part) => {
+		notes = notes.concat(
+			part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase),
+			part.instance.part.getInvalidReasonNotes()
+		)
+	})
+	notes = notes.concat(segment.notes || [])
+
+	let lastValidPartIndex = o.parts.length - 1
+
+	for (let i = lastValidPartIndex; i > 0; i--) {
+		if (o.parts[i].instance.part.invalid) {
+			lastValidPartIndex = i - 1
+		} else {
+			break
+		}
+	}
+
+	return {
+		segmentui: o.segmentExtended,
+		parts: o.parts,
+		segmentNotes: notes,
+		isLiveSegment: o.isLiveSegment,
+		currentLivePart: o.currentLivePart,
+		currentNextPart: o.currentNextPart,
+		isNextSegment: o.isNextSegment,
+		hasAlreadyPlayed: o.hasAlreadyPlayed,
+		hasRemoteItems: o.hasRemoteItems,
+		hasGuestItems: o.hasGuestItems,
+		autoNextPart: o.autoNextPart,
+		lastValidPartIndex,
+	}
+})(
 	class ScriptViewSegment extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
 		isLiveSegment: boolean
 		isVisible: boolean
@@ -290,9 +240,7 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>(
 				<div>
 					<div className="segment-script-view">
 						<div className="segment-script-view__title">
-							{this.props.segmentui && (
-								<h2 className="segment-script-view__title__label">{this.props.segmentui.name}</h2>
-							)}
+							{this.props.segmentui && <h2>{this.props.segmentui.name}</h2>}
 						</div>
 						<div className="segment-script-view__grid">
 							{this.props.parts.map((part) => (
@@ -303,6 +251,7 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>(
 									studio={this.props.studio}
 									showStyleBase={this.props.showStyleBase}
 									part={part}
+									pieces={this.props.pieces}
 									isLastSegment={false}
 									isLastInSegment={false}
 									activeLayerGroups={this.props.activeLayerGroups}

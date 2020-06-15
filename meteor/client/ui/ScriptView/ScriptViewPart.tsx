@@ -38,6 +38,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: Studio
 	part: PartUi
+	pieces: Piece[]
 	showStyleBase: ShowStyleBase
 	totalSegmentDuration?: number
 	firstPartInSegment?: PartUi
@@ -114,6 +115,8 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 		}
 
 		shouldComponentUpdate(nextProps: IProps & ITrackedProps, nextState: IState) {
+			console.log(nextProps.activeLayerGroups, this.props.activeLayerGroups)
+
 			let result = !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 			return result
 		}
