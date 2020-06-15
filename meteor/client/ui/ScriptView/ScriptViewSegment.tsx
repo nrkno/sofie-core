@@ -58,33 +58,14 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
 	pieces: Piece[]
-	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onTimeScaleChange?: (timeScaleVal: number) => void
-	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
-	onSegmentScroll?: () => void
-	onHeaderNoteClick?: (level: NoteType) => void
-	segmentRef?: (el: React.ComponentClass, sId: string) => void
-	isLastSegment: boolean
 	activeLayerGroups: OutputGroups<boolean>
+	isLastSegment: boolean
 }
-interface IState {
-	scrollLeft: number
-	collapsedOutputs: {
-		[key: string]: boolean
-	}
-	collapsed: boolean
-	followLiveLine: boolean
-	livePosition: number
-	displayTimecode: number
-	autoExpandCurrentNextSegment: boolean
-}
+interface IState {}
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
-	isLiveSegment: boolean
-	isNextSegment: boolean
 	currentLivePart: PartUi | undefined
 	currentNextPart: PartUi | undefined
 	hasRemoteItems: boolean
@@ -92,6 +73,8 @@ interface ITrackedProps {
 	hasAlreadyPlayed: boolean
 	autoNextPart: boolean
 	lastValidPartIndex: number | undefined
+	isNextSegment: boolean
+	isLiveSegment: boolean
 }
 export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	// console.log('PeripheralDevices',PeripheralDevices);
@@ -106,8 +89,6 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 			segmentui: undefined,
 			parts: [],
 			segmentNotes: [],
-			isLiveSegment: false,
-			isNextSegment: false,
 			currentLivePart: undefined,
 			currentNextPart: undefined,
 			hasRemoteItems: false,
@@ -115,6 +96,8 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 			hasAlreadyPlayed: false,
 			autoNextPart: false,
 			lastValidPartIndex: undefined,
+			isNextSegment: false,
+			isLiveSegment: false,
 		}
 	}
 
@@ -142,15 +125,15 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 		segmentui: o.segmentExtended,
 		parts: o.parts,
 		segmentNotes: notes,
-		isLiveSegment: o.isLiveSegment,
 		currentLivePart: o.currentLivePart,
 		currentNextPart: o.currentNextPart,
-		isNextSegment: o.isNextSegment,
 		hasAlreadyPlayed: o.hasAlreadyPlayed,
 		hasRemoteItems: o.hasRemoteItems,
 		hasGuestItems: o.hasGuestItems,
 		autoNextPart: o.autoNextPart,
 		lastValidPartIndex,
+		isLiveSegment: o.isLiveSegment,
+		isNextSegment: o.isNextSegment,
 	}
 })(
 	class ScriptViewSegment extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
@@ -161,23 +144,7 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 		constructor(props: IProps & ITrackedProps) {
 			super(props)
 
-			this.state = {
-				collapsedOutputs: UIStateStorage.getItemBooleanMap(
-					`rundownView.${this.props.playlist._id}`,
-					`segment.${props.segmentId}.outputs`,
-					{}
-				),
-				collapsed: UIStateStorage.getItemBoolean(
-					`rundownView.${this.props.playlist._id}`,
-					`segment.${props.segmentId}`,
-					!!Settings.defaultToCollapsedSegments
-				),
-				scrollLeft: 0,
-				followLiveLine: false,
-				livePosition: 0,
-				displayTimecode: 0,
-				autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment,
-			}
+			this.state = {}
 
 			this.isLiveSegment = props.isLiveSegment || false
 			this.isVisible = false
@@ -235,15 +202,27 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 			this._cleanUp()
 		}
 
+		getStatusClass() {
+			const SEGMENT_VIEW = 'segment-script-view'
+
+			if (this.props.isLiveSegment) {
+				return SEGMENT_VIEW + ' live'
+			} else if (this.props.isNextSegment) {
+				return SEGMENT_VIEW + ' next'
+			}
+
+			return SEGMENT_VIEW
+		}
+
 		render() {
 			return (
 				<div>
-					<div className="segment-script-view">
+					<div className={this.getStatusClass()}>
 						<div className="segment-script-view__title">
 							{this.props.segmentui && <h2>{this.props.segmentui.name}</h2>}
 						</div>
 						<div className="segment-script-view__grid">
-							{this.props.parts.map((part) => (
+							{this.props.parts.map((part, index, arr) => (
 								<ScriptViewPart
 									key={'segment__' + this.props.segmentId + '__part__' + part.partId}
 									segment={this.props.segmentui}
@@ -252,8 +231,8 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 									showStyleBase={this.props.showStyleBase}
 									part={part}
 									pieces={this.props.pieces}
-									isLastSegment={false}
-									isLastInSegment={false}
+									isLastSegment={this.props.isLiveSegment}
+									isLastInSegment={index === arr.length - 1}
 									activeLayerGroups={this.props.activeLayerGroups}
 								/>
 							))}

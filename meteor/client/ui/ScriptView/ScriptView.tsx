@@ -387,9 +387,6 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 						)
 					})
 			})
-
-			//Nothing to render in this output
-			return
 		}
 
 		render() {
@@ -409,7 +406,7 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 							</div>
 						</div>
 						{this.props.segments.map(
-							(item, index) =>
+							(item, index, arr) =>
 								this.props.studio &&
 								this.props.showStyleBase &&
 								this.props.playlist && (
@@ -421,8 +418,8 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 										showStyleBase={this.props.showStyleBase}
 										playlist={this.props.playlist}
 										pieces={this.props.pieces}
-										isLastSegment={index === this.props.segments.length - 1}
 										activeLayerGroups={this.props.activeLayerGroups}
+										isLastSegment={index === arr.length - 1}
 									/>
 								)
 						)}
