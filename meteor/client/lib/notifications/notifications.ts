@@ -9,8 +9,6 @@ import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { RundownAPI } from '../../../lib/api/rundown'
 
-const CONCENTRATION_MODE_AUTO_SNOOZE = 5000
-
 /**
  * Priority level for Notifications.
  *
@@ -120,7 +118,9 @@ type NotificationsSource = SegmentId | string | undefined
  */
 class NotificationCenter0 {
 	/** Default notification timeout for non-persistent notifications */
-	private NOTIFICATION_TIMEOUT = 5000
+	private readonly NOTIFICATION_TIMEOUT = 5000
+	/** Default notification timeout for non-persistent notifications */
+	private readonly CONCENTRATION_MODE_AUTO_SNOOZE = 10000
 	/** The highlighted source of notifications */
 	private highlightedSource: ReactiveVar<NotificationsSource>
 	/** The highlighted level of highlighted level */
@@ -208,7 +208,7 @@ class NotificationCenter0 {
 				Meteor.setTimeout(() => {
 					delete this.willSnooze[id]
 					notice.snooze()
-				}, CONCENTRATION_MODE_AUTO_SNOOZE)
+				}, this.CONCENTRATION_MODE_AUTO_SNOOZE)
 			}
 		}
 
@@ -263,7 +263,7 @@ class NotificationCenter0 {
 						Meteor.setTimeout(() => {
 							i.snooze()
 							delete this.willSnooze[i.id || `${key}_${itemKey}`]
-						}, CONCENTRATION_MODE_AUTO_SNOOZE)
+						}, this.CONCENTRATION_MODE_AUTO_SNOOZE)
 					}
 				})
 				return item.result
@@ -484,6 +484,8 @@ export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusC
 }
 
 window['testNotification'] = function() {
-	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', protectString('test')))
+	NotificationCenter.push(
+		new Notification(undefined, NoticeLevel.CRITICAL, 'Notification test', protectString('test'), 10000)
+	)
 }
 window['notificationCenter'] = NotificationCenter

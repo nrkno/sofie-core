@@ -9,7 +9,7 @@ import { NotificationCenter, Notification, NoticeLevel, NotificationAction } fro
 import { ContextMenuTrigger, ContextMenu, MenuItem } from 'react-contextmenu'
 import * as _ from 'underscore'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { CriticalIcon, WarningIcon } from '../notificationIcons'
+import { CriticalIcon, WarningIcon, CollapseChevrons } from '../notificationIcons'
 
 interface IPopUpProps {
 	item: Notification
@@ -96,7 +96,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 							}}>
-							<CoreIcon.NrkClose />
+							<CollapseChevrons />
 						</button>
 						{/* </div> */}
 					</ContextMenuTrigger>
