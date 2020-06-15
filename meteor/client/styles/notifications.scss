@@ -117,6 +117,20 @@
 				margin: 0;
 				padding: 0;
 				font-size: 0.7rem;
+
+				> svg {
+					fill: #525252;
+					width: 2.25em;
+					height: 2.25em;
+					vertical-align: top;
+					margin-top: -0.4em;
+				}
+
+				&:hover {
+					> svg {
+						fill: #727272;
+					}
+				}
 			}
 		}
 	}
