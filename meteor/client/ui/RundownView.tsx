@@ -1286,8 +1286,10 @@ export enum RundownViewEvents {
 	'goToTop' = 'sofie:goToTop',
 	'segmentZoomOn' = 'sofie:segmentZoomOn',
 	'segmentZoomOff' = 'sofie:segmentZoomOff',
-	'goToPart' = 'goToPart',
-	'goToPartInstance' = 'goToPartInstance',
+	'revealInShelf' = 'sofie:revealInShelf',
+	'switchShelfTab' = 'sofie:switchShelfTab',
+	'goToPart' = 'sofie:goToPart',
+	'goToPartInstance' = 'sofie:goToPartInstance',
 }
 
 export interface IGoToPartEvent {
@@ -1534,6 +1536,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						},
 					})
 					this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+						rundownId: {
+							$in: rundownIDs,
+						},
+					})
+					this.subscribe(PubSub.adLibActions, {
+						rundownId: {
+							$in: rundownIDs,
+						},
+					})
+					this.subscribe(PubSub.rundownBaselineAdLibActions, {
 						rundownId: {
 							$in: rundownIDs,
 						},
@@ -2145,9 +2157,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					isInspectorShelfExpanded: true,
 				})
-				if (this._inspectorShelf) {
-					this._inspectorShelf.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
-				}
+				window.dispatchEvent(
+					new CustomEvent(RundownViewEvents.switchShelfTab, {
+						detail: {
+							tab: ShelfTabs.SYSTEM_HOTKEYS,
+						},
+					})
+				)
 			} else {
 				this.setState({
 					isInspectorShelfExpanded: false,

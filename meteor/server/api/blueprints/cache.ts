@@ -23,6 +23,8 @@ interface Cache {
 	fcn: SomeBlueprintManifest
 }
 
+export const BLUEPRINT_CACHE_CONTROL = { disable: false }
+
 export interface WrappedSystemBlueprint {
 	blueprintId: BlueprintId
 	blueprint: SystemBlueprintManifest
@@ -92,7 +94,7 @@ export function getBlueprintOfRundown(rundown: Rundown, noCache?: boolean): Wrap
 		return loadShowStyleBlueprints(showStyleBase)
 	}
 
-	if (noCache) {
+	if (noCache || BLUEPRINT_CACHE_CONTROL.disable) {
 		return fcn()
 	} else {
 		return cacheResult(`rundownBlueprint_${rundown._id}`, fcn, 1000)
@@ -141,7 +143,7 @@ function loadBlueprintsById(blueprintId: BlueprintId): SomeBlueprintManifest | u
 }
 export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	let cached: Cache | null = null
-	if (!noCache) {
+	if (!noCache && !BLUEPRINT_CACHE_CONTROL.disable) {
 		// First, check if we've got the function cached:
 		cached = blueprintCache[unprotectString(blueprint._id)] ? blueprintCache[unprotectString(blueprint._id)] : null
 		if (cached && (!cached.modified || cached.modified !== blueprint.modified)) {

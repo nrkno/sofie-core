@@ -3,7 +3,14 @@ import * as _ from 'underscore'
 import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
-import { SourceLayerType, getPieceGroupId, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import {
+	SourceLayerType,
+	getPieceGroupId,
+	PieceLifespan,
+	IBlueprintActionManifest,
+	IBlueprintActionManifestDisplay,
+	IBlueprintActionManifestDisplayContent,
+} from 'tv-automation-sofie-blueprints-integration'
 import {
 	SegmentExtended,
 	PartExtended,
@@ -603,5 +610,14 @@ export namespace RundownUtils {
 			return false
 		}
 		return true
+	}
+
+	export function isAdlibActionContent(
+		display: IBlueprintActionManifestDisplay | IBlueprintActionManifestDisplayContent
+	): display is IBlueprintActionManifestDisplayContent {
+		if ((display as any).sourceLayerId !== undefined) {
+			return true
+		}
+		return false
 	}
 }

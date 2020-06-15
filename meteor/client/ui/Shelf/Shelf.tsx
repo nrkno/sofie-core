@@ -8,13 +8,13 @@ import * as mousetrap from 'mousetrap'
 import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
-import { AdLibPanel } from './AdLibPanel'
+import { AdLibPanel, AdLibPieceUi } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
@@ -44,6 +44,7 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { Settings } from '../../../lib/Settings'
 import { KeyboardPreviewPanel } from './KeyboardPreviewPanel'
+import { ShelfInspector } from './Inspector/ShelfInspector'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -81,7 +82,7 @@ interface IState {
 	moving: boolean
 	selectedTab: string | undefined
 	shouldQueue: boolean
-	selectedPiece: PieceUi | undefined
+	selectedPiece: AdLibPieceUi | PieceUi | undefined
 }
 
 const CLOSE_MARGIN = 45
@@ -180,6 +181,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		this.props.onRegisterHotkeys(this.bindKeys)
 		this.restoreDefaultTab()
+
+		window.addEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
 	}
 
 	componentWillUnmount() {
@@ -192,6 +195,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				mousetrap.unbind(k.key, 'keydown')
 			}
 		})
+
+		window.removeEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -388,6 +393,14 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
+	onSwitchShelfTab = (e: any) => {
+		const tab = e.detail && e.detail.tab
+
+		if (tab) {
+			this.switchTab(tab)
+		}
+	}
+
 	switchTab = (tab: string) => {
 		this.setState({
 			selectedTab: tab,
@@ -489,6 +502,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							shouldQueue={this.state.shouldQueue}
 							showStyleBase={this.props.showStyleBase}
 						/>
+					</ErrorBoundary>
+					<ErrorBoundary>
+						<ShelfInspector selected={this.state.selectedPiece} showStyleBase={this.props.showStyleBase} />
 					</ErrorBoundary>
 				</div>
 			</div>

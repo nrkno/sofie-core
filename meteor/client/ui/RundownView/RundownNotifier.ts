@@ -421,7 +421,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			// console.log('RundownViewNotifier 4')
 			const newNoteIds: Array<string> = []
 			const combined = fullNotes.get().concat(localNotes.get())
-			combined.forEach((item: TrackedNote) => {
+			combined.forEach((item: TrackedNote & { rank: number }) => {
 				const id =
 					item.message +
 					'-' +

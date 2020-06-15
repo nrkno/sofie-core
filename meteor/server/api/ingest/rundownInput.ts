@@ -60,7 +60,13 @@ import {
 	RundownBaselineObjId,
 } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
-import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
+import {
+	postProcessRundownBaselineItems,
+	postProcessAdLibPieces,
+	postProcessPieces,
+	postProcessAdLibActions,
+	postProcessGlobalAdLibActions,
+} from '../blueprints/postProcess'
 import {
 	RundownBaselineAdLibItem,
 	RundownBaselineAdLibPieces,
@@ -123,6 +129,11 @@ import {
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
 import { Settings } from '../../../lib/Settings'
+import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import {
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibAction,
+} from '../../../lib/collections/RundownBaselineAdLibActions'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -552,13 +563,23 @@ function updateRundownFromIngestData(
 	const baselineObj: RundownBaselineObj = {
 		_id: protectString<RundownBaselineObjId>(Random.id(7)),
 		rundownId: dbRundown._id,
-		objects: postProcessRundownBaselineItems(blueprintRundownContext, rundownRes.baseline),
+		objects: postProcessRundownBaselineItems(
+			blueprintRundownContext,
+			showStyle.base.blueprintId,
+			rundownRes.baseline
+		),
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
-	const adlibItems = postProcessAdLibPieces(
+	const baselineAdlibPieces = postProcessAdLibPieces(
 		blueprintRundownContext,
 		rundownRes.globalAdLibPieces,
+		showStyle.base.blueprintId
+	)
+	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
+	const baselineAdlibActions = postProcessGlobalAdLibActions(
+		blueprintRundownContext,
+		rundownRes.globalActions || [],
 		showStyle.base.blueprintId
 	)
 
@@ -572,6 +593,7 @@ function updateRundownFromIngestData(
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
+	const adlibActions: AdLibAction[] = []
 
 	const { blueprint, blueprintId } = getBlueprintOfRundown(dbRundown)
 
@@ -598,6 +620,7 @@ function updateRundownFromIngestData(
 		parts.push(...segmentContents.parts)
 		segmentPieces.push(...segmentContents.segmentPieces)
 		adlibPieces.push(...segmentContents.adlibPieces)
+		adlibActions.push(...segmentContents.adlibActions)
 	})
 
 	// Prepare updates:
@@ -629,6 +652,13 @@ function updateRundownFromIngestData(
 			rundownId: rundownId,
 		},
 		adlibPieces
+	)
+	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(
+		AdLibActions,
+		{
+			rundownId: rundownId,
+		},
+		adlibActions
 	)
 
 	if (Settings.allowUnsyncedSegments) {
@@ -741,7 +771,14 @@ function updateRundownFromIngestData(
 			{
 				rundownId: dbRundown._id,
 			},
-			adlibItems
+			baselineAdlibPieces
+		),
+		saveIntoDb<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
+			RundownBaselineAdLibActions,
+			{
+				rundownId: dbRundown._id,
+			},
+			baselineAdlibActions
 		),
 
 		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
@@ -759,6 +796,18 @@ function updateRundownFromIngestData(
 			},
 		}),
 
+		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdLibActions, cache.AdLibActions, {
+			afterInsert(adlibAction) {
+				logger.debug('inserted adlibAction ' + adlibAction._id)
+				logger.debug(adlibAction)
+			},
+			afterUpdate(adlibAction) {
+				logger.debug('updated adlibAction ' + adlibAction._id)
+			},
+			afterRemove(adlibAction) {
+				logger.debug('deleted adlibAction ' + adlibAction._id)
+			},
+		}),
 		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
 			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
@@ -1053,7 +1102,7 @@ function updateSegmentFromIngestData(
 	const context = new SegmentContext(rundown, studio, existingParts, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 
-	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(
+	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
 		context,
 		blueprintId,
 		ingestSegment,
@@ -1097,6 +1146,14 @@ function updateSegmentFromIngestData(
 			partId: { $in: parts.map((p) => p._id) },
 		},
 		adlibPieces
+	)
+	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(
+		AdLibActions,
+		{
+			rundownId: rundown._id,
+			partId: { $in: parts.map((p) => p._id) },
+		},
+		adlibActions
 	)
 
 	// determine if update is allowed here
@@ -1148,7 +1205,7 @@ function updateSegmentFromIngestData(
 				logger.debug('deleted piece ' + piece._id)
 			},
 		}),
-		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces!, {
+		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
 			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
@@ -1158,6 +1215,18 @@ function updateSegmentFromIngestData(
 			},
 			afterRemove(adLibPiece) {
 				logger.debug('deleted adLibPiece ' + adLibPiece._id)
+			},
+		}),
+		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdLibActions, cache.AdLibActions, {
+			afterInsert(adLibAction) {
+				logger.debug('inserted adLibAction ' + adLibAction._id)
+				logger.debug(adLibAction)
+			},
+			afterUpdate(adLibAction) {
+				logger.debug('updated adLibAction ' + adLibAction._id)
+			},
+			afterRemove(adLibAction) {
+				logger.debug('deleted adLibAction ' + adLibAction._id)
 			},
 		}),
 		savePreparedChangesIntoCache<Part, DBPart>(prepareSaveParts, cache.Parts, {
@@ -1357,6 +1426,7 @@ function generateSegmentContents(
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
+	const adlibActions: AdLibAction[] = []
 
 	// Parts
 	blueprintRes.parts.forEach((blueprintPart, i) => {
@@ -1391,11 +1461,9 @@ function generateSegmentContents(
 		}
 
 		// Update pieces
-		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)
-		segmentPieces.push(...pieces)
-
-		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id)
-		adlibPieces.push(...adlibs)
+		segmentPieces.push(...postProcessPieces(context, blueprintPart.pieces, blueprintId, rundownId, part._id))
+		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
+		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
 
 	return {
@@ -1403,6 +1471,7 @@ function generateSegmentContents(
 		parts,
 		segmentPieces,
 		adlibPieces,
+		adlibActions,
 	}
 }
 

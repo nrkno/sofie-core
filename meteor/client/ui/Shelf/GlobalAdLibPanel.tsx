@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { translate } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -17,25 +18,32 @@ import * as faList from '@fortawesome/fontawesome-free-solid/faList'
 import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
 import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
 
-import { RundownViewKbdShortcuts } from '../RundownView'
+import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
 
 import { Spinner } from '../../lib/Spinner'
-import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { PieceGeneric } from '../../../lib/collections/Pieces'
-import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IOutputLayer,
+	ISourceLayer,
+	SomeContent,
+	IBlueprintActionManifestDisplayContent,
+} from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { ShelfInspector } from './Inspector/ShelfInspector'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../lib/rundown'
 import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
+import { AdLibActions } from '../../../lib/collections/AdLibActions'
+import { ShelfTabs } from './Shelf'
+import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -146,6 +154,7 @@ const AdLibListView = translate()(
 													this.props.selectedPiece._id === item._id) ||
 												false
 											}
+											outputLayer={undefined}
 											layer={item.layer}
 											onToggleAdLib={this.props.onToggleSticky}
 											onSelectAdLib={this.props.onSelectAdLib}
@@ -175,6 +184,27 @@ const AdLibListView = translate()(
 											playlist={this.props.playlist}
 										/>
 									)
+								} else if (
+									!this.props.searchFilter ||
+									item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0
+								) {
+									return (
+										<AdLibListItem
+											key={unprotectString(item._id)}
+											adLibListItem={item}
+											selected={
+												(this.props.selectedPiece &&
+													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+													this.props.selectedPiece._id === item._id) ||
+												false
+											}
+											layer={undefined}
+											outputLayer={undefined}
+											onToggleAdLib={this.props.onToggleAdLib}
+											onSelectAdLib={this.props.onSelectAdLib}
+											playlist={this.props.playlist}
+										/>
+									)
 								} else {
 									return null
 								}
@@ -196,7 +226,6 @@ const AdLibListView = translate()(
 					<table className="adlib-panel__list-view__list__table" ref={this.setTableRef}>
 						{this.renderGlobalAdLibs()}
 					</table>
-					<ShelfInspector selected={this.props.selectedPiece} />
 				</div>
 			)
 		}
@@ -321,19 +350,70 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		let rundownAdLibItems = RundownBaselineAdLibPieces.find(
-			{ rundownId: currentRundown._id },
-			{ sort: { sourceLayerId: 1, _rank: 1 } }
+			{
+				rundownId: currentRundown._id,
+			},
+			{
+				sort: {
+					sourceLayerId: 1,
+					_rank: 1,
+				},
+			}
 		).fetch()
-		rundownAdLibItems.forEach((item) => {
-			// automatically assign hotkeys based on adLibItem index
+		rundownAdLibs = rundownAdLibItems.map((item) => {
 			const uiAdLib: AdLibPieceUi = _.clone(item)
 			uiAdLib.isGlobal = true
 
-			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+			return uiAdLib
+		})
+
+		const globalAdLibActions = RundownBaselineAdLibActions.find(
+			{
+				rundownId: currentRundown._id,
+			},
+			{
+				sort: { _rank: 1 },
+			}
+		)
+			.fetch()
+			.map((action) => {
+				let sourceLayerId = ''
+				let outputLayerId = ''
+				let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+				const isContent = RundownUtils.isAdlibActionContent(action.display)
+				if (isContent) {
+					sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+					outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+					content = (action.display as IBlueprintActionManifestDisplayContent).content
+				}
+
+				return literal<AdLibPieceUi>({
+					_id: protectString(`function_${action._id}`),
+					name: action.display.label,
+					status: RundownAPI.PieceStatusCode.UNKNOWN,
+					isAction: true,
+					isGlobal: true,
+					expectedDuration: 0,
+					disabled: false,
+					externalId: unprotectString(action._id),
+					rundownId: action.rundownId,
+					sourceLayerId,
+					outputLayerId,
+					_rank: action.display._rank || 0,
+					content: content,
+					adlibAction: action,
+				})
+			})
+
+		rundownAdLibs = rundownAdLibs.concat(globalAdLibActions).sort((a, b) => a._rank - b._rank)
+
+		rundownAdLibs.forEach((uiAdLib) => {
+			// automatically assign hotkeys based on adLibItem index
+			let sourceLayer = uiAdLib.sourceLayerId && sourceLayerLookup[uiAdLib.sourceLayerId]
 			if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
 				let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
 				const sourceHotKeyUseLayerId =
-					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
+					sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || uiAdLib.sourceLayerId
 				if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
 					uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
 					// add one to the usage hash table
@@ -344,9 +424,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			if (sourceLayer && sourceLayer.isHidden) {
 				uiAdLib.isHidden = true
 			}
-
-			// always add them to the list
-			rundownAdLibs.push(uiAdLib)
+			return uiAdLib
 		})
 	}
 
@@ -356,7 +434,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		currentRundown,
 	}
 })(
-	class AdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
+	class GlobalAdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		usedHotkeys: Array<string> = []
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
@@ -382,6 +460,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					})
 				}
 			})
+
+			window.addEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -401,6 +481,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				tag: this.props.hotkeyGroup,
 			})
 			this.usedHotkeys.length = 0
+
+			window.removeEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 		}
 
 		refreshKeyboardHotkeys() {
@@ -549,7 +631,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		onSelectAdLib = (piece: AdLibPieceUi) => {
-			// console.log(aSLine)
+			console.log(piece)
 			this.props.onSelectPiece && this.props.onSelectPiece(piece)
 		}
 
@@ -591,15 +673,22 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId && adlibPiece.isGlobal) {
 				const { t } = this.props
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
-					MeteorCall.userAction.baselineAdLibPieceStart(
-						e,
-						this.props.playlist._id,
-						currentPartInstanceId,
-						adlibPiece._id,
-						queue || false
+				if (adlibPiece.isAction && adlibPiece.adlibAction) {
+					const action = adlibPiece.adlibAction
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+						MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
 					)
-				)
+				} else {
+					doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+						MeteorCall.userAction.baselineAdLibPieceStart(
+							e,
+							this.props.playlist._id,
+							currentPartInstanceId,
+							adlibPiece._id,
+							queue || false
+						)
+					)
+				}
 			}
 		}
 
@@ -617,6 +706,36 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						sourceLayers.map((sl) => sl._id)
 					)
 				)
+			}
+		}
+
+		onRevealInShelf = (e: CustomEvent) => {
+			const pieceId = e.detail && e.detail.pieceId
+			if (pieceId) {
+				let found = false
+				const index = this.props.rundownAdLibs.findIndex((piece) => piece._id === pieceId)
+				if (index >= 0) {
+					found = true
+				}
+
+				if (found) {
+					window.dispatchEvent(
+						new CustomEvent(RundownViewEvents.switchShelfTab, {
+							detail: {
+								tab: ShelfTabs.GLOBAL_ADLIB,
+							},
+						})
+					)
+
+					Meteor.setTimeout(() => {
+						const el = document.querySelector(`.adlib-panel__list-view__list__segment__item[data-obj-id="${pieceId}"]`)
+						if (el) {
+							el.scrollIntoView({
+								behavior: 'smooth',
+							})
+						}
+					}, 100)
+				}
 			}
 		}
 
@@ -647,7 +766,11 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				if (!this.props.currentRundown) {
 					return <Spinner />
 				} else {
-					return <div className="adlib-panel super-dark">{this.renderListView()}</div>
+					return (
+						<div className="adlib-panel super-dark" data-tab-id={ShelfTabs.GLOBAL_ADLIB}>
+							{this.renderListView()}
+						</div>
+					)
 				}
 			}
 			return null

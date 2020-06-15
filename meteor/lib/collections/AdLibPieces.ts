@@ -8,7 +8,7 @@ import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
 import { BucketId } from './Buckets'
 
-export interface AdLibPiece extends PieceGeneric, Omit<IBlueprintAdLibPiece, 'partId'> {
+export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 
@@ -16,13 +16,10 @@ export interface AdLibPiece extends PieceGeneric, Omit<IBlueprintAdLibPiece, 'pa
 	disabled: false
 
 	/** Rundown this AdLib belongs to */
-	rundownId?: RundownId
+	rundownId: RundownId
 
 	/** Part this AdLib belongs to */
 	partId?: PartId
-
-	/** Bucket this AdLib belongs to */
-	bucketId?: BucketId
 }
 
 export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece> = createMongoCollection<AdLibPiece>(

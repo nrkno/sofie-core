@@ -8,11 +8,15 @@ import {
 	unprotectObject,
 	unprotectObjectArray,
 	protectString,
+	assertNever,
+	protectStringArray,
 	getCurrentTime,
-} from '../../../lib/lib'
-import { DBPart, PartId } from '../../../lib/collections/Parts'
+	unprotectStringArray,
+	normalizeArray,
+} from '../../../../lib/lib'
+import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from 'meteor/check'
-import { logger } from '../../../lib/logging'
+import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
 	NotesContext as INotesContext,
@@ -35,25 +39,35 @@ import {
 	IBlueprintPartDB,
 	IBlueprintRundownDB,
 	IBlueprintAsRunLogEvent,
+	IBlueprintPiece,
+	IBlueprintPart,
+	IBlueprintResolvedPieceInstance,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig, findMissingConfigs } from './config'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { AsRunLogEvent, AsRunLog } from '../../../lib/collections/AsRunLog'
-import { PartNote, NoteType, INoteBase } from '../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../ingest/ingestCache'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Segment, SegmentId } from '../../../lib/collections/Segments'
-import { PieceInstances, unprotectPieceInstance } from '../../../lib/collections/PieceInstances'
+import { Studio, StudioId } from '../../../../lib/collections/Studios'
+import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
+import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
+import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
+import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
+import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
+import { PartNote, NoteType, INoteBase } from '../../../../lib/api/notes'
+import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
+import { RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import { Segment, SegmentId } from '../../../../lib/collections/Segments'
+import {
+	PieceInstances,
+	unprotectPieceInstance,
+	PieceInstanceId,
+	PieceInstance,
+} from '../../../../lib/collections/PieceInstances'
 import {
 	InternalIBlueprintPartInstance,
 	PartInstanceId,
 	unprotectPartInstance,
 	PartInstance,
-} from '../../../lib/collections/PartInstances'
-import { Blueprints } from '../../../lib/collections/Blueprints'
+} from '../../../../lib/collections/PartInstances'
+import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { getResolvedPieces } from '../../playout/pieces'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
 
 /** Common */
 
@@ -86,7 +100,6 @@ export interface RawNote extends INoteBase {
 }
 
 export class NotesContext extends CommonContext implements INotesContext {
-	protected readonly _rundownId: RundownId
 	private readonly _contextName: string
 	private readonly _contextIdentifier: string
 	private _handleNotesExternally: boolean

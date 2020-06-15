@@ -23,6 +23,8 @@ import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { MongoSelector } from '../lib/typings/meteor'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
+import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -144,7 +146,9 @@ export class CacheForRundownPlaylist extends CacheForStudio {
 
 	// These are optional and will be initialized when needed:
 	AdLibPieces: DbCacheCollection<AdLibPiece, AdLibPiece>
+	AdLibActions: DbCacheCollection<AdLibAction, AdLibAction>
 	RundownBaselineAdLibPieces: DbCacheCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>
+	RundownBaselineAdLibActions: DbCacheCollection<RundownBaselineAdLibAction, RundownBaselineAdLibAction>
 
 	constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super(studioId)
@@ -161,9 +165,14 @@ export class CacheForRundownPlaylist extends CacheForStudio {
 		this.RundownBaselineObjs = new DbCacheCollection<RundownBaselineObj, RundownBaselineObj>(RundownBaselineObjs)
 
 		this.AdLibPieces = new DbCacheCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
+		this.AdLibActions = new DbCacheCollection<AdLibAction, AdLibAction>(AdLibActions)
 		this.RundownBaselineAdLibPieces = new DbCacheCollection<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
 			RundownBaselineAdLibPieces
 		)
+		this.RundownBaselineAdLibActions = new DbCacheCollection<
+			RundownBaselineAdLibAction,
+			RundownBaselineAdLibAction
+		>(RundownBaselineAdLibActions)
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
@@ -229,10 +238,30 @@ async function fillCacheForRundownPlaylistWithData(
 			)
 		)
 	)
+	ps.push(
+		makePromise(() =>
+			cache.AdLibActions.prepareInit(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				false
+			)
+		)
+	)
 
 	ps.push(
 		makePromise(() =>
 			cache.RundownBaselineAdLibPieces.prepareInit(
+				{
+					rundownId: { $in: rundownIds },
+				},
+				false
+			)
+		)
+	)
+	ps.push(
+		makePromise(() =>
+			cache.RundownBaselineAdLibActions.prepareInit(
 				{
 					rundownId: { $in: rundownIds },
 				},
