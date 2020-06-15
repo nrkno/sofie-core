@@ -28,6 +28,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
+import { faBookOpen } from '@fortawesome/fontawesome-free-solid'
 
 const PackageInfo = require('../../package.json')
 
@@ -51,6 +52,13 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 	}
 
+	getEditorRundownLink(rundownPlaylistId: RundownPlaylistId) {
+		// double encoding so that "/" are handled correctly
+		const rundown = Rundowns.findOne({ playlistId: rundownPlaylistId })
+		if (rundown) return '/editor/' + encodeURIComponent(encodeURIComponent(unprotectString(rundown._id)))
+
+		return '/'
+	}
 	getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId) {
 		// double encoding so that "/" are handled correctly
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(unprotectString(rundownPlaylistId)))
@@ -185,6 +193,15 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 								</button>
 							</Tooltip>
 						) : null}
+
+						{/* <Tooltip overlay={t('Open editor')} placement="top"> */}
+						<Tooltip overlay={'Open in read mode'} placement="top">
+							<Link to={this.getEditorRundownLink(this.props.rundownPlaylist._id)}>
+								<button className="action-btn">
+									<FontAwesomeIcon icon={faBookOpen} />
+								</button>
+							</Link>
+						</Tooltip>
 					</td>
 				</tr>
 				{this.props.rundownPlaylist.startedPlayback !== undefined &&
