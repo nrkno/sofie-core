@@ -2,7 +2,6 @@ import * as React from 'react'
 import CoreIcon from '@nrk/core-icons/jsx'
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
-import * as Velocity from 'velocity-animate'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from './notifications'
@@ -312,12 +311,41 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 					role="button"
 					onClick={this.props.onClick}
 					tabIndex={0}>
-					<WarningIcon />
-					{this.props.count > 0 && (
-						<span className="notifications__toggle-button__count">
-							{this.props.count > 99 ? '99+' : this.props.count}
-						</span>
-					)}
+					<VelocityReact.VelocityTransitionGroup
+						enter={{
+							animation: {
+								translateX: [0, '-3em'],
+								opacity: [1, 0],
+							},
+							duration: 500,
+						}}
+						leave={{
+							animation: {
+								translateX: ['3em', 0],
+								opacity: [0, 1],
+							},
+							duration: 500,
+						}}>
+						{!this.props.isOpen ? (
+							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--default">
+								<WarningIcon />
+								{this.props.count > 0 && (
+									<span className="notifications__toggle-button__count">
+										{this.props.count > 99 ? '99+' : this.props.count}
+									</span>
+								)}
+							</div>
+						) : (
+							undefined
+						)}
+						{this.props.isOpen ? (
+							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--collapse">
+								<CollapseChevrons />
+							</div>
+						) : (
+							undefined
+						)}
+					</VelocityReact.VelocityTransitionGroup>
 				</button>
 			)
 		}

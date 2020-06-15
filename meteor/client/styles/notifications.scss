@@ -143,29 +143,46 @@
 	z-index: 310;
 	text-align: left;
 	cursor: pointer;
+	overflow: hidden;
 
-	> svg {
-		position: absolute;
-		width: #{$fullscreen-controls__button--radius / 2};
-		height: #{$fullscreen-controls__button--radius / 2};
-		top: 50%;
-		right: 0;
-		transform: translate(-50%, -53%);
-		transition: 0.5s all ease-in-out;
+	.notifications__toggle-button__icon {
+		> svg {
+			position: absolute;
+			width: #{$fullscreen-controls__button--radius / 2};
+			height: #{$fullscreen-controls__button--radius / 2};
+			top: 50%;
+			right: 0;
+			transform: translate(-50%, -53%);
+			transition: 0.5s all ease-in-out;
+		}
 	}
 
 	&.has-items {
-		> svg {
-			transform: translate(-80%, -53%);
-			filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+		.notifications__toggle-button__icon:not(.notifications__toggle-button__icon--collapse) {
+			> svg {
+				transform: translate(-80%, -53%);
+				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+			}
 		}
 	}
+
 	&:not(.has-items) {
-		> svg {
-			> path {
-				fill: transparent;
-				outline: #fff;
+		.notifications__toggle-button__icon {
+			> svg {
+				> path {
+					fill: transparent;
+					outline: #fff;
+				}
 			}
+		}
+	}
+
+	.notifications__toggle-button__icon.notifications__toggle-button__icon--collapse {
+		> svg {
+			fill: #fff;
+			width: 2.5em;
+			height: 2.5em;
+			transform: translate(-5%, -50%);
 		}
 	}
 
