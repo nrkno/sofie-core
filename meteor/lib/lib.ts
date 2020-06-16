@@ -106,9 +106,14 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 }
 export interface PreparedChanges<T> {
 	inserted: T[]
-	changed: {doc: T, oldId: ProtectedString<any>}[]
+	changed: PreparedChangesChangesDoc<T>[]
 	removed: T[]
 	unchanged: T[]
+}
+
+export interface PreparedChangesChangesDoc<T> {
+	doc: T
+	oldId: ProtectedString<any>
 }
 export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj> (
 	collection: TransformedCollection<DocClass, DBInterface>,
@@ -982,31 +987,65 @@ export function mongoWhere<T> (o: any, selector: MongoSelector<T>): boolean {
 export function mongoFindOptions<T> (docs: T[], options?: FindOptions) {
 	if (options) {
 		if (options.sort) {
-			let tmpDocs = _.chain(docs)
-			for (const key of _.keys(options.sort)) {
-				const dir = options.sort[key]
-				// TODO - direction
-				tmpDocs = tmpDocs.sortBy(doc => doc[key])
+			docs = [...docs] // Shallow clone it
+
+			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
+			const keys = _.keys(options.sort).filter(k => options.sort)
+			function doSort(a: any, b: any, i: number): number {
+				if (i >= keys.length) return 0
+
+				const key = keys[i]
+				const order = options!.sort![key]
+
+				// Get the values, and handle asc vs desc
+				const val1 = objectPath.get(order > 0 ? a : b, key)
+				const val2 = objectPath.get(order > 0 ? b : a, key)
+
+				if (_.isEqual(val1, val2)) {
+					return doSort(a, b, i + 1)
+				} else if (val1 > val2) { 
+					return 1
+				} else {
+					return -1
+				}
 			}
-			docs = tmpDocs.value()
+
+			if (keys.length > 0) {
+				docs.sort((a, b) => doSort(a, b, 0))
+			}
 		}
 
+		if (options.skip) {
+			docs = docs.slice(options.skip)
+		}
 		if (options.limit !== undefined) {
 			docs = _.take(docs, options.limit)
 		}
 
 		if (options.fields !== undefined) {
-			docs = _.map(docs, doc => _.omit(doc, _.keys(options.fields).filter(key => options.fields![key] === 0)))
-		}
-		if (options.skip) {
-			docs = docs.slice(options.skip)
-		}
-		if (options.limit) {
-			docs = docs.slice(0, options.limit)
+			const idVal = options.fields['_id']
+			const includeKeys: string[] = _.keys(options.fields).filter(key => key !== '_id' && options.fields![key] !== 0)
+			const excludeKeys: string[] = _.keys(options.fields).filter(key => key !== '_id' && options.fields![key] === 0)
+
+			// Mongo does allow mixed include and exclude (exception being excluding _id)
+			// https://docs.mongodb.com/manual/reference/method/db.collection.find/#projection
+			if (includeKeys.length !== 0 && excludeKeys.length !== 0) {
+				throw new Meteor.Error(`options.fields cannot contain both include and exclude rules`)
+			}
+
+			// TODO - does this need to use objectPath in some way?
+
+			if (includeKeys.length !== 0) {
+				if (idVal !== 0) includeKeys.push('_id')
+				docs = _.map(docs, doc => _.pick(doc, includeKeys))
+			} else if (excludeKeys.length !== 0) {
+				if (idVal === 0) excludeKeys.push('_id')
+				docs = _.map(docs, doc => _.omit(doc, excludeKeys))
+			}
 		}
 
 		// options.reactive // Not used server-side
-		if (options.transform) throw new Meteor.Error(`options.transform not supported`)
+		if (options.transform) throw new Meteor.Error(`options.transform not implemented`)
 	}
 	return docs
 }
@@ -1285,8 +1324,9 @@ export function protectStringArray<T extends ProtectedString<any>> (arr: string[
 	return arr as any as T[]
 }
 export function unprotectString (protectedStr: ProtectedString<any>): string
+export function unprotectString (protectedStr: ProtectedString<any> | null): string | null
 export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined
-export function unprotectString (protectedStr: ProtectedString<any> | undefined): string | undefined {
+export function unprotectString (protectedStr: ProtectedString<any> | undefined | null): string | undefined | null {
 	return protectedStr as any as string
 }
 export function isProtectedString (str: any): str is ProtectedString<any> {

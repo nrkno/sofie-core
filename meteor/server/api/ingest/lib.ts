@@ -6,10 +6,8 @@ import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId, Segment, Segments } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { touchRundownPlaylistsInCache } from '../playout/lib'
 
 export function getRundownId (studio: Studio, rundownExternalId: string): RundownId {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
@@ -49,6 +47,11 @@ export function getRundown (rundownId: RundownId, externalRundownId: string): Ru
 	rundown.touch()
 	return rundown
 }
+export function getSegment (segmentId: SegmentId): Segment {
+	const segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
+	return segment
+}
 export function getPeripheralDeviceFromRundown (rundown: Rundown): PeripheralDevice {
 	if (!rundown.peripheralDeviceId) throw new Meteor.Error(500, `Rundown "${rundown._id}" does not have a peripheralDeviceId`)
 
@@ -66,10 +69,16 @@ function updateDeviceLastDataReceived (deviceId: PeripheralDeviceId) {
 	})
 }
 
-export function canBeUpdated (rundown: Rundown | undefined, _segmentId?: SegmentId, _partId?: PartId) {
+export function canBeUpdated (rundown: Rundown | undefined, segment?: Segment, _partId?: PartId) {
 	if (!rundown) return true
 	if (rundown.unsynced) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
+		return false
+	}
+
+	if (!segment) return true
+	if (segment.unsynced) {
+		logger.info(`Segment "${segment._id}" has been unsynced and needs to be synced before it can be updated.`)
 		return false
 	}
 

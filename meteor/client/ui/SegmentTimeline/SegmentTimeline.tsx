@@ -23,7 +23,7 @@ import {
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { scrollToSegment } from '../../lib/viewPort'
+import { scrollToSegment, scrollToPart } from '../../lib/viewPort'
 
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
@@ -47,6 +47,7 @@ import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 
 interface IProps {
 	id: string
@@ -470,7 +471,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineWheel = (e: React.WheelEventHandler<HTMLDivElement> & any) => {
+	onTimelineWheel = (e: WheelEvent) => {
 		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey &&
 			// @ts-ignore
 			!window.keyboardModifiers.altRight) { // ctrl + Scroll
@@ -486,8 +487,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		} else if (!e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) { // no modifier
 			if (e.deltaX !== 0) {
 				this.props.onScroll(Math.max(0, this.props.scrollLeft + ((e.deltaX) / this.props.timeScale)), e)
+				e.preventDefault()
 			}
 		}
+	}
+
+	onClickSegmentIdent = (partId: PartId) => {
+		scrollToPart(partId)
 	}
 
 	getSegmentContext = (props) => {
@@ -653,6 +659,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			return prev
 		}, 0)
 
+		const identifiers: Array<{ partId: PartId, ident?: string }> = this.props.parts.map(p => {
+			return { partId: p.partId, ident: p.instance.part.identifier }
+		})
+
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
 			const nextPart = this.props.isNextSegment ?
@@ -684,8 +694,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					attributes={{
 						className: 'segment-timeline__title'
 					}}
+					holdToDisplay={contextMenuHoldToDisplayTime()}
 					renderTag='div'>
-					<h2>
+					<h2 className={'segment-timeline__title__label' + (this.props.segment.identifier ? ' identifier' : '') }
+						data-identifier={this.props.segment.identifier}>
 						{this.props.segment.name}
 					</h2>
 					{(criticalNotes > 0 || warningNotes > 0) && <div className='segment-timeline__title__notes'>
@@ -710,6 +722,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							</div>
 						</div>}
 					</div>}
+					<div className='segment-timeline__part-identifiers'>
+						{ identifiers.map(ident => <div
+							className='segment-timeline__part-identifiers__identifier'
+							key={ident.partId + ''}
+							onClick={() => this.onClickSegmentIdent(ident.partId)}>{ident.ident}</div>) }
+					</div>
 				</ContextMenuTrigger>
 				<div className='segment-timeline__duration' tabIndex={0}
 					onClick={(e) => this.props.onCollapseSegmentToggle && this.props.onCollapseSegmentToggle(e)}>
@@ -726,6 +744,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							partId={countdownToPartId}
 							hideOnZero={true}
 						/>
+					}
+					{
+						Settings.allowUnsyncedSegments && this.props.segment.unsynced &&
+						<span className='segment-timeline__unsynced'>
+							{ t('Unsynced') }
+						</span>
 					}
 				</div>
 				<div className='segment-timeline__mos-id'>{this.props.segment.externalId}</div>

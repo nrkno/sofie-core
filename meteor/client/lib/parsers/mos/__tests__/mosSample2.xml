@@ -1,0 +1,23 @@
+<mos>
+	<ncsItem>
+		<item>
+			<itemID>2</itemID>
+			<itemSlug>bts-finnmark-bil_navnekonflikt(2)</itemSlug>
+			<objID>41cfc641849c417eaa10e4f3c377f181</objID>
+			<objSlug>bts-finnmark-bil_navnekonflikt(2)</objSlug>
+			<mosID>quantelplugin.sofie</mosID>
+			<mosPlugInID>Sofie.QuantelPlugin</mosPlugInID>
+			<mosAbstract/>
+			<objPaths>
+				<objPath techDescription="VIDEO">41cfc641849c417eaa10e4f3c377f181</objPath>
+			</objPaths>
+			<itemEdDur/>
+			<mosExternalMetadata>
+				<mosScope>OBJECT</mosScope>
+				<mosPayload>
+					<objType>VIDEO</objType>
+				</mosPayload>
+			</mosExternalMetadata>
+		</item>
+	</ncsItem>
+</mos> 

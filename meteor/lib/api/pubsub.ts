@@ -35,7 +35,9 @@ export enum PubSub {
 	userActionsLog = 'userActionsLog',
 	mediaWorkFlows = 'mediaWorkFlows',
 	mediaWorkFlowSteps = 'mediaWorkFlowSteps',
-	rundownLayouts = 'rundownLayouts'
+	rundownLayouts = 'rundownLayouts',
+	buckets = 'buckets',
+	bucketAdLibPieces = 'bucketAdLibPieces'
 }
 
 export function meteorSubscribe (name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

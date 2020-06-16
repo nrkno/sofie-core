@@ -8,12 +8,15 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
-import { PartUi } from './SegmentTimelineContainer'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { PartUi, SegmentUi } from './SegmentTimelineContainer'
+import { SegmentId, Segment } from '../../../lib/collections/Segments'
+import * as i18next from 'i18next'
+import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
 	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
+	onResyncSegment: (segmentId: SegmentId, e: any) => void
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
@@ -29,6 +32,7 @@ export const SegmentContextMenu = translate()(class SegmentContextMenu extends R
 	render () {
 		const { t } = this.props
 
+		const segment = this.getSegmentFromContext()
 		const part = this.getPartFromContext()
 		const timecode = this.getTimePosition()
 		const startsAt = this.getPartStartsAt()
@@ -64,11 +68,42 @@ export const SegmentContextMenu = translate()(class SegmentContextMenu extends R
 									<span>{t('Clear queued segment')}</span>
 								</MenuItem>
 							}
+							{
+								Settings.allowUnsyncedSegments && this.menuItemResyncSegment(t, segment)
+							}
 						</React.Fragment>}
+					</ContextMenu>
+				</Escape>
+				: Settings.allowUnsyncedSegments && segment && segment.unsynced ?
+				<Escape to='document'>
+					<ContextMenu id='segment-timeline-context-menu'>
+						<React.Fragment>
+							{
+								this.menuItemResyncSegment(t, segment)
+							}
+						</React.Fragment>
 					</ContextMenu>
 				</Escape>
 				: null
 		)
+	}
+
+	menuItemResyncSegment = (t: (key: string | string[], options?: i18next.TranslationOptions<object> | undefined) => any, segment: SegmentUi | null) => {
+		if (segment && segment.unsynced) {
+			return (
+				<MenuItem onClick={(e) => this.props.onResyncSegment(segment._id, e)}>
+					<span>{t('Resync Segment')}</span>
+				</MenuItem>
+			)
+		}
+	}
+
+	getSegmentFromContext = (): SegmentUi | null => {
+		if (this.props.contextMenuContext && this.props.contextMenuContext.segment) {
+			return this.props.contextMenuContext.segment
+		}
+
+		return null
 	}
 
 	getPartFromContext = (): PartUi | null => {

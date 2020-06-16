@@ -4,7 +4,7 @@ import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, literal, protectString, unprotectString, getRandomId, waitForPromise } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, getRandomId, waitForPromise, MeteorPromiseCall } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
@@ -23,9 +23,10 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 
 export namespace ServerPlayoutAdLibAPI {
-	export function pieceTakeNow (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
+	export function pieceTakeNow(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -88,15 +89,19 @@ export namespace ServerPlayoutAdLibAPI {
 					}
 				}
 
-				cache.PieceInstances.update(pieceInstanceToCopy._id, {$set: {
-					'piece.disabled': true,
-					'piece.hidden': true
-				}})
+				cache.PieceInstances.update(pieceInstanceToCopy._id, {
+					$set: {
+						'piece.disabled': true,
+						'piece.hidden': true
+					}
+				})
 				// TODO-PartInstance - pending new data flow
-				cache.Pieces.update(pieceInstanceToCopy.piece._id, {$set: {
-					disabled: true,
-					hidden: true
-				}})
+				cache.Pieces.update(pieceInstanceToCopy.piece._id, {
+					$set: {
+						disabled: true,
+						hidden: true
+					}
+				})
 			}
 
 			cache.PieceInstances.insert(newPieceInstance)
@@ -110,7 +115,7 @@ export namespace ServerPlayoutAdLibAPI {
 			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
-	export function segmentAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean) {
+	export function segmentAdLibPieceStart(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, adLibPieceId: PieceId, queue: boolean) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
@@ -142,7 +147,7 @@ export namespace ServerPlayoutAdLibAPI {
 			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
-	export function rundownBaselineAdLibPieceStart (rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, baselineAdLibPieceId: PieceId, queue: boolean) {
+	export function rundownBaselineAdLibPieceStart(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, baselineAdLibPieceId: PieceId, queue: boolean) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			logger.debug('rundownBaselineAdLibPieceStart')
 
@@ -179,7 +184,7 @@ export namespace ServerPlayoutAdLibAPI {
 		rundown: Rundown,
 		queue: boolean,
 		partInstanceId0: PartInstanceId,
-		adLibPiece: AdLibPiece
+		adLibPiece: AdLibPiece | BucketAdLib
 	) {
 		if (adLibPiece.toBeQueued) {
 			// Allow adlib to request to always be queued
@@ -212,6 +217,17 @@ export namespace ServerPlayoutAdLibAPI {
 			// Update any infinites
 			updateSourceLayerInfinitesAfterPart(cache, rundown, previousPartInstance!.part)
 
+			// Copy across adlib-preroll and other properties needed on the part
+			cache.PartInstances.update(partInstance._id, {
+				$set: {
+					prerollDuration: adLibPiece.adlibPreroll,
+					autoNext: adLibPiece.adlibAutoNext,
+					autoNextOverlap: adLibPiece.adlibAutoNextOverlap,
+					disableOutTransition: adLibPiece.adlibDisableOutTransition,
+					expectedDuration: adLibPiece.expectedDuration
+				}
+			})
+
 			setNextPart(cache, rundownPlaylist, partInstance)
 		} else {
 			cropInfinitesOnLayer(cache, rundown, partInstance, newPieceInstance)
@@ -224,7 +240,7 @@ export namespace ServerPlayoutAdLibAPI {
 		rundownPlaylist: RundownPlaylist,
 		rundown: Rundown,
 		afterPartInstance: PartInstance,
-		adLibPiece: AdLibPiece
+		adLibPiece: AdLibPiece | BucketAdLib
 	): PartInstanceId {
 		logger.info('adlibQueueInsertPartInstance')
 
@@ -275,7 +291,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		return newPartInstanceId
 	}
-	export function sourceLayerStickyPieceStart (rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
+	export function sourceLayerStickyPieceStart(rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
@@ -324,6 +340,36 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 
 			waitForPromise(cache.saveAllToDatabase())
+		})
+	}
+	export function startBucketAdlibPiece(rundownPlaylistId: RundownPlaylistId, partInstanceId: PartInstanceId, bucketAdlibId: PieceId, queue: boolean) {
+		const bucketAdlib = BucketAdLibs.findOne(bucketAdlibId)
+		if (!bucketAdlib) throw new Meteor.Error(404, `Bucket Adlib "${bucketAdlibId}" not found!`)
+
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!rundownPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (!rundownPlaylist.active) throw new Meteor.Error(403, `Bucket AdLib-pieces can be only placed in an active rundown!`)
+			if (!rundownPlaylist.currentPartInstanceId) throw new Meteor.Error(400, `A part needs to be active to use a bucket adlib`)
+			if (rundownPlaylist.holdState === RundownHoldState.ACTIVE || rundownPlaylist.holdState === RundownHoldState.PENDING) {
+				throw new Meteor.Error(403, `Buckete AdLib-pieces can not be used in combination with hold!`)
+			}
+
+			if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId) throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a currently playing part!`)
+
+			const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
+
+			const currentPartInstance = cache.PartInstances.findOne(rundownPlaylist.currentPartInstanceId)
+			if (!currentPartInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
+			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${currentPartInstance.rundownId}" not found!`)
+			if (rundown.playlistId !== rundownPlaylistId) throw new Meteor.Error(406, `Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylistId}!"`)
+
+			if (bucketAdlib.showStyleVariantId !== rundown.showStyleVariantId || bucketAdlib.studioId !== rundown.studioId) {
+				throw new Meteor.Error(404, `Bucket AdLib "${bucketAdlibId}" is not compatible with rundown "${rundown._id}"!`)
+			}
+
+			innerStartAdLibPiece(cache, rundownPlaylist, rundown, queue, partInstanceId, bucketAdlib)
 		})
 	}
 }

@@ -20,7 +20,7 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 
 import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -137,6 +137,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 				className: 'segment-timeline__layer',
 				onMouseUpCapture: (e) => this.onMouseUp(e)
 			}}
+				holdToDisplay={contextMenuHoldToDisplayTime()}
 				collect={this.getPartContext}>
 				{this.renderInside()}
 			</ContextMenuTrigger>
@@ -642,6 +643,7 @@ export const SegmentTimelinePart = translate()(withTiming<IProps, IState>((props
 							)}
 							{this.props.isAfterLastValidInSegmentAndItsLive && CARRIAGE_RETURN_ICON}
 						</div>
+							{!this.props.relative && this.props.part.instance.part.identifier && <div className='segment-timeline__identifier'>{this.props.part.instance.part.identifier}</div>}
 					</div>
 					{this.props.playlist.nextTimeOffset && this.state.isNext && // This is the off-set line
 						<div className={ClassNames('segment-timeline__part__nextline', {

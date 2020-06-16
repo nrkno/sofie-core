@@ -2,14 +2,15 @@ import { Rundown, RundownId } from '../collections/Rundowns'
 import { NoteType } from './notes'
 import * as _ from 'underscore'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
-import { ReloadRundownPlaylistResponse, ReloadRundownResponse } from './userActions'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
+import { SegmentId } from '../collections/Segments'
 
 export interface RundownPlaylistValidateBlueprintConfigResult {
 	studio: string[]
 	showStyles: Array<{
 		id: string
 		name: string
-		checkFailed: boolean 
+		checkFailed: boolean
 		fields: string[]
 	}>
 }
@@ -20,8 +21,10 @@ export interface NewRundownAPI {
 	rundownPlaylistNeedsResync (playlistId: RundownPlaylistId): Promise<string[]>
 	rundownPlaylistValidateBlueprintConfig (playlistId: RundownPlaylistId): Promise<RundownPlaylistValidateBlueprintConfigResult>
 	removeRundown (rundownId: RundownId): Promise<void>
-	resyncRundown (rundownId: RundownId): Promise<ReloadRundownResponse>
+	resyncRundown (rundownId: RundownId): Promise<TriggerReloadDataResponse>
+	resyncSegment (segmentId: SegmentId): Promise<TriggerReloadDataResponse>
 	unsyncRundown (rundownId: RundownId): Promise<void>
+	unsyncSegment (rundownId: RundownId, segmentId: SegmentId): Promise<void>
 }
 
 export enum RundownAPIMethods {
@@ -32,7 +35,9 @@ export enum RundownAPIMethods {
 
 	'removeRundown' 		= 'rundown.removeRundown',
 	'resyncRundown' 		= 'rundown.resyncRundown',
-	'unsyncRundown' 		= 'rundown.unsyncRundown'
+	'resyncSegment'			= 'rundown.resyncSegment',
+	'unsyncRundown' 		= 'rundown.unsyncRundown',
+	'unsyncSegment' 		= 'rundown.unsyncSegment'
 }
 
 export namespace RundownAPI {
