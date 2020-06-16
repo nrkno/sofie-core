@@ -122,6 +122,7 @@ import {
 } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
+import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
@@ -816,6 +817,8 @@ function updateRundownFromIngestData(
 			dbRundown,
 			_.map(segments, (s) => s._id)
 		)
+
+		reportRundownDataHasChanged(cache, dbPlaylist, dbRundown)
 	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)

@@ -36,6 +36,7 @@ import {
 	IBlueprintPartDB,
 	IBlueprintRundownDB,
 	IBlueprintAsRunLogEvent,
+	IBlueprintExternalMessageQueueObj,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig, findMissingConfigs } from './config'
@@ -55,6 +56,7 @@ import {
 	PartInstance,
 } from '../../../lib/collections/PartInstances'
 import { Blueprints } from '../../../lib/collections/Blueprints'
+import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 
 /** Common */
 
@@ -370,6 +372,22 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 				{
 					sort: {
 						timestamp: 1,
+					},
+				}
+			).fetch()
+		)
+	}
+	/** Get all unsent and queued messages in the rundown */
+	getAllQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]> {
+		return unprotectObjectArray(
+			ExternalMessageQueue.find(
+				{
+					rundownId: this._rundown._id,
+					queueForLaterReason: { $exists: true },
+				},
+				{
+					sort: {
+						created: 1,
 					},
 				}
 			).fetch()

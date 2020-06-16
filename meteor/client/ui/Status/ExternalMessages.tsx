@@ -264,6 +264,11 @@ const ExternalMessagesInStudio = translateWithTracker<
 						ID: {msg._id}
 						<br />
 						Created: <MomentFromNow unit="seconds">{msg.created}</MomentFromNow>
+						{msg.queueForLaterReason !== undefined ? (
+							<div>
+								<b>Queued for later due to: {msg.queueForLaterReason || 'Unknown reason'}</b>
+							</div>
+						) : null}
 					</td>
 					<td className="c7 small">
 						<div>{info}</div>

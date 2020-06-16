@@ -12,7 +12,15 @@ import {
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
 } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, removeNullyProperties, getRandomId, makePromise, check } from '../../lib/lib'
+import {
+	getCurrentTime,
+	removeNullyProperties,
+	getRandomId,
+	makePromise,
+	protectString,
+	omit,
+	check,
+} from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
@@ -20,9 +28,12 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
+import { MongoModifier } from '../../lib/typings/meteor'
 
 export function queueExternalMessages(rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
-	_.each(messages, (message) => {
+	const playlist = rundown.getRundownPlaylist()
+
+	_.each(messages, (message: IBlueprintExternalMessageQueueObj) => {
 		// check the output:
 		if (!message) throw new Meteor.Error('Falsy result!')
 		if (!message.type) throw new Meteor.Error('attribute .type missing!')
@@ -30,29 +41,52 @@ export function queueExternalMessages(rundown: Rundown, messages: Array<IBluepri
 		if (!message.message) throw new Meteor.Error('attribute .message missing!')
 
 		// Save the output into the message queue, for later processing:
-		let now = getCurrentTime()
-		let message2: ExternalMessageQueueObj = {
-			_id: getRandomId(),
-			type: message.type,
-			receiver: message.receiver,
-			message: message.message,
-			retryUntil: message.retryUntil,
-			studioId: rundown.studioId,
-			rundownId: rundown._id,
-			created: now,
-			tryCount: 0,
-			expires: now + 35 * 24 * 3600 * 1000, // 35 days
-			manualRetry: false,
-		}
+		if (message._id) {
+			// Overwrite an existing message
+			const messageId = protectString(message._id)
 
-		message2 = removeNullyProperties(message2)
+			const existingMessage = ExternalMessageQueue.findOne(messageId)
+			if (!existingMessage) throw new Meteor.Error(`ExternalMessage ${message._id} not found!`)
+			if (existingMessage.studioId !== rundown.studioId)
+				throw new Meteor.Error(`ExternalMessage ${message._id} is not in the right studio!`)
+			if (existingMessage.rundownId !== rundown._id)
+				throw new Meteor.Error(`ExternalMessage ${message._id} is not in the right rundown!`)
 
-		const playlist = rundown.getRundownPlaylist()
-		if (!playlist.rehearsal) {
-			// Don't save the message when running rehearsals
-			ExternalMessageQueue.insert(message2)
+			if (!playlist.rehearsal) {
+				const m: MongoModifier<ExternalMessageQueueObj> = {
+					$set: {
+						...omit(message, '_id'),
+					},
+				}
+				if (message.queueForLaterReason === undefined) {
+					m.$unset = {
+						queueForLaterReason: 1,
+					}
+				}
+				ExternalMessageQueue.update(existingMessage._id, m)
+				triggerdoMessageQueue() // trigger processing of the queue
+			}
+		} else {
+			let now = getCurrentTime()
+			let message2: ExternalMessageQueueObj = {
+				_id: getRandomId(),
 
-			triggerdoMessageQueue() // trigger processing of the queue
+				...omit(message, '_id'),
+
+				studioId: rundown.studioId,
+				rundownId: rundown._id,
+
+				created: now,
+				tryCount: 0,
+				expires: now + 35 * 24 * 3600 * 1000, // 35 days
+				manualRetry: false,
+			}
+			message2 = removeNullyProperties(message2)
+			if (!playlist.rehearsal) {
+				// Don't save the message when running rehearsals
+				ExternalMessageQueue.insert(message2)
+				triggerdoMessageQueue() // trigger processing of the queue
+			}
 		}
 	})
 }
@@ -85,11 +119,12 @@ function doMessageQueue() {
 		let now = getCurrentTime()
 		let messagesToSend = ExternalMessageQueue.find(
 			{
-				expires: { $gt: now },
-				lastTry: { $not: { $gt: now - tryInterval } },
 				sent: { $not: { $gt: 0 } },
+				lastTry: { $not: { $gt: now - tryInterval } },
+				expires: { $gt: now },
 				hold: { $not: { $eq: true } },
 				errorFatal: { $not: { $eq: true } },
+				queueForLaterReason: { $exists: false },
 			},
 			{
 				sort: {
