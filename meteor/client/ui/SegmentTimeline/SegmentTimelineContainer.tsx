@@ -87,6 +87,7 @@ interface IState {
 	livePosition: number
 	displayTimecode: number
 	autoExpandCurrentNextSegment: boolean
+	checked: boolean
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined
@@ -251,6 +252,11 @@ export const SegmentTimelineContainer = translate()(
 					livePosition: 0,
 					displayTimecode: 0,
 					autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment,
+					checked: UIStateStorage.getItemBoolean(
+						`rundownView.${this.props.playlist._id}`,
+						`segment.${props.segmentId}.checked`,
+						false
+					),
 				}
 
 				this.isLiveSegment = props.isLiveSegment || false
@@ -469,6 +475,17 @@ export const SegmentTimelineContainer = translate()(
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 			}
 
+			onCheck = (value: boolean) => {
+				this.setState({
+					checked: value,
+				})
+				UIStateStorage.setItem(
+					`rundownView.${this.props.playlist._id}`,
+					`segment.${this.props.segmentId}.checked`,
+					value
+				)
+			}
+
 			onRewindSegment = () => {
 				if (!this.props.isLiveSegment) {
 					this.setState({
@@ -674,6 +691,8 @@ export const SegmentTimelineContainer = translate()(
 							onShowEntireSegment={this.onShowEntireSegment}
 							onZoomChange={this.onZoomChange}
 							onScroll={this.onScroll}
+							onCheck={this.onCheck}
+							checked={this.state.checked}
 							isLastSegment={this.props.isLastSegment}
 							lastValidPartIndex={this.props.lastValidPartIndex}
 							onHeaderNoteClick={this.props.onHeaderNoteClick}

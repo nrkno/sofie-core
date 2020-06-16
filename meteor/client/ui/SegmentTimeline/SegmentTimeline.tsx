@@ -45,6 +45,10 @@ import { PartId } from '../../../lib/collections/Parts'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { CriticalIcon, WarningIcon } from '../../lib/notificationIcons'
 
+import * as faCheckSquare from '@fortawesome/fontawesome-free-solid/faCheckSquare'
+import * as faSquare from '@fortawesome/fontawesome-free-solid/faSquare'
+import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+
 interface IProps {
 	id: string
 	key: string
@@ -55,6 +59,7 @@ interface IProps {
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 	timeScale: number
+	checked: boolean
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -80,6 +85,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (level: NoteType) => void
+	onCheck?: (value: boolean) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -521,6 +527,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		scrollToPart(partId)
 	}
 
+	onClickCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
+		if (this.props.onCheck && typeof this.props.onCheck === 'function') this.props.onCheck(e.currentTarget.checked)
+	}
+
 	getSegmentContext = (props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
@@ -783,6 +793,24 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						data-identifier={this.props.segment.identifier}>
 						{this.props.segment.name}
 					</h2>
+					<div className="segment-timeline__title__check">
+						<label>
+							<span className="checkbox">
+								<input
+									type="checkbox"
+									className="form-control"
+									checked={this.props.checked}
+									onChange={this.onClickCheck}
+								/>
+								<span className="checkbox-checked">
+									<FontAwesomeIcon icon={faCheckSquare} />
+								</span>
+								<span className="checkbox-unchecked">
+									<FontAwesomeIcon icon={faSquare} />
+								</span>
+							</span>
+						</label>
+					</div>
 					{(criticalNotes > 0 || warningNotes > 0) && (
 						<div className="segment-timeline__title__notes">
 							{criticalNotes > 0 && (
