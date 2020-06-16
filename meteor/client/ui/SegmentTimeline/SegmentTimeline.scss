@@ -9,6 +9,14 @@ $timeline-layer-height: 1em;
 		position: relative;
 	}
 }
+.segment-timeline__title__check {
+	margin: 0 0 0.5em;
+	padding: 0 0.5em;
+
+	.checkbox-checked {
+		color: #0cff57;
+	}
+}
 .segment-timeline__title__label.identifier::before {
 	content: attr(data-identifier);
 	background-color: #095709;
