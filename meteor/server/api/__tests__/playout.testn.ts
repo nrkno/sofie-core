@@ -656,7 +656,6 @@ function createEmptyPart (id: string, rundownData: RundownData) {
 		segmentId: protectString(''),
 		rundownId: rundownData.rundown._id,
 		title: '',
-		typeVariant: ''
 	}
 	const part2 = part as Part
 	part2.getAllPieces = () => {

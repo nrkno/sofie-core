@@ -26,7 +26,7 @@ interface IPropsHeader {
 }
 
 interface INamePropsHeader extends IPropsHeader {
-	partSlug: string
+	partName: string
 }
 
 function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
@@ -94,7 +94,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 						return this.props.pieceInstance.piece.name
 				}
 			}
-			return this.props.partSlug.split(';')[1] || ''
+			return this.props.partName || ''
 		}
 	}
 )

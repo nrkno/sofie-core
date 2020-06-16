@@ -72,7 +72,8 @@ export function updateSourceLayerInfinitesAfterPart(
 				delete activeInfiniteItemsSegmentId[piece.sourceLayerId]
 			} else {
 				if (!piece.infiniteId) {
-					// ensure infinite id is setpiece.infiniteId = piece._id
+					// ensure infinite id is set
+					piece.infiniteId = piece._id
 					cache.Pieces.update(piece._id, {
 						$set: { infiniteId: piece.infiniteId },
 					})
