@@ -483,9 +483,19 @@ export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusC
 		: null
 }
 
-window['testNotification'] = function() {
+window['testNotification'] = function(delay: number, fakePersistent: boolean = false) {
 	NotificationCenter.push(
-		new Notification(undefined, NoticeLevel.CRITICAL, 'Notification test', protectString('test'), 10000)
+		new Notification(
+			undefined,
+			NoticeLevel.CRITICAL,
+			'Notification test',
+			protectString('test'),
+			undefined,
+			fakePersistent,
+			undefined,
+			100000,
+			delay || 10000
+		)
 	)
 }
 window['notificationCenter'] = NotificationCenter

@@ -35,6 +35,22 @@
 			margin-bottom: 0.9375rem;
 		}
 
+		@keyframes notification-dismiss {
+			0% {
+				transform: translate3d(0, 0, 0) scale(1);
+				opacity: 1;
+			}
+			100% {
+				transform: translate3d(200%, 0, 0) scale(0);
+				opacity: 0;
+			}
+		}
+
+		&.notification-pop-up--dismiss {
+			opacity: 0;
+			transition: opacity 0.5s ease-in, transform 0.5s ease-in;
+		}
+
 		> .notification-pop-up__header {
 			display: block;
 			flex: 0;
@@ -124,6 +140,10 @@
 					height: 2.25em;
 					vertical-align: top;
 					margin-top: -0.4em;
+
+					&[id='nrk-close'] {
+						margin-top: 0;
+					}
 				}
 
 				&:hover {
@@ -167,7 +187,7 @@
 	}
 
 	&:not(.has-items) {
-		.notifications__toggle-button__icon {
+		.notifications__toggle-button__icon:not(.notifications__toggle-button__icon--collapse) {
 			> svg {
 				> path {
 					fill: transparent;
