@@ -445,7 +445,7 @@ export function convertAdLibToPiece (adLibPiece: AdLibPiece | Piece, part: Part,
 		_id: newId,
 		enable: {
 			start: start,
-			duration: duration
+			duration: !queue && adLibPiece.infiniteMode === PieceLifespan.Normal ? duration : undefined
 		},
 		partId: part._id,
 		adLibSourceId: adLibPiece._id,
