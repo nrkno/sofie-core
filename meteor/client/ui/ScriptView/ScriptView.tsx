@@ -1,11 +1,12 @@
 import * as React from 'react'
+import * as VelocityReact from 'velocity-react'
 
 import { parse as queryStringParse } from 'query-string'
 import * as _ from 'underscore'
 
 import { TSR, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
 
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { withTracker, Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
@@ -32,14 +33,41 @@ import {
 	RundownLayoutId,
 } from '../../../lib/collections/RundownLayouts'
 
+import {
+	scrollToPart,
+	scrollToPosition,
+	scrollToSegment,
+	maintainFocusOnPartInstance,
+	scrollToPartInstance,
+} from '../../lib/viewPort'
+
 import { Buckets, Bucket } from '../../../lib/collections/Buckets'
 import { Settings } from '../../../lib/Settings'
 import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { documentTitle } from '../../lib/documentTitle'
 
 import { ScriptViewSegment } from './ScriptViewSegment'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, Parts } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
+import { RundownHeader } from '../RundownView'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { RundownTimingProvider } from '../RundownView/RundownTiming'
+import { RundownFullscreenControls } from '../RundownView/RundownFullscreenControls'
+import {
+	RONotificationEvent,
+	onRONotificationClick as rundownNotificationHandler,
+	RundownNotifier,
+	reloadRundownPlaylistClick,
+} from '../RundownView/RundownNotifier'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { MeteorCall } from '../../../lib/api/methods'
+import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../../lib/clientAPI'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { SupportPopUp } from '../SupportPopUp'
+import { Prompt } from 'react-router-dom'
+import { t } from 'i18next'
+import { NotificationCenterPanel } from '../../lib/notifications/NotificationCenterPanel'
 
 export interface LayerGroups<T> {
 	primary: T
@@ -95,7 +123,7 @@ interface ScriptViewTrackedProps {
 	activeLayerGroups: OutputGroups<boolean>
 }
 
-export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptViewTrackedProps>(
+export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewState, ScriptViewTrackedProps>(
 	(props: ScriptViewProps) => {
 		let rundownId
 		if (props.match && props.match.params.rundownId) {
@@ -250,7 +278,7 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 		}
 	}
 )(
-	class ScriptView extends MeteorReactComponent<ScriptViewProps & ScriptViewTrackedProps, ScriptViewState> {
+	class ScriptView extends MeteorReactComponent<Translated<ScriptViewProps> & ScriptViewTrackedProps, ScriptViewState> {
 		constructor(props: ScriptViewProps & ScriptViewTrackedProps) {
 			super(props)
 
@@ -336,6 +364,10 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 
 			document.body.classList.add('dark', 'vertical-overflow-only')
 
+			document.body.classList.add('dark', 'vertical-overflow-only')
+
+			rundownNotificationHandler.set(this.onRONotificationClick)
+
 			if (this.props.playlist) {
 				documentTitle.set(this.props.playlist.name)
 			}
@@ -344,6 +376,24 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 			if (themeColor) {
 				themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
 				themeColor.setAttribute('content', '#000000')
+			}
+		}
+
+		onRONotificationClick = (e: RONotificationEvent) => {
+			if (e.sourceLocator) {
+				let segmentId = e.sourceLocator.segmentId
+
+				if (!segmentId) {
+					if (e.sourceLocator.partId) {
+						let part = Parts.findOne(e.sourceLocator.partId)
+						if (part) {
+							segmentId = part.segmentId
+						}
+					}
+				}
+				if (segmentId) {
+					scrollToSegment(segmentId).catch(console.error)
+				}
 			}
 		}
 
@@ -389,13 +439,94 @@ export const ScriptView = withTracker<ScriptViewProps, ScriptViewState, ScriptVi
 			})
 		}
 
+		onTake = (e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, playlistId))
+			}
+		}
+
+		onToggleSupportPanel = () => {
+			this.setState({
+				isSupportPanelOpen: !this.state.isSupportPanelOpen,
+			})
+		}
+
+		onToggleNotifications = () => {
+			if (!this.state.isNotificationsCenterOpen === true) {
+				NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
+			}
+
+			NotificationCenter.isOpen = !this.state.isNotificationsCenterOpen
+
+			this.setState({
+				isNotificationsCenterOpen: !this.state.isNotificationsCenterOpen,
+			})
+		}
+
 		render() {
 			return (
 				<div className="script-view">
+					<ErrorBoundary>
+						{this.props.playlist && this.props.studio && this.props.rundown && (
+							<RundownTimingProvider playlist={this.props.playlist}>
+								<ErrorBoundary>
+									<RundownFullscreenControls
+										isFollowingOnAir={this.state.followLiveSegments}
+										// onFollowOnAir={this.onGoToLiveSegment}
+										// onRewindSegments={this.onRewindSegments}
+										isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
+										onToggleNotifications={this.onToggleNotifications}
+										isSupportPanelOpen={this.state.isSupportPanelOpen}
+										onToggleSupportPanel={this.onToggleSupportPanel}
+										isStudioMode={this.state.studioMode}
+										onTake={this.onTake}
+									/>
+								</ErrorBoundary>
+								<ErrorBoundary>
+									<VelocityReact.VelocityTransitionGroup
+										enter={{
+											animation: {
+												translateX: ['0%', '100%'],
+											},
+											easing: 'ease-out',
+											duration: 300,
+										}}
+										leave={{
+											animation: {
+												translateX: ['100%', '0%'],
+											},
+											easing: 'ease-in',
+											duration: 500,
+										}}>
+										{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+									</VelocityReact.VelocityTransitionGroup>
+								</ErrorBoundary>
+								<ErrorBoundary>
+									{this.state.studioMode && (
+										<Prompt
+											when={this.props.playlist.active || false}
+											message={t('This rundown is now active. Are you sure you want to exit this screen?')}
+										/>
+									)}
+								</ErrorBoundary>
+								<ErrorBoundary>
+									<RundownHeader
+										playlist={this.props.playlist}
+										studio={this.props.studio}
+										rundownIds={[this.props.rundown._id]}
+										//onActivate={this.onActivate}
+										studioMode={this.state.studioMode}
+										//onRegisterHotkeys={this.onRegisterHotkeys}
+										inActiveRundownView={this.props.inActiveRundownView}
+									/>
+								</ErrorBoundary>
+							</RundownTimingProvider>
+						)}
+					</ErrorBoundary>
 					<div>
 						<div className="segment-script-view__sticky">
-							<h1>{this.props.rundown && this.props.rundown.name}</h1>
-
 							<div className="segment-script-view__output">
 								<div className="segment-script-view__layergroup">
 									<div className="segment-script-view__layergroup__script">

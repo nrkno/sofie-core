@@ -124,10 +124,11 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 		return (
 			<Router>
 				<div className="container-fluid">
-					{/* Header switch - render the usual header for all pages but the rundown view */}
+					{/* Header switch - render the usual header for all pages but the rundown and script view */}
 					<ErrorBoundary>
 						<Switch>
 							<Route path="/rundown/:playlistId" component={NullComponent} />
+							<Route path="/scriptview/:rundownId" component={NullComponent} />
 							<Route path="/countdowns/:studioId/presenter" component={NullComponent} />
 							<Route path="/countdowns/presenter" component={NullComponent} />
 							<Route path="/activeRundown" component={NullComponent} />

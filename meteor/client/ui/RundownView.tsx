@@ -435,7 +435,7 @@ interface IRundownHeaderState {
 	errorMessage?: string
 }
 
-const RundownHeader = translate()(
+export const RundownHeader = translate()(
 	class RundownHeader extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 		bindKeys: Array<{
 			key: string

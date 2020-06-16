@@ -133,7 +133,8 @@
 	}
 }
 
-.rundown-view .status-bar {
+.rundown-view .status-bar,
+.script-view .status-bar {
 	position: fixed;
 	padding-right: rem(5px);
 	top: rem(64px);

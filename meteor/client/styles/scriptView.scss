@@ -110,15 +110,15 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .script-view {
-	padding-top: 4rem;
+	padding-top: 7.8125rem;
 	padding-bottom: 50vh;
 	padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
 
 	.script-view-nextline {
-		width: calc(100% + 50px);
-		transform: translateX(-50px);
-		border-bottom-width: 4px;
+		width: calc(100% + 100px);
+		transform: translateX(-100px);
+		border-bottom-width: 2px;
 		border-bottom-style: solid;
 		border-color: $part-start-color;
 		font-weight: lighter;
@@ -129,8 +129,8 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			content: ' ';
 			display: block;
 			position: absolute;
-			bottom: -26px;
-			left: 0px;
+			bottom: -2wpx;
+			left: -2px;
 			width: 0;
 			height: 0;
 			border-style: solid;
@@ -138,24 +138,20 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			border-color: $part-start-color transparent transparent transparent;
 		}
 
-		& > .timecode {
-			position: relative;
-			top: -7px;
-			height: 0px;
-		}
-
 		& > .autotag {
 			position: relative;
-			top: 3px;
-			left: -50px;
+			top: 27px;
+			left: 0px;
 			height: 0px;
+
+			text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 		}
 	}
 
 	.segment-script-view__sticky {
 		position: sticky;
-		top: 0px;
-		z-index: 1;
+		top: 7.8125rem;
+		z-index: 10;
 		background-color: #252627;
 		color: white;
 		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
@@ -176,6 +172,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 			.segment-script-view__output__label {
 				h3 {
+					margin-top: 5px;
 					margin-bottom: 0px;
 					margin-left: 8px;
 				}
@@ -185,14 +182,16 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		.segment-script-view__layergroup {
 			color: $output-header-font-color;
 			white-space: nowrap;
-			overflow-y: scroll;
+
+			overflow: hidden;
 
 			border-right-color: $part-start-color;
 			border-right-style: solid;
-			border-right-width: 4px;
+			border-right-width: 2px;
 
 			h4 {
-				margin-bottom: 0px;
+				margin-top: 5px;
+				margin-bottom: 3px;
 				margin-left: 10px;
 			}
 
@@ -203,12 +202,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 			.segment-script-view__layergroup__layer {
 				width: $layergroup-piece-size;
-
 				display: inline-block;
 			}
 
 			h4 {
-				height: 44px;
+				height: 20px;
 				margin-right: 0;
 
 				border-right-color: $part-start-color;
@@ -217,7 +215,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			}
 
 			.last_layer_in_group {
-				border-right-width: 4px;
+				border-right-width: 2px;
 
 				&:nth-last-child(1) {
 					border-right-width: 0px;
@@ -236,11 +234,18 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 		.script-view-part-container__scripts {
 			width: $script-piece-size + 1px;
-			min-height: 100%;
+			min-height: 100px;
 
 			border-color: #000;
 			border-right-style: solid;
 			border-right-width: 1px;
+
+			& > .timecode {
+				position: relative;
+				top: 15px;
+				height: 0px;
+				left: -45px;
+			}
 
 			.script-view-script__pieces {
 				color: black;
@@ -291,10 +296,10 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			}
 
 			&:last-child {
-				width: $layergroup-piece-size + 4px;
+				width: $layergroup-piece-size + 2px;
 
 				border-color: $part-start-color;
-				border-right-width: 4px;
+				border-right-width: 2px;
 			}
 		}
 
@@ -318,10 +323,26 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			color: white;
 
 			@include item-type-colors();
+
+			position: relative;
+			z-index: 1;
+			text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+			font-weight: 400;
+			pointer-events: none;
+			white-space: nowrap;
+
+			//transform: translate3d(0, 0, 1px); // Just to make it render in front	}
 		}
 
 		.primary {
+			width: $layergroup-piece-size - 1px;
 			flex-grow: 1;
+			margin: 0px;
+			padding: 7px;
+		}
+
+		.transition {
+			max-height: 28px;
 		}
 	}
 }
@@ -336,7 +357,7 @@ body.no-overflow {
 	overflow-y: hidden;
 }
 
-.header.script {
+.header.rundown {
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -401,6 +422,8 @@ body.no-overflow {
 				font-size: 2.3em;
 				font-weight: 100;
 				text-align: center;
+
+				text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 			}
 
 			&.current-remaining {
@@ -443,7 +466,7 @@ body.no-overflow {
 					width: 100%;
 				}
 
-				&.script-name {
+				&.rundown-name {
 					width: auto;
 					max-width: calc(30vw - 138px);
 					min-width: 100%;
@@ -467,7 +490,7 @@ body.no-overflow {
 			}
 		}
 
-		.script__header-status {
+		.rundown__header-status {
 			position: absolute;
 			font-size: 0.7rem;
 			text-transform: uppercase;
@@ -480,7 +503,7 @@ body.no-overflow {
 			left: 0;
 			padding: 2px 5px 1px;
 
-			&.script__header-status--hold {
+			&.rundown__header-status--hold {
 				background: $hold-status-color;
 			}
 		}
@@ -547,22 +570,17 @@ body.no-overflow {
 	cursor: default;
 }
 
-.header.script.not-active .first-row {
+.header.rundown.not-active .first-row {
 	background-color: rgb(38, 137, 186);
 }
-.header.script.not-active .first-row span {
+.header.rundown.not-active .first-row span {
 	color: #fff !important;
 }
-// .header.script.active .first-row  {
+// .header.rundown.active .first-row  {
 // background-color: #600
 // }
-.header.script.active.rehearsal .first-row {
+.header.rundown.active.rehearsal .first-row {
 	background-color: #660;
-}
-
-.segment-script-view-placeholder {
-	margin: 1.5em;
-	width: auto;
 }
 
 // A component for displaying the segments (ENPS Stories/NKR Titles)
@@ -579,7 +597,7 @@ body.no-overflow {
 
 	width: auto;
 	margin: 1.5em;
-	padding-bottom: 25px;
+	padding-bottom: 40px;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
@@ -605,8 +623,6 @@ body.no-overflow {
 		transition: $output-layer-group-collapse-animation-duration opacity,
 			$output-layer-group-collapse-animation-duration visibility 0s;
 
-		word-break: break-word;
-
 		h2 {
 			margin: 0;
 			padding: 0.3em;
@@ -616,6 +632,11 @@ body.no-overflow {
 			hyphens: auto;
 			-webkit-hyphens: auto;
 			-ms-hyphens: auto;
+			width: 400px;
+
+			/* Rotate from top left corner (not default) */
+			transform-origin: 0 0;
+			transform: translateX(45px) rotate(90deg);
 		}
 
 		.segment-script-view__title__notes {
@@ -728,122 +749,6 @@ body.no-overflow {
 		}
 	}
 
-	// mos-id is a utility element, so that we can quickly check the mos Id of a segment using the inspector
-	// let's hide it in the UI
-	.segment-script-view__mos-id {
-		display: none;
-	}
-
-	// This is the display in the top-left corner of the segment
-	.segment-script-view__duration {
-		position: relative;
-		display: block;
-		margin: 0;
-		padding: 0;
-
-		grid-column: segment-name / segment-group-controls;
-		grid-row: header / main-view;
-
-		cursor: pointer;
-
-		font-size: 1em;
-		line-height: 2.45em;
-		padding-left: 25px;
-		margin-left: 0.3em;
-		letter-spacing: 1px;
-
-		@include collapse-triangle();
-
-		> span.negative {
-			color: $general-late-color;
-			font-weight: 500;
-		}
-	}
-	.segment-script-view__timeUntil {
-		position: relative;
-		display: block;
-		margin: 0;
-		padding: 0;
-		text-align: right;
-
-		grid-column: segment-name / segment-group-controls;
-		grid-row: header / main-view;
-
-		cursor: pointer;
-
-		font-size: 1.3em;
-		font-weight: 400;
-		line-height: 2em;
-		padding-right: 0px;
-		margin-right: 0em;
-		letter-spacing: 0px;
-	}
-	.segment-script-view__unsynced {
-		text-transform: uppercase;
-	}
-	.segment-script-view__timeline-zoom-buttons {
-		position: relative;
-		grid-column: segment-group-controls / timeline;
-		grid-row: zoom-area / end;
-		display: flex;
-		flex-direction: row;
-		justify-content: center;
-
-		opacity: 0;
-		transition: 0.5s opacity ease-in-out;
-
-		> .segment-script-view__timeline-zoom-buttons__button {
-			min-width: 30px;
-			min-height: 30px;
-			max-width: 30px;
-			max-height: 30px;
-			background: transparent;
-			transition: 0.3s background-color ease-in-out;
-			border-radius: 100%;
-			overflow: visible;
-
-			&:hover {
-				background: $segment-title-background-color;
-				transition: 0s background-color;
-			}
-
-			&:active {
-				background: $ui-button-primary;
-				transition: 0s background-color;
-			}
-		}
-	}
-	&:hover {
-		.segment-script-view__timeline-zoom-buttons {
-			transition: 0.2s opacity ease-in-out;
-			opacity: 1;
-		}
-	}
-	.segment-script-view__next-preview {
-		position: relative;
-		grid-column: end / future-script-view-end;
-		grid-row: header / zoom-area;
-		margin: $segment-header-height 0 0 1em;
-		overflow: hidden;
-		transition: $output-layer-group-collapse-animation-duration margin ease-in-out;
-	}
-	.segment-script-view__next-preview-background {
-		position: relative;
-		grid-column: end / future-script-view-end;
-		grid-row: header / zoom-area;
-		margin: $segment-header-height 0 1.5em 1em;
-		background: $segment-next-preview-background-color;
-		opacity: 1;
-		transition: $output-layer-group-collapse-animation-duration opacity
-				($output-layer-group-collapse-animation-duration * 1/2),
-			$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
-	}
-
-	/* The timeline itself is constructed out of three overlapping layers:
-			.segment-script-view__timeline-background - renders the big, flat gray background
-			.segment-script-view__timeline-grid - renders just the time grid and the labels above them
-			.segment-script-view__timeline-container - contains the timeline elements and the live-line and other lines
-	*/
 	.segment-script-view__timeline-background {
 		grid-column: timeline / end;
 		grid-row: main-view / zoom-area;

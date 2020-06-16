@@ -16,7 +16,7 @@ import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
 import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 
 import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigItemValue, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigItemValue, SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
@@ -32,6 +32,9 @@ import { PartExtended, PieceExtended } from '../../../lib/Rundown'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { LayerGroups, OutputGroups } from './ScriptView'
 import { FloatingInspector } from '../FloatingInspector'
+import { SourceLayerItemContainer } from '../SegmentTimeline/SourceLayerItemContainer'
+import { pieceSetInOutPoints } from '../../../server/api/userActions'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 
 interface IProps {
 	segment: SegmentUi | undefined
@@ -115,8 +118,6 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 		}
 
 		shouldComponentUpdate(nextProps: IProps & ITrackedProps, nextState: IState) {
-			console.log(nextProps.activeLayerGroups, this.props.activeLayerGroups)
-
 			let result = !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 			return result
 		}
@@ -162,12 +163,20 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 					if (this.props.showStyleBase) {
 						const layer = this.props.showStyleBase.sourceLayers.find((sl) => sl._id == type)
 
-						if (layer) {
+						if (!!layer) {
 							return layer.type
 						}
 					}
 
 					return SourceLayerType.UNKNOWN
+				}
+
+				const layerIdtoLayer = (type: string): ISourceLayer | undefined => {
+					if (this.props.showStyleBase) {
+						const layer = this.props.showStyleBase.sourceLayers.find((sl) => sl._id == type)
+
+						return layer
+					}
 				}
 
 				let displayedHeaders = Object.keys(this.props.activeLayerGroups).filter(
@@ -230,7 +239,14 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 			return (
 				<React.Fragment>
 					<div className="script-view-part-container">
-						<div className="script-view-part-container__scripts">{this.renderScripts()}</div>
+						<div className="script-view-part-container__scripts">
+							<div className="timecode">
+								{partAttributes.expectedDuration
+									? RundownUtils.formatTimeToShortTime(partAttributes.expectedDuration)
+									: ''}
+							</div>
+							{this.renderScripts()}
+						</div>
 
 						<div className="script-view-part-container__layergroups">
 							<div className="container">
@@ -261,12 +277,7 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 						</div>
 					</div>
 					<div className={'script-view-nextline'}>
-						<div className="timecode">
-							{partAttributes.expectedDuration
-								? RundownUtils.formatTimeToShortTime(partAttributes.expectedDuration)
-								: ''}
-						</div>
-						<div className="autotag">{partAttributes.autoNext ? 'AUTO' : ''}</div>
+						<div className="autotag">{!partAttributes.autoNext ? 'AUTO' : ''}</div>
 					</div>
 				</React.Fragment>
 			)
