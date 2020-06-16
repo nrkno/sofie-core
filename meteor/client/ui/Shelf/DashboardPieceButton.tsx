@@ -48,16 +48,18 @@ export const DEFAULT_BUTTON_HEIGHT = 5.625
 interface IDashboardButtonTrackedProps {
 	status: RundownAPI.PieceStatusCode | undefined
 	metadata: MediaObject | null
+	contentDuration: number | undefined
 }
 
 export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
 	const piece = props.item as any as AdLibPieceUi
 
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
+	const { status, metadata, contentDuration } = checkPieceContentStatus(piece, props.layer, props.rundown.getStudio().settings)
 
 	return {
 		status,
-		metadata
+		metadata,
+		contentDuration
 	}
 })(class extends MeteorReactComponent<Translated<IDashboardButtonProps & IDashboardButtonTrackedProps>> {
 	private objId: string
@@ -128,11 +130,23 @@ export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, 
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
 			const adLib = this.props.item as AdLibPieceUi
+
+			let time = adLib.content ? (adLib.content as VTContent).sourceDuration : undefined
+			if (
+				time === undefined
+			) {
+				if (this.props.contentDuration !== undefined) {
+					time = this.props.contentDuration
+				} else {
+					time = 0
+				}
+			}
+
 			return <React.Fragment>
 				{previewUrl && <img src={previewUrl} className='dashboard-panel__panel__button__thumbnail' />}
 				{adLib.content && (adLib.content as VTContent) &&
 					<span className='dashboard-panel__panel__button__sub-label'>
-						{RundownUtils.formatDiffToTimecode((adLib.content as VTContent).sourceDuration || 0, false, undefined, undefined, undefined, true)}
+						{RundownUtils.formatDiffToTimecode(time, false, undefined, undefined, undefined, true)}
 					</span>}
 			</React.Fragment>
 		}
