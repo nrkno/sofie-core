@@ -115,9 +115,8 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 
 	checkFullScreen() {
 		return (
+			// @ts-ignore fullscreen has become deprecated
 			document.fullscreen ||
-			// @ts-ignore
-			document.fullScreen ||
 			// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 			document.mozFullScreen ||
 			// @ts-ignore

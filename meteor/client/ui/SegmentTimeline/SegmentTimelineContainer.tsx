@@ -192,10 +192,16 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				) ||
 					data.parts.find(
 						(i) =>
+							i.instance._id === props.playlist.currentPartInstanceId ||
+							i.instance._id === nextProps.playlist.currentPartInstanceId
+					) ||
+					data.parts.find(
+						(i) =>
 							i.instance._id === props.playlist.nextPartInstanceId ||
 							i.instance._id === nextProps.playlist.nextPartInstanceId
 					))) ||
-			props.playlist.holdState !== nextProps.playlist.holdState
+			props.playlist.holdState !== nextProps.playlist.holdState ||
+			props.playlist.nextTimeOffset !== nextProps.playlist.nextTimeOffset
 		) {
 			return true
 		}
@@ -510,7 +516,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				let isExpectedToPlay: boolean = currentLivePart.startedPlayback || false
 				const lastTake = currentLivePart.getLastTake()
 				const lastStartedPlayback = currentLivePart.getLastStartedPlayback()
-				let virtualStartedPlayback = (lastTake || 0) > (lastStartedPlayback || -1) ? lastTake : lastStartedPlayback
+				const lastTakeOffset = currentLivePart.getLastPlayOffset() || 0
+				let virtualStartedPlayback =
+					(lastTake || 0) > (lastStartedPlayback || -1)
+						? lastTake
+						: lastStartedPlayback
+						? lastStartedPlayback - lastTakeOffset
+						: undefined
 				if (currentLivePart.taken && lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
 					isExpectedToPlay = true
 					// console.log('Simulated playback')
@@ -525,12 +537,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						}
 					}
 				}
-				const lastPlayOffset = currentLivePart.getLastPlayOffset() || 0
 
 				let newLivePosition =
 					isExpectedToPlay && virtualStartedPlayback
-						? e.detail.currentTime - virtualStartedPlayback + partOffset
-						: partOffset + lastPlayOffset
+						? partOffset + e.detail.currentTime - virtualStartedPlayback + lastTakeOffset
+						: partOffset + lastTakeOffset
 
 				if (lastStartedPlayback && simulationPercentage < 1) {
 					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)

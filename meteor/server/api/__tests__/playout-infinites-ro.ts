@@ -118,9 +118,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'VIGNETT;Vignett',
-			typeVariant: 'vignett',
 			expectedDuration: 13240,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('bzwmGuXuSSg_dRHhlNDFNNl1_Js_'),
@@ -129,9 +127,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'VIGNETT;Head 1',
-			typeVariant: 'head',
 			expectedDuration: 8880,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('qGi_A8A0NtZoSgNnYZVNI_Vb700_'),
@@ -140,9 +136,7 @@ export const testRO1: MockRO = {
 			_rank: 2,
 			externalId: '',
 			title: 'VIGNETT;Head 2',
-			typeVariant: 'head',
 			expectedDuration: 19960,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('nDQtVZ1Bo0J3qEYnBqjr7KuyhDQ_'),
@@ -151,9 +145,7 @@ export const testRO1: MockRO = {
 			_rank: 3,
 			externalId: '',
 			title: 'VIGNETT;Velkommen med super',
-			typeVariant: 'kam',
 			expectedDuration: 4880,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('kjW9GfMhvvh_CdSnBrnQmd9WBOk_'),
@@ -162,9 +154,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'BYVEKST AVTALE;intrundown -',
-			typeVariant: 'kam',
 			expectedDuration: 14000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('2yKRioTfVGnRztaYBn3uW013U7M_'),
@@ -173,9 +163,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'BYVEKST AVTALE;BYVEKST-AVTALE-300818-SL',
-			typeVariant: 'full',
 			expectedDuration: 8560,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('IomGMc7Zfwxem69eqqvlMjRSj9E_'),
@@ -184,9 +172,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'GJEST;Intrundown',
-			typeVariant: 'kam',
 			expectedDuration: 4880,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('saTW13T4_wBQQIXXw9J1dRU0XXw_'),
@@ -195,9 +181,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'SYKKEL VEI;intrundown -',
-			typeVariant: 'kam',
 			expectedDuration: 13000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('R0HMkiSy38MascKSmom2ovahStc_'),
@@ -206,9 +190,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'GJEST;GJEST-',
-			typeVariant: 'kam',
 			expectedDuration: 29880,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('hDstudio_wI5jDH53Z4X2hwu9V_1V1Y_'),
@@ -217,9 +199,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'SYKKEL VEI;SYKKEL-VEI-310818-SL',
-			typeVariant: 'full',
 			expectedDuration: 110920,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('BNx_pjsUS_NZmV8z_YmAT_C0riU_'),
@@ -228,9 +208,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'PADLERE;Kamera - ikke skriv her',
-			typeVariant: 'kam',
 			expectedDuration: 3000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('rUiB1GP4V671z_rYY03v1eM_icQ_'),
@@ -239,9 +217,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'PADLERE;PADLERE-300818S-SL',
-			typeVariant: 'stk',
 			expectedDuration: 21000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('3_qhlFEIYlESrvZYxbk3ie_5_z0_'),
@@ -250,9 +226,7 @@ export const testRO1: MockRO = {
 			_rank: 2,
 			externalId: '',
 			title: 'PADLERE;PADLERE-300818F-SL',
-			typeVariant: 'full',
 			expectedDuration: 9240,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('Q5fb7VHFWQZjgdUQ_AD9QZjrknk_'),
@@ -261,9 +235,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'DIREKTE PUNKT FESTIVAL;intrundown -',
-			typeVariant: 'kam',
 			expectedDuration: 9000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('BX_SmzfT60bQ2_6VGHxKuzjKZdg_'),
@@ -272,9 +244,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'DIREKTE PUNKT FESTIVAL;Split',
-			typeVariant: 'split',
 			expectedDuration: 4000,
-			subTypeVariant: '',
 			stoppedPlayback: true
 		},
 		{
@@ -284,9 +254,7 @@ export const testRO1: MockRO = {
 			_rank: 2,
 			externalId: '',
 			title: 'DIREKTE PUNKT FESTIVAL;PUNKTFESTIVALE-300818S-SL',
-			typeVariant: 'stk',
 			expectedDuration: 11800,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('kPKjHD_z3qXD35LqPOD314lOSPo_'),
@@ -295,9 +263,7 @@ export const testRO1: MockRO = {
 			_rank: 3,
 			externalId: '',
 			title: 'DIREKTE PUNKT FESTIVAL;Live',
-			typeVariant: 'dir',
 			expectedDuration: 0,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('MTwVEbe90uguNcecrum5tqVLzWg_'),
@@ -306,9 +272,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'KOMMER 2055;Kamera - ikke skriv her',
-			typeVariant: 'kam',
 			expectedDuration: 0,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('nArzKAkxPONWUVchEVB4o1Q4VsE_'),
@@ -317,9 +281,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'KOMMER 2055;STK',
-			typeVariant: 'stk',
 			expectedDuration: 15000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('UoSeVe3h1b67aSun_UMUSSz9NZw_'),
@@ -328,9 +290,7 @@ export const testRO1: MockRO = {
 			_rank: 2,
 			externalId: '',
 			title: 'KOMMER 2055;SYNK',
-			typeVariant: 'full',
 			expectedDuration: 15000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('cq9VY7XbnFhpZGSr0q5tfvOx5gs_'),
@@ -339,9 +299,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'SEERBILDE;Kamera - ikke skriv her',
-			typeVariant: 'kam',
 			expectedDuration: 3000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('gRQFPOgXaV7r_WqgNCPqVcAvsGc_'),
@@ -350,9 +308,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'SEERBILDE;SEERBILDE',
-			typeVariant: 'grafikk',
 			expectedDuration: 15000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('zZPFW5kV_Cy1w_NeZX7nvAGxFSQ_'),
@@ -361,9 +317,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'VÆRET;Kamera - ikke skriv her',
-			typeVariant: 'kam',
 			expectedDuration: 0,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('1WWrqgLIvlxNE4ciwOSL2Qn2yCI_'),
@@ -372,9 +326,7 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'VÆRET;VERET-LØRDAG-310818S-SL',
-			typeVariant: 'grafikk',
 			expectedDuration: 15000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('jh3nz3Le_21YJMCMTZ_uwp6smDY_'),
@@ -383,9 +335,7 @@ export const testRO1: MockRO = {
 			_rank: 2,
 			externalId: '',
 			title: 'VÆRET;VERET-SØNDAG-310818S-SL',
-			typeVariant: 'stk',
 			expectedDuration: 0,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('gtWWWXdaRUM3KfiXAWoRUN879a8_'),
@@ -394,9 +344,7 @@ export const testRO1: MockRO = {
 			_rank: 0,
 			externalId: '',
 			title: 'TAKK FOR IDAG;tekst - takk for nå.',
-			typeVariant: 'kam',
 			expectedDuration: 5000,
-			subTypeVariant: ''
 		},
 		{
 			_id: protectString('ESeI8e10J9XgRKIVYfs9BHu_mMg_'),
@@ -405,10 +353,8 @@ export const testRO1: MockRO = {
 			_rank: 1,
 			externalId: '',
 			title: 'TAKK FOR IDAG;SLUTTKREDITT LUKKING',
-			typeVariant: 'kam',
 			expectedDuration: 13540,
-			subTypeVariant: ''
-		}
+		},
 	],
 	pieces: [
 		{

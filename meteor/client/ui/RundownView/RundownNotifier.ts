@@ -31,12 +31,7 @@ import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
 import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
-import {
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistId,
-	getAllNotesForSegmentAndParts,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'

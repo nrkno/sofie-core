@@ -954,10 +954,10 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 			let keyWords = key.split('.')
 			if (keyWords.length > 1) {
 				let oAttr = o[keyWords[0]]
-				if (oAttr && _.isObject(oAttr)) {
+				if (_.isObject(oAttr) || oAttr === undefined) {
 					let innerSelector: any = {}
 					innerSelector[keyWords.slice(1).join('.')] = s
-					ok = mongoWhere(oAttr, innerSelector)
+					ok = mongoWhere(oAttr || {}, innerSelector)
 				} else {
 					ok = false
 				}
@@ -998,8 +998,8 @@ export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 						innerSelector[key] = s.$not
 						ok = !mongoWhere(o, innerSelector)
 					} else {
-						if (_.isObject(oAttr)) {
-							ok = mongoWhere(oAttr, s)
+						if (_.isObject(oAttr) || oAttr === undefined) {
+							ok = mongoWhere(oAttr || {}, s)
 						} else {
 							ok = false
 						}

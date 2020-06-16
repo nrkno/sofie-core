@@ -350,7 +350,6 @@ export namespace ServerPlayoutAdLibAPI {
 			title: adLibPiece.name,
 			dynamicallyInserted: true,
 			afterPart: afterPartInstance.part.afterPart || afterPartInstance.part._id,
-			typeVariant: 'adlib',
 			prerollDuration: adLibPiece.adlibPreroll,
 			expectedDuration: adLibPiece.expectedDuration,
 		})
