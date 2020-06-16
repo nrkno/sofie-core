@@ -7,9 +7,9 @@ import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { DatePickerFromTo } from '../../lib/datePicker'
-import * as moment from 'moment'
+import moment from 'moment'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
@@ -17,7 +17,7 @@ interface IUserActionsListProps {
 	renderButtons?: (item: UserActionsLogItem) => React.Component
 }
 
-export const UserActionsList = translate()(
+export const UserActionsList = withTranslation()(
 	class UserActionsList extends React.Component<Translated<IUserActionsListProps>> {
 		renderMessageHead() {
 			const { t } = this.props
@@ -99,7 +99,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 		}
 	}
 )(
-	class ExternalMessages extends MeteorReactComponent<
+	class UserActivity extends MeteorReactComponent<
 		Translated<IUserActivityProps & IUserActivityTrackedProps>,
 		IUserActivityState
 	> {
@@ -118,7 +118,7 @@ const UserActivity = translateWithTracker<IUserActivityProps, IUserActivityState
 					.valueOf(),
 			}
 		}
-		componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.updateSubscription()
 		}

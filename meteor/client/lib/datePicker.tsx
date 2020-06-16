@@ -1,13 +1,12 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import DatePicker from 'react-datepicker'
-import * as moment from 'moment'
+import moment from 'moment'
 import 'react-datepicker/dist/react-datepicker.css'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as faChevronRight from '@fortawesome/fontawesome-free-solid/faChevronRight'
-import * as faChevronLeft from '@fortawesome/fontawesome-free-solid/faChevronLeft'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'
 import { Time } from '../../lib/lib'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 
 interface IProps {
 	from: Time
@@ -18,9 +17,9 @@ interface IState {
 	dateFrom: moment.Moment
 	dateTo: moment.Moment
 }
-export const DatePickerFromTo = translate()(
-	class DatePickerFromTo extends React.Component<IProps & InjectedTranslateProps, IState> {
-		constructor(props: IProps & InjectedTranslateProps) {
+export const DatePickerFromTo = withTranslation()(
+	class DatePickerFromTo extends React.Component<IProps & WithTranslation, IState> {
+		constructor(props: IProps & WithTranslation) {
 			super(props)
 
 			this.state = {

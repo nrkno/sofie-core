@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	RundownLayoutExternalFrame,
@@ -10,7 +9,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
-import { literal, protectString } from '../../../lib/lib'
+import { literal, check, protectString } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
@@ -24,7 +23,7 @@ import {
 import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
 import { IMOSItem } from 'mos-connection'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Buckets, Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
@@ -92,7 +91,7 @@ interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessag
 	}
 }
 
-export const ExternalFramePanel = translate()(
+export const ExternalFramePanel = withTranslation()(
 	class ExternalFramePanel extends React.Component<Translated<IProps>> {
 		frame: HTMLIFrameElement
 		mounted: boolean = false

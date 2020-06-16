@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import {
@@ -13,7 +12,7 @@ import {
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
 } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, removeNullyProperties, getRandomId, makePromise } from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties, getRandomId, makePromise, check } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'

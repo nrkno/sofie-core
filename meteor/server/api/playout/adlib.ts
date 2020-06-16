@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
@@ -330,7 +329,7 @@ export namespace ServerPlayoutAdLibAPI {
 				'part._rank': { $gt: afterPartInstance.part._rank },
 			},
 			{
-				sort: { _rank: -1, _id: -1 },
+				sort: { _id: -1 },
 			}
 		)
 		if (alreadyQueuedPartInstance) {
@@ -414,6 +413,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 			const lastPieceInstances = cache.PieceInstances.findFetch(query, {
 				sort: {
+					// @ts-ignore deep property
 					'piece.startedPlayback': -1,
 				},
 				limit: 1,

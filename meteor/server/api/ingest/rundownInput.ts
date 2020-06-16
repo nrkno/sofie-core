@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
@@ -29,8 +28,9 @@ import {
 	unprotectString,
 	protectString,
 	omit,
-	Omit,
 	ProtectedString,
+	check,
+	Omit,
 	PreparedChangesChangesDoc,
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'

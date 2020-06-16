@@ -1,8 +1,8 @@
 import * as React from 'react'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as faArrowsAltH from '@fortawesome/fontawesome-free-solid/faArrowsAltH'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowsAltH } from '@fortawesome/free-solid-svg-icons'
 
 interface IState {
 	showCursor: boolean

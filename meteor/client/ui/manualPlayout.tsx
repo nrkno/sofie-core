@@ -27,7 +27,7 @@ export class ManualPlayout extends MeteorReactComponent<IManualPlayoutProps, IMa
 			inputValues: {},
 		}
 	}
-	componentWillMount() {
+	componentDidMount() {
 		this.subscribe(PubSub.studios, {})
 		this.subscribe(PubSub.peripheralDevices, {})
 	}

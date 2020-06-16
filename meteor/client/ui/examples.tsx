@@ -1,7 +1,7 @@
 import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import * as React from 'react'
 import { withTiming, WithTiming } from './RundownView/RundownTiming'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Meteor } from 'meteor/meteor'
 
@@ -46,7 +46,7 @@ interface TranslatedSimpleComponentProps {
 interface TranslatedSimpleComponentState {
 	myState0: string
 }
-const TranslatedSimpleComponent = translate()(
+const TranslatedSimpleComponent = withTranslation()(
 	class TranslatedSimpleComponent extends React.Component<
 		Translated<TranslatedSimpleComponentProps>,
 		TranslatedSimpleComponentState
@@ -71,12 +71,12 @@ const TranslatedSimpleComponent = translate()(
 		}
 	}
 )
-function testTranslatedSimpleComponent() {
-	let a = new TranslatedSimpleComponent({
-		myProp0: '',
-		// asdf: 123, // invalid argument
-	})
-}
+// function testTranslatedSimpleComponent () {
+// 	let a = new TranslatedSimpleComponent({
+// 		myProp0: '',
+// 		// asdf: 123, // invalid argument
+// 	})
+// }
 // Reactive Component ----------------------------
 
 interface ReactiveComponentProps {
@@ -91,7 +91,7 @@ interface ReactiveComponentTrackedProps {
 const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentState, ReactiveComponentTrackedProps>(
 	() => {
 		return {
-			myReactiveProp0: Meteor.status(),
+			myReactiveProp0: Meteor.status().status,
 		}
 	}
 )(
@@ -142,7 +142,7 @@ const TranslatedReactiveComponent = translateWithTracker<
 	TranslatedReactiveComponentTrackedProps
 >(() => {
 	return {
-		myReactiveProp0: Meteor.status(),
+		myReactiveProp0: Meteor.status().status,
 	}
 })(
 	class TranslatedReactiveComponent extends MeteorReactComponent<
@@ -170,12 +170,12 @@ const TranslatedReactiveComponent = translateWithTracker<
 		}
 	}
 )
-function testTranslatedReactiveComponent() {
-	let a = new TranslatedReactiveComponent({
-		myProp0: '',
-		// asdf: 123, // invalid argument
-	})
-}
+// function testTranslatedReactiveComponent () {
+// 	let a = new TranslatedReactiveComponent({
+// 		myProp0: '',
+// 		// asdf: 123, // invalid argument
+// 	})
+// }
 
 // withTiming ----------------------
 interface WithTimingComponentProps {

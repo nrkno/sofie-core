@@ -1,18 +1,11 @@
 import * as React from 'react'
-import * as CoreIcons from '@nrk/core-icons'
-import {
-	faChevronDown,
-	faChevronRight,
-	faCheck,
-	faStopCircle,
-	faRedo,
-	faFlag,
-} from '@fortawesome/fontawesome-free-solid'
+import CoreIcons from '@nrk/core-icons/jsx'
+import { faChevronDown, faChevronRight, faCheck, faStopCircle, faRedo, faFlag } from '@fortawesome/free-solid-svg-icons'
 import * as VelocityReact from 'velocity-react'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import * as ClassNames from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ClassNames from 'classnames'
 import { MomentFromNow } from '../../lib/Moment'
-import ReactCircularProgressbar from 'react-circular-progressbar'
+import { CircularProgressbar } from 'react-circular-progressbar'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MediaWorkFlow, MediaWorkFlows, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
@@ -25,8 +18,8 @@ import { Spinner } from '../../lib/Spinner'
 import { sofieWarningIcon as WarningIcon } from '../../lib/notifications/warningIcon'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
+import Tooltip from 'rc-tooltip'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-const Tooltip = require('rc-tooltip')
 
 interface IMediaManagerStatusProps {}
 
@@ -101,7 +94,7 @@ function workFlowStatusLabel(
 	if (success && finished) {
 		return (
 			<React.Fragment>
-				<CoreIcons id="nrk-check" />
+				<CoreIcons.NrkCheck />
 				{t('Done')}
 			</React.Fragment>
 		)
@@ -151,8 +144,8 @@ function workStepStatusLabel(t: TFunc, step: MediaWorkFlowStep): string {
 	}
 }
 
-const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslateProps> = (
-	props: IItemProps & i18next.InjectedTranslateProps
+const MediaManagerWorkFlowItem: React.FunctionComponent<IItemProps & i18next.WithTranslation> = (
+	props: IItemProps & i18next.WithTranslation
 ) => {
 	const mediaWorkflow = props.item
 	const t = props.t
@@ -217,9 +210,8 @@ const MediaManagerWorkFlowItem: React.SFC<IItemProps & i18next.InjectedTranslate
 						animation={!finishedOK && !finishedError ? iconEnterAnimation : iconLeaveAnimation}
 						duration={300}
 						easing="easeIn">
-						<ReactCircularProgressbar
-							initialAnimation={true}
-							percentage={progress * 100}
+						<CircularProgressbar
+							value={progress * 100} // TODO: initialAnimation={true} removed, make the animation other way if needed
 							text={Math.round(progress * 100) + '%'}
 							strokeWidth={10}
 							styles={{
@@ -374,7 +366,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			}
 		}
 
-		componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.subscribe(PubSub.mediaWorkFlows, {}) // TODO: add some limit
 			this.subscribe(PubSub.mediaWorkFlowSteps, {})
@@ -413,7 +405,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		}
 
 		renderWorkFlows() {
-			const { t } = this.props
+			const { t, i18n, tReady } = this.props
 
 			return this.props.workFlows
 				.sort((a, b) => b.created - a.created)
@@ -425,6 +417,8 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 							item={mediaWorkflow}
 							key={unprotectString(mediaWorkflow._id)}
 							t={t}
+							i18n={i18n}
+							tReady={tReady}
 							toggleExpanded={this.toggleExpanded}
 							actionRestart={this.actionRestart}
 							actionAbort={this.actionAbort}
