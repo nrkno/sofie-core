@@ -28,6 +28,7 @@ import {
 	TimelineObjectCoreExt,
 	OnGenerateTimelineObj,
 	TSR,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
@@ -442,7 +443,7 @@ export function convertAdLibToPieceInstance(
 			partId: partInstance.part._id,
 			enable: {
 				start: queue ? 0 : 'now',
-				duration: duration,
+				duration: !queue && adLibPiece.infiniteMode === PieceLifespan.Normal ? duration : undefined,
 			},
 			adLibSourceId: adLibPiece._id,
 			dynamicallyInserted: !queue,
