@@ -364,7 +364,7 @@ export const RundownViewBuckets = withTranslation()(
 				const draggedB = this.props.buckets.find((b) => b._id === draggedId)
 
 				if (draggedB) {
-					let newRank = draggedB._rank
+					var newRank = draggedB._rank
 
 					// Dragged over into first place
 					if (newIndex === 0) {

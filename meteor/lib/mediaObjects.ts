@@ -1,10 +1,14 @@
 import * as _ from 'underscore'
-import { VTContent, SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import {
+	VTContent,
+	SourceLayerType,
+	ISourceLayer,
+	IBlueprintPieceGeneric,
+} from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings } from './collections/Studios'
-import { InternalIBlueprintPieceGeneric } from './collections/Pieces'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -93,7 +97,7 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 	)
 }
 
-export function getMediaObjectMediaId(piece: InternalIBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId(piece: IBlueprintPieceGeneric, sourceLayer: ISourceLayer) {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
@@ -106,7 +110,7 @@ export function getMediaObjectMediaId(piece: InternalIBlueprintPieceGeneric, sou
 }
 
 export function checkPieceContentStatus(
-	piece: InternalIBlueprintPieceGeneric,
+	piece: IBlueprintPieceGeneric,
 	sourceLayer: ISourceLayer | undefined,
 	settings: IStudioSettings | undefined,
 	t?: i18next.TFunction

@@ -5,8 +5,8 @@ import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integ
 interface IPropsHeader {
 	adLibListItem: IAdLibListItem
 	selected: boolean
-	layer: ISourceLayer
-	outputLayer?: IOutputLayer
+	layer: ISourceLayer | undefined
+	outputLayer: IOutputLayer | undefined
 }
 
 export const DefaultListItemRenderer: React.FunctionComponent<IPropsHeader> = (props: IPropsHeader) => (
