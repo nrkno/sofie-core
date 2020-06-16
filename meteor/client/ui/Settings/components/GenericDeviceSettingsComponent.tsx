@@ -1,29 +1,20 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { translate } from 'react-i18next'
-import { PeripheralDevices, PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
-import {
-	MosDeviceSettings,
-	MosDeviceSettingsDevice,
-} from '../../../../lib/collections/PeripheralDeviceSettings/mosDevice'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
+import { withTranslation } from 'react-i18next'
+import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Meteor } from 'meteor/meteor'
 import { DeviceItem } from '../../Status/SystemStatus'
-import { IPlayoutDeviceSettingsComponentProps } from './IHttpSendDeviceSettingsComponentProps'
 import {
 	ConfigManifestEntry,
 	ConfigManifestEntryType,
 	TableConfigManifestEntry,
-	SubDeviceConfigManifestEntry,
+	TableEntryConfigManifestEntry,
 } from '../../../../lib/api/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
@@ -35,12 +26,18 @@ interface IGenericDeviceSettingsComponentState {
 	showDeleteConfirm: boolean
 	editedObjects: EditId[]
 }
-export const GenericDeviceSettingsComponent = translate()(
+
+interface IGenericDeviceSettingsComponentProps {
+	device: PeripheralDevice
+	subDevices?: PeripheralDevice[]
+}
+
+export const GenericDeviceSettingsComponent = withTranslation()(
 	class GenericDeviceSettingsComponent extends React.Component<
-		Translated<IPlayoutDeviceSettingsComponentProps>,
+		Translated<IGenericDeviceSettingsComponentProps>,
 		IGenericDeviceSettingsComponentState
 	> {
-		constructor(props: Translated<IPlayoutDeviceSettingsComponentProps>) {
+		constructor(props: Translated<IGenericDeviceSettingsComponentProps>) {
 			super(props)
 			this.state = {
 				deleteConfirmItemPath: undefined,
@@ -133,8 +130,8 @@ export const GenericDeviceSettingsComponent = translate()(
 			defaults[itemConfig.typeField || 'type'] = itemConfig.defaultType
 
 			for (const prop of itemConfig.config[itemConfig.defaultType]) {
-				if ((prop as SubDeviceConfigManifestEntry).defaultVal !== undefined) {
-					createDefault(prop.id.split('.'), (prop as SubDeviceConfigManifestEntry).defaultVal, defaults)
+				if (prop.defaultVal !== undefined) {
+					createDefault(prop.id.split('.'), prop.defaultVal, defaults)
 				}
 			}
 
@@ -263,9 +260,7 @@ export const GenericDeviceSettingsComponent = translate()(
 
 			if (deviceTypes.length === 1) {
 				const config = configManifest.config[configManifest.defaultType || 'default']
-				const propNames = config
-					.map((o) => (o as SubDeviceConfigManifestEntry).columnName)
-					.map((name) => (name ? <th key={name}>{name}</th> : undefined))
+				const propNames = config.map((o) => o.columnName).map((name) => (name ? <th key={name}>{name}</th> : undefined))
 				propNames.push(<th key="action">&nbsp;</th>)
 
 				return (
@@ -423,11 +418,11 @@ export const GenericDeviceSettingsComponent = translate()(
 		}
 
 		getConfigSummaryFields(configManifest: TableConfigManifestEntry) {
-			const fieldNames: { [field: string]: SubDeviceConfigManifestEntry } = {}
+			const fieldNames: { [field: string]: TableEntryConfigManifestEntry } = {}
 
 			_.each(configManifest.config, (c) => {
 				for (const field of c) {
-					if ((field as SubDeviceConfigManifestEntry).columnName) {
+					if (field.columnName) {
 						fieldNames[field.id] = field
 					}
 				}
@@ -504,9 +499,7 @@ export const GenericDeviceSettingsComponent = translate()(
 			if (configTypes.length === 1) {
 				if (configField.defaultType === undefined) throw new Error('Default type not set: ' + configField.id)
 				const config = configField.config[configField.defaultType]
-				const propNames = config
-					.map((o) => (o as SubDeviceConfigManifestEntry).columnName)
-					.map((name) => (name ? <th key={name}>{name}</th> : undefined))
+				const propNames = config.map((o) => o.columnName).map((name) => (name ? <th key={name}>{name}</th> : undefined))
 				propNames.push(<th key="actions">&nbsp;</th>)
 
 				return (

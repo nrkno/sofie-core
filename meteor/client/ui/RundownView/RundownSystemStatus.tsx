@@ -1,15 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PeripheralDevice, PeripheralDevices, MosParentDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Segments } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Parts } from '../../../lib/collections/Parts'
 import { scrollToSegment } from '../../lib/viewPort'
@@ -21,8 +21,8 @@ interface IMOSStatusProps {
 	lastUpdate: Time
 }
 
-export const MOSLastUpdateStatus = translate()(
-	class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & InjectedTranslateProps> {
+export const MOSLastUpdateStatus = withTranslation()(
+	class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & WithTranslation> {
 		_interval: number
 
 		componentDidMount() {
@@ -150,11 +150,7 @@ export const RundownSystemStatus = translateWithTracker(
 					(device) => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR
 				),
 			}
-			const lastUpdate = _.reduce(
-				devices,
-				(memo, device: MosParentDevice) => Math.max(device.lastDataReceived || 0, memo),
-				0
-			)
+			const lastUpdate = _.reduce(devices, (memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
 			return {
 				status: status,
 				lastUpdate: lastUpdate,
@@ -202,11 +198,12 @@ export const RundownSystemStatus = translateWithTracker(
 			}
 		}
 
-		componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
 				studioId: this.props.studio._id,
 			})
 		}
+
 		componentWillUnmount() {
 			super.componentWillUnmount()
 

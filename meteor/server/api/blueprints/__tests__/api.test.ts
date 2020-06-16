@@ -27,7 +27,7 @@ describe('Test blueprint management api', () => {
 			const blueprint: Blueprint = {
 				_id: getRandomId(),
 				name: 'Fake blueprint',
-				code: `{default: (() => 5)()}`,
+				code: `({default: (() => 5)()})`,
 				created: 0,
 				modified: 0,
 
@@ -217,7 +217,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('body not a manifest', () => {
 			try {
-				uploadBlueprint(protectString('blueprint99'), `{default: (() => 5)()}`)
+				uploadBlueprint(protectString('blueprint99'), `({default: (() => 5)()})`)
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 returned a manifest of type number`)

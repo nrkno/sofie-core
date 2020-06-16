@@ -6,7 +6,7 @@ import { MomentFromNow } from '../../lib/Moment'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { UserActionsLogItem, UserActionsLog } from '../../../lib/collections/UserActionsLog'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
-import * as moment from 'moment'
+import moment from 'moment'
 import { Meteor } from 'meteor/meteor'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { DatePickerFromTo } from '../../lib/datePicker'
@@ -67,7 +67,7 @@ const UserLogPlayerPage = translateWithTracker<IRecordingListProps, IRecordingLi
 					.valueOf(),
 			}
 		}
-		componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
@@ -275,7 +275,7 @@ const UserLogRundownSelect = translateWithTracker<IRundownSelectProps, IRundownS
 		Translated<IRundownSelectProps & IRundownSelectTrackedProps>,
 		IRundownSelectState
 	> {
-		componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 
 			this.subscribe(PubSub.rundownPlaylists, {})

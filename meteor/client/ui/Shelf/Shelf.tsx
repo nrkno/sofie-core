@@ -1,12 +1,12 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
 
-import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faBars } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { AdLibPanel } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
@@ -49,7 +49,7 @@ export enum ShelfTabs {
 	GLOBAL_ADLIB = 'global_adlib',
 	SYSTEM_HOTKEYS = 'system_hotkeys',
 }
-export interface IShelfProps {
+export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
@@ -495,6 +495,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 }
 
-export const Shelf = translate(undefined, {
+export const Shelf = withTranslation(undefined, {
 	withRef: true,
 })(ShelfBase)

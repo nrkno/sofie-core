@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
+import { TransformedCollection, MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import {
 	Time,
@@ -138,7 +138,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 	}
 	/** Returns all Rundowns in the RundownPlaylist */
-	getRundowns(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Rundown[] {
+	getRundowns(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): Rundown[] {
 		return Rundowns.find(
 			_.extend(
 				{
@@ -158,7 +158,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		).fetch()
 	}
 	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
-	getRundownIDs(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): RundownId[] {
+	getRundownIDs(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): RundownId[] {
 		return this.getRundowns(
 			selector,
 			_.extend(
@@ -176,7 +176,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			)
 		).map((i) => i._id)
 	}
-	getRundownsMap(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
+	getRundownsMap(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
 	}
 	touch() {
@@ -204,7 +204,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
 	/** Returns all segments in their correct order for this RundownPlaylist */
-	getSegments(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Segment[] {
+	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_rank: 1,
@@ -236,7 +236,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const { parts } = this.getSegmentsAndPartsSync()
 		return parts
 	}
-	getUnorderedParts(selector?: MongoSelector<DBPart>, options?: FindOptions): Part[] {
+	getUnorderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_id: 1,
@@ -382,7 +382,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			previousPartInstance: instances.find((inst) => inst._id === this.previousPartInstanceId),
 		}
 	}
-	getAllPartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
 		const rundownIds = this.getRundownIDs()
 
 		selector = selector || {}
@@ -402,14 +402,14 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			)
 		).fetch()
 	}
-	getActivePartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
 		const newSelector = {
 			...selector,
 			reset: { $ne: true },
 		}
 		return this.getAllPartInstances(newSelector, options)
 	}
-	getActivePartInstancesMap(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstancesMap(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
 		const instances = this.getActivePartInstances(selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
@@ -461,51 +461,10 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		let notes: Array<TrackedNote> = []
 		notes = notes.concat(rundownNotes.map((note) => _.extend(note, { rank: 0 })))
 
-		const segmentNotes = _.object(
-			this.getSegments(
-				{},
-				{
-					fields: {
-						rank: 1,
-						notes: 1,
-					},
-				}
-			).map((segment) => [
-				segment._id,
-				{
-					rank: segment._rank,
-					notes: segment.notes,
-				},
-			])
-		) as { [key: string]: { notes: GenericNote[]; rank: number } }
+		const segments = this.getSegments()
+		const parts = this.getUnorderedParts()
 
-		this.getUnorderedParts(
-			{},
-			{
-				fields: {
-					segmentId: 1,
-					notes: 1,
-				},
-			}
-		).map((part) => {
-			if (part.notes) {
-				const segmentNote = segmentNotes[unprotectString(part.segmentId)]
-				if (segmentNote) {
-					return segmentNote.notes.concat(part.notes)
-				}
-			}
-		})
-		notes = notes.concat(
-			_.flatten(
-				_.map(_.values(segmentNotes), (o) => {
-					return o.notes.map((note) =>
-						_.extend(note, {
-							rank: o.rank,
-						})
-					)
-				})
-			)
-		)
+		notes = notes.concat(getAllNotesForSegmentAndParts(segments, parts))
 
 		return notes
 	}

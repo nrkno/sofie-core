@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -22,6 +22,7 @@ import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext } from '../RundownView'
+import { CSSProperties } from '../../styles/_cssVariables'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -104,7 +105,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 					return (
 						<SourceLayerItemContainer
 							key={piece.instance._id}
-							{...this.props}
+							{..._.omit(this.props, 'key')} // kz: TODO two keys is to many but which one to choose?
 							// The following code is fine, just withTracker HOC messing with available props
 							onClick={this.props.onPieceClick}
 							onDoubleClick={this.props.onPieceDoubleClick}
@@ -167,7 +168,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 						return (
 							<SourceLayerItemContainer
 								key={piece.instance._id}
-								{...this.props}
+								{..._.omit(this.props, 'key')}
 								// The following code is fine, just withTracker HOC messing with available props
 								onClick={this.props.onPieceClick}
 								onDoubleClick={this.props.onPieceDoubleClick}
@@ -360,8 +361,8 @@ const CARRIAGE_RETURN_ICON = (
 	</div>
 )
 
-export const SegmentTimelinePart = translate()(
-	withTiming<IProps, IState>((props: IProps) => {
+export const SegmentTimelinePart = withTranslation()(
+	withTiming<IProps & WithTranslation, IState>((props: IProps) => {
 		return {
 			isHighResolution: false,
 			filter: (durations: RundownTiming.RundownTimingContext) => {
@@ -480,11 +481,7 @@ export const SegmentTimelinePart = translate()(
 					if (part.instance.part.duration) {
 						return part.instance.part.duration
 					} else {
-						return (
-							currentTime -
-							(part.instance.part.getLastStartedPlayback() || 0) +
-							(part.instance.part.getLastPlayOffset() || 0)
-						)
+						return currentTime - (part.instance.part.getLastStartedPlayback() || 0)
 					}
 				} else {
 					return 0
@@ -664,13 +661,13 @@ export const SegmentTimelinePart = translate()(
 					this.props.isLastSegment &&
 					this.props.isLastInSegment &&
 					(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
-				let invalidReasonColorVars: React.CSSProperties | undefined = undefined
+				let invalidReasonColorVars: CSSProperties | undefined = undefined
 				if (innerPart.invalidReason && innerPart.invalidReason.color) {
 					const invalidColor = SegmentTimelinePart0.convertHexToRgba(innerPart.invalidReason.color)
 					if (invalidColor) {
 						invalidReasonColorVars = {
-							'--invalid-reason-color-opaque': `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
-							'--invalid-reason-color-transparent': `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 0)`,
+							['--invalid-reason-color-opaque']: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 1)`,
+							['--invalid-reason-color-transparent']: `rgba(${invalidColor.red}, ${invalidColor.green}, ${invalidColor.blue}, 0)`,
 						}
 					}
 				}

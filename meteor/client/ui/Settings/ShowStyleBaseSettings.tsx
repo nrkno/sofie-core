@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
-import * as ClassNames from 'classnames'
-const Tooltip = require('rc-tooltip')
+import ClassNames from 'classnames'
+import Tooltip from 'rc-tooltip'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -14,15 +14,12 @@ import {
 	ShowStyleBaseId,
 } from '../../../lib/collections/ShowStyleBases'
 import { doModalDialog } from '../../lib/ModalDialog'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTrash, faPencilAlt, faCheck, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
 import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
 import { Random } from 'meteor/random'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import {
@@ -37,7 +34,6 @@ import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
-import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -236,6 +232,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<div className="col c12 r1-c12">
 							<ConfigManifestSettings
 								t={this.props.t}
+								i18n={this.props.i18n}
+								tReady={this.props.tReady}
 								manifest={this.props.blueprintConfigManifest}
 								object={showStyleBase}
 								collection={ShowStyleBases}
@@ -275,7 +273,7 @@ interface IStudioRuntimeArgumentsSettingsState {
 	editedItems: Array<string>
 }
 
-const StudioRuntimeArgumentsSettings = translate()(
+const StudioRuntimeArgumentsSettings = withTranslation()(
 	class StudioRuntimeArgumentsSettings extends React.Component<
 		Translated<IStudioRuntimeArgumentsSettingsProps>,
 		IStudioRuntimeArgumentsSettingsState
@@ -461,7 +459,7 @@ interface IStudioSourcesSettingsState {
 	editedSources: Array<string>
 }
 
-const SourceLayerSettings = translate()(
+const SourceLayerSettings = withTranslation()(
 	class SourceLayerSettings extends React.Component<
 		Translated<IStudioSourcesSettingsProps>,
 		IStudioSourcesSettingsState
@@ -896,7 +894,7 @@ interface IOutputSettingsState {
 	editedOutputs: Array<string>
 }
 
-const OutputSettings = translate()(
+const OutputSettings = withTranslation()(
 	class OutputSettings extends React.Component<Translated<IOutputSettingsProps>, IOutputSettingsState> {
 		constructor(props: Translated<IOutputSettingsProps>) {
 			super(props)
@@ -1154,7 +1152,7 @@ interface IHotkeyLegendSettingsState {
 	editedItems: Array<string>
 }
 
-const HotkeyLegendSettings = translate()(
+const HotkeyLegendSettings = withTranslation()(
 	class HotkeyLegendSettings extends React.Component<
 		Translated<IHotkeyLegendSettingsProps>,
 		IHotkeyLegendSettingsState
@@ -1308,7 +1306,7 @@ interface IShowStyleVariantsProps {
 interface IShowStyleVariantsSettingsState {
 	editedMappings: ProtectedString<any>[]
 }
-const ShowStyleVariantsSettings = translate()(
+const ShowStyleVariantsSettings = withTranslation()(
 	class ShowStyleVariantsSettings extends React.Component<
 		Translated<IShowStyleVariantsProps>,
 		IShowStyleVariantsSettingsState
@@ -1409,6 +1407,8 @@ const ShowStyleVariantsSettings = translate()(
 										<div className="col c12 r1-c12 phs">
 											<ConfigManifestSettings
 												t={this.props.t}
+												i18n={this.props.i18n}
+												tReady={this.props.tReady}
 												manifest={this.props.blueprintConfigManifest}
 												collection={ShowStyleVariants}
 												configPath={'config'}

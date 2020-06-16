@@ -1,9 +1,9 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
-import { PeripheralDevice, SpreadsheetDevice } from '../../../../lib/collections/PeripheralDevices'
+import { withTranslation } from 'react-i18next'
+import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { SpreadsheetDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/spreadsheet'
+import { IngestDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { fetchFrom } from '../../../lib/lib'
@@ -12,7 +12,7 @@ interface IConfigManifestOAuthFlowComponentState {}
 interface IConfigManifestOAuthFlowComponentProps {
 	device: PeripheralDevice
 }
-export const ConfigManifestOAuthFlowComponent = translate()(
+export const ConfigManifestOAuthFlowComponent = withTranslation()(
 	class ConfigManifestOAuthFlowComponent extends React.Component<
 		Translated<IConfigManifestOAuthFlowComponentProps>,
 		IConfigManifestOAuthFlowComponentState
@@ -126,8 +126,8 @@ export const ConfigManifestOAuthFlowComponent = translate()(
 		}
 		render() {
 			const { t } = this.props
-			let settings = (this.props.device.settings || {}) as SpreadsheetDeviceSettings
-			let device = this.props.device as SpreadsheetDevice
+			let settings = (this.props.device.settings || {}) as IngestDeviceSettings
+			let device = this.props.device
 			return (
 				<div>
 					<div className="mod mvs mhn">

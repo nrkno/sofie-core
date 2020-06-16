@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
-import * as moment from 'moment'
-import { SaferEval } from 'safer-eval'
+import moment from 'moment'
+import { VM } from 'vm2'
 import { logger } from '../../logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
@@ -20,7 +20,7 @@ import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../l
 const blueprintCache: { [id: string]: Cache } = {}
 interface Cache {
 	modified: number
-	fcn: SomeBlueprintManifest
+	manifest: SomeBlueprintManifest
 }
 
 export interface WrappedSystemBlueprint {
@@ -151,18 +151,17 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 	}
 
 	if (cached) {
-		return cached.fcn
+		return cached.manifest
 	} else {
-		// Inject some commonly used libraries, so that they don't have to be bundled into the blueprints
-		const context = {
-			_,
-			moment,
-		}
+		const vm = new VM({
+			sandbox: {
+				_,
+				moment,
+			},
+		})
 
-		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(
-			blueprint.code
-		)
-		let manifest = entry.default
+		const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
+		const manifest: SomeBlueprintManifest = entry.default
 
 		// Wrap the functions, to emit better errors
 		_.each(_.keys(manifest), (key) => {
@@ -181,6 +180,10 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 			}
 		})
 
+		blueprintCache[unprotectString(blueprint._id)] = {
+			manifest,
+			modified: blueprint.modified,
+		}
 		return manifest
 	}
 }

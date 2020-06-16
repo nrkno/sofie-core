@@ -4,13 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { PeripheralDeviceId } from './PeripheralDevices'
-
-export enum WorkFlowSource {
-	EXPECTED_MEDIA_ITEM = 'expected_media_item',
-	SOURCE_STORAGE_REMOVE = 'source_storage_remove',
-	LOCAL_MEDIA_ITEM = 'local_media_item',
-	TARGET_STORAGE_REMOVE = 'local_storage_remove',
-}
+import { MediaManagerAPI } from '../api/mediaManager'
 
 /** A string, identifying a MediaWorkFlow */
 export type MediaWorkFlowId = ProtectedString<'MediaWorkFlowId'>
@@ -27,7 +21,7 @@ export interface MediaWorkFlow {
 	deviceId: PeripheralDeviceId
 	studioId: StudioId
 
-	source: WorkFlowSource
+	source: string
 	/** Id of the expectedMedia Item */
 	expectedMediaItemId?: string[]
 	mediaObjectId?: string

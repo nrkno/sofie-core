@@ -2,10 +2,10 @@ import * as _ from 'underscore'
 import * as React from 'react'
 import * as VelocityReact from 'velocity-react'
 
-import * as faFastBackward from '@fortawesome/fontawesome-free-solid/faFastBackward'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFastBackward } from '@fortawesome/free-solid-svg-icons'
 
-import Lottie from 'react-lottie'
+import { Lottie } from '@crello/react-lottie'
 import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel'
 
 // @ts-ignore Not recognized by Typescript
@@ -114,10 +114,12 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 	}
 
 	checkFullScreen() {
-		// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 		return (
-			document.fullScreen ||
+			// @ts-ignore fullscreen has become deprecated
+			document.fullscreen ||
+			// @ts-ignore TypeScript doesn't have vendor-prefixed fullscreen flags
 			document.mozFullScreen ||
+			// @ts-ignore
 			document.webkitIsFullScreen ||
 			Math.abs(screen.height - window.innerHeight) < 10 ||
 			false
@@ -213,11 +215,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 							onMouseLeave={this.onOnAirMouseLeave}
 							onClick={this.onOnAirClick}
 							tabIndex={0}>
-							{this.state.onAirHover ? (
-								<Lottie options={this.onAirOver} isStopped={false} isPaused={false} />
-							) : (
-								<Lottie options={this.onAirOut} isStopped={false} isPaused={false} />
-							)}
+							{this.state.onAirHover ? <Lottie config={this.onAirOver} /> : <Lottie config={this.onAirOut} />}
 						</button>
 					)}
 					{!this.state.isFullscreen && (

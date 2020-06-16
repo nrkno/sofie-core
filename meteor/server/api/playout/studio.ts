@@ -7,14 +7,14 @@ import {
 import { StudioId } from '../../../lib/collections/Studios'
 import { protectString } from '../../../lib/lib'
 import { CacheForStudio } from '../../DatabaseCaches'
-import { MongoSelector } from '../../../lib/typings/meteor'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 export function getActiveRundownPlaylistsInStudio(
 	cache: CacheForStudio | null,
 	studioId: StudioId,
 	excludeRundownPlaylistId?: RundownPlaylistId
 ): RundownPlaylist[] {
-	const q: MongoSelector<DBRundownPlaylist> = {
+	const q: MongoQuery<DBRundownPlaylist> = {
 		studioId: studioId,
 		active: true,
 		_id: {

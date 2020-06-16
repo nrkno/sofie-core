@@ -26,7 +26,7 @@ interface IPropsHeader {
 }
 
 interface INamePropsHeader extends IPropsHeader {
-	partSlug: string
+	partName: string
 }
 
 function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<SourceLayerType>) {
@@ -76,7 +76,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 	class PieceNameContainer extends MeteorReactComponent<
 		INamePropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
 	> {
-		componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.pieceInstancesSimple, {
 				rundownId: { $in: this.props.rundownIds },
 			})
@@ -94,7 +94,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 						return this.props.pieceInstance.piece.name
 				}
 			}
-			return this.props.partSlug.split(';')[1] || ''
+			return this.props.partName || ''
 		}
 	}
 )
@@ -113,7 +113,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	class PieceIconContainer extends MeteorReactComponent<
 		IPropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
 	> {
-		componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.pieceInstancesSimple, {
 				rundownId: { $in: this.props.rundownIds },
 			})

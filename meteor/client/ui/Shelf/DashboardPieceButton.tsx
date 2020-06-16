@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -24,7 +24,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
 import { IAdLibListItem } from './AdLibListItem'
-import { PieceId } from '../../../lib/collections/Pieces'
+import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
@@ -141,13 +141,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	renderSplits(renderThumbnail: boolean = false) {
-		const splitAdLib = this.props.adLibListItem as AdLibPieceUi
+		const splitAdLib = this.props.adLibListItem
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
 			return (
 				<React.Fragment>
 					{renderThumbnail ? (
-						<DashboardPieceButtonSplitPreview piece={(this.props.adLibListItem as any) as AdLibPieceUi} />
+						<DashboardPieceButtonSplitPreview piece={splitAdLib} />
 					) : (
 						<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
 					)}
@@ -183,15 +183,15 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				style={{
 					width: isList
 						? 'calc(100% - 8px)'
-						: this.props.widthScale
+						: !!this.props.widthScale
 						? //@ts-ignore: widthScale is in a weird state between a number and something else
 						  //		      because of the optional generic type argument
-						  this.props.widthScale * DEFAULT_BUTTON_WIDTH + 'em'
+						  (this.props.widthScale as number) * DEFAULT_BUTTON_WIDTH + 'em'
 						: undefined,
 					height:
-						!isList && this.props.heightScale
+						!isList && !!this.props.heightScale
 							? //@ts-ignore
-							  this.props.heightScale * DEFAULT_BUTTON_HEIGHT + 'em'
+							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
 				onClick={(e) =>

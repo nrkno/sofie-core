@@ -1,5 +1,5 @@
 import { setLoggerLevel } from '../server/api/logger'
-import { runInFiber, Fiber } from './Fibers'
+import { Fiber } from './Fibers'
 import { resetRandomId } from './random'
 import { makeCompatible } from 'meteor-promise'
 
@@ -10,18 +10,18 @@ makeCompatible(Promise, Fiber)
 
 // Add references to all "meteor" mocks below, so that jest resolves the imports properly.
 
-jest.mock('meteor/meteor', require('./meteor').setup, { virtual: true })
-jest.mock('meteor/random', require('./random').setup, { virtual: true })
-jest.mock('meteor/check', require('./check').setup, { virtual: true })
+jest.mock('meteor/meteor', (...args) => require('./meteor').setup(args), { virtual: true })
+jest.mock('meteor/random', (...args) => require('./random').setup(args), { virtual: true })
+jest.mock('meteor/check', (...args) => require('./check').setup(args), { virtual: true })
 
-jest.mock('meteor/meteorhacks:picker', require('./meteorhacks-picker').setup, { virtual: true })
-jest.mock('meteor/mdg:validated-method', require('./validated-method').setup, { virtual: true })
+jest.mock('meteor/meteorhacks:picker', (...args) => require('./meteorhacks-picker').setup(args), { virtual: true })
+jest.mock('meteor/mdg:validated-method', (...args) => require('./validated-method').setup(args), { virtual: true })
 
-jest.mock('meteor/mongo', require('./mongo').setup, { virtual: true })
+jest.mock('meteor/mongo', (...args) => require('./mongo').setup(args), { virtual: true })
 
-jest.mock('../server/api/integration/slack', require('./slack').setup, { virtual: true })
-jest.mock('../server/api/integration/soap', require('./soap').setup, { virtual: true })
-jest.mock('../server/api/integration/rabbitMQ', require('./rabbitMQ').setup, { virtual: true })
+jest.mock('../server/api/integration/slack', (...args) => require('./slack').setup(args), { virtual: true })
+jest.mock('../server/api/integration/soap', (...args) => require('./soap').setup(args), { virtual: true })
+jest.mock('../server/api/integration/rabbitMQ', (...args) => require('./rabbitMQ').setup(args), { virtual: true })
 
 require('../server/api/logger.ts')
 

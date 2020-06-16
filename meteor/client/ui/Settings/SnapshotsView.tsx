@@ -7,8 +7,8 @@ import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { faWindowClose, faUpload } from '@fortawesome/fontawesome-free-solid'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faWindowClose, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
@@ -54,7 +54,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 				removeSnapshots: false,
 			}
 		}
-		componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.snapshots, {
 				created: {
 					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days

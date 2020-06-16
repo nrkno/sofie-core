@@ -5,16 +5,8 @@ import { createMongoCollection } from './lib'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { StudioId } from './Studios'
 import { MediaWorkFlowId } from './MediaWorkFlows'
+import { MediaManagerAPI } from '../api/mediaManager'
 
-export enum WorkStepStatus {
-	IDLE = 'idle',
-	WORKING = 'working',
-	DONE = 'done',
-	ERROR = 'error',
-	SKIPPED = 'skipped',
-	CANCELED = 'canceled',
-	BLOCKED = 'blocked',
-}
 /** A string, identifying a MediaWorkFlowStep */
 export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
 
@@ -28,7 +20,7 @@ export abstract class MediaWorkFlowStep {
 
 	workFlowId: MediaWorkFlowId
 	action: string
-	status: WorkStepStatus
+	status: MediaManagerAPI.WorkStepStatus
 	messages?: Array<string>
 
 	priority: number

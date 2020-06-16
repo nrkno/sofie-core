@@ -1,13 +1,10 @@
-export interface SpreadsheetDeviceSettings {
-	/** Path/Name to the Drive folder */
-	folderPath: string
-	debugLogging: boolean
-
-	/** Set to true when secret value exists */
+export interface IngestDeviceSettings {
+	/** OAuth: Set to true when secret value exists */
 	secretCredentials: boolean
 	secretAccessToken: boolean
 }
-export interface SpreadsheetDeviceSecretSettings {
+export interface IngestDeviceSecretSettings {
+	/** OAuth: */
 	credentials?: Credentials
 	accessToken?: AccessToken
 }

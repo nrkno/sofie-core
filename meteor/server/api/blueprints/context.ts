@@ -8,10 +8,11 @@ import {
 	unprotectObject,
 	unprotectObjectArray,
 	protectString,
+	check,
 	getCurrentTime,
 } from '../../../lib/lib'
 import { DBPart, PartId } from '../../../lib/collections/Parts'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { logger } from '../../../lib/logging'
 import {
 	ICommonContext,

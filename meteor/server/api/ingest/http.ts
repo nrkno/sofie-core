@@ -3,10 +3,9 @@ import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
 import { updateRundownAndSaveCache } from './rundownInput'
 import { Studios, StudioId } from '../../../lib/collections/Studios'
-import { check } from 'meteor/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId } from './lib'
-import { protectString } from '../../../lib/lib'
+import { protectString, check } from '../../../lib/lib'
 import { PickerPOST } from '../http'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
@@ -15,7 +14,8 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 
 	let content = ''
 	try {
-		let ingestRundown = (req as any).body
+		let ingestRundown = req.body
+		if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')
 		if (typeof ingestRundown !== 'object') {
 			// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
 			ingestRundown = JSON.parse(ingestRundown)

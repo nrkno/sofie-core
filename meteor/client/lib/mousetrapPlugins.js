@@ -1,5 +1,5 @@
 import { mousetrapHelper } from './mousetrapHelper'
-
+import Mousetrap from 'mousetrap'
 ;(function(Mousetrap) {
 	var _globalCallbacks = {}
 	var _originalStopCallback = Mousetrap.prototype.stopCallback
@@ -34,7 +34,6 @@ import { mousetrapHelper } from './mousetrapHelper'
 
 	Mousetrap.init()
 })(Mousetrap)
-
 ;(function(Mousetrap) {
 	var _originalStopCallback = Mousetrap.prototype.stopCallback
 	var _originalHandleKey = Mousetrap.prototype.handleKey
