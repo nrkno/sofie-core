@@ -10,13 +10,17 @@ import { protectString } from '../../../lib/lib'
  * Especially relevant for multi-user.
  */
 export namespace ConfigRef {
-	export function getStudioConfigRef (studioId: StudioId, configKey: string): string {
+	export function getStudioConfigRef(studioId: StudioId, configKey: string): string {
 		return '${studio.' + studioId + '.' + configKey + '}'
 	}
-	export function getShowStyleConfigRef (showStyleVariantId: ShowStyleVariantId, configKey: string): string {
+	export function getShowStyleConfigRef(showStyleVariantId: ShowStyleVariantId, configKey: string): string {
 		return '${showStyle.' + showStyleVariantId + '.' + configKey + '}'
 	}
-	export function retrieveRefs (stringWithReferences: string, modifier?: (str: string) => string, bailOnError?: boolean): string {
+	export function retrieveRefs(
+		stringWithReferences: string,
+		modifier?: (str: string) => string,
+		bailOnError?: boolean
+	): string {
 		if (!stringWithReferences) return stringWithReferences
 
 		const refs = stringWithReferences.match(/\$\{[^}]+\}/g) || []
@@ -31,15 +35,11 @@ export namespace ConfigRef {
 		})
 		return stringWithReferences
 	}
-	function retrieveRef (reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
+	function retrieveRef(reference: string, bailOnError?: boolean): ConfigItemValue | string | undefined {
 		if (!reference) return undefined
 		let m = reference.match(/\$\{([^.}]+)\.([^.}]+)\.([^.}]+)\}/)
 		if (m) {
-			if (
-				m[1] === 'studio' &&
-				_.isString(m[2]) &&
-				_.isString(m[3])
-			) {
+			if (m[1] === 'studio' && _.isString(m[2]) && _.isString(m[3])) {
 				const studioId: StudioId = protectString(m[2])
 				const configId = m[3]
 				const studio = Studios.findOne(studioId)
@@ -50,12 +50,9 @@ export namespace ConfigRef {
 					} else {
 						return undefined
 					}
-				} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Studio "${studioId}" not found`)
-			} else if (
-				m[1] === 'showStyle' &&
-				_.isString(m[2]) &&
-				_.isString(m[3])
-			) {
+				} else if (bailOnError)
+					throw new Meteor.Error(404, `Ref "${reference}": Studio "${studioId}" not found`)
+			} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
 				const showStyleVariantId = protectString<ShowStyleVariantId>(m[2])
 				const configId = m[3]
 				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
@@ -66,15 +63,19 @@ export namespace ConfigRef {
 					} else {
 						return undefined
 					}
-				} else if (bailOnError) throw new Meteor.Error(404,`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`)
+				} else if (bailOnError)
+					throw new Meteor.Error(
+						404,
+						`Ref "${reference}": Showstyle variant "${showStyleVariantId}" not found`
+					)
 			}
 		}
 		return undefined
 	}
 }
 
-export function compileStudioConfig (studio: Studio) {
-	const res: {[key: string]: ConfigItemValue} = {}
+export function compileStudioConfig(studio: Studio) {
+	const res: { [key: string]: ConfigItemValue } = {}
 	_.each(studio.config, (c) => {
 		res[c._id] = c.value
 	})
@@ -85,14 +86,14 @@ export function compileStudioConfig (studio: Studio) {
 	return res
 }
 
-export function findMissingConfigs (manifest: ConfigManifestEntry[] | undefined, config: IConfigItem[]) {
+export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, config: IConfigItem[]) {
 	const missingKeys: string[] = []
 	if (manifest === undefined) {
-		 return missingKeys
+		return missingKeys
 	}
 
-	const configKeys = _.map(config, c => c._id)
-	_.each(manifest, m => {
+	const configKeys = _.map(config, (c) => c._id)
+	_.each(manifest, (m) => {
 		if (m.required && configKeys.indexOf(m.id) === -1) {
 			missingKeys.push(m.name)
 		}

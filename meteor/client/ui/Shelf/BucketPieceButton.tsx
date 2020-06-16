@@ -9,7 +9,13 @@ import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { RundownUtils } from '../../lib/rundown'
-import { ISourceLayer, IOutputLayer, SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
+import {
+	ISourceLayer,
+	IOutputLayer,
+	SourceLayerType,
+	VTContent,
+	LiveSpeakContent,
+} from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
@@ -39,7 +45,7 @@ const buttonSource = {
 		return {
 			id: props.adLibListItem._id,
 			originalIndex: props.findAdLib(props.adLibListItem._id).index,
-			bucketId: props.bucketId
+			bucketId: props.bucketId,
 		}
 	},
 
@@ -59,7 +65,7 @@ const buttonSource = {
 				props.onAdLibMove(droppedId, bucketId)
 			}
 		}
-	}
+	},
 }
 
 const buttonTarget = {
@@ -82,14 +88,14 @@ const buttonTarget = {
 
 		return {
 			index,
-			action: 'reorder'
+			action: 'reorder',
 		}
-	}
+	},
 }
 
 export interface BucketPieceButtonBaseProps {
 	moveAdLib: (id: PieceId, atIndex: number) => void
-	findAdLib: (id: PieceId) => { piece: BucketAdLib | undefined, index: number }
+	findAdLib: (id: PieceId) => { piece: BucketAdLib | undefined; index: number }
 	onAdLibReorder: (draggedId: PieceId, newIndex: number, oldIndex: number) => void
 	onAdLibMove: (id: PieceId, newBucketId: BucketId) => void
 	bucketId: BucketId
@@ -105,36 +111,41 @@ interface ButtonTargetCollectedProps {
 	connectDropTarget: ConnectDropTarget
 }
 
-export class BucketPieceButtonBase extends DashboardPieceButtonBase<ButtonSourceCollectedProps & ButtonTargetCollectedProps> {
+export class BucketPieceButtonBase extends DashboardPieceButtonBase<
+	ButtonSourceCollectedProps & ButtonTargetCollectedProps
+> {
 	constructor(props) {
 		super(props)
 	}
 
 	render() {
-		const {
-			isDragging,
-			connectDragSource,
-			connectDragPreview,
-			connectDropTarget,
-		} = this.props
+		const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 		return connectDropTarget(connectDragSource(super.render()))
 	}
 }
 
-export const BucketPieceButton = translateWithTracker<IDashboardButtonProps & BucketPieceButtonBaseProps, {}, IDashboardButtonTrackedProps>((props: IDashboardButtonProps) => {
-	const piece = props.adLibListItem as any as AdLibPieceUi
+export const BucketPieceButton = translateWithTracker<
+	IDashboardButtonProps & BucketPieceButtonBaseProps,
+	{},
+	IDashboardButtonTrackedProps
+>((props: IDashboardButtonProps) => {
+	const piece = (props.adLibListItem as any) as AdLibPieceUi
 
 	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 
 	return {
 		status,
-		metadata
+		metadata,
 	}
-})(DropTarget(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonTarget, connect => ({
-	connectDropTarget: connect.dropTarget(),
-}))(DragSource(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonSource, (connect, monitor) => ({
-	connectDragSource: connect.dragSource(),
-	connectDragPreview: connect.dragPreview(),
-	isDragging: monitor.isDragging(),
-}))(BucketPieceButtonBase)))
+})(
+	DropTarget(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonTarget, (connect) => ({
+		connectDropTarget: connect.dropTarget(),
+	}))(
+		DragSource(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonSource, (connect, monitor) => ({
+			connectDragSource: connect.dragSource(),
+			connectDragPreview: connect.dragPreview(),
+			isDragging: monitor.isDragging(),
+		}))(BucketPieceButtonBase)
+	)
+)

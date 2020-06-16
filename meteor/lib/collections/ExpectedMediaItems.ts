@@ -57,20 +57,21 @@ export interface ExpectedMediaItemBucket extends ExpectedMediaItemBase {
 
 export type ExpectedMediaItem = ExpectedMediaItemRundown | ExpectedMediaItemBucket
 
-export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem>
-	= createMongoCollection<ExpectedMediaItem>('expectedMediaItems')
+export const ExpectedMediaItems: TransformedCollection<ExpectedMediaItem, ExpectedMediaItem> = createMongoCollection<
+	ExpectedMediaItem
+>('expectedMediaItems')
 registerCollection('ExpectedMediaItems', ExpectedMediaItems)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ExpectedMediaItems._ensureIndex({
-			path: 1
+			path: 1,
 		})
 		ExpectedMediaItems._ensureIndex({
 			mediaFlowId: 1,
-			studioId: 1
+			studioId: 1,
 		})
 		ExpectedMediaItems._ensureIndex({
-			rundownId: 1
+			rundownId: 1,
 		})
 	}
 })

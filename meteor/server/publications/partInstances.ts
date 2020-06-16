@@ -9,8 +9,8 @@ meteorPublish(PubSub.partInstances, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
-			token: 0
-		}
+			token: 0,
+		},
 	}
 
 	// Enforce only not-reset

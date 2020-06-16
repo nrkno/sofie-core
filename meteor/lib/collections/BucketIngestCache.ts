@@ -18,14 +18,16 @@ export interface BucketIngestCacheObj {
 	data: IngestAdlib
 }
 
-export const BucketIngestCache: TransformedCollection<BucketIngestCacheObj, BucketIngestCacheObj>
-	= createMongoCollection<BucketIngestCacheObj>('bucketIngestCache')
+export const BucketIngestCache: TransformedCollection<
+	BucketIngestCacheObj,
+	BucketIngestCacheObj
+> = createMongoCollection<BucketIngestCacheObj>('bucketIngestCache')
 registerCollection('BucketIngestCache', BucketIngestCache)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		BucketIngestCache._ensureIndex({
 			showStyleVariantId: 1,
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })

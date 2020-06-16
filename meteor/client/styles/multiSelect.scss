@@ -10,13 +10,14 @@
 			position: static;
 
 			.checkbox {
-				.checkbox-checked, .checkbox-unchecked {
+				.checkbox-checked,
+				.checkbox-unchecked {
 					top: -3px;
 				}
 			}
 		}
 	}
-	
+
 	.expco-title.focusable-main {
 		&.placeholder {
 			color: #bbb;
@@ -33,13 +34,13 @@
 		border-bottom-left-radius: 0px;
 		border-bottom-right-radius: 0px;
 	}
-	
+
 	&.expco-popper {
 		border: 0px;
 		border-top-left-radius: 0px;
 		border-top-right-radius: 0px;
 		background: #fff;
-		margin: 0!important;
+		margin: 0 !important;
 		transition: none;
 	}
 }
@@ -71,7 +72,7 @@
 		width: auto;
 
 		&.expco-expanded {
-			display: block
+			display: block;
 		}
 	}
 
@@ -89,7 +90,7 @@
 }
 
 .table {
-	.expco-item{
+	.expco-item {
 		margin: 10px;
 	}
 }

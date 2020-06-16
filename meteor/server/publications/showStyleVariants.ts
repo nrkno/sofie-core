@@ -9,8 +9,8 @@ meteorPublish(PubSub.showStyleVariants, (selector, token) => {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
-			token: 0
-		}
+			token: 0,
+		},
 	}
 	if (ShowStyleBasesSecurity.allowReadAccess(selector, token, this)) {
 		return ShowStyleVariants.find(selector, modifier)

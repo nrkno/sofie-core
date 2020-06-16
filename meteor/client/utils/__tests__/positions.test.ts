@@ -7,7 +7,7 @@ describe('getElementDocumentOffset', () => {
 		bottom: 0,
 		right: 0,
 		height: 0,
-		width: 0
+		width: 0,
 	}
 
 	test('should return null for null input', () => {
@@ -15,7 +15,6 @@ describe('getElementDocumentOffset', () => {
 
 		expect(actual).toBe(null)
 	})
-
 
 	describe('{top}', () => {
 		test('should be 0 when bounding client rect top is 0 and window.scrollY is 0', () => {

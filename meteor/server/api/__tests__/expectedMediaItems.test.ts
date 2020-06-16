@@ -14,7 +14,10 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { wrapWithCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
+import {
+	wrapWithCacheForRundownPlaylistFromRundown,
+	initCacheForRundownPlaylistFromRundown,
+} from '../../DatabaseCaches'
 import { removeRundownFromCache } from '../playout/lib'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
@@ -39,7 +42,7 @@ describe('Expected Media Items', () => {
 	const mockFlow0 = 'mockFlow0'
 	const mockFlow1 = 'mockFlow1'
 
-	function setupRundown (rdId: RundownId, rplId: RundownPlaylistId) {
+	function setupRundown(rdId: RundownId, rplId: RundownPlaylistId) {
 		RundownPlaylists.insert({
 			_id: rplId,
 			externalId: 'mock_rpl',
@@ -51,153 +54,169 @@ describe('Expected Media Items', () => {
 			currentPartInstanceId: protectString(''),
 			previousPartInstanceId: protectString(''),
 			nextPartInstanceId: protectString(''),
-			active: true
+			active: true,
 		})
 
-		Rundowns.insert(literal<DBRundown>({
-			_id: rdId,
-			created: 0,
-			dataSource: '',
-			expectedDuration: 0,
-			expectedStart: 0,
-			externalId: '',
-			importVersions: {
-				blueprint: '',
-				core: '',
-				showStyleBase: '',
-				showStyleVariant: '',
-				studio: ''
-			},
-			metaData: {},
-			modified: 0,
-			name: 'Mock Rundown',
-			peripheralDeviceId: env.ingestDevice._id,
-			showStyleBaseId: env.showStyleBaseId,
-			showStyleVariantId: env.showStyleVariantId,
-			studioId: env.studio._id,
-			playlistId: rplId,
-			_rank: 0,
-		}))
-		Segments.insert(literal<DBSegment>({
-			_id: getRandomId(),
-			_rank: 1,
-			externalId: '',
-			metaData: {},
-			name: '',
-			rundownId: rdId,
-			externalModified: 1
-		}))
-		Parts.insert(literal<DBPart>({
-			_id: protectString(rdId + '_' + mockPart0),
-			_rank: 1,
-			autoNext: false,
-			autoNextOverlap: 0,
-			classes: [],
-			classesForNext: [],
-			disableOutTransition: false,
-			expectedDuration: 1,
-			externalId: '',
-			rundownId: rdId,
-			segmentId: protectString(''),
-			title: '',
-			typeVariant: ''
-		}))
-		Pieces.insert(literal<Piece>({
-			_id: protectString(rdId + '_' + mockPiece0),
-			name: '',
-			enable: {
-				start: 0
-			},
-			adlibPreroll: 0,
-			externalId: '',
-			metaData: {},
-			outputLayerId: LAYER_IDS.OUTPUT_PGM,
-			partId: protectString(rdId + '_' + mockPart0),
-			rundownId: rdId,
-			sourceLayerId: LAYER_IDS.SOURCE_VT0,
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			content: literal<VTContent>({
-				fileName: mockFileName0,
-				path: mockPath0,
-				mediaFlowIds: [ mockFlow0, mockFlow1 ],
-				firstWords: '',
-				lastWords: '',
-				sourceDuration: 0,
-				timelineObjects: []
+		Rundowns.insert(
+			literal<DBRundown>({
+				_id: rdId,
+				created: 0,
+				dataSource: '',
+				expectedDuration: 0,
+				expectedStart: 0,
+				externalId: '',
+				importVersions: {
+					blueprint: '',
+					core: '',
+					showStyleBase: '',
+					showStyleVariant: '',
+					studio: '',
+				},
+				metaData: {},
+				modified: 0,
+				name: 'Mock Rundown',
+				peripheralDeviceId: env.ingestDevice._id,
+				showStyleBaseId: env.showStyleBaseId,
+				showStyleVariantId: env.showStyleVariantId,
+				studioId: env.studio._id,
+				playlistId: rplId,
+				_rank: 0,
 			})
-		}))
-		Parts.insert(literal<DBPart>({
-			_id: protectString(rdId + '_' + mockPart1),
-			_rank: 1,
-			autoNext: false,
-			autoNextOverlap: 0,
-			classes: [],
-			classesForNext: [],
-			disableOutTransition: false,
-			expectedDuration: 1,
-			externalId: '',
-			rundownId: rdId,
-			segmentId: protectString(''),
-			title: '',
-			typeVariant: ''
-		}))
-		Pieces.insert(literal<Piece>({
-			_id: protectString(rdId + '_' + mockPiece1),
-			name: '',
-			enable: {
-				start: 0,
-			},
-			adlibPreroll: 0,
-			externalId: '',
-			metaData: {},
-			outputLayerId: LAYER_IDS.OUTPUT_PGM,
-			partId: protectString(rdId + '_' + mockPart1),
-			rundownId: rdId,
-			sourceLayerId: LAYER_IDS.SOURCE_VT0,
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			content: literal<VTContent>({
-				fileName: mockFileName1,
-				path: mockPath1,
-				mediaFlowIds: [mockFlow0],
-				firstWords: '',
-				lastWords: '',
-				sourceDuration: 0,
-				timelineObjects: []
+		)
+		Segments.insert(
+			literal<DBSegment>({
+				_id: getRandomId(),
+				_rank: 1,
+				externalId: '',
+				metaData: {},
+				name: '',
+				rundownId: rdId,
+				externalModified: 1,
 			})
-		}))
-		AdLibPieces.insert(literal<AdLibPiece>({
-			_id: protectString(rdId + '_' + mockAdLibPiece0),
-			name: '',
-			_rank: 0,
-			adlibPreroll: 0,
-			disabled: false,
-			expectedDuration: 0,
-			externalId: '',
-			infiniteMode: PieceLifespan.Normal,
-			invalid: false,
-			metaData: {},
-			outputLayerId: LAYER_IDS.OUTPUT_PGM,
-			partId: protectString(rdId + '_' + mockPart1),
-			rundownId: rdId,
-			sourceLayerId: LAYER_IDS.SOURCE_VT0,
-			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			// trigger: undefined,
-			content: literal<VTContent>({
-				fileName: mockFileName1,
-				path: mockPath1,
-				mediaFlowIds: [mockFlow0],
-				firstWords: '',
-				lastWords: '',
-				sourceDuration: 0,
-				timelineObjects: []
+		)
+		Parts.insert(
+			literal<DBPart>({
+				_id: protectString(rdId + '_' + mockPart0),
+				_rank: 1,
+				autoNext: false,
+				autoNextOverlap: 0,
+				classes: [],
+				classesForNext: [],
+				disableOutTransition: false,
+				expectedDuration: 1,
+				externalId: '',
+				rundownId: rdId,
+				segmentId: protectString(''),
+				title: '',
+				typeVariant: '',
 			})
-		}))
+		)
+		Pieces.insert(
+			literal<Piece>({
+				_id: protectString(rdId + '_' + mockPiece0),
+				name: '',
+				enable: {
+					start: 0,
+				},
+				adlibPreroll: 0,
+				externalId: '',
+				metaData: {},
+				outputLayerId: LAYER_IDS.OUTPUT_PGM,
+				partId: protectString(rdId + '_' + mockPart0),
+				rundownId: rdId,
+				sourceLayerId: LAYER_IDS.SOURCE_VT0,
+				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				content: literal<VTContent>({
+					fileName: mockFileName0,
+					path: mockPath0,
+					mediaFlowIds: [mockFlow0, mockFlow1],
+					firstWords: '',
+					lastWords: '',
+					sourceDuration: 0,
+					timelineObjects: [],
+				}),
+			})
+		)
+		Parts.insert(
+			literal<DBPart>({
+				_id: protectString(rdId + '_' + mockPart1),
+				_rank: 1,
+				autoNext: false,
+				autoNextOverlap: 0,
+				classes: [],
+				classesForNext: [],
+				disableOutTransition: false,
+				expectedDuration: 1,
+				externalId: '',
+				rundownId: rdId,
+				segmentId: protectString(''),
+				title: '',
+				typeVariant: '',
+			})
+		)
+		Pieces.insert(
+			literal<Piece>({
+				_id: protectString(rdId + '_' + mockPiece1),
+				name: '',
+				enable: {
+					start: 0,
+				},
+				adlibPreroll: 0,
+				externalId: '',
+				metaData: {},
+				outputLayerId: LAYER_IDS.OUTPUT_PGM,
+				partId: protectString(rdId + '_' + mockPart1),
+				rundownId: rdId,
+				sourceLayerId: LAYER_IDS.SOURCE_VT0,
+				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				content: literal<VTContent>({
+					fileName: mockFileName1,
+					path: mockPath1,
+					mediaFlowIds: [mockFlow0],
+					firstWords: '',
+					lastWords: '',
+					sourceDuration: 0,
+					timelineObjects: [],
+				}),
+			})
+		)
+		AdLibPieces.insert(
+			literal<AdLibPiece>({
+				_id: protectString(rdId + '_' + mockAdLibPiece0),
+				name: '',
+				_rank: 0,
+				adlibPreroll: 0,
+				disabled: false,
+				expectedDuration: 0,
+				externalId: '',
+				infiniteMode: PieceLifespan.Normal,
+				invalid: false,
+				metaData: {},
+				outputLayerId: LAYER_IDS.OUTPUT_PGM,
+				partId: protectString(rdId + '_' + mockPart1),
+				rundownId: rdId,
+				sourceLayerId: LAYER_IDS.SOURCE_VT0,
+				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				// trigger: undefined,
+				content: literal<VTContent>({
+					fileName: mockFileName1,
+					path: mockPath1,
+					mediaFlowIds: [mockFlow0],
+					firstWords: '',
+					lastWords: '',
+					sourceDuration: 0,
+					timelineObjects: [],
+				}),
+			})
+		)
 	}
 
-	beforeAll(() => runInFiber(() => {
-		setupRundown(rdId0, rplId0)
-		setupRundown(rdId1, rplId1)
-	}))
+	beforeAll(() =>
+		runInFiber(() => {
+			setupRundown(rdId0, rplId0)
+			setupRundown(rdId1, rplId1)
+		})
+	)
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
@@ -224,7 +243,7 @@ describe('Expected Media Items', () => {
 			waitForPromise(cache.saveAllToDatabase())
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
-				studioId: env.studio._id
+				studioId: env.studio._id,
 			}).fetch()
 			expect(items).toHaveLength(0)
 		})
@@ -242,13 +261,13 @@ describe('Expected Media Items', () => {
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId1,
-				studioId: env.studio._id
+				studioId: env.studio._id,
 			}).fetch()
 			expect(items).toHaveLength(2)
 		})
 		testInFiber('Removes all ExpectedMediaItems if a Part has been deleted', () => {
 			Parts.remove({
-				_id: protectString(rdId1 + '_' + mockPart0)
+				_id: protectString(rdId1 + '_' + mockPart0),
 			})
 
 			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
@@ -257,7 +276,7 @@ describe('Expected Media Items', () => {
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId1,
-				studioId: env.studio._id
+				studioId: env.studio._id,
 			}).fetch()
 			expect(items).toHaveLength(0)
 		})
@@ -274,7 +293,7 @@ describe('Expected Media Items', () => {
 			waitForPromise(cache.saveAllToDatabase())
 			let items = ExpectedMediaItems.find({
 				rundownId: rdId1,
-				studioId: env.studio._id
+				studioId: env.studio._id,
 			}).fetch()
 			expect(items).toHaveLength(2)
 
@@ -284,10 +303,9 @@ describe('Expected Media Items', () => {
 			waitForPromise(cache.saveAllToDatabase())
 			items = ExpectedMediaItems.find({
 				rundownId: rdId1,
-				studioId: env.studio._id
+				studioId: env.studio._id,
 			}).fetch()
 			expect(items).toHaveLength(0)
-
 		})
 	})
 

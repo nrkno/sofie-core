@@ -5,12 +5,12 @@ import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 
-meteorPublish(PubSub.pieceInstances, function (selector, token) {
-	if (!selector) throw new Meteor.Error(400,'selector argument missing')
+meteorPublish(PubSub.pieceInstances, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
-			token: 0
-		}
+			token: 0,
+		},
 	}
 
 	// Enforce only not-reset
@@ -23,7 +23,7 @@ meteorPublish(PubSub.pieceInstances, function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.pieceInstancesSimple, function (selector, token) {
+meteorPublish(PubSub.pieceInstancesSimple, function(selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier = {
 		fields: {
@@ -31,7 +31,7 @@ meteorPublish(PubSub.pieceInstancesSimple, function (selector, token) {
 			timings: 0,
 			// we kind-of need to know the contents, unfortunately
 			// content: 0,
-		}
+		},
 	}
 
 	// Enforce only not-reset

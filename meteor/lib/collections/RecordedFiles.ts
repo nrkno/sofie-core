@@ -18,13 +18,14 @@ export interface RecordedFile {
 	stoppedAt?: Time
 }
 
-export const RecordedFiles: TransformedCollection<RecordedFile, RecordedFile>
-	= createMongoCollection<RecordedFile>('recordedFiles')
+export const RecordedFiles: TransformedCollection<RecordedFile, RecordedFile> = createMongoCollection<RecordedFile>(
+	'recordedFiles'
+)
 registerCollection('RecordedFiles', RecordedFiles)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		RecordedFiles._ensureIndex({
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })

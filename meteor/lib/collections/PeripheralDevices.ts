@@ -46,7 +46,12 @@ export interface PeripheralDevice {
 
 	token: string
 
-	settings?: MosDeviceSettings | PlayoutDeviceSettings | MediaManagerDeviceSettings | SpreadsheetDeviceSettings | INewsDeviceSettings
+	settings?:
+		| MosDeviceSettings
+		| PlayoutDeviceSettings
+		| MediaManagerDeviceSettings
+		| SpreadsheetDeviceSettings
+		| INewsDeviceSettings
 
 	secretSettings?: any | SpreadsheetDeviceSecretSettings
 
@@ -57,54 +62,55 @@ export interface PeripheralDevice {
 }
 
 export interface MosParentDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	type: PeripheralDeviceAPI.DeviceType.MOS,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+	category: PeripheralDeviceAPI.DeviceCategory.INGEST
+	type: PeripheralDeviceAPI.DeviceType.MOS
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
 	settings?: MosDeviceSettings
 	secretSettings: undefined
 	lastDataReceived?: Time
 }
 export interface PlayoutParentDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-	type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+	category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT
+	type: PeripheralDeviceAPI.DeviceType.PLAYOUT
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
 	secretSettings: undefined
 	settings?: PlayoutDeviceSettings
 }
 export interface MediaManagerDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
-	type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+	category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER
+	type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
 	secretSettings: undefined
 	settings?: MediaManagerDeviceSettings
 }
 export interface SpreadsheetDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+	category: PeripheralDeviceAPI.DeviceCategory.INGEST
+	type: PeripheralDeviceAPI.DeviceType.SPREADSHEET
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
 	settings?: SpreadsheetDeviceSettings
 	secretSettings?: SpreadsheetDeviceSecretSettings
 	accessTokenUrl?: string
 }
 export interface INewsDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	type: PeripheralDeviceAPI.DeviceType.INEWS,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+	category: PeripheralDeviceAPI.DeviceCategory.INGEST
+	type: PeripheralDeviceAPI.DeviceType.INEWS
+	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
 	settings?: INewsDeviceSettings
 }
 
-export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
-	= createMongoCollection<PeripheralDevice>('peripheralDevices')
+export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice> = createMongoCollection<
+	PeripheralDevice
+>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PeripheralDevices._ensureIndex({
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })
 
-export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): StudioId | undefined {
+export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId | undefined {
 	if (peripheralDevice.studioId) {
 		return peripheralDevice.studioId
 	}

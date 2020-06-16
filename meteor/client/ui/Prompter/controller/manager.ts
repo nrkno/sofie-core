@@ -21,11 +21,9 @@ export class PrompterControlManager {
 		if (Array.isArray(this._view.configOptions.mode)) {
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.MOUSE) > -1) {
 				this._controllers.push(new MouseIshController(this._view))
-
 			}
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.KEYBOARD) > -1) {
 				this._controllers.push(new KeyboardController(this._view))
-
 			}
 			if (this._view.configOptions.mode.indexOf(PrompterConfigMode.SHUTTLEKEYBOARD) > -1) {
 				this._controllers.push(new ShuttleKeyboardController(this._view))
@@ -45,22 +43,22 @@ export class PrompterControlManager {
 		window.removeEventListener('mousedown', this._onMouseKeyDown)
 		window.removeEventListener('mouseup', this._onMouseKeyUp)
 
-		_.each(this._controllers, c => c.destroy())
+		_.each(this._controllers, (c) => c.destroy())
 		this._controllers = []
 	}
 	private _onKeyDown = (e: KeyboardEvent) => {
-		_.each(this._controllers, c => c.onKeyDown(e))
+		_.each(this._controllers, (c) => c.onKeyDown(e))
 	}
 	private _onKeyUp = (e: KeyboardEvent) => {
-		_.each(this._controllers, c => c.onKeyUp(e))
+		_.each(this._controllers, (c) => c.onKeyUp(e))
 	}
 	private _onMouseKeyDown = (e: MouseEvent) => {
-		_.each(this._controllers, c => c.onMouseKeyDown(e))
+		_.each(this._controllers, (c) => c.onMouseKeyDown(e))
 	}
 	private _onMouseKeyUp = (e: MouseEvent) => {
-		_.each(this._controllers, c => c.onMouseKeyUp(e))
+		_.each(this._controllers, (c) => c.onMouseKeyUp(e))
 	}
 	private _onWheel = (e: WheelEvent) => {
-		_.each(this._controllers, c => c.onWheel(e))
+		_.each(this._controllers, (c) => c.onWheel(e))
 	}
 }

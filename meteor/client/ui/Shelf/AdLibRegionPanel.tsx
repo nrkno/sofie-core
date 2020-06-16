@@ -1,6 +1,13 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { RundownLayoutBase, RundownLayoutAdLibRegion, DashboardLayoutAdLibRegion, RundownLayoutAdLibRegionRole, RundownLayoutElementType, PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
+import {
+	RundownLayoutBase,
+	RundownLayoutAdLibRegion,
+	DashboardLayoutAdLibRegion,
+	RundownLayoutAdLibRegionRole,
+	RundownLayoutElementType,
+	PieceDisplayStyle,
+} from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
@@ -16,8 +23,7 @@ import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/col
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceId } from '../../../lib/collections/Pieces'
 
-interface IState {
-}
+interface IState {}
 
 interface IAdLibRegionPanelProps {
 	layout: RundownLayoutBase
@@ -35,22 +41,29 @@ interface IAdLibRegionPanelTrackedProps {
 	}
 }
 
-export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>, IState> {
-
-	constructor (props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+export class AdLibRegionPanelInner extends MeteorReactComponent<
+	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>,
+	IState
+> {
+	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
 		super(props)
-
 	}
 
-	isAdLibOnAir (adLib: AdLibPieceUi) {
-		if (this.props.unfinishedPieces[unprotectString(adLib._id)] && this.props.unfinishedPieces[unprotectString(adLib._id)].length > 0) {
+	isAdLibOnAir(adLib: AdLibPieceUi) {
+		if (
+			this.props.unfinishedPieces[unprotectString(adLib._id)] &&
+			this.props.unfinishedPieces[unprotectString(adLib._id)].length > 0
+		) {
 			return true
 		}
 		return false
 	}
 
-	isAdLibNext (adLib: AdLibPieceUi) {
-		if (this.props.nextPieces[unprotectString(adLib._id)] && this.props.nextPieces[unprotectString(adLib._id)].length > 0) {
+	isAdLibNext(adLib: AdLibPieceUi) {
+		if (
+			this.props.nextPieces[unprotectString(adLib._id)] &&
+			this.props.nextPieces[unprotectString(adLib._id)].length > 0
+		) {
 			return true
 		}
 		return false
@@ -59,24 +72,27 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLi
 	onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.active) {
 			const { t } = this.props
-			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) => MeteorCall.userAction.sourceLayerStickyPieceStart(e,
-				this.props.playlist._id, sourceLayerId
-			))
+			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e) =>
+				MeteorCall.userAction.sourceLayerStickyPieceStart(e, this.props.playlist._id, sourceLayerId)
+			)
 		}
 	}
 
-	toggleAdLib (e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
+	toggleAdLib(e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
 		const { t } = this.props
 		if (!piece) {
 			return
 		}
 
 		if (piece.invalid) {
-			NotificationCenter.push(new Notification(
-				t('Invalid AdLib'),
-				NoticeLevel.WARNING,
-				t('Cannot play this AdLib because it is marked as Invalid'),
-				'toggleAdLib'))
+			NotificationCenter.push(
+				new Notification(
+					t('Invalid AdLib'),
+					NoticeLevel.WARNING,
+					t('Cannot play this AdLib because it is marked as Invalid'),
+					'toggleAdLib'
+				)
+			)
 			return
 		}
 
@@ -84,13 +100,25 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLi
 
 		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
 			if (!piece.isGlobal) {
-				doUserAction(t, e, UserAction.START_ADLIB, (e) => MeteorCall.userAction.segmentAdLibPieceStart(e,
-					this.props.playlist._id, currentPartInstanceId, piece._id, true
-				))
+				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
+					MeteorCall.userAction.segmentAdLibPieceStart(
+						e,
+						this.props.playlist._id,
+						currentPartInstanceId,
+						piece._id,
+						true
+					)
+				)
 			} else if (piece.isGlobal && !piece.isSticky) {
-				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) => MeteorCall.userAction.baselineAdLibPieceStart(e,
-					this.props.playlist._id, currentPartInstanceId, piece._id, true
-				))
+				doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e) =>
+					MeteorCall.userAction.baselineAdLibPieceStart(
+						e,
+						this.props.playlist._id,
+						currentPartInstanceId,
+						piece._id,
+						true
+					)
+				)
 			} else if (piece.isSticky) {
 				this.onToggleSticky(piece.sourceLayerId, e)
 			}
@@ -117,40 +145,48 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<Translated<IAdLi
 		}
 	}
 
-	render () {
-		const piece = this.props.panel.tags && this.props.rundownBaselineAdLibs ?
-		this.props.rundownBaselineAdLibs.concat(_.flatten(this.props.uiSegments.map(seg => seg.pieces))).filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[this.props.adlibRank ? this.props.adlibRank : 0] : undefined
-		return <div className='adlib-region-panel'
-			style={
-				_.extend(
-					RundownLayoutsAPI.isDashboardLayout(this.props.layout) ?
-						dashboardElementPosition(this.props.panel as DashboardLayoutAdLibRegion) :
-						{},
+	render() {
+		const piece =
+			this.props.panel.tags && this.props.rundownBaselineAdLibs
+				? this.props.rundownBaselineAdLibs
+						.concat(_.flatten(this.props.uiSegments.map((seg) => seg.pieces)))
+						.filter((item) => matchFilter(item, this.props.showStyleBase, this.props.uiSegments, this.props.filter))[
+						this.props.adlibRank ? this.props.adlibRank : 0
+				  ]
+				: undefined
+		return (
+			<div
+				className="adlib-region-panel"
+				style={_.extend(
+					RundownLayoutsAPI.isDashboardLayout(this.props.layout)
+						? dashboardElementPosition(this.props.panel as DashboardLayoutAdLibRegion)
+						: {},
 					{
-						'visibility': this.props.visible ? 'visible' : 'hidden'
+						visibility: this.props.visible ? 'visible' : 'hidden',
 					}
-				)
-			}>
-			<div className={classNames('adlib-region-panel__image-container', {
-				'next': piece && this.isAdLibNext(piece),
-				'on-air': piece && this.isAdLibOnAir(piece)
-			})} >
-				<div className='adlib-region-panel__button'
-					onClick={(e) => this.onAction(e, piece)}
-				>
-					{
-					<span className={classNames('adlib-region-panel__label',{
-						'adlib-region-panel__label--large': this.props.panel.labelBelowPanel
-					})}>{this.props.panel.name}</span>
-					}
+				)}>
+				<div
+					className={classNames('adlib-region-panel__image-container', {
+						next: piece && this.isAdLibNext(piece),
+						'on-air': piece && this.isAdLibOnAir(piece),
+					})}>
+					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
+						{
+							<span
+								className={classNames('adlib-region-panel__label', {
+									'adlib-region-panel__label--large': this.props.panel.labelBelowPanel,
+								})}>
+								{this.props.panel.name}
+							</span>
+						}
+					</div>
 				</div>
 			</div>
-		</div>
+		)
 	}
 }
 
-
-export function getNextPiecesReactive (nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
+export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -158,29 +194,39 @@ export function getNextPiecesReactive (nextPartInstanceId: PartInstanceId | null
 			$and: [
 				{
 					piece: {
-						$exists: true
-					}
+						$exists: true,
+					},
 				},
 				{
 					'piece.adLibSourceId': {
-						$exists: true
-					}
-				}
-			]
+						$exists: true,
+					},
+				},
+			],
 		}).fetch()
 	}
 
 	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
-	_.each(_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId), (grp, id) => nextPieces[id] = _.map(grp, instance => instance))
+	_.each(
+		_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId),
+		(grp, id) => (nextPieces[id] = _.map(grp, (instance) => instance))
+	)
 	return nextPieces
 }
 
-export const AdLibRegionPanel = translateWithTracker<Translated<IAdLibPanelProps & IAdLibRegionPanelProps>, IState, IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>((props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
-	return Object.assign({}, fetchAndFilter(props), {
-		studio: props.playlist.getStudio(),
-		unfinishedPieces: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
-		nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId)
-	})
-}, (data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
-	return !_.isEqual(props, nextProps)
-})(AdLibRegionPanelInner)
+export const AdLibRegionPanel = translateWithTracker<
+	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
+	IState,
+	IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps
+>(
+	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
+		return Object.assign({}, fetchAndFilter(props), {
+			studio: props.playlist.getStudio(),
+			unfinishedPieces: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+			nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId),
+		})
+	},
+	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+		return !_.isEqual(props, nextProps)
+	}
+)(AdLibRegionPanelInner)

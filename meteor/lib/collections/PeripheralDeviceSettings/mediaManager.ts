@@ -103,7 +103,7 @@ export enum MediaFlowType {
 	WATCH_FOLDER = 'watch_folder',
 	LOCAL_INGEST = 'local_ingest',
 	EXPECTED_ITEMS = 'expected_items',
-	UNKNOWN = 'unknown'
+	UNKNOWN = 'unknown',
 }
 
 export interface MediaFlow {
@@ -121,7 +121,7 @@ export enum StorageType {
 	LOCAL_FOLDER = 'local_folder',
 	FILE_SHARE = 'file_share',
 	QUANTEL_HTTP = 'quantel_http',
-	UNKNOWN = 'unknown'
+	UNKNOWN = 'unknown',
 	// FTP = 'ftp',
 	// AWS_S3 = 'aws_s3'
 }
@@ -172,7 +172,11 @@ export interface FileShareStorage extends StorageSettings {
 		onlySelectedFiles?: boolean
 	}
 }
-export type MonitorSettings = MonitorSettingsNull | MonitorSettingsWatcher | MonitorSettingsMediaScanner | MonitorSettingsQuantel
+export type MonitorSettings =
+	| MonitorSettingsNull
+	| MonitorSettingsWatcher
+	| MonitorSettingsMediaScanner
+	| MonitorSettingsQuantel
 export interface MonitorSettingsBase {
 	type: MonitorSettingsType
 
@@ -186,9 +190,10 @@ export enum MonitorSettingsType {
 	NULL = '',
 	WATCHER = 'watcher',
 	MEDIA_SCANNER = 'mediascanner',
-	QUANTEL = 'quantel'
+	QUANTEL = 'quantel',
 }
-export interface WatchOptions { // See https://www.npmjs.com/package/chokidar#api
+export interface WatchOptions {
+	// See https://www.npmjs.com/package/chokidar#api
 	persistent?: boolean
 	ignored?: any
 	ignoreInitial?: boolean
@@ -203,10 +208,12 @@ export interface WatchOptions { // See https://www.npmjs.com/package/chokidar#ap
 	binaryInterval?: number
 	ignorePermissionErrors?: boolean
 	atomic?: boolean | number
-	awaitWriteFinish?: boolean | {
-		stabilityThreshold?: number
-		pollInterval?: number
-	}
+	awaitWriteFinish?:
+		| boolean
+		| {
+				stabilityThreshold?: number
+				pollInterval?: number
+		  }
 }
 export interface MonitorSettingsNull extends MonitorSettingsBase {
 	type: MonitorSettingsType.NULL

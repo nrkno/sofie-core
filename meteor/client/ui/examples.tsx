@@ -16,22 +16,24 @@ interface SimpleComponentState {
 	myState0: string
 }
 class SimpleComponent extends React.Component<SimpleComponentProps, SimpleComponentState> {
-	constructor (props: SimpleComponentProps) {
+	constructor(props: SimpleComponentProps) {
 		super(props)
 		this.state = {
-			myState0: ''
+			myState0: '',
 		}
 	}
-	render () {
-		return <div>
-			{this.props.myProp0}
-			{this.state.myState0}
-			{/* {this.props.asdf} invalid argument */}
-			{/* {this.state.asdf} invalid argument */}
-		</div>
+	render() {
+		return (
+			<div>
+				{this.props.myProp0}
+				{this.state.myState0}
+				{/* {this.props.asdf} invalid argument */}
+				{/* {this.state.asdf} invalid argument */}
+			</div>
+		)
 	}
 }
-function testSimpleComponent () {
+function testSimpleComponent() {
 	let a = new SimpleComponent({
 		myProp0: '',
 		// asdf: 123, // invalid argument
@@ -45,26 +47,31 @@ interface TranslatedSimpleComponentState {
 	myState0: string
 }
 const TranslatedSimpleComponent = translate()(
-	class TranslatedSimpleComponent extends React.Component<Translated<TranslatedSimpleComponentProps>, TranslatedSimpleComponentState> {
-		constructor (props: Translated<TranslatedSimpleComponentProps>) {
+	class TranslatedSimpleComponent extends React.Component<
+		Translated<TranslatedSimpleComponentProps>,
+		TranslatedSimpleComponentState
+	> {
+		constructor(props: Translated<TranslatedSimpleComponentProps>) {
 			super(props)
 			this.state = {
-				myState0: ''
+				myState0: '',
 			}
 		}
-		render () {
+		render() {
 			let t = this.props.t
-			return <div>
-				{t('Test test')}
-				{this.props.myProp0}
-				{this.state.myState0}
-				{/* {this.props.asdf} invalid argument */}
-				{/* {this.state.asdf} invalid argument */}
-			</div>
+			return (
+				<div>
+					{t('Test test')}
+					{this.props.myProp0}
+					{this.state.myState0}
+					{/* {this.props.asdf} invalid argument */}
+					{/* {this.state.asdf} invalid argument */}
+				</div>
+			)
 		}
 	}
 )
-function testTranslatedSimpleComponent () {
+function testTranslatedSimpleComponent() {
 	let a = new TranslatedSimpleComponent({
 		myProp0: '',
 		// asdf: 123, // invalid argument
@@ -81,29 +88,37 @@ interface ReactiveComponentState {
 interface ReactiveComponentTrackedProps {
 	myReactiveProp0: string
 }
-const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentState, ReactiveComponentTrackedProps>(() => {
-	return {
-		myReactiveProp0: Meteor.status()
-	}
-})(
-class ReactiveComponent extends MeteorReactComponent<ReactiveComponentProps & ReactiveComponentTrackedProps, ReactiveComponentState> {
-	constructor (props: ReactiveComponentProps & ReactiveComponentTrackedProps) {
-		super(props)
-		this.state = {
-			myState0: ''
+const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentState, ReactiveComponentTrackedProps>(
+	() => {
+		return {
+			myReactiveProp0: Meteor.status(),
 		}
 	}
-	render () {
-		return <div>
-			{this.props.myProp0}
-			{this.state.myState0}
-			{this.props.myReactiveProp0}
-			{/* {this.props.asdf} invalid argument */}
-			{/* {this.state.asdf} invalid argument */}
-		</div>
+)(
+	class ReactiveComponent extends MeteorReactComponent<
+		ReactiveComponentProps & ReactiveComponentTrackedProps,
+		ReactiveComponentState
+	> {
+		constructor(props: ReactiveComponentProps & ReactiveComponentTrackedProps) {
+			super(props)
+			this.state = {
+				myState0: '',
+			}
+		}
+		render() {
+			return (
+				<div>
+					{this.props.myProp0}
+					{this.state.myState0}
+					{this.props.myReactiveProp0}
+					{/* {this.props.asdf} invalid argument */}
+					{/* {this.state.asdf} invalid argument */}
+				</div>
+			)
+		}
 	}
-})
-function testReactiveComponent () {
+)
+function testReactiveComponent() {
 	let a = new ReactiveComponent({
 		myProp0: '',
 		// myReactiveProp0: '', // invalid argument
@@ -121,32 +136,41 @@ interface TranslatedReactiveComponentTrackedProps {
 	myReactiveProp0: string
 }
 
-const TranslatedReactiveComponent = translateWithTracker<TranslatedReactiveComponentProps, TranslatedReactiveComponentState, TranslatedReactiveComponentTrackedProps>(() => {
+const TranslatedReactiveComponent = translateWithTracker<
+	TranslatedReactiveComponentProps,
+	TranslatedReactiveComponentState,
+	TranslatedReactiveComponentTrackedProps
+>(() => {
 	return {
-		myReactiveProp0: Meteor.status()
+		myReactiveProp0: Meteor.status(),
 	}
 })(
-	class TranslatedReactiveComponent extends MeteorReactComponent<Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>, TranslatedReactiveComponentState> {
-		constructor (props: Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>) {
+	class TranslatedReactiveComponent extends MeteorReactComponent<
+		Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>,
+		TranslatedReactiveComponentState
+	> {
+		constructor(props: Translated<TranslatedReactiveComponentProps & TranslatedReactiveComponentTrackedProps>) {
 			super(props)
 			this.state = {
-				myState0: ''
+				myState0: '',
 			}
 		}
-		render () {
+		render() {
 			let t = this.props.t
-			return <div>
-				{t('Test test')}
-				{this.props.myProp0}
-				{this.state.myState0}
-				{this.props.myReactiveProp0}
-				{/* {this.props.asdf} invalid argument */}
-				{/* {this.state.asdf} invalid argument */}
-			</div>
+			return (
+				<div>
+					{t('Test test')}
+					{this.props.myProp0}
+					{this.state.myState0}
+					{this.props.myReactiveProp0}
+					{/* {this.props.asdf} invalid argument */}
+					{/* {this.state.asdf} invalid argument */}
+				</div>
+			)
 		}
 	}
 )
-function testTranslatedReactiveComponent () {
+function testTranslatedReactiveComponent() {
 	let a = new TranslatedReactiveComponent({
 		myProp0: '',
 		// asdf: 123, // invalid argument
@@ -161,33 +185,40 @@ interface WithTimingComponentState {
 	myState0: string
 }
 const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimingComponentState>({
-	isHighResolution: false
-})(class WithTimingComponent extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {
-	_refreshTimer: number | undefined
+	isHighResolution: false,
+})(
+	class WithTimingComponent extends React.Component<WithTiming<WithTimingComponentProps>, WithTimingComponentState> {
+		_refreshTimer: number | undefined
 
-	constructor (props: WithTiming<WithTimingComponentProps>) {
-		super(props)
+		constructor(props: WithTiming<WithTimingComponentProps>) {
+			super(props)
 
-		let a = this.props.myProp0
+			let a = this.props.myProp0
 
-		this.state = {
-			myState0: a,
-			// asdf: '' // invalid state attr
+			this.state = {
+				myState0: a,
+				// asdf: '' // invalid state attr
+			}
+		}
+
+		render() {
+			return (
+				<div>
+					{this.props.myProp0}
+					{this.state.myState0}
+					{/* {this.props.asdf} invalid argument */}
+					{/* {this.state.asdf} invalid argument */}
+				</div>
+			)
 		}
 	}
-
-	render () {
-		return <div>
-			{this.props.myProp0}
-			{this.state.myState0}
-			{/* {this.props.asdf} invalid argument */}
-			{/* {this.state.asdf} invalid argument */}
-		</div>
-	}
-})
-function testWithTimingComponent () {
-	let a = new WithTimingComponent({
-		myProp0: '',
-		// asdf: 123, // invalid argument
-	},{})
+)
+function testWithTimingComponent() {
+	let a = new WithTimingComponent(
+		{
+			myProp0: '',
+			// asdf: 123, // invalid argument
+		},
+		{}
+	)
 }

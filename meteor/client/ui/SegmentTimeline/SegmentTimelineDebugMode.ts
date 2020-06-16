@@ -1,4 +1,3 @@
-
 let DEBUG_MODE: boolean = false
 window['setDebugMode'] = (d) => {
 	DEBUG_MODE = d

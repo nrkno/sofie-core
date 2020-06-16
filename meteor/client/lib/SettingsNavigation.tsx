@@ -14,156 +14,180 @@ interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 }
 export type SettingsNavigationType = 'blueprint' | 'showstyle' | 'newshowstyle'
 export class SettingsNavigation extends React.Component<ISettingsNavigation> {
-	render () {
-
+	render() {
 		if (this.props.type === 'blueprint') {
-			return (
-				<Blueprint {...this.props} />
-			)
+			return <Blueprint {...this.props} />
 		} else if (this.props.type === 'showstyle') {
-			return (
-				<ShowStyle {...this.props} />
-			)
+			return <ShowStyle {...this.props} />
 		} else if (this.props.type === 'newshowstyle') {
-			return (
-				<NewShowStyle {...this.props} />
-			)
+			return <NewShowStyle {...this.props} />
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
 	}
 }
 interface ISettingsNavigationBaseProps {
-	attribute?: string,
+	attribute?: string
 	collection?: Mongo.Collection<any>
 	obj?: any
 	className?: string
 }
 
 interface ISettingsNavigationBaseState {
-	redirect: boolean,
+	redirect: boolean
 	redirectRoute: string
 }
-export class SettingsNavigationBase extends React.Component<ISettingsNavigationBaseProps, ISettingsNavigationBaseState> {
-	constructor (props) {
+export class SettingsNavigationBase extends React.Component<
+	ISettingsNavigationBaseProps,
+	ISettingsNavigationBaseState
+> {
+	constructor(props) {
 		super(props)
 
 		this.state = {
 			redirect: false,
-			redirectRoute: ''
+			redirectRoute: '',
 		}
 
 		this.redirectUser = this.redirectUser.bind(this)
 	}
 
-	redirectUser (url: string) {
+	redirectUser(url: string) {
 		this.setState({
 			redirect: true,
-			redirectRoute: url
+			redirectRoute: url,
 		})
 	}
 
-	renderButton () {
+	renderButton() {
 		return <button></button>
 	}
 
-	render () {
+	render() {
 		if (this.state.redirect === true) {
 			return <Redirect to={this.state.redirectRoute} />
 		}
 
-		return (
-			this.renderButton()
-		)
+		return this.renderButton()
 	}
 }
-function wrapSettingsNavigation (newClass) {
+function wrapSettingsNavigation(newClass) {
 	return withTracker((props: ISettingsNavigationBaseProps) => {
 		// These properties will be exposed under this.props
 		// Note that these properties are reactively recalculated
 		return {
-			myObject: props.collection ? props.collection.findOne(props.obj._id) : (props.obj || {})
+			myObject: props.collection ? props.collection.findOne(props.obj._id) : props.obj || {},
 		}
 	})(newClass)
 }
 
-const Blueprint = wrapSettingsNavigation(translate()(class Blueprint extends SettingsNavigationBase {
-	constructor (props) {
-		super(props)
-	}
+const Blueprint = wrapSettingsNavigation(
+	translate()(
+		class Blueprint extends SettingsNavigationBase {
+			constructor(props) {
+				super(props)
+			}
 
-	onBlueprintAdd () {
-		MeteorCall.blueprint.insertBlueprint()
-			.then(blueprintId => {
-				this.props.obj['blueprintId'] = blueprintId
-				if (this.props.obj) {
-					let m = {}
-					m['blueprintId'] = blueprintId
-					Studios.update(this.props.obj['_id'], { $set: m })
+			onBlueprintAdd() {
+				MeteorCall.blueprint
+					.insertBlueprint()
+					.then((blueprintId) => {
+						this.props.obj['blueprintId'] = blueprintId
+						if (this.props.obj) {
+							let m = {}
+							m['blueprintId'] = blueprintId
+							Studios.update(this.props.obj['_id'], { $set: m })
+						}
+						console.log(this.props.obj)
+						this.redirectUser('/settings/blueprint/' + blueprintId)
+					})
+					.catch(console.error)
+			}
+
+			renderButton() {
+				if (this.props.obj && this.props.attribute) {
+					if (this.props.obj[this.props.attribute]) {
+						return (
+							<button
+								className="btn btn-primary btn-add-new"
+								onClick={() => {
+									this.redirectUser(
+										'/settings/blueprint/' + (this.props.attribute ? this.props.obj[this.props.attribute] : '')
+									)
+								}}>
+								Edit Blueprint
+							</button>
+						)
+					}
 				}
-				console.log(this.props.obj)
-				this.redirectUser('/settings/blueprint/' + blueprintId)
-			})
-			.catch(console.error)
-	}
 
-	renderButton () {
-		if (this.props.obj && this.props.attribute) {
-			if (this.props.obj[this.props.attribute]) {
 				return (
-					<button className='btn btn-primary btn-add-new'
-						onClick={() => { this.redirectUser('/settings/blueprint/' + (this.props.attribute ? this.props.obj[this.props.attribute] : '')) }}>
-						Edit Blueprint
+					<button
+						className="btn btn-primary btn-add-new"
+						onClick={() => {
+							this.onBlueprintAdd()
+						}}>
+						New Blueprint
 					</button>
 				)
 			}
 		}
+	)
+)
 
-		return (
-			<button className='btn btn-primary btn-add-new' onClick={() => { this.onBlueprintAdd() }}>
-				New Blueprint
-			</button>
-		)
-	}
-}))
+const ShowStyle = wrapSettingsNavigation(
+	translate()(
+		class ShowStyle extends SettingsNavigationBase {
+			constructor(props) {
+				super(props)
+			}
 
-const ShowStyle = wrapSettingsNavigation(translate()(class ShowStyle extends SettingsNavigationBase {
-	constructor (props) {
-		super(props)
-	}
-
-	renderButton () {
-		if (this.props.obj && this.props.attribute) {
-			return (
-				<button key={'button-navigate-' + this.props.obj[this.props.attribute]}
-					className='btn btn-primary btn-add-new'
-					onClick={() => { this.redirectUser('/settings/showStyleBase/' + (this.props.attribute ? this.props.obj['_id'] : '')) }}>
-					Edit {this.props.obj[this.props.attribute]}
-				</button>
-			)
+			renderButton() {
+				if (this.props.obj && this.props.attribute) {
+					return (
+						<button
+							key={'button-navigate-' + this.props.obj[this.props.attribute]}
+							className="btn btn-primary btn-add-new"
+							onClick={() => {
+								this.redirectUser('/settings/showStyleBase/' + (this.props.attribute ? this.props.obj['_id'] : ''))
+							}}>
+							Edit {this.props.obj[this.props.attribute]}
+						</button>
+					)
+				}
+				return <div>Invalid props for SettingsNavigation</div>
+			}
 		}
-		return <div>Invalid props for SettingsNavigation</div>
-	}
-}))
+	)
+)
 
-const NewShowStyle = wrapSettingsNavigation(translate()(class NewShowStyle extends SettingsNavigationBase {
-	constructor (props) {
-		super(props)
-	}
+const NewShowStyle = wrapSettingsNavigation(
+	translate()(
+		class NewShowStyle extends SettingsNavigationBase {
+			constructor(props) {
+				super(props)
+			}
 
-	onShowStyleAdd () {
-		MeteorCall.showstyles.insertShowStyleBase()
-		.then(showStyleBaseId => {
-			this.redirectUser('/settings/showStyleBase/' + showStyleBaseId)
-		})
-		.catch(console.error)
-	}
+			onShowStyleAdd() {
+				MeteorCall.showstyles
+					.insertShowStyleBase()
+					.then((showStyleBaseId) => {
+						this.redirectUser('/settings/showStyleBase/' + showStyleBaseId)
+					})
+					.catch(console.error)
+			}
 
-	renderButton () {
-		return (
-			<button className='btn btn-primary btn-add-new' onClick={() => { this.onShowStyleAdd() }}>
-				New Show Style
-			</button>
-		)
-	}
-}))
+			renderButton() {
+				return (
+					<button
+						className="btn btn-primary btn-add-new"
+						onClick={() => {
+							this.onShowStyleAdd()
+						}}>
+						New Show Style
+					</button>
+				)
+			}
+		}
+	)
+)

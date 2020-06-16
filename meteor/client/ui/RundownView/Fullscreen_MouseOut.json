@@ -1,1 +1,3390 @@
-{"v":"5.3.3","fr":25,"ip":16,"op":32,"w":300,"h":300,"nm":"Sofie_Fullscreen_v02","ddd":0,"assets":[],"layers":[{"ddd":0,"ind":1,"ty":4,"nm":"Arrow 8","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.opacity;"},"r":{"a":0,"k":270,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.position;"},"a":{"a":0,"k":[0,0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.anchorPoint;"},"s":{"a":0,"k":[110,110,100],"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.scale;"}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":1,"k":[{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":49,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":57,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}]},{"t":63}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":44,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":49,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":52,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":56,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"t":65}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"},"o":{"a":0,"k":100,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"},"w":{"a":0,"k":10,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"},"s":{"a":0,"k":[69,69],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.scale;"},"r":{"a":0,"k":270,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[-14,19],"e":[-44,-11],"to":[-5,-5],"ti":[5,5]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.333,"y":0.333},"n":"0p833_0p833_0p333_0p333","t":44,"s":[-44,-11],"e":[-44,-11],"to":[0,0],"ti":[0,0]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":49,"s":[-44,-11],"e":[-14,19],"to":[5,5],"ti":[-5,-5]},{"t":58}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.anchorPoint;"},"s":{"a":0,"k":[100,100],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.scale;"},"r":{"a":0,"k":0,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":33,"op":67,"st":32,"bm":0},{"ddd":0,"ind":2,"ty":4,"nm":"Arrow 7","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.opacity;"},"r":{"a":0,"k":180,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.position;"},"a":{"a":0,"k":[0,0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.anchorPoint;"},"s":{"a":0,"k":[110,110,100],"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.scale;"}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":1,"k":[{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":49,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":57,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}]},{"t":63}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":44,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":49,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":52,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":56,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"t":65}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"},"o":{"a":0,"k":100,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"},"w":{"a":0,"k":10,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"},"s":{"a":0,"k":[69,69],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.scale;"},"r":{"a":0,"k":270,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[-14,19],"e":[-44,-11],"to":[-5,-5],"ti":[5,5]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.333,"y":0.333},"n":"0p833_0p833_0p333_0p333","t":44,"s":[-44,-11],"e":[-44,-11],"to":[0,0],"ti":[0,0]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":49,"s":[-44,-11],"e":[-14,19],"to":[5,5],"ti":[-5,-5]},{"t":58}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.anchorPoint;"},"s":{"a":0,"k":[100,100],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.scale;"},"r":{"a":0,"k":0,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":33,"op":67,"st":32,"bm":0},{"ddd":0,"ind":3,"ty":4,"nm":"Arrow 6","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.opacity;"},"r":{"a":0,"k":90,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.position;"},"a":{"a":0,"k":[0,0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.anchorPoint;"},"s":{"a":0,"k":[110,110,100],"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.scale;"}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":1,"k":[{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":49,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":57,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}]},{"t":63}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":44,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":49,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":52,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":56,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"t":65}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"},"o":{"a":0,"k":100,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"},"w":{"a":0,"k":10,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"},"s":{"a":0,"k":[69,69],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.scale;"},"r":{"a":0,"k":270,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[-14,19],"e":[-44,-11],"to":[-5,-5],"ti":[5,5]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.333,"y":0.333},"n":"0p833_0p833_0p333_0p333","t":44,"s":[-44,-11],"e":[-44,-11],"to":[0,0],"ti":[0,0]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":49,"s":[-44,-11],"e":[-14,19],"to":[5,5],"ti":[-5,-5]},{"t":58}],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.anchorPoint;"},"s":{"a":0,"k":[100,100],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.scale;"},"r":{"a":0,"k":0,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":33,"op":67,"st":32,"bm":0},{"ddd":0,"ind":4,"ty":4,"nm":"Arrow 5","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[110,110,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":1,"k":[{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":33,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[-2.701,20.27],[5.122,-16.094],[-32.151,-8.271]],"c":false}]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":37,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[-2.701,20.27],[5.122,-16.094],[-32.151,-8.271]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":49,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":57,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}]},{"t":63}],"ix":2},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":44,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":49,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":52,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":56,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"t":65}],"ix":2},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3},"o":{"a":0,"k":100,"ix":4},"w":{"a":0,"k":10,"ix":5},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[69,69],"ix":3},"r":{"a":0,"k":270,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":33,"s":[18,52],"e":[-12,22],"to":[-5,-5],"ti":[5,5]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.333,"y":0.333},"n":"0p833_0p833_0p333_0p333","t":44,"s":[-12,22],"e":[-12,22],"to":[0,0],"ti":[0,0]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":49,"s":[-12,22],"e":[18,52],"to":[5,5],"ti":[-5,-5]},{"t":58}],"ix":2},"a":{"a":0,"k":[125,126],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":33,"op":67,"st":32,"bm":0},{"ddd":0,"ind":5,"ty":4,"nm":"Arrow 4","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":0,"k":270,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[110,110,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false},"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":0,"k":{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true},"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"},"o":{"a":0,"k":100,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"},"w":{"a":0,"k":10,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"},"s":{"a":0,"k":[69,69],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.scale;"},"r":{"a":0,"k":270,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":0,"k":[-14,19],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.anchorPoint;"},"s":{"a":0,"k":[100,100],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.scale;"},"r":{"a":0,"k":0,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":33,"st":-1,"bm":0},{"ddd":0,"ind":6,"ty":4,"nm":"Arrow 3","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":0,"k":180,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[110,110,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false},"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":0,"k":{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true},"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"},"o":{"a":0,"k":100,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"},"w":{"a":0,"k":10,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"},"s":{"a":0,"k":[69,69],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.scale;"},"r":{"a":0,"k":270,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":0,"k":[-14,19],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.anchorPoint;"},"s":{"a":0,"k":[100,100],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.scale;"},"r":{"a":0,"k":0,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":33,"st":-1,"bm":0},{"ddd":0,"ind":7,"ty":4,"nm":"Arrow 2","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":0,"k":90,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[110,110,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false},"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":0,"k":{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true},"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"},"o":{"a":0,"k":100,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"},"w":{"a":0,"k":10,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"},"s":{"a":0,"k":[69,69],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.scale;"},"r":{"a":0,"k":270,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":0,"k":[-14,19],"ix":2,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.position;"},"a":{"a":0,"k":[0,0],"ix":1,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.anchorPoint;"},"s":{"a":0,"k":[100,100],"ix":3,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.scale;"},"r":{"a":0,"k":0,"ix":6,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.rotation;"},"o":{"a":0,"k":100,"ix":7,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.opacity;"},"sk":{"a":0,"k":0,"ix":4,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skew;"},"sa":{"a":0,"k":0,"ix":5,"x":"var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skewAxis;"},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":33,"st":-1,"bm":0},{"ddd":0,"ind":8,"ty":4,"nm":"Arrow 1","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[150,150,0],"ix":2},"a":{"a":0,"k":[0,0,0],"ix":1},"s":{"a":0,"k":[110,110,100],"ix":6}},"ao":0,"shapes":[{"ty":"gr","it":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":1,"k":[{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":0,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[-2.701,20.27],[5.122,-16.094],[-32.151,-8.271]],"c":false}]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":4,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[-2.701,20.27],[5.122,-16.094],[-32.151,-8.271]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.167,"y":0.167},"n":"0p833_0p833_0p167_0p167","t":16,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":24,"s":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[19.944,20.27],[5.122,-16.094],[-32.151,-30.916]],"c":false}],"e":[{"i":[[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0]],"v":[[5.122,20.27],[5.122,-16.094],[-32.151,-16.094]],"c":false}]},{"t":30}],"ix":2},"nm":"Arrow Head","mn":"ADBE Vector Shape - Group","hd":false},{"ind":1,"ty":"sh","ix":2,"ks":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":0,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":11,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-79.49,69.027]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":16,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":19,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-20.514,9.721]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}]},{"i":{"x":0.667,"y":1},"o":{"x":0.333,"y":0},"n":"0p667_1_0p333_0","t":23,"s":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-12.092,1.629]],"c":true}],"e":[{"i":[[0,0],[0,0]],"o":[[0,0],[0,0]],"v":[[5.361,-16.158],[-36.154,25.361]],"c":true}]},{"t":32}],"ix":2},"nm":"Arrow Stem","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"st","c":{"a":0,"k":[1,1,1,1],"ix":3},"o":{"a":0,"k":100,"ix":4},"w":{"a":0,"k":10,"ix":5},"lc":2,"lj":1,"ml":4,"ml2":{"a":0,"k":4,"ix":8},"nm":"Stroke 1","mn":"ADBE Vector Graphic - Stroke","hd":false},{"ty":"tr","p":{"a":0,"k":[74,34],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[69,69],"ix":3},"r":{"a":0,"k":270,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Arrow 1","np":3,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false},{"ty":"tr","p":{"a":1,"k":[{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":0,"s":[-14,19],"e":[-44,-11],"to":[-5,-5],"ti":[5,5]},{"i":{"x":0.833,"y":0.833},"o":{"x":0.333,"y":0.333},"n":"0p833_0p833_0p333_0p333","t":11,"s":[-44,-11],"e":[-44,-11],"to":[0,0],"ti":[0,0]},{"i":{"x":0.667,"y":1},"o":{"x":0.167,"y":0.167},"n":"0p667_1_0p167_0p167","t":16,"s":[-44,-11],"e":[-14,19],"to":[5,5],"ti":[-5,-5]},{"t":25}],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Arrows 1","np":1,"cix":2,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":33,"st":-1,"bm":0}],"markers":[{"tm":0,"cm":"Fullscreen_MouseOver","dr":0},{"tm":16,"cm":"Fullscreen_MouseOut","dr":0},{"tm":31,"cm":"3","dr":0},{"tm":33,"cm":"Windowed_MouseOver","dr":0},{"tm":49,"cm":"Windowed_MouseOut","dr":0},{"tm":65,"cm":"6","dr":0}]}
+{
+	"v": "5.3.3",
+	"fr": 25,
+	"ip": 16,
+	"op": 32,
+	"w": 300,
+	"h": 300,
+	"nm": "Sofie_Fullscreen_v02",
+	"ddd": 0,
+	"assets": [],
+	"layers": [
+		{
+			"ddd": 0,
+			"ind": 1,
+			"ty": 4,
+			"nm": "Arrow 8",
+			"sr": 1,
+			"ks": {
+				"o": {
+					"a": 0,
+					"k": 100,
+					"ix": 11,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.opacity;"
+				},
+				"r": { "a": 0, "k": 270, "ix": 10 },
+				"p": {
+					"a": 0,
+					"k": [150, 150, 0],
+					"ix": 2,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.position;"
+				},
+				"a": {
+					"a": 0,
+					"k": [0, 0, 0],
+					"ix": 1,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.anchorPoint;"
+				},
+				"s": {
+					"a": 0,
+					"k": [110, 110, 100],
+					"ix": 6,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.scale;"
+				}
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 57,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												]
+											},
+											{ "t": 63 }
+										],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 33,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 44,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 52,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 56,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{ "t": 65 }
+										],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": {
+										"a": 0,
+										"k": [1, 1, 1, 1],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"
+									},
+									"w": {
+										"a": 0,
+										"k": 10,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"
+									},
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": {
+										"a": 0,
+										"k": 4,
+										"ix": 8,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"
+									},
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": {
+										"a": 0,
+										"k": [74, 34],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.position;"
+									},
+									"a": {
+										"a": 0,
+										"k": [0, 0],
+										"ix": 1,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"
+									},
+									"s": {
+										"a": 0,
+										"k": [69, 69],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.scale;"
+									},
+									"r": {
+										"a": 0,
+										"k": 270,
+										"ix": 6,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.rotation;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 7,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.opacity;"
+									},
+									"sk": {
+										"a": 0,
+										"k": 0,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skew;"
+									},
+									"sa": {
+										"a": 0,
+										"k": 0,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skewAxis;"
+									},
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 1,
+								"k": [
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 33,
+										"s": [-14, 19],
+										"e": [-44, -11],
+										"to": [-5, -5],
+										"ti": [5, 5]
+									},
+									{
+										"i": { "x": 0.833, "y": 0.833 },
+										"o": { "x": 0.333, "y": 0.333 },
+										"n": "0p833_0p833_0p333_0p333",
+										"t": 44,
+										"s": [-44, -11],
+										"e": [-44, -11],
+										"to": [0, 0],
+										"ti": [0, 0]
+									},
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 49,
+										"s": [-44, -11],
+										"e": [-14, 19],
+										"to": [5, 5],
+										"ti": [-5, -5]
+									},
+									{ "t": 58 }
+								],
+								"ix": 2,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.position;"
+							},
+							"a": {
+								"a": 0,
+								"k": [0, 0],
+								"ix": 1,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.anchorPoint;"
+							},
+							"s": {
+								"a": 0,
+								"k": [100, 100],
+								"ix": 3,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.scale;"
+							},
+							"r": {
+								"a": 0,
+								"k": 0,
+								"ix": 6,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.rotation;"
+							},
+							"o": {
+								"a": 0,
+								"k": 100,
+								"ix": 7,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.opacity;"
+							},
+							"sk": {
+								"a": 0,
+								"k": 0,
+								"ix": 4,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skew;"
+							},
+							"sa": {
+								"a": 0,
+								"k": 0,
+								"ix": 5,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skewAxis;"
+							},
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 33,
+			"op": 67,
+			"st": 32,
+			"bm": 0
+		},
+		{
+			"ddd": 0,
+			"ind": 2,
+			"ty": 4,
+			"nm": "Arrow 7",
+			"sr": 1,
+			"ks": {
+				"o": {
+					"a": 0,
+					"k": 100,
+					"ix": 11,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.opacity;"
+				},
+				"r": { "a": 0, "k": 180, "ix": 10 },
+				"p": {
+					"a": 0,
+					"k": [150, 150, 0],
+					"ix": 2,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.position;"
+				},
+				"a": {
+					"a": 0,
+					"k": [0, 0, 0],
+					"ix": 1,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.anchorPoint;"
+				},
+				"s": {
+					"a": 0,
+					"k": [110, 110, 100],
+					"ix": 6,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.scale;"
+				}
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 57,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												]
+											},
+											{ "t": 63 }
+										],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 33,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 44,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 52,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 56,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{ "t": 65 }
+										],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": {
+										"a": 0,
+										"k": [1, 1, 1, 1],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"
+									},
+									"w": {
+										"a": 0,
+										"k": 10,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"
+									},
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": {
+										"a": 0,
+										"k": 4,
+										"ix": 8,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"
+									},
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": {
+										"a": 0,
+										"k": [74, 34],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.position;"
+									},
+									"a": {
+										"a": 0,
+										"k": [0, 0],
+										"ix": 1,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"
+									},
+									"s": {
+										"a": 0,
+										"k": [69, 69],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.scale;"
+									},
+									"r": {
+										"a": 0,
+										"k": 270,
+										"ix": 6,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.rotation;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 7,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.opacity;"
+									},
+									"sk": {
+										"a": 0,
+										"k": 0,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skew;"
+									},
+									"sa": {
+										"a": 0,
+										"k": 0,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skewAxis;"
+									},
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 1,
+								"k": [
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 33,
+										"s": [-14, 19],
+										"e": [-44, -11],
+										"to": [-5, -5],
+										"ti": [5, 5]
+									},
+									{
+										"i": { "x": 0.833, "y": 0.833 },
+										"o": { "x": 0.333, "y": 0.333 },
+										"n": "0p833_0p833_0p333_0p333",
+										"t": 44,
+										"s": [-44, -11],
+										"e": [-44, -11],
+										"to": [0, 0],
+										"ti": [0, 0]
+									},
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 49,
+										"s": [-44, -11],
+										"e": [-14, 19],
+										"to": [5, 5],
+										"ti": [-5, -5]
+									},
+									{ "t": 58 }
+								],
+								"ix": 2,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.position;"
+							},
+							"a": {
+								"a": 0,
+								"k": [0, 0],
+								"ix": 1,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.anchorPoint;"
+							},
+							"s": {
+								"a": 0,
+								"k": [100, 100],
+								"ix": 3,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.scale;"
+							},
+							"r": {
+								"a": 0,
+								"k": 0,
+								"ix": 6,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.rotation;"
+							},
+							"o": {
+								"a": 0,
+								"k": 100,
+								"ix": 7,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.opacity;"
+							},
+							"sk": {
+								"a": 0,
+								"k": 0,
+								"ix": 4,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skew;"
+							},
+							"sa": {
+								"a": 0,
+								"k": 0,
+								"ix": 5,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skewAxis;"
+							},
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 33,
+			"op": 67,
+			"st": 32,
+			"bm": 0
+		},
+		{
+			"ddd": 0,
+			"ind": 3,
+			"ty": 4,
+			"nm": "Arrow 6",
+			"sr": 1,
+			"ks": {
+				"o": {
+					"a": 0,
+					"k": 100,
+					"ix": 11,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.opacity;"
+				},
+				"r": { "a": 0, "k": 90, "ix": 10 },
+				"p": {
+					"a": 0,
+					"k": [150, 150, 0],
+					"ix": 2,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.position;"
+				},
+				"a": {
+					"a": 0,
+					"k": [0, 0, 0],
+					"ix": 1,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.anchorPoint;"
+				},
+				"s": {
+					"a": 0,
+					"k": [110, 110, 100],
+					"ix": 6,
+					"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').transform.scale;"
+				}
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 57,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												]
+											},
+											{ "t": 63 }
+										],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 33,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 44,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 52,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 56,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{ "t": 65 }
+										],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": {
+										"a": 0,
+										"k": [1, 1, 1, 1],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"
+									},
+									"w": {
+										"a": 0,
+										"k": 10,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"
+									},
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": {
+										"a": 0,
+										"k": 4,
+										"ix": 8,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"
+									},
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": {
+										"a": 0,
+										"k": [74, 34],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.position;"
+									},
+									"a": {
+										"a": 0,
+										"k": [0, 0],
+										"ix": 1,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"
+									},
+									"s": {
+										"a": 0,
+										"k": [69, 69],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.scale;"
+									},
+									"r": {
+										"a": 0,
+										"k": 270,
+										"ix": 6,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.rotation;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 7,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.opacity;"
+									},
+									"sk": {
+										"a": 0,
+										"k": 0,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skew;"
+									},
+									"sa": {
+										"a": 0,
+										"k": 0,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').content('Arrow 1').transform.skewAxis;"
+									},
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 1,
+								"k": [
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 33,
+										"s": [-14, 19],
+										"e": [-44, -11],
+										"to": [-5, -5],
+										"ti": [5, 5]
+									},
+									{
+										"i": { "x": 0.833, "y": 0.833 },
+										"o": { "x": 0.333, "y": 0.333 },
+										"n": "0p833_0p833_0p333_0p333",
+										"t": 44,
+										"s": [-44, -11],
+										"e": [-44, -11],
+										"to": [0, 0],
+										"ti": [0, 0]
+									},
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 49,
+										"s": [-44, -11],
+										"e": [-14, 19],
+										"to": [5, 5],
+										"ti": [-5, -5]
+									},
+									{ "t": 58 }
+								],
+								"ix": 2,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.position;"
+							},
+							"a": {
+								"a": 0,
+								"k": [0, 0],
+								"ix": 1,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.anchorPoint;"
+							},
+							"s": {
+								"a": 0,
+								"k": [100, 100],
+								"ix": 3,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.scale;"
+							},
+							"r": {
+								"a": 0,
+								"k": 0,
+								"ix": 6,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.rotation;"
+							},
+							"o": {
+								"a": 0,
+								"k": 100,
+								"ix": 7,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.opacity;"
+							},
+							"sk": {
+								"a": 0,
+								"k": 0,
+								"ix": 4,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skew;"
+							},
+							"sa": {
+								"a": 0,
+								"k": 0,
+								"ix": 5,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 5').content('Arrows 1').transform.skewAxis;"
+							},
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 33,
+			"op": 67,
+			"st": 32,
+			"bm": 0
+		},
+		{
+			"ddd": 0,
+			"ind": 4,
+			"ty": 4,
+			"nm": "Arrow 5",
+			"sr": 1,
+			"ks": {
+				"o": { "a": 0, "k": 100, "ix": 11 },
+				"r": { "a": 0, "k": 0, "ix": 10 },
+				"p": { "a": 0, "k": [150, 150, 0], "ix": 2 },
+				"a": { "a": 0, "k": [0, 0, 0], "ix": 1 },
+				"s": { "a": 0, "k": [110, 110, 100], "ix": 6 }
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 33,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[-2.701, 20.27],
+															[5.122, -16.094],
+															[-32.151, -8.271]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 37,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[-2.701, 20.27],
+															[5.122, -16.094],
+															[-32.151, -8.271]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 57,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												]
+											},
+											{ "t": 63 }
+										],
+										"ix": 2
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 33,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 44,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 49,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 52,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 56,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{ "t": 65 }
+										],
+										"ix": 2
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": { "a": 0, "k": [1, 1, 1, 1], "ix": 3 },
+									"o": { "a": 0, "k": 100, "ix": 4 },
+									"w": { "a": 0, "k": 10, "ix": 5 },
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": { "a": 0, "k": 4, "ix": 8 },
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": { "a": 0, "k": [74, 34], "ix": 2 },
+									"a": { "a": 0, "k": [0, 0], "ix": 1 },
+									"s": { "a": 0, "k": [69, 69], "ix": 3 },
+									"r": { "a": 0, "k": 270, "ix": 6 },
+									"o": { "a": 0, "k": 100, "ix": 7 },
+									"sk": { "a": 0, "k": 0, "ix": 4 },
+									"sa": { "a": 0, "k": 0, "ix": 5 },
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 1,
+								"k": [
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 33,
+										"s": [18, 52],
+										"e": [-12, 22],
+										"to": [-5, -5],
+										"ti": [5, 5]
+									},
+									{
+										"i": { "x": 0.833, "y": 0.833 },
+										"o": { "x": 0.333, "y": 0.333 },
+										"n": "0p833_0p833_0p333_0p333",
+										"t": 44,
+										"s": [-12, 22],
+										"e": [-12, 22],
+										"to": [0, 0],
+										"ti": [0, 0]
+									},
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 49,
+										"s": [-12, 22],
+										"e": [18, 52],
+										"to": [5, 5],
+										"ti": [-5, -5]
+									},
+									{ "t": 58 }
+								],
+								"ix": 2
+							},
+							"a": { "a": 0, "k": [125, 126], "ix": 1 },
+							"s": { "a": 0, "k": [100, 100], "ix": 3 },
+							"r": { "a": 0, "k": 0, "ix": 6 },
+							"o": { "a": 0, "k": 100, "ix": 7 },
+							"sk": { "a": 0, "k": 0, "ix": 4 },
+							"sa": { "a": 0, "k": 0, "ix": 5 },
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 33,
+			"op": 67,
+			"st": 32,
+			"bm": 0
+		},
+		{
+			"ddd": 0,
+			"ind": 5,
+			"ty": 4,
+			"nm": "Arrow 4",
+			"sr": 1,
+			"ks": {
+				"o": { "a": 0, "k": 100, "ix": 11 },
+				"r": { "a": 0, "k": 270, "ix": 10 },
+				"p": { "a": 0, "k": [150, 150, 0], "ix": 2 },
+				"a": { "a": 0, "k": [0, 0, 0], "ix": 1 },
+				"s": { "a": 0, "k": [110, 110, 100], "ix": 6 }
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 0,
+										"k": {
+											"i": [
+												[0, 0],
+												[0, 0],
+												[0, 0]
+											],
+											"o": [
+												[0, 0],
+												[0, 0],
+												[0, 0]
+											],
+											"v": [
+												[5.122, 20.27],
+												[5.122, -16.094],
+												[-32.151, -16.094]
+											],
+											"c": false
+										},
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 0,
+										"k": {
+											"i": [
+												[0, 0],
+												[0, 0]
+											],
+											"o": [
+												[0, 0],
+												[0, 0]
+											],
+											"v": [
+												[5.361, -16.158],
+												[-36.154, 25.361]
+											],
+											"c": true
+										},
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": {
+										"a": 0,
+										"k": [1, 1, 1, 1],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"
+									},
+									"w": {
+										"a": 0,
+										"k": 10,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"
+									},
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": {
+										"a": 0,
+										"k": 4,
+										"ix": 8,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"
+									},
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": {
+										"a": 0,
+										"k": [74, 34],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.position;"
+									},
+									"a": {
+										"a": 0,
+										"k": [0, 0],
+										"ix": 1,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"
+									},
+									"s": {
+										"a": 0,
+										"k": [69, 69],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.scale;"
+									},
+									"r": {
+										"a": 0,
+										"k": 270,
+										"ix": 6,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.rotation;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 7,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.opacity;"
+									},
+									"sk": {
+										"a": 0,
+										"k": 0,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skew;"
+									},
+									"sa": {
+										"a": 0,
+										"k": 0,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skewAxis;"
+									},
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 0,
+								"k": [-14, 19],
+								"ix": 2,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.position;"
+							},
+							"a": {
+								"a": 0,
+								"k": [0, 0],
+								"ix": 1,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.anchorPoint;"
+							},
+							"s": {
+								"a": 0,
+								"k": [100, 100],
+								"ix": 3,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.scale;"
+							},
+							"r": {
+								"a": 0,
+								"k": 0,
+								"ix": 6,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.rotation;"
+							},
+							"o": {
+								"a": 0,
+								"k": 100,
+								"ix": 7,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.opacity;"
+							},
+							"sk": {
+								"a": 0,
+								"k": 0,
+								"ix": 4,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skew;"
+							},
+							"sa": {
+								"a": 0,
+								"k": 0,
+								"ix": 5,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skewAxis;"
+							},
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 0,
+			"op": 33,
+			"st": -1,
+			"bm": 0
+		},
+		{
+			"ddd": 0,
+			"ind": 6,
+			"ty": 4,
+			"nm": "Arrow 3",
+			"sr": 1,
+			"ks": {
+				"o": { "a": 0, "k": 100, "ix": 11 },
+				"r": { "a": 0, "k": 180, "ix": 10 },
+				"p": { "a": 0, "k": [150, 150, 0], "ix": 2 },
+				"a": { "a": 0, "k": [0, 0, 0], "ix": 1 },
+				"s": { "a": 0, "k": [110, 110, 100], "ix": 6 }
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 0,
+										"k": {
+											"i": [
+												[0, 0],
+												[0, 0],
+												[0, 0]
+											],
+											"o": [
+												[0, 0],
+												[0, 0],
+												[0, 0]
+											],
+											"v": [
+												[5.122, 20.27],
+												[5.122, -16.094],
+												[-32.151, -16.094]
+											],
+											"c": false
+										},
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 0,
+										"k": {
+											"i": [
+												[0, 0],
+												[0, 0]
+											],
+											"o": [
+												[0, 0],
+												[0, 0]
+											],
+											"v": [
+												[5.361, -16.158],
+												[-36.154, 25.361]
+											],
+											"c": true
+										},
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": {
+										"a": 0,
+										"k": [1, 1, 1, 1],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"
+									},
+									"w": {
+										"a": 0,
+										"k": 10,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"
+									},
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": {
+										"a": 0,
+										"k": 4,
+										"ix": 8,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"
+									},
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": {
+										"a": 0,
+										"k": [74, 34],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.position;"
+									},
+									"a": {
+										"a": 0,
+										"k": [0, 0],
+										"ix": 1,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"
+									},
+									"s": {
+										"a": 0,
+										"k": [69, 69],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.scale;"
+									},
+									"r": {
+										"a": 0,
+										"k": 270,
+										"ix": 6,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.rotation;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 7,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.opacity;"
+									},
+									"sk": {
+										"a": 0,
+										"k": 0,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skew;"
+									},
+									"sa": {
+										"a": 0,
+										"k": 0,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skewAxis;"
+									},
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 0,
+								"k": [-14, 19],
+								"ix": 2,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.position;"
+							},
+							"a": {
+								"a": 0,
+								"k": [0, 0],
+								"ix": 1,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.anchorPoint;"
+							},
+							"s": {
+								"a": 0,
+								"k": [100, 100],
+								"ix": 3,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.scale;"
+							},
+							"r": {
+								"a": 0,
+								"k": 0,
+								"ix": 6,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.rotation;"
+							},
+							"o": {
+								"a": 0,
+								"k": 100,
+								"ix": 7,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.opacity;"
+							},
+							"sk": {
+								"a": 0,
+								"k": 0,
+								"ix": 4,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skew;"
+							},
+							"sa": {
+								"a": 0,
+								"k": 0,
+								"ix": 5,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skewAxis;"
+							},
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 0,
+			"op": 33,
+			"st": -1,
+			"bm": 0
+		},
+		{
+			"ddd": 0,
+			"ind": 7,
+			"ty": 4,
+			"nm": "Arrow 2",
+			"sr": 1,
+			"ks": {
+				"o": { "a": 0, "k": 100, "ix": 11 },
+				"r": { "a": 0, "k": 90, "ix": 10 },
+				"p": { "a": 0, "k": [150, 150, 0], "ix": 2 },
+				"a": { "a": 0, "k": [0, 0, 0], "ix": 1 },
+				"s": { "a": 0, "k": [110, 110, 100], "ix": 6 }
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 0,
+										"k": {
+											"i": [
+												[0, 0],
+												[0, 0],
+												[0, 0]
+											],
+											"o": [
+												[0, 0],
+												[0, 0],
+												[0, 0]
+											],
+											"v": [
+												[5.122, 20.27],
+												[5.122, -16.094],
+												[-32.151, -16.094]
+											],
+											"c": false
+										},
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Head').path;"
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 0,
+										"k": {
+											"i": [
+												[0, 0],
+												[0, 0]
+											],
+											"o": [
+												[0, 0],
+												[0, 0]
+											],
+											"v": [
+												[5.361, -16.158],
+												[-36.154, 25.361]
+											],
+											"c": true
+										},
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Arrow Stem').path;"
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": {
+										"a": 0,
+										"k": [1, 1, 1, 1],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').color;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').opacity;"
+									},
+									"w": {
+										"a": 0,
+										"k": 10,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').strokeWidth;"
+									},
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": {
+										"a": 0,
+										"k": 4,
+										"ix": 8,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').content('Stroke 1').miterLimit;"
+									},
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": {
+										"a": 0,
+										"k": [74, 34],
+										"ix": 2,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.position;"
+									},
+									"a": {
+										"a": 0,
+										"k": [0, 0],
+										"ix": 1,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.anchorPoint;"
+									},
+									"s": {
+										"a": 0,
+										"k": [69, 69],
+										"ix": 3,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.scale;"
+									},
+									"r": {
+										"a": 0,
+										"k": 270,
+										"ix": 6,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.rotation;"
+									},
+									"o": {
+										"a": 0,
+										"k": 100,
+										"ix": 7,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.opacity;"
+									},
+									"sk": {
+										"a": 0,
+										"k": 0,
+										"ix": 4,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skew;"
+									},
+									"sa": {
+										"a": 0,
+										"k": 0,
+										"ix": 5,
+										"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').content('Arrow 1').transform.skewAxis;"
+									},
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 0,
+								"k": [-14, 19],
+								"ix": 2,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.position;"
+							},
+							"a": {
+								"a": 0,
+								"k": [0, 0],
+								"ix": 1,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.anchorPoint;"
+							},
+							"s": {
+								"a": 0,
+								"k": [100, 100],
+								"ix": 3,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.scale;"
+							},
+							"r": {
+								"a": 0,
+								"k": 0,
+								"ix": 6,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.rotation;"
+							},
+							"o": {
+								"a": 0,
+								"k": 100,
+								"ix": 7,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.opacity;"
+							},
+							"sk": {
+								"a": 0,
+								"k": 0,
+								"ix": 4,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skew;"
+							},
+							"sa": {
+								"a": 0,
+								"k": 0,
+								"ix": 5,
+								"x": "var $bm_rt;\n$bm_rt = thisComp.layer('Arrow 1').content('Arrows 1').transform.skewAxis;"
+							},
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 0,
+			"op": 33,
+			"st": -1,
+			"bm": 0
+		},
+		{
+			"ddd": 0,
+			"ind": 8,
+			"ty": 4,
+			"nm": "Arrow 1",
+			"sr": 1,
+			"ks": {
+				"o": { "a": 0, "k": 100, "ix": 11 },
+				"r": { "a": 0, "k": 0, "ix": 10 },
+				"p": { "a": 0, "k": [150, 150, 0], "ix": 2 },
+				"a": { "a": 0, "k": [0, 0, 0], "ix": 1 },
+				"s": { "a": 0, "k": [110, 110, 100], "ix": 6 }
+			},
+			"ao": 0,
+			"shapes": [
+				{
+					"ty": "gr",
+					"it": [
+						{
+							"ty": "gr",
+							"it": [
+								{
+									"ind": 0,
+									"ty": "sh",
+									"ix": 1,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 0,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[-2.701, 20.27],
+															[5.122, -16.094],
+															[-32.151, -8.271]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 4,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[-2.701, 20.27],
+															[5.122, -16.094],
+															[-32.151, -8.271]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.833, "y": 0.833 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p833_0p833_0p167_0p167",
+												"t": 16,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 24,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[19.944, 20.27],
+															[5.122, -16.094],
+															[-32.151, -30.916]
+														],
+														"c": false
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.122, 20.27],
+															[5.122, -16.094],
+															[-32.151, -16.094]
+														],
+														"c": false
+													}
+												]
+											},
+											{ "t": 30 }
+										],
+										"ix": 2
+									},
+									"nm": "Arrow Head",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ind": 1,
+									"ty": "sh",
+									"ix": 2,
+									"ks": {
+										"a": 1,
+										"k": [
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.167, "y": 0.167 },
+												"n": "0p667_1_0p167_0p167",
+												"t": 0,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 11,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-79.49, 69.027]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 16,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 19,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-20.514, 9.721]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												]
+											},
+											{
+												"i": { "x": 0.667, "y": 1 },
+												"o": { "x": 0.333, "y": 0 },
+												"n": "0p667_1_0p333_0",
+												"t": 23,
+												"s": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-12.092, 1.629]
+														],
+														"c": true
+													}
+												],
+												"e": [
+													{
+														"i": [
+															[0, 0],
+															[0, 0]
+														],
+														"o": [
+															[0, 0],
+															[0, 0]
+														],
+														"v": [
+															[5.361, -16.158],
+															[-36.154, 25.361]
+														],
+														"c": true
+													}
+												]
+											},
+											{ "t": 32 }
+										],
+										"ix": 2
+									},
+									"nm": "Arrow Stem",
+									"mn": "ADBE Vector Shape - Group",
+									"hd": false
+								},
+								{
+									"ty": "st",
+									"c": { "a": 0, "k": [1, 1, 1, 1], "ix": 3 },
+									"o": { "a": 0, "k": 100, "ix": 4 },
+									"w": { "a": 0, "k": 10, "ix": 5 },
+									"lc": 2,
+									"lj": 1,
+									"ml": 4,
+									"ml2": { "a": 0, "k": 4, "ix": 8 },
+									"nm": "Stroke 1",
+									"mn": "ADBE Vector Graphic - Stroke",
+									"hd": false
+								},
+								{
+									"ty": "tr",
+									"p": { "a": 0, "k": [74, 34], "ix": 2 },
+									"a": { "a": 0, "k": [0, 0], "ix": 1 },
+									"s": { "a": 0, "k": [69, 69], "ix": 3 },
+									"r": { "a": 0, "k": 270, "ix": 6 },
+									"o": { "a": 0, "k": 100, "ix": 7 },
+									"sk": { "a": 0, "k": 0, "ix": 4 },
+									"sa": { "a": 0, "k": 0, "ix": 5 },
+									"nm": "Transform"
+								}
+							],
+							"nm": "Arrow 1",
+							"np": 3,
+							"cix": 2,
+							"ix": 1,
+							"mn": "ADBE Vector Group",
+							"hd": false
+						},
+						{
+							"ty": "tr",
+							"p": {
+								"a": 1,
+								"k": [
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 0,
+										"s": [-14, 19],
+										"e": [-44, -11],
+										"to": [-5, -5],
+										"ti": [5, 5]
+									},
+									{
+										"i": { "x": 0.833, "y": 0.833 },
+										"o": { "x": 0.333, "y": 0.333 },
+										"n": "0p833_0p833_0p333_0p333",
+										"t": 11,
+										"s": [-44, -11],
+										"e": [-44, -11],
+										"to": [0, 0],
+										"ti": [0, 0]
+									},
+									{
+										"i": { "x": 0.667, "y": 1 },
+										"o": { "x": 0.167, "y": 0.167 },
+										"n": "0p667_1_0p167_0p167",
+										"t": 16,
+										"s": [-44, -11],
+										"e": [-14, 19],
+										"to": [5, 5],
+										"ti": [-5, -5]
+									},
+									{ "t": 25 }
+								],
+								"ix": 2
+							},
+							"a": { "a": 0, "k": [0, 0], "ix": 1 },
+							"s": { "a": 0, "k": [100, 100], "ix": 3 },
+							"r": { "a": 0, "k": 0, "ix": 6 },
+							"o": { "a": 0, "k": 100, "ix": 7 },
+							"sk": { "a": 0, "k": 0, "ix": 4 },
+							"sa": { "a": 0, "k": 0, "ix": 5 },
+							"nm": "Transform"
+						}
+					],
+					"nm": "Arrows 1",
+					"np": 1,
+					"cix": 2,
+					"ix": 1,
+					"mn": "ADBE Vector Group",
+					"hd": false
+				}
+			],
+			"ip": 0,
+			"op": 33,
+			"st": -1,
+			"bm": 0
+		}
+	],
+	"markers": [
+		{ "tm": 0, "cm": "Fullscreen_MouseOver", "dr": 0 },
+		{ "tm": 16, "cm": "Fullscreen_MouseOut", "dr": 0 },
+		{ "tm": 31, "cm": "3", "dr": 0 },
+		{ "tm": 33, "cm": "Windowed_MouseOver", "dr": 0 },
+		{ "tm": 49, "cm": "Windowed_MouseOut", "dr": 0 },
+		{ "tm": 65, "cm": "6", "dr": 0 }
+	]
+}
