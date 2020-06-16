@@ -9,12 +9,16 @@ import { ContextMenuTrigger, ContextMenu, MenuItem } from 'react-contextmenu'
 import * as _ from 'underscore'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { CriticalIcon, WarningIcon, CollapseChevrons } from '../notificationIcons'
+import update from 'immutability-helper'
 
 interface IPopUpProps {
+	id?: string
 	item: Notification
 	showDismiss?: boolean
 	isHighlighted?: boolean
 	onDismiss?: (e: any) => void
+	className?: string
+	style?: React.CSSProperties
 }
 
 /**
@@ -44,19 +48,25 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 
 		return (
 			<div
-				className={ClassNames('notification-pop-up', {
-					critical: item.status === NoticeLevel.CRITICAL,
-					notice: item.status === NoticeLevel.NOTIFICATION,
-					warning: item.status === NoticeLevel.WARNING,
-					tip: item.status === NoticeLevel.TIP,
+				id={this.props.id}
+				className={ClassNames(
+					'notification-pop-up',
+					{
+						critical: item.status === NoticeLevel.CRITICAL,
+						notice: item.status === NoticeLevel.NOTIFICATION,
+						warning: item.status === NoticeLevel.WARNING,
+						tip: item.status === NoticeLevel.TIP,
 
-					'has-default-action': !!defaultAction,
+						'has-default-action': !!defaultAction,
 
-					persistent: item.persistent,
+						persistent: item.persistent,
 
-					'is-highlighted': this.props.isHighlighted,
-				})}
-				onClick={defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined}>
+						'is-highlighted': this.props.isHighlighted,
+					},
+					this.props.className
+				)}
+				onClick={defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined}
+				style={this.props.style}>
 				<div className="notification-pop-up__header">
 					{item.status === NoticeLevel.CRITICAL ? (
 						<CriticalIcon />
@@ -95,7 +105,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 							}}>
-							<CollapseChevrons />
+							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon id="nrk-close" />}
 						</button>
 						{/* </div> */}
 					</ContextMenuTrigger>
@@ -117,7 +127,11 @@ interface IProps {
 	limitCount?: number
 }
 
-interface IState {}
+interface IState {
+	displayList: boolean
+	dismissing: string[]
+	dismissingTransform: string[]
+}
 
 interface ITrackedProps {
 	notifications: Array<Notification>
@@ -140,7 +154,20 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 	}
 )(
 	class NotificationCenterPopUps extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		dismissNotification(item: Notification) {
+		private readonly DISMISS_ANIMATION_DURATION = 500
+		private readonly LEAVE_ANIMATION_DURATION = 150
+
+		constructor(props: Translated<IProps & ITrackedProps>) {
+			super(props)
+
+			this.state = {
+				displayList: props.notifications.length > 0,
+				dismissing: [],
+				dismissingTransform: [],
+			}
+		}
+
+		private innerDismissNotification(item: Notification) {
 			if (item.persistent) {
 				item.snooze()
 			} else {
@@ -148,10 +175,80 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		dismissAll() {
-			for (const notification of this.props.notifications) {
-				this.dismissNotification(notification)
+		dismissNotification(item: Notification, key: string) {
+			if (!this.state.dismissing.includes(key)) {
+				if (item.persistent) {
+					this.setState({
+						dismissing: update(this.state.dismissing, {
+							$push: [key],
+						}),
+						dismissingTransform: update(this.state.dismissingTransform, {
+							$push: [this.createTransform(`notification-pop-up_${key}`) || ''],
+						}),
+					})
+
+					setTimeout(() => {
+						this.innerDismissNotification(item)
+						setTimeout(() => {
+							this.setState({
+								dismissing: update(this.state.dismissing, {
+									$splice: [[this.state.dismissing.indexOf(key), 1]],
+								}),
+								dismissingTransform: update(this.state.dismissingTransform, {
+									$splice: [[this.state.dismissing.indexOf(key), 1]],
+								}),
+							})
+						}, this.LEAVE_ANIMATION_DURATION + 10)
+					}, this.DISMISS_ANIMATION_DURATION)
+				} else {
+					this.innerDismissNotification(item)
+				}
 			}
+		}
+
+		dismissAll() {
+			const displayNotifications = this.getNotificationsToDisplay()
+
+			const notificationsToDismiss: string[] = []
+
+			for (const notification of this.props.notifications) {
+				if (notification.persistent) {
+					const key = this.notificationKey(notification)
+					if (!this.state.dismissing.includes(key)) notificationsToDismiss.push(key)
+				} else {
+					this.innerDismissNotification(notification)
+				}
+			}
+
+			this.setState({
+				dismissing: update(this.state.dismissing, {
+					$push: notificationsToDismiss,
+				}),
+				dismissingTransform: update(this.state.dismissingTransform, {
+					$push: notificationsToDismiss.map((key) => this.createTransform(`notification-pop-up_${key}`) || ''),
+				}),
+			})
+
+			setTimeout(() => {
+				const indexes = notificationsToDismiss
+					.map((value) => this.state.dismissing.indexOf(value))
+					.map((index) => [index, 1]) as [number, number][]
+
+				setTimeout(() => {
+					this.setState({
+						dismissing: update(this.state.dismissing, {
+							$splice: indexes,
+						}),
+						dismissingTransform: update(this.state.dismissingTransform, {
+							$splice: indexes,
+						}),
+					})
+				}, this.LEAVE_ANIMATION_DURATION + 10)
+
+				for (const notification of this.props.notifications) {
+					this.innerDismissNotification(notification)
+				}
+			}, this.DISMISS_ANIMATION_DURATION)
 		}
 
 		UNSAFE_componentWillUpdate() {
@@ -198,61 +295,111 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					}
 				}
 			}
+
+			if (this.props.notifications.length > 0 && this.state.displayList !== true) {
+				this.setState({
+					displayList: true,
+				})
+			}
+		}
+
+		private createTransform = (id: string, toggleButtonRect?: ClientRect) => {
+			const notificationEl = document.getElementById(id)
+			const toggleButtonEl = toggleButtonRect
+				? null
+				: document.getElementsByClassName('notifications__toggle-button')[0]
+
+			if (notificationEl && (toggleButtonEl || toggleButtonRect)) {
+				const notificationPosition = notificationEl.getClientRects()[0]
+				const toggleButtonPosition = toggleButtonRect
+					? toggleButtonRect
+					: toggleButtonEl
+					? toggleButtonEl.getClientRects()[0]
+					: null
+				if (toggleButtonPosition) {
+					const style = `translate3d(${toggleButtonPosition.left -
+						notificationPosition.left}px, ${toggleButtonPosition.top - notificationPosition.top}px, 0) scale(0)`
+					return style
+				}
+			}
+			return undefined
+		}
+
+		private getNotificationsToDisplay = () => {
+			if (this.props.limitCount !== undefined) {
+				return this.props.notifications
+					.filter((i) => this.props.showSnoozed || !i.snoozed)
+					.sort((a, b) => Notification.compare(a, b))
+					.slice(0, this.props.limitCount)
+			} else {
+				return this.props.notifications
+					.filter((i) => this.props.showSnoozed || !i.snoozed)
+					.sort((a, b) => Notification.compare(a, b))
+			}
+		}
+
+		private checkKeepDisplaying = () => {
+			const notifications = this.getNotificationsToDisplay()
+			if (notifications.length === 0) {
+				this.setState({
+					displayList: false,
+				})
+			}
+		}
+
+		private notificationKey = (item: Notification) => {
+			return item.created + (item.message || 'undefined').toString() + (item.id || '')
 		}
 
 		render() {
 			const { t, highlightedSource, highlightedLevel } = this.props
 
-			let notifications
-			if (this.props.limitCount !== undefined) {
-				notifications = this.props.notifications
-					.filter((i) => this.props.showSnoozed || !i.snoozed)
-					.sort((a, b) => Notification.compare(a, b))
-					.slice(0, this.props.limitCount)
-			} else {
-				notifications = this.props.notifications
-					.filter((i) => this.props.showSnoozed || !i.snoozed)
-					.sort((a, b) => Notification.compare(a, b))
-			}
+			const notifications = this.getNotificationsToDisplay()
 
-			const displayList = notifications.map((item) => (
-				<NotificationPopUp
-					key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
-					item={item}
-					onDismiss={() => this.dismissNotification(item)}
-					showDismiss={!item.persistent || !this.props.showSnoozed}
-					isHighlighted={item.source === highlightedSource && item.status === highlightedLevel}
-				/>
-			))
-
-			return (
-				(this.props.showEmptyListLabel || displayList.length > 0) && (
-					<div className="notification-pop-ups">
-						<VelocityReact.VelocityTransitionGroup
-							enter={{
-								animation: 'fadeIn',
-								easing: 'ease-out',
-								duration: 300,
-								display: 'flex',
-							}}
-							leave={{
-								animation: 'fadeOut',
-								easing: 'ease-in',
-								duration: 150,
-								display: 'flex',
-							}}>
-							{displayList}
-							{this.props.showEmptyListLabel && displayList.length === 0 && (
-								<div className="notification-pop-ups__empty-list">{t('No notifications')}</div>
-							)}
-						</VelocityReact.VelocityTransitionGroup>
-
-						<ContextMenu id="context-menu-dissmiss-all">
-							<MenuItem onClick={() => this.dismissAll()}>{t('Dismiss all notifications')}</MenuItem>
-						</ContextMenu>
-					</div>
+			const displayList = notifications.map((item) => {
+				const key = this.notificationKey(item)
+				const index = this.state.dismissing.indexOf(key)
+				return (
+					<NotificationPopUp
+						id={`notification-pop-up_${key}`}
+						key={key}
+						item={item}
+						onDismiss={() => this.dismissNotification(item, key)}
+						className={index >= 0 ? 'notification-pop-up--dismiss' : undefined}
+						showDismiss={!item.persistent || !this.props.showSnoozed}
+						isHighlighted={item.source === highlightedSource && item.status === highlightedLevel}
+						style={index >= 0 ? { transform: this.state.dismissingTransform[index], opacity: 0 } : undefined}
+					/>
 				)
-			)
+			})
+
+			return this.state.displayList ? (
+				<div className="notification-pop-ups">
+					<VelocityReact.VelocityTransitionGroup
+						enter={{
+							animation: 'fadeIn',
+							easing: 'ease-out',
+							duration: 300,
+							display: 'flex',
+						}}
+						leave={{
+							animation: 'fadeOut',
+							easing: 'ease-in',
+							duration: this.LEAVE_ANIMATION_DURATION,
+							display: 'flex',
+							complete: (elements) => this.checkKeepDisplaying(),
+						}}>
+						{displayList}
+						{this.props.showEmptyListLabel && displayList.length === 0 && (
+							<div className="notification-pop-ups__empty-list">{t('No notifications')}</div>
+						)}
+					</VelocityReact.VelocityTransitionGroup>
+
+					<ContextMenu id="context-menu-dissmiss-all">
+						<MenuItem onClick={() => this.dismissAll()}>{t('Dismiss all notifications')}</MenuItem>
+					</ContextMenu>
+				</div>
+			) : null
 		}
 	}
 )
