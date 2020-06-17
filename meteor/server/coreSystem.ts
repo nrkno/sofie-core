@@ -426,6 +426,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 			'caller-module',
 			'chai',
 			'classnames',
+			'concurrently',
 			'core-js',
 			'element-resize-event',
 			'fast-clone',
