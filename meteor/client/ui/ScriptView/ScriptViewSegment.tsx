@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { ContextMenuTrigger } from 'react-contextmenu'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker, Translated } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -26,6 +27,9 @@ import { Parts } from '../../../lib/collections/Parts'
 import { ScriptViewPart } from './ScriptViewPart'
 import { OutputGroups } from './ScriptView'
 import { Piece } from '../../../lib/collections/Pieces'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { literal } from '../../../lib/lib'
 
 interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -58,8 +62,11 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
 	pieces: Piece[]
-	activeLayerGroups: OutputGroups<boolean>
+	adlibs: AdLibPiece[]
+	activeLayerGroups: OutputGroups<boolean, boolean>
 	isLastSegment: boolean
+	isQueuedSegment: boolean
+	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
 interface IState {}
 interface ITrackedProps {
@@ -172,14 +179,23 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 				const partIds = Parts.find({
 					segmentId: this.props.segmentId,
 				}).map((part) => part._id)
+
 				const partInstanceIds = PartInstances.find({
 					segmentId: this.props.segmentId,
 				}).map((instance) => instance._id)
+
 				this.subscribe(PubSub.pieces, {
 					partId: {
 						$in: partIds,
 					},
 				})
+
+				this.subscribe(PubSub.adLibPieces, {
+					partId: {
+						$in: partIds,
+					},
+				})
+
 				this.subscribe(PubSub.pieceInstances, {
 					partInstanceId: {
 						$in: partInstanceIds,
@@ -209,34 +225,55 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 				return SEGMENT_VIEW + ' live'
 			} else if (this.props.isNextSegment) {
 				return SEGMENT_VIEW + ' next'
+			} else if (this.props.isQueuedSegment) {
+				return SEGMENT_VIEW + ' queued'
 			}
 
 			return SEGMENT_VIEW
 		}
 
+		getSegmentContext = (props) => {
+			const ctx = literal<IContextMenuContext>({
+				segment: this.props.segmentui,
+				part: this.props.parts.length > 0 ? this.props.parts[0] : null,
+			})
+
+			if (this.props.onContextMenu && typeof this.props.onContextMenu === 'function') {
+				this.props.onContextMenu(ctx)
+			}
+
+			return ctx
+		}
+
 		render() {
 			return (
-				<div>
-					<div className={this.getStatusClass()}>
-						<div className="segment-script-view__title">
-							{this.props.segmentui && <h2>{this.props.segmentui.name}</h2>}
-						</div>
-						<div className="segment-script-view__grid">
-							{this.props.parts.map((part, index, arr) => (
-								<ScriptViewPart
-									key={'segment__' + this.props.segmentId + '__part__' + part.partId}
-									segment={this.props.segmentui}
-									playlist={this.props.playlist}
-									studio={this.props.studio}
-									showStyleBase={this.props.showStyleBase}
-									part={part}
-									pieces={this.props.pieces}
-									isLastSegment={this.props.isLiveSegment}
-									isLastInSegment={index === arr.length - 1}
-									activeLayerGroups={this.props.activeLayerGroups}
-								/>
-							))}
-						</div>
+				<div className={this.getStatusClass()}>
+					<ContextMenuTrigger
+						id="segment-timeline-context-menu"
+						collect={this.getSegmentContext}
+						attributes={{
+							className: 'segment-script-view__title',
+						}}
+						holdToDisplay={contextMenuHoldToDisplayTime()}
+						renderTag="div">
+						{this.props.segmentui && <h2>{this.props.segmentui.name}</h2>}
+					</ContextMenuTrigger>
+					<div className="segment-script-view__grid">
+						{this.props.parts.map((part, index, arr) => (
+							<ScriptViewPart
+								key={'segment__' + this.props.segmentId + '__part__' + part.partId}
+								segment={this.props.segmentui}
+								playlist={this.props.playlist}
+								studio={this.props.studio}
+								showStyleBase={this.props.showStyleBase}
+								part={part}
+								pieces={this.props.pieces}
+								adlibs={this.props.adlibs}
+								isLastSegment={this.props.isLiveSegment}
+								isLastInSegment={index === arr.length - 1}
+								activeLayerGroups={this.props.activeLayerGroups}
+							/>
+						))}
 					</div>
 				</div>
 			)

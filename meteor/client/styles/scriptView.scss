@@ -334,7 +334,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 			//transform: translate3d(0, 0, 1px); // Just to make it render in front	}
 		}
 
-		.primary {
+		.primaryGroup {
 			width: $layergroup-piece-size - 1px;
 			flex-grow: 1;
 			margin: 0px;

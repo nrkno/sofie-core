@@ -6,11 +6,11 @@ import * as _ from 'underscore'
 
 import { TSR, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
 
-import { withTracker, Translated } from '../../lib/ReactMeteorData/react-meteor-data'
+import { withTracker, Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
-import { Segment } from '../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -18,7 +18,7 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { unprotectString, protectString } from '../../../lib/lib'
 
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { getAllowStudio } from '../../lib/localStorage'
+import { getAllowStudio, getAllowDeveloper } from '../../lib/localStorage'
 
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
@@ -49,7 +49,7 @@ import { documentTitle } from '../../lib/documentTitle'
 import { ScriptViewSegment } from './ScriptViewSegment'
 import { Part, Parts } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
-import { RundownHeader } from '../RundownView'
+import { RundownHeader, IContextMenuContext } from '../RundownView'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { RundownTimingProvider } from '../RundownView/RundownTiming'
 import { RundownFullscreenControls } from '../RundownView/RundownFullscreenControls'
@@ -68,17 +68,19 @@ import { SupportPopUp } from '../SupportPopUp'
 import { Prompt } from 'react-router-dom'
 import { t } from 'i18next'
 import { NotificationCenterPanel } from '../../lib/notifications/NotificationCenterPanel'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { SegmentContextMenu } from '../SegmentTimeline/SegmentContextMenu'
 
-export interface LayerGroups<T> {
-	primary: T
-	overlays: T
-	audio: T
-	other: T
-	adlib: T
+export interface LayerGroups<T, P> {
+	primaryGroup: T
+	overlayGroup: T
+	audioGroup: T
+	otherGroup: T
+	adlibGroup: P
 }
 
-export interface OutputGroups<T> {
-	[key: string]: LayerGroups<T>
+export interface OutputGroups<T, P> {
+	[key: string]: LayerGroups<T, P>
 }
 
 interface ScriptViewProps {
@@ -104,6 +106,7 @@ interface ScriptViewState {
 	isClipTrimmerOpen: boolean
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	rundownLayout: RundownLayout | undefined
+	contextMenuContext: IContextMenuContext | null
 }
 
 interface ScriptViewTrackedProps {
@@ -114,16 +117,17 @@ interface ScriptViewTrackedProps {
 	segments: Segment[]
 	parts: Part[]
 	pieces: Piece[]
+	adlibs: AdLibPiece[]
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
-	activeLayerGroups: OutputGroups<boolean>
+	activeLayerGroups: OutputGroups<boolean, boolean>
 }
 
-export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewState, ScriptViewTrackedProps>(
+export const ScriptView = translateWithTracker<ScriptViewProps, ScriptViewState, ScriptViewTrackedProps>(
 	(props: ScriptViewProps) => {
 		let rundownId
 		if (props.match && props.match.params.rundownId) {
@@ -137,9 +141,10 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 		let segments: Segment[] = []
 		let parts: Part[] = []
 		let pieces: Piece[] = []
+		let adlibs: AdLibPiece[] = []
 
 		let showStyleBase: ShowStyleBase | undefined
-		let activeLayerGroups: OutputGroups<boolean> = {}
+		let activeLayerGroups: OutputGroups<boolean, boolean> = {}
 
 		if (rundown) {
 			showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
@@ -161,15 +166,16 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 
 			if (parts.length > 0) {
 				pieces = parts.map((part) => part.getAllPieces()).reduce((acc, val) => acc.concat(val), [])
+				adlibs = parts.map((part) => part.getAdLibPieces()).reduce((acc, val) => acc.concat(val), [])
 
 				if (pieces.length > 0 && showStyleBase && studio) {
 					showStyleBase.outputLayers.map((output) => {
-						const layerGroups: LayerGroups<boolean> = {
-							primary: false,
-							overlays: false,
-							audio: false,
-							other: false,
-							adlib: false,
+						const layerGroups: LayerGroups<boolean, boolean> = {
+							primaryGroup: false,
+							overlayGroup: false,
+							audioGroup: false,
+							otherGroup: false,
+							adlibGroup: false,
 						}
 
 						let setLayerGroupActive = (type: SourceLayerType) => {
@@ -183,21 +189,21 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 								case SourceLayerType.REMOTE:
 								case SourceLayerType.SPLITS:
 								case SourceLayerType.LIVE_SPEAK:
-									layerGroups.primary = true
+									layerGroups.primaryGroup = true
 									break
 
 								case SourceLayerType.GRAPHICS:
 								case SourceLayerType.LOWER_THIRD:
-									layerGroups.overlays = true
+									layerGroups.overlayGroup = true
 									break
 
 								case SourceLayerType.AUDIO:
 								case SourceLayerType.MIC:
-									layerGroups.audio = true
+									layerGroups.audioGroup = true
 									break
 
 								default:
-									layerGroups.other = true
+									layerGroups.otherGroup = true
 									break
 							}
 						}
@@ -217,19 +223,22 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 						pieces
 							.filter((piece) => piece.outputLayerId == output._id)
 							.map((piece) => {
-								if (piece.metaData && piece.metaData.adlib == true) {
-									layerGroups.adlib = true
-								} else {
-									setLayerGroupActive(layerIdtoLayerType(piece.sourceLayerId))
-								}
+								setLayerGroupActive(layerIdtoLayerType(piece.sourceLayerId))
 							})
 
+						console.log(adlibs)
+						if (adlibs.filter((adlib) => adlib.outputLayerId == output._id).length > 0) {
+							layerGroups.adlibGroup = true
+						}
+
+						console.log(output.name, layerGroups)
 						if (Object.keys(layerGroups).filter((key) => layerGroups[key]).length > 0) {
 							activeLayerGroups[output.name] = layerGroups
 						}
 					})
 				}
 			}
+			console.log(activeLayerGroups)
 		}
 
 		const params = queryStringParse(location.search)
@@ -242,6 +251,7 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 			segments,
 			parts,
 			pieces,
+			adlibs,
 			playlist,
 			studio: studio,
 			showStyleBase,
@@ -295,6 +305,7 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 				isClipTrimmerOpen: false,
 				selectedPiece: undefined,
 				rundownLayout: undefined,
+				contextMenuContext: null,
 			}
 		}
 
@@ -306,6 +317,10 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 			})
 
 			this.subscribe(PubSub.pieces, {
+				rundownId: rundownId,
+			})
+
+			this.subscribe(PubSub.adLibPieces, {
 				rundownId: rundownId,
 			})
 
@@ -415,6 +430,14 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 		}
 
 		renderHeaders() {
+			const headersToText = {
+				primaryGroup: 'Primaries',
+				overlayGroup: 'Overlays',
+				audioGroup: 'Audio',
+				otherGroup: 'Others',
+				adlibGroup: 'AdLibs',
+			}
+
 			const headersWithPieces = this.props.activeLayerGroups
 
 			return Object.keys(this.props.activeLayerGroups).map((header) => {
@@ -432,7 +455,7 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 										<h3>{header}</h3>
 									</div>
 								)}
-								<h4>{layerGroup}</h4>
+								<h4>{headersToText[layerGroup]}</h4>
 							</div>
 						)
 					})
@@ -465,63 +488,145 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 			})
 		}
 
+		onContextMenu = (contextMenuContext: IContextMenuContext) => {
+			this.setState({
+				contextMenuContext,
+			})
+		}
+
+		onSetNext = (part: Part, e: any, offset?: number, take?: boolean) => {
+			const { t } = this.props
+			if (this.state.studioMode && part && part._id && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.SET_NEXT,
+					(e) => MeteorCall.userAction.setNext(e, playlistId, part._id, offset),
+					(err) => {
+						this.setState({
+							manualSetAsNext: true,
+						})
+						if (!err && take && this.props.playlist) {
+							const playlistId = this.props.playlist._id
+							doUserAction(t, e, UserAction.TAKE, (e) => MeteorCall.userAction.take(e, playlistId))
+						}
+					}
+				)
+			}
+		}
+		onSetNextSegment = (segmentId: SegmentId | null, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.SET_NEXT,
+					(e) => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId),
+					(err, res) => {
+						if (err) console.error(err)
+						this.setState({
+							manualSetAsNext: true,
+						})
+					}
+				)
+			}
+		}
+
+		onResyncSegment = (segmentId: SegmentId, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && this.props.rundownPlaylistId) {
+				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
+			}
+		}
+
+		onContextMenuTop = (e: React.MouseEvent<HTMLDivElement>): boolean => {
+			if (!getAllowDeveloper()) {
+				e.preventDefault()
+				e.stopPropagation()
+			}
+			return false
+		}
+
 		render() {
 			return (
 				<div className="script-view">
 					<ErrorBoundary>
 						{this.props.playlist && this.props.studio && this.props.rundown && (
 							<RundownTimingProvider playlist={this.props.playlist}>
-								<ErrorBoundary>
-									<RundownFullscreenControls
-										isFollowingOnAir={this.state.followLiveSegments}
-										// onFollowOnAir={this.onGoToLiveSegment}
-										// onRewindSegments={this.onRewindSegments}
-										isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
-										onToggleNotifications={this.onToggleNotifications}
-										isSupportPanelOpen={this.state.isSupportPanelOpen}
-										onToggleSupportPanel={this.onToggleSupportPanel}
-										isStudioMode={this.state.studioMode}
-										onTake={this.onTake}
-									/>
-								</ErrorBoundary>
-								<ErrorBoundary>
-									<VelocityReact.VelocityTransitionGroup
-										enter={{
-											animation: {
-												translateX: ['0%', '100%'],
-											},
-											easing: 'ease-out',
-											duration: 300,
-										}}
-										leave={{
-											animation: {
-												translateX: ['100%', '0%'],
-											},
-											easing: 'ease-in',
-											duration: 500,
-										}}>
-										{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
-									</VelocityReact.VelocityTransitionGroup>
-								</ErrorBoundary>
-								<ErrorBoundary>
-									{this.state.studioMode && (
-										<Prompt
-											when={this.props.playlist.active || false}
-											message={t('This rundown is now active. Are you sure you want to exit this screen?')}
+								<div onContextMenu={this.onContextMenuTop}>
+									<ErrorBoundary>
+										<SegmentContextMenu
+											contextMenuContext={this.state.contextMenuContext}
+											playlist={this.props.playlist}
+											onSetNext={this.onSetNext}
+											onSetNextSegment={this.onSetNextSegment}
+											onResyncSegment={this.onResyncSegment}
+											studioMode={this.state.studioMode}
 										/>
-									)}
-								</ErrorBoundary>
-								<ErrorBoundary>
-									<RundownHeader
-										playlist={this.props.playlist}
-										studio={this.props.studio}
-										rundownIds={[this.props.rundown._id]}
-										//onActivate={this.onActivate}
-										studioMode={this.state.studioMode}
-										//onRegisterHotkeys={this.onRegisterHotkeys}
-										inActiveRundownView={this.props.inActiveRundownView}
-									/>
-								</ErrorBoundary>
+									</ErrorBoundary>
+									<ErrorBoundary>
+										<RundownFullscreenControls
+											isFollowingOnAir={this.state.followLiveSegments}
+											// onFollowOnAir={this.onGoToLiveSegment}
+											// onRewindSegments={this.onRewindSegments}
+											isNotificationCenterOpen={this.state.isNotificationsCenterOpen}
+											onToggleNotifications={this.onToggleNotifications}
+											isSupportPanelOpen={this.state.isSupportPanelOpen}
+											onToggleSupportPanel={this.onToggleSupportPanel}
+											isStudioMode={this.state.studioMode}
+											onTake={this.onTake}
+										/>
+									</ErrorBoundary>
+									<ErrorBoundary>
+										<VelocityReact.VelocityTransitionGroup
+											enter={{
+												animation: {
+													translateX: ['0%', '100%'],
+												},
+												easing: 'ease-out',
+												duration: 300,
+											}}
+											leave={{
+												animation: {
+													translateX: ['100%', '0%'],
+												},
+												easing: 'ease-in',
+												duration: 500,
+											}}>
+											{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+										</VelocityReact.VelocityTransitionGroup>
+									</ErrorBoundary>
+									<ErrorBoundary>
+										{this.state.studioMode && (
+											<Prompt
+												when={this.props.playlist.active || false}
+												message={t('This rundown is now active. Are you sure you want to exit this screen?')}
+											/>
+										)}
+									</ErrorBoundary>
+									<ErrorBoundary>
+										<RundownHeader
+											playlist={this.props.playlist}
+											studio={this.props.studio}
+											rundownIds={[this.props.rundown._id]}
+											//onActivate={this.onActivate}
+											studioMode={this.state.studioMode}
+											//onRegisterHotkeys={this.onRegisterHotkeys}
+											inActiveRundownView={this.props.inActiveRundownView}
+										/>
+									</ErrorBoundary>
+									<ErrorBoundary>
+										{this.props.playlist && this.props.studio && this.props.showStyleBase && (
+											<RundownNotifier
+												playlistId={this.props.playlist._id}
+												studio={this.props.studio}
+												showStyleBase={this.props.showStyleBase}
+											/>
+										)}
+									</ErrorBoundary>
+								</div>
 							</RundownTimingProvider>
 						)}
 					</ErrorBoundary>
@@ -549,8 +654,11 @@ export const ScriptView = withTracker<Translated<ScriptViewProps>, ScriptViewSta
 										showStyleBase={this.props.showStyleBase}
 										playlist={this.props.playlist}
 										pieces={this.props.pieces}
+										adlibs={this.props.adlibs}
 										activeLayerGroups={this.props.activeLayerGroups}
 										isLastSegment={index === arr.length - 1}
+										onContextMenu={this.onContextMenu}
+										isQueuedSegment={this.props.playlist.nextSegmentId === item._id}
 									/>
 								)
 						)}

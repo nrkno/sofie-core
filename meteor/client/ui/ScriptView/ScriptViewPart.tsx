@@ -35,6 +35,7 @@ import { FloatingInspector } from '../FloatingInspector'
 import { SourceLayerItemContainer } from '../SegmentTimeline/SourceLayerItemContainer'
 import { pieceSetInOutPoints } from '../../../server/api/userActions'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 
 interface IProps {
 	segment: SegmentUi | undefined
@@ -42,12 +43,13 @@ interface IProps {
 	studio: Studio
 	part: PartUi
 	pieces: Piece[]
+	adlibs: AdLibPiece[]
 	showStyleBase: ShowStyleBase
 	totalSegmentDuration?: number
 	firstPartInSegment?: PartUi
 	isLastInSegment: boolean
 	isLastSegment: boolean
-	activeLayerGroups: OutputGroups<boolean>
+	activeLayerGroups: OutputGroups<boolean, boolean>
 }
 
 interface IState {
@@ -107,6 +109,10 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 					partId: this.props.part.partId,
 				})
 
+				this.subscribe(PubSub.adLibPieces, {
+					partId: this.props.part.partId,
+				})
+
 				this.autorun(() => {
 					this.subscribe(PubSub.pieces, {
 						partId: {
@@ -155,9 +161,9 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 
 		sortPieces() {
 			const pieces = this.props.part.instance.part.getPieces()
+			const adlibs = this.props.part.instance.part.getAdLibPieces()
 
-			let layerGroups: OutputGroups<Piece[]> = {}
-
+			let layerGroups: OutputGroups<Piece[], AdLibPiece[]> = {}
 			if (this.props.studio && this.props.showStyleBase) {
 				const layerIdtoLayerType = (type: string): SourceLayerType => {
 					if (this.props.showStyleBase) {
@@ -185,11 +191,11 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 
 				for (const output of displayedHeaders) {
 					layerGroups[output] = {
-						primary: [],
-						overlays: [],
-						audio: [],
-						other: [],
-						adlib: [],
+						primaryGroup: [],
+						overlayGroup: [],
+						audioGroup: [],
+						otherGroup: [],
+						adlibGroup: [],
 					}
 
 					const outputLayerId = this.props.showStyleBase.outputLayers.find((op) => op.name == output)
@@ -207,23 +213,29 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 									case SourceLayerType.REMOTE:
 									case SourceLayerType.SPLITS:
 									case SourceLayerType.LIVE_SPEAK:
-										layerGroups[output].primary.push(piece)
+										layerGroups[output].primaryGroup.push(piece)
 										break
 
 									case SourceLayerType.GRAPHICS:
 									case SourceLayerType.LOWER_THIRD:
-										layerGroups[output].overlays.push(piece)
+										layerGroups[output].overlayGroup.push(piece)
 										break
 
 									case SourceLayerType.AUDIO:
 									case SourceLayerType.MIC:
-										layerGroups[output].audio.push(piece)
+										layerGroups[output].audioGroup.push(piece)
 										break
 
 									default:
-										layerGroups[output].other.push(piece)
+										layerGroups[output].otherGroup.push(piece)
 										break
 								}
+							}
+						}
+
+						for (const adlib of adlibs) {
+							if (adlib.outputLayerId == outputLayerId._id) {
+								layerGroups[output].adlibGroup.push(adlib)
 							}
 						}
 					}
