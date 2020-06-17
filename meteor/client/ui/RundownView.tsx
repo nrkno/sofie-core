@@ -1253,7 +1253,7 @@ interface IState {
 	manualSetAsNext: boolean
 	subsReady: boolean
 	usedHotkeys: Array<HotkeyDefinition>
-	isNotificationsCenterOpen: boolean
+	isNotificationsCenterOpen: NoticeLevel | undefined
 	isSupportPanelOpen: boolean
 	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
@@ -1428,7 +1428,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						label: t('Change to fullscreen mode'),
 					},
 				]),
-				isNotificationsCenterOpen: false,
+				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
 				isInspectorShelfExpanded: false,
 				isClipTrimmerOpen: false,
@@ -1586,7 +1586,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (HIDE_NOTIFICATIONS_AFTER_MOUNT) {
 				NotificationCenter.isOpen = true
 				this._hideNotificationsAfterMount = Meteor.setTimeout(() => {
-					NotificationCenter.isOpen = this.state.isNotificationsCenterOpen
+					NotificationCenter.isOpen = this.state.isNotificationsCenterOpen !== undefined
 					this._hideNotificationsAfterMount = undefined
 				}, HIDE_NOTIFICATIONS_AFTER_MOUNT)
 			}
@@ -1994,7 +1994,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			NotificationCenter.snoozeAll()
 			const isOpen = this.state.isNotificationsCenterOpen
 			this.setState({
-				isNotificationsCenterOpen: true,
+				isNotificationsCenterOpen: undefined,
 			})
 			setTimeout(
 				function() {
@@ -2087,15 +2087,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return false
 		}
 
-		onToggleNotifications = () => {
+		onToggleNotifications = (e: React.MouseEvent<HTMLElement>, filter: NoticeLevel) => {
 			if (!this.state.isNotificationsCenterOpen === true) {
 				NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 			}
 
-			NotificationCenter.isOpen = !this.state.isNotificationsCenterOpen
+			NotificationCenter.isOpen = !(this.state.isNotificationsCenterOpen === filter)
 
 			this.setState({
-				isNotificationsCenterOpen: !this.state.isNotificationsCenterOpen,
+				isNotificationsCenterOpen: this.state.isNotificationsCenterOpen === filter ? undefined : filter,
 			})
 		}
 
@@ -2245,7 +2245,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={DEFAULT_DISPLAY_DURATION}>
 							<div
 								className={ClassNames('rundown-view', {
-									'notification-center-open': this.state.isNotificationsCenterOpen,
+									'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
 									'rundown-view--studio-mode': this.state.studioMode,
 								})}
 								style={this.getStyle()}
@@ -2287,7 +2287,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											easing: 'ease-in',
 											duration: 500,
 										}}>
-										{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+										{this.state.isNotificationsCenterOpen && (
+											<NotificationCenterPanel filter={this.state.isNotificationsCenterOpen} />
+										)}
 									</VelocityReact.VelocityTransitionGroup>
 									<VelocityReact.VelocityTransitionGroup
 										enter={{

@@ -8,7 +8,7 @@ import { NotificationCenter, Notification, NoticeLevel, NotificationAction } fro
 import { ContextMenuTrigger, ContextMenu, MenuItem } from 'react-contextmenu'
 import * as _ from 'underscore'
 import { SegmentId } from '../../../lib/collections/Segments'
-import { CriticalIcon, WarningIcon, CollapseChevrons } from '../notificationIcons'
+import { CriticalIcon, WarningIcon, CollapseChevrons, InformationIcon } from '../notificationIcons'
 import update from 'immutability-helper'
 
 interface IPopUpProps {
@@ -125,6 +125,8 @@ interface IProps {
 	showSnoozed?: boolean
 	/** Limit the amount of shown notifications */
 	limitCount?: number
+
+	filter?: NoticeLevel
 }
 
 interface IState {
@@ -326,15 +328,17 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		private getNotificationsToDisplay = () => {
+			const filter = (i: Notification) =>
+				(this.props.showSnoozed || !i.snoozed) &&
+				(this.props.filter === undefined || (i.status & this.props.filter) !== 0)
+			const sort = (a: Notification, b: Notification) => Notification.compare(a, b)
 			if (this.props.limitCount !== undefined) {
 				return this.props.notifications
-					.filter((i) => this.props.showSnoozed || !i.snoozed)
-					.sort((a, b) => Notification.compare(a, b))
+					.filter(filter)
+					.sort(sort)
 					.slice(0, this.props.limitCount)
 			} else {
-				return this.props.notifications
-					.filter((i) => this.props.showSnoozed || !i.snoozed)
-					.sort((a, b) => Notification.compare(a, b))
+				return this.props.notifications.filter(filter).sort(sort)
 			}
 		}
 
@@ -411,15 +415,16 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
  * @class NotificationCenterPanel
  * @extends React.Component
  */
-export class NotificationCenterPanel extends React.Component<{ limitCount?: number }> {
-	render() {
-		return (
-			<div className="notification-center-panel">
-				<NotificationCenterPopUps showEmptyListLabel={true} showSnoozed={true} limitCount={this.props.limitCount} />
-			</div>
-		)
-	}
-}
+export const NotificationCenterPanel = (props: { limitCount?: number; filter?: NoticeLevel }) => (
+	<div className="notification-center-panel">
+		<NotificationCenterPopUps
+			showEmptyListLabel={true}
+			showSnoozed={true}
+			limitCount={props.limitCount}
+			filter={props.filter}
+		/>
+	</div>
+)
 
 /**
  * NotificationCenterPanelToggle props
@@ -430,6 +435,7 @@ interface IToggleProps {
 	onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void
 	/** Use 'open' class for the button to signify that the notification center is open */
 	isOpen?: boolean
+	filter?: NoticeLevel
 }
 
 interface ITrackedCountProps {
@@ -442,11 +448,13 @@ interface ITrackedCountProps {
  * @class NotificationCenterPanelToggle
  * @extends React.Component<IToggleProps>
  */
-export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrackedCountProps>(() => {
-	return {
-		count: NotificationCenter.count(),
+export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrackedCountProps>(
+	(props: IToggleProps) => {
+		return {
+			count: NotificationCenter.count(props.filter),
+		}
 	}
-})(
+)(
 	class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
 		render() {
 			return (
@@ -475,7 +483,15 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 						}}>
 						{!this.props.isOpen ? (
 							<div className="notifications__toggle-button__icon notifications__toggle-button__icon--default">
-								<WarningIcon />
+								{((this.props.filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
+									<CriticalIcon />
+								) : ((this.props.filter || 0) & NoticeLevel.CRITICAL) !== 0 ? (
+									<WarningIcon />
+								) : ((this.props.filter || 0) & (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)) !== 0 ? (
+									<InformationIcon />
+								) : (
+									<WarningIcon />
+								)}
 								{this.props.count > 0 && (
 									<span className="notifications__toggle-button__count">
 										{this.props.count > 99 ? '99+' : this.props.count}
