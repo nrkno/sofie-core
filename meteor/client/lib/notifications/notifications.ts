@@ -17,13 +17,13 @@ import { RundownAPI } from '../../../lib/api/rundown'
  */
 export enum NoticeLevel {
 	/** Highest priority notification. Subject matter will affect operations. */
-	CRITICAL = 1,
+	CRITICAL = 0b0001, // 1
 	/** High priority notification. Operations will not be affected, but non-critical functions may be affected or the result may be undesirable. */
-	WARNING = 2,
+	WARNING = 0b0010, // 2
 	/** Confirmation of a successful operation and general informations. */
-	NOTIFICATION = 3,
+	NOTIFICATION = 0b0100, // 3
 	/** Tips to the user */
-	TIP = 4,
+	TIP = 0b1000, // 4
 }
 
 /**
@@ -277,16 +277,20 @@ class NotificationCenter0 {
 	 * @returns {number}
 	 * @memberof NotificationCenter0
 	 */
-	count(): number {
+	count(filter?: NoticeLevel): number {
 		notificationsDep.depend()
 
-		return (
-			_.reduce(
-				_.map(notifiers, (item) => item.result.length),
-				(a, b) => a + b,
-				0
-			) + _.values(notifications).length
-		)
+		return filter === undefined
+			? _.reduce(
+					_.map(notifiers, (item) => item.result.length),
+					(a, b) => a + b,
+					0
+			  ) + _.values(notifications).length
+			: _.reduce(
+					_.map(notifiers, (item) => item.result.filter((item) => (item.status & filter) !== 0).length),
+					(a, b) => a + b,
+					0
+			  ) + _.values(notifications).filter((item) => item.status === filter).length
 	}
 
 	/**

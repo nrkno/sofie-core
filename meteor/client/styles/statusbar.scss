@@ -160,7 +160,10 @@
 		&.status-bar__controls__button--open {
 			border: none !important;
 			margin-left: 0 !important;
-			background-color: #eee;
+			background-color: #fff;
+			&.notifications__toggle-button {
+				background-color: #acacad;
+			}
 		}
 	}
 }
