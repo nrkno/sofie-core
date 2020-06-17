@@ -269,7 +269,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error(`Piece with id "${rawPiece._id}" already exists`)
 		}
 
-		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, ['_id'].concat(IBlueprintPieceSampleKeys))
+		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, ['_id'].concat(IBlueprintPieceSampleKeys) as any)
 
 		const piece = postProcessPieces(
 			this,

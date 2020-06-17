@@ -356,6 +356,7 @@ export namespace ServerPlayoutAdLibAPI {
 		// TODO - will this cause problems?
 		return PieceInstances.findOne(query, {
 			sort: {
+				// @ts-ignore deep property
 				'piece.startedPlayback': -1,
 			},
 		})

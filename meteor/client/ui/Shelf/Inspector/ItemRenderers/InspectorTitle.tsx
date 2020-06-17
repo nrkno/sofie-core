@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as classNames from 'classnames'
+import ClassNames from 'classnames'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
@@ -17,7 +17,7 @@ export default function InspectorTitle(props: { piece: PieceUi | AdLibPieceUi; s
 	return (
 		<h2 className="shelf-inspector__title">
 			<div
-				className={classNames(
+				className={ClassNames(
 					'shelf-inspector__title__icon',
 					layer && RundownUtils.getSourceLayerClassName(layer.type),
 					{

@@ -13,7 +13,7 @@ import {
 } from '../../../../lib/lib'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { Match } from 'meteor/check'
-import { logger } from '../../../lib/../logging'
+import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
 	NotesContext as INotesContext,
