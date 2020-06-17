@@ -14,8 +14,8 @@ interface IProps {
 	onChange: (from: Time, to: Time) => void
 }
 interface IState {
-	dateFrom: moment.Moment
-	dateTo: moment.Moment
+	dateFrom: Date
+	dateTo: Date
 }
 export const DatePickerFromTo = withTranslation()(
 	class DatePickerFromTo extends React.Component<IProps & WithTranslation, IState> {
@@ -24,31 +24,40 @@ export const DatePickerFromTo = withTranslation()(
 
 			this.state = {
 				dateFrom: props.from
-					? moment(props.from)
+					? new Date(props.from)
 					: moment()
 							.subtract(1, 'days')
-							.startOf('day'),
-				dateTo: props.to ? moment(props.to) : moment().startOf('day'),
+							.startOf('day')
+							.toDate(),
+				dateTo: props.to
+					? new Date(props.to)
+					: moment()
+							.startOf('day')
+							.toDate(),
 			}
 		}
 		triggerOnchange = (state: IState) => {
 			this.props.onChange(state.dateFrom.valueOf(), state.dateTo.valueOf())
 		}
-		updateData = (o) => {
-			this.setState(o)
+		updateData = (o: Partial<IState>) => {
+			this.setState(o as any)
 
 			let newState: IState = _.extend(_.clone(this.state), o)
 			this.triggerOnchange(newState)
 		}
-		handleChangeFrom = (date: moment.Moment) => {
-			this.updateData({
-				dateFrom: date,
-			})
+		handleChangeFrom = (date: Date | null) => {
+			if (date) {
+				this.updateData({
+					dateFrom: date,
+				})
+			}
 		}
-		handleChangeTo = (date: moment.Moment) => {
-			this.updateData({
-				dateTo: date,
-			})
+		handleChangeTo = (date: Date | null) => {
+			if (date) {
+				this.updateData({
+					dateTo: date,
+				})
+			}
 		}
 		onClickPrevious = () => {
 			let from = this.state.dateFrom.valueOf()
@@ -56,8 +65,8 @@ export const DatePickerFromTo = withTranslation()(
 			let range = to - from
 
 			this.updateData({
-				dateFrom: moment(from - range),
-				dateTo: moment(to - range),
+				dateFrom: new Date(from - range),
+				dateTo: new Date(to - range),
 			})
 		}
 		onClickNext = () => {
@@ -66,8 +75,8 @@ export const DatePickerFromTo = withTranslation()(
 			let range = to - from
 
 			this.updateData({
-				dateFrom: moment(from + range),
-				dateTo: moment(to + range),
+				dateFrom: new Date(from + range),
+				dateTo: new Date(to + range),
 			})
 		}
 		render() {
@@ -81,7 +90,7 @@ export const DatePickerFromTo = withTranslation()(
 						{t('From')}
 						<div className="picker expco">
 							<DatePicker
-								dateFormat="YYYY-MM-DD"
+								dateFormat="yyyy-MM-dd"
 								selected={this.state.dateFrom}
 								onChange={this.handleChangeFrom}
 								className="expco-title"
@@ -92,7 +101,7 @@ export const DatePickerFromTo = withTranslation()(
 						{t('Until')}
 						<div className="picker expco">
 							<DatePicker
-								dateFormat="YYYY-MM-DD"
+								dateFormat="yyyy-MM-dd"
 								selected={this.state.dateTo}
 								onChange={this.handleChangeTo}
 								className="expco-title"
