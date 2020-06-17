@@ -9,9 +9,9 @@ import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
  *
  * **************************************************************************************
  */
-// x.x.x (Release X)
+// Release X
 addMigrationSteps(CURRENT_SYSTEM_VERSION, [
-	// <--- To be set to an absolute version number when doing the release
+	//                     ^--- To be set to an absolute version number when doing the release
 	// add steps here:
 	// {
 	// 	id: 'my fancy step',

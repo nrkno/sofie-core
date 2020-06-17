@@ -3,18 +3,8 @@ import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-// 1.9.0 (Release 21)
+// Release 21
 addMigrationSteps('1.9.0', [
-	// <--- To be set to an absolute version number when doing the release
 	{
 		id: 'migrateScannersToWatchers',
 		canBeRunAutomatically: true,
