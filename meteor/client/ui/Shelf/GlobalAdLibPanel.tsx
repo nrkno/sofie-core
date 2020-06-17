@@ -370,7 +370,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				rundownId: currentRundown._id,
 			},
 			{
-				sort: { _rank: 1 },
+				// @ts-ignore deep-property
+				sort: { 'display._rank': 1 },
 			}
 		)
 			.fetch()

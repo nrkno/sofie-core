@@ -603,7 +603,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 					},
 				},
 				{
-					sort: { _rank: 1 },
+					// @ts-ignore deep-property
+					sort: { 'display._rank': 1 },
 				}
 			)
 				.fetch()
@@ -772,7 +773,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 									},
 								},
 								{
-									sort: { _rank: 1 },
+									// @ts-ignore deep-property
+									sort: { 'display._rank': 1 },
 								}
 							)
 								.fetch()
