@@ -226,19 +226,16 @@ export const ScriptView = translateWithTracker<ScriptViewProps, ScriptViewState,
 								setLayerGroupActive(layerIdtoLayerType(piece.sourceLayerId))
 							})
 
-						console.log(adlibs)
 						if (adlibs.filter((adlib) => adlib.outputLayerId == output._id).length > 0) {
 							layerGroups.adlibGroup = true
 						}
 
-						console.log(output.name, layerGroups)
 						if (Object.keys(layerGroups).filter((key) => layerGroups[key]).length > 0) {
 							activeLayerGroups[output.name] = layerGroups
 						}
 					})
 				}
 			}
-			console.log(activeLayerGroups)
 		}
 
 		const params = queryStringParse(location.search)
