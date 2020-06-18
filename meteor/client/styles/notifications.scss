@@ -112,14 +112,24 @@
 				margin-top: 0.5em;
 
 				.notification-pop-up__actions--button {
+					font-weight: 500;
+					letter-spacing: 0.2px;
+					line-height: 1.43em;
+					padding-left: 10px;
+					padding-right: 10px;
+
 					.icon {
-						vertical-align: bottom;
+						vertical-align: middle;
 					}
 
 					.label {
-						margin-left: 1em;
-						line-height: 1.5em;
+						margin-left: 10px;
+						line-height: inherit;
 					}
+				}
+
+				.btn-default {
+					background: #d7dade;
 				}
 
 				> .notification-pop-up__actions--default {
