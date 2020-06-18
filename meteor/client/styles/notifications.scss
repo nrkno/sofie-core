@@ -63,6 +63,11 @@
 
 			> svg {
 				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+
+				&.type-notification {
+					width: 1.5em;
+					height: 1.5em;
+				}
 			}
 		}
 

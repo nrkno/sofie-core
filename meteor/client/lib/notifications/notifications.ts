@@ -290,7 +290,7 @@ class NotificationCenter0 {
 					_.map(notifiers, (item) => item.result.filter((item) => (item.status & filter) !== 0).length),
 					(a, b) => a + b,
 					0
-			  ) + _.values(notifications).filter((item) => item.status === filter).length
+			  ) + _.values(notifications).filter((item) => (item.status & filter) !== 0).length
 	}
 
 	/**
@@ -487,11 +487,15 @@ export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusC
 		: null
 }
 
-window['testNotification'] = function(delay: number, fakePersistent: boolean = false) {
+window['testNotification'] = function(
+	delay: number,
+	level: NoticeLevel = NoticeLevel.CRITICAL,
+	fakePersistent: boolean = false
+) {
 	NotificationCenter.push(
 		new Notification(
 			undefined,
-			NoticeLevel.CRITICAL,
+			level,
 			'Notification test',
 			protectString('test'),
 			undefined,
