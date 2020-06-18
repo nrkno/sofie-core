@@ -234,7 +234,7 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 		render() {
 			return (
 				<div className={this.getStatusClass()}>
-					<ContextMenuTrigger
+					{/* <ContextMenuTrigger
 						id="segment-timeline-context-menu"
 						collect={this.getSegmentContext}
 						attributes={{
@@ -243,7 +243,10 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 						holdToDisplay={contextMenuHoldToDisplayTime()}
 						renderTag="div">
 						{this.props.segmentui && <h2>{this.props.segmentui.name}</h2>}
-					</ContextMenuTrigger>
+					</ContextMenuTrigger> */}
+					<div className="segment-script-view__title">
+						{this.props.segmentui && <h2>{this.props.segmentui.name}</h2>}
+					</div>
 					<div className="segment-script-view__grid">
 						{this.props.parts.map((part, index, arr) => (
 							<ScriptViewPart
