@@ -73,7 +73,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					) : item.status === NoticeLevel.WARNING ? (
 						<WarningIcon />
 					) : (
-						<WarningIcon />
+						<InformationIcon />
 					)}
 				</div>
 				<div className="notification-pop-up__contents">
