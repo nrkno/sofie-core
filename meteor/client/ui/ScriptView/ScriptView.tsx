@@ -613,40 +613,38 @@ export const ScriptView = translateWithTracker<ScriptViewProps, ScriptViewState,
 							</RundownTimingProvider>
 						)}
 					</ErrorBoundary>
-					<div>
-						<div className="segment-script-view__sticky">
-							<div className="segment-script-view__output">
-								<div className="segment-script-view__layergroup">
-									<div className="segment-script-view__layergroup__script">
-										<h4>Script</h4>
-									</div>
-									{this.props.showStyleBase && this.renderHeaders()}
+					<div className="segment-script-view__sticky">
+						<div className="segment-script-view__output">
+							<div className="segment-script-view__layergroup">
+								<div className="segment-script-view__layergroup__script">
+									<h4>Script</h4>
 								</div>
+								{this.props.showStyleBase && this.renderHeaders()}
 							</div>
 						</div>
-						{this.props.segments.map(
-							(item, index, arr) =>
-								this.props.studio &&
-								this.props.showStyleBase &&
-								this.props.playlist && (
-									<ScriptViewSegment
-										key={item._id + ''}
-										id={'Segment__' + item._id + '' + item._rank}
-										segmentId={item._id}
-										studio={this.props.studio && this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-										playlist={this.props.playlist}
-										pieces={this.props.pieces}
-										adlibs={this.props.adlibs}
-										activeLayerGroups={this.props.activeLayerGroups}
-										isLastSegment={index === arr.length - 1}
-										isFirstSegment={index === 0}
-										onContextMenu={this.onContextMenu}
-										isQueuedSegment={this.props.playlist.nextSegmentId === item._id}
-									/>
-								)
-						)}
 					</div>
+					{this.props.segments.map(
+						(item, index, arr) =>
+							this.props.studio &&
+							this.props.showStyleBase &&
+							this.props.playlist && (
+								<ScriptViewSegment
+									key={item._id + ''}
+									id={'Segment__' + item._id + '' + item._rank}
+									segmentId={item._id}
+									studio={this.props.studio && this.props.studio}
+									showStyleBase={this.props.showStyleBase}
+									playlist={this.props.playlist}
+									pieces={this.props.pieces}
+									adlibs={this.props.adlibs}
+									activeLayerGroups={this.props.activeLayerGroups}
+									isLastSegment={index === arr.length - 1}
+									isFirstSegment={index === 0}
+									onContextMenu={this.onContextMenu}
+									isQueuedSegment={this.props.playlist.nextSegmentId === item._id}
+								/>
+							)
+					)}
 				</div>
 			)
 		}

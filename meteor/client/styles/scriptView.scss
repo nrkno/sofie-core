@@ -109,14 +109,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 }
 
-.container-fluid {
-	width: fit-content;
-}
-
 .script-view {
 	padding-top: 7.8125rem;
 	padding-bottom: 50vh;
-	margin-right: 38px;
+	width: fit-content;
+	padding-right: 100px;
 	transition: 0s padding-right 0s;
 
 	.script-view-nextline {
