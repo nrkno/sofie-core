@@ -106,17 +106,29 @@
 			}
 
 			> .notification-pop-up__actions {
-				text-align: right;
+				display: grid;
+				grid-template-columns: auto auto;
+				grid-template-areas: 'left right';
 				margin-top: 0.5em;
-			}
-		}
 
-		&.has-default-action {
-			> .notification-pop-up__contents {
-				cursor: pointer;
+				.notification-pop-up__actions--button {
+					.icon {
+						vertical-align: bottom;
+					}
 
-				&:hover {
-					text-decoration: underline;
+					.label {
+						margin-left: 1em;
+						line-height: 1.5em;
+					}
+				}
+
+				> .notification-pop-up__actions--default {
+					grid-area: left;
+				}
+
+				> .notification-pop-up__actions--other {
+					text-align: right;
+					grid-area: right;
 				}
 			}
 		}
