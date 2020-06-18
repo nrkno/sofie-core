@@ -112,9 +112,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 .script-view {
 	padding-top: 7.8125rem;
 	padding-bottom: 50vh;
+	padding-right: 70px;
 	width: fit-content;
-	padding-right: 100px;
 	transition: 0s padding-right 0s;
+
+	box-sizing: content-box;
 
 	.script-view-nextline {
 		width: calc(100% + 100px);
@@ -177,7 +179,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		color: white;
 		box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 		min-width: fit-content;
-		width: calc(100vw - 84px);
+		width: calc(100vw - 80px);
+
+		box-sizing: border-box;
 
 		h1 {
 			margin-bottom: 0px;
@@ -608,6 +612,7 @@ body.no-overflow {
 
 // A component for displaying the segments (ENPS Stories/NKR Titles)
 .segment-script-view {
+	box-sizing: border-box;
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
