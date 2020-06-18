@@ -65,6 +65,7 @@ interface IProps {
 	adlibs: AdLibPiece[]
 	activeLayerGroups: OutputGroups<boolean, boolean>
 	isLastSegment: boolean
+	isFirstSegment: boolean
 	isQueuedSegment: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 }
@@ -269,7 +270,8 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 								part={part}
 								pieces={this.props.pieces}
 								adlibs={this.props.adlibs}
-								isLastSegment={this.props.isLiveSegment}
+								isLastSegment={this.props.isLastSegment}
+								isFirstInFirstSegment={this.props.isFirstSegment && index === 0}
 								isLastInSegment={index === arr.length - 1}
 								activeLayerGroups={this.props.activeLayerGroups}
 							/>

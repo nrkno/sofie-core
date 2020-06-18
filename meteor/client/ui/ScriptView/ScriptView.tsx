@@ -374,9 +374,7 @@ export const ScriptView = translateWithTracker<ScriptViewProps, ScriptViewState,
 				}
 			})
 
-			document.body.classList.add('dark', 'vertical-overflow-only')
-
-			document.body.classList.add('dark', 'vertical-overflow-only')
+			document.body.classList.add('dark')
 
 			rundownNotificationHandler.set(this.onRONotificationClick)
 
@@ -654,6 +652,7 @@ export const ScriptView = translateWithTracker<ScriptViewProps, ScriptViewState,
 										adlibs={this.props.adlibs}
 										activeLayerGroups={this.props.activeLayerGroups}
 										isLastSegment={index === arr.length - 1}
+										isFirstSegment={index === 0}
 										onContextMenu={this.onContextMenu}
 										isQueuedSegment={this.props.playlist.nextSegmentId === item._id}
 									/>

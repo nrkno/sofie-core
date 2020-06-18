@@ -47,6 +47,7 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 	totalSegmentDuration?: number
 	firstPartInSegment?: PartUi
+	isFirstInFirstSegment: boolean
 	isLastInSegment: boolean
 	isLastSegment: boolean
 	activeLayerGroups: OutputGroups<boolean, boolean>
@@ -250,6 +251,7 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 			let partAttributes = this.props.part.instance.part
 			return (
 				<React.Fragment>
+					{this.props.isFirstInFirstSegment && <div className={'script-view-nextline'} />}
 					<div className="script-view-part-container">
 						<div className="script-view-part-container__scripts">
 							<div className="timecode">
@@ -288,9 +290,18 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 							</div>
 						</div>
 					</div>
-					<div className={'script-view-nextline'}>
-						<div className="autotag">{!partAttributes.autoNext ? 'AUTO' : ''}</div>
-					</div>
+					{this.props.isLastSegment && this.props.isLastInSegment ? (
+						<React.Fragment>
+							<div className={'script-view-endline'} />
+							<div className={'script-view-endline'}>
+								<div className="endofshow">SHOW END</div>
+							</div>
+						</React.Fragment>
+					) : (
+						<div className={'script-view-nextline'}>
+							<div className="autotag">{partAttributes.autoNext ? 'AUTO' : ''}</div>
+						</div>
+					)}
 				</React.Fragment>
 			)
 		}
