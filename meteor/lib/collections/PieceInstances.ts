@@ -23,6 +23,9 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
+	/** Whether this instance has been finished with and reset (to restore the original piece as the primary version) */
+	reset?: boolean
+
 	_id: PieceInstanceId
 	/** The rundown this piece belongs to */
 	rundownId: RundownId

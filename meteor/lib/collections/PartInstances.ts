@@ -56,6 +56,9 @@ export class PartInstance implements DBPartInstance {
 	 */
 	public readonly isScratch?: true
 
+	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
+	public reset?: boolean
+
 	public takeCount: number
 
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
