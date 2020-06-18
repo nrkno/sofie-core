@@ -361,7 +361,15 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 		}
 
 		private notificationKey = (item: Notification) => {
-			return item.created + (item.message || 'undefined').toString() + (item.id || '')
+			return item.id
+				? item.id
+				: item.created +
+						(typeof item.message === 'string'
+							? item.message
+							: item.message === null
+							? 'null'
+							: `jsx_${btoa(JSON.stringify(item.message))}`
+						).toString()
 		}
 
 		render() {
