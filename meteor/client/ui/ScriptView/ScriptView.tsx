@@ -4,9 +4,9 @@ import * as VelocityReact from 'velocity-react'
 import { parse as queryStringParse } from 'query-string'
 import * as _ from 'underscore'
 
-import { TSR, SourceLayerType, IOutputLayer } from 'tv-automation-sofie-blueprints-integration'
+import { TSR, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 
-import { withTracker, Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
@@ -33,13 +33,7 @@ import {
 	RundownLayoutId,
 } from '../../../lib/collections/RundownLayouts'
 
-import {
-	scrollToPart,
-	scrollToPosition,
-	scrollToSegment,
-	maintainFocusOnPartInstance,
-	scrollToPartInstance,
-} from '../../lib/viewPort'
+import { scrollToSegment } from '../../lib/viewPort'
 
 import { Buckets, Bucket } from '../../../lib/collections/Buckets'
 import { Settings } from '../../../lib/Settings'
@@ -57,14 +51,10 @@ import {
 	RONotificationEvent,
 	onRONotificationClick as rundownNotificationHandler,
 	RundownNotifier,
-	reloadRundownPlaylistClick,
 } from '../RundownView/RundownNotifier'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../../lib/clientAPI'
-import { doModalDialog } from '../../lib/ModalDialog'
-import { SupportPopUp } from '../SupportPopUp'
+import { NotificationCenter, NoticeLevel } from '../../lib/notifications/notifications'
 import { Prompt } from 'react-router-dom'
 import { t } from 'i18next'
 import { NotificationCenterPanel } from '../../lib/notifications/NotificationCenterPanel'
@@ -433,8 +423,6 @@ export const ScriptView = translateWithTracker<ScriptViewProps, ScriptViewState,
 				adlibGroup: 'AdLibs',
 			}
 
-			const headersWithPieces = this.props.activeLayerGroups
-
 			return Object.keys(this.props.activeLayerGroups).map((header) => {
 				return Object.keys(this.props.activeLayerGroups[header])
 					.filter((layergroup) => this.props.activeLayerGroups[header][layergroup])
@@ -519,7 +507,7 @@ export const ScriptView = translateWithTracker<ScriptViewProps, ScriptViewState,
 					e,
 					UserAction.SET_NEXT,
 					(e) => MeteorCall.userAction.setNextSegment(e, playlistId, segmentId),
-					(err, res) => {
+					(err) => {
 						if (err) console.error(err)
 						this.setState({
 							manualSetAsNext: true,

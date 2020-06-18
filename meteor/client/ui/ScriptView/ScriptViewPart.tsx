@@ -1,40 +1,23 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
-import { SegmentUi, IOutputLayerUi, ISourceLayerUi, PieceUi, PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
-
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { SegmentUi, PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 
 import { RundownUtils } from '../../lib/rundown'
-import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 
 import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigItemValue, SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 
-import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { IContextMenuContext } from '../RundownView'
-import { SegmentNote } from '../../../lib/api/notes'
 import { Segments } from '../../../lib/collections/Segments'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
-import { Pieces, Piece } from '../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 import { Parts } from '../../../lib/collections/Parts'
-import { EditAttribute } from '../../lib/EditAttribute'
-import { faBookOpen } from '@fortawesome/fontawesome-free-solid'
-import { PartExtended, PieceExtended } from '../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/Rundown'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { LayerGroups, OutputGroups } from './ScriptView'
-import { FloatingInspector } from '../FloatingInspector'
-import { SourceLayerItemContainer } from '../SegmentTimeline/SourceLayerItemContainer'
-import { pieceSetInOutPoints } from '../../../server/api/userActions'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { OutputGroups } from './ScriptView'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 
 interface IProps {
@@ -81,8 +64,6 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 	}
 })(
 	class ScriptViewPart0 extends MeteorReactComponent<Translated<IProps> & ITrackedProps, IState> {
-		private delayedInstanceUpdate: NodeJS.Timer | undefined
-
 		constructor(props: IProps & ITrackedProps) {
 			super(props)
 
@@ -90,7 +71,6 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 
 			const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
 			const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-			const startedPlayback = partInstance.part.startedPlayback
 
 			this.state = {
 				isLive,
@@ -176,14 +156,6 @@ export const ScriptViewPart = withTracker<IProps, IState, ITrackedProps>((props:
 					}
 
 					return SourceLayerType.UNKNOWN
-				}
-
-				const layerIdtoLayer = (type: string): ISourceLayer | undefined => {
-					if (this.props.showStyleBase) {
-						const layer = this.props.showStyleBase.sourceLayers.find((sl) => sl._id == type)
-
-						return layer
-					}
 				}
 
 				let displayedHeaders = Object.keys(this.props.activeLayerGroups).filter(

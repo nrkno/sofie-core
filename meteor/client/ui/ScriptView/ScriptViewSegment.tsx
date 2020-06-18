@@ -5,22 +5,14 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker, Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
-import { UIStateStorage } from '../../lib/UIStateStorage'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import {
-	IOutputLayerExtended,
-	ISourceLayerExtended,
-	PieceExtended,
-	PartExtended,
-	SegmentExtended,
-} from '../../../lib/Rundown'
+import { IOutputLayerExtended, ISourceLayerExtended, PartExtended, SegmentExtended } from '../../../lib/Rundown'
 import { IContextMenuContext } from '../RundownView'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { SegmentNote } from '../../../lib/api/notes'
 import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
-import { Settings } from '../../../lib/Settings'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { Parts } from '../../../lib/collections/Parts'
 
@@ -48,13 +40,6 @@ interface IOutputLayerUi extends IOutputLayerExtended {
 	collapsed?: boolean
 }
 interface ISourceLayerUi extends ISourceLayerExtended {}
-interface PieceUi extends PieceExtended {
-	/** This item has already been linked to the parent item of the spanning item group */
-	linked?: boolean
-	/** Metadata object */
-	contentMetaData?: any
-	message?: string | null
-}
 interface IProps {
 	id: string
 	segmentId: SegmentId
@@ -233,7 +218,7 @@ export const ScriptViewSegment = withTracker<IProps, IState, ITrackedProps>((pro
 			return SEGMENT_VIEW
 		}
 
-		getSegmentContext = (props) => {
+		getSegmentContext = () => {
 			const ctx = literal<IContextMenuContext>({
 				segment: this.props.segmentui,
 				part: this.props.parts.length > 0 ? this.props.parts[0] : null,
