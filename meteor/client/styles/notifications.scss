@@ -111,17 +111,39 @@
 			}
 
 			> .notification-pop-up__actions {
-				text-align: right;
+				display: grid;
+				grid-template-columns: auto auto;
+				grid-template-areas: 'left right';
 				margin-top: 0.5em;
-			}
-		}
 
-		&.has-default-action {
-			> .notification-pop-up__contents {
-				cursor: pointer;
+				.notification-pop-up__actions--button {
+					font-weight: 500;
+					letter-spacing: 0.2px;
+					line-height: 1.43em;
+					padding-left: 10px;
+					padding-right: 10px;
 
-				&:hover {
-					text-decoration: underline;
+					.icon {
+						vertical-align: middle;
+					}
+
+					.label {
+						margin-left: 10px;
+						line-height: inherit;
+					}
+				}
+
+				.btn-default {
+					background: #d7dade;
+				}
+
+				> .notification-pop-up__actions--default {
+					grid-area: left;
+				}
+
+				> .notification-pop-up__actions--other {
+					text-align: right;
+					grid-area: right;
 				}
 			}
 		}

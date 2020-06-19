@@ -56,16 +56,12 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 						notice: item.status === NoticeLevel.NOTIFICATION,
 						warning: item.status === NoticeLevel.WARNING,
 						tip: item.status === NoticeLevel.TIP,
-
-						'has-default-action': !!defaultAction,
-
 						persistent: item.persistent,
 
 						'is-highlighted': this.props.isHighlighted,
 					},
 					this.props.className
 				)}
-				onClick={defaultAction ? (e) => this.triggerEvent(defaultAction, e) : undefined}
 				style={this.props.style}>
 				<div className="notification-pop-up__header">
 					{item.status === NoticeLevel.CRITICAL ? (
@@ -78,21 +74,40 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				</div>
 				<div className="notification-pop-up__contents">
 					{item.message}
-					{!defaultAction && allActions.length ? (
+					{defaultAction || allActions.length ? (
 						<div className="notification-pop-up__actions">
-							{_.map(allActions, (action: NotificationAction, i: number) => {
-								return (
+							{defaultAction ? (
+								<div className="notification-pop-up__actions--default">
 									<button
-										key={i}
-										className={ClassNames(
-											'btn',
-											['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default'
-										)}
-										onClick={(e) => this.triggerEvent(action, e)}>
-										{action.label}
+										className="btn btn-default notification-pop-up__actions--button"
+										onClick={(e) => this.triggerEvent(defaultAction, e)}>
+										<CoreIcon
+											id="nrk-arrow-left"
+											className="icon"
+											width="1em"
+											height="1em"
+											style={{ verticalAlign: 'middle', marginTop: '-0.1em', marginRight: '-0.4em' }}
+										/>
+										<span className="label">{defaultAction.label}</span>
 									</button>
-								)
-							})}
+								</div>
+							) : !defaultAction && allActions.length ? (
+								<div className="notification-pop-up__actions--other">
+									{_.map(allActions, (action: NotificationAction, i: number) => {
+										return (
+											<button
+												key={i}
+												className={ClassNames(
+													'btn',
+													['default', 'primary'].indexOf(action.type) ? 'btn-primary' : 'btn-default'
+												)}
+												onClick={(e) => this.triggerEvent(action, e)}>
+												{action.label}
+											</button>
+										)
+									})}
+								</div>
+							) : null}
 						</div>
 					) : null}
 				</div>
