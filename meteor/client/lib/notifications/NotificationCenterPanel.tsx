@@ -81,7 +81,13 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 									<button
 										className="btn btn-default notification-pop-up__actions--button"
 										onClick={(e) => this.triggerEvent(defaultAction, e)}>
-										<CoreIcon id="nrk-arrow-left" className="icon" width="1.43em" height="1.43em" />
+										<CoreIcon
+											id="nrk-arrow-left"
+											className="icon"
+											width="1em"
+											height="1em"
+											style={{ verticalAlign: 'middle', marginTop: '-0.1em', marginRight: '-0.4em' }}
+										/>
 										<span className="label">{defaultAction.label}</span>
 									</button>
 								</div>
