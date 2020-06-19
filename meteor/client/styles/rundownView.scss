@@ -692,9 +692,6 @@ body.no-overflow {
 		flex-direction: row;
 		justify-content: center;
 
-		opacity: 0;
-		transition: 0.5s opacity ease-in-out;
-
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 30px;
 			min-height: 30px;
@@ -714,12 +711,6 @@ body.no-overflow {
 				background: $ui-button-primary;
 				transition: 0s background-color;
 			}
-		}
-	}
-	&:hover {
-		.segment-timeline__timeline-zoom-buttons {
-			transition: 0.2s opacity ease-in-out;
-			opacity: 1;
 		}
 	}
 	.segment-timeline__next-preview {
