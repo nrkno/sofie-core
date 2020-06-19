@@ -253,19 +253,19 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 				<LottieButton
 					className="segment-timeline__timeline-zoom-buttons__button"
 					inAnimation={Zoom_In_MouseOver}
-					outAnimation={Zoom_In_MouseOut}
+					outAnimation={Zoom_In_MouseOver}
 					onClick={this.zoomIn}
 				/>
 				<LottieButton
 					className="segment-timeline__timeline-zoom-buttons__button"
 					inAnimation={Zoom_Normal_MouseOver}
-					outAnimation={Zoom_Normal_MouseOut}
+					outAnimation={Zoom_Normal_MouseOver}
 					onClick={this.zoomNormalize}
 				/>
 				<LottieButton
 					className="segment-timeline__timeline-zoom-buttons__button"
 					inAnimation={Zoom_Out_MouseOver}
-					outAnimation={Zoom_Out_MouseOut}
+					outAnimation={Zoom_Out_MouseOver}
 					onClick={this.zoomOut}
 				/>
 			</div>
