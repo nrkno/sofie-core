@@ -148,12 +148,12 @@ const StudioDevices = withTranslation()(
 						</Tooltip>
 					</h2>
 					&nbsp;
-					{!Settings.enableUserAccounts && !this.props.studioDevices.length ? (
+					{!this.props.studioDevices.length ? (
 						<div className="error-notice">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No devices connected')}
 						</div>
 					) : null}
-					{!Settings.enableUserAccounts && !this.isPlayoutConnected() ? (
+					{!this.isPlayoutConnected() ? (
 						<div className="error-notice">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('Playout gateway not connected')}
 						</div>

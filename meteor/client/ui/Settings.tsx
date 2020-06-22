@@ -105,7 +105,6 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			if (!studio.name) return true
 			if (!studio.supportedShowStyleBase.length) return true
 			if (!studio.blueprintId) return true
-			if (MeteorSettings.enableUserAccounts) return false
 			const peripherals = this.props.peripheralDevices.filter((device) => device.studioId === studio._id)
 			if (!peripherals.length) return true
 			if (!peripherals.filter((device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT).length) return true
