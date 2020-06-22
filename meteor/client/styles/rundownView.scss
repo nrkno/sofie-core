@@ -2104,11 +2104,12 @@ body.no-overflow {
 	background: #474747;
 	box-shadow: 1px -1.5px 3.5px 1.5px rgba(0, 0, 0, 0.5);
 	padding: 0.7em 1em;
-	white-space: nowrap;
+	white-space: normal;
 	transform: translate(-50%, -100%);
 	animation: 0.2s inspector-fadeIn;
 	animation-iteration-count: 1;
 	border: 1px black solid;
+	max-width: 26em;
 
 	@include item-type-borders();
 
@@ -2305,6 +2306,8 @@ body.no-overflow {
 		max-width: 60vw;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		word-break: break-all;
+		white-space: normal;
 	}
 	.mini-inspector__system {
 		font-weight: 300;
