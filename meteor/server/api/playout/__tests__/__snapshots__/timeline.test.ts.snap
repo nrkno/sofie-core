@@ -3,7 +3,7 @@
 exports[`Timeline Basic rundown 1`] = `
 Array [
   Object {
-    "_id": "mockStudio10_playlist_randomId11002_status",
+    "_id": "mockStudio10_playlist_randomId9002_status",
     "classes": Array [
       "rundown_active",
     ],
@@ -13,7 +13,7 @@ Array [
     "enable": Object {
       "while": 1,
     },
-    "id": "playlist_randomId11002_status",
+    "id": "playlist_randomId9002_status",
     "layer": "rundown_status",
     "objectType": "rundown",
     "studioId": "mockStudio10",
@@ -34,7 +34,7 @@ Array [
     "studioId": "mockStudio10",
   },
   Object {
-    "_id": "mockStudio10_part_group_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio10_part_group_randomId9002_part0_0_randomId9004",
     "children": Array [],
     "content": Object {
       "deviceType": 0,
@@ -43,7 +43,7 @@ Array [
     "enable": Object {
       "start": "now",
     },
-    "id": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_randomId9002_part0_0_randomId9004",
     "isGroup": true,
     "isPartGroup": true,
     "layer": "",
@@ -52,13 +52,13 @@ Array [
     "studioId": "mockStudio10",
   },
   Object {
-    "_id": "mockStudio10_part_group_firstobject_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio10_part_group_firstobject_randomId9002_part0_0_randomId9004",
     "classes": Array [],
     "content": Object {
       "callBack": "partPlaybackStarted",
       "callBackData": Object {
-        "partInstanceId": "randomId11002_part0_0_randomId11004",
-        "rundownId": "randomId11002",
+        "partInstanceId": "randomId9002_part0_0_randomId9004",
+        "rundownId": "randomId9002",
       },
       "callBackStopped": "partPlaybackStopped",
       "deviceType": 0,
@@ -67,8 +67,8 @@ Array [
     "enable": Object {
       "start": 0,
     },
-    "id": "part_group_firstobject_randomId11002_part0_0_randomId11004",
-    "inGroup": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_firstobject_randomId9002_part0_0_randomId9004",
+    "inGroup": "part_group_randomId9002_part0_0_randomId9004",
     "layer": "group_first_object",
     "objectType": "rundown",
     "studioId": "mockStudio10",
@@ -79,7 +79,7 @@ Array [
 exports[`Timeline Basic rundown 2`] = `
 Array [
   Object {
-    "_id": "mockStudio10_playlist_randomId11002_status",
+    "_id": "mockStudio10_playlist_randomId9002_status",
     "classes": Array [
       "rundown_active",
     ],
@@ -89,7 +89,7 @@ Array [
     "enable": Object {
       "while": 1,
     },
-    "id": "playlist_randomId11002_status",
+    "id": "playlist_randomId9002_status",
     "layer": "rundown_status",
     "objectType": "rundown",
     "studioId": "mockStudio10",
@@ -110,7 +110,7 @@ Array [
     "studioId": "mockStudio10",
   },
   Object {
-    "_id": "mockStudio10_part_group_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio10_part_group_randomId9002_part0_0_randomId9004",
     "children": Array [],
     "content": Object {
       "deviceType": 0,
@@ -120,7 +120,7 @@ Array [
       "setFromNow": true,
       "start": 100000,
     },
-    "id": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_randomId9002_part0_0_randomId9004",
     "isGroup": true,
     "isPartGroup": true,
     "layer": "",
@@ -129,13 +129,13 @@ Array [
     "studioId": "mockStudio10",
   },
   Object {
-    "_id": "mockStudio10_part_group_firstobject_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio10_part_group_firstobject_randomId9002_part0_0_randomId9004",
     "classes": Array [],
     "content": Object {
       "callBack": "partPlaybackStarted",
       "callBackData": Object {
-        "partInstanceId": "randomId11002_part0_0_randomId11004",
-        "rundownId": "randomId11002",
+        "partInstanceId": "randomId9002_part0_0_randomId9004",
+        "rundownId": "randomId9002",
       },
       "callBackStopped": "partPlaybackStopped",
       "deviceType": 0,
@@ -144,8 +144,8 @@ Array [
     "enable": Object {
       "start": 0,
     },
-    "id": "part_group_firstobject_randomId11002_part0_0_randomId11004",
-    "inGroup": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_firstobject_randomId9002_part0_0_randomId9004",
+    "inGroup": "part_group_randomId9002_part0_0_randomId9004",
     "layer": "group_first_object",
     "objectType": "rundown",
     "studioId": "mockStudio10",

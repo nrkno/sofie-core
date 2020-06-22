@@ -19,6 +19,10 @@ import { removeRundownPlaylistFromCache } from '../../playout/lib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
+// test('abc', () => {
+// 	setupDefaultStudioEnvironment()
+// })
+
 describe('Test ingest actions for rundowns and segments', () => {
 	let device: PeripheralDevice
 	let device2: PeripheralDevice

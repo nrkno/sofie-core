@@ -59,6 +59,8 @@ import {
 } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { restartRandomId } from '../random'
+import { MongoMock } from '../mongo'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -121,6 +123,10 @@ export function setupMockPeripheralDevice(
 	return device
 }
 export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
+	// Reset everything mongo, to keep the ids predictable
+	restartRandomId()
+	MongoMock.deleteAllData()
+
 	doc = doc || {}
 
 	const defaultCore: ICoreSystem = {
