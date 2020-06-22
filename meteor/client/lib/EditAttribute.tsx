@@ -8,6 +8,7 @@ import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import { ColorPickerEvent, ColorPicker } from './colorPicker'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -21,6 +22,7 @@ export type EditAttributeType =
 	| 'dropdown'
 	| 'switch'
 	| 'multiselect'
+	| 'colorpicker'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 		if (this.props.type === 'text') {
@@ -39,6 +41,8 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeDropdown {...this.props} />
 		} else if (this.props.type === 'multiselect') {
 			return <EditAttributeMultiSelect {...this.props} />
+		} else if (this.props.type === 'colorpicker') {
+			return <EditAttributeColorPicker {...this.props} />
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -622,6 +626,28 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 					value={this.getAttribute()}
 					placeholder={this.props.label}
 					onChange={this.handleChange}></MultiSelect>
+			)
+		}
+	}
+)
+const EditAttributeColorPicker = wrapEditAttribute(
+	class EditAttributeColorPicker extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+		}
+		handleChange(event: ColorPickerEvent) {
+			this.handleUpdate(event.selectedValue)
+		}
+		render() {
+			return (
+				<ColorPicker
+					className={this.props.className}
+					availableOptions={this.props.options}
+					value={this.getAttribute()}
+					placeholder={this.props.label}
+					onChange={this.handleChange}></ColorPicker>
 			)
 		}
 	}

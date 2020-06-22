@@ -45,6 +45,7 @@ import { fetchFrom } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
+import { defaultColorPickerPalette } from '../../lib/colorPicker'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
@@ -1327,6 +1328,45 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											mutateDisplayValue={(v) => (v === undefined ? RundownLayoutElementType.FILTER : v)}
 											collection={RundownLayouts}
 											className="input text-input input-l"></EditAttribute>
+									</label>
+								</div>
+								<div className="mod mvs mhs">
+									<label className="field">
+										{t('Expose layout as a standalone page')}
+										<EditAttribute
+											modifiedClassName="bghl"
+											attribute={'exposeAsStandalone'}
+											obj={item}
+											options={RundownLayoutType}
+											type="checkbox"
+											collection={RundownLayouts}
+											className="mod mas"></EditAttribute>
+									</label>
+								</div>
+								<div className="mod mvs mhs">
+									<label className="field">
+										{t('Expose as a layout for the shelf')}
+										<EditAttribute
+											modifiedClassName="bghl"
+											attribute={'exposeAsShelf'}
+											obj={item}
+											options={RundownLayoutType}
+											type="checkbox"
+											collection={RundownLayouts}
+											className="mod mas"></EditAttribute>
+									</label>
+								</div>
+								<div className="mod mvs mhs">
+									<label className="field">
+										{t('Label color')}
+										<EditAttribute
+											modifiedClassName="bghl"
+											attribute={'color'}
+											obj={item}
+											options={defaultColorPickerPalette}
+											type="colorpicker"
+											collection={RundownLayouts}
+											className="input text-input input-s"></EditAttribute>
 									</label>
 								</div>
 							</div>
