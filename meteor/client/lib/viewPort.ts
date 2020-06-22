@@ -164,7 +164,9 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 						left: 0,
 						behavior: 'smooth',
 					})
-					resolve()
+					setTimeout(() => {
+						resolve()
+					}, 2000)
 				},
 				{ timeout: 250 }
 			)
