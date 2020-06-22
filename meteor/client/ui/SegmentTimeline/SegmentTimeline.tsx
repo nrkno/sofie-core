@@ -231,8 +231,16 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 	}
 }
 
-class SegmentTimelineZoomButtons extends React.Component<IProps> {
-	constructor(props: IProps) {
+class SegmentTimelineZoomButtons extends React.Component<
+	IProps & {
+		onTimelineDoubleClick(e: React.MouseEvent<HTMLDivElement>)
+	}
+> {
+	constructor(
+		props: IProps & {
+			onTimelineDoubleClick(e: React.MouseEvent<HTMLDivElement>)
+		}
+	) {
 		super(props)
 	}
 
@@ -245,7 +253,8 @@ class SegmentTimelineZoomButtons extends React.Component<IProps> {
 	}
 
 	zoomNormalize = (e: React.MouseEvent<HTMLDivElement>) => {
-		this.props.onZoomChange(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, e)
+		// this.props.onZoomChange(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, e)
+		this.props.onTimelineDoubleClick && this.props.onTimelineDoubleClick(e)
 	}
 
 	render() {
@@ -917,7 +926,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					{this.renderLiveLine()}
 				</div>
 				<ErrorBoundary>
-					<SegmentTimelineZoomButtons {...this.props} />
+					<SegmentTimelineZoomButtons {...this.props} onTimelineDoubleClick={this.onTimelineDoubleClick} />
 				</ErrorBoundary>
 				{/* <ErrorBoundary>
 					<SegmentNextPreview
