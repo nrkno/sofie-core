@@ -139,7 +139,8 @@ export interface RundownLayoutBase {
 	filters: RundownLayoutElementBase[]
 	exposeAsStandalone: boolean
 	exposeAsShelf: boolean
-	color: string
+	icon: string
+	iconColor: string
 }
 
 export interface RundownLayout extends RundownLayoutBase {

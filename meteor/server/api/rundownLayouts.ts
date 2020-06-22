@@ -38,7 +38,8 @@ export function createRundownLayout(
 			userId,
 			exposeAsStandalone: !!exposeAsStandalone,
 			exposeAsShelf: !!exposeAsShelf,
-			color: '#ffffff',
+			icon: '',
+			iconColor: '#ffffff',
 		})
 	)
 	return id
