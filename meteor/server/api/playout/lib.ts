@@ -41,6 +41,8 @@ import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBase
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { saveIntoCache } from '../../DatabaseCache'
+import { afterRemoveParts } from '../rundown'
 
 /**
  * Reset the rundown:
@@ -687,11 +689,20 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 		}
 	)
 	// remove parts that have been dynamically queued for after this part (queued adLibs)
-	cache.Parts.remove({
-		rundownId: part.rundownId,
-		afterPart: part._id,
-		dynamicallyInserted: true,
-	})
+	saveIntoCache(
+		cache.Parts,
+		{
+			rundownId: part.rundownId,
+			afterPart: part._id,
+			dynamicallyInserted: true,
+		},
+		[],
+		{
+			afterRemoveAll(removedParts) {
+				afterRemoveParts(cache, part.rundownId, removedParts)
+			},
+		}
+	)
 
 	// Remove all pieces that have been dynamically created (such as adLib pieces)
 	const removedPiecesCount = cache.Pieces.remove({
