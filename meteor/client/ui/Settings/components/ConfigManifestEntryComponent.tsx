@@ -47,6 +47,19 @@ export const ConfigManifestEntryComponent = translate()(
 						type="multiline"
 						className="input text-input input-l"></EditAttribute>
 				)
+			} else if (configField.type === ConfigManifestEntryType.MULTILINE_STRING) {
+				return (
+					<EditAttribute
+						{...opts}
+						modifiedClassName="bghl"
+						type="multiline"
+						className="input text-input input-l"
+						mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join('\n'))}
+						mutateUpdateValue={(v) =>
+							v === undefined || v.length === 0 ? undefined : v.split('\n').map((i) => i.trimStart())
+						}
+					/>
+				)
 			}
 		}
 

@@ -253,6 +253,12 @@ const EditAttributeMultilineText = wrapEditAttribute(
 				this.handleDiscard()
 			}
 		}
+		handleEnterKey(event) {
+			let e = event as KeyboardEvent
+			if (e.key === 'Enter') {
+				e.stopPropagation()
+			}
+		}
 		render() {
 			return (
 				<textarea
@@ -269,6 +275,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 					onChange={this.handleChange}
 					onBlur={this.handleBlur}
 					onKeyUp={this.handleEscape}
+					onKeyPress={this.handleEnterKey}
 				/>
 			)
 		}
