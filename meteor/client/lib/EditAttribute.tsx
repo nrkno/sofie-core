@@ -687,7 +687,7 @@ const EditAttributeJson = wrapEditAttribute(
 			return (
 				<input
 					type="text"
-					className={classNames(
+					className={ClassNames(
 						'form-control',
 						this.props.className,
 						this.state.valueError && this.props.invalidClassName
