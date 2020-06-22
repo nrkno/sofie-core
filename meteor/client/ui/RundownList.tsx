@@ -155,7 +155,11 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 	renderViewLinks() {
 		const { t } = this.props
 		const standaloneLayouts = this.props.rundownLayouts
-			.filter((layout) => layout.exposeAsStandalone)
+			.filter(
+				(layout) =>
+					layout.exposeAsStandalone &&
+					this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
+			)
 			.map((layout) => {
 				return this.renderLinkItem(
 					layout,
@@ -164,7 +168,10 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				)
 			})
 		const shelfLayouts = this.props.rundownLayouts
-			.filter((layout) => layout.exposeAsShelf)
+			.filter(
+				(layout) =>
+					layout.exposeAsShelf && this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
+			)
 			.map((layout) => {
 				return this.renderLinkItem(
 					layout,
@@ -173,6 +180,9 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				)
 			})
 		const allElements = [
+			<div className="expco-header" key={'header2'}>
+				{t('Standalone Shelf')}
+			</div>,
 			...standaloneLayouts,
 			<div className="expco-header" key={'header2'}>
 				{t('Timeline views')}
@@ -590,6 +600,7 @@ export const RundownList = translateWithTracker(() => {
 											<th className="c1">{t('Duration')}</th>
 											<th className="c1">{t('Status')}</th>
 											<th className="c1">{t('Air Status')}</th>
+											<th className="c1">&nbsp;</th>
 											<th className="c1">&nbsp;</th>
 										</tr>
 									</thead>
