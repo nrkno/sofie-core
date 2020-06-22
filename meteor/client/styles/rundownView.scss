@@ -108,6 +108,25 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
 
+	.invert-flash {
+		@keyframes invert-flash {
+			0% {
+				filter: #{'invert()'};
+			}
+			50% {
+				filter: #{'invert()'};
+			}
+			51% {
+				filter: none;
+			}
+			100% {
+				filter: none;
+			}
+		}
+
+		animation: invert-flash 1s infinite;
+	}
+
 	.rundown-view__part__icon {
 		display: inline-block;
 		margin-left: 0.2em;

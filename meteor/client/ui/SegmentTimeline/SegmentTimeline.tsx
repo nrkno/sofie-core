@@ -93,6 +93,7 @@ interface IProps {
 interface IStateHeader {
 	timelineWidth: number
 	mouseGrabbed: boolean
+	highlight: boolean
 }
 
 interface IZoomPropsHeader {
@@ -300,17 +301,41 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		this.state = {
 			timelineWidth: 1,
 			mouseGrabbed: false,
+			highlight: false,
 		}
 	}
 
 	componentDidMount() {
+		super.componentDidMount && super.componentDidMount()
+		window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+
 		window.addEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
 		window.addEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
 	}
 
 	componentWillUnmount() {
+		super.componentWillUnmount && super.componentWillUnmount()
+		window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+		clearTimeout(this.highlightTimeout)
+
 		window.removeEventListener(RundownViewEvents.segmentZoomOn, this.onRundownEventSegmentZoomOn)
 		window.removeEventListener(RundownViewEvents.segmentZoomOff, this.onRundownEventSegmentZoomOff)
+	}
+
+	private highlightTimeout: NodeJS.Timer
+
+	private onHighlight = (e: any) => {
+		if (e.detail && e.detail.segmentId === this.props.segment._id && !e.detail.partId && !e.detail.pieceId) {
+			this.setState({
+				highlight: true,
+			})
+			clearTimeout(this.highlightTimeout)
+			this.highlightTimeout = setTimeout(() => {
+				this.setState({
+					highlight: false,
+				})
+			}, 5000)
+		}
 	}
 
 	setSegmentRef = (el: HTMLDivElement) => {
@@ -777,6 +802,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 					'has-guest-items': this.props.hasGuestItems,
 					'has-remote-items': this.props.hasRemoteItems,
+					'invert-flash': this.state.highlight,
 				})}
 				data-obj-id={this.props.segment._id}
 				ref={this.setSegmentRef}>

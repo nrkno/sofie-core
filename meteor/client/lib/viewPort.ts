@@ -90,13 +90,14 @@ export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnim
 	return Promise.reject('Could not find part')
 }
 
-export const HEADER_HEIGHT = 150 // TV2 has: 54
+export const HEADER_HEIGHT = 133 // TV2 has: 54
 export const HEADER_MARGIN = 15
 
 export function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
-	noAnimation?: boolean
+	noAnimation?: boolean,
+	secondStage?: boolean
 ): Promise<boolean> {
 	let elementToScrollTo: HTMLElement | null = isProtectedString(elementToScrollToOrSegmentId)
 		? document.querySelector('#' + SEGMENT_TIMELINE_ELEMENT_ID + elementToScrollToOrSegmentId)
@@ -116,7 +117,30 @@ export function scrollToSegment(
 		bottom > window.scrollY + window.innerHeight ||
 		top < window.scrollY + HEADER_HEIGHT + HEADER_MARGIN
 	) {
-		return scrollToPosition(top, noAnimation).then(() => true)
+		return scrollToPosition(top, noAnimation).then(() => {
+			// retry scroll in case we have to load some data
+			return new Promise<boolean>((resolve, reject) => {
+				if (!secondStage) {
+					// check if we still need to scroll
+					let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
+					top += window.scrollY
+					bottom += window.scrollY
+
+					if (
+						bottom > window.scrollY + window.innerHeight ||
+						top < window.scrollY + HEADER_HEIGHT + HEADER_MARGIN
+					) {
+						setTimeout(() => {
+							scrollToSegment(elementToScrollToOrSegmentId, false, true, true).then(resolve, reject)
+						}, 3000)
+					} else {
+						resolve(true)
+					}
+				} else {
+					resolve(true)
+				}
+			})
+		})
 	}
 
 	return Promise.resolve(false)

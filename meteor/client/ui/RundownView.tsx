@@ -1272,6 +1272,7 @@ export enum RundownViewEvents {
 	'goToPart' = 'sofie:goToPart',
 	'goToPartInstance' = 'sofie:goToPartInstance',
 	'selectPiece' = 'sofie:selectPiece',
+	'highlight' = 'sofie:highlight',
 }
 
 export interface IGoToPartEvent {
@@ -2005,7 +2006,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					}
 				}
 				if (segmentId) {
-					scrollToSegment(segmentId).catch(console.error)
+					scrollToSegment(segmentId)
+						.then(() => {
+							window.dispatchEvent(
+								new CustomEvent(RundownViewEvents.highlight, {
+									detail: e.sourceLocator,
+								})
+							)
+						})
+						.catch(console.error)
 				}
 			}
 		}
