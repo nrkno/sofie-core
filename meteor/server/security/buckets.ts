@@ -6,6 +6,7 @@ import { triggerWriteAccess } from './lib/securityVerify'
 import { PieceId } from '../../lib/collections/Pieces'
 import { Settings } from '../../lib/Settings'
 import { check } from '../../lib/check'
+import { Meteor } from 'meteor/meteor'
 
 export namespace BucketSecurity {
 	// Sometimes a studio ID is passed, others the peice / bucket id
