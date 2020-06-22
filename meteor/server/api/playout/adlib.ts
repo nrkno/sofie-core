@@ -413,7 +413,7 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.Pieces.insert(pieceInstance.piece)
 		})
 
-		updatePartRanks(cache, rundown)
+		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
 
 		setNextPart(cache, rundownPlaylist, newPartInstance)
 	}

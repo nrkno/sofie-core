@@ -1244,15 +1244,16 @@ function updateSegmentFromIngestData(
 }
 function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
-	// To be called after rundown has been changed
-	updateExpectedMediaItemsOnRundown(cache, rundown._id)
-	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
-	updatePartRanks(cache, rundown)
-	updateSourceLayerInfinitesAfterPart(cache, rundown)
-
 	if (!playlist) {
 		throw new Meteor.Error(404, `Orphaned rundown ${rundown._id}`)
 	}
+
+	// To be called after rundown has been changed
+	updateExpectedMediaItemsOnRundown(cache, rundown._id)
+	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
+	updatePartRanks(cache, playlist, changedSegmentIds)
+	updateSourceLayerInfinitesAfterPart(cache, rundown)
+
 	UpdateNext.ensureNextPartIsValid(cache, playlist)
 
 	triggerUpdateTimelineAfterIngestData(cache, rundown._id, changedSegmentIds)

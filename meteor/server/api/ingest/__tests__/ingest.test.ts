@@ -961,6 +961,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
 
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
@@ -982,7 +985,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		// Let the logic generate the correct rank first
 		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
-			updatePartRanks(cache, rundown)
+			updatePartRanks(cache, playlist, [part.segmentId])
 		})
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
@@ -1041,6 +1044,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
 
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
@@ -1075,7 +1081,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			externalId: '',
 			title: 'Dynamic',
 			dynamicallyInserted: true,
-			afterPart: part._id,
+			afterPart: protectString('dynamic1'),
 		})
 		expect(Parts.findOne(protectString('dynamic0'))).toBeTruthy()
 		expect(Parts.findOne(protectString('dynamic1'))).toBeTruthy()
@@ -1083,7 +1089,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		// Let the logic generate the correct rank first
 		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
-			updatePartRanks(cache, rundown)
+			updatePartRanks(cache, playlist, [part.segmentId])
 		})
 
 		let part1 = Parts.findOne({ externalId: 'part1' }) as Part
