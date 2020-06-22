@@ -9,7 +9,7 @@ import { Mongo } from 'meteor/mongo'
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
-import { IconPicker } from './iconPicker'
+import { IconPicker, IconPickerEvent } from './iconPicker'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -663,7 +663,7 @@ const EditAttributeIconPicker = wrapEditAttribute(
 
 			this.handleChange = this.handleChange.bind(this)
 		}
-		handleChange(event: ColorPickerEvent) {
+		handleChange(event: IconPickerEvent) {
 			this.handleUpdate(event.selectedValue)
 		}
 		render() {
