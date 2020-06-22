@@ -8,7 +8,7 @@ import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { TransformedCollection } from '../../lib/typings/meteor'
-import * as classNames from 'classnames'
+import ClassNames from 'classnames'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
