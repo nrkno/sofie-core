@@ -7,7 +7,6 @@ import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { check } from '../../lib/check'
-
 import { Parts, PartId } from '../../lib/collections/Parts'
 import { updateSourceLayerInfinitesAfterPart } from '../api/playout/infinites'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'

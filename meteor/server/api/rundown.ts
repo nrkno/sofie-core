@@ -73,6 +73,7 @@ import {
 	removeRundownPlaylistFromCache,
 	getRundownsSegmentsAndPartsFromCache,
 } from './playout/lib'
+import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
@@ -373,6 +374,11 @@ export function afterRemovePartsAuxiliary(
 				},
 			}
 		)
+
+		AdLibActions.remove({
+			rundownId: rundownId,
+			partId: { $in: _.map(removedParts, (p) => p._id) },
+		})
 	})
 }
 

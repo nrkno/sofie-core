@@ -184,14 +184,14 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessRundownBaselineItems(context, [])
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [])
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null object', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessRundownBaselineItems(context, [null as any])
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [null as any])
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('some no ids', () => {
@@ -237,7 +237,7 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.compact(_.map(rawObjects, (obj) => obj.id)).concat(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessRundownBaselineItems(context, _.clone(rawObjects))
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), _.clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -309,12 +309,13 @@ describe('Test blueprint post-process', () => {
 				},
 			])
 
+			const blueprintId = 'some-blueprints'
 			try {
-				postProcessRundownBaselineItems(context, _.clone(rawObjects))
+				postProcessRundownBaselineItems(context, protectString(blueprintId), _.clone(rawObjects))
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[400] Error in baseline blueprint: ids of timelineObjs must be unique! ("testObj")`
+					`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
 				)
 			}
 		})
@@ -447,14 +448,26 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessPieces(context, [], protectString('blueprint9'), protectString('part8'))
+			const res = postProcessPieces(
+				context,
+				[],
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part8')
+			)
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null piece', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessPieces(context, [null as any], protectString('blueprint9'), protectString('part8'))
+			const res = postProcessPieces(
+				context,
+				[null as any],
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part8')
+			)
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('various pieces', () => {
@@ -507,7 +520,13 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.compact(_.map(pieces, (obj) => obj._id)).concat(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessPieces(context, pieces, protectString('blueprint9'), protectString('part8'))
+			const res = postProcessPieces(
+				context,
+				pieces,
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part8')
+			)
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
 
 			// Ensure all required keys are defined
@@ -557,7 +576,13 @@ describe('Test blueprint post-process', () => {
 				},
 			})
 
-			const res = postProcessPieces(context, [piece], protectString('blueprint9'), protectString('part6'))
+			const res = postProcessPieces(
+				context,
+				[piece],
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part6')
+			)
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([_.omit(piece, '_id')])
 

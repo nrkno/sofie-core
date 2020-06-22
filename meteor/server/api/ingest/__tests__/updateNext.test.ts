@@ -109,7 +109,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p1',
 				title: 'Part 1',
-				typeVariant: '',
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -124,7 +123,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p2',
 				title: 'Part 2',
-				typeVariant: '',
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -139,7 +137,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment1'),
 				externalId: 'p3',
 				title: 'Part 3',
-				typeVariant: '',
 			}),
 		}),
 		// Segment 2
@@ -155,7 +152,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment2'),
 				externalId: 'p4',
 				title: 'Part 4',
-				typeVariant: '',
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -170,7 +166,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment2'),
 				externalId: 'p5',
 				title: 'Part 5',
-				typeVariant: '',
 			}),
 		}),
 		// Segment 3
@@ -186,7 +181,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment3'),
 				externalId: 'p6',
 				title: 'Part 6',
-				typeVariant: '',
 			}),
 		}),
 		// Segment 4
@@ -202,7 +196,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'p7',
 				title: 'Part 7',
-				typeVariant: '',
 			}),
 		}),
 		literal<DBPartInstance>({
@@ -217,7 +210,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'p8',
 				title: 'Part 8',
-				typeVariant: '',
 				floated: true,
 			}),
 		}),
@@ -233,7 +225,6 @@ function createMockRO() {
 				segmentId: protectString('mock_segment4'),
 				externalId: 'p9',
 				title: 'Part 9',
-				typeVariant: '',
 			}),
 		}),
 	]

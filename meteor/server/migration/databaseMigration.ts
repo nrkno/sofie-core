@@ -62,13 +62,14 @@ import { SnapshotId } from '../../lib/collections/Snapshots'
  * 1.2.0: Release 14  (2019-11-06)
  * 1.3.0: Release 15  (2019-11-25)
  * 1.4.0: Release 16  (2019-01-02)
- * 1.5.0: Release 17  (TBD)
- * 1.6.0: Release 18  (TBD)
- * 1.7.0: Release 19  (TBD)
- * 1.8.0: Release 20  (TBD)
- * 1.9.0: Release 21  (TBD)
+ * 1.5.0: Release 17  (2019-01-24)
+ * 1.6.0: Release 18  (2019-03-04)
+ * 1.7.0: Release 19  (2019-03-31)
+ * 1.8.0: Release 20  (2019-05-12)
+ * 1.9.0: Release 21  (never released)
+ * 1.10.0: Release 22  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.9.0'
+export const CURRENT_SYSTEM_VERSION = '1.10.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)

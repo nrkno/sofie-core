@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { InjectedTranslateProps } from 'react-i18next'
+import { WithTranslation } from 'react-i18next'
 import { Meteor } from 'meteor/meteor'
 import { NavLink, Link } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
@@ -30,7 +30,7 @@ interface IStateHeader {
 }
 
 class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
-	constructor(props: IPropsHeader & InjectedTranslateProps) {
+	constructor(props: IPropsHeader & WithTranslation) {
 		super(props)
 
 		this.state = {
@@ -163,7 +163,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 	}
 }
 
-export default translateWithTracker((props: IPropsHeader & InjectedTranslateProps) => {
+export default translateWithTracker((props: IPropsHeader & WithTranslation) => {
 	const coreSystem = CoreSystem.findOne()
 	let name: string | undefined = undefined
 

@@ -4,16 +4,16 @@ import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { VTContent, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { translate } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
-import * as CoreIcon from '@nrk/core-icons/jsx'
+import CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
@@ -111,7 +111,7 @@ interface ITimingWarningState {
 	plannedStartCloseShown?: boolean
 	plannedStartCloseShow?: boolean
 }
-const WarningDisplay = translate()(
+const WarningDisplay = withTranslation()(
 	timer(5000)(
 		class WarningDisplay extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
 			private readonly REHEARSAL_MARGIN = 1 * 60 * 1000
@@ -225,8 +225,8 @@ export enum RundownViewKbdShortcuts {
 	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = '',
 }
 
-const TimingDisplay = translate()(
-	withTiming<ITimingDisplayProps, {}>()(
+const TimingDisplay = withTranslation()(
+	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 			render() {
 				const { t } = this.props
@@ -435,7 +435,7 @@ interface IRundownHeaderState {
 	errorMessage?: string
 }
 
-const RundownHeader = translate()(
+const RundownHeader = withTranslation()(
 	class RundownHeader extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 		bindKeys: Array<{
 			key: string
@@ -1189,7 +1189,7 @@ const RundownHeader = translate()(
 								<div className="flex-col right horizontal-align-right">
 									<div className="links mod close">
 										<NavLink to="/rundowns">
-											<CoreIcon id="nrk-close" />
+											<CoreIcon.NrkClose />
 										</NavLink>
 									</div>
 								</div>
@@ -1265,8 +1265,10 @@ export enum RundownViewEvents {
 	'goToTop' = 'sofie:goToTop',
 	'segmentZoomOn' = 'sofie:segmentZoomOn',
 	'segmentZoomOff' = 'sofie:segmentZoomOff',
-	'goToPart' = 'goToPart',
-	'goToPartInstance' = 'goToPartInstance',
+	'revealInShelf' = 'sofie:revealInShelf',
+	'switchShelfTab' = 'sofie:switchShelfTab',
+	'goToPart' = 'sofie:goToPart',
+	'goToPartInstance' = 'sofie:goToPartInstance',
 }
 
 export interface IGoToPartEvent {
@@ -1513,6 +1515,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						},
 					})
 					this.subscribe(PubSub.rundownBaselineAdLibPieces, {
+						rundownId: {
+							$in: rundownIDs,
+						},
+					})
+					this.subscribe(PubSub.adLibActions, {
+						rundownId: {
+							$in: rundownIDs,
+						},
+					})
+					this.subscribe(PubSub.rundownBaselineAdLibActions, {
 						rundownId: {
 							$in: rundownIDs,
 						},
@@ -2092,9 +2104,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					isInspectorShelfExpanded: true,
 				})
-				if (this._inspectorShelf) {
-					this._inspectorShelf.getWrappedInstance().switchTab(ShelfTabs.SYSTEM_HOTKEYS)
-				}
+				window.dispatchEvent(
+					new CustomEvent(RundownViewEvents.switchShelfTab, {
+						detail: {
+							tab: ShelfTabs.SYSTEM_HOTKEYS,
+						},
+					})
+				)
 			} else {
 				this.setState({
 					isInspectorShelfExpanded: false,
@@ -2475,7 +2491,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 )
 
 export function handleRundownPlaylistReloadResponse(
-	t: i18next.TranslationFunction<any, object, string>,
+	t: i18next.TFunction,
 	rundownPlaylist: RundownPlaylist,
 	result: ReloadRundownPlaylistResponse
 ): boolean {

@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TransformedCollection, FindOptions, MongoSelector } from '../typings/meteor'
+import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
 import { Rundowns, Rundown, RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
@@ -98,8 +98,6 @@ export class Part implements DBPart {
 	public transitionDuration?: number | null
 	public disableOutTransition?: boolean
 	public expectedDuration?: number
-	public typeVariant: string
-	public subTypeVariant?: string
 	public holdMode?: PartHoldMode
 	public shouldNotifyCurrentPlayingPart?: boolean
 	public classes?: string[]
@@ -145,7 +143,7 @@ export class Part implements DBPart {
 	getSegment() {
 		return Segments.findOne(this.segmentId)
 	}
-	getPieces(selector?: MongoSelector<Piece>, options?: FindOptions<Piece>) {
+	getPieces(selector?: MongoQuery<Piece>, options?: FindOptions<Piece>) {
 		selector = selector || {}
 		options = options || {}
 		return Pieces.find(
@@ -168,7 +166,7 @@ export class Part implements DBPart {
 		return this.getPieces()
 	}
 
-	getAdLibPieces(selector?: MongoSelector<Piece>, options?: FindOptions<AdLibPiece>) {
+	getAdLibPieces(selector?: MongoQuery<Piece>, options?: FindOptions<Piece>) {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(

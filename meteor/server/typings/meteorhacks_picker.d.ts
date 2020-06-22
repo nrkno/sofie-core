@@ -18,3 +18,9 @@ declare module 'meteor/meteorhacks:picker' {
 	}
 	var Picker: PickerClass
 }
+
+declare module 'http' {
+	interface IncomingMessage {
+		body?: object | string
+	}
+}

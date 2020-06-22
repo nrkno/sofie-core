@@ -1,11 +1,7 @@
 import * as _ from 'underscore'
 import {
-	pushOntoPath,
-	setOntoPath,
 	mongoWhere,
 	literal,
-	unsetPath,
-	pullFromPath,
 	Omit,
 	ProtectedString,
 	unprotectString,
@@ -14,26 +10,19 @@ import {
 	mongoFindOptions,
 } from '../lib/lib'
 import { RandomMock } from './random'
-import {
-	UpsertOptions,
-	UpdateOptions,
-	MongoSelector,
-	FindOptions,
-	ObserveChangesCallbacks,
-} from '../lib/typings/meteor'
+import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
-import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 const clone = require('fast-clone')
 
-interface ObserverEntry {
-	id: string
-	query: any
-	callbacks: ObserveChangesCallbacks<any>
-}
-
 export namespace MongoMock {
+	interface ObserverEntry<T extends CollectionObject> {
+		id: string
+		query: any
+		callbacks: ObserveChangesCallbacks<T>
+	}
+
 	export interface MockCollections<T extends CollectionObject> {
 		[collectionName: string]: MockCollection<T>
 	}
@@ -50,7 +39,7 @@ export namespace MongoMock {
 		public _name: string
 		private _options: any = {}
 		private _isMock: true = true // used in test to check that it's a mock
-		private observers: ObserverEntry[] = []
+		private observers: ObserverEntry<T>[] = []
 
 		private _transform?: (o: T) => T
 
@@ -99,11 +88,11 @@ export namespace MongoMock {
 						},
 					}
 				},
-				observeChanges(clbs: Mongo.ObserveChangesCallbacks) {
+				observeChanges(clbs: ObserveChangesCallbacks<T>) {
 					// todo - finish implementing uses of callbacks
 					const id = Random.id(5)
 					observers.push(
-						literal<ObserverEntry>({
+						literal<ObserverEntry<T>>({
 							id: id,
 							callbacks: clbs,
 							query: query,

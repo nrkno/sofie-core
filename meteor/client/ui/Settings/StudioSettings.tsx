@@ -1,25 +1,22 @@
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import { Studio, Studios, MappingExt, StudioId } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faPencilAlt from '@fortawesome/fontawesome-free-solid/faPencilAlt'
-import * as faCheck from '@fortawesome/fontawesome-free-solid/faCheck'
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faExclamationTriangle, faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../lib/Moment'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import {
 	LookaheadMode,
@@ -43,7 +40,6 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend,
 } from '../../../lib/api/studios'
-import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
@@ -60,7 +56,7 @@ interface IStudioDevicesProps {
 interface IStudioDevicesSettingsState {
 	showAvailableDevices: boolean
 }
-const StudioDevices = translate()(
+const StudioDevices = withTranslation()(
 	class StudioDevices extends React.Component<Translated<IStudioDevicesProps>, IStudioDevicesSettingsState> {
 		constructor(props: Translated<IStudioDevicesProps>) {
 			super(props)
@@ -199,7 +195,7 @@ interface IStudioMappingsState {
 	editedMappings: Array<string>
 }
 
-const StudioMappings = translate()(
+const StudioMappings = withTranslation()(
 	class StudioMappings extends React.Component<Translated<IStudioMappingsProps>, IStudioMappingsState> {
 		constructor(props: Translated<IStudioMappingsProps>) {
 			super(props)
@@ -757,7 +753,7 @@ interface ITestToolsRecordingsSettingsProps {
 }
 interface ITestToolsRecordingsSettingsState {}
 
-const TestToolsRecordingsSettings = translate()(
+const TestToolsRecordingsSettings = withTranslation()(
 	class TestToolsRecordingsSettings extends React.Component<
 		Translated<ITestToolsRecordingsSettingsProps>,
 		ITestToolsRecordingsSettingsState
@@ -1222,7 +1218,12 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">
-							<StudioBaselineStatus studio={this.props.studio} t={t} />
+							<StudioBaselineStatus
+								studio={this.props.studio}
+								t={t}
+								i18n={this.props.i18n}
+								tReady={this.props.tReady}
+							/>
 						</div>
 					</div>
 					<div className="row">
@@ -1238,6 +1239,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						<div className="col c12 r1-c12">
 							<ConfigManifestSettings
 								t={this.props.t}
+								i18n={this.props.i18n}
+								tReady={this.props.tReady}
 								manifest={this.props.blueprintConfigManifest}
 								object={this.props.studio}
 								layerMappings={this.getLayerMappingsFlat()}

@@ -409,9 +409,12 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 		let omitNames = [
 			'@babel/runtime',
 			'@fortawesome/fontawesome',
+			'@fortawesome/free-solid-svg-icons',
 			'@fortawesome/fontawesome-free-solid',
+			'@fortawesome/fontawesome-svg-core',
 			'@fortawesome/react-fontawesome',
 			'@nrk/core-icons',
+			'@popperjs/core',
 			'@slack/client',
 			'@types/amqplib',
 			'@types/body-parser',
@@ -423,6 +426,7 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 			'caller-module',
 			'chai',
 			'classnames',
+			'concurrently',
 			'core-js',
 			'element-resize-event',
 			'fast-clone',
@@ -430,17 +434,18 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 			'i18next',
 			'i18next-browser-languagedetector',
 			'i18next-xhr-backend',
+			'immutability-helper',
 			'indexof',
 			'lottie-web',
 			'meteor-node-stubs',
 			'moment',
+			'mousetrap',
 			'ntp-client',
 			'object-path',
 			'prop-types',
 			'query-string',
 			'rc-tooltip',
 			'react',
-			'react-bootstrap',
 			'react-circular-progressbar',
 			'react-contextmenu',
 			'react-datepicker',
@@ -449,11 +454,14 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 			'react-hotkeys',
 			'react-i18next',
 			'react-intersection-observer',
-			'react-lottie',
+			'@crello/react-lottie',
+			'react-dnd',
+			'react-dnd-html5-backend',
 			'react-moment',
 			'react-router-dom',
 			'react-timer-hoc',
-			'safer-eval',
+			'react-popper',
+			'vm2',
 			'semver',
 			'timecode',
 			'soap',
@@ -487,17 +495,17 @@ export function getRelevantSystemVersions(): { [name: string]: string } {
 function startupMessage() {
 	if (!Meteor.isTest) {
 		console.log('process started') // This is a message all Sofie processes log upon startup
+
+		logger.info(`Core starting up`)
+		logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
+
+		logger.info(`Core package version: "${PackageInfo.versionExtended || PackageInfo.version}"`)
+
+		const versions = getRelevantSystemVersions()
+		_.each(versions, (version, name) => {
+			logger.info(`Core package ${name} version: "${version}"`)
+		})
 	}
-
-	logger.info(`Core starting up`)
-	logger.info(`Core system version: "${CURRENT_SYSTEM_VERSION}"`)
-
-	logger.info(`Core package version: "${PackageInfo.versionExtended || PackageInfo.version}"`)
-
-	const versions = getRelevantSystemVersions()
-	_.each(versions, (version, name) => {
-		logger.info(`Core package ${name} version: "${version}"`)
-	})
 }
 
 Meteor.startup(() => {

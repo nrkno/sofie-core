@@ -56,7 +56,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 
 	let content = ''
 	try {
-		const body = (req as any).body
+		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
 
 		if (typeof body !== 'string' || body.length < 10)

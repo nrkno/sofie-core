@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -36,8 +36,8 @@ export interface IAdLibListItem extends PieceGeneric {
 interface IListViewItemProps {
 	adLibListItem: IAdLibListItem
 	selected: boolean
-	layer: ISourceLayer
-	outputLayer?: IOutputLayer
+	layer: ISourceLayer | undefined
+	outputLayer: IOutputLayer | undefined
 	onSelectAdLib: (aSLine: PieceGeneric) => void
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	playlist: RundownPlaylist
@@ -102,8 +102,6 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 						mediaId: this.objId,
 					})
 				}
-			} else {
-				console.error("One of the Piece's is invalid:", this.props.adLibListItem)
 			}
 		}
 

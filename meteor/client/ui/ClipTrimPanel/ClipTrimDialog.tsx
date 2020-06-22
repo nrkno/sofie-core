@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { ClipTrimPanel } from './ClipTrimPanel'
 import { VTContent, VTEditableParameters } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../lib/collections/Studios'
@@ -26,9 +26,9 @@ interface IState {
 	duration: number
 }
 
-export const ClipTrimDialog = translate()(
-	class ClipTrimDialog extends React.Component<IProps & InjectedTranslateProps, IState> {
-		constructor(props: IProps & InjectedTranslateProps) {
+export const ClipTrimDialog = withTranslation()(
+	class ClipTrimDialog extends React.Component<IProps & WithTranslation, IState> {
+		constructor(props: IProps & WithTranslation) {
 			super(props)
 
 			this.state = {

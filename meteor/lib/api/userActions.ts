@@ -17,6 +17,8 @@ import { ShowStyleVariantId } from '../collections/ShowStyleVariants'
 import { BucketId, Bucket } from '../collections/Buckets'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
+import { AdLibActionId } from '../collections/AdLibActions'
+import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
@@ -91,6 +93,12 @@ export interface NewUserActionAPI extends MethodContext {
 		pieceId: PieceId,
 		inPoint: number,
 		duration: number
+	): Promise<ClientAPI.ClientResponse<void>>
+	executeAction(
+		userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		actionId: string,
+		userData: ActionUserData
 	): Promise<ClientAPI.ClientResponse<void>>
 	segmentAdLibPieceStart(
 		userEvent: string,
@@ -207,6 +215,7 @@ export enum UserActionAPIMethods {
 	'togglePartArgument' = 'userAction.togglePartArgument',
 	'pieceTakeNow' = 'userAction.pieceTakeNow',
 	'setInOutPoints' = 'userAction.pieceSetInOutPoints',
+	'executeAction' = 'userAction.executeAction',
 
 	'bucketAdlibImport' = 'userAction.bucketAdlibImport',
 	'bucketAdlibStart' = 'userAction.bucketAdlibStart',

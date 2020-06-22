@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
+import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
 import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
@@ -58,7 +59,7 @@ export namespace ServerClientAPI {
 		UserActionsLog.insert(
 			literal<UserActionsLogItem>({
 				_id: actionId,
-				clientAddress: methodContext.connection.clientAddress,
+				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
 				organizationId: organizationId,
 				userId: userId,
 				context: context,
@@ -156,7 +157,7 @@ export namespace ServerClientAPI {
 			UserActionsLog.insert(
 				literal<UserActionsLogItem>({
 					_id: actionId,
-					clientAddress: methodContext.connection.clientAddress,
+					clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
 					organizationId: access.organizationId,
 					userId: access.userId,
 					context: context,

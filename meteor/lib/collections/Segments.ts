@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Parts, DBPart } from './Parts'
 import { Rundowns, RundownId } from './Rundowns'
-import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB, Time } from 'tv-automation-sofie-blueprints-integration'
 import { PartNote, SegmentNote } from '../api/notes'
@@ -54,7 +54,7 @@ export class Segment implements DBSegment {
 			this[key] = document[key]
 		})
 	}
-	getParts(selector?: MongoSelector<DBSegment>, options?: FindOptions<DBPart>) {
+	getParts(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBPart>) {
 		selector = selector || {}
 		options = options || {}
 		return Parts.find(

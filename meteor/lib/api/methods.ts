@@ -76,14 +76,14 @@ export interface MethodContext {
 	/** Info about the connection that called the method. Undefined if called internally from server-side */
 	connection?: {
 		clientAddress: string
-	}
+	} | null
 }
 /** Abstarct class to be used when defining Mehod-classes */
 export abstract class MethodContextAPI implements MethodContext {
 	public userId?: UserId
 	public connection?: {
 		clientAddress: string
-	}
+	} | null
 }
 /** Convenience-method to call a userAction method old-Meteor.call-style */
 export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]) {

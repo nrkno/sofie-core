@@ -1,7 +1,7 @@
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -62,88 +62,86 @@ const Timediff = class Timediff extends React.Component<{ time: number }> {
 	}
 }
 
-const ClockComponent = translate()(
-	withTiming<RundownOverviewProps, RundownOverviewState>()(
-		withTracker<
-			WithTiming<RundownOverviewProps & InjectedTranslateProps>,
-			RundownOverviewState,
-			RundownOverviewTrackedProps
-		>((props: RundownOverviewProps) => {
-			let playlist: RundownPlaylist | undefined
-			if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
-			let segments: Array<SegmentUi> = []
-			let showStyleBaseId: ShowStyleBaseId | undefined = undefined
-			let rundownIds: RundownId[] = []
+const ClockComponent = withTranslation()(
+	withTiming<RundownOverviewProps & WithTranslation, RundownOverviewState>()(
+		withTracker<WithTiming<RundownOverviewProps & WithTranslation>, RundownOverviewState, RundownOverviewTrackedProps>(
+			(props: RundownOverviewProps) => {
+				let playlist: RundownPlaylist | undefined
+				if (props.playlistId) playlist = RundownPlaylists.findOne(props.playlistId)
+				let segments: Array<SegmentUi> = []
+				let showStyleBaseId: ShowStyleBaseId | undefined = undefined
+				let rundownIds: RundownId[] = []
 
-			if (playlist) {
-				const allPartInstancesMap = playlist.getActivePartInstancesMap()
-				segments = _.map(playlist.getSegments(), (segment) => {
-					const displayDurationGroups: _.Dictionary<number> = {}
-					const parts = segment.getParts()
-					let displayDuration = 0
+				if (playlist) {
+					const allPartInstancesMap = playlist.getActivePartInstancesMap()
+					segments = _.map(playlist.getSegments(), (segment) => {
+						const displayDurationGroups: _.Dictionary<number> = {}
+						const parts = segment.getParts()
+						let displayDuration = 0
 
-					return extendMandadory<DBSegment, SegmentUi>(segment, {
-						items: _.map(parts, (part, index) => {
-							const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
-							if (
-								part.displayDurationGroup &&
-								(displayDurationGroups[part.displayDurationGroup] ||
-									// or there is a following member of this displayDurationGroup
-									(parts[index + 1] && parts[index + 1].displayDurationGroup === part.displayDurationGroup))
-							) {
-								displayDurationGroups[part.displayDurationGroup] =
-									(displayDurationGroups[part.displayDurationGroup] || 0) +
-									((part.expectedDuration || 0) - (part.duration || 0))
-								displayDuration = Math.max(
-									0,
-									Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) ||
-										displayDurationGroups[part.displayDurationGroup]
-								)
-							}
-							return literal<PartUi>({
-								instance,
-								partId: part._id,
-								pieces: [],
-								renderedDuration: part.expectedDuration ? 0 : displayDuration,
-								startsAt: 0,
-								willProbablyAutoNext: false,
-							})
-						}),
+						return extendMandadory<DBSegment, SegmentUi>(segment, {
+							items: _.map(parts, (part, index) => {
+								const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
+								if (
+									part.displayDurationGroup &&
+									(displayDurationGroups[part.displayDurationGroup] ||
+										// or there is a following member of this displayDurationGroup
+										(parts[index + 1] && parts[index + 1].displayDurationGroup === part.displayDurationGroup))
+								) {
+									displayDurationGroups[part.displayDurationGroup] =
+										(displayDurationGroups[part.displayDurationGroup] || 0) +
+										((part.expectedDuration || 0) - (part.duration || 0))
+									displayDuration = Math.max(
+										0,
+										Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) ||
+											displayDurationGroups[part.displayDurationGroup]
+									)
+								}
+								return literal<PartUi>({
+									instance,
+									partId: part._id,
+									pieces: [],
+									renderedDuration: part.expectedDuration ? 0 : displayDuration,
+									startsAt: 0,
+									willProbablyAutoNext: false,
+								})
+							}),
+						})
 					})
-				})
 
-				if (playlist.currentPartInstanceId) {
-					const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
-					const partInstance = currentPartInstance || nextPartInstance
-					if (partInstance) {
-						const currentRundown = Rundowns.findOne(partInstance.rundownId)
-						if (currentRundown) {
-							showStyleBaseId = currentRundown.showStyleBaseId
+					if (playlist.currentPartInstanceId) {
+						const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
+						const partInstance = currentPartInstance || nextPartInstance
+						if (partInstance) {
+							const currentRundown = Rundowns.findOne(partInstance.rundownId)
+							if (currentRundown) {
+								showStyleBaseId = currentRundown.showStyleBaseId
+							}
 						}
 					}
-				}
 
-				if (!showStyleBaseId) {
-					const rundowns = playlist.getRundowns()
-					if (rundowns.length > 0) {
-						showStyleBaseId = rundowns[0].showStyleBaseId
+					if (!showStyleBaseId) {
+						const rundowns = playlist.getRundowns()
+						if (rundowns.length > 0) {
+							showStyleBaseId = rundowns[0].showStyleBaseId
+						}
 					}
-				}
 
-				rundownIds = playlist.getRundownIDs()
+					rundownIds = playlist.getRundownIDs()
+				}
+				return {
+					segments,
+					playlist,
+					showStyleBaseId,
+					rundownIds,
+				}
 			}
-			return {
-				segments,
-				playlist,
-				showStyleBaseId,
-				rundownIds,
-			}
-		})(
+		)(
 			class ClockComponent extends MeteorReactComponent<
-				WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & InjectedTranslateProps>,
+				WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>,
 				RundownOverviewState
 			> {
-				componentWillMount() {
+				componentDidMount() {
 					this.autorun(() => {
 						let playlist = RundownPlaylists.findOne(this.props.playlistId)
 						if (this.props.playlist) {
@@ -242,7 +240,7 @@ const ClockComponent = translate()(
 											<div className="clocks-part-title clocks-current-segment-title">{currentSegment!.name}</div>
 											<div className="clocks-part-title clocks-part-title clocks-current-segment-title">
 												<PieceNameContainer
-													partSlug={currentPart.instance.part.title}
+													partName={currentPart.instance.part.title}
 													partInstanceId={currentPart.instance._id}
 													showStyleBaseId={showStyleBaseId}
 													rundownIds={this.props.rundownIds}
@@ -286,7 +284,7 @@ const ClockComponent = translate()(
 										<div className="clocks-part-title clocks-part-title">
 											{nextPart && nextPart.instance.part.title ? (
 												<PieceNameContainer
-													partSlug={nextPart.instance.part.title}
+													partName={nextPart.instance.part.title}
 													partInstanceId={nextPart.instance._id}
 													showStyleBaseId={showStyleBaseId}
 													rundownIds={this.props.rundownIds}
@@ -325,7 +323,7 @@ const ClockComponent = translate()(
 	)
 )
 
-interface IPropsHeader extends InjectedTranslateProps {
+interface IPropsHeader extends WithTranslation {
 	key: string
 	playlist: RundownPlaylist
 	rundowns: Array<Rundown> | undefined
@@ -340,7 +338,7 @@ interface IPropsHeader extends InjectedTranslateProps {
 
 interface IStateHeader {}
 
-export const ClockView = translate()(
+export const ClockView = withTranslation()(
 	withTracker(function(props: IPropsHeader) {
 		let studioId = objectPathGet(props, 'match.params.studioId')
 		const playlist = RundownPlaylists.findOne({

@@ -11,7 +11,7 @@ import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -427,6 +427,25 @@ export function pieceSetInOutPoints(
 		.then(() => ClientAPI.responseSuccess(undefined))
 		.catch((error) => ClientAPI.responseError(error))
 }
+export function executeAction(
+	context: MethodContext,
+	rundownPlaylistId: RundownPlaylistId,
+	actionId: string,
+	userData: any
+) {
+	check(rundownPlaylistId, String)
+	check(actionId, String)
+	check(userData, Match.Any)
+
+	const playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
+	if (!playlist.active)
+		return ClientAPI.responseError(`The Rundown isn't active, please activate it before executing an action!`)
+	if (!playlist.currentPartInstanceId)
+		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
+
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.executeAction(rundownPlaylistId, actionId, userData))
+}
 export function segmentAdLibPieceStart(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
@@ -833,6 +852,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		duration: number
 	) {
 		return pieceSetInOutPoints(this, rundownPlaylistId, partId, pieceId, inPoint, duration)
+	}
+	executeAction(
+		_userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		actionId: string,
+		userData: ActionUserData
+	) {
+		return makePromise(() => executeAction(this, rundownPlaylistId, actionId, userData))
 	}
 	segmentAdLibPieceStart(
 		_userEvent: string,

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -12,7 +12,7 @@ interface IConfigManifestOAuthFlowComponentState {}
 interface IConfigManifestOAuthFlowComponentProps {
 	device: PeripheralDevice
 }
-export const ConfigManifestOAuthFlowComponent = translate()(
+export const ConfigManifestOAuthFlowComponent = withTranslation()(
 	class ConfigManifestOAuthFlowComponent extends React.Component<
 		Translated<IConfigManifestOAuthFlowComponentProps>,
 		IConfigManifestOAuthFlowComponentState

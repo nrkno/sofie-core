@@ -20,7 +20,7 @@ import {
 	asyncCollectionUpsert,
 } from '../lib/lib'
 import * as _ from 'underscore'
-import { MongoSelector, TransformedCollection, MongoModifier, FindOptions } from '../lib/typings/meteor'
+import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
 
 export function isDbCacheCollection(o: any): o is DbCacheCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
@@ -29,7 +29,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 	documents: { [_id: string]: DbCacheCollectionDocument<Class> } = {}
 
 	private _initialized: boolean = false
-	private _initializer?: MongoSelector<DBInterface> | (() => Promise<void>) = undefined
+	private _initializer?: MongoQuery<DBInterface> | (() => Promise<void>) = undefined
 
 	constructor(private _collection: TransformedCollection<Class, DBInterface>) {
 		//
@@ -38,7 +38,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		return this._collection['name']
 	}
 
-	prepareInit(initializer: MongoSelector<DBInterface> | (() => Promise<void>), initializeImmediately: boolean) {
+	prepareInit(initializer: MongoQuery<DBInterface> | (() => Promise<void>), initializeImmediately: boolean) {
 		this._initializer = initializer
 		if (initializeImmediately) {
 			this._initialize()
@@ -67,7 +67,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 	}
 
 	findFetch(
-		selector?: MongoSelector<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
+		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class[] {
 		this._initialize()
@@ -98,7 +98,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		return mongoFindOptions(results, options)
 	}
 	findOne(
-		selector?: MongoSelector<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
+		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class | undefined {
 		this._initialize()
@@ -119,7 +119,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		}
 		return doc._id
 	}
-	remove(selector: MongoSelector<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>): number {
+	remove(selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>): number {
 		this._initialize()
 
 		const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
@@ -130,12 +130,12 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		return idsToRemove.length
 	}
 	update(
-		selector: MongoSelector<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>
 	): number {
 		this._initialize()
 
-		const selectorInModify: MongoSelector<DBInterface> = _.isFunction(selector)
+		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
 			? {}
 			: isProtectedString(selector)
 			? ({ _id: selector } as any)
@@ -169,7 +169,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 	}
 
 	upsert(
-		selector: MongoSelector<DBInterface> | DBInterface['_id'],
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		doc: DBInterface
 	): {
 		numberAffected?: number
@@ -199,7 +199,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		}
 	}
 
-	async fillWithDataFromDatabase(selector: MongoSelector<DBInterface>): Promise<number> {
+	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
 		this._innerfillWithDataFromArray(docs)
@@ -297,7 +297,7 @@ interface Changes {
 }
 export function saveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: DbCacheCollection<DocClass, DBInterface>,
-	filter: MongoSelector<DBInterface>,
+	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
@@ -313,7 +313,7 @@ export interface PreparedChanges<T> {
 }
 export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: DbCacheCollection<DocClass, DBInterface>,
-	filter: MongoSelector<DBInterface>,
+	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ): PreparedChanges<DBInterface> {

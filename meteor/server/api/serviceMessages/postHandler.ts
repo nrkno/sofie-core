@@ -1,10 +1,9 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../logging'
-import { write } from 'fs-extra'
 import { stat } from 'fs'
 import { ServiceMessage, Criticality } from '../../../lib/collections/CoreSystem'
 import { writeMessage } from './serviceMessagesApi'
-import * as moment from 'moment'
+import moment from 'moment'
 
 export { BodyParsingIncomingMessage, postHandler }
 

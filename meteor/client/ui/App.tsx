@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { translate, InjectedI18nProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
@@ -255,4 +255,4 @@ export const App = translateWithTracker(() => {
 	}
 )
 
-export default App
+export default withTranslation()(App)

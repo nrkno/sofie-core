@@ -71,6 +71,7 @@ describe('lib/timeline', () => {
 					start: 0,
 				},
 				content: {
+					// @ts-ignore temporary ignoring typing issue
 					callBack: 'partPlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',
@@ -91,6 +92,7 @@ describe('lib/timeline', () => {
 					start: 0,
 				},
 				content: {
+					// @ts-ignore temporary ignoring typing issue
 					callBack: 'piecePlaybackStarted',
 					callBackData: {
 						rundownId: 'myRundown0',

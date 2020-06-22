@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString } from '../lib'
+import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintExternalMessageQueueObj,
@@ -12,7 +12,7 @@ import { RundownId } from './Rundowns'
 /** A string, identifying a ExternalMessageQueueObj */
 export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>
 
-export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
+export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlueprintExternalMessageQueueObj, '_id'> {
 	_id: ExternalMessageQueueObjId
 	/** Id of the studio this message originates from */
 	studioId: StudioId
@@ -41,6 +41,11 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 
 	/** Type of message */
 	type: IBlueprintExternalMessageQueueType
+	/**
+	 * If set, the message won't be sent automatically.
+	 * Contains the reason for why the message was queued and not sent.
+	 */
+	queueForLaterReason?: string
 	/** Receiver details */
 	receiver: any
 	/** Messate details */

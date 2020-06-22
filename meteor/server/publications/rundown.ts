@@ -20,6 +20,11 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
+import { AdLibAction, AdLibActions } from '../../lib/collections/AdLibActions'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActions,
+} from '../../lib/collections/RundownBaselineAdLibActions'
 
 meteorPublish(PubSub.rundowns, function(selector0, token: string) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -204,6 +209,26 @@ meteorPublish(PubSub.rundownBaselineAdLibPieces, function(
 	}
 	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
 		return RundownBaselineAdLibPieces.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.adLibActions, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<AdLibAction> = {
+		fields: {},
+	}
+	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+		return AdLibActions.find(selector, modifier)
+	}
+	return null
+})
+meteorPublish(PubSub.rundownBaselineAdLibActions, function(selector, token) {
+	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+	const modifier: FindOptions<RundownBaselineAdLibAction> = {
+		fields: {},
+	}
+	if (RundownReadAccess.rundownContent(selector, { userId: this.userId, token })) {
+		return RundownBaselineAdLibActions.find(selector, modifier)
 	}
 	return null
 })

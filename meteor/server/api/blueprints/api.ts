@@ -76,6 +76,7 @@ export function uploadBlueprint(
 
 	// TODO: add access control here
 	const { organizationId, blueprint } = OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
+	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
 

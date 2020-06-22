@@ -52,7 +52,7 @@ import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databas
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { MongoSelector, UserId } from '../../lib/typings/meteor'
+import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { ingestMOSRundown } from './ingest/http'
@@ -248,12 +248,12 @@ function createSystemSnapshot(studioId: StudioId | null, organizationId: Organiz
 	if (Settings.enableUserAccounts && !organizationId)
 		throw new Meteor.Error(500, 'Not able to create a systemSnaphost without studioId')
 
-	let queryStudio: MongoSelector<Studio> = {}
-	let queryShowStyleBases: MongoSelector<ShowStyleBase> = {}
-	let queryShowStyleVariants: MongoSelector<ShowStyleVariant> = {}
-	let queryRundownLayouts: MongoSelector<RundownLayoutBase> = {}
-	let queryDevices: MongoSelector<PeripheralDevice> = {}
-	let queryBlueprints: MongoSelector<Blueprint> = {}
+	let queryStudio: MongoQuery<Studio> = {}
+	let queryShowStyleBases: MongoQuery<ShowStyleBase> = {}
+	let queryShowStyleVariants: MongoQuery<ShowStyleVariant> = {}
+	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}
+	let queryDevices: MongoQuery<PeripheralDevice> = {}
+	let queryBlueprints: MongoQuery<Blueprint> = {}
 
 	if (studioId) queryStudio = { _id: studioId }
 	else if (organizationId) queryStudio = { organizationId: organizationId }
@@ -890,7 +890,9 @@ PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: S
 	let content = 'ok'
 	try {
 		response.setHeader('Content-Type', 'text/plain')
-		let snapshot = (req as any).body
+		let snapshot = req.body as any
+		if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
+
 		if (typeof snapshot !== 'object') {
 			// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
 			snapshot = JSON.parse(snapshot)

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -19,15 +19,13 @@ import BlueprintSettings from './Settings/BlueprintSettings'
 import SystemMessages from './Settings/SystemMessages'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 
-import * as faPlus from '@fortawesome/fontawesome-free-solid/faPlus'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faPlus, faTrash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { MigrationView } from './Settings/Migration'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
-import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { MeteorCall } from '../../lib/api/methods'
 import { getUser, User } from '../../lib/collections/Users'
 import { Settings as MeteorSettings } from '../../lib/Settings'
@@ -453,7 +451,7 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		this.user = getUser()
 	}
 
-	componentWillMount() {
+	componentDidMount() {
 		// Subscribe to data:
 		this.subscribe(PubSub.peripheralDevices, {})
 		this.subscribe(PubSub.studios, {})
@@ -505,4 +503,4 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	}
 }
 
-export default translate()(Settings)
+export default withTranslation()(Settings)

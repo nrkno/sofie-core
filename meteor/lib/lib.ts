@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
+import { check as MeteorCheck, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	TransformedCollection,
-	MongoSelector,
+	MongoQuery,
 	MongoModifier,
 	UpdateOptions,
 	UpsertOptions,
@@ -47,6 +47,10 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 			else resolve(res)
 		})
 	})
+}
+export function check(value: any, pattern: Match.Pattern) {
+	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
+	MeteorCheck(value, pattern)
 }
 
 export type Time = number
@@ -96,7 +100,7 @@ interface Changes {
  */
 export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	filter: MongoSelector<DBInterface>,
+	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
@@ -117,7 +121,7 @@ export interface PreparedChangesChangesDoc<T> {
 }
 export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	filter: MongoSelector<DBInterface>,
+	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ): PreparedChanges<DBInterface> {
@@ -493,7 +497,7 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 )
 export function fetchBefore<T>(
 	collection: TransformedCollection<T, any>,
-	selector: MongoSelector<T> = {},
+	selector: MongoQuery<T> = {},
 	rank: number = Number.POSITIVE_INFINITY
 ): T {
 	return collection
@@ -781,7 +785,7 @@ export function asyncCollectionFindFetch<
 	DBInterface extends { _id: ProtectedString<any> }
 >(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | string,
+	selector: MongoQuery<DBInterface> | string,
 	options?: FindOptions<DBInterface>
 ): Promise<Array<DocClass>> {
 	// Make the collection fethcing in another Fiber:
@@ -794,7 +798,7 @@ export function asyncCollectionFindFetch<
 }
 export function asyncCollectionFindOne<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | string
+	selector: MongoQuery<DBInterface> | string
 ): Promise<DocClass | undefined> {
 	return asyncCollectionFindFetch(collection, selector).then((arr) => {
 		return arr[0]
@@ -837,7 +841,7 @@ export function asyncCollectionInsertIgnore<
 }
 export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | ProtectedString<any>,
 	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 ): Promise<number> {
@@ -851,7 +855,7 @@ export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | ProtectedString<any>,
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 ): Promise<{ numberAffected: number; insertedId: string }> {
@@ -870,7 +874,7 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoSelector<DBInterface> | ProtectedString<any>
+	selector: MongoQuery<DBInterface> | ProtectedString<any>
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
 		collection.remove(selector, (err: any) => {
@@ -892,7 +896,15 @@ export const caught: <T>(v: Promise<T>) => Promise<T> = ((f) => (p) => (p.catch(
 /**
  * Blocks the fiber until all the Promises have resolved
  */
-export function waitForPromiseAll<T>(ps: Array<Promise<T>>): Array<T> {
+export function waitForPromiseAll<T1, T2, T3, T4>(
+	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>]
+): [T1, T2, T3, T4]
+export function waitForPromiseAll<T1, T2, T3>(
+	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>]
+): [T1, T2, T3]
+export function waitForPromiseAll<T1, T2>(ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>]): [T1, T2]
+export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[]
+export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
 	return waitForPromise(Promise.all(ps))
 }
 
@@ -920,7 +932,10 @@ export const waitForPromise: <T>(p: Promise<T>) => T = Meteor.wrapAsync(function
 			cb(e)
 		})
 })
-/** Executes the provided function in another (asynchronous) Fiber, returning the result in a promise */
+/**
+ * Convert a Fiber function into a promise
+ * Makes the Fiber function to run in its own fiber and return a promise
+ */
 export function makePromise<T>(fcn: () => T): Promise<T> {
 	return new Promise((resolve, reject) => {
 		Meteor.defer(() => {
@@ -932,7 +947,8 @@ export function makePromise<T>(fcn: () => T): Promise<T> {
 		})
 	})
 }
-export function mongoWhere<T>(o: any, selector: MongoSelector<T>): boolean {
+
+export function mongoWhere<T>(o: any, selector: MongoQuery<T>): boolean {
 	let ok = true
 	_.each(selector, (s: any, key: string) => {
 		if (!ok) return
@@ -1004,25 +1020,25 @@ export function mongoWhere<T>(o: any, selector: MongoSelector<T>): boolean {
 	})
 	return ok
 }
-export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
+export function mongoFindOptions<Class extends DBInterface, DBInterface extends { _id?: ProtectedString<any> }>(
 	docs: Class[],
 	options?: FindOptions<DBInterface>
-) {
+): Class[] {
 	if (options) {
 		if (options.sort) {
 			docs = [...docs] // Shallow clone it
 
 			// Underscore doesnt support desc order, or multiple fields, so we have to do it manually
 			const keys = _.keys(options.sort).filter((k) => options.sort)
-			function doSort(a: any, b: any, i: number): number {
+			const doSort = (a: any, b: any, i: number): number => {
 				if (i >= keys.length) return 0
 
 				const key = keys[i]
 				const order = options!.sort![key]
 
 				// Get the values, and handle asc vs desc
-				const val1 = objectPath.get(order > 0 ? a : b, key)
-				const val2 = objectPath.get(order > 0 ? b : a, key)
+				const val1 = objectPath.get(order! > 0 ? a : b, key)
+				const val2 = objectPath.get(order! > 0 ? b : a, key)
 
 				if (_.isEqual(val1, val2)) {
 					return doSort(a, b, i + 1)
@@ -1047,9 +1063,9 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 
 		if (options.fields !== undefined) {
 			const idVal = options.fields['_id']
-			const includeKeys: string[] = _.keys(options.fields).filter(
+			const includeKeys = (_.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] !== 0
-			)
+			) as any) as (keyof DBInterface)[]
 			const excludeKeys: string[] = _.keys(options.fields).filter(
 				(key) => key !== '_id' && options.fields![key] === 0
 			)
@@ -1064,10 +1080,10 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 
 			if (includeKeys.length !== 0) {
 				if (idVal !== 0) includeKeys.push('_id')
-				docs = _.map(docs, (doc) => _.pick(doc, includeKeys))
+				docs = _.map(docs, (doc) => _.pick(doc, includeKeys)) as any // any since includeKeys breaks strict typings anyway
 			} else if (excludeKeys.length !== 0) {
 				if (idVal === 0) excludeKeys.push('_id')
-				docs = _.map(docs, (doc) => _.omit(doc, excludeKeys))
+				docs = _.map(docs, (doc) => _.omit(doc, excludeKeys)) as any // any since excludeKeys breaks strict typings anyway
 			}
 		}
 
@@ -1077,7 +1093,7 @@ export function mongoFindOptions<Class extends DBInterface, DBInterface extends 
 	return docs
 }
 export function mongoModify<DBInterface extends { _id: ProtectedString<any> }>(
-	selector: MongoSelector<DBInterface>,
+	selector: MongoQuery<DBInterface>,
 	doc: DBInterface,
 	modifier: MongoModifier<DBInterface>
 ): DBInterface {
@@ -1334,7 +1350,7 @@ export function extendMandadory<A, B extends A>(original: A, extendObj: Differen
 	return _.extend(original, extendObj)
 }
 
-export function trimIfString<T extends any>(value: T): T {
+export function trimIfString<T extends any>(value: T): T | string {
 	if (_.isString(value)) return value.trim()
 	return value
 }
@@ -1385,6 +1401,9 @@ export function unprotectString(protectedStr: ProtectedString<any> | undefined):
 export function unprotectString(protectedStr: ProtectedString<any> | undefined | null): string | undefined | null {
 	return (protectedStr as any) as string
 }
+export function unprotectStringArray(protectedStrs: Array<ProtectedString<any>>): string[] {
+	return (protectedStrs as any) as string[]
+}
 /** Used on protectedStrings instead of _.isString or typeof x === 'string' */
 export function isProtectedString(str: any): str is ProtectedString<any> {
 	return typeof str === 'string'
@@ -1415,31 +1434,7 @@ export function isStringOrProtectedString<T extends ProtectedString<any>>(val: a
 export function isPromise<T extends any>(val: any): val is Promise<T> {
 	return _.isObject(val) && typeof val.then === 'function' && typeof val.catch === 'function'
 }
-// const aaa: ProtectedString<'aaaa'> = protectString('asdf')
 
-// interface Test {
-// 	a: string
-// 	b: string
-// 	c: string
-// 	d: number
-// }
-// type A = ProtectedStringProperties<Test, 'a' | 'b'>
-// const a: A = {
-// 	a : protectString('123'),
-// 	b : protectString('123'),
-// 	c: '123',
-// 	d: 123
-// }
-
-// a.a = '123' // should be wrong
-// a.b = '123' // should be wrong
-// a.c = '123' // should be ok
-// a.d = 123 // should be ok
-
-// const b = unprotectObject(a)
-
-// b.a = '123' // should be ok
-// b.b = '123' // should be ok
-// b.c = '123' // should be ok
-// a.d = 123 // should be ok
-// a.d = '123' // not ok
+export function assertNever(_never: never): void {
+	// Do nothing. This is a type guard
+}
