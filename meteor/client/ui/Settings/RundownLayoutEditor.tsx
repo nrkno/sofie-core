@@ -1300,6 +1300,57 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			return (
 				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Expose layout as a standalone page')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'exposeAsStandalone'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Expose as a layout for the shelf')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'exposeAsShelf'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Icon')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'icon'}
+								obj={item}
+								type="iconpicker"
+								collection={RundownLayouts}
+								className="input text-input input-s"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Icon color')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'iconColor'}
+								obj={item}
+								options={defaultColorPickerPalette}
+								type="colorpicker"
+								collection={RundownLayouts}
+								className="input text-input input-s"></EditAttribute>
+						</label>
+					</div>
 					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>
 					{item.filters.map((tab, index) => (
 						<div className="rundown-layout-editor-filter mod pan mas" key={tab._id}>
@@ -1328,57 +1379,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											mutateDisplayValue={(v) => (v === undefined ? RundownLayoutElementType.FILTER : v)}
 											collection={RundownLayouts}
 											className="input text-input input-l"></EditAttribute>
-									</label>
-								</div>
-								<div className="mod mvs mhs">
-									<label className="field">
-										{t('Expose layout as a standalone page')}
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={'exposeAsStandalone'}
-											obj={item}
-											options={RundownLayoutType}
-											type="checkbox"
-											collection={RundownLayouts}
-											className="mod mas"></EditAttribute>
-									</label>
-								</div>
-								<div className="mod mvs mhs">
-									<label className="field">
-										{t('Expose as a layout for the shelf')}
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={'exposeAsShelf'}
-											obj={item}
-											options={RundownLayoutType}
-											type="checkbox"
-											collection={RundownLayouts}
-											className="mod mas"></EditAttribute>
-									</label>
-								</div>
-								<div className="mod mvs mhs">
-									<label className="field">
-										{t('Icon')}
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={'icon'}
-											obj={item}
-											type="iconpicker"
-											collection={RundownLayouts}
-											className="input text-input input-s"></EditAttribute>
-									</label>
-								</div>
-								<div className="mod mvs mhs">
-									<label className="field">
-										{t('Icon color')}
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={'iconColor'}
-											obj={item}
-											options={defaultColorPickerPalette}
-											type="colorpicker"
-											collection={RundownLayouts}
-											className="input text-input input-s"></EditAttribute>
 									</label>
 								</div>
 							</div>
