@@ -1443,6 +1443,7 @@ body.no-overflow {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 						transform-style: preserve-3d;
+						overflow: hidden;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
