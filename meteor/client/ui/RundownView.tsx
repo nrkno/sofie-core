@@ -1269,6 +1269,7 @@ export enum RundownViewEvents {
 	'switchShelfTab' = 'sofie:switchShelfTab',
 	'goToPart' = 'sofie:goToPart',
 	'goToPartInstance' = 'sofie:goToPartInstance',
+	'selectPiece' = 'sofie:selectPiece',
 }
 
 export interface IGoToPartEvent {
@@ -1733,9 +1734,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						selectedPiece: piece,
 					})
 				} else {
-					if (this._inspectorShelf) {
-						this._inspectorShelf.getWrappedInstance().selectPiece(piece)
-					}
+					window.dispatchEvent(
+						new CustomEvent<{
+							piece: PieceUi | AdLibPieceUi | undefined
+						}>(RundownViewEvents.selectPiece, {
+							detail: {
+								piece: piece,
+							},
+						})
+					)
 				}
 			}
 		}
