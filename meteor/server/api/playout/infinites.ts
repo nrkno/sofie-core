@@ -6,7 +6,6 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { syncFunction } from '../../codeControl'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { getOrderedPiece, PieceResolved, orderPieces } from './pieces'
 import {
 	asyncCollectionUpdate,
 	waitForPromiseAll,

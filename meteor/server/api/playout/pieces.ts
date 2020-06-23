@@ -1,7 +1,6 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver } from 'superfly-timeline'
 import * as _ from 'underscore'
-import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 import {
 	literal,
@@ -32,15 +31,10 @@ import {
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
-import { prefixAllObjectIds, getAllPiecesFromCache, getSelectedPartInstancesFromCache } from './lib'
+import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import {
-	PieceInstance,
-	ResolvedPieceInstance,
-	PieceInstanceId,
-	PieceInstancePiece,
-} from '../../../lib/collections/PieceInstances'
+import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
@@ -67,13 +61,6 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 		}
 	})
 	return pieces
-}
-
-export interface PieceResolved extends Piece {
-	/** Resolved start time of the piece */
-	resolvedStart: number
-	/** Whether the piece was successfully resolved */
-	resolved: boolean
 }
 
 export function createPieceGroupFirstObject(

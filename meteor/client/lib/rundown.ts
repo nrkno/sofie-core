@@ -7,7 +7,6 @@ import {
 	SourceLayerType,
 	getPieceGroupId,
 	PieceLifespan,
-	IBlueprintActionManifest,
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -19,16 +18,15 @@ import {
 	PieceExtended,
 	IOutputLayerExtended,
 	ISourceLayerExtended,
-	calculatePieceTimelineEnable,
 } from '../../lib/Rundown'
-import { DBSegment, Segment } from '../../lib/collections/Segments'
+import { DBSegment } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, fetchNext, last, normalizeArray, unprotectObject } from '../../lib/lib'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
+import { literal, normalizeArray, unprotectObject } from '../../lib/lib'
+import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
-import { Part } from '../../lib/collections/Parts'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
+import { PieceInstancePiece } from '../../lib/collections/PieceInstances'
 
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {
@@ -364,12 +362,16 @@ export namespace RundownUtils {
 
 				// insert items into the timeline for resolution
 				_.each<PieceExtended>(partE.pieces, (piece) => {
+					const rawInnerPiece: PieceInstancePiece = piece.instance.piece
 					partTimeline.push({
-						id: getPieceGroupId(unprotectObject(piece.instance.piece)),
-						enable: calculatePieceTimelineEnable(piece.instance.piece, TIMELINE_TEMP_OFFSET),
-						layer: piece.instance.piece.outputLayerId,
+						id: getPieceGroupId(unprotectObject(rawInnerPiece)),
+						enable: {
+							...rawInnerPiece.enable,
+							start: rawInnerPiece.enable.start + TIMELINE_TEMP_OFFSET,
+						},
+						layer: rawInnerPiece.outputLayerId,
 						content: {
-							id: piece.instance.piece._id,
+							id: rawInnerPiece._id,
 						},
 					})
 					// find the target output layer
@@ -550,7 +552,7 @@ export namespace RundownUtils {
 								currentItem.renderedDuration !== undefined
 							) {
 								if (
-									previousItem.instance.piece.infiniteMode ||
+									previousItem.instance.infinite ||
 									(previousItem.renderedDuration !== null &&
 										previousItem.renderedInPoint + previousItem.renderedDuration >
 											currentItem.renderedInPoint)
@@ -558,8 +560,10 @@ export namespace RundownUtils {
 									previousItem.renderedDuration =
 										currentItem.renderedInPoint - previousItem.renderedInPoint
 									previousItem.cropped = true
-									if (previousItem.instance.piece.infiniteMode) {
-										previousItem.instance.piece.infiniteMode = PieceLifespan.Normal
+									if (previousItem.instance.infinite) {
+										// TODO-INFINITE
+										previousItem.instance.piece.lifespan = PieceLifespan.WithinPart
+										delete previousItem.instance.infinite
 									}
 								}
 

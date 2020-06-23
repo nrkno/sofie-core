@@ -66,13 +66,18 @@ import {
 	deactivateRundownPlaylistInner,
 	standDownStudio,
 } from './actions'
-import { PieceResolved, getResolvedPieces, orderPieces } from './pieces'
+import { getResolvedPieces, sortPiecesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import {
+	PieceInstances,
+	PieceInstance,
+	PieceInstanceId,
+	PieceInstancePiece,
+} from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import {
@@ -619,30 +624,27 @@ export namespace ServerPlayoutAPI {
 				}
 
 				const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance)
-				const orderedPieces: Array<PieceResolved> = orderPieces(
-					pieceInstances.map((p) => p.piece),
-					partInstance.part._id,
-					partInstance.part.getLastStartedPlayback()
-				)
+				const sortedPieces: PieceInstancePiece[] = sortPiecesByStart(pieceInstances.map((p) => p.piece))
 
 				let findLast: boolean = !!undo
 
 				let filteredPieces = _.sortBy(
-					_.filter(orderedPieces, (piece: PieceResolved) => {
+					_.filter(sortedPieces, (piece: PieceInstancePiece) => {
 						let sourceLayer = allowedSourceLayers[piece.sourceLayerId]
-						if (sourceLayer && sourceLayer.allowDisable && !piece.virtual) return true
+						if (sourceLayer && sourceLayer.allowDisable && !piece.virtual && !piece.isTransition)
+							return true
 						return false
 					}),
-					(piece: PieceResolved) => {
+					(piece: PieceInstancePiece) => {
 						let sourceLayer = allowedSourceLayers[piece.sourceLayerId]
 						return sourceLayer._rank || -9999
 					}
 				)
 				if (findLast) filteredPieces.reverse()
 
-				let nextPiece: PieceResolved | undefined = _.find(filteredPieces, (piece) => {
-					logger.info('piece.resolvedStart', piece.resolvedStart)
-					return piece.resolvedStart >= nowInPart && ((!undo && !piece.disabled) || (undo && piece.disabled))
+				let nextPiece: PieceInstancePiece | undefined = _.find(filteredPieces, (piece) => {
+					logger.info('piece.enable.start', piece.enable.start)
+					return piece.enable.start >= nowInPart && ((!undo && !piece.disabled) || (undo && piece.disabled))
 				})
 				return nextPiece ? pieceInstances.find((p) => p.piece._id === nextPiece!._id) : undefined
 			}

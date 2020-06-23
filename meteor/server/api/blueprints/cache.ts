@@ -15,7 +15,7 @@ import {
 	SystemBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
-import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../lib/lib'
+import { makePromise, cacheResult, unprotectString } from '../../../lib/lib'
 
 const blueprintCache: { [id: string]: Cache } = {}
 interface Cache {

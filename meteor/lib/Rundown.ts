@@ -69,7 +69,7 @@ export interface PieceExtended {
 export function getPieceInstancesForPartInstance(partInstance: PartInstance) {
 	if (partInstance.isTemporary || partInstance.isScratch) {
 		return Pieces.find({
-			partId: partInstance.part._id,
+			startPartId: partInstance.part._id,
 		}).map((p) => wrapPieceToTemporaryInstance(p, partInstance._id))
 	} else {
 		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
