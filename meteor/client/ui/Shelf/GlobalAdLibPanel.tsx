@@ -41,6 +41,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { ReactiveMap } from '../../../lib/reactiveMap'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -324,11 +325,15 @@ interface ITrackedProps {
 
 const HOTKEY_GROUP = 'GlobalAdLibPanel'
 
+export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
+
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse = {}
+	let sourceHotKeyUse: {
+		[key: string]: number
+	} = {}
 
 	let rundownAdLibs: Array<AdLibPieceUi> = []
 	let currentRundown: Rundown | undefined = undefined
@@ -370,7 +375,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				rundownId: currentRundown._id,
 			},
 			{
-				sort: { _rank: 1 },
+				// @ts-ignore deep-property
+				sort: { 'display._rank': 1 },
 			}
 		)
 			.fetch()
@@ -424,6 +430,10 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 			return uiAdLib
 		})
+	}
+
+	for (let [key, value] of Object.entries(sourceHotKeyUse)) {
+		GlobalAdLibHotkeyUseMap.set(key, value)
 	}
 
 	return {

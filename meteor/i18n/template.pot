@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-05-13T13:47:33.705Z\n"
-"PO-Revision-Date: 2020-05-13T13:47:33.705Z\n"
+"POT-Creation-Date: 2020-06-23T09:53:07.760Z\n"
+"PO-Revision-Date: 2020-06-23T09:53:07.760Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -29,11 +29,6 @@ msgstr ""
 msgid "Did you have any problems with the broadcast?"
 msgstr ""
 
-msgid ""
-"Please explain the problems you experienced (what happened and when, what "
-"should have happened, what could have triggered the problems, etcetera...)"
-msgstr ""
-
 msgid "Your name"
 msgstr ""
 
@@ -49,21 +44,10 @@ msgstr ""
 msgid "Something went wrong, and it affected the output"
 msgstr ""
 
-msgid ""
-"Trimming this clip has timed out. It's possible that the story is currently "
-"locked for writing in {{nrcsName}} and will eventually be updated. Make "
-"sure that the story is not being edited by other users."
-msgstr ""
-
 msgid "Trimming this clip has failed due to an error: {{error}}."
 msgstr ""
 
 msgid "Trimmed succesfully."
-msgstr ""
-
-msgid ""
-"Trimming this clip is taking longer than expected. It's possible that the "
-"story is locked for writing in {{nrcsName}}."
 msgstr ""
 
 msgid "Trim \"{{name}}\""
@@ -272,11 +256,6 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-msgid ""
-"You are in rehearsal mode, the broadcast starts in less than 1 minute. Do "
-"you want to reset the rundown and go into playout mode?"
-msgstr ""
-
 msgid "Started"
 msgstr ""
 
@@ -345,13 +324,6 @@ msgstr ""
 msgid "Another Rundown is Already Active!"
 msgstr ""
 
-msgid ""
-"The rundown \"{{rundownName}}\" will need to be deactivated in order to "
-"activate this one.\n"
-"\n"
-"Are you sure you want to activate this one anyway?"
-msgstr ""
-
 msgid "Activate Anyway"
 msgstr ""
 
@@ -418,11 +390,6 @@ msgstr ""
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
 msgstr ""
 
-msgid ""
-"There are no Playout Gateways connected and attached to this studio. Please "
-"contact the system administrator to start the Playout Gateway."
-msgstr ""
-
 msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
 msgstr ""
 
@@ -476,17 +443,7 @@ msgstr ""
 msgid "Remove just the rundown"
 msgstr ""
 
-msgid ""
-"Do you really want to remove just the rundown \"{{rundownName}}\" in the "
-"playlist {{playlistName}}? This cannot be undone!"
-msgstr ""
-
 msgid "Remove rundown playlist"
-msgstr ""
-
-msgid ""
-"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
-"cannot be undone!"
 msgstr ""
 
 msgid ""
@@ -500,35 +457,16 @@ msgstr ""
 msgid "Re-sync Rundown"
 msgstr ""
 
-msgid ""
-"Are you sure you want to re-sync the Rundown?\n"
-"(If the currently playing Part has been changed, this can affect the output)"
-msgstr ""
-
 msgid "Restart"
 msgstr ""
 
-msgid ""
-"Fixing this problem requires a restart to the host device. Are you sure you "
-"want to restart {{device}}?\n"
-"(This might affect output)"
-msgstr ""
-
 msgid "Device \"{{deviceName}}\" restarting..."
-msgstr ""
-
-msgid "Failed to restart device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Show issue"
 msgstr ""
 
 msgid "External message queue has unsent messages."
-msgstr ""
-
-msgid ""
-"The system configuration has been changed since importing this rundown. It "
-"might not run correctly"
 msgstr ""
 
 msgid "Unable to check the system configuration for changes"
@@ -633,6 +571,9 @@ msgstr ""
 msgid "Clear queued segment"
 msgstr ""
 
+msgid "Resync Segment"
+msgstr ""
+
 msgid "On Air"
 msgstr ""
 
@@ -640,6 +581,9 @@ msgid "Critical Errors"
 msgstr ""
 
 msgid "Warnings"
+msgstr ""
+
+msgid "Unsynced"
 msgstr ""
 
 msgid "Invalid"
@@ -878,313 +822,10 @@ msgstr ""
 msgid "Attached Subdevices"
 msgstr ""
 
-msgid "URL"
-msgstr ""
-
-msgid "Params"
-msgstr ""
-
-msgid "Make ready commands"
-msgstr ""
-
-msgid "Remove this command?"
-msgstr ""
-
-msgid "Are you sure you want to remove this command?"
-msgstr ""
-
-msgid "Host"
-msgstr ""
-
-msgid "Queue"
-msgstr ""
-
-msgid "Hosts"
-msgstr ""
-
-msgid "iNews Queues"
-msgstr ""
-
-msgid "User"
-msgstr ""
-
-msgid "Password"
-msgstr ""
-
-msgid "Debug logging"
-msgstr ""
-
-msgid "Storage ID"
-msgstr ""
-
-msgid "Storage Type"
-msgstr ""
-
-msgid "Allow Read"
-msgstr ""
-
-msgid "Allow Write"
-msgstr ""
-
-msgid "Base Path"
-msgstr ""
-
-msgid "Media Path"
-msgstr ""
-
-msgid "Mapped Networked Drive"
-msgstr ""
-
-msgid "Username"
-msgstr ""
-
-msgid "Don't Scan Entire Storage"
-msgstr ""
-
-msgid "Base path is a network share"
-msgstr ""
-
-msgid "Media Flow ID"
-msgstr ""
-
-msgid "Media Flow Type"
-msgstr ""
-
-msgid "Source Storage"
-msgstr ""
-
-msgid "Target Storage"
-msgstr ""
-
-msgid "Delete this Monitor?"
-msgstr ""
-
-msgid "Are you sure you want to delete the monitor \"{{monitorId}}\"?"
-msgstr ""
-
-msgid "ID already exists"
-msgstr ""
-
-msgid "The ID {{monitorId}} already exists!"
-msgstr ""
-
-msgid "Monitor ID"
-msgstr ""
-
-msgid "Monitor Type"
-msgstr ""
-
-msgid "Media Scanner Host"
-msgstr ""
-
-msgid "Media Scanner Port"
-msgstr ""
-
-msgid "Quantel Gateway URL"
-msgstr ""
-
-msgid "Quantel ISA URL"
-msgstr ""
-
-msgid "Zone ID (leave blank for default)"
-msgstr ""
-
-msgid "Quantel Server ID"
-msgstr ""
-
-msgid "No. of Available Workers"
-msgstr ""
-
-msgid "File Linger Time"
-msgstr ""
-
-msgid "Workflow Linger Time"
-msgstr ""
-
-msgid "Cron-Job Interval Time"
-msgstr ""
-
-msgid "Activate Debug Logging"
-msgstr ""
-
-msgid "Remove this storage?"
-msgstr ""
-
-msgid "Are you sure you want to remove storage \"{{storageId}}\"?"
-msgstr ""
-
-msgid "Remove this flow?"
-msgstr ""
-
-msgid "Are you sure you want to remove flow \"{{flowId}}\"?"
-msgstr ""
-
-msgid "Attached Storages"
-msgstr ""
-
-msgid "Media Flows"
-msgstr ""
-
-msgid "Monitors"
-msgstr ""
-
-msgid "Primary ID (Newsroom System MOS ID)"
-msgstr ""
-
-msgid "Primary Host (IP or Hostname)"
-msgstr ""
-
-msgid "Primary: dont use MOS query-port"
-msgstr ""
-
-msgid "Secondary ID (Newsroom System MOS ID)"
-msgstr ""
-
-msgid "Secondary Host (IP Address or Hostname)"
-msgstr ""
-
-msgid "Secondary: dont use MOS query-port"
-msgstr ""
-
-msgid "MOS ID of Gateway (Sofie MOS ID)"
-msgstr ""
-
-msgid "Remove this device?"
-msgstr ""
-
-msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
-msgstr ""
-
-msgid "Device id"
-msgstr ""
-
-msgid "Disable"
-msgstr ""
-
-msgid "Thread Usage"
-msgstr ""
-
-msgid "Port"
-msgstr ""
-
-msgid "CasparCG Launcher Host"
-msgstr ""
-
-msgid "CasparCG Launcher Port"
-msgstr ""
-
-msgid "Sources Path"
-msgstr ""
-
-msgid "Ramp Function Path"
-msgstr ""
-
-msgid "Priority"
-msgstr ""
-
-msgid "Buffer Encoding"
-msgstr ""
-
-msgid "Minimum recording time"
-msgstr ""
-
-msgid "Enable SSL"
-msgstr ""
-
-msgid "URI"
-msgstr ""
-
-msgid "HTTPMethod"
-msgstr ""
-
-msgid "expectedHttpResponse"
-msgstr ""
-
-msgid "Keyword"
-msgstr ""
-
-msgid "Interval"
-msgstr ""
-
-msgid "Gateway URL"
-msgstr ""
-
-msgid "ISA URL"
-msgstr ""
-
-msgid "Zone ID"
-msgstr ""
-
-msgid "(Optional) REST port"
-msgstr ""
-
-msgid "(Optional) Websocket port"
-msgstr ""
-
-msgid "Show ID"
-msgstr ""
-
-msgid "Profile"
-msgstr ""
-
-msgid "(Optional) Playlist id"
-msgstr ""
-
-msgid "Preload all elements"
-msgstr ""
-
-msgid "Automatically load internal elements when added"
-msgstr ""
-
-msgid "Clear-All template name"
-msgstr ""
-
-msgid "Clear-All on make-ready (activate rundown)"
-msgstr ""
-
-msgid "Dont deactivate on stand-down (deactivate rundown)"
-msgstr ""
-
-msgid "Only preload elements in active Rundown"
-msgstr ""
-
-msgid "On preload-All elements, also initialize the rundown playlist again"
-msgstr ""
-
-msgid "Activate Multi-Threading"
-msgstr ""
-
-msgid "Activate Multi-Threaded Timeline Resolving"
-msgstr ""
-
-msgid "(Restart to apply)"
-msgstr ""
-
-msgid "Report command timings on all commangs"
-msgstr ""
-
-msgid "Connect some devices to the playout gateway"
-msgstr ""
-
-msgid ""
-"Go to the url below and click on the \"Enable the Drive API\" button. Then "
-"click on \"Download Client configuration\", save the credentials.json file "
-"and upload it here."
-msgstr ""
-
-msgid "Drive folder name"
-msgstr ""
-
-msgid "Provide the name of the folder to download rundowns from"
-msgstr ""
-
-msgid "Row"
+msgid "Failed to update config: {{errorMessage}}"
 msgstr ""
 
 msgid "Export"
-msgstr ""
-
-msgid "Failed to update config: {{errorMessage}}"
 msgstr ""
 
 msgid "Import"
@@ -1226,10 +867,16 @@ msgstr ""
 msgid "More settings specific to this studio can be found here"
 msgstr ""
 
+msgid "Peripheral Device is outdated"
+msgstr ""
+
 msgid "Are you sure you want to restart this device?"
 msgstr ""
 
 msgid "Restart this Device?"
+msgstr ""
+
+msgid "Failed to restart device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Generic Properties"
@@ -1242,11 +889,6 @@ msgid "Restart Device"
 msgstr ""
 
 msgid "Reset Database Version"
-msgstr ""
-
-msgid ""
-"Are you sure you want to reset the database version?\n"
-"Only do this if you plan on running the migration right after."
 msgstr ""
 
 msgid "Version for {{name}}: From {{fromVersion}} to {{toVersion}}"
@@ -1265,11 +907,6 @@ msgid "Migrate database"
 msgstr ""
 
 msgid "All steps"
-msgstr ""
-
-msgid ""
-"The migration consists of several phases, you will get more options after "
-"you've this migration"
 msgstr ""
 
 msgid "The migration can be completed automatically."
@@ -1301,12 +938,6 @@ msgid ""
 msgstr ""
 
 msgid "Force Migration"
-msgstr ""
-
-msgid ""
-"Are you sure you want to force the migration? This will bypass the "
-"migration checks, so be sure to verify that the values in the settings are "
-"correct!"
 msgstr ""
 
 msgid "Force Migration (unsafe)"
@@ -1363,6 +994,12 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
+msgid "Display Style"
+msgstr ""
+
+msgid "Show thumbnails next to list items"
+msgstr ""
+
 msgid "Button width scale factor"
 msgstr ""
 
@@ -1396,6 +1033,9 @@ msgstr ""
 msgid "Label contains"
 msgstr ""
 
+msgid "Tags must contain"
+msgstr ""
+
 msgid "Register Shortcuts for this Panel"
 msgstr ""
 
@@ -1408,7 +1048,25 @@ msgstr ""
 msgid "Overflow horizontally"
 msgstr ""
 
-msgid "Tags must contain"
+msgid "Display Take buttons"
+msgstr ""
+
+msgid "Queue all adlibs"
+msgstr ""
+
+msgid "URL"
+msgstr ""
+
+msgid "Scale"
+msgstr ""
+
+msgid "Role"
+msgstr ""
+
+msgid "Adlib Rank"
+msgstr ""
+
+msgid "Place label below panel"
 msgstr ""
 
 msgid "Tabs"
@@ -1659,11 +1317,6 @@ msgstr ""
 msgid "Full System Snapshot"
 msgstr ""
 
-msgid ""
-"A Full System Snapshot contains all system settings (studios, showstyles, "
-"blueprints, devices, etc.)"
-msgstr ""
-
 msgid "Take a Full System Snapshot"
 msgstr ""
 
@@ -1689,6 +1342,12 @@ msgid "Restore"
 msgstr ""
 
 msgid "Show \"Remove snapshots\"-buttons"
+msgstr ""
+
+msgid "Remove this device?"
+msgstr ""
+
+msgid "Are you sure you want to remove device \"{{deviceId}}\"?"
 msgstr ""
 
 msgid "Devices are needed to control your studio hardware"
@@ -1734,6 +1393,9 @@ msgid "Index"
 msgstr ""
 
 msgid "Identifier"
+msgstr ""
+
+msgid "Priority"
 msgstr ""
 
 msgid "QuanSisyfos Channel"
@@ -1906,6 +1568,48 @@ msgstr ""
 msgid "Cannot play this AdLib becasue it is marked as Floated"
 msgstr ""
 
+msgid "AdLib does not provide any options"
+msgstr ""
+
+msgid "Cue as Next"
+msgstr ""
+
+msgid "Save to Bucket"
+msgstr ""
+
+msgid "Reveal in Shelf"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "New Bucket"
+msgstr ""
+
+msgid "Are you sure you want to delete this AdLib?"
+msgstr ""
+
+msgid "Are you sure you want to delete this Bucket?"
+msgstr ""
+
+msgid "Are you sure you want to empty (remove all adlibs inside) this Bucket?"
+msgstr ""
+
+msgid "Delete this AdLib"
+msgstr ""
+
+msgid "Empty this Bucket"
+msgstr ""
+
+msgid "Rename this Bucket"
+msgstr ""
+
+msgid "Delete this Bucket"
+msgstr ""
+
+msgid "Create new Bucket"
+msgstr ""
+
 msgid "Toggle Shelf"
 msgstr ""
 
@@ -2064,6 +1768,9 @@ msgstr ""
 msgid "Last seen"
 msgstr ""
 
+msgid "Connect some devices to the playout gateway"
+msgstr ""
+
 msgid "Format disks"
 msgstr ""
 
@@ -2157,6 +1864,18 @@ msgid "Your browser does not support video playback"
 msgstr ""
 
 msgid "Recording still in progress"
+msgstr ""
+
+msgid "Play from here"
+msgstr ""
+
+msgid "Exectute Single"
+msgstr ""
+
+msgid "Next Action"
+msgstr ""
+
+msgid "Run in"
 msgstr ""
 
 msgid "Source is not set"

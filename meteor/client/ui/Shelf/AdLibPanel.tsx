@@ -52,6 +52,7 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -469,7 +470,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse: { [key: string]: number } = {}
+	let sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -486,13 +487,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
 	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
-		(
-			currentPartId: PartId,
-			nextPartId: PartId,
-			segments: Segment[],
-			sourceLayerLookup: SourceLayerLookup,
-			sourceHotKeyUse: { [key: string]: number }
-		) => {
+		(currentPartId: PartId, nextPartId: PartId, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 
@@ -559,9 +554,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 		'uiSegments',
 		currentPartInstance ? currentPartInstance.part._id : undefined,
 		nextPartInstance ? nextPartInstance.part._id : undefined,
-		segments,
-		sourceLayerLookup,
-		sourceHotKeyUse
+		segments
 	)
 
 	uiSegments.forEach((segment) => (segment.pieces.length = 0))
@@ -603,7 +596,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 					},
 				},
 				{
-					sort: { _rank: 1 },
+					// @ts-ignore deep-property
+					sort: { 'display._rank': 1 },
 				}
 			)
 				.fetch()
@@ -772,7 +766,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 									},
 								},
 								{
-									sort: { _rank: 1 },
+									// @ts-ignore deep-property
+									sort: { 'display._rank': 1 },
 								}
 							)
 								.fetch()
