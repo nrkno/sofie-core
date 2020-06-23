@@ -1,23 +1,44 @@
+@import '_colorScheme';
+
+.expco.button {
+	background: $ui-button-primary;
+	color: #fff;
+
+	&:hover {
+		background: $ui-button-primary--hover;
+	}
+}
+
 .expco.split-dropdown {
 	position: relative;
 	padding-top: 0;
 	padding-bottom: 0;
+	max-width: 150px;
 	&.expco-expanded  {
 		z-index: 2;
 	}
 
 	.expco-expand {
 		cursor: pointer;
+		color: #fff;
 	}
 
 	.expco-title {
 		white-space: nowrap;
 		margin-right: 24px;
 		cursor: auto;
-		width: auto;
-		border-right: 1px solid #ccc;
+		width: 88%;
+		color: #fff;
 		border-radius: 0px;
 		padding: 0px;
+
+		.action-btn {
+			color: #fff;
+
+			.layout-icon {
+				color: #fff;
+			}
+		}
 	}
 
 	.expco-body {
@@ -29,6 +50,13 @@
 		overflow-y: auto;
 		border: 1px solid #bbb;
 		padding: 2px 0 4px 0;
+		box-sizing: unset;
+	}
+
+	.expco-text {
+		display: inline-flex;
+		overflow: hidden;
+		width: 90%;
 	}
 
 	.expco-item {
@@ -39,8 +67,12 @@
 			padding: 5px 10px;
 			margin: 0px;
 			width: 100%;
-			color: #252627;
 			font-weight: 300;
+
+			&:hover {
+				background: $ui-button-primary--hover;
+				color: #fff;
+			}
 		}
 	}
 	

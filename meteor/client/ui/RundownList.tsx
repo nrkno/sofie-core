@@ -146,7 +146,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						style={{ color: layout.iconColor || 'transparent' }}>
 						<FontAwesomeIcon icon={layout.icon || 'circle'} />
 					</div>
-					{layout.name}
+					<span className="expco-text">{layout.name}</span>
 				</div>
 			</Link>
 		)
@@ -180,11 +180,11 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				)
 			})
 		const allElements = [
-			<div className="expco-header" key={'header2'}>
+			<div className="expco-header" key={`${this.props.rundownPlaylist._id}layoutsheader2`}>
 				{t('Standalone Shelf')}
 			</div>,
 			...standaloneLayouts,
-			<div className="expco-header" key={'header2'}>
+			<div className="expco-header" key={`${this.props.rundownPlaylist._id}layoutsheader1`}>
 				{t('Timeline views')}
 			</div>,
 			...shelfLayouts,

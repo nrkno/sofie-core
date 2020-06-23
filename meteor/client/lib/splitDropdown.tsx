@@ -42,7 +42,7 @@ export class SplitDropdown extends React.Component<IProps, IState> {
 		return (
 			<div
 				className={ClassNames(
-					'expco focusable subtle split-dropdown',
+					'expco button focusable subtle split-dropdown',
 					{
 						'expco-expanded': this.state.expanded,
 					},
