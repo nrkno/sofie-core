@@ -5,7 +5,7 @@ import { logger } from '../../../lib/logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { syncFunction } from '../../codeControl'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import {
 	asyncCollectionUpdate,
 	waitForPromiseAll,
@@ -20,7 +20,7 @@ import {
 	getCurrentTime,
 } from '../../../lib/lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, wrapPieceToInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
 	getPartsAfter,
@@ -28,11 +28,70 @@ import {
 	getAllPieceInstancesFromCache,
 	getRundownsSegmentsAndPartsFromCache,
 } from './lib'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId, Segment } from '../../../lib/collections/Segments'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
+
+export async function loadPiecesThatMayBeActiveForPart(
+	cache: CacheForRundownPlaylist,
+	// rundown: Rundown,
+	// segment: Segment,
+	playingPartInstance: PartInstance | undefined,
+	part: Part
+): Promise<{ pieces: Piece[]; pieceInstances: PieceInstance[] }> {
+	const res = { pieces: literal<Piece[]>([]), pieceInstances: literal<PieceInstance[]>([]) }
+
+	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, { startPartId: part._id })
+
+	const partsBeforeThisInSegment = cache.Parts.findFetch({ segmentId: part.segmentId, _rank: { $lt: part._rank } })
+	const segmentsBeforeThisInRundown = cache.Segments.findFetch({
+		rundownId: part.rundownId,
+		_rank: { $lt: part._rank },
+	})
+
+	const pInfinitePieces = asyncCollectionFindFetch(Pieces, {
+		invalid: { $ne: true },
+		$or: [
+			{
+				// same segment, and previous part
+				lifespan: { $in: [PieceLifespan.OutOnSegmentEnd /*, PieceLifespan.OutOnSegmentChange*/] },
+				startRundownId: part.rundownId,
+				startSegmentId: part.segmentId,
+				startPartId: { $in: partsBeforeThisInSegment.map((p) => p._id) },
+			},
+			{
+				// same rundown, and previous segment
+				lifespan: { $in: [PieceLifespan.OutOnRundownEnd /*, PieceLifespan.OutOnRundownChange*/] },
+				startRundownId: part.rundownId,
+				startSegmentId: { $in: segmentsBeforeThisInRundown.map((p) => p._id) },
+			},
+			// {
+			// 	// previous rundown
+			//  // Potential future scope
+			// }
+		],
+	})
+
+	const pieceInstancesInPrevious = playingPartInstance
+		? cache.PieceInstances.findFetch({
+				'piece.lifespan': {
+					$in: [
+						/*PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnSegmentChange*/
+					],
+				},
+				partInstanceId: playingPartInstance._id,
+		  })
+		: []
+
+	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
+
+	return {
+		pieceInstances: pieceInstancesInPrevious,
+		pieces: [...piecesStartingInPart, ...infinitePieces],
+	}
+}
 
 export function updateSourceLayerInfinitesAfterPart(
 	cache: CacheForRundownPlaylist,
