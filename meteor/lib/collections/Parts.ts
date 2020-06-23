@@ -73,8 +73,8 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 
 	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an part */
 	runtimeArguments?: BlueprintRuntimeArguments
-	/** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
-	dirty?: boolean
+	// /** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
+	// dirty?: boolean
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
 }
@@ -129,7 +129,7 @@ export class Part implements DBPart {
 	public afterPart?: PartId
 	public dynamicallyInserted?: boolean
 	public runtimeArguments?: BlueprintRuntimeArguments
-	public dirty?: boolean
+	// public dirty?: boolean
 	public identifier?: string
 
 	constructor(document: DBPart) {

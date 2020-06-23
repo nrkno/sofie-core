@@ -71,9 +71,9 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 		}
 	)
 
-	const dirtyParts = cache.Parts.findFetch({ rundownId: rundown._id, dirty: true })
+	// const dirtyParts = cache.Parts.findFetch({ rundownId: rundown._id, dirty: true })
 
-	refreshParts(cache, dirtyParts)
+	// refreshParts(cache, dirtyParts)
 
 	// Reset all pieces that were modified for holds
 	cache.Pieces.update(
@@ -213,13 +213,13 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		}
 	)
 
-	const dirtyParts = cache.Parts.findFetch({
-		rundownId: {
-			$in: rundownIDs,
-		},
-		dirty: true,
-	})
-	refreshParts(cache, dirtyParts)
+	// const dirtyParts = cache.Parts.findFetch({
+	// 	rundownId: {
+	// 		$in: rundownIDs,
+	// 	},
+	// 	dirty: true,
+	// })
+	// refreshParts(cache, dirtyParts)
 
 	// Reset all pieces that were modified for holds
 	cache.Pieces.update(
@@ -352,44 +352,44 @@ export function getPreviousPart(cache: CacheForRundownPlaylist, partToCheck: Par
 	}
 	return previousPart
 }
-export function refreshParts(cache: CacheForRundownPlaylist, parts: Part[]) {
-	const ps: Promise<any>[] = []
-	parts.forEach((part) => {
-		const rundown = cache.Rundowns.findOne(part.rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found in refreshParts`)
-		ps.push(
-			refreshPart(cache, rundown, part).then(() => {
-				cache.Parts.update(part._id, {
-					$unset: {
-						dirty: 1,
-					},
-				})
-			})
-		)
-	})
-	waitForPromiseAll(ps)
-}
-export async function refreshPart(cache: CacheForRundownPlaylist, rundown: Rundown, part: Part) {
-	// TODO:
-	const pIngestSegment = makePromise(() =>
-		loadCachedIngestSegment(rundown._id, rundown.externalId, part.segmentId, unprotectString(part.segmentId))
-	)
+// export function refreshParts(cache: CacheForRundownPlaylist, parts: Part[]) {
+// 	const ps: Promise<any>[] = []
+// 	parts.forEach((part) => {
+// 		const rundown = cache.Rundowns.findOne(part.rundownId)
+// 		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found in refreshParts`)
+// 		ps.push(
+// 			refreshPart(cache, rundown, part).then(() => {
+// 				cache.Parts.update(part._id, {
+// 					$unset: {
+// 						dirty: 1,
+// 					},
+// 				})
+// 			})
+// 		)
+// 	})
+// 	waitForPromiseAll(ps)
+// }
+// export async function refreshPart(cache: CacheForRundownPlaylist, rundown: Rundown, part: Part) {
+// 	// TODO:
+// 	const pIngestSegment = makePromise(() =>
+// 		loadCachedIngestSegment(rundown._id, rundown.externalId, part.segmentId, unprotectString(part.segmentId))
+// 	)
 
-	const studio = cache.Studios.findOne(rundown.studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio ${rundown.studioId} was not found`)
-	const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
+// 	const studio = cache.Studios.findOne(rundown.studioId)
+// 	if (!studio) throw new Meteor.Error(404, `Studio ${rundown.studioId} was not found`)
+// 	const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
+// 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
 
-	const ingestSegment = await pIngestSegment
-	updateSegmentsFromIngestData(cache, studio, playlist, rundown, [ingestSegment])
+// 	const ingestSegment = await pIngestSegment
+// 	updateSegmentsFromIngestData(cache, studio, playlist, rundown, [ingestSegment])
 
-	// const segment = Segments.findOne(dbPart.segmentId)
-	// if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
+// 	// const segment = Segments.findOne(dbPart.segmentId)
+// 	// if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
 
-	// This is run on the whole rundown inside the update, IF anything was changed
-	// const prevPart = getPartBeforeSegment(dbRundown._id, segment)
-	// updateSourceLayerInfinitesAfterPart(rundown, prevPart)
-}
+// 	// This is run on the whole rundown inside the update, IF anything was changed
+// 	// const prevPart = getPartBeforeSegment(dbRundown._id, segment)
+// 	// updateSourceLayerInfinitesAfterPart(rundown, prevPart)
+// }
 
 export function selectNextPart(
 	rundownPlaylist: RundownPlaylist,
@@ -645,7 +645,7 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 
 	let willNeedToBeFullyReset: boolean = !!part.startedPlayback
 
-	const isDirty = part.dirty || false
+	// const isDirty = part.dirty || false
 
 	cache.Parts.update(
 		{
@@ -658,7 +658,7 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 				startedPlayback: 1,
 				taken: 1,
 				// runtimeArguments: 1,
-				dirty: 1,
+				// dirty: 1,
 				stoppedPlayback: 1,
 			},
 		}
@@ -720,15 +720,15 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	const rundown = cache.Rundowns.findOne(part.rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
 
-	if (isDirty) {
-		waitForPromise(refreshPart(cache, rundown, part))
-	} else {
-		if (willNeedToBeFullyReset) {
-			const prevPart = getPreviousPart(cache, part, rundown)
+	// if (isDirty) {
+	// 	waitForPromise(refreshPart(cache, rundown, part))
+	// } else {
+	if (willNeedToBeFullyReset) {
+		const prevPart = getPreviousPart(cache, part, rundown)
 
-			updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
-		}
+		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
 	}
+	// }
 }
 export function onPartHasStoppedPlaying(
 	cache: CacheForRundownPlaylist,
