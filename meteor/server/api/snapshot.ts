@@ -165,7 +165,7 @@ function createRundownPlaylistSnapshot(playlistId: RundownPlaylistId): RundownPl
 	const segments = playlist.getSegments()
 	const parts = playlist.getAllOrderedParts()
 	const partInstances = playlist.getAllPartInstances()
-	const pieces = Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const pieces = Pieces.find({ startRundownId: { $in: rundownIds } }).fetch()
 	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
@@ -677,7 +677,7 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
 	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
 	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
-	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
+	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false)) // TODO-INFINITES - mutate them
 	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(

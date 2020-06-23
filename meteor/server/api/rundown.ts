@@ -1,31 +1,25 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { Part, Parts, DBPart, PartId } from '../../lib/collections/Parts'
-import { Pieces, Piece } from '../../lib/collections/Pieces'
+import { Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Part, DBPart } from '../../lib/collections/Parts'
+import { Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
-	getRank,
 	getCurrentTime,
-	asyncCollectionUpdate,
-	waitForPromiseAll,
 	getHash,
-	literal,
 	waitForPromise,
 	unprotectObjectArray,
 	protectString,
 	unprotectString,
 	makePromise,
-	Omit,
 	waitForPromiseObj,
 	asyncCollectionFindFetch,
 	normalizeArray,
 	check,
 } from '../../lib/lib'
 import { logger } from '../logging'
-import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
@@ -38,12 +32,7 @@ import {
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import {
-	IngestRundown,
-	BlueprintResultOrderedRundowns,
-	ConfigManifestEntry,
-	IConfigItem,
-} from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, BlueprintResultOrderedRundowns } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
@@ -64,13 +53,8 @@ import {
 	initCacheForRundownPlaylistFromRundown,
 } from '../DatabaseCaches'
 import { saveIntoCache } from '../DatabaseCache'
-import {
-	removeRundownFromCache,
-	removeRundownPlaylistFromCache,
-	getRundownsSegmentsAndPartsFromCache,
-	getAllOrderedPartsFromCache,
-} from './playout/lib'
-import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
+import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 
@@ -291,8 +275,6 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
 			},
 		}
 	)
-
-	triggerUpdateTimelineAfterIngestData(cache, rundownId, segmentIds)
 }
 
 /**
@@ -325,7 +307,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		cache.Pieces,
 		{
 			rundownId: rundownId,
-			partId: { $in: _.map(removedParts, (p) => p._id) },
+			startPartId: { $in: _.map(removedParts, (p) => p._id) },
 		},
 		[],
 		{

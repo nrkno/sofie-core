@@ -1,4 +1,3 @@
-import { syncFunctionIgnore } from '../../codeControl'
 import {
 	Time,
 	getPartGroupId,
@@ -13,7 +12,6 @@ import {
 import { logger } from '../../../lib/logging'
 import {
 	TimelineObjGeneric,
-	Timeline,
 	TimelineObjRundown,
 	TimelineObjStat,
 	TimelineObjType,
@@ -23,22 +21,14 @@ import {
 	TimelineObjPartAbstract,
 	getTimelineId,
 	fixTimelineId,
-	TimelineObjId,
 } from '../../../lib/collections/Timeline'
-import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
+import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
-	waitForPromiseAll,
-	caught,
-	saveIntoDb,
-	asyncCollectionFindOne,
 	waitForPromise,
-	asyncCollectionRemove,
-	asyncCollectionFindFetch,
 	getHash,
 	stringifyObjects,
 	getCurrentTime,
-	asyncCollectionUpsert,
 	extendMandadory,
 	literal,
 	clone,
@@ -47,16 +37,16 @@ import {
 	unprotectString,
 	unprotectObjectArray,
 	unprotectObject,
+	normalizeArrayFunc,
 } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Rundowns, Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { RundownBaselineObj, RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
+import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprints, getBlueprintOfRundownAsync } from '../blueprints/cache'
 import { StudioContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
-import { RecordedFiles } from '../../../lib/collections/RecordedFiles'
 import { generateRecordingTimelineObjs } from '../testTools'
 import { Part } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
@@ -64,8 +54,7 @@ import { createPieceGroup, createPieceGroupFirstObject, getResolvedPiecesFromFul
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
-import { isNumber } from 'util'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 
@@ -81,22 +70,11 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	let timelineObjs: Array<TimelineObjGeneric> = []
 	const studio = cache.Studios.findOne(studioId)
 
-	// let playoutData: RundownPlaylistPlayoutData | null = null
-
-	// if (playoutData0 === undefined) {
-	// 	// When activeRundownData0 is not provided:
-
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
 	if (activePlaylist && cache.containsDataFromPlaylist !== activePlaylist._id) {
 		throw new Meteor.Error(500, `Active rundownPlaylist is not in cache`)
 	}
-	// if (activePlaylist) {
-	// 	playoutData = activePlaylist.fetchAllPlayoutData()
-	// }
-	// } else {
-	// 	playoutData = playoutData0
-	// }
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
 
@@ -475,11 +453,9 @@ function buildTimelineObjsForRundown(
 	// Currently playing:
 	if (currentPartInstance) {
 		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: currentPartInstance._id })
-		const currentInfinitePieces = currentPieces.filter(
-			(l) => l.piece.infiniteMode! > PieceLifespan.OutOnNextPart && l.piece.infiniteId
-		)
-		const currentNormalItems = currentPieces.filter(
-			(l) => !(l.piece.infiniteMode! > PieceLifespan.OutOnNextPart && l.piece.infiniteId)
+		const [currentInfinitePieces, currentNormalItems] = _.partition(
+			currentPieces,
+			(l) => !!l.infinite && l.piece.lifespan !== PieceLifespan.WithinPart
 		)
 
 		let allowTransition = false
@@ -555,8 +531,20 @@ function buildTimelineObjsForRundown(
 			})
 		}
 
+		const previousPartInfinites = previousPartInstance
+			? normalizeArrayFunc(
+					cache.PieceInstances.findFetch((p) => p.partInstanceId === previousPartInstance._id),
+					(inst) => (inst.infinite ? unprotectString(inst.infinite.infinitePieceId) : '')
+			  )
+			: {}
+
 		// any continued infinite lines need to skip the group, as they need a different start trigger
 		for (let piece of currentInfinitePieces) {
+			if (!piece.infinite) {
+				// Type guard, should never be hit
+				continue
+			}
+
 			const infiniteGroup = createPartGroup(currentPartInstance, {
 				start: `#${currentPartGroup.id}.start`, // This gets overriden with a concrete time if the original piece is known to have already started
 				duration: piece.piece.enable.duration || undefined,
@@ -566,32 +554,33 @@ function buildTimelineObjsForRundown(
 
 			const groupClasses: string[] = ['current_part']
 			// If the previousPart also contains another segment of this infinite piece, then we label our new one as such
-			if (previousPieces.filter((pi) => pi.piece.infiniteId && pi.piece.infiniteId === piece.piece.infiniteId)) {
+			if (previousPartInfinites[unprotectString(piece.infinite.infinitePieceId)]) {
 				groupClasses.push('continues_infinite')
 			}
 
 			if (piece.piece.infiniteId) {
-				// TODO-PartInstance - this will be wrong once infinites work on only the instances
-				const originalItem = cache.Pieces.findOne(piece.piece.infiniteId)
+				// TODO-INFINITES - something new here?
+				// // TODO-PartInstance - this will be wrong once infinites work on only the instances
+				// const originalItem = cache.Pieces.findOne(piece.piece.infiniteId)
 
-				// If we are a continuation, set the same start point to ensure that anything timed is correct
-				if (originalItem && originalItem.startedPlayback) {
-					infiniteGroup.enable = { start: originalItem.startedPlayback }
+				// // If we are a continuation, set the same start point to ensure that anything timed is correct
+				// if (originalItem && originalItem.startedPlayback) {
+				// 	infiniteGroup.enable = { start: originalItem.startedPlayback }
 
-					// If an absolute time has been set by a hotkey, then update the duration to be correct
-					const partStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
-					if (piece.piece.userDuration && partStartedPlayback) {
-						const previousPartsDuration = partStartedPlayback - originalItem.startedPlayback
-						if (piece.piece.userDuration.end) {
-							infiniteGroup.enable.end = piece.piece.userDuration.end
-						} else {
-							infiniteGroup.enable.duration = offsetTimelineEnableExpression(
-								piece.piece.userDuration.duration,
-								previousPartsDuration
-							)
-						}
-					}
-				}
+				// 	// If an absolute time has been set by a hotkey, then update the duration to be correct
+				// 	const partStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
+				// 	if (piece.piece.userDuration && partStartedPlayback) {
+				// 		const previousPartsDuration = partStartedPlayback - originalItem.startedPlayback
+				// 		if (piece.piece.userDuration.end) {
+				// 			infiniteGroup.enable.end = piece.piece.userDuration.end
+				// 		} else {
+				// 			infiniteGroup.enable.duration = offsetTimelineEnableExpression(
+				// 				piece.piece.userDuration.duration,
+				// 				previousPartsDuration
+				// 			)
+				// 		}
+				// 	}
+				// }
 
 				// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
 				const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
@@ -618,7 +607,7 @@ function buildTimelineObjsForRundown(
 			}
 
 			// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
-			const showHoldExcept = piece.piece.infiniteId !== piece.piece._id
+			const isOriginOfInfinite = piece.piece.startPartId !== currentPartInstance.part._id
 			timelineObjs = timelineObjs.concat(
 				infiniteGroup,
 				transformPartIntoTimeline(
@@ -627,7 +616,7 @@ function buildTimelineObjsForRundown(
 					infiniteGroup,
 					undefined,
 					activePlaylist.holdState,
-					showHoldExcept
+					isOriginOfInfinite
 				)
 			)
 		}
@@ -811,7 +800,8 @@ function transformPartIntoTimeline(
 		if (pieceInstance.piece.content && pieceInstance.piece.content.timelineObjects) {
 			let tos: TimelineObjectCoreExt[] = pieceInstance.piece.content.timelineObjects
 
-			if (pieceInstance.piece.enable.start === 0 && !isInfiniteContinuation) {
+			const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
+			if (pieceEnable.start === 0 && !isInfiniteContinuation) {
 				// If timed absolute and there is a transition delay, then apply delay
 				if (
 					!pieceInstance.piece.isTransition &&
@@ -821,16 +811,16 @@ function transformPartIntoTimeline(
 				) {
 					const transitionContentsDelayStr =
 						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
-					pieceInstance.piece.enable.start = `#${getPieceGroupId(
+					pieceEnable.start = `#${getPieceGroupId(
 						unprotectObject(transition.piece)
 					)}.start ${transitionContentsDelayStr}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
-					pieceInstance.piece.enable.start = Math.max(0, transitionPieceDelay)
+					pieceEnable.start = Math.max(0, transitionPieceDelay)
 				}
 			}
 
 			// create a piece group for the pieces and then place all of them there
-			const pieceGroup = createPieceGroup(pieceInstance, partGroup)
+			const pieceGroup = createPieceGroup(pieceInstance, partGroup, pieceEnable)
 			timelineObjs.push(pieceGroup)
 
 			if (!pieceInstance.piece.virtual) {

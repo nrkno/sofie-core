@@ -320,8 +320,8 @@ export function pieceTakeNow(
 		throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
 	}
 
-	const rundown = Rundowns.findOne(pieceToCopy.rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${pieceToCopy.rundownId}" not found!`)
+	const rundown = Rundowns.findOne(pieceToCopy.startRundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${pieceToCopy.startRundownId}" not found!`)
 
 	const partInstance = PartInstances.findOne({
 		_id: partInstanceId,

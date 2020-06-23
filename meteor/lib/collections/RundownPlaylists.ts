@@ -86,25 +86,6 @@ export interface DBRundownPlaylist {
 	previousPersistentState?: TimelinePersistentState
 }
 
-export interface RundownPlaylistPlayoutData {
-	rundownPlaylist: RundownPlaylist
-	/** Ordered array of the Rundowns in a Playlist */
-	rundowns: Rundown[]
-	rundownsMap: { [key: string]: Rundown }
-	/** Ordered array of the Segments in a Playlist */
-	segments: Segment[]
-	segmentsMap: { [key: string]: Segment }
-	/** Ordered array of the Parts in a Playlist */
-	parts: Part[]
-	partsMap: { [key: string]: Part }
-	pieces: Piece[]
-
-	currentPartInstance: PartInstance | undefined
-	nextPartInstance: PartInstance | undefined
-	previousPartInstance: PartInstance | undefined
-	selectedInstancePieces: Array<PieceInstance>
-}
-
 export class RundownPlaylist implements DBRundownPlaylist {
 	public _id: RundownPlaylistId
 	public externalId: string

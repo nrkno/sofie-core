@@ -7,16 +7,10 @@ import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	Time,
-	fetchNext,
-	asyncCollectionUpdate,
-	waitForPromiseAll,
-	asyncCollectionInsert,
-	asyncCollectionUpsert,
 	waitForPromise,
 	makePromise,
 	clone,
 	literal,
-	asyncCollectionRemove,
 	normalizeArray,
 	unprotectString,
 	unprotectObjectArray,
@@ -27,11 +21,10 @@ import {
 } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { PieceLifespan, PartHoldMode, VTContent, PartEndState } from 'tv-automation-sofie-blueprints-integration'
-import { Studios, StudioId } from '../../../lib/collections/Studios'
+import { StudioId } from '../../../lib/collections/Studios'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -41,12 +34,7 @@ import {
 	reportPieceHasStopped,
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import {
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistPlayoutData,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { PartEventContext, RundownContext } from '../blueprints/context'
 import { NotesContext } from '../blueprints/context/context'
@@ -78,14 +66,7 @@ import {
 	deactivateRundownPlaylistInner,
 	standDownStudio,
 } from './actions'
-import {
-	PieceResolved,
-	getOrderedPiece,
-	getResolvedPieces,
-	convertAdLibToPieceInstance,
-	convertPieceToAdLibPiece,
-	orderPieces,
-} from './pieces'
+import { PieceResolved, getResolvedPieces, orderPieces } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudio } from './studio'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
