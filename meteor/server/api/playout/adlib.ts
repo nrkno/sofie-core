@@ -296,6 +296,14 @@ export namespace ServerPlayoutAdLibAPI {
 				})
 			}
 
+			if (adLibPiece.adlibTransitionKeepAlive !== undefined) {
+				Parts.update(partId, {
+					$set: {
+						transitionKeepaliveDuration: adLibPiece.adlibTransitionKeepAlive
+					}
+				})
+			}
+
 			ServerPlayoutAPI.setNextPartInner(rundown, partId, undefined, undefined, true)
 		}
 
