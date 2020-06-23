@@ -40,26 +40,15 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
-import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
 import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { PartNote, NoteType, INoteBase } from '../../../../lib/api/notes'
+import { NoteType, INoteBase } from '../../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { Segment, SegmentId } from '../../../../lib/collections/Segments'
-import {
-	PieceInstances,
-	unprotectPieceInstance,
-	PieceInstanceId,
-	PieceInstance,
-} from '../../../../lib/collections/PieceInstances'
-import {
-	InternalIBlueprintPartInstance,
-	PartInstanceId,
-	unprotectPartInstance,
-	PartInstance,
-} from '../../../../lib/collections/PartInstances'
+import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
+import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 
@@ -298,7 +287,6 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments | undefined }
 export class SegmentContext extends RundownContext implements ISegmentContext {
 	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
-	private readonly segment: Readonly<Segment>
 
 	constructor(
 		rundown: Rundown,

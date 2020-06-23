@@ -54,6 +54,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const playlist = RundownPlaylists.findOne() as RundownPlaylist
 		expect(playlist).toMatchObject({
 			externalId: rundownData.externalId,
+			_id: rundown.playlistId,
 		})
 
 		// // Set to unsynced to ensure that flag gets ignored by the debug method

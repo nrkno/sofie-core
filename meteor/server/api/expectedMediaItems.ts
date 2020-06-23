@@ -23,17 +23,17 @@ export enum PieceType {
 function generateExpectedMediaItems(
 	rundownId: RundownId,
 	studioId: StudioId,
-	piece: RundownPieceGeneric | AdLibPiece,
+	partId: PartId,
+	piece: PieceGeneric,
 	pieceType: string
 ): ExpectedMediaItem[] {
 	const result: ExpectedMediaItem[] = []
 
-	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds && piece.partId) {
-		const partId = piece.partId
+	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds) {
 		;(piece.content.mediaFlowIds as string[]).forEach(
 			function(flow) {
 				const id = protectString<ExpectedMediaItemId>(
-					getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + piece.partId)
+					getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + partId)
 				)
 				result.push({
 					_id: id,
@@ -139,12 +139,12 @@ export const updateExpectedMediaItemsOnRundown: (
 
 		const eMIs: ExpectedMediaItem[] = []
 
-		function iterateOnPieceLike(piece: RundownPieceGeneric | AdLibPiece, pieceType: string) {
-			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
+		function iterateOnPieceLike(piece: PieceGeneric, partId: PartId, pieceType: string) {
+			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
 		}
 
-		pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
-		adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
+		pieces.forEach((doc) => iterateOnPieceLike(doc, doc.startPartId, PieceType.PIECE))
+		adlibs.forEach((doc) => iterateOnPieceLike(doc, doc.partId, PieceType.ADLIB))
 
 		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
 			ExpectedMediaItems,
@@ -205,12 +205,12 @@ export const updateExpectedMediaItemsOnPart: (
 			partId: part._id,
 		}).fetch()
 
-		function iterateOnPieceLike(piece: RundownPieceGeneric | AdLibPiece, pieceType: string) {
-			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
+		function iterateOnPieceLike(piece: PieceGeneric, partId: PartId, pieceType: string) {
+			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
 		}
 
-		pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
-		adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
+		pieces.forEach((doc) => iterateOnPieceLike(doc, doc.startPartId, PieceType.PIECE))
+		adlibs.forEach((doc) => iterateOnPieceLike(doc, doc.partId, PieceType.ADLIB))
 
 		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
 			ExpectedMediaItems,

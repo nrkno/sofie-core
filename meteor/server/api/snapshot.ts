@@ -55,7 +55,7 @@ import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-au
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
-import { ingestMOSRundown } from './ingest/http'
+import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -436,7 +436,7 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studio = Studios.findOne(Meteor.settings.manualSnapshotIngestStudioId || undefined)
 		if (studio) {
-			ingestMOSRundown(studio._id, snapshot)
+			importIngestRundown(studio._id, snapshot)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)
