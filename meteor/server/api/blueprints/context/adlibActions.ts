@@ -19,7 +19,6 @@ import {
 	omit,
 } from '../../../../lib/lib'
 import { DBPart, PartId, Part } from '../../../../lib/collections/Parts'
-import { check, Match } from 'meteor/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { check as MeteorCheck, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	TransformedCollection,
@@ -47,10 +46,6 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 			else resolve(res)
 		})
 	})
-}
-export function check(value: any, pattern: Match.Pattern) {
-	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
-	MeteorCheck(value, pattern)
 }
 
 export type Time = number

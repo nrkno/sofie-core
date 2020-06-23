@@ -452,7 +452,7 @@ PickerPOST.route(
 			if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 			if (!token) throw new Meteor.Error(400, `parameter token is missing`)
 
-			const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, {})
+			const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, { userId: null })
 
 			let url = parseUrl(req.url || '', true)
 

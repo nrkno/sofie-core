@@ -1,6 +1,5 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { Match } from 'meteor/check'
 import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
@@ -23,7 +22,6 @@ import {
 	protectString,
 	isStringOrProtectedString,
 	getRandomId,
-	check,
 } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -106,6 +104,7 @@ import {
 	CacheForStudio,
 } from '../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { check, Match } from '../../../lib/check'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"

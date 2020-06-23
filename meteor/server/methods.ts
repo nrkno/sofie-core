@@ -4,7 +4,7 @@ import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from '../lib/api/methods'
 
-type MeteorMethod = (this: Meteor.MethodThisType, ...args: any[]) => any
+type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 
 interface Methods {
 	[method: string]: MeteorMethod
@@ -107,6 +107,7 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 			AllMeteorMethods.push(methodName)
 		}
 	})
+	// @ts-ignore: incompatible due to userId
 	Meteor.methods(methods)
 }
 export function getRunningMethods() {

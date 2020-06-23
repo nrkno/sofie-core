@@ -12,7 +12,19 @@ import { MethodContext } from '../../../../lib/api/methods'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
-const DEFAULT_CONTEXT: MethodContext = {}
+const DEFAULT_CONTEXT: MethodContext = {
+	userId: null,
+	isSimulation: false,
+	connection: {
+		id: 'mockConnectionId',
+		close: () => {},
+		onClose: () => {},
+		clientAddress: '127.0.0.1',
+		httpHeaders: {},
+	},
+	setUserId: () => {},
+	unblock: () => {},
+}
 
 describe('Test blueprint management api', () => {
 	beforeAll(() => {
@@ -205,7 +217,7 @@ describe('Test blueprint management api', () => {
 	describe('uploadBlueprint', () => {
 		testInFiber('empty id', () => {
 			try {
-				uploadBlueprint({}, protectString(''), '0')
+				uploadBlueprint(DEFAULT_CONTEXT, protectString(''), '0')
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint id "" is not valid`)
@@ -213,7 +225,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('empty body', () => {
 			try {
-				uploadBlueprint({}, protectString('blueprint99'), '')
+				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), '')
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 failed to parse`)
@@ -221,7 +233,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('body not a manifest', () => {
 			try {
-				uploadBlueprint({}, protectString('blueprint99'), `({default: (() => 5)()})`)
+				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), `({default: (() => 5)()})`)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 returned a manifest of type number`)
@@ -247,7 +259,7 @@ describe('Test blueprint management api', () => {
 				}
 			})
 			try {
-				uploadBlueprint({}, protectString('blueprint99'), blueprintStr)
+				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), blueprintStr)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
@@ -278,7 +290,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 
 			try {
-				uploadBlueprint({}, existingBlueprint._id, blueprintStr)
+				uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
@@ -306,7 +318,7 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint({}, protectString('tmp_showstyle'), blueprintStr)
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_showstyle'), blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -344,7 +356,7 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint({}, protectString('tmp_studio'), blueprintStr, 'tmp name')
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_studio'), blueprintStr, 'tmp name')
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -383,7 +395,7 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint({}, protectString('tmp_system'), blueprintStr, 'tmp name')
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_system'), blueprintStr, 'tmp name')
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -425,7 +437,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeFalsy()
 
-			const blueprint = uploadBlueprint({}, existingBlueprint._id, blueprintStr)
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -471,7 +483,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			const blueprint = uploadBlueprint({}, existingBlueprint._id, blueprintStr)
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
@@ -518,7 +530,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
 			try {
-				uploadBlueprint({}, existingBlueprint._id, blueprintStr)
+				uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
@@ -553,7 +565,7 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
 			try {
-				uploadBlueprint({}, existingBlueprint._id, blueprintStr)
+				uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(

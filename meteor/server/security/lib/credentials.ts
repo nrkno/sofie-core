@@ -5,7 +5,7 @@ import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/l
 import { LIMIT_CACHE_TIME } from './security'
 
 export interface Credentials {
-	userId?: UserId
+	userId: UserId | null
 	token?: string
 }
 export interface ResolvedCredentials {
@@ -27,7 +27,7 @@ export function resolveCredentials(cred: Credentials | ResolvedCredentials): Res
 			const resolved: ResolvedCredentials = {}
 
 			if (cred.token && typeof cred.token !== 'string') cred.token = undefined
-			if (cred.userId && typeof cred.userId !== 'string') cred.userId = undefined
+			if (cred.userId && !isProtectedString(cred.userId)) cred.userId = null
 
 			let user: DBUser | undefined = undefined
 			// Lookup user, using userId:

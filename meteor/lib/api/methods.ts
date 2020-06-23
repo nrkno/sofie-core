@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { MeteorPromiseCall } from '../lib'
+import { MeteorPromiseCall, ProtectedStringProperties } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
@@ -19,6 +19,7 @@ import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { NewUserAPI, UserAPIMethods } from './user'
 import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
+import { Meteor } from 'meteor/meteor'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -71,19 +72,27 @@ function makeMethods(methods: object): any {
 	})
 	return o
 }
-export interface MethodContext {
-	userId?: UserId
-	/** Info about the connection that called the method. Undefined if called internally from server-side */
-	connection?: {
-		clientAddress: string
-	} | null
+export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
+	userId: UserId | null
 }
+
 /** Abstarct class to be used when defining Mehod-classes */
 export abstract class MethodContextAPI implements MethodContext {
-	public userId?: UserId
-	public connection?: {
-		clientAddress: string
-	} | null
+	public userId: UserId | null
+	public isSimulation: boolean
+	public setUserId(userId: string): void {
+		throw new Meteor.Error(
+			500,
+			`This shoulc never be called, there's something wrong in with 'this' in the calling method`
+		)
+	}
+	public unblock(): void {
+		throw new Meteor.Error(
+			500,
+			`This shoulc never be called, there's something wrong in with 'this' in the calling method`
+		)
+	}
+	public connection: Meteor.Connection | null
 }
 /** Convenience-method to call a userAction method old-Meteor.call-style */
 export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]) {

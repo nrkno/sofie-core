@@ -27,8 +27,8 @@ export function insertOrganization(context: MethodContext, organization: NewOrga
 			modified: getCurrentTime(),
 		}),
 		() => {
-			insertStudio({ userId })
-			insertShowStyleBase({ userId })
+			insertStudio(context)
+			insertShowStyleBase(context)
 		}
 	)
 	Meteor.users.update(userId, { $set: { organizationId: id } })

@@ -854,7 +854,7 @@ if (!Settings.enableUserAccounts) {
 		return handleResponse(response, () => {
 			check(params.studioId, Match.Optional(String))
 
-			const cred0: Credentials = { token: params.token }
+			const cred0: Credentials = { userId: null, token: params.token }
 			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
 			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
 
@@ -865,7 +865,7 @@ if (!Settings.enableUserAccounts) {
 		return handleResponse(response, () => {
 			check(params.playlistId, String)
 
-			const cred0: Credentials = { token: params.token }
+			const cred0: Credentials = { userId: null, token: params.token }
 			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
 			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
@@ -878,7 +878,7 @@ if (!Settings.enableUserAccounts) {
 		return handleResponse(response, () => {
 			check(params.studioId, String)
 
-			const cred0: Credentials = { token: params.token }
+			const cred0: Credentials = { userId: null, token: params.token }
 			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
 			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
 
@@ -919,7 +919,7 @@ if (!Settings.enableUserAccounts) {
 	PickerGET.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, () => {
 			check(params.snapshotId, String)
-			return retreiveSnapshot(protectString(params.snapshotId), {})
+			return retreiveSnapshot(protectString(params.snapshotId), { userId: null })
 		})
 	})
 }
@@ -927,7 +927,7 @@ if (!Settings.enableUserAccounts) {
 PickerGET.route('/snapshot/:token/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.snapshotId, String)
-		return retreiveSnapshot(protectString(params.snapshotId), { token: params.token })
+		return retreiveSnapshot(protectString(params.snapshotId), { userId: null, token: params.token })
 	})
 })
 

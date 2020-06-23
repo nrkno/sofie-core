@@ -22,7 +22,19 @@ import {
 	initCacheForRundownPlaylistFromStudio,
 } from '../../../DatabaseCaches'
 
-const DEFAULT_CONTEXT: MethodContext = {}
+const DEFAULT_CONTEXT: MethodContext = {
+	userId: null,
+	isSimulation: false,
+	connection: {
+		id: 'mockConnectionId',
+		close: () => {},
+		onClose: () => {},
+		clientAddress: '127.0.0.1',
+		httpHeaders: {},
+	},
+	setUserId: () => {},
+	unblock: () => {},
+}
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment

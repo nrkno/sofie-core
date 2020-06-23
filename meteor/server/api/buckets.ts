@@ -1,7 +1,6 @@
 import * as _ from 'underscore'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
 import { literal, Omit, protectString } from '../../lib/lib'
 import { ClientAPI } from '../../lib/api/client'
@@ -13,6 +12,7 @@ import { StudioId, Studios } from '../../lib/collections/Studios'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
+import { check } from '../../lib/check'
 
 const DEFAULT_BUCKET_WIDTH = undefined
 

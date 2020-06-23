@@ -503,4 +503,4 @@ class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 	}
 }
 
-export default withTranslation()(Settings)
+export default Settings

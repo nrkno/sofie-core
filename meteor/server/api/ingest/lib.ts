@@ -17,11 +17,12 @@ import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDev
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { touchRundownPlaylistsInCache } from '../playout/lib'
+import { Credentials } from '../../security/lib/credentials'
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
 	deviceId: PeripheralDeviceId,
 	token: string | undefined,
-	context: MethodContext
+	context: Credentials | MethodContext
 ): PeripheralDevice {
 	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 	const peripheralDevice = access.device
