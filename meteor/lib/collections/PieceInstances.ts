@@ -1,5 +1,13 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, literal, ProtectedString, ProtectedStringProperties, protectString, Omit } from '../lib'
+import {
+	registerCollection,
+	literal,
+	ProtectedString,
+	ProtectedStringProperties,
+	protectString,
+	Omit,
+	omit,
+} from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceInstance,
@@ -7,7 +15,7 @@ import {
 	IBlueprintResolvedPieceInstance,
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
-import { Piece } from './Pieces'
+import { Piece, PieceId } from './Pieces'
 import { PartInstance, PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 
@@ -18,6 +26,8 @@ export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined)
 export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined): IBlueprintPieceInstance | undefined {
 	return pieceInstance as any
 }
+
+export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
 export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
@@ -32,29 +42,55 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	/** The part instace this piece belongs to */
 	partInstanceId: PartInstanceId
 
-	piece: Piece
+	piece: PieceInstancePiece
+
+	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
+	infinite?: {
+		infinitePieceId: PieceId
+		// lifespan: PieceLifespan // In case the original piece gets destroyed/mutated? // TODO - is this wanted?
+		// TODO - more properties?
+		/** When the instance was a copy made from hold */
+		fromHold?: boolean
+	}
 }
 
 export interface ResolvedPieceInstance extends PieceInstance, Omit<IBlueprintResolvedPieceInstance, '_id' | 'piece'> {
-	piece: Piece
+	piece: PieceInstancePiece
+}
+
+export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece {
+	return omit(piece, 'startRundownId', 'startSegmentId')
 }
 
 export function wrapPieceToTemporaryInstance(piece: Piece, partInstanceId: PartInstanceId): PieceInstance {
 	return literal<PieceInstance>({
 		isTemporary: true,
 		_id: protectString(`${piece._id}_tmp_instance`),
-		rundownId: piece.rundownId,
+		rundownId: piece.startRundownId,
+		partInstanceId: partInstanceId,
+		piece: omitPiecePropertiesForInstance(piece),
+	})
+}
+
+export function rewrapPieceToInstance(
+	piece: PieceInstancePiece,
+	rundownId: RundownId,
+	partInstanceId: PartInstanceId
+): PieceInstance {
+	return {
+		_id: protectString(`${partInstanceId}_${piece._id}`),
+		rundownId: rundownId,
 		partInstanceId: partInstanceId,
 		piece: piece,
-	})
+	}
 }
 
 export function wrapPieceToInstance(piece: Piece, partInstanceId: PartInstanceId): PieceInstance {
 	return {
 		_id: protectString(`${partInstanceId}_${piece._id}`),
-		rundownId: piece.rundownId,
+		rundownId: piece.startRundownId,
 		partInstanceId: partInstanceId,
-		piece: piece,
+		piece: omitPiecePropertiesForInstance(piece),
 	}
 }
 

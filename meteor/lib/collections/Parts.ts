@@ -67,7 +67,7 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
 	/** if the part is inserted after another (for adlibbing) */
-	afterPart?: PartId
+	afterPart?: PartId // TODO-ASAP combine with dynamicallyInserted (call dynamicallyAfterPart)
 	/** if the part was dunamically inserted (adlib) */
 	dynamicallyInserted?: boolean
 
@@ -149,8 +149,8 @@ export class Part implements DBPart {
 		return Pieces.find(
 			_.extend(
 				{
-					rundownId: this.rundownId,
-					partId: this._id,
+					startRundownId: this.rundownId,
+					startPartId: this._id,
 				},
 				selector
 			),
