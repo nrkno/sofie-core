@@ -135,7 +135,6 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.Pieces.insert(newPieceInstance.piece)
 
 			cropInfinitesOnLayer(cache, rundown, partInstance, newPieceInstance) // todo: this one uses showStyleBase
-			// stopInfinitesRunningOnLayer(cache, rundownPlaylist, rundown, partInstance, newPieceInstance.piece.sourceLayerId)
 			updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
 			updateTimeline(cache, rundown.studioId)
 
@@ -271,13 +270,9 @@ export namespace ServerPlayoutAdLibAPI {
 		} else {
 			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
-
-			// TODO - I dont think this is necessary
-			// stopInfinitesRunningOnLayer(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance.piece.sourceLayerId)
 		}
 
 		// Update any infinites
-		// TODO - this was done for queue, with stopInfinitesRunningOnLayer done for non-queue. This was weird..
 		updateSourceLayerInfinitesAfterPart(cache, rundown, currentPartInstance.part)
 
 		updateTimeline(cache, rundownPlaylist.studioId)

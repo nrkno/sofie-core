@@ -1,42 +1,31 @@
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { Rundown, Rundowns, RundownHoldState, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Pieces } from '../../../lib/collections/Pieces'
-import { Parts, DBPart, Part, isPartPlayable } from '../../../lib/collections/Parts'
+import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
+import { Parts, Part } from '../../../lib/collections/Parts'
 import {
-	asyncCollectionUpdate,
 	getCurrentTime,
 	waitForPromiseAll,
-	asyncCollectionRemove,
 	Time,
-	pushOntoPath,
 	clone,
 	literal,
-	asyncCollectionInsert,
-	asyncCollectionInsertMany,
 	waitForPromise,
-	asyncCollectionFindFetch,
 	unprotectString,
 	protectString,
 	makePromise,
-	DBObj,
 } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
 import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
 import { updateSourceLayerInfinitesAfterPart } from './infinites'
-import { Studios } from '../../../lib/collections/Studios'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'

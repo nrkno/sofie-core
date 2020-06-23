@@ -105,52 +105,6 @@ export function offsetTimelineEnableExpression(
 	}
 }
 
-export function calculatePieceTimelineEnable(piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
-	let duration: SuperTimeline.Expression | undefined
-	let end: SuperTimeline.Expression | undefined
-	if (piece.playoutDuration !== undefined) {
-		duration = piece.playoutDuration
-	} else if (piece.userDuration !== undefined) {
-		duration = piece.userDuration.duration
-		end = piece.userDuration.end
-	} else {
-		duration = piece.enable.duration
-		end = piece.enable.end
-	}
-
-	// If we have an end and not a start, then use that with a duration
-	if ((end !== undefined || piece.enable.end !== undefined) && piece.enable.start === undefined) {
-		return {
-			end: end !== undefined ? end : offsetTimelineEnableExpression(piece.enable.end, offset),
-			duration: duration,
-		}
-		// Otherwise, if we have a start, then use that with either the end or duration
-	} else if (piece.enable.start !== undefined) {
-		let enable = literal<SuperTimeline.TimelineEnable>({})
-
-		if (piece.enable.start === 'now') {
-			enable.start = 'now'
-		} else {
-			enable.start = offsetTimelineEnableExpression(piece.enable.start, offset)
-		}
-
-		if (duration !== undefined) {
-			enable.duration = duration
-		} else if (end !== undefined) {
-			enable.end = end
-		} else if (piece.enable.end !== undefined) {
-			enable.end = offsetTimelineEnableExpression(piece.enable.end, offset)
-		}
-		return enable
-	} else {
-		return {
-			start: 0,
-			duration: duration,
-			end: end,
-		}
-	}
-}
-
 // 1 reactivelly listen to data changes
 /*
 setup () {

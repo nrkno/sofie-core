@@ -33,12 +33,41 @@ import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds, getAllPiecesFromCache, getSelectedPartInstancesFromCache } from './lib'
-import { calculatePieceTimelineEnable } from '../../../lib/Rundown'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { PieceInstance, ResolvedPieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import {
+	PieceInstance,
+	ResolvedPieceInstance,
+	PieceInstanceId,
+	PieceInstancePiece,
+} from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+
+export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[] {
+	pieces.sort((a, b) => {
+		if (a.enable.start < b.enable.start) {
+			return -1
+		} else if (a.enable.start > b.enable.start) {
+			return 1
+		} else {
+			// Transitions first
+			if (a.isTransition && !b.isTransition) {
+				return -1
+			} else if (!a.isTransition && b.isTransition) {
+				return 1
+			} else if (a._id < b._id) {
+				// Then go by id to make it consistent
+				return -1
+			} else if (a._id > b._id) {
+				return 1
+			} else {
+				return 0
+			}
+		}
+	})
+	return pieces
+}
 
 export interface PieceResolved extends Piece {
 	/** Resolved start time of the piece */
@@ -46,93 +75,7 @@ export interface PieceResolved extends Piece {
 	/** Whether the piece was successfully resolved */
 	resolved: boolean
 }
-export function orderPieces(pieces: Piece[], partId: PartId, partStarted?: number): Array<PieceResolved> {
-	const now = getCurrentTime()
 
-	const pieceMap = normalizeArray(pieces, '_id')
-
-	const objs: Array<TimelineObjRundown> = pieces.map((piece) => {
-		const obj = createPieceGroup({
-			_id: protectString(unprotectString(piece._id)) as PieceInstanceId, // Set the id to the same, as it is just for metadata
-			rundownId: piece.rundownId,
-			piece: piece,
-		})
-
-		if (obj.enable.start === 0) {
-			if (piece.infiniteId && piece.infiniteId !== piece._id) {
-				// Infinite coninuation, needs to start earlier otherwise it will likely end up being unresolved
-				obj.enable.start = 0
-			} else {
-				obj.enable.start = 100 // TODO: write a motivation for this. perhaps to try and avoid unresolved pieces, due to them never having length?
-			}
-		} else if (obj.enable.start === 'now') {
-			obj.enable.start = (partStarted ? now - partStarted : 0) + 100
-			// I think this is + 100 as 'now' will at the earliest happen in 100ms from now, so we are trying to compensate?
-		}
-
-		return obj
-	})
-
-	const tlResolved = Resolver.resolveTimeline(transformTimeline(objs), {
-		time: 0,
-	})
-
-	let resolvedPieces: Array<PieceResolved> = []
-	let unresolvedIds: string[] = []
-	let unresolvedCount = tlResolved.statistics.unresolvedCount
-	_.each(tlResolved.objects, (obj0) => {
-		const obj = (obj0 as any) as TimelineObjRundown
-		const pieceInstanceId = (obj.metaData || {}).pieceId
-		const piece = _.clone(pieceMap[pieceInstanceId]) as PieceResolved
-		if (obj0.resolved.resolved && obj0.resolved.instances && obj0.resolved.instances.length > 0) {
-			piece.resolvedStart = obj0.resolved.instances[0].start || 0
-			piece.resolved = true
-			resolvedPieces.push(piece)
-		} else {
-			piece.resolvedStart = 0
-			piece.resolved = false
-
-			resolvedPieces.push(piece)
-
-			if (piece.virtual) {
-				// Virtuals always are unresolved and should be ignored
-				unresolvedCount -= 1
-			} else {
-				unresolvedIds.push(obj.id)
-			}
-		}
-	})
-
-	if (unresolvedCount > 0) {
-		logger.error(
-			`Got ${unresolvedCount} unresolved timeline-objects for part #${partId} (${unresolvedIds.join(', ')})`
-		)
-	}
-	if (pieces.length !== resolvedPieces.length) {
-		logger.error(`Got ${resolvedPieces.length} ordered pieces. Expected ${pieces.length} for part #${partId}`)
-	}
-
-	resolvedPieces.sort((a, b) => {
-		if (a.resolvedStart < b.resolvedStart) return -1
-		if (a.resolvedStart > b.resolvedStart) return 1
-
-		if (a.isTransition === b.isTransition) return 0
-		if (b.isTransition) return 1
-		return -1
-	})
-
-	return resolvedPieces
-}
-/**
- * Returns a list of the pieces in a Part, ordered in the order they will be played
- * @param part
- */
-export function getOrderedPiece(cache: CacheForRundownPlaylist, part: Part): Array<PieceResolved> {
-	const pieces = getAllPiecesFromCache(cache, part)
-	const partStarted = part.getLastStartedPlayback()
-
-	return orderPieces(pieces, part._id, partStarted)
-}
 export function createPieceGroupFirstObject(
 	pieceInstance: PieceInstance,
 	pieceGroup: TimelineObjRundown,
@@ -182,7 +125,7 @@ export function createPieceGroup(
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
 		objectType: TimelineObjType.RUNDOWN,
-		enable: pieceEnable ?? calculatePieceTimelineEnable(pieceInstance.piece),
+		enable: pieceEnable ?? pieceInstance.piece.enable,
 		layer: pieceInstance.piece.sourceLayerId,
 		metaData: {
 			pieceId: pieceInstance._id,
@@ -301,7 +244,7 @@ export function getResolvedPieces(cache: CacheForRundownPlaylist, partInstance: 
 
 	// crop infinite pieces
 	resolvedPieces.forEach((pieceInstance, index, source) => {
-		if (pieceInstance.piece.infiniteMode) {
+		if (pieceInstance.infinite) {
 			for (let i = index + 1; i < source.length; i++) {
 				const sourcePieceInstance = source[i]
 				if (pieceInstance.piece.sourceLayerId === sourcePieceInstance.piece.sourceLayerId) {
@@ -363,7 +306,7 @@ export function getResolvedPiecesFromFullTimeline(
 
 	// crop infinite pieces
 	resolvedPieces.forEach((instance, index, source) => {
-		if (instance.piece.infiniteMode) {
+		if (instance.infinite) {
 			// && piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
 			for (let i = index + 1; i < source.length; i++) {
 				const sourceInstance = source[i]
@@ -387,7 +330,7 @@ export function getResolvedPiecesFromFullTimeline(
 	}
 }
 
-export function convertPieceToAdLibPiece(piece: Piece): AdLibPiece {
+export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece {
 	// const oldId = piece._id
 	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
@@ -396,8 +339,9 @@ export function convertPieceToAdLibPiece(piece: Piece): AdLibPiece {
 		_rank: 0,
 		disabled: false,
 		dynamicallyInserted: true,
-		infiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode,
-		expectedDuration: _.isNumber(piece.enable.duration) ? piece.enable.duration : 0,
+		// TODO-INFINITE
+		// infiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode,
+		expectedDuration: piece.enable.duration ?? 0,
 	})
 
 	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {
