@@ -1149,86 +1149,86 @@ export namespace ServerPlayoutAPI {
 			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
-	export function rundownTogglePartArgument(
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		property: string,
-		value: string
-	) {
-		check(rundownPlaylistId, String)
-		check(partInstanceId, String)
+	// export function rundownTogglePartArgument(
+	// 	rundownPlaylistId: RundownPlaylistId,
+	// 	partInstanceId: PartInstanceId,
+	// 	property: string,
+	// 	value: string
+	// ) {
+	// 	check(rundownPlaylistId, String)
+	// 	check(partInstanceId, String)
 
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			let playlist = RundownPlaylists.findOne(rundownPlaylistId)
-			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
-			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-				throw new Meteor.Error(403, `Part Arguments can not be toggled when hold is used!`)
-			}
+	// 	return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+	// 		let playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	// 		if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+	// 		if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
+	// 			throw new Meteor.Error(403, `Part Arguments can not be toggled when hold is used!`)
+	// 		}
 
-			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+	// 		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-			playlist = cache.RundownPlaylists.findOne(playlist._id)
-			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
+	// 		playlist = cache.RundownPlaylists.findOne(playlist._id)
+	// 		if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
-			let partInstance = cache.PartInstances.findOne(partInstanceId)
-			if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
-			if (!rundown) throw new Meteor.Error(501, `Rundown "${partInstance.rundownId}" not found!`)
+	// 		let partInstance = cache.PartInstances.findOne(partInstanceId)
+	// 		if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
+	// 		const rundown = cache.Rundowns.findOne(partInstance.rundownId)
+	// 		if (!rundown) throw new Meteor.Error(501, `Rundown "${partInstance.rundownId}" not found!`)
 
-			const rArguments = partInstance.part.runtimeArguments || {}
+	// 		const rArguments = partInstance.part.runtimeArguments || {}
 
-			if (rArguments[property] === value) {
-				// unset property
-				const mUnset: any = {}
-				const mUnset1: any = {}
-				mUnset['runtimeArguments.' + property] = 1
-				mUnset1['part.runtimeArguments.' + property] = 1
-				cache.Parts.update(partInstance.part._id, {
-					$unset: mUnset,
-					$set: {
-						dirty: true,
-					},
-				})
-				cache.PartInstances.update(partInstance._id, {
-					$unset: mUnset1,
-					$set: {
-						dirty: true,
-					},
-				})
-				delete rArguments[property]
-			} else {
-				// set property
-				const mSet: any = {}
-				const mSet1: any = {}
-				mSet['runtimeArguments.' + property] = value
-				mSet1['part.runtimeArguments.' + property] = value
-				mSet.dirty = true
-				cache.Parts.update(partInstance.part._id, { $set: mSet })
-				cache.PartInstances.update(partInstance._id, { $set: mSet1 })
+	// 		if (rArguments[property] === value) {
+	// 			// unset property
+	// 			const mUnset: any = {}
+	// 			const mUnset1: any = {}
+	// 			mUnset['runtimeArguments.' + property] = 1
+	// 			mUnset1['part.runtimeArguments.' + property] = 1
+	// 			cache.Parts.update(partInstance.part._id, {
+	// 				$unset: mUnset,
+	// 				$set: {
+	// 					dirty: true,
+	// 				},
+	// 			})
+	// 			cache.PartInstances.update(partInstance._id, {
+	// 				$unset: mUnset1,
+	// 				$set: {
+	// 					dirty: true,
+	// 				},
+	// 			})
+	// 			delete rArguments[property]
+	// 		} else {
+	// 			// set property
+	// 			const mSet: any = {}
+	// 			const mSet1: any = {}
+	// 			mSet['runtimeArguments.' + property] = value
+	// 			mSet1['part.runtimeArguments.' + property] = value
+	// 			mSet.dirty = true
+	// 			cache.Parts.update(partInstance.part._id, { $set: mSet })
+	// 			cache.PartInstances.update(partInstance._id, { $set: mSet1 })
 
-				rArguments[property] = value
-			}
+	// 			rArguments[property] = value
+	// 		}
 
-			waitForPromise(refreshPart(cache, rundown, partInstance.part))
+	// 		waitForPromise(refreshPart(cache, rundown, partInstance.part))
 
-			// Only take time to update the timeline if there's a point to do it
-			if (playlist.active) {
-				// If this part is rundown's next, check if current part has autoNext
-				if (playlist.nextPartInstanceId === partInstance._id && playlist.currentPartInstanceId) {
-					const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
-					if (currentPartInstance && currentPartInstance.part.autoNext) {
-						updateTimeline(cache, rundown.studioId)
-					}
-					// If this is rundown's current part, update immediately
-				} else if (playlist.currentPartInstanceId === partInstance._id) {
-					updateTimeline(cache, rundown.studioId)
-				}
-			}
+	// 		// Only take time to update the timeline if there's a point to do it
+	// 		if (playlist.active) {
+	// 			// If this part is rundown's next, check if current part has autoNext
+	// 			if (playlist.nextPartInstanceId === partInstance._id && playlist.currentPartInstanceId) {
+	// 				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+	// 				if (currentPartInstance && currentPartInstance.part.autoNext) {
+	// 					updateTimeline(cache, rundown.studioId)
+	// 				}
+	// 				// If this is rundown's current part, update immediately
+	// 			} else if (playlist.currentPartInstanceId === partInstance._id) {
+	// 				updateTimeline(cache, rundown.studioId)
+	// 			}
+	// 		}
 
-			waitForPromise(cache.saveAllToDatabase())
-			return ClientAPI.responseSuccess(undefined)
-		})
-	}
+	// 		waitForPromise(cache.saveAllToDatabase())
+	// 		return ClientAPI.responseSuccess(undefined)
+	// 	})
+	// }
 	/**
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )

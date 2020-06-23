@@ -284,33 +284,34 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	}
 }
 
-export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments | undefined }
+// export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments | undefined }
 export class SegmentContext extends RundownContext implements ISegmentContext {
-	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
+	// private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
 
 	constructor(
 		rundown: Rundown,
 		studio: Studio | undefined,
-		runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[],
+		// runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[],
 		notesContext: NotesContext
 	) {
 		super(rundown, notesContext, studio)
 
-		if (_.isArray(runtimeArguments)) {
-			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
-			_.each(runtimeArguments, (p) => {
-				if (p.runtimeArguments) {
-					existingRuntimeArguments[p.externalId] = p.runtimeArguments
-				}
-			})
-			this.runtimeArguments = existingRuntimeArguments
-		} else {
-			this.runtimeArguments = runtimeArguments
-		}
+		// if (_.isArray(runtimeArguments)) {
+		// 	const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
+		// 	_.each(runtimeArguments, (p) => {
+		// 		if (p.runtimeArguments) {
+		// 			existingRuntimeArguments[p.externalId] = p.runtimeArguments
+		// 		}
+		// 	})
+		// 	this.runtimeArguments = existingRuntimeArguments
+		// } else {
+		// 	this.runtimeArguments = runtimeArguments
+		// }
 	}
 
 	getRuntimeArguments(externalId: string): BlueprintRuntimeArguments | undefined {
-		return this.runtimeArguments[externalId]
+		// return this.runtimeArguments[externalId]
+		return undefined
 	}
 }
 

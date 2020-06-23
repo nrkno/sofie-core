@@ -282,20 +282,20 @@ export function unsyncRundown(rundownId: RundownId) {
 export function disableNextPiece(rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.disableNextPiece(rundownPlaylistId, undo))
 }
-export function togglePartArgument(
-	rundownPlaylistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	property: string,
-	value: string
-) {
-	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		return ClientAPI.responseError(`Part-arguments can't be toggled while Rundown is in Hold mode!`)
-	}
+// export function togglePartArgument(
+// 	rundownPlaylistId: RundownPlaylistId,
+// 	partInstanceId: PartInstanceId,
+// 	property: string,
+// 	value: string
+// ) {
+// 	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+// 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+// 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
+// 		return ClientAPI.responseError(`Part-arguments can't be toggled while Rundown is in Hold mode!`)
+// 	}
 
-	return ServerPlayoutAPI.rundownTogglePartArgument(rundownPlaylistId, partInstanceId, property, value)
-}
+// 	return ServerPlayoutAPI.rundownTogglePartArgument(rundownPlaylistId, partInstanceId, property, value)
+// }
 export function pieceTakeNow(
 	rundownPlaylistId: RundownPlaylistId,
 	partInstanceId: PartInstanceId,
@@ -755,7 +755,8 @@ class ServerUserActionAPI implements NewUserActionAPI {
 		property: string,
 		value: string
 	) {
-		return makePromise(() => togglePartArgument(rundownPlaylistId, partInstanceId, property, value))
+		return makePromise(() => noop())
+		// return makePromise(() => togglePartArgument(rundownPlaylistId, partInstanceId, property, value))
 	}
 	pieceTakeNow(
 		_userEvent: string,

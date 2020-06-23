@@ -1,89 +1,40 @@
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import {
-	getHash,
-	formatDateAsTimecode,
-	formatDurationAsTimecode,
 	unprotectString,
 	unprotectObject,
-	unprotectObjectArray,
 	protectString,
 	assertNever,
-	protectStringArray,
 	getCurrentTime,
 	unprotectStringArray,
-	normalizeArray,
-	literal,
 	getRandomId,
-	omit,
 } from '../../../../lib/lib'
-import { DBPart, PartId, Part } from '../../../../lib/collections/Parts'
-import { check, Match } from 'meteor/check'
+import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
-	ICommonContext,
-	NotesContext as INotesContext,
-	ShowStyleContext as IShowStyleContext,
-	RundownContext as IRundownContext,
-	SegmentContext as ISegmentContext,
 	EventContext as IEventContext,
-	AsRunEventContext as IAsRunEventContext,
-	PartEventContext as IPartEventContext,
 	ActionExecutionContext as IActionExecutionContext,
-	IStudioConfigContext,
-	ConfigItemValue,
-	IStudioContext,
-	BlueprintMappings,
-	BlueprintRuntimeArguments,
-	IBlueprintSegmentDB,
-	IngestRundown,
-	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
-	IBlueprintPartDB,
-	IBlueprintRundownDB,
-	IBlueprintAsRunLogEvent,
 	IBlueprintPiece,
 	IBlueprintPart,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintPieceDB,
 	PieceLifespan,
 	OmitId,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig } from '../config'
-import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { PartNote, NoteType, INoteBase } from '../../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { Segment, SegmentId } from '../../../../lib/collections/Segments'
-import {
-	PieceInstances,
-	unprotectPieceInstance,
-	PieceInstanceId,
-	PieceInstance,
-	wrapPieceToInstance,
-} from '../../../../lib/collections/PieceInstances'
-import {
-	InternalIBlueprintPartInstance,
-	PartInstanceId,
-	unprotectPartInstance,
-	PartInstance,
-	wrapPartToTemporaryInstance,
-} from '../../../../lib/collections/PartInstances'
+import { Rundown } from '../../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
+import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { StudioContext, NotesContext, ShowStyleContext, EventContext } from './context'
-import { setNextPart, getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
+import { NotesContext, ShowStyleContext } from './context'
+import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
-import { Piece } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -93,7 +44,7 @@ export enum ActionPartChange {
 	MARK_DIRTY = 2,
 }
 
-const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
+const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	externalId: '',
 	enable: { start: 0 },
 	virtual: false,
@@ -106,7 +57,7 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 	outputLayerId: '',
 	content: {},
 	transitions: {},
-	infiniteMode: PieceLifespan.Normal,
+	lifespan: PieceLifespan.WithinPart,
 	adlibPreroll: 0,
 	toBeQueued: false,
 	expectedPlayoutItems: [],
@@ -115,7 +66,7 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 	adlibDisableOutTransition: false,
 }
 // Compile a list of the keys which are allowed to be set
-const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof OmitId<IBlueprintPiece>>
+const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
@@ -262,20 +213,14 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Failed to find rundown of partInstance')
 		}
 
-		// Fill in missing id, and ensure it does not already exist
-		if (!rawPiece._id) rawPiece._id = Random.id()
-		if (this.cache.Pieces.findOne(protectString(rawPiece._id))) {
-			// TODO-PartInstances - this will need rethinking after new dataflow
-			throw new Error(`Piece with id "${rawPiece._id}" already exists`)
-		}
-
-		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, [...IBlueprintPieceSampleKeys, '_id'])
+		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
 			this,
 			[trimmedPiece],
 			this.getShowStyleBase().blueprintId,
 			partInstance.rundownId,
+			partInstance.segmentId,
 			partInstance.part._id,
 			part === 'current',
 			true
@@ -412,6 +357,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			rawPieces,
 			this.getShowStyleBase().blueprintId,
 			currentPartInstance.rundownId,
+			newPartInstance.segmentId,
 			newPartInstance.part._id
 		)
 		const newPieceInstances = pieces.map((piece) => wrapPieceToInstance(piece, newPartInstance._id))

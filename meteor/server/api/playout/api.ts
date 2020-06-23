@@ -48,9 +48,10 @@ class ServerPlayoutAPIClass implements NewPlayoutAPI {
 		property: string,
 		value: string
 	) {
-		return makePromise(() =>
-			ServerPlayoutAPI.rundownTogglePartArgument(playlistId, partInstanceId, property, value)
-		)
+		return makePromise(() => {})
+		// return makePromise(() =>
+		// 	ServerPlayoutAPI.rundownTogglePartArgument(playlistId, partInstanceId, property, value)
+		// )
 	}
 	rundownSetNext(playlistId: RundownPlaylistId, partId: PartId, timeOffset?: number | undefined) {
 		return makePromise(() => ServerPlayoutAPI.setNextPart(playlistId, partId, true, timeOffset))
