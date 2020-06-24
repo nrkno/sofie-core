@@ -18,6 +18,7 @@ import {
 	protectString,
 	unprotectObject,
 	getCurrentTime,
+	assertNever,
 } from '../../../lib/lib'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance, wrapPieceToInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
@@ -34,15 +35,13 @@ import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
-export async function loadPiecesThatMayBeActiveForPart(
+export async function fetchPiecesThatMayBeActiveForPart(
 	cache: CacheForRundownPlaylist,
 	// rundown: Rundown,
 	// segment: Segment,
-	playingPartInstance: PartInstance | undefined,
+	// playingPartInstance: PartInstance | undefined,
 	part: Part
-): Promise<{ pieces: Piece[]; pieceInstances: PieceInstance[] }> {
-	const res = { pieces: literal<Piece[]>([]), pieceInstances: literal<PieceInstance[]>([]) }
-
+): Promise<Piece[]> {
 	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, { startPartId: part._id })
 
 	const partsBeforeThisInSegment = cache.Parts.findFetch({ segmentId: part.segmentId, _rank: { $lt: part._rank } })
@@ -56,14 +55,14 @@ export async function loadPiecesThatMayBeActiveForPart(
 		$or: [
 			{
 				// same segment, and previous part
-				lifespan: { $in: [PieceLifespan.OutOnSegmentEnd /*, PieceLifespan.OutOnSegmentChange*/] },
+				lifespan: { $in: [PieceLifespan.OutOnSegmentEnd, PieceLifespan.OutOnSegmentChange] },
 				startRundownId: part.rundownId,
 				startSegmentId: part.segmentId,
 				startPartId: { $in: partsBeforeThisInSegment.map((p) => p._id) },
 			},
 			{
 				// same rundown, and previous segment
-				lifespan: { $in: [PieceLifespan.OutOnRundownEnd /*, PieceLifespan.OutOnRundownChange*/] },
+				lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
 				startRundownId: part.rundownId,
 				startSegmentId: { $in: segmentsBeforeThisInRundown.map((p) => p._id) },
 			},
@@ -74,22 +73,157 @@ export async function loadPiecesThatMayBeActiveForPart(
 		],
 	})
 
-	const pieceInstancesInPrevious = playingPartInstance
-		? cache.PieceInstances.findFetch({
-				'piece.lifespan': {
-					$in: [
-						/*PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnSegmentChange*/
-					],
-				},
-				partInstanceId: playingPartInstance._id,
-		  })
-		: []
+	// const pieceInstancesInPrevious = playingPartInstance
+	// 	? cache.PieceInstances.findFetch({
+	// 			'piece.lifespan': {
+	// 				$in: [PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnSegmentChange],
+	// 			},
+	// 			partInstanceId: playingPartInstance._id,
+	// 	  })
+	// 	: []
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 
-	return {
-		pieceInstances: pieceInstancesInPrevious,
-		pieces: [...piecesStartingInPart, ...infinitePieces],
+	return [...piecesStartingInPart, ...infinitePieces]
+}
+
+// export function getPiecesForPart (
+// 	cache: CacheForRundownPlaylist,
+// 	playingPartInstance: PartInstance | undefined,
+// 	part: Part
+
+//     // rundown,
+//     // segment,
+//     // part,
+
+//     // playHead: Playhead | undefined, // currentPartInstance
+//     // nextHead: Playhead | undefined // nextPartInstance
+// ) {
+
+//    // IN the GUI
+//    /*
+//     if (I want to view the Part as-played) {
+//        display latest PartInstance
+//     } else {
+//         Display "how it's going to look like, when it'll be played next time (by only doing TAKE:S) "
+//     }
+//    */
+
+//     const normalPieces = cache.Pieces.findFetch({
+//         partId: part._id,
+//         //infiniteMode: ''
+//     })
+
+//     const allInfinitePieces = cache.Pieces.findFetch({
+//         infiniteMode: 'all of them',
+//         partId: { $ne: part._id },
+//     })
+
+//     const pieceInstancesOfPlayingPart = cache.PieceInstances.findFetch({
+//         infiniteMode: 'all onChanged',
+//         partId: playHead._id,
+//     })
+
+//     if (part._id === playHead.partId) {
+//         cache.PieceIsntances.findFetch({
+//             infiniteMode: 'all the onchange',
+//             partId: playHead.previousPartId
+//         })
+//     }
+
+//     cache.PieceIsntances.findFetch({
+//         infiniteMode: 'all the onchange',
+//         partId: previousPartId
+//     })
+
+//     const piecesOnSourceLayers: {[sourceLayerId: string]: Piece} = {}
+//     allInfinitePieces.forEach(piece => {
+//         const useIt = isInfinitePotentiallyActive(
+//             rundown,
+//             segment,
+//             part,
+//             playHead,
+//             nextHead,
+//             pieceToCheck
+//         )
+
+//         if (useIt) {
+//             const existingPiece = piecesOnSourceLayers[piece.sourceLayerId]
+//             if (
+//                 piece.segmentRank >= existingPiece.segmentRank ||
+//                 piece.partRank > existingPiece.partRank
+//             ) {
+//                 piecesOnSourceLayers[piece.sourceLayerId] = piece
+//             }
+//         }
+//     })
+
+//     // end goal:
+//     // return the pieces that are active for this Part
+//     return normalPieces.concat(Object.values(piecesOnSourceLayers))
+// }
+
+export function isInfinitePotentiallyActive(
+	previousPartInstance: PartInstance | undefined,
+	partsBeforeThisInSegment: Set<PartId>,
+	segmentsBeforeThisInRundown: Set<SegmentId>,
+	partInstance: PartInstance,
+	pieceToCheck: Piece
+) {
+	// If its from the current part
+	if (pieceToCheck.startPartId === partInstance.part._id) {
+		return true
+	}
+
+	switch (pieceToCheck.lifespan) {
+		case PieceLifespan.WithinPart:
+			return false
+		case PieceLifespan.OutOnSegmentEnd:
+			return (
+				pieceToCheck.startSegmentId === partInstance.segmentId &&
+				partsBeforeThisInSegment.has(pieceToCheck.startPartId)
+			)
+		case PieceLifespan.OutOnRundownEnd:
+			return (
+				pieceToCheck.startRundownId === partInstance.rundownId &&
+				segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
+			)
+		case PieceLifespan.OutOnSegmentChange:
+			if (previousPartInstance === undefined) {
+				// Predicting what will happen at arbitrary point in the future
+				return (
+					pieceToCheck.startSegmentId === partInstance.segmentId &&
+					partsBeforeThisInSegment.has(pieceToCheck.startPartId)
+				)
+			} else {
+				// TODO-INFINITES
+				return false
+				// return (
+				// 	(pieceToCheck.startSegmentId === segment._id &&
+				// 		playHead.partId === part && // we're checking in t	he currently-playing part
+				// 			pieceToCheck.startPartRank >= part._rank) ||
+				// 	(nextHead.segmentId === segment && // We're checking the currently-playing segment
+				// 		pieceToCheck.rank >= nextHead.partRank &&
+				// 		part.rank < playHead.partRank) ||
+				// 	(nextHead.partId !== part &&
+				// 		pieceToCheck.startSegmentId === segment._id &&
+				// 		pieceToCheck.startPartRank >= part._rank)
+				// )
+			}
+		case PieceLifespan.OutOnRundownChange:
+			if (previousPartInstance === undefined) {
+				// Predicting what will happen at arbitrary point in the future
+				return (
+					pieceToCheck.startRundownId === partInstance.rundownId &&
+					segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
+				)
+			} else {
+				// TODO-INFINITES
+				return false
+			}
+		default:
+			assertNever(pieceToCheck.lifespan)
+			return false
 	}
 }
 
