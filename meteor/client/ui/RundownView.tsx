@@ -95,6 +95,7 @@ import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { RundownTimeline } from './SegmentTimeline/RundownTimeline'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2009,39 +2010,54 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderSegments() {
 			if (this.props.segments) {
-				return this.props.segments.map((segment, index, array) => {
-					if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
-						return (
-							<ErrorBoundary key={unprotectString(segment._id)}>
-								<VirtualElement
-									id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-									margin={'100% 0px 100% 0px'}
-									initialShow={index < window.innerHeight / 260}
-									placeholderHeight={260}
-									placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
-									width="auto">
-									<SegmentTimelineContainer
-										id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-										studio={this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-										followLiveSegments={this.state.followLiveSegments}
-										segmentId={segment._id}
-										playlist={this.props.playlist}
-										liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
-										timeScale={this.state.timeScale}
-										onTimeScaleChange={this.onTimeScaleChange}
-										onContextMenu={this.onContextMenu}
-										onSegmentScroll={this.onSegmentScroll}
-										isLastSegment={index === array.length - 1}
-										onPieceClick={this.onSelectPiece}
-										onPieceDoubleClick={this.onPieceDoubleClick}
-										onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
-									/>
-								</VirtualElement>
-							</ErrorBoundary>
-						)
+				console.log('this.props.segments', this.props.segments)
+
+				let elements: (JSX.Element | undefined)[] = []
+
+				let previousRundownId = ''
+				this.props.rundowns.forEach((rundown, index) => {
+					if (this.props.rundowns.length > 1) {
+						elements.push(<RundownTimeline key={`rundown${index}`} rundown={rundown} />)
 					}
+					elements = elements.concat(
+						this.props.segments
+							.filter((segment) => segment.rundownId === rundown._id)
+							.map((segment, index, array) => {
+								if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
+									return (
+										<ErrorBoundary key={unprotectString(segment._id)}>
+											<VirtualElement
+												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+												margin={'100% 0px 100% 0px'}
+												initialShow={index < window.innerHeight / 260}
+												placeholderHeight={260}
+												placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
+												width="auto">
+												<SegmentTimelineContainer
+													id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+													studio={this.props.studio}
+													showStyleBase={this.props.showStyleBase}
+													followLiveSegments={this.state.followLiveSegments}
+													segmentId={segment._id}
+													playlist={this.props.playlist}
+													liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
+													timeScale={this.state.timeScale}
+													onTimeScaleChange={this.onTimeScaleChange}
+													onContextMenu={this.onContextMenu}
+													onSegmentScroll={this.onSegmentScroll}
+													isLastSegment={index === array.length - 1}
+													onPieceClick={this.onSelectPiece}
+													onPieceDoubleClick={this.onPieceDoubleClick}
+													onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+												/>
+											</VirtualElement>
+										</ErrorBoundary>
+									)
+								}
+							})
+					)
 				})
+				return elements
 			} else {
 				return <div></div>
 			}
