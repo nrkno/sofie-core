@@ -119,8 +119,6 @@ type NotificationsSource = SegmentId | string | undefined
 class NotificationCenter0 {
 	/** Default notification timeout for non-persistent notifications */
 	private readonly NOTIFICATION_TIMEOUT = 5000
-	/** Default notification timeout for non-persistent notifications */
-	private readonly CONCENTRATION_MODE_AUTO_SNOOZE = 10000
 	/** The highlighted source of notifications */
 	private highlightedSource: ReactiveVar<NotificationsSource>
 	/** The highlighted level of highlighted level */
@@ -203,12 +201,6 @@ class NotificationCenter0 {
 		if (!notice.snoozed && this._isConcentrationMode) {
 			if (notice.status !== NoticeLevel.CRITICAL) {
 				notice.snooze()
-			} else if (!this.willSnooze[id]) {
-				this.willSnooze[id] = true
-				Meteor.setTimeout(() => {
-					delete this.willSnooze[id]
-					notice.snooze()
-				}, this.CONCENTRATION_MODE_AUTO_SNOOZE)
 			}
 		}
 
@@ -253,17 +245,6 @@ class NotificationCenter0 {
 					if (this._isOpen && !i.snoozed) i.snooze()
 					if (this._isConcentrationMode && !i.snoozed && i.status !== NoticeLevel.CRITICAL) {
 						i.snooze()
-					} else if (
-						this._isConcentrationMode &&
-						!i.snoozed &&
-						i.status === NoticeLevel.CRITICAL &&
-						!this.willSnooze[i.id || `${key}_${itemKey}`]
-					) {
-						this.willSnooze[i.id || `${key}_${itemKey}`] = true
-						Meteor.setTimeout(() => {
-							i.snooze()
-							delete this.willSnooze[i.id || `${key}_${itemKey}`]
-						}, this.CONCENTRATION_MODE_AUTO_SNOOZE)
 					}
 				})
 				return item.result
@@ -304,7 +285,7 @@ class NotificationCenter0 {
 			const matchers = filters.map((filter) => _.matches(filter))
 			n = n.filter((value, index, array) =>
 				_.reduce(
-					matchers.map((m) => m(value, index, array)),
+					matchers.map((m) => m(value)),
 					(value, memo) => value || memo,
 					false
 				)

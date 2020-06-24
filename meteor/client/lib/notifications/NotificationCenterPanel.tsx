@@ -81,8 +81,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 									<button
 										className="btn btn-default notification-pop-up__actions--button"
 										onClick={(e) => this.triggerEvent(defaultAction, e)}>
-										<CoreIcon
-											id="nrk-arrow-left"
+										<CoreIcon.NrkArrowLeft
 											className="icon"
 											width="1em"
 											height="1em"
@@ -113,16 +112,14 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				</div>
 				{this.props.showDismiss && (
 					<ContextMenuTrigger id="context-menu-dissmiss-all" attributes={{ className: 'notification-pop-up__dismiss' }}>
-						{/* <div className='notification-pop-up__dismiss'> */}
 						<button
 							className="notification-pop-up__dismiss__button"
 							onClick={(e) => {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 							}}>
-							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon id="nrk-close" />}
+							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon.NrkClose />}
 						</button>
-						{/* </div> */}
 					</ContextMenuTrigger>
 				)}
 			</div>
