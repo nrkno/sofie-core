@@ -99,8 +99,6 @@ export class Part implements DBPart {
 	public transitionDuration?: number | null
 	public disableOutTransition?: boolean
 	public expectedDuration?: number
-	public typeVariant?: string
-	public subTypeVariant?: string
 	public holdMode?: PartHoldMode
 	public shouldNotifyCurrentPlayingPart?: boolean
 	public classes?: string[]

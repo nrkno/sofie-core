@@ -76,25 +76,9 @@ export namespace PrompterAPI {
 			}
 
 			_.each(parts, (part) => {
-				let title: string | undefined = part ? part.title : undefined
-				if (
-					part &&
-					part.typeVariant &&
-					part.typeVariant.toString &&
-					part.typeVariant
-						.toString()
-						.toLowerCase()
-						.trim() === 'full'
-				) {
-					title = 'FULL'
-				}
-				if (title) {
-					title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
-				}
-
 				const partData: PrompterDataPart = {
 					id: part._id,
-					title: title,
+					title: part.title,
 					pieces: [],
 				}
 

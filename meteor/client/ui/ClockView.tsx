@@ -242,7 +242,7 @@ const ClockComponent = translate()(
 											<div className="clocks-part-title clocks-current-segment-title">{currentSegment!.name}</div>
 											<div className="clocks-part-title clocks-part-title clocks-current-segment-title">
 												<PieceNameContainer
-													partSlug={currentPart.instance.part.title}
+													partName={currentPart.instance.part.title}
 													partInstanceId={currentPart.instance._id}
 													showStyleBaseId={showStyleBaseId}
 													rundownIds={this.props.rundownIds}
@@ -286,7 +286,7 @@ const ClockComponent = translate()(
 										<div className="clocks-part-title clocks-part-title">
 											{nextPart && nextPart.instance.part.title ? (
 												<PieceNameContainer
-													partSlug={nextPart.instance.part.title}
+													partName={nextPart.instance.part.title}
 													partInstanceId={nextPart.instance._id}
 													showStyleBaseId={showStyleBaseId}
 													rundownIds={this.props.rundownIds}
