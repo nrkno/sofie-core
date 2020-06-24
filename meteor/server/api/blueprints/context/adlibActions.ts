@@ -113,6 +113,8 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 	adlibAutoNext: false,
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
+	adlibTransitionKeepAlive: 0,
+	canCombineQueue: false,
 }
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample)

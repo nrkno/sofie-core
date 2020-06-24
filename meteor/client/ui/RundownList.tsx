@@ -32,10 +32,6 @@ import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/Rundown
 import { UIStateStorage } from '../lib/UIStateStorage'
 import * as ClassNames from 'classnames'
 import { MeteorCall } from '../../lib/api/methods'
-import { SplitDropdown } from '../lib/splitDropdown'
-import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
-import { UIStateStorage } from '../lib/UIStateStorage'
-import * as ClassNames from 'classnames'
 
 const PackageInfo = require('../../package.json')
 

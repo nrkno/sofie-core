@@ -10,9 +10,7 @@ import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { TransformedCollection } from '../../lib/typings/meteor'
-import { ColorPickerEvent, ColorPicker } from './colorPicker'
-import { IconPicker, IconPickerEvent } from './iconPicker'
-import ClassNames from 'classnames'
+import * as ClassNames from 'classnames'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
