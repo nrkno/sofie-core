@@ -53,6 +53,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	isTaken?: boolean
 
+	/** If the playlist was in rehearsal mode when the PartInstance was created */
+	rehearsal: boolean
+
 	part: DBPart
 }
 
@@ -66,6 +69,7 @@ export class PartInstance implements DBPartInstance {
 	public reset?: boolean
 	public takeCount: number
 	public isTaken?: boolean
+	public rehearsal: boolean
 
 	// From IBlueprintPartInstance:
 	public part: Part
@@ -89,6 +93,7 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 			rundownId: part.rundownId,
 			segmentId: part.segmentId,
 			takeCount: -1,
+			rehearsal: false,
 			part: new Part(part),
 		},
 		true

@@ -522,6 +522,7 @@ export function setNextPart(
 				segmentId: nextPart.segmentId,
 				part: nextPart,
 				isScratch: true,
+				rehearsal: !!rundownPlaylist.rehearsal,
 			})
 			/*
 			RundownPlaylists.findOne().nextPartInstanceId
