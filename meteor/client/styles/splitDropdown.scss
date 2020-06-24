@@ -8,6 +8,19 @@
 	&:hover {
 		background: $ui-button-primary--hover;
 	}
+
+	.action-btn.right {
+		width: 20%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		display: flex;
+
+		svg {
+			display: block;
+			margin: auto;
+		}
+	}
 }
 
 .expco.split-dropdown {
@@ -26,9 +39,8 @@
 
 	.expco-title {
 		white-space: nowrap;
-		margin-right: 24px;
 		cursor: auto;
-		width: 88%;
+		width: 80%;
 		color: #fff;
 		border-radius: 0px;
 		padding: 0px;

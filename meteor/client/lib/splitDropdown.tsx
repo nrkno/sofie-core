@@ -49,9 +49,9 @@ export class SplitDropdown extends React.Component<IProps, IState> {
 					this.props.className
 				)}>
 				<div className={ClassNames('expco-title focusable-main')}>{this.getSelected()}</div>
-				<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
+				<div className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
 					<FontAwesomeIcon icon={faChevronUp} />
-				</a>
+				</div>
 				<div className="expco-body bd">{this.props.elements}</div>
 			</div>
 		)
