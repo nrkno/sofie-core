@@ -18,7 +18,11 @@ import {
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { loadCachedIngestSegment } from '../ingest/ingestCache'
 import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
-import { updateSourceLayerInfinitesAfterPart } from './infinites'
+import {
+	updateSourceLayerInfinitesAfterPart,
+	fetchPiecesThatMayBeActiveForPart,
+	getPieceInstancesForPart,
+} from './infinites'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -499,9 +503,11 @@ export function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
+			// TODO-INFINITES - where do the infinite parts for this come from?
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
+			// TODO-INFINITES - does anything need to be updated?
 		} else {
 			// Create new isntance
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)
@@ -512,28 +518,20 @@ export function setNextPart(
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
 				part: nextPart,
-				isScratch: true,
 			})
-			/*
-			RundownPlaylists.findOne().nextPartInstanceId
-			"fNMbKWnQSnXfyaqLc_dZWHyWoKscptNibds"
-			PartInstances.findOne(RundownPlaylists.findOne().nextPartInstanceId)
-			undefined
-			*/
 
-			const rawPieces = cache.Pieces.findFetch({
-				rundownId: nextPart.rundownId,
-				partId: nextPart._id,
-			})
-			const pieceInstances = _.map(rawPieces, (piece) => wrapPieceToInstance(piece, newInstanceId))
-			_.each(pieceInstances, (pieceInstance) => {
+			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
+			const newPieceInstances = getPieceInstancesForPart(
+				cache,
+				currentPartInstance,
+				nextPart,
+				possiblePieces,
+				newInstanceId,
+				false
+			)
+			for (const pieceInstance of newPieceInstances) {
 				cache.PieceInstances.insert(pieceInstance)
-			})
-			cache.PartInstances.update(newInstanceId, {
-				$unset: {
-					isScratch: 1,
-				},
-			})
+			}
 		}
 
 		// reset any previous instances of this part

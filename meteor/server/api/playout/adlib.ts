@@ -21,7 +21,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../l
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, getPartBeforeSegment, getPreviousPart, getRundownIDsFromCache } from './lib'
-import { cropInfinitesOnLayer, updateSourceLayerInfinitesAfterPart } from './infinites'
+import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
@@ -134,7 +134,6 @@ export namespace ServerPlayoutAdLibAPI {
 			// TODO-PartInstance - pending new data flow
 			cache.Pieces.insert(newPieceInstance.piece)
 
-			cropInfinitesOnLayer(cache, rundown, partInstance, newPieceInstance) // todo: this one uses showStyleBase
 			updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
 			updateTimeline(cache, rundown.studioId)
 
@@ -427,8 +426,6 @@ export namespace ServerPlayoutAdLibAPI {
 		cache.PieceInstances.insert(newPieceInstance)
 		// TODO-PartInstance - pending new data flow
 		cache.Pieces.insert(newPieceInstance.piece)
-
-		cropInfinitesOnLayer(cache, rundown, existingPartInstance, newPieceInstance)
 	}
 
 	export function innerStopPieces(

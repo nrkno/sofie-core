@@ -38,8 +38,6 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
 
-	isScratch?: true
-
 	/** Rank of the take that this PartInstance belongs to */
 	takeCount: number
 
@@ -49,12 +47,6 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 export class PartInstance implements DBPartInstance {
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
-
-	/**
-	 * Whether this PartInstance is a scratch instance - the copy of the Part for the instance
-	 * is still being made and the piece instances are being created.
-	 */
-	public readonly isScratch?: true
 
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
