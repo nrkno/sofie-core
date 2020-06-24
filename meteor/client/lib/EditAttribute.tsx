@@ -10,6 +10,8 @@ import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import { ColorPickerEvent, ColorPicker } from './colorPicker'
+import { IconPicker, IconPickerEvent } from './iconPicker'
 import ClassNames from 'classnames'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
@@ -655,7 +657,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 	}
 )
 const EditAttributeColorPicker = wrapEditAttribute(
-	class extends EditAttributeBase {
+	class EditAttributeColorPicker extends EditAttributeBase {
 		constructor(props) {
 			super(props)
 

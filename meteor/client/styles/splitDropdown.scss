@@ -1,23 +1,57 @@
+@import '_colorScheme';
+
+.expco.button {
+	background: $ui-button-primary;
+	color: #fff;
+	box-shadow: unset;
+
+	&:hover {
+		background: $ui-button-primary--hover;
+	}
+
+	.action-btn.right {
+		width: 20%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		display: flex;
+
+		svg {
+			display: block;
+			margin: auto;
+		}
+	}
+}
+
 .expco.split-dropdown {
 	position: relative;
 	padding-top: 0;
 	padding-bottom: 0;
-	&.expco-expanded {
+	max-width: 150px;
+	&.expco-expanded  {
 		z-index: 2;
 	}
 
 	.expco-expand {
 		cursor: pointer;
+		color: #fff;
 	}
 
 	.expco-title {
 		white-space: nowrap;
-		margin-right: 24px;
 		cursor: auto;
-		width: auto;
-		border-right: 1px solid #ccc;
+		width: 80%;
+		color: #fff;
 		border-radius: 0px;
 		padding: 0px;
+
+		.action-btn {
+			color: #fff;
+
+			.layout-icon {
+				color: #fff;
+			}
+		}
 	}
 
 	.expco-body {
@@ -29,6 +63,13 @@
 		overflow-y: auto;
 		border: 1px solid #bbb;
 		padding: 2px 0 4px 0;
+		box-sizing: unset;
+	}
+
+	.expco-text {
+		display: inline-flex;
+		overflow: hidden;
+		width: 82%;
 	}
 
 	.expco-item {
@@ -39,14 +80,19 @@
 			padding: 5px 10px;
 			margin: 0px;
 			width: 100%;
-			color: #252627;
 			font-weight: 300;
+
+			&:hover {
+				background: $ui-button-primary--hover;
+				color: #fff;
+			}
 		}
 	}
+	
 
 	.expco-header {
 		text-transform: uppercase;
-		font-size: 0.8em;
+		font-size: .8em;
 		font-weight: bold;
 		padding: 12px 10px 4px 10px;
 		color: #999;

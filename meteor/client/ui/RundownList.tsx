@@ -32,6 +32,10 @@ import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/Rundown
 import { UIStateStorage } from '../lib/UIStateStorage'
 import * as ClassNames from 'classnames'
 import { MeteorCall } from '../../lib/api/methods'
+import { SplitDropdown } from '../lib/splitDropdown'
+import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
+import { UIStateStorage } from '../lib/UIStateStorage'
+import * as ClassNames from 'classnames'
 
 const PackageInfo = require('../../package.json')
 
@@ -50,7 +54,7 @@ interface IRundownListItemProps {
 }
 
 interface IRundownListItemState {
-	selectedView: string // TODO
+	selectedView: string
 }
 
 export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemState> {
@@ -58,7 +62,11 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		super(props)
 
 		this.state = {
-			selectedView: '', // UIStateStorage.getItemString(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', 'default')
+			selectedView: UIStateStorage.getItemString(
+				`rundownList.${this.props.rundownPlaylist.studioId}`,
+				'defaultView',
+				'default'
+			),
 		}
 	}
 
@@ -130,7 +138,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 	}
 
 	saveViewChoice(key: string) {
-		// UIStateStorage.setItem(`rundownList.${this.props.rundown.showStyleVariantId}`, 'defaultView', key)
+		UIStateStorage.setItem(`rundownList.${this.props.rundownPlaylist.studioId}`, 'defaultView', key)
 	}
 
 	renderLinkItem(layout: RundownLayoutBase, link: string, key: string) {
@@ -142,35 +150,60 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						style={{ color: layout.iconColor || 'transparent' }}>
 						<FontAwesomeIcon icon={layout.icon || 'circle'} />
 					</div>
-					{layout.name}
+					<span className="expco-text">{layout.name}</span>
 				</div>
 			</Link>
 		)
 	}
 
 	renderViewLinks() {
-		// const { t } = this.props
-		// const standaloneLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsStandalone).map(layout => {
-		// 	return this.renderLinkItem(layout, this.getShelfLink(this.props.rundown._id, layout._id), `standalone${layout._id}`)
-		// })
-		// const shelfLayouts = this.props.rundownLayouts.filter(layout => layout.exposeAsShelf).map(layout => {
-		// 	return this.renderLinkItem(layout, this.getRundownWithLayoutLink(this.props.rundown._id, layout._id), `shelf${layout._id}`)
-		// })
-		// const allElements = [
-		// 	...standaloneLayouts,
-		// 	<div className='expco-header' key={'header2'}>{t('Timeline views')}</div>,
-		// 	...shelfLayouts,
-		// 	// <Link to={this.getRundownLink(this.props.rundown._id)} onClick={() => this.saveViewChoice('default')} key={'default'}>
-		// 	//	<div className='action-btn expco-item'>{t('Default')}</div>
-		// 	// </Link>
-		// ]
-		// return (
-		// 	<React.Fragment>
-		// 		<SplitDropdown selectedKey={this.state.selectedView} elements={allElements}/>
-		// 	</React.Fragment>
-		// )
-
-		return <div></div>
+		const { t } = this.props
+		const standaloneLayouts = this.props.rundownLayouts
+			.filter(
+				(layout) =>
+					layout.exposeAsStandalone &&
+					this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
+			)
+			.map((layout) => {
+				return this.renderLinkItem(
+					layout,
+					this.getShelfLink(this.props.rundownPlaylist._id, layout._id),
+					`standalone${layout._id}`
+				)
+			})
+		const shelfLayouts = this.props.rundownLayouts
+			.filter(
+				(layout) =>
+					layout.exposeAsShelf && this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
+			)
+			.map((layout) => {
+				return this.renderLinkItem(
+					layout,
+					this.getRundownWithLayoutLink(this.props.rundownPlaylist._id, layout._id),
+					`shelf${layout._id}`
+				)
+			})
+		const allElements = [
+			<div className="expco-header" key={`${this.props.rundownPlaylist._id}layoutsheader2`}>
+				{t('Standalone Shelf')}
+			</div>,
+			...standaloneLayouts,
+			<div className="expco-header" key={`${this.props.rundownPlaylist._id}layoutsheader1`}>
+				{t('Timeline views')}
+			</div>,
+			...shelfLayouts,
+			<Link
+				to={this.getRundownPlaylistLink(this.props.rundownPlaylist._id)}
+				onClick={() => this.saveViewChoice('default')}
+				key={'default'}>
+				<div className="action-btn expco-item">{t('Default')}</div>
+			</Link>,
+		]
+		return (
+			<React.Fragment>
+				<SplitDropdown selectedKey={this.state.selectedView} elements={allElements} />
+			</React.Fragment>
+		)
 	}
 
 	render() {
@@ -571,6 +604,7 @@ export const RundownList = translateWithTracker(() => {
 											<th className="c1">{t('Duration')}</th>
 											<th className="c1">{t('Status')}</th>
 											<th className="c1">{t('Air Status')}</th>
+											<th className="c1">&nbsp;</th>
 											<th className="c1">&nbsp;</th>
 										</tr>
 									</thead>
