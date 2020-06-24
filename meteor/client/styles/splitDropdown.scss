@@ -3,6 +3,7 @@
 .expco.button {
 	background: $ui-button-primary;
 	color: #fff;
+	box-shadow: unset;
 
 	&:hover {
 		background: $ui-button-primary--hover;
@@ -56,7 +57,7 @@
 	.expco-text {
 		display: inline-flex;
 		overflow: hidden;
-		width: 90%;
+		width: 82%;
 	}
 
 	.expco-item {
