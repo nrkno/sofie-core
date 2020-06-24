@@ -37,7 +37,7 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 					className: 'rundown-view__shelf__contents__pane shelf-inspector',
 				}}
 				holdToDisplay={contextMenuHoldToDisplayTime()}>
-				{content}
+				{content || false}
 			</ContextMenuTrigger>
 		)
 	}
