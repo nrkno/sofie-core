@@ -181,6 +181,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.restoreDefaultTab()
 
 		window.addEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
+		window.addEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
 	}
 
 	componentWillUnmount() {
@@ -195,6 +196,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 
 		window.removeEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
+		window.removeEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -407,7 +409,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
-	selectPiece = (piece: PieceUi) => {
+	private onSelectPiece = (e: CustomEvent<{ piece: AdLibPieceUi | PieceUi | undefined }>) => {
+		this.selectPiece(e.detail.piece)
+	}
+
+	selectPiece = (piece: AdLibPieceUi | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
 		})
