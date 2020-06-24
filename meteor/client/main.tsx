@@ -2,7 +2,9 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { render } from 'react-dom'
 
-import { I18nextProvider, withTranslation } from 'react-i18next'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
+
 import './ui/i18n'
 
 import '../lib/main'
@@ -29,9 +31,9 @@ if ('serviceWorker' in navigator) {
 
 Meteor.startup(() => {
 	render(
-		// <I18nextProvider i18n={i18nInstance}> // Note: Check if translation actually works without this?
-		<App />,
-		// </I18nextProvider>
+		<DndProvider backend={HTML5Backend}>
+			<App />
+		</DndProvider>,
 		document.getElementById('render-target')
 	)
 })
