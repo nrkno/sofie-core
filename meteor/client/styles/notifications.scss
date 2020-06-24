@@ -123,8 +123,12 @@
 					padding-left: 10px;
 					padding-right: 10px;
 
-					.icon {
+					> svg {
+						margin-top: -0.1em;
 						vertical-align: middle;
+						margin-right: -0.4em;
+						width: 1em;
+						height: 1em;
 					}
 
 					.label {
