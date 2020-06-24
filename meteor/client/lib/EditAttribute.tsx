@@ -10,7 +10,7 @@ import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { TransformedCollection } from '../../lib/typings/meteor'
-import * as classNames from 'classnames'
+import ClassNames from 'classnames'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -747,7 +747,7 @@ const EditAttributeJson = wrapEditAttribute(
 			return (
 				<input
 					type="text"
-					className={classNames(
+					className={ClassNames(
 						'form-control',
 						this.props.className,
 						this.state.valueError && this.props.invalidClassName
