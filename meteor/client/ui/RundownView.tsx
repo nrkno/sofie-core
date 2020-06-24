@@ -95,7 +95,7 @@ import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
-import { RundownTimeline } from './SegmentTimeline/RundownTimeline'
+import { RundownDividerTimeline } from './SegmentTimeline/RundownTimeline'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2017,7 +2017,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				let previousRundownId = ''
 				this.props.rundowns.forEach((rundown, index) => {
 					if (this.props.rundowns.length > 1) {
-						elements.push(<RundownTimeline key={`rundown${index}`} rundown={rundown} />)
+						elements.push(<RundownDividerTimeline key={`rundown${index}`} rundown={rundown} />)
 					}
 					elements = elements.concat(
 						this.props.segments
