@@ -164,6 +164,17 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 	const rundownIDs = rundowns.map((i) => i._id)
 	// const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
 
+	const partInstancesToRemove = cache.PartInstances.findFetch({
+		rundownId: { $in: rundownIDs },
+		rehearsal: true,
+	})
+	cache.PartInstances.remove({
+		_id: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+	cache.PieceInstances.remove({
+		partInstanceId: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+
 	cache.PartInstances.update(
 		{
 			rundownId: {
@@ -522,6 +533,7 @@ export function setNextPart(
 				segmentId: nextPart.segmentId,
 				part: nextPart,
 				isScratch: true,
+				rehearsal: !!rundownPlaylist.rehearsal,
 			})
 			/*
 			RundownPlaylists.findOne().nextPartInstanceId
