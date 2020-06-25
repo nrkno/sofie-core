@@ -2459,6 +2459,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										? t('This rundown has been unpublished from Sofie.')
 										: !this.props.studio
 										? t('Error: The studio of this Rundown was not found.')
+										: !this.props.rundowns.length
+										? t('This playlist is empty')
 										: !this.props.showStyleBase
 										? t('Error: The ShowStyle of this Rundown was not found.')
 										: t('Unknown error')}
