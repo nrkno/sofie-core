@@ -199,7 +199,7 @@ class NotificationCenter0 {
 			notice.snooze()
 		}
 		if (!notice.snoozed && this._isConcentrationMode) {
-			if (notice.status !== NoticeLevel.CRITICAL) {
+			if (notice.status !== NoticeLevel.CRITICAL && notice.timeout === undefined) {
 				notice.snooze()
 			}
 		}
@@ -243,7 +243,12 @@ class NotificationCenter0 {
 			_.map(notifiers, (item, key) => {
 				item.result.forEach((i, itemKey) => {
 					if (this._isOpen && !i.snoozed) i.snooze()
-					if (this._isConcentrationMode && !i.snoozed && i.status !== NoticeLevel.CRITICAL) {
+					if (
+						this._isConcentrationMode &&
+						!i.snoozed &&
+						i.status !== NoticeLevel.CRITICAL &&
+						i.timeout === undefined
+					) {
 						i.snooze()
 					}
 				})
