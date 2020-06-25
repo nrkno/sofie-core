@@ -1,12 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { Rundowns } from '../collections/Rundowns'
 import { Part, PartId } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
-import { normalizeArray, protectString, unprotectString, getRandomId } from '../lib'
+import { normalizeArray, protectString, unprotectString, getRandomId, check } from '../lib'
 import { SegmentId } from '../collections/Segments'
 import { PieceId } from '../collections/Pieces'
 
@@ -76,25 +75,9 @@ export namespace PrompterAPI {
 			}
 
 			_.each(parts, (part) => {
-				let title: string | undefined = part ? part.title : undefined
-				if (
-					part &&
-					part.typeVariant &&
-					part.typeVariant.toString &&
-					part.typeVariant
-						.toString()
-						.toLowerCase()
-						.trim() === 'full'
-				) {
-					title = 'FULL'
-				}
-				if (title) {
-					title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
-				}
-
 				const partData: PrompterDataPart = {
 					id: part._id,
-					title: title,
+					title: part.title,
 					pieces: [],
 				}
 

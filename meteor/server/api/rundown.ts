@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { check } from 'meteor/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import { Part, Parts, DBPart, PartId } from '../../lib/collections/Parts'
 import { Pieces, Piece } from '../../lib/collections/Pieces'
@@ -23,6 +22,7 @@ import {
 	waitForPromiseObj,
 	asyncCollectionFindFetch,
 	normalizeArray,
+	check,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
@@ -65,6 +65,7 @@ import {
 	removeRundownPlaylistFromCache,
 	getRundownsSegmentsAndPartsFromCache,
 } from './playout/lib'
+import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 
@@ -362,6 +363,11 @@ export function afterRemovePartsAuxiliary(
 				},
 			}
 		)
+
+		AdLibActions.remove({
+			rundownId: rundownId,
+			partId: { $in: _.map(removedParts, (p) => p._id) },
+		})
 	})
 }
 

@@ -1,10 +1,9 @@
-import { check } from 'meteor/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariantId } from '../../lib/collections/ShowStyleVariants'
-import { literal, protectString, getRandomId, makePromise } from '../../lib/lib'
+import { literal, protectString, getRandomId, makePromise, check } from '../../lib/lib'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 
 export function insertShowStyleBase(): ShowStyleBaseId {

@@ -9,8 +9,8 @@ import { MomentFromNow } from '../../lib/Moment'
 import Moment from 'react-moment'
 import { EditAttribute } from '../../lib/EditAttribute'
 import * as objectPath from 'object-path'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/fontawesome-free-solid'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { StudioSelect } from './StudioSelect'
@@ -68,7 +68,7 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 			}
 		}
 
-		componentWillMount() {
+		componentDidMount() {
 			if (this.props.match && this.props.match.params) {
 				// Subscribe to data:
 				this.subscribe(PubSub.recordedFiles, {

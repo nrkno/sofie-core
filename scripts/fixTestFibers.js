@@ -1,11 +1,8 @@
 // Fix fibers implementation, so it runs with Jest:
 
-
-// 
-
 var fs = require('fs')
 
-const filePath = './node_modules/fibers/fibers.js'
+const filePath = './node_modules/fibers-npm/fibers.js'
 
 const stringToInsert = '\t\tif (process.env.JEST_WORKER_ID !== undefined ) modPath += \'.node\''
 const insertLineNumber = 13
@@ -21,4 +18,4 @@ var text = lines.join('\n')
 
 fs.writeFile(filePath, text, function (err) {
   if (err) return console.log(err)
-});
+})

@@ -1,19 +1,6 @@
 {
+	"extends": "./tsconfig-base.json",
 	"compilerOptions": {
-		"target": "es2016",
-		"experimentalDecorators": true,
-		"moduleResolution": "node",
-		"strictNullChecks": true,
-		"sourceMap": true,
-		"allowJs": true,
-		"jsx": "react",
-		"plugins": [
-			{
-				"name": "typescript-tslint-plugin"
-			}
-		],
-		"lib": ["dom", "es6", "es2016", "dom.iterable", "scripthost", "es2017.object"]
-	},
-	"exclude": ["node_modules", "**/__mocks__/**/*", "**/.coverage/**/*"],
-	"include": ["client", "lib", "server"]
+		"types": ["node", "jest"]
+	}
 }

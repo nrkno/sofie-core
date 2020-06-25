@@ -971,7 +971,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			typeVariant: 'dynamic',
 			dynamicallyInserted: true,
 			afterPart: part._id,
 		})
@@ -1051,7 +1050,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			typeVariant: 'dynamic',
 			dynamicallyInserted: true,
 			afterPart: part._id,
 		})
@@ -1062,7 +1060,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			typeVariant: 'dynamic',
 			dynamicallyInserted: true,
 			afterPart: protectString('dynamic0'),
 		})
@@ -1073,7 +1070,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			typeVariant: 'dynamic',
 			dynamicallyInserted: true,
 			afterPart: part._id,
 		})

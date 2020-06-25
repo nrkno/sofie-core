@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
+import { TransformedCollection } from '../typings/meteor'
 import {
 	applyClassToDocument,
 	Time,
@@ -55,6 +55,9 @@ export class PartInstance implements DBPartInstance {
 	 * is still being made and the piece instances are being created.
 	 */
 	public readonly isScratch?: true
+
+	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
+	public reset?: boolean
 
 	public takeCount: number
 

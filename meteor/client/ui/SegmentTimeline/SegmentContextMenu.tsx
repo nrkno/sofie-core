@@ -1,16 +1,14 @@
 import * as React from 'react'
-import * as Escape from 'react-escape'
-import { translate } from 'react-i18next'
+import Escape from 'react-escape'
+import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from 'react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId, Segment } from '../../../lib/collections/Segments'
-import * as i18next from 'i18next'
 import { Settings } from '../../../lib/Settings'
 
 interface IProps {
@@ -23,7 +21,7 @@ interface IProps {
 }
 interface IState {}
 
-export const SegmentContextMenu = translate()(
+export const SegmentContextMenu = withTranslation()(
 	class SegmentContextMenu extends React.Component<Translated<IProps>, IState> {
 		constructor(props: Translated<IProps>) {
 			super(props)
@@ -38,7 +36,7 @@ export const SegmentContextMenu = translate()(
 			const startsAt = this.getPartStartsAt()
 
 			const isCurrentPart =
-				part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId
+				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
 
 			return this.props.studioMode && this.props.playlist && this.props.playlist.active ? (
 				<Escape to="document">
@@ -94,7 +92,7 @@ export const SegmentContextMenu = translate()(
 		}
 
 		menuItemResyncSegment = (
-			t: (key: string | string[], options?: i18next.TranslationOptions<object> | undefined) => any,
+			t: (key: string | string[], options?: unknown | undefined) => any,
 			segment: SegmentUi | null
 		) => {
 			if (segment && segment.unsynced) {

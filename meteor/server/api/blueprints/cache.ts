@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
-import * as moment from 'moment'
-import { SaferEval } from 'safer-eval'
+import moment from 'moment'
+import { VM } from 'vm2'
 import { logger } from '../../logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
@@ -20,8 +20,10 @@ import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../l
 const blueprintCache: { [id: string]: Cache } = {}
 interface Cache {
 	modified: number
-	fcn: SomeBlueprintManifest
+	manifest: SomeBlueprintManifest
 }
+
+export const BLUEPRINT_CACHE_CONTROL = { disable: false }
 
 export interface WrappedSystemBlueprint {
 	blueprintId: BlueprintId
@@ -92,7 +94,7 @@ export function getBlueprintOfRundown(rundown: Rundown, noCache?: boolean): Wrap
 		return loadShowStyleBlueprints(showStyleBase)
 	}
 
-	if (noCache) {
+	if (noCache || BLUEPRINT_CACHE_CONTROL.disable) {
 		return fcn()
 	} else {
 		return cacheResult(`rundownBlueprint_${rundown._id}`, fcn, 1000)
@@ -141,7 +143,7 @@ function loadBlueprintsById(blueprintId: BlueprintId): SomeBlueprintManifest | u
 }
 export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	let cached: Cache | null = null
-	if (!noCache) {
+	if (!noCache && !BLUEPRINT_CACHE_CONTROL.disable) {
 		// First, check if we've got the function cached:
 		cached = blueprintCache[unprotectString(blueprint._id)] ? blueprintCache[unprotectString(blueprint._id)] : null
 		if (cached && (!cached.modified || cached.modified !== blueprint.modified)) {
@@ -151,18 +153,17 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 	}
 
 	if (cached) {
-		return cached.fcn
+		return cached.manifest
 	} else {
-		// Inject some commonly used libraries, so that they don't have to be bundled into the blueprints
-		const context = {
-			_,
-			moment,
-		}
+		const vm = new VM({
+			sandbox: {
+				_,
+				moment,
+			},
+		})
 
-		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(
-			blueprint.code
-		)
-		let manifest = entry.default
+		const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
+		const manifest: SomeBlueprintManifest = entry.default
 
 		// Wrap the functions, to emit better errors
 		_.each(_.keys(manifest), (key) => {
@@ -181,6 +182,10 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 			}
 		})
 
+		blueprintCache[unprotectString(blueprint._id)] = {
+			manifest,
+			modified: blueprint.modified,
+		}
 		return manifest
 	}
 }

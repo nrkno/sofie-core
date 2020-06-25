@@ -7,14 +7,14 @@ import { PieceUi } from '../SegmentTimelineContainer'
 import { FloatingInspector } from '../../FloatingInspector'
 import { getElementWidth } from '../../../utils/dimensions'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
 
-import Lottie from 'react-lottie'
+import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
@@ -22,7 +22,7 @@ interface IState {
 	blacks?: Array<Anomaly>
 	freezes?: Array<Anomaly>
 }
-export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
 	vPreview: HTMLVideoElement
 	leftLabel: HTMLSpanElement
 	rightLabel: HTMLSpanElement
@@ -31,7 +31,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 
 	metadataRev: string | undefined
 
-	constructor(props: IProps & InjectedTranslateProps) {
+	constructor(props: IProps & WithTranslation) {
 		super(props)
 
 		this.state = {}
@@ -95,7 +95,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps & WithTranslation>, prevState: Readonly<IState>) {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -330,11 +330,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 					{this.begin && this.end === '' && vtContent && vtContent.loop && (
 						<div className="segment-timeline__piece__label label-icon label-loop-icon">
 							<Lottie
-								options={defaultOptions}
-								width={24}
-								height={24}
-								isStopped={!this.props.showMiniInspector}
-								isPaused={false}
+								config={defaultOptions}
+								width="24px"
+								height="24px"
+								playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
 							/>
 						</div>
 					)}
@@ -347,11 +346,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 					{this.end && vtContent && vtContent.loop && (
 						<div className="segment-timeline__piece__label label-icon label-loop-icon">
 							<Lottie
-								options={defaultOptions}
-								width={24}
-								height={24}
-								isStopped={!this.props.showMiniInspector}
-								isPaused={false}
+								config={defaultOptions}
+								width="24px"
+								height="24px"
+								playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
 							/>
 						</div>
 					)}
@@ -401,4 +399,4 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & Injec
 	}
 }
 
-export const VTSourceRenderer = translate()(VTSourceRendererBase)
+export const VTSourceRenderer = withTranslation()(VTSourceRendererBase)

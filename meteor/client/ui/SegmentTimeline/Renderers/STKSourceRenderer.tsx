@@ -7,18 +7,18 @@ import { PieceUi } from '../SegmentTimelineContainer'
 
 import { FloatingInspector } from '../../FloatingInspector'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { VTSourceRendererBase } from './VTSourceRenderer'
 import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
 
-import Lottie from 'react-lottie'
+import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
-import { InjectedTranslateProps, translate } from 'react-i18next'
+import { WithTranslation, withTranslation } from 'react-i18next'
 import { LiveSpeakContent, VTContent } from 'tv-automation-sofie-blueprints-integration'
 
-export const STKSourceRenderer = translate()(
+export const STKSourceRenderer = withTranslation()(
 	class STKSourceRenderer extends VTSourceRendererBase {
 		constructor(props) {
 			super(props)
@@ -106,11 +106,10 @@ export const STKSourceRenderer = translate()(
 						{this.begin && this.end === '' && vtContent && vtContent.loop && (
 							<div className="segment-timeline__piece__label label-icon label-loop-icon">
 								<Lottie
-									options={defaultOptions}
-									width={24}
-									height={24}
-									isStopped={!this.props.showMiniInspector}
-									isPaused={false}
+									config={defaultOptions}
+									width="24px"
+									height="24px"
+									playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
 								/>
 							</div>
 						)}
@@ -123,11 +122,10 @@ export const STKSourceRenderer = translate()(
 						{this.end && vtContent && vtContent.loop && (
 							<div className="segment-timeline__piece__label label-icon label-loop-icon">
 								<Lottie
-									options={defaultOptions}
-									width={24}
-									height={24}
-									isStopped={!this.props.showMiniInspector}
-									isPaused={false}
+									config={defaultOptions}
+									width="24px"
+									height="24px"
+									playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
 								/>
 							</div>
 						)}
