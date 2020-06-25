@@ -405,7 +405,21 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 									true
 								)}
 							</span>
-							{this.getInspectorWarnings(realCursorTimePosition)}
+							{noticeLevel !== null ? (
+								<div
+									className={
+										'segment-timeline__mini-inspector segment-timeline__mini-inspector--sub-inspector ' +
+										this.props.typeClass +
+										' ' +
+										(noticeLevel === NoticeLevel.CRITICAL
+											? 'segment-timeline__mini-inspector--notice notice-critical'
+											: noticeLevel === NoticeLevel.WARNING
+											? 'segment-timeline__mini-inspector--notice notice-warning'
+											: '')
+									}>
+									{this.renderNotice(noticeLevel)}
+								</div>
+							) : null}
 						</div>
 					) : (
 						<div

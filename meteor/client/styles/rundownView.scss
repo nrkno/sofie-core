@@ -2112,6 +2112,12 @@ body.no-overflow {
 	border: 1px black solid;
 	max-width: 26em;
 
+	&.segment-timeline__mini-inspector--sub-inspector {
+		transform: none;
+		bottom: 100%;
+		width: 26em;
+	}
+
 	@include item-type-borders();
 
 	&::before {
