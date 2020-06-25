@@ -555,10 +555,6 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		scrollToPart(partId)
 	}
 
-	onClickCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (this.props.onCheck && typeof this.props.onCheck === 'function') this.props.onCheck(e.currentTarget.checked)
-	}
-
 	getSegmentContext = (props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
