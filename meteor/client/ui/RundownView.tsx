@@ -2385,6 +2385,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onSetNextSegment={this.onSetNextSegment}
 										onResyncSegment={this.onResyncSegment}
 										studioMode={this.state.studioMode}
+										enablePlayFromAnywhere={!!this.props.studio.settings.enablePlayFromAnywhere}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
