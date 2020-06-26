@@ -385,17 +385,23 @@
 			@keyframes highlight {
 				0% {
 					background-color: rgb(206, 240, 255);
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--translucent);
 				}
-				100% {
+				50% {
+					background-color: rgb(206, 240, 255);
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--translucent);
+				}
+				51% {
 					background-color: #fff;
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--transparent);
 				}
 			}
 
 			&.is-highlighted {
 				animation-name: highlight;
-				animation-duration: 2s;
-				animation-delay: 1.5s;
-				animation-iteration-count: 1;
+				animation-duration: 1s;
+				animation-delay: 0.5s;
+				animation-iteration-count: 5;
 				animation-fill-mode: both;
 				animation-direction: normal;
 			}

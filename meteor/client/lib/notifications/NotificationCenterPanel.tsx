@@ -197,7 +197,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 							$push: [key],
 						}),
 						dismissingTransform: update(this.state.dismissingTransform, {
-							$push: [this.createTransform(`notification-pop-up_${key}`) || ''],
+							$push: [this.createDismissTransform(`notification-pop-up_${key}`) || ''],
 						}),
 					})
 
@@ -239,7 +239,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					$push: notificationsToDismiss,
 				}),
 				dismissingTransform: update(this.state.dismissingTransform, {
-					$push: notificationsToDismiss.map((key) => this.createTransform(`notification-pop-up_${key}`) || ''),
+					$push: notificationsToDismiss.map((key) => this.createDismissTransform(`notification-pop-up_${key}`) || ''),
 				}),
 			})
 
@@ -317,7 +317,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		private createTransform = (id: string, toggleButtonRect?: ClientRect) => {
+		private createDismissTransform = (id: string, toggleButtonRect?: ClientRect) => {
 			const notificationEl = document.getElementById(id)
 			const toggleButtonEl = toggleButtonRect
 				? null
@@ -401,7 +401,11 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 				<div className="notification-pop-ups">
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
-							animation: 'fadeIn',
+							animation: {
+								translateX: ['0%', '150%'],
+								translateZ: 0,
+								opacity: [1, 0],
+							},
 							easing: 'ease-out',
 							duration: 300,
 							display: 'flex',
