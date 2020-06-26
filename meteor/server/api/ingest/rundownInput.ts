@@ -503,26 +503,47 @@ function updateRundownFromIngestData(
 				},
 
 				// omit the below fields:
-				created: 0,
-				modified: 0,
-
-				peripheralDeviceId: protectString<PeripheralDeviceId>(''), // added later
-				dataSource: '', // added later
-
-				playlistId: protectString<RundownPlaylistId>(''), // added later
-				_rank: 0, // added later
+				created: 0, // omitted, set later, below
+				modified: 0, // omitted, set later, below
+				peripheralDeviceId: protectString(''), // omitted, set later, below
+				dataSource: '', // omitted, set later, below
+				playlistId: protectString<RundownPlaylistId>(''), // omitted, set later, in produceRundownPlaylistInfo
+				_rank: 0, // omitted, set later, in produceRundownPlaylistInfo
 			}),
 			['created', 'modified', 'peripheralDeviceId', 'dataSource', 'playlistId', '_rank']
 		)
 	)
-	dbRundownData.peripheralDeviceId = peripheralDevice
-		? peripheralDevice._id
-		: existingDbRundown
-		? existingDbRundown.peripheralDeviceId
-		: protectString('')
-
+	if (peripheralDevice) {
+		dbRundownData.peripheralDeviceId = peripheralDevice._id
+	}
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource
+	}
+	// Do a check if we're allowed to move out of currently playing playlist:
+	if (existingDbRundown && existingDbRundown.playlistExternalId !== dbRundownData.playlistExternalId) {
+		// The rundown is going to change playlist
+
+		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
+		if (existingPlaylist) {
+			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
+
+			if (currentPartInstance && currentPartInstance.rundownId === existingDbRundown._id) {
+				// The rundown contains a PartInstance that is currently on air.
+				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
+				// and will just revert the playlist change:
+
+				dbRundownData.playlistExternalId = existingDbRundown.playlistExternalId
+				dbRundownData.playlistId = existingDbRundown.playlistId
+
+				rundownNotes.push({
+					type: NoteType.WARNING,
+					message: `The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.`,
+					origin: {
+						name: 'Data update',
+					},
+				})
+			}
+		}
 	}
 
 	// Save rundown into database:
