@@ -171,8 +171,14 @@
 					height: 2.25em;
 					vertical-align: top;
 					margin-top: -0.4em;
+				}
 
-					&[id='nrk-close'] {
+				&.notification-pop-up__dismiss__button--close {
+					> svg {
+						fill: #525252;
+						width: 1.5em;
+						height: 1.5em;
+						vertical-align: top;
 						margin-top: 0;
 					}
 				}

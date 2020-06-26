@@ -113,12 +113,15 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 				{this.props.showDismiss && (
 					<ContextMenuTrigger id="context-menu-dissmiss-all" attributes={{ className: 'notification-pop-up__dismiss' }}>
 						<button
-							className="notification-pop-up__dismiss__button"
+							className={
+								'notification-pop-up__dismiss__button ' +
+								(this.props.item.persistent ? '' : 'notification-pop-up__dismiss__button--close')
+							}
 							onClick={(e) => {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 							}}>
-							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon.NrkClose />}
+							{this.props.item.persistent ? <CollapseChevrons /> : <CoreIcon.NrkClose id="nrk-close" />}
 						</button>
 					</ContextMenuTrigger>
 				)}

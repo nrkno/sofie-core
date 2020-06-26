@@ -199,7 +199,7 @@ class NotificationCenter0 {
 			notice.snooze()
 		}
 		if (!notice.snoozed && this._isConcentrationMode) {
-			if (notice.status !== NoticeLevel.CRITICAL && notice.timeout === undefined) {
+			if (notice.status !== NoticeLevel.CRITICAL && notice.timeout === undefined && notice.persistent === true) {
 				notice.snooze()
 			}
 		}
@@ -247,7 +247,8 @@ class NotificationCenter0 {
 						this._isConcentrationMode &&
 						!i.snoozed &&
 						i.status !== NoticeLevel.CRITICAL &&
-						i.timeout === undefined
+						i.timeout === undefined &&
+						i.persistent === true
 					) {
 						i.snooze()
 					}
