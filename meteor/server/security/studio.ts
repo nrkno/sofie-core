@@ -75,6 +75,9 @@ export namespace StudioContentWriteAccess {
 	export function baseline(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
+	export function bucket(cred0: Credentials, studioId: StudioId) {
+		return anyContent(cred0, studioId)
+	}
 	export function externalMessage(
 		cred0: Credentials,
 		existingMessage: ExternalMessageQueueObj | ExternalMessageQueueObjId
@@ -124,7 +127,7 @@ export namespace StudioContentWriteAccess {
 		}
 	}
 }
-function studioContentAllowWrite(userId, doc: StudioContent): boolean {
+export function studioContentAllowWrite(userId, doc: StudioContent): boolean {
 	const access = allowAccessToStudio({ userId: userId }, doc.studioId)
 	if (!access.update) return logNotAllowed('Studio content', access.reason)
 	return true

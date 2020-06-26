@@ -18,7 +18,7 @@ const DEFAULT_BUCKET_WIDTH = undefined
 
 export namespace BucketsAPI {
 	export function removeBucketAdLib(context: MethodContext, id: PieceId) {
-		BucketSecurity.allowWriteAccess({ _id: id }, context)
+		BucketSecurity.allowWriteAccessPiece({ _id: id }, context)
 
 		const adlib = BucketAdLibs.findOne(id)
 		if (!adlib) throw new Meteor.Error(404, `Bucket Ad-Lib not found: ${id}`)
@@ -102,10 +102,11 @@ export namespace BucketsAPI {
 	}
 
 	export function modifyBucketAdLib(context: MethodContext, id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		if (!BucketSecurity.allowWriteAccess({ _id: id }, context))
-			throw new Meteor.Error(403, `Not allowed to edit bucket adlib: ${id}`)
 		check(id, String)
 		check(adlib, Object)
+
+		if (!BucketSecurity.allowWriteAccessPiece({ _id: id }, context))
+			throw new Meteor.Error(403, `Not allowed to edit bucket adlib: ${id}`)
 
 		const oldAdLib = BucketAdLibs.findOne(id)
 		if (!oldAdLib) {
