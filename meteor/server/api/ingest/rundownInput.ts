@@ -606,7 +606,7 @@ function updateRundownFromIngestData(
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
 		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
-		const context = new SegmentContext(dbRundown, studio, existingParts, notesContext)
+		const context = new SegmentContext(dbRundown, studio, notesContext)
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(
@@ -900,7 +900,7 @@ function syncChangesToSelectedPartInstances(
 				})
 
 				// Pieces
-				const piecesForPart = pieces.filter((p) => p.partId === newPart._id)
+				const piecesForPart = pieces.filter((p) => p.startPartId === newPart._id)
 				const currentPieceInstances = rawPieceInstances.filter((p) => p.partInstanceId === partInstance._id)
 				const currentPieceInstancesMap = normalizeArrayFunc(currentPieceInstances, (p) =>
 					unprotectString(p.piece._id)
@@ -1102,7 +1102,7 @@ function updateSegmentFromIngestData(
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
 	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
-	const context = new SegmentContext(rundown, studio, existingParts, notesContext)
+	const context = new SegmentContext(rundown, studio, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
@@ -1455,7 +1455,9 @@ function generateSegmentContents(
 		}
 
 		// Update pieces
-		segmentPieces.push(...postProcessPieces(context, blueprintPart.pieces, blueprintId, rundownId, part._id))
+		segmentPieces.push(
+			...postProcessPieces(context, blueprintPart.pieces, blueprintId, rundownId, newSegment._id, part._id)
+		)
 		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
@@ -1626,7 +1628,7 @@ function splitIntoSegments(
 	})
 
 	for (const piece of prepareSavePieces.changed) {
-		const segmentId = partsToSegments.get(piece.doc.partId)
+		const segmentId = partsToSegments.get(piece.doc.startPartId)
 		if (!segmentId) {
 			logger.warning(`SegmentId could not be found when trying to modify piece ${piece.doc._id}`)
 			break // In theory this shouldn't happen, but reject 'orphaned' changes
@@ -1643,7 +1645,7 @@ function splitIntoSegments(
 
 	;['removed', 'inserted', 'unchanged'].forEach((change: keyof Omit<PreparedChanges<Piece>, 'changed'>) => {
 		for (const piece of prepareSavePieces[change]) {
-			const segmentId = partsToSegments.get(piece.partId)
+			const segmentId = partsToSegments.get(piece.startPartId)
 			if (!segmentId) {
 				logger.warning(`SegmentId could not be found when trying to modify piece ${piece._id}`)
 				break // In theory this shouldn't happen, but reject 'orphaned' changes

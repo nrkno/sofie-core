@@ -10,6 +10,7 @@ import { PartId } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { StudioId } from '../../../lib/collections/Studios'
 import { PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { ClientAPI } from '../../../lib/api/client'
 
 class ServerPlayoutAPIClass implements NewPlayoutAPI {
 	rundownPrepareForBroadcast(playlistId: RundownPlaylistId) {
@@ -48,7 +49,7 @@ class ServerPlayoutAPIClass implements NewPlayoutAPI {
 		property: string,
 		value: string
 	) {
-		return makePromise(() => {})
+		return makePromise(() => ClientAPI.responseSuccess(undefined))
 		// return makePromise(() =>
 		// 	ServerPlayoutAPI.rundownTogglePartArgument(playlistId, partInstanceId, property, value)
 		// )

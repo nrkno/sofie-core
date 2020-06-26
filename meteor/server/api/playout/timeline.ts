@@ -591,7 +591,7 @@ function buildTimelineObjsForRundown(
 					!hasDurationOrEnd(infiniteGroup.enable) &&
 					hasDurationOrEnd(infiniteInNextPart.piece.enable)
 				) {
-					infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
+					// infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
 					infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
 				}
 			}

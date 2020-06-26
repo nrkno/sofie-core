@@ -523,6 +523,7 @@ export function setNextPart(
 			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
 			const newPieceInstances = getPieceInstancesForPart(
 				cache,
+				rundownPlaylist,
 				currentPartInstance,
 				nextPart,
 				possiblePieces,

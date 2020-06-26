@@ -30,7 +30,7 @@ import { getResolvedPieces } from './pieces'
 import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
@@ -96,7 +96,7 @@ export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientA
 			})
 			// If hold is active, then this take is to clear it
 		} else if (playlist.holdState === RundownHoldState.ACTIVE) {
-			completeHold(cache, playlist, currentPartInstance, previousPartInstance)
+			completeHold(cache, playlist, currentPartInstance)
 
 			waitForPromise(cache.saveAllToDatabase())
 
@@ -316,7 +316,7 @@ function copyOverflowingPieces(
 						piece: {
 							...omit(instance.piece, 'startedPlayback', 'userDuration', 'overflows'),
 							_id: getRandomId(),
-							partId: nextPartInstance.part._id,
+							startPartId: nextPartInstance.part._id,
 							enable: {
 								start: 0,
 								duration: remainingDuration,
@@ -329,7 +329,11 @@ function copyOverflowingPieces(
 					cache.PieceInstances.insert(overflowedItem)
 
 					// TODO-PartInstance - pending new data flow
-					cache.Pieces.insert(overflowedItem.piece)
+					cache.Pieces.insert({
+						...overflowedItem.piece,
+						startSegmentId: nextPartInstance.segmentId,
+						startRundownId: nextPartInstance.rundownId,
+					})
 				}
 			}
 		})
@@ -380,42 +384,31 @@ function startHold(
 	)
 	itemsToCopy.forEach((instance) => {
 		// TODO-PartInstance - temporary mutate existing piece, pending new data flow
-		const rawPiece = cache.Pieces.findOne((p) => p._id === instance.piece._id)
-		if (rawPiece) {
-			rawPiece.infiniteId = rawPiece._id
-			rawPiece.infiniteMode = PieceLifespan.OutOnNextPart
-			cache.Pieces.update(rawPiece._id, {
-				$set: {
-					infiniteMode: PieceLifespan.OutOnNextPart,
-					infiniteId: rawPiece._id,
-				},
-			})
-		}
+		// const rawPiece = cache.Pieces.findOne((p) => p._id === instance.piece._id)
+		// if (rawPiece) {
+		// 	rawPiece.infiniteId = rawPiece._id
+		// 	rawPiece.infiniteMode = PieceLifespan.OutOnNextPart
+		// 	cache.Pieces.update(rawPiece._id, {
+		// 		$set: {
+		// 			infiniteMode: PieceLifespan.OutOnNextPart,
+		// 			infiniteId: rawPiece._id,
+		// 		},
+		// 	})
+		// }
 
 		// mark current one as infinite
-		instance.piece.infiniteId = instance.piece._id
-		instance.piece.infiniteMode = PieceLifespan.OutOnNextPart
+		instance.infinite = {
+			infinitePieceId: instance.piece._id,
+			fromHold: true,
+		}
 		cache.PieceInstances.update(instance._id, {
 			$set: {
-				'piece.infiniteMode': PieceLifespan.OutOnNextPart,
-				'piece.infiniteId': instance.piece._id,
+				infinite: {
+					infinitePieceId: instance.piece._id,
+					fromHold: true,
+				},
 			},
 		})
-
-		// TODO-PartInstance - temporary piece extension, pending new data flow
-		const newPieceTmp: Piece = clone(instance.piece)
-		newPieceTmp.partId = holdToPartInstance.part._id
-		newPieceTmp.enable = { start: 0 }
-		const contentTmp = newPieceTmp.content as VTContent
-		if (contentTmp.fileName && contentTmp.sourceDuration && instance.piece.startedPlayback) {
-			contentTmp.seek = Math.min(contentTmp.sourceDuration, getCurrentTime() - instance.piece.startedPlayback)
-		}
-		newPieceTmp.dynamicallyInserted = true
-		newPieceTmp._id = protectString<PieceId>(instance.piece._id + '_hold')
-
-		// This gets deleted once the nextpart is activated, so it doesnt linger for long
-		cache.Pieces.upsert(newPieceTmp._id, newPieceTmp)
-		// rundownData.pieces.push(newPieceTmp) // update the local collection
 
 		// make the extension
 		const newInstance = literal<PieceInstance>({
@@ -424,10 +417,14 @@ function startHold(
 			partInstanceId: holdToPartInstance._id,
 			piece: {
 				...clone(instance.piece),
-				_id: newPieceTmp._id,
-				partId: holdToPartInstance.part._id,
+				_id: protectString<PieceId>(instance.piece._id + '_hold'),
+				startPartId: holdToPartInstance.part._id,
 				enable: { start: 0 },
 				dynamicallyInserted: true,
+			},
+			infinite: {
+				infinitePieceId: instance.piece._id,
+				fromHold: true,
 			},
 		})
 		const content = newInstance.piece.content as VTContent | undefined
@@ -437,15 +434,13 @@ function startHold(
 
 		// This gets deleted once the nextpart is activated, so it doesnt linger for long
 		cache.PieceInstances.upsert(newInstance._id, newInstance)
-		// rundownData.selectedInstancePieces.push(newInstance) // update the local collection
 	})
 }
 
 function completeHold(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
-	currentPartInstance: PartInstance | undefined,
-	previousPartInstance: PartInstance | undefined
+	currentPartInstance: PartInstance | undefined
 ) {
 	cache.RundownPlaylists.update(playlist._id, {
 		$set: {
@@ -457,49 +452,23 @@ function completeHold(
 		if (!currentPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
 
 		// Remove the current extension line
-		cache.PieceInstances.remove(
-			(pieceInstance) =>
-				pieceInstance.partInstanceId === currentPartInstance._id &&
-				pieceInstance.piece.extendOnHold === true &&
-				pieceInstance.piece.dynamicallyInserted === true
-		)
-		// TODO-PartInstance - pending new data flow
-		cache.Pieces.remove(
-			(piece) =>
-				piece.partId === currentPartInstance.part._id &&
-				piece.extendOnHold === true &&
-				piece.dynamicallyInserted === true
-		)
-	}
-	if (!playlist.previousPartInstanceId) {
-		if (!previousPartInstance) throw new Meteor.Error(404, 'previousPart not found!')
+		const extendedPieceInstances = cache.PieceInstances.findFetch({
+			partInstanceId: currentPartInstance._id,
+			'piece.extendOnHold': true,
+			infinite: { $exists: true },
+		})
 
-		// Clear the extended mark on the original
-		cache.PieceInstances.update(
-			(pieceInstance) =>
-				pieceInstance.partInstanceId === previousPartInstance._id &&
-				pieceInstance.piece.extendOnHold === true &&
-				pieceInstance.piece.dynamicallyInserted === false,
-			{
-				$unset: {
-					'piece.infiniteId': 0,
-					'piece.infiniteMode': 0,
-				},
+		for (const pieceInstance of extendedPieceInstances) {
+			if (pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInstance.part._id) {
+				// This is a continuation, so give it an end
+				cache.PieceInstances.update(pieceInstance._id, {
+					$set: {
+						// TODO - is this correct (both field and value)
+						'piece.userDuration.end': getCurrentTime(),
+					},
+				})
 			}
-		)
-		// TODO-PartInstance - pending new data flow
-		cache.Pieces.update(
-			(piece) =>
-				piece.partId === previousPartInstance.part._id &&
-				piece.extendOnHold === true &&
-				piece.dynamicallyInserted === false,
-			{
-				$unset: {
-					infiniteId: 0,
-					infiniteMode: 0,
-				},
-			}
-		)
+		}
 	}
 
 	updateTimeline(cache, playlist.studioId)

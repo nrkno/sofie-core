@@ -19,7 +19,12 @@ import {
 	MediaStreamType,
 } from './../collections/MediaObjects'
 import { literal, protectString } from '../lib'
-import { ISourceLayer, SourceLayerType, IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
+import {
+	ISourceLayer,
+	SourceLayerType,
+	IBlueprintPieceGeneric,
+	PieceLifespan,
+} from 'tv-automation-sofie-blueprints-integration'
 import { IStudioSettings } from '../collections/Studios'
 import { RundownAPI } from '../api/rundown'
 
@@ -103,6 +108,7 @@ describe('lib/mediaObjects', () => {
 				content: {
 					fileName: 'test',
 				},
+				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
 				_id: '',
@@ -122,6 +128,7 @@ describe('lib/mediaObjects', () => {
 				content: {
 					fileName: 'TEST',
 				},
+				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
 				_id: '',
@@ -139,6 +146,7 @@ describe('lib/mediaObjects', () => {
 				sourceLayerId: '',
 				outputLayerId: '',
 				content: {},
+				lifespan: PieceLifespan.WithinPart,
 			}),
 			literal<ISourceLayer>({
 				_id: '',
@@ -226,7 +234,7 @@ describe('lib/mediaObjects', () => {
 			name: 'Test_file',
 			adlibPreroll: 0,
 			externalId: '',
-			infiniteMode: 0,
+			lifespan: PieceLifespan.WithinPart,
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
@@ -310,7 +318,7 @@ describe('lib/mediaObjects', () => {
 			name: 'Test_file_2',
 			adlibPreroll: 0,
 			externalId: '',
-			infiniteMode: 0,
+			lifespan: PieceLifespan.WithinPart,
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',
@@ -323,7 +331,7 @@ describe('lib/mediaObjects', () => {
 			name: 'Test_file_3',
 			adlibPreroll: 0,
 			externalId: '',
-			infiniteMode: 0,
+			lifespan: PieceLifespan.WithinPart,
 			metaData: {},
 			outputLayerId: '',
 			sourceLayerId: '',

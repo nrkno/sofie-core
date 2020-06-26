@@ -282,8 +282,9 @@ addMigrationSteps('0.25.0', [
 		'Pieces',
 		{
 			externalId: 'mosId',
-			partId: 'segmentLineId',
-			rundownId: 'runningOrderId',
+			startPartId: 'segmentLineId',
+			// TODO-INFINITES startSegmentId
+			startRundownId: 'runningOrderId',
 		},
 		'migrateDatabaseCollections'
 	),

@@ -102,7 +102,7 @@ export namespace ServerPlayoutAdLibAPI {
 					if (
 						resolvedPieceBeingCopied &&
 						resolvedPieceBeingCopied.piece.playoutDuration !== undefined &&
-						(pieceInstanceToCopy.piece.infiniteMode ||
+						(pieceInstanceToCopy.infinite ||
 							pieceInstanceToCopy.piece.startedPlayback +
 								resolvedPieceBeingCopied.piece.playoutDuration >=
 								getCurrentTime())
@@ -132,7 +132,11 @@ export namespace ServerPlayoutAdLibAPI {
 
 			cache.PieceInstances.insert(newPieceInstance)
 			// TODO-PartInstance - pending new data flow
-			cache.Pieces.insert(newPieceInstance.piece)
+			cache.Pieces.insert({
+				...newPieceInstance.piece,
+				startRundownId: partInstance.rundownId,
+				startSegmentId: partInstance.segmentId,
+			})
 
 			updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
 			updateTimeline(cache, rundown.studioId)
@@ -400,11 +404,15 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstances.forEach((pieceInstance) => {
 			// Ensure it is labelled as dynamic
 			pieceInstance.partInstanceId = newPartInstance._id
-			pieceInstance.piece.partId = newPartInstance.part._id
+			pieceInstance.piece.startPartId = newPartInstance.part._id
 
 			cache.PieceInstances.insert(pieceInstance)
 			// TODO-PartInstance - pending new data flow
-			cache.Pieces.insert(pieceInstance.piece)
+			cache.Pieces.insert({
+				...pieceInstance.piece,
+				startRundownId: newPartInstance.rundownId,
+				startSegmentId: newPartInstance.segmentId,
+			})
 		})
 
 		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
@@ -420,12 +428,16 @@ export namespace ServerPlayoutAdLibAPI {
 	) {
 		// Ensure it is labelled as dynamic
 		newPieceInstance.partInstanceId = existingPartInstance._id
-		newPieceInstance.piece.partId = existingPartInstance.part._id
+		newPieceInstance.piece.startPartId = existingPartInstance.part._id
 		newPieceInstance.piece.dynamicallyInserted = true
 
 		cache.PieceInstances.insert(newPieceInstance)
 		// TODO-PartInstance - pending new data flow
-		cache.Pieces.insert(newPieceInstance.piece)
+		cache.Pieces.insert({
+			...newPieceInstance.piece,
+			startRundownId: existingPartInstance.rundownId,
+			startSegmentId: existingPartInstance.segmentId,
+		})
 	}
 
 	export function innerStopPieces(

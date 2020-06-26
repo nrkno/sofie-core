@@ -351,7 +351,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 }
 
 export function convertAdLibToPieceInstance(
-	adLibPiece: AdLibPiece | Piece | BucketAdLib,
+	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
 	partInstance: PartInstance,
 	queue: boolean
 ): PieceInstance {

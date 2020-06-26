@@ -30,6 +30,7 @@ import {
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
 	IBlueprintPiece,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
 import {
 	CommonContext,
@@ -328,8 +329,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: partInstances[0]._id,
 					piece: {
 						_id: getRandomId(),
-						partId: partInstances[0].part._id,
-						rundownId: rundown._id,
+						startPartId: partInstances[0].part._id,
 						externalId: '',
 						name: 'abc',
 						sourceLayerId: sourceLayerIds[0],
@@ -338,6 +338,8 @@ describe('Test blueprint api context', () => {
 						enable: { start: 0 },
 						startedPlayback: 1000,
 						dynamicallyInserted: true,
+						lifespan: PieceLifespan.OutOnSegmentChange,
+						invalid: false,
 					},
 				})
 				// We need to push changes back to 'mongo' for these tests
@@ -354,8 +356,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: partInstances[0]._id,
 					piece: {
 						_id: getRandomId(),
-						partId: partInstances[0].part._id,
-						rundownId: rundown._id,
+						startPartId: partInstances[0].part._id,
 						externalId: '',
 						name: 'abc',
 						sourceLayerId: sourceLayerIds[0],
@@ -364,6 +365,8 @@ describe('Test blueprint api context', () => {
 						enable: { start: 0 },
 						startedPlayback: 2000,
 						dynamicallyInserted: true,
+						lifespan: PieceLifespan.OutOnSegmentChange,
+						invalid: false,
 					},
 				})
 				// We need to push changes back to 'mongo' for these tests
@@ -399,8 +402,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: partInstances[0]._id,
 					piece: {
 						_id: getRandomId(),
-						partId: partInstances[0].part._id,
-						rundownId: rundown._id,
+						startPartId: partInstances[0].part._id,
 						externalId: '',
 						name: 'abc',
 						sourceLayerId: sourceLayerIds[0],
@@ -409,6 +411,8 @@ describe('Test blueprint api context', () => {
 						enable: { start: 0 },
 						startedPlayback: 1000,
 						dynamicallyInserted: true,
+						lifespan: PieceLifespan.OutOnSegmentChange,
+						invalid: false,
 					},
 				})
 				const pieceId1: PieceInstanceId = getRandomId()
@@ -418,8 +422,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: partInstances[2]._id,
 					piece: {
 						_id: getRandomId(),
-						partId: partInstances[2].part._id,
-						rundownId: rundown._id,
+						startPartId: partInstances[2].part._id,
 						externalId: '',
 						name: 'abc',
 						sourceLayerId: sourceLayerIds[0],
@@ -428,6 +431,8 @@ describe('Test blueprint api context', () => {
 						enable: { start: 0 },
 						startedPlayback: 2000,
 						dynamicallyInserted: true,
+						lifespan: PieceLifespan.OutOnSegmentChange,
+						invalid: false,
 					},
 				})
 				// We need to push changes back to 'mongo' for these tests
@@ -466,8 +471,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: partInstances[0]._id,
 					piece: {
 						_id: getRandomId(),
-						partId: partInstances[0].part._id,
-						rundownId: rundown._id,
+						startPartId: partInstances[0].part._id,
 						externalId: '',
 						name: 'abc',
 						sourceLayerId: sourceLayerIds[0],
@@ -476,6 +480,8 @@ describe('Test blueprint api context', () => {
 						enable: { start: 0 },
 						startedPlayback: 1000,
 						dynamicallyInserted: true,
+						lifespan: PieceLifespan.OutOnSegmentChange,
+						invalid: false,
 					},
 				})
 				const pieceId1: PieceInstanceId = getRandomId()
@@ -485,8 +491,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: partInstances[2]._id,
 					piece: {
 						_id: getRandomId(),
-						partId: partInstances[2].part._id,
-						rundownId: rundown._id,
+						startPartId: partInstances[2].part._id,
 						externalId: '',
 						name: 'abc',
 						sourceLayerId: sourceLayerIds[0],
@@ -499,6 +504,8 @@ describe('Test blueprint api context', () => {
 							prop1: 'hello',
 							prop2: '5',
 						},
+						lifespan: PieceLifespan.OutOnSegmentChange,
+						invalid: false,
 					},
 				})
 				// We need to push changes back to 'mongo' for these tests
@@ -780,12 +787,12 @@ describe('Test blueprint api context', () => {
 				playlist.currentPartInstanceId = partInstance._id
 
 				const newPiece: IBlueprintPiece = {
-					_id: '',
 					name: 'test piece',
 					sourceLayerId: 'sl1',
 					outputLayerId: 'o1',
 					externalId: '-',
 					enable: { start: 0 },
+					lifespan: PieceLifespan.OutOnRundownEnd,
 				}
 				const newPart: IBlueprintPart = {
 					externalId: 'nope',

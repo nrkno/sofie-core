@@ -17,6 +17,7 @@ import {
 	TimelineObjectCoreExt,
 	IBlueprintPieceDB,
 	TSR,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
@@ -346,6 +347,7 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid0',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
 					_rank: 2,
@@ -354,6 +356,7 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {},
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
 					_rank: 1,
@@ -364,6 +367,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
 					_rank: 9,
@@ -374,6 +378,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [null as any],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 			])
 
@@ -397,6 +402,7 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: '',
 				rundownId: protectString(''),
 				status: 0,
+				lifespan: PieceLifespan.WithinPart,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
@@ -432,6 +438,7 @@ describe('Test blueprint post-process', () => {
 						}),
 					],
 				},
+				lifespan: PieceLifespan.WithinPart,
 			})
 
 			const res = postProcessAdLibPieces(context, [piece], protectString('blueprint9'))
@@ -453,6 +460,7 @@ describe('Test blueprint post-process', () => {
 				[],
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment5'),
 				protectString('part8')
 			)
 			expect(res).toHaveLength(0)
@@ -466,6 +474,7 @@ describe('Test blueprint post-process', () => {
 				[null as any],
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment5'),
 				protectString('part8')
 			)
 			expect(res).toHaveLength(0)
@@ -475,24 +484,23 @@ describe('Test blueprint post-process', () => {
 
 			const pieces = literal<IBlueprintPiece[]>([
 				{
-					_id: 'id0',
 					name: 'test',
 					externalId: 'eid0',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
+					lifespan: PieceLifespan.OutOnSegmentChange,
 				},
 				{
-					_id: '',
 					name: 'test',
 					externalId: 'eid1',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {},
+					lifespan: PieceLifespan.OutOnSegmentEnd,
 				},
 				{
-					_id: '',
 					name: 'test2',
 					externalId: 'eid2',
 					enable: { start: 0 },
@@ -501,9 +509,9 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
-					_id: 'id3',
 					name: 'test2',
 					externalId: 'eid2',
 					enable: { start: 0 },
@@ -512,12 +520,13 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [null as any],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 			])
 
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
-			const expectedIds = _.compact(_.map(pieces, (obj) => obj._id)).concat(mockedIds)
+			const expectedIds = mockedIds
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
 			const res = postProcessPieces(
@@ -525,6 +534,7 @@ describe('Test blueprint post-process', () => {
 				pieces,
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment5'),
 				protectString('part8')
 			)
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
@@ -537,9 +547,12 @@ describe('Test blueprint post-process', () => {
 				enable: { start: 0 },
 				sourceLayerId: '',
 				outputLayerId: '',
-				partId: protectString(''),
-				rundownId: protectString(''),
+				startPartId: protectString(''),
+				startSegmentId: protectString(''),
+				startRundownId: protectString(''),
 				status: 0,
+				lifespan: PieceLifespan.WithinPart,
+				invalid: false,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
@@ -556,7 +569,6 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			const piece = literal<IBlueprintPiece>({
-				_id: '',
 				name: 'test2',
 				externalId: 'eid2',
 				enable: { start: 0 },
@@ -574,6 +586,7 @@ describe('Test blueprint post-process', () => {
 						}),
 					],
 				},
+				lifespan: PieceLifespan.OutOnRundownEnd,
 			})
 
 			const res = postProcessPieces(
@@ -581,6 +594,7 @@ describe('Test blueprint post-process', () => {
 				[piece],
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment8'),
 				protectString('part6')
 			)
 			expect(res).toHaveLength(1)
