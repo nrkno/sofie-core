@@ -1,44 +1,13 @@
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
-import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { logger } from '../../../lib/logging'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { Part, PartId, DBPart } from '../../../lib/collections/Parts'
-import { syncFunction } from '../../codeControl'
-import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
-import {
-	asyncCollectionUpdate,
-	waitForPromiseAll,
-	asyncCollectionRemove,
-	asyncCollectionInsert,
-	makePromise,
-	waitForPromise,
-	asyncCollectionFindFetch,
-	literal,
-	protectString,
-	unprotectObject,
-	getCurrentTime,
-	assertNever,
-	unprotectString,
-} from '../../../lib/lib'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { PartId, DBPart } from '../../../lib/collections/Parts'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { asyncCollectionFindFetch, assertNever } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import {
-	PieceInstance,
-	wrapPieceToInstance,
-	PieceInstances,
-	wrapPieceToTemporaryInstance,
-	rewrapPieceToInstance,
-	PieceInstancePiece,
-} from '../../../lib/collections/PieceInstances'
+import { PieceInstance, rewrapPieceToInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import {
-	getSelectedPartInstancesFromCache,
-	getAllPieceInstancesFromCache,
-	getRundownsSegmentsAndPartsFromCache,
-	getRundownsFromCache,
-	getAllOrderedPartsFromCache,
-} from './lib'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
+import { getAllOrderedPartsFromCache } from './lib'
+import { SegmentId } from '../../../lib/collections/Segments'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
