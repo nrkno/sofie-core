@@ -522,12 +522,21 @@ function updateRundownFromIngestData(
 	// Do a check if we're allowed to move out of currently playing playlist:
 	if (existingDbRundown && existingDbRundown.playlistExternalId !== dbRundownData.playlistExternalId) {
 		// The rundown is going to change playlist
-
+		logger.info(
+			`TMP: playlistExternalId changed ${dbRundownData.playlistExternalId}, ${existingDbRundown.playlistExternalId}`
+		)
 		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
 		if (existingPlaylist) {
 			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
 
-			if (currentPartInstance && currentPartInstance.rundownId === existingDbRundown._id) {
+			logger.info(
+				`TMP: currentPartInstance.rundownId ${currentPartInstance ? currentPartInstance.rundownId : 'N/A'}`
+			)
+			if (
+				existingPlaylist.active &&
+				currentPartInstance &&
+				currentPartInstance.rundownId === existingDbRundown._id
+			) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
 				// and will just revert the playlist change:
@@ -535,7 +544,8 @@ function updateRundownFromIngestData(
 				dbRundownData.playlistExternalId = existingDbRundown.playlistExternalId
 				dbRundownData.playlistId = existingDbRundown.playlistId
 
-				rundownNotes.push({
+				if (!dbRundownData.notes) dbRundownData.notes = []
+				dbRundownData.notes.push({
 					type: NoteType.WARNING,
 					message: `The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.`,
 					origin: {
@@ -543,6 +553,8 @@ function updateRundownFromIngestData(
 					},
 				})
 			}
+		} else {
+			logger.error(`Existing playlist "${existingDbRundown.playlistId}" not found`)
 		}
 	}
 
