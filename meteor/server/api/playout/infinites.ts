@@ -19,6 +19,7 @@ import {
 	unprotectObject,
 	getCurrentTime,
 	assertNever,
+	unprotectString,
 } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import {
@@ -31,7 +32,6 @@ import {
 } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
-	getPartsAfter,
 	getSelectedPartInstancesFromCache,
 	getAllPieceInstancesFromCache,
 	getRundownsSegmentsAndPartsFromCache,
@@ -54,17 +54,28 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, { startPartId: part._id })
 
 	const partsBeforeThisInSegment = cache.Parts.findFetch({ segmentId: part.segmentId, _rank: { $lt: part._rank } })
-	const segmentsBeforeThisInRundown = cache.Segments.findFetch({
-		rundownId: part.rundownId,
-		_rank: { $lt: part._rank },
-	})
+	const currentSegment = cache.Segments.findOne(part.segmentId)
+	const segmentsBeforeThisInRundown = currentSegment
+		? cache.Segments.findFetch({
+				rundownId: part.rundownId,
+				_rank: { $lt: currentSegment._rank },
+		  })
+		: []
 
 	const pInfinitePieces = asyncCollectionFindFetch(Pieces, {
 		invalid: { $ne: true },
+		startPartId: { $ne: part._id },
 		$or: [
 			{
 				// same segment, and previous part
-				lifespan: { $in: [PieceLifespan.OutOnSegmentEnd, PieceLifespan.OutOnSegmentChange] },
+				lifespan: {
+					$in: [
+						PieceLifespan.OutOnSegmentEnd,
+						PieceLifespan.OutOnSegmentChange,
+						PieceLifespan.OutOnRundownEnd,
+						PieceLifespan.OutOnRundownChange,
+					],
+				},
 				startRundownId: part.rundownId,
 				startSegmentId: part.segmentId,
 				startPartId: { $in: partsBeforeThisInSegment.map((p) => p._id) },
@@ -93,6 +104,8 @@ export async function fetchPiecesThatMayBeActiveForPart(
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 
+	console.log(infinitePieces.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke').map((p) => p._id))
+
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
@@ -105,9 +118,6 @@ export function getPieceInstancesForPart(
 	newInstanceId: PartInstanceId,
 	isTemporary: boolean
 ): PieceInstance[] {
-	// TOOD
-	// return []
-
 	//    // IN the GUI
 	//    /*
 	//     if (I want to view the Part as-played) {
@@ -121,14 +131,35 @@ export function getPieceInstancesForPart(
 	const partsBeforeThisInSegmentSet = new Set(
 		cache.Parts.findFetch({ segmentId: part.segmentId, _rank: { $lt: part._rank } }).map((p) => p._id)
 	)
+	const currentSegment = cache.Segments.findOne(part.segmentId)
 	const segmentsBeforeThisInRundownSet = new Set(
-		cache.Segments.findFetch({
-			rundownId: part.rundownId,
-			_rank: { $lt: part._rank },
-		}).map((p) => p._id)
+		currentSegment
+			? cache.Segments.findFetch({
+					rundownId: part.rundownId,
+					_rank: { $lt: currentSegment._rank },
+			  }).map((p) => p._id)
+			: []
 	)
 
-	const wrapPiece = (p: PieceInstancePiece) => rewrapPieceToInstance(p, part.rundownId, newInstanceId, isTemporary)
+	const wrapPiece = (p: PieceInstancePiece) => {
+		const instance = rewrapPieceToInstance(p, part.rundownId, newInstanceId, isTemporary)
+
+		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
+			instance.infinite = {
+				infinitePieceId: instance.piece._id,
+			}
+		}
+
+		return instance
+	}
+
+	const rewrapInstance = (p: PieceInstance) => {
+		const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
+
+		instance.infinite = p.infinite
+
+		return instance
+	}
 
 	const orderedPartIds = getAllOrderedPartsFromCache(cache, playlist).map((p) => p._id)
 	const doesPieceAStartBeforePieceB = (pieceA: Piece, pieceB: Piece): boolean => {
@@ -174,18 +205,19 @@ export function getPieceInstancesForPart(
 	}
 
 	// OnChange infinites take priority over onEnd, as they travel with the playhead
-	const onChangePiecesOnSourceLayers: { [sourceLayerId: string]: PieceInstancePiece } = {}
+	const onChangePiecesOnSourceLayers: { [sourceLayerId: string]: PieceInstance } = {}
 	const onChangePieceInstances = playingPartInstance
-		? cache.PieceInstances.findFetch({
-				'piece.lifespan': {
-					$in: [PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnSegmentChange],
-				},
-				partInstanceId: playingPartInstance._id,
+		? cache.PieceInstances.findFetch((p) => {
+				return (
+					p.partInstanceId === playingPartInstance._id &&
+					(p.piece.lifespan === PieceLifespan.OutOnRundownChange ||
+						p.piece.lifespan === PieceLifespan.OutOnSegmentChange)
+				)
 		  })
 		: []
 	for (const onChangePiece of onChangePieceInstances) {
 		delete piecesOnSourceLayers[onChangePiece.piece.sourceLayerId]
-		onChangePiecesOnSourceLayers[onChangePiece.piece.sourceLayerId] = onChangePiece.piece
+		onChangePiecesOnSourceLayers[onChangePiece.piece.sourceLayerId] = onChangePiece
 	}
 
 	// Prune any on layers where the normalPiece starts at 0
@@ -197,9 +229,20 @@ export function getPieceInstancesForPart(
 		}
 	}
 
+	console.log(
+		Object.values(piecesOnSourceLayers)
+			.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke')
+			.map((p) => p._id),
+		Object.values(onChangePiecesOnSourceLayers)
+			.filter((p) => p.piece.sourceLayerId === 'studio0_graphics_klokke')
+			.map((p) => p._id),
+		normalPieces.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke').map((p) => p._id),
+		possiblePieces.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke').map((p) => p._id)
+	)
+
 	return [
 		...Object.values(piecesOnSourceLayers).map(wrapPiece),
-		...Object.values(onChangePiecesOnSourceLayers).map(wrapPiece),
+		...Object.values(onChangePiecesOnSourceLayers).map(rewrapInstance),
 		...normalPieces.map(wrapPiece),
 	]
 }
@@ -266,10 +309,3 @@ export function isPiecePotentiallyActiveInPart(
 			return false
 	}
 }
-
-export function updateSourceLayerInfinitesAfterPart(
-	cache: CacheForRundownPlaylist,
-	rundown: Rundown,
-	previousPart?: Part,
-	runUntilEnd?: boolean
-): void {}

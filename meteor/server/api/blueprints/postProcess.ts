@@ -35,7 +35,8 @@ export function postProcessPieces(
 	segmentId: SegmentId,
 	partId: PartId,
 	allowNowForPiece?: boolean,
-	prefixAllTimelineObjects?: boolean
+	prefixAllTimelineObjects?: boolean,
+	setInvalid?: boolean
 ): Piece[] {
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -48,7 +49,7 @@ export function postProcessPieces(
 			startSegmentId: segmentId,
 			startPartId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			invalid: false,
+			invalid: setInvalid ?? false,
 		}
 
 		if (!piece.externalId && !piece.isTransition)

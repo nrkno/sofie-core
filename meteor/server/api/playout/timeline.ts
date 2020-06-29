@@ -57,6 +57,7 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
+import { writeFileSync } from 'fs'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -67,9 +68,7 @@ import { saveIntoCache } from '../../DatabaseCache'
 // = syncFunctionIgnore(function updateTimeline (cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
 export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
 	logger.debug('updateTimeline running...')
-	let timelineObjs: Array<TimelineObjGeneric> = []
 	const studio = cache.Studios.findOne(studioId)
-
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
 	if (activePlaylist && cache.containsDataFromPlaylist !== activePlaylist._id) {
@@ -77,10 +76,6 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	}
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
-
-	const applyTimelineObjs = (_timelineObjs: TimelineObjGeneric[]) => {
-		timelineObjs = timelineObjs.concat(_timelineObjs)
-	}
 
 	if (activePlaylist) {
 		// remove anything not related to active rundown
@@ -94,10 +89,15 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		})
 	}
 
-	applyTimelineObjs(getTimelineRundown(cache, studio))
-	applyTimelineObjs(getTimelineRecording(cache, studio))
+	const timelineObjs: Array<TimelineObjGeneric> = [
+		...getTimelineRundown(cache, studio),
+		...getTimelineRecording(cache, studio),
+	]
 
 	processTimelineObjects(studio, timelineObjs)
+
+	// logger.info(`timelineObjs: ${JSON.stringify(timelineObjs, undefined, 4)}`)
+	writeFileSync('tmp.json', JSON.stringify(timelineObjs, undefined, 4))
 
 	if (forceNowToTime) {
 		// used when autoNexting
@@ -457,6 +457,7 @@ function buildTimelineObjsForRundown(
 			currentPieces,
 			(l) => !!l.infinite && l.piece.lifespan !== PieceLifespan.WithinPart
 		)
+		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 
 		let allowTransition = false
 
@@ -483,9 +484,8 @@ function buildTimelineObjsForRundown(
 				previousPartGroup.priority = -1
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
-				const skipIds = currentInfinitePieces.map((l) => l.piece.infiniteId || '')
 				const previousContinuedPieces = previousPieces.filter(
-					(pi) => !pi.piece.infiniteId || skipIds.indexOf(pi.piece.infiniteId) < 0
+					(pi) => !pi.infinite || currentInfinitePieceIds.indexOf(pi.infinite.infinitePieceId) < 0
 				)
 
 				const groupClasses: string[] = ['previous_part']
@@ -525,8 +525,8 @@ function buildTimelineObjsForRundown(
 		const nextPartInfinites: { [infiniteId: string]: PieceInstance | undefined } = {}
 		if (currentPartInstance.part.autoNext && nextPartInstance) {
 			getAllPieceInstancesFromCache(cache, nextPartInstance).forEach((piece) => {
-				if (piece.piece.infiniteId) {
-					nextPartInfinites[unprotectString(piece.piece.infiniteId)] = piece
+				if (piece.infinite) {
+					nextPartInfinites[unprotectString(piece.infinite.infinitePieceId)] = piece
 				}
 			})
 		}
@@ -558,7 +558,7 @@ function buildTimelineObjsForRundown(
 				groupClasses.push('continues_infinite')
 			}
 
-			if (piece.piece.infiniteId) {
+			if (piece.infinite) {
 				// TODO-INFINITES - something new here?
 				// // TODO-PartInstance - this will be wrong once infinites work on only the instances
 				// const originalItem = cache.Pieces.findOne(piece.piece.infiniteId)
@@ -585,7 +585,7 @@ function buildTimelineObjsForRundown(
 				// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
 				const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
 					enable.duration !== undefined || enable.end !== undefined
-				const infiniteInNextPart = nextPartInfinites[unprotectString(piece.piece.infiniteId)]
+				const infiniteInNextPart = nextPartInfinites[unprotectString(piece.infinite.infinitePieceId)]
 				if (
 					infiniteInNextPart &&
 					!hasDurationOrEnd(infiniteGroup.enable) &&
@@ -598,9 +598,12 @@ function buildTimelineObjsForRundown(
 
 			// If this piece does not continue in the next part, then set it to end with the part it belongs to
 			if (nextPartInstance && currentPartInstance.part.autoNext && infiniteGroup.enable.duration === undefined) {
-				const nextItem = cache.PieceInstances.findFetch({
-					partInstanceId: nextPartInstance._id,
-				}).find((p) => p.piece.infiniteId === piece.piece.infiniteId)
+				const nextItem = cache.PieceInstances.findFetch(
+					(p) =>
+						p.partInstanceId === nextPartInstance._id &&
+						p.infinite &&
+						p.infinite.infinitePieceId === piece.infinite?.infinitePieceId
+				)
 				if (!nextItem) {
 					infiniteGroup.enable.end = `#${currentPartGroup.id}.end`
 				}
@@ -654,11 +657,8 @@ function buildTimelineObjsForRundown(
 				}
 			}
 
-			let toSkipIds = currentPieces.filter((i) => i.piece.infiniteId).map((i) => i.piece.infiniteId)
-
-			let nextPieceInstances = cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
-			nextPieceInstances = nextPieceInstances.filter(
-				(i) => !i.piece.infiniteId || toSkipIds.indexOf(i.piece.infiniteId) === -1
+			const nextPieceInstances = cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id }).filter(
+				(i) => !i.infinite || currentInfinitePieceIds.indexOf(i.infinite.infinitePieceId) === -1
 			)
 
 			const groupClasses: string[] = ['next_part']
@@ -792,9 +792,9 @@ function transformPartIntoTimeline(
 		if (pieceInstance.piece.definitelyEnded && pieceInstance.piece.definitelyEnded < getCurrentTime()) return
 
 		const isInfiniteContinuation =
-			pieceInstance.piece.infiniteId && pieceInstance.piece.infiniteId !== pieceInstance.piece._id
-		if (isInfiniteContinuation && pieceInstance.piece.infiniteId) {
-			pieceInstance.piece._id = pieceInstance.piece.infiniteId
+			pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id
+		if (isInfiniteContinuation && pieceInstance.infinite) {
+			pieceInstance.piece._id = pieceInstance.infinite.infinitePieceId
 		}
 
 		if (pieceInstance.piece.content && pieceInstance.piece.content.timelineObjects) {
@@ -851,7 +851,7 @@ function transformPartIntoTimeline(
 						inGroup: partGroup ? pieceGroup.id : undefined,
 						objectType: TimelineObjType.RUNDOWN,
 						pieceInstanceId: unprotectString(pieceInstance._id),
-						infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
+						infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 					})
 				})
 			}

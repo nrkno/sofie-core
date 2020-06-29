@@ -54,9 +54,7 @@ export interface RundownPieceGeneric extends PieceGeneric {
 	// partId?: PartId
 }
 
-export interface Piece
-	extends RundownPieceGeneric,
-		ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'>, 'infiniteId'> {
+export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'infiniteId'> {
 	startRundownId: RundownId
 	startSegmentId: SegmentId
 	startPartId: PartId
@@ -77,7 +75,7 @@ export interface Piece
 	// /** This is a backup of the original infiniteMode of the piece, so that the normal field can be modified during playback and restored afterwards */
 	// originalInfiniteMode?: PieceLifespan
 	// /** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
-	infiniteId?: PieceId
+	// infiniteId?: PieceId
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece

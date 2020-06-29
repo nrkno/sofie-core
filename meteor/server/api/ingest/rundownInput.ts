@@ -101,7 +101,6 @@ import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
-import { updateSourceLayerInfinitesAfterPart } from '../playout/infinites'
 import { UpdateNext } from './updateNext'
 import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
@@ -1252,7 +1251,6 @@ function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown
 	updateExpectedMediaItemsOnRundown(cache, rundown._id)
 	updateExpectedPlayoutItemsOnRundown(cache, rundown._id)
 	updatePartRanks(cache, playlist, changedSegmentIds)
-	updateSourceLayerInfinitesAfterPart(cache, rundown)
 
 	UpdateNext.ensureNextPartIsValid(cache, playlist)
 
@@ -1456,7 +1454,17 @@ function generateSegmentContents(
 
 		// Update pieces
 		segmentPieces.push(
-			...postProcessPieces(context, blueprintPart.pieces, blueprintId, rundownId, newSegment._id, part._id)
+			...postProcessPieces(
+				context,
+				blueprintPart.pieces,
+				blueprintId,
+				rundownId,
+				newSegment._id,
+				part._id,
+				undefined,
+				undefined,
+				part.invalid
+			)
 		)
 		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))

@@ -1,27 +1,15 @@
 import { Meteor } from 'meteor/meteor'
-import { Mongo } from 'meteor/mongo'
-import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import {
-	getCurrentTime,
-	literal,
-	protectString,
-	unprotectString,
-	getRandomId,
-	waitForPromise,
-	unprotectStringArray,
-} from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, getRandomId, waitForPromise } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
-import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getPartBeforeSegment, getPreviousPart, getRundownIDsFromCache } from './lib'
-import { updateSourceLayerInfinitesAfterPart } from './infinites'
+import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { Part } from '../../../lib/collections/Parts'
+import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
@@ -138,7 +126,6 @@ export namespace ServerPlayoutAdLibAPI {
 				startSegmentId: partInstance.segmentId,
 			})
 
-			updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
 			updateTimeline(cache, rundown.studioId)
 
 			waitForPromise(cache.saveAllToDatabase())
@@ -274,9 +261,6 @@ export namespace ServerPlayoutAdLibAPI {
 			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
 		}
-
-		// Update any infinites
-		updateSourceLayerInfinitesAfterPart(cache, rundown, currentPartInstance.part)
 
 		updateTimeline(cache, rundownPlaylist.studioId)
 	}
@@ -461,7 +445,7 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!pieceInstance.piece.userDuration && filter(pieceInstance)) {
 				let newExpectedDuration: number | undefined = undefined
 
-				if (pieceInstance.piece.infiniteId && pieceInstance.piece.infiniteId !== pieceInstance.piece._id) {
+				if (pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id) {
 					newExpectedDuration = stopAt - lastStartedPlayback
 				} else if (
 					pieceInstance.piece.startedPlayback && // currently playing

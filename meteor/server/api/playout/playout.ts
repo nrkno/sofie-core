@@ -69,7 +69,6 @@ import {
 import { getResolvedPieces, sortPiecesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudio } from './studio'
-import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import {
@@ -1093,10 +1092,6 @@ export namespace ServerPlayoutAPI {
 			// }
 
 			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
-				updateSourceLayerInfinitesAfterPart(cache, rundown, currentPartInstance.part)
-			}
-
-			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
 				updateTimeline(cache, playlist.studioId)
 			}
 
@@ -1142,8 +1137,6 @@ export namespace ServerPlayoutAPI {
 				(pieceInstance) => sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1,
 				undefined
 			)
-
-			updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
 
 			updateTimeline(cache, playlist.studioId)
 
@@ -1401,9 +1394,6 @@ export function triggerUpdateTimelineAfterIngestData(
 		const playlist = getRundownPlaylistFromCache(cache, rundown)
 		if (!playlist)
 			throw new Meteor.Error(501, `Rundown "${rundownId}" not a part of a playlist: "${rundown.playlistId}"`)
-
-		// TODO - test the input data for this
-		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart, true)
 
 		return rundownPlaylistSyncFunction(playlist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			if (playlist.active && playlist.currentPartInstanceId) {

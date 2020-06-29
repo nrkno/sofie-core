@@ -4,29 +4,13 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Parts, Part } from '../../../lib/collections/Parts'
-import {
-	getCurrentTime,
-	waitForPromiseAll,
-	Time,
-	clone,
-	literal,
-	waitForPromise,
-	unprotectString,
-	protectString,
-	makePromise,
-} from '../../../lib/lib'
+import { getCurrentTime, Time, clone, literal, waitForPromise, protectString } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
-import { loadCachedIngestSegment } from '../ingest/ingestCache'
-import { updateSegmentsFromIngestData } from '../ingest/rundownInput'
-import {
-	updateSourceLayerInfinitesAfterPart,
-	fetchPiecesThatMayBeActiveForPart,
-	getPieceInstancesForPart,
-} from './infinites'
+import { fetchPiecesThatMayBeActiveForPart, getPieceInstancesForPart } from './infinites'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
@@ -36,6 +20,7 @@ import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { saveIntoCache } from '../../DatabaseCache'
 import { afterRemoveParts } from '../rundown'
+import { writeFileSync } from 'fs'
 
 /**
  * Reset the rundown:
@@ -79,33 +64,33 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 
 	// refreshParts(cache, dirtyParts)
 
-	// Reset all pieces that were modified for holds
-	cache.Pieces.update(
-		{
-			rundownId: rundown._id,
-			extendOnHold: true,
-			infiniteId: { $exists: true },
-		},
-		{
-			$unset: {
-				infiniteId: 0,
-				infiniteMode: 0,
-			},
-		}
-	)
+	// // Reset all pieces that were modified for holds
+	// cache.Pieces.update(
+	// 	{
+	// 		rundownId: rundown._id,
+	// 		extendOnHold: true,
+	// 		infiniteId: { $exists: true },
+	// 	},
+	// 	{
+	// 		$unset: {
+	// 			infiniteId: 0,
+	// 			infiniteMode: 0,
+	// 		},
+	// 	}
+	// )
 
-	// Reset any pieces that were modified by inserted adlibs
-	cache.Pieces.update(
-		{
-			rundownId: rundown._id,
-			originalInfiniteMode: { $exists: true },
-		},
-		{
-			$rename: {
-				originalInfiniteMode: 'infiniteMode',
-			},
-		}
-	)
+	// // Reset any pieces that were modified by inserted adlibs
+	// cache.Pieces.update(
+	// 	{
+	// 		rundownId: rundown._id,
+	// 		originalInfiniteMode: { $exists: true },
+	// 	},
+	// 	{
+	// 		$rename: {
+	// 			originalInfiniteMode: 'infiniteMode',
+	// 		},
+	// 	}
+	// )
 
 	cache.Pieces.update(
 		{
@@ -143,9 +128,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 			},
 		}
 	)
-
-	// ensure that any removed infinites are restored
-	updateSourceLayerInfinitesAfterPart(cache, rundown)
 }
 
 /**
@@ -225,37 +207,37 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 	// })
 	// refreshParts(cache, dirtyParts)
 
-	// Reset all pieces that were modified for holds
-	cache.Pieces.update(
-		{
-			rundownId: {
-				$in: rundownIDs,
-			},
-			extendOnHold: true,
-			infiniteId: { $exists: true },
-		},
-		{
-			$unset: {
-				infiniteId: 0,
-				infiniteMode: 0,
-			},
-		}
-	)
+	// // Reset all pieces that were modified for holds
+	// cache.Pieces.update(
+	// 	{
+	// 		rundownId: {
+	// 			$in: rundownIDs,
+	// 		},
+	// 		extendOnHold: true,
+	// 		infiniteId: { $exists: true },
+	// 	},
+	// 	{
+	// 		$unset: {
+	// 			infiniteId: 0,
+	// 			infiniteMode: 0,
+	// 		},
+	// 	}
+	// )
 
-	// Reset any pieces that were modified by inserted adlibs
-	cache.Pieces.update(
-		{
-			rundownId: {
-				$in: rundownIDs,
-			},
-			originalInfiniteMode: { $exists: true },
-		},
-		{
-			$rename: {
-				originalInfiniteMode: 'infiniteMode',
-			},
-		}
-	)
+	// // Reset any pieces that were modified by inserted adlibs
+	// cache.Pieces.update(
+	// 	{
+	// 		rundownId: {
+	// 			$in: rundownIDs,
+	// 		},
+	// 		originalInfiniteMode: { $exists: true },
+	// 	},
+	// 	{
+	// 		$rename: {
+	// 			originalInfiniteMode: 'infiniteMode',
+	// 		},
+	// 	}
+	// )
 
 	cache.Pieces.update(
 		{
@@ -274,9 +256,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 			},
 		}
 	)
-
-	// ensure that any removed infinites are restored
-	rundowns.map((r) => updateSourceLayerInfinitesAfterPart(cache, r))
 
 	resetRundownPlaylistPlayhead(cache, rundownPlaylist)
 }
@@ -336,26 +315,26 @@ export function getPartBeforeSegment(rundownId: RundownId, dbSegment: DBSegment)
 	}
 	return undefined
 }
-export function getPartsAfter(part: Part, partsInRundownInOrder: Part[]): Part[] {
-	let found = false
-	// Only process parts after part:
-	const partsAfter = partsInRundownInOrder.filter((p) => {
-		if (found) return true
-		if (p._id === part._id) found = true
-		return false
-	})
-	return partsAfter
-}
-export function getPreviousPart(cache: CacheForRundownPlaylist, partToCheck: Part, rundown: Rundown) {
-	const partsInRundown = cache.Parts.findFetch({ rundownId: rundown._id }, { sort: { _rank: 1 } })
+// export function getPartsAfter(part: Part, partsInRundownInOrder: Part[]): Part[] {
+// 	let found = false
+// 	// Only process parts after part:
+// 	const partsAfter = partsInRundownInOrder.filter((p) => {
+// 		if (found) return true
+// 		if (p._id === part._id) found = true
+// 		return false
+// 	})
+// 	return partsAfter
+// }
+// export function getPreviousPart(cache: CacheForRundownPlaylist, partToCheck: Part, rundown: Rundown) {
+// 	const partsInRundown = cache.Parts.findFetch({ rundownId: rundown._id }, { sort: { _rank: 1 } })
 
-	let previousPart: Part | undefined = undefined
-	for (let part of partsInRundown) {
-		if (part._id === partToCheck._id) break
-		previousPart = part
-	}
-	return previousPart
-}
+// 	let previousPart: Part | undefined = undefined
+// 	for (let part of partsInRundown) {
+// 		if (part._id === partToCheck._id) break
+// 		previousPart = part
+// 	}
+// 	return previousPart
+// }
 // export function refreshParts(cache: CacheForRundownPlaylist, parts: Part[]) {
 // 	const ps: Promise<any>[] = []
 // 	parts.forEach((part) => {
@@ -530,6 +509,7 @@ export function setNextPart(
 				newInstanceId,
 				false
 			)
+			writeFileSync('tmp.json', JSON.stringify(newPieceInstances, undefined, 4))
 			for (const pieceInstance of newPieceInstances) {
 				cache.PieceInstances.insert(pieceInstance)
 			}
@@ -702,19 +682,19 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 		willNeedToBeFullyReset = true
 	}
 
-	// Reset any pieces that were modified by inserted adlibs
-	cache.Pieces.update(
-		{
-			rundownId: part.rundownId,
-			partId: part._id,
-			originalInfiniteMode: { $exists: true },
-		},
-		{
-			$rename: {
-				originalInfiniteMode: 'infiniteMode',
-			},
-		}
-	)
+	// // Reset any pieces that were modified by inserted adlibs
+	// cache.Pieces.update(
+	// 	{
+	// 		rundownId: part.rundownId,
+	// 		partId: part._id,
+	// 		originalInfiniteMode: { $exists: true },
+	// 	},
+	// 	{
+	// 		$rename: {
+	// 			originalInfiniteMode: 'infiniteMode',
+	// 		},
+	// 	}
+	// )
 
 	const rundown = cache.Rundowns.findOne(part.rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
@@ -722,11 +702,11 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	// if (isDirty) {
 	// 	waitForPromise(refreshPart(cache, rundown, part))
 	// } else {
-	if (willNeedToBeFullyReset) {
-		const prevPart = getPreviousPart(cache, part, rundown)
+	// if (willNeedToBeFullyReset) {
+	// 	const prevPart = getPreviousPart(cache, part, rundown)
 
-		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
-	}
+	// 	updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
+	// }
 	// }
 }
 export function onPartHasStoppedPlaying(

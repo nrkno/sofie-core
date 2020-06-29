@@ -73,7 +73,7 @@ export function createPieceGroupFirstObject(
 		_id: protectString(''), // set later
 		studioId: protectString(''), // set later
 		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
+		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: pieceInstance.piece.sourceLayerId + '_firstobject',
@@ -94,7 +94,7 @@ export function createPieceGroupFirstObject(
 	return firstObject
 }
 export function createPieceGroup(
-	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece'>,
+	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece' | 'infinite'>,
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
@@ -110,7 +110,7 @@ export function createPieceGroup(
 		inGroup: partGroup && partGroup.id,
 		isGroup: true,
 		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceId: unprotectString(pieceInstance.piece.infiniteId),
+		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
 		enable: pieceEnable ?? pieceInstance.piece.enable,
 		layer: pieceInstance.piece.sourceLayerId,
