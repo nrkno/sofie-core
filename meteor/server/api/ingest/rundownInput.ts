@@ -482,7 +482,7 @@ function updateRundownFromIngestData(
 	const showStyleBlueprintDb = (Blueprints.findOne(showStyle.base.blueprintId) as Blueprint) || {}
 
 	const dbRundownData: DBRundown = _.extend(
-		existingDbRundown || {},
+		_.clone(existingDbRundown) || {},
 		_.omit(
 			literal<DBRundown>({
 				...rundownRes.rundown,
