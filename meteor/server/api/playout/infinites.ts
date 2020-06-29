@@ -104,8 +104,6 @@ export async function fetchPiecesThatMayBeActiveForPart(
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 
-	console.log(infinitePieces.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke').map((p) => p._id))
-
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
@@ -228,17 +226,6 @@ export function getPieceInstancesForPart(
 			delete onChangePiecesOnSourceLayers[normalPiece.sourceLayerId]
 		}
 	}
-
-	console.log(
-		Object.values(piecesOnSourceLayers)
-			.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke')
-			.map((p) => p._id),
-		Object.values(onChangePiecesOnSourceLayers)
-			.filter((p) => p.piece.sourceLayerId === 'studio0_graphics_klokke')
-			.map((p) => p._id),
-		normalPieces.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke').map((p) => p._id),
-		possiblePieces.filter((p) => p.sourceLayerId === 'studio0_graphics_klokke').map((p) => p._id)
-	)
 
 	return [
 		...Object.values(piecesOnSourceLayers).map(wrapPiece),
