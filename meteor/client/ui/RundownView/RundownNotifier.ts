@@ -25,7 +25,7 @@ import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
-// import { translate, getI18n, getDefaults } from 'react-i18next'
+// import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
 import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
 import { Pieces, PieceId } from '../../../lib/collections/Pieces'
@@ -165,6 +165,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			fields: {
 				_id: 1,
 				unsynced: 1,
+				notes: 1,
 			},
 		})
 		this.autorun(() => {
@@ -421,7 +422,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			// console.log('RundownViewNotifier 4')
 			const newNoteIds: Array<string> = []
 			const combined = fullNotes.get().concat(localNotes.get())
-			combined.forEach((item: TrackedNote) => {
+			combined.forEach((item: TrackedNote & { rank: number }) => {
 				const id =
 					item.message +
 					'-' +

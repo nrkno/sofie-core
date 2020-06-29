@@ -1,11 +1,10 @@
-import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ExpectedMediaItems, ExpectedMediaItem, ExpectedMediaItemId } from '../../lib/collections/ExpectedMediaItems'
 import { RundownId } from '../../lib/collections/Rundowns'
-import { PieceGeneric, PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { PieceGeneric, PieceId, RundownPieceGeneric } from '../../lib/collections/Pieces'
+import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
-import { saveIntoDb, getCurrentTime, getHash, protectString } from '../../lib/lib'
+import { saveIntoDb, getCurrentTime, getHash, protectString, check } from '../../lib/lib'
 import { PartId } from '../../lib/collections/Parts'
 import { Random } from 'meteor/random'
 import { logger } from '../logging'
@@ -24,7 +23,7 @@ export enum PieceType {
 function generateExpectedMediaItems(
 	rundownId: RundownId,
 	studioId: StudioId,
-	piece: PieceGeneric,
+	piece: RundownPieceGeneric | AdLibPiece,
 	pieceType: string
 ): ExpectedMediaItem[] {
 	const result: ExpectedMediaItem[] = []
@@ -140,7 +139,7 @@ export const updateExpectedMediaItemsOnRundown: (
 
 		const eMIs: ExpectedMediaItem[] = []
 
-		function iterateOnPieceLike(piece: PieceGeneric, pieceType: string) {
+		function iterateOnPieceLike(piece: RundownPieceGeneric | AdLibPiece, pieceType: string) {
 			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
 		}
 
@@ -206,7 +205,7 @@ export const updateExpectedMediaItemsOnPart: (
 			partId: part._id,
 		}).fetch()
 
-		function iterateOnPieceLike(piece: PieceGeneric, pieceType: string) {
+		function iterateOnPieceLike(piece: RundownPieceGeneric | AdLibPiece, pieceType: string) {
 			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
 		}
 

@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
 import {
@@ -8,7 +8,7 @@ import {
 	RundownLayoutBase,
 	RundownLayoutId,
 } from '../../lib/collections/RundownLayouts'
-import { literal, getRandomId, protectString, makePromise } from '../../lib/lib'
+import { literal, getRandomId, protectString, makePromise, check } from '../../lib/lib'
 import { RundownLayoutSecurity } from '../security/rundownLayouts'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
@@ -61,7 +61,7 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 
 	let content = ''
 	try {
-		const body = (req as any).body
+		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
 
 		if (typeof body !== 'string' || body.length < 10)

@@ -1,9 +1,9 @@
-import { check } from 'meteor/check'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { MediaWorkFlowsSecurity, MediaWorkFlowStepsSecurity } from '../security/mediaWorkFlows'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
+import { check } from '../../lib/lib'
 
 meteorPublish(PubSub.mediaWorkFlowSteps, (selector, token) => {
 	selector = selector || {}

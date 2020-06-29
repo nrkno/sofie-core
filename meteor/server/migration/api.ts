@@ -1,9 +1,9 @@
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { MigrationChunk, NewMigrationAPI, RunMigrationResult, MigrationAPIMethods } from '../../lib/api/migration'
 import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
-import { makePromise } from '../../lib/lib'
+import { makePromise, check } from '../../lib/lib'
 
 function getMigrationStatus() {
 	return Migrations.getMigrationStatus()

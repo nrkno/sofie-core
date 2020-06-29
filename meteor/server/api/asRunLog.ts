@@ -63,7 +63,7 @@ export function pushAsRunLog(eventBase: AsRunLogEventBase, rehersal: boolean, ti
  * Called after an asRun log event occurs
  * @param event
  */
-function handleEvent(event: AsRunLogEvent): void {
+function handleAsRunEvent(event: AsRunLogEvent): void {
 	// wait EVENT_WAIT_TIME, because blueprint.onAsRunEvent() might depend on events that
 	// might havent been reported yet
 	Meteor.setTimeout(() => {
@@ -91,7 +91,6 @@ function handleEvent(event: AsRunLogEvent): void {
 }
 
 // Convenience functions:
-
 export function reportRundownHasStarted(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
@@ -129,7 +128,35 @@ export function reportRundownHasStarted(
 			!!playlist.rehearsal,
 			timestamp
 		)
-		if (event) handleEvent(event)
+		if (event) handleAsRunEvent(event)
+	}
+}
+
+export function reportRundownDataHasChanged(
+	_cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	rundown: Rundown
+) {
+	// Called when the data in rundown is changed
+
+	if (!rundown) {
+		logger.error(`rundown argument missing in reportRundownDataHasChanged`)
+	} else if (!playlist) {
+		logger.error(`playlist argument missing in reportRundownDataHasChanged`)
+	} else {
+		const timestamp = getCurrentTime()
+
+		const event = pushAsRunLog(
+			{
+				studioId: rundown.studioId,
+				rundownId: rundown._id,
+				content: IBlueprintAsRunLogEventContent.DATACHANGED,
+				content2: 'rundown',
+			},
+			!!playlist.rehearsal,
+			timestamp
+		)
+		if (event) handleAsRunEvent(event)
 	}
 }
 // export function reportSegmentHasStarted (segment: Segment, timestamp?: Time) {
@@ -175,7 +202,7 @@ export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstanc
 				!!playlist.rehearsal,
 				timestamp
 			)
-			if (event) handleEvent(event)
+			if (event) handleAsRunEvent(event)
 		} else {
 			logger.error(`Rundown "${partInstance.rundownId}" not found in reportPartHasStarted "${partInstance._id}"`)
 		}
@@ -226,7 +253,7 @@ export function reportPartHasStopped(partInstanceOrId: PartInstance | PartInstan
 				!!playlist.rehearsal,
 				timestamp
 			)
-			if (event) handleEvent(event)
+			if (event) handleAsRunEvent(event)
 			return event
 		} else
 			logger.error(`Rundown "${partInstance.rundownId}" not found in reportPartHasStarted "${partInstance._id}"`)
@@ -295,7 +322,7 @@ export function reportPieceHasStarted(pieceInstanceOrId: PieceInstance | PieceIn
 				!!playlist.rehearsal,
 				timestamp
 			)
-			if (event) handleEvent(event)
+			if (event) handleAsRunEvent(event)
 		}
 	} else logger.error(`PieceInstance not found in reportPieceHasStarted "${pieceInstanceOrId}"`)
 }
@@ -358,7 +385,7 @@ export function reportPieceHasStopped(pieceInstanceOrId: PieceInstance | PieceIn
 				!!playlist.rehearsal,
 				timestamp
 			)
-			if (event) handleEvent(event)
+			if (event) handleAsRunEvent(event)
 		}
 	} else logger.error(`piece not found in reportPieceHasStopped "${pieceInstanceOrId}"`)
 }

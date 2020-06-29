@@ -164,6 +164,17 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 	const rundownIDs = rundowns.map((i) => i._id)
 	// const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
 
+	const partInstancesToRemove = cache.PartInstances.findFetch({
+		rundownId: { $in: rundownIDs },
+		rehearsal: true,
+	})
+	cache.PartInstances.remove({
+		_id: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+	cache.PieceInstances.remove({
+		partInstanceId: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+
 	cache.PartInstances.update(
 		{
 			rundownId: {
@@ -522,6 +533,7 @@ export function setNextPart(
 				segmentId: nextPart.segmentId,
 				part: nextPart,
 				isScratch: true,
+				rehearsal: !!rundownPlaylist.rehearsal,
 			})
 			/*
 			RundownPlaylists.findOne().nextPartInstanceId
@@ -652,6 +664,10 @@ export function setNextSegment(
 function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	let ps: Array<Promise<any>> = []
 
+	let willNeedToBeFullyReset: boolean = !!part.startedPlayback
+
+	const isDirty = part.dirty || false
+
 	cache.Parts.update(
 		{
 			_id: part._id,
@@ -690,11 +706,14 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	})
 
 	// Remove all pieces that have been dynamically created (such as adLib pieces)
-	cache.Pieces.remove({
+	const removedPiecesCount = cache.Pieces.remove({
 		rundownId: part.rundownId,
 		partId: part._id,
 		dynamicallyInserted: true,
 	})
+	if (removedPiecesCount > 0) {
+		willNeedToBeFullyReset = true
+	}
 
 	// Reset any pieces that were modified by inserted adlibs
 	cache.Pieces.update(
@@ -710,17 +729,17 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 		}
 	)
 
-	let isDirty = part.dirty || false
-
 	const rundown = cache.Rundowns.findOne(part.rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
 
 	if (isDirty) {
 		waitForPromise(refreshPart(cache, rundown, part))
 	} else {
-		const prevPart = getPreviousPart(cache, part, rundown)
+		if (willNeedToBeFullyReset) {
+			const prevPart = getPreviousPart(cache, part, rundown)
 
-		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
+			updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
+		}
 	}
 }
 export function onPartHasStoppedPlaying(
@@ -862,17 +881,10 @@ export function getRundownIDsFromCache(cache: CacheForRundownPlaylist, playlist:
 }
 /** Get all pieces in a part */
 export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
-	return cache.Pieces.findFetch(
-		{
-			rundownId: part.rundownId,
-			partId: part._id,
-		},
-		{
-			sort: {
-				_rank: 1,
-			},
-		}
-	)
+	return cache.Pieces.findFetch({
+		rundownId: part.rundownId,
+		partId: part._id,
+	})
 }
 /** Get all adlib pieces in a part */
 export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {

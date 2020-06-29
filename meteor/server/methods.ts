@@ -4,11 +4,13 @@ import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext } from '../lib/api/methods'
 
+type MeteorMethod = (this: Meteor.MethodThisType, ...args: any[]) => any
+
 interface Methods {
-	[method: string]: Function
+	[method: string]: MeteorMethod
 }
 export interface MethodsInner {
-	[method: string]: { wrapped: Function; original: Function }
+	[method: string]: { wrapped: MeteorMethod; original: MeteorMethod }
 }
 export const MeteorMethodSignatures: { [key: string]: string[] } = {}
 
@@ -39,7 +41,11 @@ export function registerClassToMeteorMethods(
 	const methods: MethodsInner = {}
 	_.each(getAllClassMethods(orgClass), (classMethodName) => {
 		const enumValue = methodEnum[classMethodName]
-		if (!enumValue) throw new Meteor.Error(500, `registerClassToMeteorMethods: Unknown method "${classMethodName}"`)
+		if (!enumValue)
+			throw new Meteor.Error(
+				500,
+				`registerClassToMeteorMethods: The method "${classMethodName}" is not set in the enum containing methods.`
+			)
 		if (wrapper) {
 			methods[enumValue] = {
 				wrapped: function(...args: any[]) {

@@ -1,9 +1,8 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from './ReactMeteorData/react-meteor-data'
-import * as faCheckSquare from '@fortawesome/fontawesome-free-solid/faCheckSquare'
-import * as faSquare from '@fortawesome/fontawesome-free-solid/faSquare'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'

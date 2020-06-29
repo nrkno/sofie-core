@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
-import { getCurrentTime, protectString, unprotectString, getRandomId, makePromise } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString, getRandomId, makePromise, check } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'
 import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
@@ -55,7 +55,7 @@ export function uploadBlueprint(
 	check(body, String)
 	check(blueprintName, Match.Maybe(String))
 
-	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
+	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) {
 		throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)

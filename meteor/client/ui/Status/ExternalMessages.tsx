@@ -5,16 +5,16 @@ import { getCurrentTime, Time, unprotectString } from '../../../lib/lib'
 import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'
 import { ClientAPI } from '../../../lib/api/client'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
-import * as moment from 'moment'
+import moment from 'moment'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
-import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/fontawesome-free-solid'
+import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/free-solid-svg-icons'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 
@@ -45,7 +45,7 @@ const ExternalMessages = translateWithTracker<
 				studioId: undefined,
 			}
 		}
-		componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.studios, {})
 		}
 		onClickStudio = (studio) => {
@@ -148,7 +148,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			}
 		}
 
-		componentWillMount() {
+		componentDidMount() {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
@@ -264,6 +264,11 @@ const ExternalMessagesInStudio = translateWithTracker<
 						ID: {msg._id}
 						<br />
 						Created: <MomentFromNow unit="seconds">{msg.created}</MomentFromNow>
+						{msg.queueForLaterReason !== undefined ? (
+							<div>
+								<b>Queued for later due to: {msg.queueForLaterReason || 'Unknown reason'}</b>
+							</div>
+						) : null}
 					</td>
 					<td className="c7 small">
 						<div>{info}</div>

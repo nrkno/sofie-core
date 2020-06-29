@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
@@ -29,8 +28,9 @@ import {
 	unprotectString,
 	protectString,
 	omit,
-	Omit,
 	ProtectedString,
+	check,
+	Omit,
 	PreparedChangesChangesDoc,
 } from '../../../lib/lib'
 import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
@@ -41,7 +41,7 @@ import {
 	BlueprintResultSegment,
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../lib/collections/Studios'
 import {
 	selectShowStyleVariant,
 	afterRemoveSegments,
@@ -60,7 +60,13 @@ import {
 	RundownBaselineObjId,
 } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
-import { postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../blueprints/postProcess'
+import {
+	postProcessRundownBaselineItems,
+	postProcessAdLibPieces,
+	postProcessPieces,
+	postProcessAdLibActions,
+	postProcessGlobalAdLibActions,
+} from '../blueprints/postProcess'
 import {
 	RundownBaselineAdLibItem,
 	RundownBaselineAdLibPieces,
@@ -89,6 +95,8 @@ import {
 	canBeUpdated,
 	getRundownPlaylist,
 	getSegment,
+	extendIngestRundownCore,
+	modifyPlaylistExternalId,
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
@@ -122,7 +130,15 @@ import {
 } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
+import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
+import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import {
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibAction,
+} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
+import { removeEmptyPlaylists } from '../rundownPlaylist'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -409,6 +425,20 @@ export function updateRundownAndSaveCache(
 
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
+export function regenerateRundown(rundownId: RundownId) {
+	logger.info(`Regenerating rundown ${rundownId}`)
+	const existingDbRundown = Rundowns.findOne(rundownId)
+	if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
+
+	const studio = Studios.findOne(existingDbRundown.studioId)
+	if (!studio) throw new Meteor.Error(404, `Studio "${existingDbRundown.studioId}" not found`)
+
+	const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown.externalId)
+
+	const dataSource = 'regenerate'
+
+	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
+}
 function updateRundownFromIngestData(
 	studio: Studio,
 	existingDbRundown: Rundown | undefined,
@@ -416,9 +446,10 @@ function updateRundownFromIngestData(
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): boolean {
+	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
-	const showStyle = selectShowStyleVariant(studio, ingestRundown)
+	const showStyle = selectShowStyleVariant(studio, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
@@ -431,7 +462,7 @@ function updateRundownFromIngestData(
 		true
 	)
 	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id, notesContext)
-	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, ingestRundown)
+	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, extendedIngestRundown)
 
 	// Ensure the ids in the notes are clean
 	const rundownNotes = _.map(notesContext.getNotes(), (note) =>
@@ -442,6 +473,10 @@ function updateRundownFromIngestData(
 				name: `${showStyle.base.name}-${showStyle.variant.name}`,
 			},
 		})
+	)
+	rundownRes.rundown.playlistExternalId = modifyPlaylistExternalId(
+		rundownRes.rundown.playlistExternalId,
+		showStyle.base
 	)
 
 	const showStyleBlueprintDb = (Blueprints.findOne(showStyle.base.blueprintId) as Blueprint) || {}
@@ -480,11 +515,12 @@ function updateRundownFromIngestData(
 			['created', 'modified', 'peripheralDeviceId', 'dataSource', 'playlistId', '_rank']
 		)
 	)
-	if (peripheralDevice) {
-		dbRundownData.peripheralDeviceId = peripheralDevice._id
-	} else {
-		// TODO - this needs to set something..
-	}
+	dbRundownData.peripheralDeviceId = peripheralDevice
+		? peripheralDevice._id
+		: existingDbRundown
+		? existingDbRundown.peripheralDeviceId
+		: protectString('')
+
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource
 	}
@@ -537,6 +573,7 @@ function updateRundownFromIngestData(
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
 	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
+	removeEmptyPlaylists(studio)
 
 	const dbPlaylist = dbRundown.getRundownPlaylist()
 	if (!dbPlaylist) throw new Meteor.Error(500, 'RundownPlaylist not found (it should have been)')
@@ -552,13 +589,23 @@ function updateRundownFromIngestData(
 	const baselineObj: RundownBaselineObj = {
 		_id: protectString<RundownBaselineObjId>(Random.id(7)),
 		rundownId: dbRundown._id,
-		objects: postProcessRundownBaselineItems(blueprintRundownContext, rundownRes.baseline),
+		objects: postProcessRundownBaselineItems(
+			blueprintRundownContext,
+			showStyle.base.blueprintId,
+			rundownRes.baseline
+		),
 	}
 	// Save the global adlibs
 	logger.info(`... got ${rundownRes.globalAdLibPieces.length} adLib objects from baseline.`)
-	const adlibItems = postProcessAdLibPieces(
+	const baselineAdlibPieces = postProcessAdLibPieces(
 		blueprintRundownContext,
 		rundownRes.globalAdLibPieces,
+		showStyle.base.blueprintId
+	)
+	logger.info(`... got ${(rundownRes.globalActions || []).length} adLib actions from baseline.`)
+	const baselineAdlibActions = postProcessGlobalAdLibActions(
+		blueprintRundownContext,
+		rundownRes.globalActions || [],
 		showStyle.base.blueprintId
 	)
 
@@ -572,6 +619,7 @@ function updateRundownFromIngestData(
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
+	const adlibActions: AdLibAction[] = []
 
 	const { blueprint, blueprintId } = getBlueprintOfRundown(dbRundown)
 
@@ -598,6 +646,7 @@ function updateRundownFromIngestData(
 		parts.push(...segmentContents.parts)
 		segmentPieces.push(...segmentContents.segmentPieces)
 		adlibPieces.push(...segmentContents.adlibPieces)
+		adlibActions.push(...segmentContents.adlibActions)
 	})
 
 	// Prepare updates:
@@ -629,6 +678,13 @@ function updateRundownFromIngestData(
 			rundownId: rundownId,
 		},
 		adlibPieces
+	)
+	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(
+		AdLibActions,
+		{
+			rundownId: rundownId,
+		},
+		adlibActions
 	)
 
 	if (Settings.allowUnsyncedSegments) {
@@ -741,7 +797,14 @@ function updateRundownFromIngestData(
 			{
 				rundownId: dbRundown._id,
 			},
-			adlibItems
+			baselineAdlibPieces
+		),
+		saveIntoDb<RundownBaselineAdLibAction, RundownBaselineAdLibAction>(
+			RundownBaselineAdLibActions,
+			{
+				rundownId: dbRundown._id,
+			},
+			baselineAdlibActions
 		),
 
 		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
@@ -759,6 +822,18 @@ function updateRundownFromIngestData(
 			},
 		}),
 
+		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdLibActions, cache.AdLibActions, {
+			afterInsert(adlibAction) {
+				logger.debug('inserted adlibAction ' + adlibAction._id)
+				logger.debug(adlibAction)
+			},
+			afterUpdate(adlibAction) {
+				logger.debug('updated adlibAction ' + adlibAction._id)
+			},
+			afterRemove(adlibAction) {
+				logger.debug('deleted adlibAction ' + adlibAction._id)
+			},
+		}),
 		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
 			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
@@ -816,6 +891,8 @@ function updateRundownFromIngestData(
 			dbRundown,
 			_.map(segments, (s) => s._id)
 		)
+
+		reportRundownDataHasChanged(cache, dbPlaylist, dbRundown)
 	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
@@ -899,6 +976,7 @@ function syncChangesToSelectedPartInstances(
 	})
 }
 
+/** Set order and playlistID of rundowns in a playlist */
 function handleUpdatedRundownPlaylist(
 	currentRundown: DBRundown,
 	playlist: DBRundownPlaylist,
@@ -1053,7 +1131,7 @@ function updateSegmentFromIngestData(
 	const context = new SegmentContext(rundown, studio, existingParts, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 
-	const { parts, segmentPieces, adlibPieces, newSegment } = generateSegmentContents(
+	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
 		context,
 		blueprintId,
 		ingestSegment,
@@ -1098,6 +1176,14 @@ function updateSegmentFromIngestData(
 		},
 		adlibPieces
 	)
+	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(
+		AdLibActions,
+		{
+			rundownId: rundown._id,
+			partId: { $in: parts.map((p) => p._id) },
+		},
+		adlibActions
+	)
 
 	// determine if update is allowed here
 	if (
@@ -1138,7 +1224,7 @@ function updateSegmentFromIngestData(
 				logger.debug('deleted piece ' + piece._id)
 			},
 		}),
-		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces!, {
+		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdLibPieces, cache.AdLibPieces, {
 			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
@@ -1148,6 +1234,18 @@ function updateSegmentFromIngestData(
 			},
 			afterRemove(adLibPiece) {
 				logger.debug('deleted adLibPiece ' + adLibPiece._id)
+			},
+		}),
+		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdLibActions, cache.AdLibActions, {
+			afterInsert(adLibAction) {
+				logger.debug('inserted adLibAction ' + adLibAction._id)
+				logger.debug(adLibAction)
+			},
+			afterUpdate(adLibAction) {
+				logger.debug('updated adLibAction ' + adLibAction._id)
+			},
+			afterRemove(adLibAction) {
+				logger.debug('deleted adLibAction ' + adLibAction._id)
 			},
 		}),
 		savePreparedChangesIntoCache<Part, DBPart>(prepareSaveParts, cache.Parts, {
@@ -1347,6 +1445,7 @@ function generateSegmentContents(
 	const parts: DBPart[] = []
 	const segmentPieces: Piece[] = []
 	const adlibPieces: AdLibPiece[] = []
+	const adlibActions: AdLibAction[] = []
 
 	// Parts
 	blueprintRes.parts.forEach((blueprintPart, i) => {
@@ -1381,11 +1480,9 @@ function generateSegmentContents(
 		}
 
 		// Update pieces
-		const pieces = postProcessPieces(context, blueprintPart.pieces, blueprintId, part._id)
-		segmentPieces.push(...pieces)
-
-		const adlibs = postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id)
-		adlibPieces.push(...adlibs)
+		segmentPieces.push(...postProcessPieces(context, blueprintPart.pieces, blueprintId, rundownId, part._id))
+		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
+		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
 
 	return {
@@ -1393,6 +1490,7 @@ function generateSegmentContents(
 		parts,
 		segmentPieces,
 		adlibPieces,
+		adlibActions,
 	}
 }
 

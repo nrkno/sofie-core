@@ -3,10 +3,10 @@ import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintManifestSet } from 'tv-automation-sofie-blueprints-integration'
 import { ServerResponse, IncomingMessage } from 'http'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { parse as parseUrl } from 'url'
 import { uploadBlueprint } from './api'
-import { protectString } from '../../../lib/lib'
+import { protectString, check } from '../../../lib/lib'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PickerPOST } from '../http'
 
@@ -25,7 +25,7 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 
 	let content = ''
 	try {
-		const body = (req as any).body as string | undefined
+		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
 		if (!_.isString(body) || body.length < 10)
@@ -47,22 +47,22 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 
 	let content = ''
 	try {
-		const body = (req as any).body
+		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
 		let collection = body
-		if (_.isString(body)) {
+		if (typeof body === 'string') {
 			if (body.length < 10) throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 			try {
 				collection = JSON.parse(body) as BlueprintManifestSet
 			} catch (e) {
 				throw new Meteor.Error(400, 'Restore Blueprint: Failed to parse request body')
 			}
-		} else if (!_.isObject(body)) {
+		} else if (typeof body !== 'object') {
 			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 		}
 
-		logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
+		if (!Meteor.isTest) logger.info(`Got blueprint collection. ${Object.keys(body).length} blueprints`)
 
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {
