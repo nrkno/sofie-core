@@ -405,8 +405,20 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
+		const nextPartInstance = this.rundownPlaylist.nextPartInstanceId
+			? this.cache.PartInstances.findOne(this.rundownPlaylist.nextPartInstanceId)
+			: undefined
+		if (!nextPartInstance && this.rundownPlaylist.nextPartInstanceId) {
+			throw new Error('Cannot find next partInstance')
+		}
 
-		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(this.cache, partInstance, filter, timeOffset)
+		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(
+			this.cache,
+			partInstance,
+			nextPartInstance,
+			filter,
+			timeOffset
+		)
 
 		if (stoppedIds.length > 0) {
 			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)

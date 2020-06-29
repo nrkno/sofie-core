@@ -9,7 +9,7 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache } from './lib'
+import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getAllPieceInstancesFromCache } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
@@ -401,6 +401,7 @@ export namespace ServerPlayoutAdLibAPI {
 	export function innerStopPieces(
 		cache: CacheForRundownPlaylist,
 		currentPartInstance: PartInstance,
+		nextPartInstance: PartInstance | undefined,
 		filter: (pieceInstance: PieceInstance) => boolean,
 		timeOffset: number | undefined
 	) {
@@ -414,6 +415,8 @@ export namespace ServerPlayoutAdLibAPI {
 		const orderedPieces = getResolvedPieces(cache, currentPartInstance)
 		const stopAt = getCurrentTime() + (timeOffset || 0)
 		const relativeStop = stopAt - lastStartedPlayback
+
+		const stoppedInfiniteIds = new Set<PieceId>()
 
 		orderedPieces.forEach((pieceInstance) => {
 			if (!pieceInstance.piece.userDuration && filter(pieceInstance)) {
@@ -452,9 +455,26 @@ export namespace ServerPlayoutAdLibAPI {
 					)
 
 					changedInstances.push(pieceInstance._id)
+					if (pieceInstance.infinite) {
+						stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
+					}
 				}
 			}
 		})
+
+		// If any instances were infinite, we also need to prune them from the next part
+		if (nextPartInstance && stoppedInfiniteIds.size > 0) {
+			const nextPieceInstances = getAllPieceInstancesFromCache(cache, nextPartInstance)
+
+			// TODO-INFINITE will this be ok with onChange modes if replaying the origin part?
+
+			for (const instance of nextPieceInstances) {
+				// If infinite has been stopped just now
+				if (instance.infinite && stoppedInfiniteIds.has(instance.infinite.infinitePieceId)) {
+					cache.PieceInstances.remove(instance._id)
+				}
+			}
+		}
 
 		return changedInstances
 	}
