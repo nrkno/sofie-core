@@ -31,7 +31,7 @@ import { ShowStyleBase } from './ShowStyleBases'
 export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -67,12 +67,13 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
 	/** if the part is inserted after another (for adlibbing) */
-	afterPart?: PartId // TODO-ASAP combine with dynamicallyInserted (call dynamicallyAfterPart)
+	dynamicallyInsertedAfterPartId?: PartId
+	// afterPart?: PartId // TODO-ASAP combine with dynamicallyInserted (call dynamicallyAfterPart)
 	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInserted?: boolean
+	// dynamicallyInserted?: boolean
 
 	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an part */
-	runtimeArguments?: BlueprintRuntimeArguments
+	// runtimeArguments?: BlueprintRuntimeArguments
 	// /** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
 	// dirty?: boolean
 	/** Human readable unqiue identifier of the part */
@@ -126,9 +127,8 @@ export class Part implements DBPart {
 	public duration?: number
 	public previousPartEndState?: PartEndState
 	public notes?: Array<PartNote>
-	public afterPart?: PartId
-	public dynamicallyInserted?: boolean
-	public runtimeArguments?: BlueprintRuntimeArguments
+	public dynamicallyInsertedAfterPartId?: PartId
+	// public runtimeArguments?: BlueprintRuntimeArguments
 	// public dirty?: boolean
 	public identifier?: string
 

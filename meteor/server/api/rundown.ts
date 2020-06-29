@@ -288,8 +288,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		cache.Parts,
 		{
 			rundownId: rundownId,
-			dynamicallyInserted: true,
-			afterPart: { $in: _.map(removedParts, (p) => p._id) },
+			dynamicallyInsertedAfterPartId: { $in: _.map(removedParts, (p) => p._id) },
 		},
 		[],
 		{
@@ -390,7 +389,7 @@ export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: Rundow
 	let updatedParts = 0
 	for (const segmentId of segmentIds) {
 		const parts = allOrderedParts.filter((p) => p.segmentId === segmentId)
-		const [dynamicParts, sortedParts] = _.partition(parts, (p) => !!p.dynamicallyInserted)
+		const [dynamicParts, sortedParts] = _.partition(parts, (p) => !!p.dynamicallyInsertedAfterPartId)
 		logger.debug(
 			`updatePartRanks (${parts.length} parts with ${dynamicParts.length} dynamic in segment "${segmentId}")`
 		)
@@ -405,7 +404,9 @@ export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: Rundow
 
 				const newRemainingParts: Part[] = []
 				_.each(remainingParts, (possiblePart) => {
-					const afterIndex = sortedParts.findIndex((p) => p._id === possiblePart.afterPart)
+					const afterIndex = sortedParts.findIndex(
+						(p) => p._id === possiblePart.dynamicallyInsertedAfterPartId
+					)
 					if (afterIndex !== -1) {
 						// We found the one before
 						sortedParts.splice(afterIndex + 1, 0, possiblePart)
@@ -425,7 +426,7 @@ export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: Rundow
 			for (let i = 0; i < sortedParts.length - 1; ) {
 				// Find the range to process this iteration
 				const beforePartIndex = i
-				const afterPartIndex = sortedParts.findIndex((p, o) => o > i && !p.dynamicallyInserted)
+				const afterPartIndex = sortedParts.findIndex((p, o) => o > i && !p.dynamicallyInsertedAfterPartId)
 
 				if (afterPartIndex === beforePartIndex + 1) {
 					// no dynamic parts in between

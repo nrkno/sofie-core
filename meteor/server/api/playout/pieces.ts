@@ -325,10 +325,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 		_id: newId,
 		_rank: 0,
 		disabled: false,
-		dynamicallyInserted: true,
-		// TODO-INFINITE
-		// infiniteMode: piece.originalInfiniteMode !== undefined ? piece.originalInfiniteMode : piece.infiniteMode,
-		expectedDuration: piece.enable.duration ?? 0,
+		expectedDuration: piece.enable.duration,
 	})
 
 	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {

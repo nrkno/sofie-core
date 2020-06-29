@@ -234,8 +234,8 @@ export namespace ServerPlayoutAdLibAPI {
 					segmentId: currentPartInstance.segmentId,
 					rundownId: rundown._id,
 					title: adLibPiece.name,
-					dynamicallyInserted: true,
-					afterPart: currentPartInstance.part.afterPart || currentPartInstance.part._id,
+					dynamicallyInsertedAfterPartId:
+						currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id,
 					prerollDuration: adLibPiece.adlibPreroll,
 					expectedDuration: adLibPiece.expectedDuration,
 				}),
@@ -343,12 +343,12 @@ export namespace ServerPlayoutAdLibAPI {
 
 		// check if there's already a queued part after this:
 		// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
-		const afterPartId = currentPartInstance.part.afterPart || currentPartInstance.part._id
+		const afterPartId = currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id
 		const alreadyQueuedPartInstance = cache.PartInstances.findOne(
 			{
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
-				'part.afterPart': afterPartId,
+				'part.dynamicallyInsertedAfterPartId': afterPartId,
 				'part._rank': { $gt: currentPartInstance.part._rank },
 			},
 			{
@@ -365,8 +365,7 @@ export namespace ServerPlayoutAdLibAPI {
 		}
 
 		// Ensure it is labelled as dynamic
-		newPartInstance.part.afterPart = afterPartId
-		newPartInstance.part.dynamicallyInserted = true
+		newPartInstance.part.dynamicallyInsertedAfterPartId = afterPartId
 
 		cache.PartInstances.insert(newPartInstance)
 		// TODO-PartInstance - pending new data flow

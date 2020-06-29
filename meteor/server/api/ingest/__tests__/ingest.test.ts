@@ -978,8 +978,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: part._id,
+			dynamicallyInsertedAfterPartId: part._id,
 		})
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
@@ -1060,8 +1059,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: part._id,
+			dynamicallyInsertedAfterPartId: part._id,
 		})
 		Parts.insert({
 			_id: protectString('dynamic1'),
@@ -1070,8 +1068,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: protectString('dynamic0'),
+			dynamicallyInsertedAfterPartId: protectString('dynamic0'),
 		})
 		Parts.insert({
 			_id: protectString('dynamic2'),
@@ -1080,8 +1077,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: protectString('dynamic1'),
+			dynamicallyInsertedAfterPartId: protectString('dynamic1'),
 		})
 		expect(Parts.findOne(protectString('dynamic0'))).toBeTruthy()
 		expect(Parts.findOne(protectString('dynamic1'))).toBeTruthy()

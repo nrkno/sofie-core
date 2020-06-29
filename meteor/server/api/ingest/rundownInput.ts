@@ -586,7 +586,7 @@ function updateRundownFromIngestData(
 	// TODO - store notes from rundownNotesContext
 
 	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache, [dbRundown])
-	const existingRundownParts = _.filter(segmentsAndParts.parts, (part) => part.dynamicallyInserted !== true)
+	const existingRundownParts = _.filter(segmentsAndParts.parts, (part) => !part.dynamicallyInsertedAfterPartId)
 	const existingSegments = segmentsAndParts.segments
 
 	const segments: DBSegment[] = []
@@ -1561,14 +1561,14 @@ export function isUpdateAllowed(
 					partChanges.removed &&
 					partChanges.removed.length &&
 					currentPart &&
-					currentPart.part.afterPart
+					currentPart.part.dynamicallyInsertedAfterPartId
 				) {
 					// If the currently playing part is a queued part and depending on any of the parts that are to be removed:
 					const removedPartIds = partChanges.removed.map((part) => part._id)
-					if (removedPartIds.includes(currentPart.part.afterPart)) {
+					if (removedPartIds.includes(currentPart.part.dynamicallyInsertedAfterPartId)) {
 						// Don't allow removal of a part that has a currently playing queued Part
 						logger.warn(
-							`Not allowing removal of part "${currentPart.part.afterPart}", because currently playing (queued) part "${currentPart._id}" is after it`
+							`Not allowing removal of part "${currentPart.part.dynamicallyInsertedAfterPartId}", because currently playing (queued) part "${currentPart._id}" is after it`
 						)
 						allowed = false
 					}

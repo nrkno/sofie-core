@@ -33,11 +33,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
 	// since that isn't tied to the rundown anymore.
 
-	// cache.Pieces.remove({
-	// 	rundownId: rundown._id,
-	// 	dynamicallyInserted: true,
-	// })
-
 	cache.Parts.remove({
 		rundownId: rundown._id,
 		dynamicallyInserted: true,
@@ -59,53 +54,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 			},
 		}
 	)
-
-	// const dirtyParts = cache.Parts.findFetch({ rundownId: rundown._id, dirty: true })
-
-	// refreshParts(cache, dirtyParts)
-
-	// // Reset all pieces that were modified for holds
-	// cache.Pieces.update(
-	// 	{
-	// 		rundownId: rundown._id,
-	// 		extendOnHold: true,
-	// 		infiniteId: { $exists: true },
-	// 	},
-	// 	{
-	// 		$unset: {
-	// 			infiniteId: 0,
-	// 			infiniteMode: 0,
-	// 		},
-	// 	}
-	// )
-
-	// // Reset any pieces that were modified by inserted adlibs
-	// cache.Pieces.update(
-	// 	{
-	// 		rundownId: rundown._id,
-	// 		originalInfiniteMode: { $exists: true },
-	// 	},
-	// 	{
-	// 		$rename: {
-	// 			originalInfiniteMode: 'infiniteMode',
-	// 		},
-	// 	}
-	// )
-
-	// cache.Pieces.update(
-	// 	{
-	// 		rundownId: rundown._id,
-	// 	},
-	// 	{
-	// 		$unset: {
-	// 			playoutDuration: 1,
-	// 			startedPlayback: 1,
-	// 			userDuration: 1,
-	// 			disabled: 1,
-	// 			hidden: 1,
-	// 		},
-	// 	}
-	// )
 
 	// Mask all instances as reset
 	cache.PartInstances.update(
@@ -166,13 +114,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		}
 	)
 
-	// cache.Pieces.remove({
-	// 	rundownId: {
-	// 		$in: rundownIDs,
-	// 	},
-	// 	dynamicallyInserted: true,
-	// })
-
 	cache.Parts.remove({
 		rundownId: {
 			$in: rundownIDs,
@@ -198,64 +139,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 			},
 		}
 	)
-
-	// const dirtyParts = cache.Parts.findFetch({
-	// 	rundownId: {
-	// 		$in: rundownIDs,
-	// 	},
-	// 	dirty: true,
-	// })
-	// refreshParts(cache, dirtyParts)
-
-	// // Reset all pieces that were modified for holds
-	// cache.Pieces.update(
-	// 	{
-	// 		rundownId: {
-	// 			$in: rundownIDs,
-	// 		},
-	// 		extendOnHold: true,
-	// 		infiniteId: { $exists: true },
-	// 	},
-	// 	{
-	// 		$unset: {
-	// 			infiniteId: 0,
-	// 			infiniteMode: 0,
-	// 		},
-	// 	}
-	// )
-
-	// // Reset any pieces that were modified by inserted adlibs
-	// cache.Pieces.update(
-	// 	{
-	// 		rundownId: {
-	// 			$in: rundownIDs,
-	// 		},
-	// 		originalInfiniteMode: { $exists: true },
-	// 	},
-	// 	{
-	// 		$rename: {
-	// 			originalInfiniteMode: 'infiniteMode',
-	// 		},
-	// 	}
-	// )
-
-	// cache.Pieces.update(
-	// 	{
-	// 		rundownId: {
-	// 			$in: rundownIDs,
-	// 		},
-	// 	},
-	// 	{
-	// 		$unset: {
-	// 			playoutDuration: 1,
-	// 			startedPlayback: 1,
-	// 			userDuration: 1,
-	// 			definitelyEnded: 1,
-	// 			disabled: 1,
-	// 			hidden: 1,
-	// 		},
-	// 	}
-	// )
 
 	resetRundownPlaylistPlayhead(cache, rundownPlaylist)
 }
@@ -620,10 +503,6 @@ export function setNextSegment(
 }
 
 function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
-	// let willNeedToBeFullyReset: boolean = !!part.startedPlayback
-
-	// const isDirty = part.dirty || false
-
 	cache.Parts.update(
 		{
 			_id: part._id,
@@ -640,27 +519,13 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 			},
 		}
 	)
-	// cache.Pieces.update(
-	// 	{
-	// 		partId: part._id,
-	// 	},
-	// 	{
-	// 		$unset: {
-	// 			startedPlayback: 1,
-	// 			userDuration: 1,
-	// 			definitelyEnded: 1,
-	// 			disabled: 1,
-	// 			hidden: 1,
-	// 		},
-	// 	}
-	// )
+
 	// remove parts that have been dynamically queued for after this part (queued adLibs)
 	saveIntoCache(
 		cache.Parts,
 		{
 			rundownId: part.rundownId,
-			afterPart: part._id,
-			dynamicallyInserted: true,
+			dynamicallyInsertedAfterPartId: part._id,
 		},
 		[],
 		{
@@ -669,43 +534,6 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 			},
 		}
 	)
-
-	// // Remove all pieces that have been dynamically created (such as adLib pieces)
-	// const removedPiecesCount = cache.Pieces.remove({
-	// 	rundownId: part.rundownId,
-	// 	partId: part._id,
-	// 	dynamicallyInserted: true,
-	// })
-	// if (removedPiecesCount > 0) {
-	// 	willNeedToBeFullyReset = true
-	// }
-
-	// // Reset any pieces that were modified by inserted adlibs
-	// cache.Pieces.update(
-	// 	{
-	// 		rundownId: part.rundownId,
-	// 		partId: part._id,
-	// 		originalInfiniteMode: { $exists: true },
-	// 	},
-	// 	{
-	// 		$rename: {
-	// 			originalInfiniteMode: 'infiniteMode',
-	// 		},
-	// 	}
-	// )
-
-	// const rundown = cache.Rundowns.findOne(part.rundownId)
-	// if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
-
-	// if (isDirty) {
-	// 	waitForPromise(refreshPart(cache, rundown, part))
-	// } else {
-	// if (willNeedToBeFullyReset) {
-	// 	const prevPart = getPreviousPart(cache, part, rundown)
-
-	// 	updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart)
-	// }
-	// }
 }
 export function onPartHasStoppedPlaying(
 	cache: CacheForRundownPlaylist,

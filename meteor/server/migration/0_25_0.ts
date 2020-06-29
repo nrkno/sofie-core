@@ -298,7 +298,7 @@ addMigrationSteps('0.25.0', [
 			segmentId: 'string',
 			rundownId: 'runningOrderId',
 			title: 'slug',
-			afterPart: 'afterSegmentLine',
+			dynamicallyInsertedAfterPartId: 'afterSegmentLine',
 		},
 		'migrateDatabaseCollections'
 	),
