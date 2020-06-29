@@ -10,7 +10,7 @@ import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
-import { faTrash, faSync } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faSync, IconName } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { doModalDialog } from '../lib/ModalDialog'
@@ -30,7 +30,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { SplitDropdown } from '../lib/SplitDropdown'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../lib/UIStateStorage'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 
 const PackageInfo = require('../../package.json')
 
@@ -143,7 +143,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					<div
 						className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
 						style={{ color: layout.iconColor || 'transparent' }}>
-						<FontAwesomeIcon icon={layout.icon || 'circle'} />
+						<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
 					</div>
 					<span className="expco-text">{layout.name}</span>
 				</div>

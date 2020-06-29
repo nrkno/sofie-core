@@ -1,44 +1,45 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 
-import * as faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
-
-import pack, { IconPack, IconDefinition } from '@fortawesome/fontawesome-free-solid'
-import { translate } from 'react-i18next'
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { fas, faChevronUp, IconName, IconPack, IconDefinition } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 
+library.add(fas)
+
 export interface IconPickerEvent {
-	selectedValue: string
+	selectedValue: IconName
 }
 
 interface IProps {
 	availableOptions: Array<string>
 	placeholder?: string
 	className?: string
-	value?: string
+	value?: IconName
 	onChange?: (event: IconPickerEvent) => void
 }
 
 interface IState {
-	selectedValue: string
+	selectedValue: IconName | ''
 	expanded: boolean
 	iconPack: IconPack
 	searchText: string
 }
 
-export const IconPicker = translate()(
+export const IconPicker = withTranslation()(
 	class IconPicker extends React.Component<Translated<IProps>, IState> {
 		constructor(props: Translated<IProps>) {
 			super(props)
 
-			delete pack['faFontAwesomeLogoFull']
+			delete fas['faFontAwesomeLogoFull']
 
 			this.state = {
 				selectedValue: '',
 				expanded: false,
-				iconPack: pack,
+				iconPack: fas,
 				searchText: '',
 			}
 		}
@@ -128,7 +129,7 @@ export const IconPicker = translate()(
 								</div>
 							)}
 							{_.values(
-								_.mapObject(this.getFilteredIcons(), (value, key) => {
+								_.mapObject(this.getFilteredIcons(), (value: IconDefinition, key) => {
 									return (
 										<div className="expco-item" key={key}>
 											<label className="action-btn" title={value.iconName} onClick={() => this.handleChange(value)}>
