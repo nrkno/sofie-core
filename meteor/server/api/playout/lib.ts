@@ -33,10 +33,10 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
 	// since that isn't tied to the rundown anymore.
 
-	cache.Pieces.remove({
-		rundownId: rundown._id,
-		dynamicallyInserted: true,
-	})
+	// cache.Pieces.remove({
+	// 	rundownId: rundown._id,
+	// 	dynamicallyInserted: true,
+	// })
 
 	cache.Parts.remove({
 		rundownId: rundown._id,
@@ -92,20 +92,20 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	// 	}
 	// )
 
-	cache.Pieces.update(
-		{
-			rundownId: rundown._id,
-		},
-		{
-			$unset: {
-				playoutDuration: 1,
-				startedPlayback: 1,
-				userDuration: 1,
-				disabled: 1,
-				hidden: 1,
-			},
-		}
-	)
+	// cache.Pieces.update(
+	// 	{
+	// 		rundownId: rundown._id,
+	// 	},
+	// 	{
+	// 		$unset: {
+	// 			playoutDuration: 1,
+	// 			startedPlayback: 1,
+	// 			userDuration: 1,
+	// 			disabled: 1,
+	// 			hidden: 1,
+	// 		},
+	// 	}
+	// )
 
 	// Mask all instances as reset
 	cache.PartInstances.update(
@@ -166,12 +166,12 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		}
 	)
 
-	cache.Pieces.remove({
-		rundownId: {
-			$in: rundownIDs,
-		},
-		dynamicallyInserted: true,
-	})
+	// cache.Pieces.remove({
+	// 	rundownId: {
+	// 		$in: rundownIDs,
+	// 	},
+	// 	dynamicallyInserted: true,
+	// })
 
 	cache.Parts.remove({
 		rundownId: {
@@ -239,23 +239,23 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 	// 	}
 	// )
 
-	cache.Pieces.update(
-		{
-			rundownId: {
-				$in: rundownIDs,
-			},
-		},
-		{
-			$unset: {
-				playoutDuration: 1,
-				startedPlayback: 1,
-				userDuration: 1,
-				definitelyEnded: 1,
-				disabled: 1,
-				hidden: 1,
-			},
-		}
-	)
+	// cache.Pieces.update(
+	// 	{
+	// 		rundownId: {
+	// 			$in: rundownIDs,
+	// 		},
+	// 	},
+	// 	{
+	// 		$unset: {
+	// 			playoutDuration: 1,
+	// 			startedPlayback: 1,
+	// 			userDuration: 1,
+	// 			definitelyEnded: 1,
+	// 			disabled: 1,
+	// 			hidden: 1,
+	// 		},
+	// 	}
+	// )
 
 	resetRundownPlaylistPlayhead(cache, rundownPlaylist)
 }
@@ -620,9 +620,7 @@ export function setNextSegment(
 }
 
 function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
-	let ps: Array<Promise<any>> = []
-
-	let willNeedToBeFullyReset: boolean = !!part.startedPlayback
+	// let willNeedToBeFullyReset: boolean = !!part.startedPlayback
 
 	// const isDirty = part.dirty || false
 
@@ -642,20 +640,20 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 			},
 		}
 	)
-	cache.Pieces.update(
-		{
-			partId: part._id,
-		},
-		{
-			$unset: {
-				startedPlayback: 1,
-				userDuration: 1,
-				definitelyEnded: 1,
-				disabled: 1,
-				hidden: 1,
-			},
-		}
-	)
+	// cache.Pieces.update(
+	// 	{
+	// 		partId: part._id,
+	// 	},
+	// 	{
+	// 		$unset: {
+	// 			startedPlayback: 1,
+	// 			userDuration: 1,
+	// 			definitelyEnded: 1,
+	// 			disabled: 1,
+	// 			hidden: 1,
+	// 		},
+	// 	}
+	// )
 	// remove parts that have been dynamically queued for after this part (queued adLibs)
 	saveIntoCache(
 		cache.Parts,
@@ -672,15 +670,15 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 		}
 	)
 
-	// Remove all pieces that have been dynamically created (such as adLib pieces)
-	const removedPiecesCount = cache.Pieces.remove({
-		rundownId: part.rundownId,
-		partId: part._id,
-		dynamicallyInserted: true,
-	})
-	if (removedPiecesCount > 0) {
-		willNeedToBeFullyReset = true
-	}
+	// // Remove all pieces that have been dynamically created (such as adLib pieces)
+	// const removedPiecesCount = cache.Pieces.remove({
+	// 	rundownId: part.rundownId,
+	// 	partId: part._id,
+	// 	dynamicallyInserted: true,
+	// })
+	// if (removedPiecesCount > 0) {
+	// 	willNeedToBeFullyReset = true
+	// }
 
 	// // Reset any pieces that were modified by inserted adlibs
 	// cache.Pieces.update(
@@ -696,8 +694,8 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 	// 	}
 	// )
 
-	const rundown = cache.Rundowns.findOne(part.rundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
+	// const rundown = cache.Rundowns.findOne(part.rundownId)
+	// if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found!`)
 
 	// if (isDirty) {
 	// 	waitForPromise(refreshPart(cache, rundown, part))

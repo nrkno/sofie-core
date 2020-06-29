@@ -1255,18 +1255,18 @@ export namespace ServerPlayoutAPI {
 				rundownId: { $in: activeRundownIds },
 			})
 			if (pieceInstance) {
-				// TODO-PartInstance - pending new data flow
-				cache.Pieces.update(
-					{
-						_id: pieceInstance.piece._id,
-						rundownId: { $in: activeRundownIds },
-					},
-					{
-						$set: {
-							'enable.start': time,
-						},
-					}
-				)
+				// // TODO-PartInstance - pending new data flow
+				// cache.Pieces.update(
+				// 	{
+				// 		_id: pieceInstance.piece._id,
+				// 		rundownId: { $in: activeRundownIds },
+				// 	},
+				// 	{
+				// 		$set: {
+				// 			'enable.start': time,
+				// 		},
+				// 	}
+				// )
 				cache.PieceInstances.update(
 					{
 						_id: pieceInstance._id,

@@ -109,22 +109,9 @@ export namespace ServerPlayoutAdLibAPI {
 						'piece.hidden': true,
 					},
 				})
-				// TODO-PartInstance - pending new data flow
-				cache.Pieces.update(pieceInstanceToCopy.piece._id, {
-					$set: {
-						disabled: true,
-						hidden: true,
-					},
-				})
 			}
 
 			cache.PieceInstances.insert(newPieceInstance)
-			// TODO-PartInstance - pending new data flow
-			cache.Pieces.insert({
-				...newPieceInstance.piece,
-				startRundownId: partInstance.rundownId,
-				startSegmentId: partInstance.segmentId,
-			})
 
 			updateTimeline(cache, rundown.studioId)
 
@@ -391,12 +378,6 @@ export namespace ServerPlayoutAdLibAPI {
 			pieceInstance.piece.startPartId = newPartInstance.part._id
 
 			cache.PieceInstances.insert(pieceInstance)
-			// TODO-PartInstance - pending new data flow
-			cache.Pieces.insert({
-				...pieceInstance.piece,
-				startRundownId: newPartInstance.rundownId,
-				startSegmentId: newPartInstance.segmentId,
-			})
 		})
 
 		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
@@ -416,12 +397,6 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.piece.dynamicallyInserted = true
 
 		cache.PieceInstances.insert(newPieceInstance)
-		// TODO-PartInstance - pending new data flow
-		cache.Pieces.insert({
-			...newPieceInstance.piece,
-			startRundownId: existingPartInstance.rundownId,
-			startSegmentId: existingPartInstance.segmentId,
-		})
 	}
 
 	export function innerStopPieces(
@@ -445,6 +420,10 @@ export namespace ServerPlayoutAdLibAPI {
 			if (!pieceInstance.piece.userDuration && filter(pieceInstance)) {
 				let newExpectedDuration: number | undefined = undefined
 
+				logger.info(
+					`Try stop ${pieceInstance._id} ${pieceInstance.resolvedStart} ${pieceInstance.infinite?.infinitePieceId}`
+				)
+
 				if (pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id) {
 					newExpectedDuration = stopAt - lastStartedPlayback
 				} else if (
@@ -467,20 +446,6 @@ export namespace ServerPlayoutAdLibAPI {
 						{
 							$set: {
 								'piece.userDuration': {
-									duration: newExpectedDuration,
-								},
-							},
-						}
-					)
-
-					// TODO-PartInstance - pending new data flow
-					cache.Pieces.update(
-						{
-							_id: pieceInstance.piece._id,
-						},
-						{
-							$set: {
-								userDuration: {
 									duration: newExpectedDuration,
 								},
 							},

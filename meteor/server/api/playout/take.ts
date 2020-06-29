@@ -327,13 +327,6 @@ function copyOverflowingPieces(
 					})
 
 					cache.PieceInstances.insert(overflowedItem)
-
-					// TODO-PartInstance - pending new data flow
-					cache.Pieces.insert({
-						...overflowedItem.piece,
-						startSegmentId: nextPartInstance.segmentId,
-						startRundownId: nextPartInstance.rundownId,
-					})
 				}
 			}
 		})
