@@ -522,16 +522,10 @@ function updateRundownFromIngestData(
 	// Do a check if we're allowed to move out of currently playing playlist:
 	if (existingDbRundown && existingDbRundown.playlistExternalId !== dbRundownData.playlistExternalId) {
 		// The rundown is going to change playlist
-		logger.info(
-			`TMP: playlistExternalId changed ${dbRundownData.playlistExternalId}, ${existingDbRundown.playlistExternalId}`
-		)
 		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
 		if (existingPlaylist) {
 			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
 
-			logger.info(
-				`TMP: currentPartInstance.rundownId ${currentPartInstance ? currentPartInstance.rundownId : 'N/A'}`
-			)
 			if (
 				existingPlaylist.active &&
 				currentPartInstance &&
@@ -554,7 +548,7 @@ function updateRundownFromIngestData(
 				})
 			}
 		} else {
-			logger.error(`Existing playlist "${existingDbRundown.playlistId}" not found`)
+			logger.warn(`Existing playlist "${existingDbRundown.playlistId}" not found`)
 		}
 	}
 
