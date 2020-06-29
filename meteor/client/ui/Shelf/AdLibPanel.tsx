@@ -639,6 +639,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 							_rank: action.display._rank || 0,
 							content: content,
 							adlibAction: action,
+							tags: action.display.tags,
 						}),
 					]
 				}),
