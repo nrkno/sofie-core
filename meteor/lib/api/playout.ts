@@ -7,6 +7,7 @@ import { PartId } from '../collections/Parts'
 import { StudioId } from '../collections/Studios'
 import { ClientAPI } from './client'
 import { ReloadRundownPlaylistResponse } from './userActions'
+import { RundownId } from '../collections/Rundowns'
 
 export interface NewPlayoutAPI {
 	rundownPrepareForBroadcast(playlistId: RundownPlaylistId): Promise<void>
@@ -59,6 +60,7 @@ export interface NewPlayoutAPI {
 	sourceLayerStickyPieceStart(playlistId: RundownPlaylistId, sourceLayerId: string): Promise<void>
 	updateStudioBaseline(studioId: StudioId): Promise<string | false>
 	shouldUpdateStudioBaseline(studioId: StudioId): Promise<string | false>
+	setRundownRank(rundownId: RundownId, newRank: number): void
 }
 
 export enum PlayoutAPIMethods {
@@ -71,6 +73,7 @@ export enum PlayoutAPIMethods {
 
 	'updateStudioBaseline' = 'playout.updateStudioBaseline',
 	'shouldUpdateStudioBaseline' = 'playout.shouldUpdateStudioBaseline',
+	'setRundownRank' = 'playout.setRundownRank',
 
 	'rundownTake' = 'playout.rundownTake',
 	'rundownSetNext' = 'playout.rundownSetNext',

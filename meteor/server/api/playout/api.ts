@@ -10,6 +10,7 @@ import { PartId } from '../../../lib/collections/Parts'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { StudioId } from '../../../lib/collections/Studios'
 import { PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 class ServerPlayoutAPIClass implements NewPlayoutAPI {
 	rundownPrepareForBroadcast(playlistId: RundownPlaylistId) {
@@ -101,6 +102,9 @@ class ServerPlayoutAPIClass implements NewPlayoutAPI {
 	}
 	shouldUpdateStudioBaseline(studioId: StudioId) {
 		return makePromise(() => ServerPlayoutAPI.shouldUpdateStudioBaseline(studioId))
+	}
+	setRundownRank(rundownId: RundownId, newRank: number) {
+		return makePromise(() => ServerPlayoutAPI.setRundownRank(rundownId, newRank))
 	}
 }
 registerClassToMeteorMethods(PlayoutAPIMethods, ServerPlayoutAPIClass, false)

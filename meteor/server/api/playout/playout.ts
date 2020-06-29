@@ -1725,6 +1725,14 @@ export namespace ServerPlayoutAPI {
 
 		return false
 	}
+	export function setRundownRank(rundownId: RundownId, newRank: number): void {
+		const rundown = getRundown(rundownId)
+		const playlist = getPlaylist(rundown)
+		if (!playlist.rundownRanksOwnedByCore) {
+			RundownPlaylists.update(playlist._id, { $set: { rundownRanksOwnedByCore: true } })
+		}
+		Rundowns.update(rundown._id, { $set: { _rank: newRank } })
+	}
 }
 
 function beforeTake(
@@ -1902,4 +1910,9 @@ function getRundown(rundownId: RundownId): Rundown {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, 'Rundown ' + rundownId + ' not found')
 	return rundown
+}
+function getPlaylist(rundown: Rundown): RundownPlaylist {
+	const playlist = RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist) throw new Meteor.Error(404, `Playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found`)
+	return playlist
 }

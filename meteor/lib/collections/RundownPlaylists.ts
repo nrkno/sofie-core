@@ -84,6 +84,9 @@ export interface DBRundownPlaylist {
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
+
+	/** Set to true is the ranks of rundowns in a playlist is not to be changed by an external system */
+	rundownRanksOwnedByCore?: boolean
 }
 
 export interface RundownPlaylistPlayoutData {
@@ -131,6 +134,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public outOfOrderTiming?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
+	public rundownRanksOwnedByCore?: boolean
 
 	constructor(document: DBRundownPlaylist) {
 		_.each(_.keys(document), (key) => {

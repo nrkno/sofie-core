@@ -986,7 +986,15 @@ function handleUpdatedRundownPlaylist(
 	let selector: Mongo.Selector<DBRundown> = {}
 	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
 		selector = { playlistExternalId: currentRundown.playlistExternalId }
-		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
+		rundowns = Rundowns.find(
+			{ playlistExternalId: currentRundown.playlistExternalId },
+			{
+				sort: {
+					_rank: 1,
+					_id: 1,
+				},
+			}
+		).fetch()
 	} else if (!currentRundown.playlistExternalId) {
 		selector = { _id: currentRundown._id }
 		rundowns = [currentRundown]
@@ -999,18 +1007,29 @@ function handleUpdatedRundownPlaylist(
 		throw new Meteor.Error(501, `Unknown error when handling rundown playlist.`)
 	}
 
-	const updated = rundowns.map((r) => {
-		const rundownOrder = order[unprotectString(r._id)]
-		if (rundownOrder !== undefined) {
-			r.playlistId = playlist._id
-			r._rank = rundownOrder
-		} else {
-			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+	rundowns.forEach((rundown) => {
+		const rundownOrder = order[unprotectString(rundown._id)]
+		rundown.playlistId = playlist._id
+		if (!playlist.rundownRanksOwnedByCore) {
+			if (rundownOrder !== undefined) {
+				rundown._rank = rundownOrder
+			} else {
+				rundown._rank = 0
+			}
 		}
-		return r
+		return rundown
 	})
+	if (playlist.rundownRanksOwnedByCore) {
+		// Make sure that all rundowns have unique ranks & put new ones at the end:
+		rundowns = _.sortBy(rundowns, (rundown) => {
+			return rundown._rank === undefined ? Infinity : rundown._rank
+		})
+		for (let i = 0; i < rundowns.length; i++) {
+			rundowns[i]._rank = i
+		}
+	}
 
-	saveIntoDb(Rundowns, selector, updated)
+	saveIntoDb(Rundowns, selector, rundowns)
 }
 
 function handleRemovedSegment(
