@@ -106,7 +106,7 @@ describe('systemStatus', () => {
 	})
 	testInFiber('getSystemStatus: a component has a fault', () => {
 		// simulate device failure
-		PeripheralDevices.update(env.ingestDevice, {
+		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
 				status: literal<PeripheralDeviceAPI.StatusObject>({
 					statusCode: StatusCode.WARNING_MAJOR,
@@ -131,7 +131,7 @@ describe('systemStatus', () => {
 	})
 	testInFiber('getSystemStatus: a component has a library version mismatch', () => {
 		// simulate device failure
-		PeripheralDevices.update(env.ingestDevice, {
+		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
 				status: literal<PeripheralDeviceAPI.StatusObject>({
 					statusCode: StatusCode.GOOD,
@@ -155,7 +155,7 @@ describe('systemStatus', () => {
 		})
 
 		// Change expectedVersions, simulate a major version mismatch
-		PeripheralDevices.update(env.ingestDevice, {
+		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
 				versions: {
 					test: '1.0.0',
@@ -175,7 +175,7 @@ describe('systemStatus', () => {
 		})
 
 		// Change expectedVersions, simulate a minor version mismatch
-		PeripheralDevices.update(env.ingestDevice, {
+		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
 				versions: {
 					test: '1.0.0',
@@ -195,7 +195,7 @@ describe('systemStatus', () => {
 		})
 
 		// Change expectedVersions, simulate a minor version mismatch
-		PeripheralDevices.update(env.ingestDevice, {
+		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
 				versions: {
 					test: '1.0.0',
@@ -215,7 +215,7 @@ describe('systemStatus', () => {
 		})
 
 		// Change expectedVersions, simulate a version match
-		PeripheralDevices.update(env.ingestDevice, {
+		PeripheralDevices.update(env.ingestDevice._id, {
 			$set: {
 				versions: {
 					test: '1.0.0',
