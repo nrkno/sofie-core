@@ -427,6 +427,7 @@ export namespace ServerPlayoutAdLibAPI {
 				)
 
 				if (pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id) {
+					// TODO-INFINITE this check doesnt work
 					newExpectedDuration = stopAt - lastStartedPlayback
 				} else if (
 					pieceInstance.piece.startedPlayback && // currently playing

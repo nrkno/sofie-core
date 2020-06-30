@@ -792,7 +792,7 @@ function transformPartIntoTimeline(
 		if (pieceInstance.piece.definitelyEnded && pieceInstance.piece.definitelyEnded < getCurrentTime()) return
 
 		const isInfiniteContinuation =
-			pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id
+			pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id // TODO-INFINITE this check doesnt work
 		if (isInfiniteContinuation && pieceInstance.infinite) {
 			pieceInstance.piece._id = pieceInstance.infinite.infinitePieceId
 		}
