@@ -2,13 +2,13 @@ import { Meteor } from 'meteor/meteor'
 import { Match } from 'meteor/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, waitForPromise, check } from '../../lib/lib'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
+import { Timeline, getTimelineId, TimelineObjStat } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
@@ -404,6 +404,60 @@ export namespace ServerPeripheralDeviceAPI {
 			deviceId: deviceId,
 		})
 	}
+	export function reportResolveDone(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		objHash: string,
+		resolveDuration: number
+	) {
+		// Device (playout gateway) reports that it has finished resolving a timeline
+		let peripheralDevice: PeripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(
+			deviceId,
+			deviceToken,
+			this
+		)
+		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
+
+		check(objHash, String)
+		check(resolveDuration, Number)
+
+		if (peripheralDevice.studioId) {
+			const statObj = Timeline.findOne({
+				id: 'statObj',
+				studioId: peripheralDevice.studioId,
+			}) as TimelineObjStat | undefined
+
+			// Compare the objHash with the one we have in the timeline.
+			// We're using that to determine when the timeline was generated (in Core)
+			// In order to determine the total latency (roundtrip from timeline-generation => resolving done in playout-gateway)
+			if (statObj) {
+				if (statObj.content.objHash === objHash) {
+					/** Time when timeline was generated in Core */
+					const startTime = statObj.content.modified
+					const endTime = getCurrentTime()
+
+					const totalLatency = endTime - startTime
+
+					const LATENCIES_MAX_LENGTH = 100
+					// more than that is not realistic:
+					const MAX_REALISTIC_LATENCY = 1000 // ms
+					if (totalLatency < MAX_REALISTIC_LATENCY) {
+						if (!peripheralDevice.latencies) peripheralDevice.latencies = []
+						peripheralDevice.latencies.push(totalLatency)
+
+						if (peripheralDevice.latencies.length > LATENCIES_MAX_LENGTH) {
+							peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
+						}
+						PeripheralDevices.update(peripheralDevice._id, {
+							$set: {
+								latencies: peripheralDevice.latencies,
+							},
+						})
+					}
+				}
+			}
+		}
+	}
 }
 
 PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse, next) => {
@@ -556,6 +610,10 @@ class ServerPeripheralDeviceAPIClass implements NewPeripheralDeviceAPI {
 		result: any
 	) {
 		return makePromise(() => functionReply(deviceId, deviceToken, commandId, err, result))
+	reportResolveDone(deviceId: PeripheralDeviceId, deviceToken: string, objHash: string, resolveDuration: number) {
+		return makePromise(() =>
+			ServerPeripheralDeviceAPI.reportResolveDone(deviceId, deviceToken, objHash, resolveDuration)
+		)
 	}
 
 	// ------ Spreadsheet Gateway --------

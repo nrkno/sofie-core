@@ -38,6 +38,9 @@ export interface PeripheralDevice {
 	lastSeen: Time // Updated continously while connected
 	lastConnected: Time // Updated upon connection, not continously
 
+	/** A list of last reported latencies */
+	latencies?: number[]
+
 	connected: boolean
 	connectionId: string | null // Id of the current ddp-Connection
 
@@ -83,4 +86,34 @@ export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): Studi
 		}
 	}
 	return undefined
+}
+export function getExpectedLatency(
+	peripheralDevice: PeripheralDevice
+): { average: number; safe: number; fastest: number } {
+	if (peripheralDevice.latencies && peripheralDevice.latencies.length) {
+		const latencies = peripheralDevice.latencies.sort((a, b) => {
+			if (a > b) return 1
+			if (a < b) return -1
+			return 0
+		})
+		var total = 0
+		for (let latency of latencies) {
+			total += latency
+		}
+		const average = total / latencies.length
+
+		// The 95th slowest percentil
+		const i95 = Math.floor(latencies.length * 0.95)
+
+		return {
+			average: average,
+			safe: latencies[i95],
+			fastest: latencies[0],
+		}
+	}
+	return {
+		average: 0,
+		safe: 0,
+		fastest: 0,
+	}
 }

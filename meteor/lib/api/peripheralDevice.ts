@@ -85,6 +85,7 @@ export interface NewPeripheralDeviceAPI {
 	requestUserAuthToken(deviceId: PeripheralDeviceId, deviceToken: string, authUrl: string): Promise<void>
 	storeAccessToken(deviceId: PeripheralDeviceId, deviceToken: string, authToken: any): Promise<void>
 	removePeripheralDevice(deviceId: PeripheralDeviceId): Promise<void>
+	reportResolveDone(deviceId: PeripheralDeviceId, deviceToken: string, objHash: string, resolveDuration: number)
 
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string): Promise<string[]>
 	dataRundownGet(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<IngestRundown>
@@ -272,6 +273,7 @@ export enum PeripheralDeviceAPIMethods {
 	'pingWithCommand' = 'peripheralDevice.pingWithCommand',
 	'killProcess' = 'peripheralDevice.killProcess',
 	'removePeripheralDevice' = 'peripheralDevice.removePeripheralDevice',
+	'reportResolveDone' = 'peripheralDevice.reportResolveDone',
 
 	'determineDiffTime' = 'systemTime.determineDiffTime',
 	'getTimeDiff' = 'systemTime.getTimeDiff',
