@@ -540,6 +540,15 @@ class ServerPeripheralDeviceAPIClass implements NewPeripheralDeviceAPI {
 	}
 
 	// ----- PeripheralDevice --------------
+	functionReply(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		commandId: PeripheralDeviceCommandId,
+		err: any,
+		result: any
+	) {
+		return makePromise(() => functionReply(deviceId, deviceToken, commandId, err, result))
+	}
 	initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) {
 		return makePromise(() => ServerPeripheralDeviceAPI.initialize(deviceId, deviceToken, options))
 	}
@@ -554,6 +563,27 @@ class ServerPeripheralDeviceAPIClass implements NewPeripheralDeviceAPI {
 	}
 	getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => ServerPeripheralDeviceAPI.getPeripheralDevice(deviceId, deviceToken))
+	}
+	pingWithCommand(deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: Function) {
+		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message, cb))
+	}
+	killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {
+		return makePromise(() => ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really))
+	}
+	testMethod(deviceId: PeripheralDeviceId, deviceToken: string, returnValue: string, throwError?: boolean) {
+		return makePromise(() => ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError))
+	}
+	removePeripheralDevice(deviceId: PeripheralDeviceId) {
+		return makePromise(() => ServerPeripheralDeviceAPI.removePeripheralDevice(deviceId))
+	}
+
+	// ------ Playout Gateway --------
+	timelineTriggerTime(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		r: PeripheralDeviceAPI.TimelineTriggerTimeResult
+	) {
+		return makePromise(() => ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r))
 	}
 	partPlaybackStarted(
 		deviceId: PeripheralDeviceId,
@@ -583,33 +613,6 @@ class ServerPeripheralDeviceAPIClass implements NewPeripheralDeviceAPI {
 	) {
 		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStarted(deviceId, deviceToken, r))
 	}
-	pingWithCommand(deviceId: PeripheralDeviceId, deviceToken: string, message: string, cb?: Function) {
-		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(deviceId, deviceToken, message, cb))
-	}
-	killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {
-		return makePromise(() => ServerPeripheralDeviceAPI.killProcess(deviceId, deviceToken, really))
-	}
-	testMethod(deviceId: PeripheralDeviceId, deviceToken: string, returnValue: string, throwError?: boolean) {
-		return makePromise(() => ServerPeripheralDeviceAPI.testMethod(deviceId, deviceToken, returnValue, throwError))
-	}
-	timelineTriggerTime(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PeripheralDeviceAPI.TimelineTriggerTimeResult
-	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.timelineTriggerTime(deviceId, deviceToken, r))
-	}
-	removePeripheralDevice(deviceId: PeripheralDeviceId) {
-		return makePromise(() => ServerPeripheralDeviceAPI.removePeripheralDevice(deviceId))
-	}
-	functionReply(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		commandId: PeripheralDeviceCommandId,
-		err: any,
-		result: any
-	) {
-		return makePromise(() => functionReply(deviceId, deviceToken, commandId, err, result))
 	reportResolveDone(deviceId: PeripheralDeviceId, deviceToken: string, objHash: string, resolveDuration: number) {
 		return makePromise(() =>
 			ServerPeripheralDeviceAPI.reportResolveDone(deviceId, deviceToken, objHash, resolveDuration)
