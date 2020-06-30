@@ -482,15 +482,15 @@ export function setNextPart(
 		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
-		if (newNextPart && rundownIds.indexOf(newNextPart.rundownId)) {
+		if (newNextPart && !rundownIds.includes(newNextPart.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`Part "${newNextPart._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`Part "${newNextPart._id}" of rundown "${newNextPart.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
-		} else if (newNextPartInstance && rundownIds.indexOf(newNextPartInstance.rundownId)) {
+		} else if (newNextPartInstance && !rundownIds.includes(newNextPartInstance.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`PartInstance "${newNextPartInstance._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
 		}
 
