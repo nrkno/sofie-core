@@ -68,6 +68,8 @@ import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceIns
 import { isNumber } from 'util'
 import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -121,9 +123,30 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 
 	processTimelineObjects(studio, timelineObjs)
 
+	/** The timestamp that "now" was set to */
+	let theNowTime: number = 0
+
 	if (forceNowToTime) {
 		// used when autoNexting
-		setNowToTimeInObjects(timelineObjs, forceNowToTime)
+		theNowTime = forceNowToTime
+	} else {
+		const devices = cache.PeripheralDevices.findFetch({
+			studio: studioId,
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		})
+		// if (devices.length > 1) {
+		if (devices.length >= 1) {
+			// if we have several playout devices, we can't use the Now feature
+
+			let worstLatency = Math.max(...devices.map((device) => getExpectedLatency(device).safe))
+
+			/** Add a little more latency, to account for network latency variability */
+			const ADD_SAFE_LATENCY = 30
+			theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
+		}
+	}
+	if (theNowTime) {
+		setNowToTimeInObjects(timelineObjs, theNowTime)
 	}
 
 	let savedTimelineObjs: TimelineObjGeneric[] = []
