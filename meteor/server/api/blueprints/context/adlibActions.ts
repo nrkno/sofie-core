@@ -472,9 +472,18 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			return
 		}
 
-		this.cache.PieceInstances.remove({
+		const pieceInstances = this.cache.PieceInstances.findFetch({
 			partInstanceId: partInstanceId,
 			_id: { $in: protectStringArray(pieceInstanceIds) },
+		})
+
+		this.cache.PieceInstances.remove({
+			partInstanceId: partInstanceId,
+			_id: { $in: pieceInstances.map((p) => p._id) },
+		})
+		this.cache.Pieces.remove({
+			partInstanceId: partInstanceId,
+			_id: { $in: pieceInstances.map((p) => p.piece._id) },
 		})
 	}
 
