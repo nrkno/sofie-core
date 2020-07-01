@@ -105,6 +105,7 @@ import {
 } from '../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
+import { Settings } from '../../../lib/Settings'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -152,8 +153,8 @@ export namespace ServerPlayoutAPI {
 	export function resetRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId): void {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
-			if (dbPlaylist.active && !dbPlaylist.rehearsal)
+			if (!dbPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (dbPlaylist.active && !dbPlaylist.rehearsal && !Settings.allowRundownResetOnAir)
 				throw new Meteor.Error(401, `resetRundown can only be run in rehearsal!`)
 
 			const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
@@ -178,8 +179,9 @@ export namespace ServerPlayoutAPI {
 		rehearsal?: boolean
 	) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-			if (dbPlaylist.active && !dbPlaylist.rehearsal)
+			const dbPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!dbPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+			if (dbPlaylist.active && !dbPlaylist.rehearsal && !Settings.allowRundownResetOnAir)
 				throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
 
 			const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))

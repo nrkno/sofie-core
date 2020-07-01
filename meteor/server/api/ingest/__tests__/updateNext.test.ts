@@ -103,6 +103,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part1'),
 				_rank: 1,
@@ -117,6 +118,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part2'),
 				_rank: 2,
@@ -131,6 +133,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment1'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part3'),
 				_rank: 3,
@@ -146,6 +149,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part4'),
 				_rank: 0,
@@ -160,6 +164,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment2'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part5'),
 				_rank: 1,
@@ -175,6 +180,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment3'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part6'),
 				_rank: 0,
@@ -190,6 +196,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part7'),
 				_rank: 0,
@@ -204,6 +211,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part8'),
 				_rank: 1,
@@ -219,6 +227,7 @@ function createMockRO() {
 			rundownId: rundownId,
 			segmentId: protectString('mock_segment4'),
 			takeCount: 0,
+			rehearsal: false,
 			part: literal<DBPart>({
 				_id: protectString('mock_part9'),
 				_rank: 2,

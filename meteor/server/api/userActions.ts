@@ -240,8 +240,8 @@ export function resetRundownPlaylist(
 ): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
-	if (playlist.active && !playlist.rehearsal) {
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
@@ -256,8 +256,8 @@ export function resetAndActivate(
 ): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-
-	if (playlist.active && !playlist.rehearsal) {
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 		return ClientAPI.responseError(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)

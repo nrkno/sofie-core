@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString } from '../../../lib/lib'
+import { getHash, getCurrentTime, protectString, unprotectObject } from '../../../lib/lib'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
@@ -18,6 +18,9 @@ import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { touchRundownPlaylistsInCache } from '../playout/lib'
 import { Credentials } from '../../security/lib/credentials'
+import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
 	deviceId: PeripheralDeviceId,
@@ -116,4 +119,18 @@ export function canBeUpdated(rundown: Rundown | undefined, segment?: Segment, _p
 
 	// TODO
 	return true
+}
+export function extendIngestRundownCore(
+	ingestRundown: IngestRundown,
+	existingDbRundown: Rundown | undefined
+): ExtendedIngestRundown {
+	const extendedIngestRundown: ExtendedIngestRundown = {
+		...ingestRundown,
+		coreData: unprotectObject(existingDbRundown),
+	}
+	return extendedIngestRundown
+}
+export function modifyPlaylistExternalId(playlistExternalId: string | undefined, showStyleBase: ShowStyleBase) {
+	if (playlistExternalId) return `${showStyleBase._id}_${playlistExternalId}`
+	else return undefined
 }

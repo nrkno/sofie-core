@@ -1150,6 +1150,17 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								<SettingsNavigation type="newshowstyle" />
 							</div>
 						</div>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.enablePlayFromAnywhere"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}></EditAttribute>
+								{t('Enable Play from Anywhere™')}
+							</label>
+						</div>
 						<label className="field">
 							{t('Media Preview URL')}
 							<div className="mdi">

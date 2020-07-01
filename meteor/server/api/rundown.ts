@@ -38,12 +38,7 @@ import {
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import {
-	IngestRundown,
-	BlueprintResultOrderedRundowns,
-	ConfigManifestEntry,
-	IConfigItem,
-} from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintResultOrderedRundowns, ExtendedIngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
 import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
@@ -77,10 +72,11 @@ import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
+import { modifyPlaylistExternalId } from './ingest/lib'
 
 export function selectShowStyleVariant(
 	studio: Studio,
-	ingestRundown: IngestRundown
+	ingestRundown: ExtendedIngestRundown
 ): { variant: ShowStyleVariant; base: ShowStyleBase } | null {
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
@@ -159,9 +155,10 @@ export function produceRundownPlaylistInfo(
 	const studioBlueprint = loadStudioBlueprints(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
-	if (currentRundown.playlistExternalId && studioBlueprint.blueprint.getRundownPlaylistInfo) {
+	const playlistExternalId = currentRundown.playlistExternalId
+	if (playlistExternalId && studioBlueprint.blueprint.getRundownPlaylistInfo) {
 		// Note: We have to use the ExternalId of the playlist here, since we actually don't know the id of the playlist yet
-		const allRundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
+		const allRundowns = Rundowns.find({ playlistExternalId: playlistExternalId }).fetch()
 
 		if (!_.find(allRundowns, (rd) => rd._id === currentRundown._id))
 			throw new Meteor.Error(
@@ -169,14 +166,14 @@ export function produceRundownPlaylistInfo(
 				`produceRundownPlaylistInfo: currentRundown ("${currentRundown._id}") not found in collection!`
 			)
 
-		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(allRundowns)
+		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(allRundowns))
 		if (!playlistInfo)
 			throw new Meteor.Error(
 				500,
-				`blueprint.getRundownPlaylistInfo() returned null for externalId "${currentRundown.playlistExternalId}"`
+				`blueprint.getRundownPlaylistInfo() returned null for externalId "${playlistExternalId}"`
 			)
 
-		const playlistId: RundownPlaylistId = protectString(getHash(playlistInfo.playlist.externalId))
+		const playlistId: RundownPlaylistId = protectString(getHash(playlistExternalId))
 
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
@@ -189,7 +186,7 @@ export function produceRundownPlaylistInfo(
 			...existingPlaylist,
 
 			_id: playlistId,
-			externalId: playlistInfo.playlist.externalId,
+			externalId: playlistExternalId,
 			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: playlistInfo.playlist.name,
@@ -202,10 +199,14 @@ export function produceRundownPlaylistInfo(
 
 			modified: getCurrentTime(),
 
-			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
+			peripheralDeviceId: peripheralDevice
+				? peripheralDevice._id
+				: existingPlaylist
+				? existingPlaylist.peripheralDeviceId
+				: protectString(''),
 		}
 
-		let order = playlistInfo.order
+		let order: BlueprintResultOrderedRundowns | null = playlistInfo.order
 		if (!order) {
 			// If no order is provided, fall back to sort the rundowns by their name:
 			const rundownsInPlaylist = Rundowns.find(
@@ -214,7 +215,9 @@ export function produceRundownPlaylistInfo(
 				},
 				{
 					sort: {
+						expectedStart: 1,
 						name: 1,
+						_id: 1,
 					},
 				}
 			).fetch()
@@ -226,8 +229,9 @@ export function produceRundownPlaylistInfo(
 			order: order,
 		}
 	} else {
+		const tmpPlaylistExternalId = unprotectString(currentRundown._id)
 		// It's a rundown that "doesn't have a playlist", so we jsut make one up:
-		const playlistId: RundownPlaylistId = protectString(getHash(unprotectString(currentRundown._id)))
+		const playlistId: RundownPlaylistId = protectString(getHash(tmpPlaylistExternalId))
 
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
@@ -240,7 +244,7 @@ export function produceRundownPlaylistInfo(
 			...existingPlaylist,
 
 			_id: playlistId,
-			externalId: currentRundown.externalId,
+			externalId: tmpPlaylistExternalId,
 			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: currentRundown.name,

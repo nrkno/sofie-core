@@ -104,11 +104,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
 		expect(rundownPlaylist).toMatchObject({
-			externalId: rundownData.externalId,
+			externalId: rundown._id,
 		})
 
-		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 			playlistId: rundownPlaylist._id,
@@ -172,13 +172,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
 		expect(rundownPlaylist).toMatchObject({
-			externalId: rundownData.externalId,
+			externalId: rundown._id,
 			name: rundownData.name,
 		})
 		expect(RundownPlaylists.find().count()).toBe(1)
 
-		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 			name: rundownData.name,
@@ -343,12 +343,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
 		expect(rundownPlaylist).toMatchObject({
-			externalId: rundownData.externalId,
+			externalId: rundown._id,
 		})
 		expect(RundownPlaylists.find().count()).toBe(1)
 
-		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
@@ -416,12 +416,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownUpdate, device._id, device.token, rundownData)
 
 		const rundownPlaylist = RundownPlaylists.findOne() as RundownPlaylist
+		const rundown = Rundowns.findOne() as Rundown
 		expect(rundownPlaylist).toMatchObject({
-			externalId: rundownData.externalId,
+			externalId: rundown._id,
 		})
 		expect(RundownPlaylists.find().count()).toBe(1)
 
-		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})

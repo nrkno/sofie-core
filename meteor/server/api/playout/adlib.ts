@@ -246,6 +246,7 @@ export namespace ServerPlayoutAdLibAPI {
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
 				takeCount: currentPartInstance.takeCount + 1,
+				rehearsal: !!rundownPlaylist.rehearsal,
 				part: new Part({
 					_id: getRandomId(),
 					_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value

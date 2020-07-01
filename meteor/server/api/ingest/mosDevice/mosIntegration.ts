@@ -7,7 +7,7 @@ import { Parts } from '../../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../../security/peripheralDevice'
 import { logger } from '../../../logging'
 import { getStudioFromDevice, canBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
-import { handleRemovedRundown } from '../rundownInput'
+import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
 	handleMosRundownData,
@@ -222,11 +222,14 @@ export namespace MosIntegration {
 		if (!canBeUpdated(rundown)) return
 
 		// Set the ready to air status of a Rundown
-		Rundowns.update(rundown._id, {
-			$set: {
-				airStatus: Action.Status,
-			},
-		})
+		if (rundown.airStatus !== Action.Status) {
+			Rundowns.update(rundown._id, {
+				$set: {
+					airStatus: Action.Status,
+				},
+			})
+			regenerateRundown(rundown._id)
+		}
 	}
 	export function mosRoFullStory(
 		context: MethodContext,
