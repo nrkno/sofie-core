@@ -1,7 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, literal, protectString, unprotectString, getRandomId, waitForPromise } from '../../../lib/lib'
+import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import {
+	getCurrentTime,
+	literal,
+	protectString,
+	unprotectString,
+	getRandomId,
+	waitForPromise,
+	assertNever,
+} from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
@@ -412,35 +420,34 @@ export namespace ServerPlayoutAdLibAPI {
 			throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 		}
 
-		const orderedPieces = getResolvedPieces(cache, currentPartInstance)
+		const resolvedPieces = getResolvedPieces(cache, currentPartInstance)
 		const stopAt = getCurrentTime() + (timeOffset || 0)
 		const relativeStop = stopAt - lastStartedPlayback
 
 		const stoppedInfiniteIds = new Set<PieceId>()
 
-		orderedPieces.forEach((pieceInstance) => {
-			if (!pieceInstance.piece.userDuration && filter(pieceInstance)) {
-				let newExpectedDuration: number | undefined = undefined
+		for (const pieceInstance of resolvedPieces) {
+			if (!pieceInstance.userDuration && filter(pieceInstance)) {
+				let newEnd: number | undefined = undefined
 
-				logger.info(
-					`Try stop ${pieceInstance._id} ${pieceInstance.resolvedStart} ${pieceInstance.infinite?.infinitePieceId}`
-				)
-
-				if (pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id) {
-					// TODO-INFINITE this check doesnt work
-					newExpectedDuration = stopAt - lastStartedPlayback
-				} else if (
-					pieceInstance.piece.startedPlayback && // currently playing
-					(pieceInstance.resolvedStart || 0) < relativeStop && // is relative, and has started
-					!pieceInstance.piece.stoppedPlayback // and not yet stopped
-				) {
-					newExpectedDuration = stopAt - pieceInstance.piece.startedPlayback
+				switch (pieceInstance.piece.lifespan) {
+					case PieceLifespan.WithinPart:
+					case PieceLifespan.OutOnSegmentChange:
+					case PieceLifespan.OutOnRundownChange:
+						newEnd = stopAt
+						// TODO - should this set a infinite.lastPartInstance property to describe where it stops?
+						break
+					case PieceLifespan.OutOnSegmentEnd:
+					case PieceLifespan.OutOnRundownEnd:
+						// TODO
+						logger.warn(`innerStopPieces failed due to unhandled lifespan: ${pieceInstance.piece.lifespan}`)
+						break
+					default:
+						assertNever(pieceInstance.piece.lifespan)
 				}
 
-				if (newExpectedDuration !== undefined) {
-					logger.info(
-						`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${newExpectedDuration}`
-					)
+				if (newEnd !== undefined) {
+					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${newEnd}`)
 
 					cache.PieceInstances.update(
 						{
@@ -448,8 +455,8 @@ export namespace ServerPlayoutAdLibAPI {
 						},
 						{
 							$set: {
-								'piece.userDuration': {
-									duration: newExpectedDuration,
+								userDuration: {
+									end: newEnd,
 								},
 							},
 						}
@@ -461,7 +468,7 @@ export namespace ServerPlayoutAdLibAPI {
 					}
 				}
 			}
-		})
+		}
 
 		// If any instances were infinite, we also need to prune them from the next part
 		if (nextPartInstance && stoppedInfiniteIds.size > 0) {

@@ -11,6 +11,7 @@ import {
 	protectString,
 	unprotectObject,
 	unprotectString,
+	omit,
 } from '../../../lib/lib'
 import {
 	TimelineContentTypeOther,
@@ -321,11 +322,12 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 	// const oldId = piece._id
 	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
-		..._.omit(piece, 'userDuration', 'timings', 'startedPlayback', 'stoppedPlayback', 'infiniteId'),
-		_id: newId,
+		...omit(piece, 'timings', 'startedPlayback', 'stoppedPlayback'),
+		_id: protectString(newId),
 		_rank: 0,
 		disabled: false,
 		expectedDuration: piece.enable.duration,
+		rundownId: protectString(''),
 	})
 
 	if (newAdLibPiece.content && newAdLibPiece.content.timelineObjects) {

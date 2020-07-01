@@ -52,6 +52,14 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		/** When the instance was a copy made from hold */
 		fromHold?: boolean
 	}
+
+	/** This is set when the duration needs to be overriden from some user action */
+	userDuration?: {
+		end: number
+	}
+
+	/** [timestamp) After this time, the piece has definitely ended and its content can be omitted from the timeline */
+	definitelyEnded?: number
 }
 
 export interface ResolvedPieceInstance extends PieceInstance, Omit<IBlueprintResolvedPieceInstance, '_id' | 'piece'> {

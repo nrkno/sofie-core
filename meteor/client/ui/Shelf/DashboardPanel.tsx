@@ -642,7 +642,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 					],
 				},
 				{
-					'piece.definitelyEnded': {
+					definitelyEnded: {
 						$exists: false,
 					},
 				},
@@ -653,35 +653,32 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 			'piece.adLibSourceId': {
 				$exists: true,
 			},
-			$or: [
-				{
-					'piece.userDuration': {
-						$exists: false,
-					},
-				},
-				{
-					'piece.userDuration.duration': {
-						$exists: false,
-					},
-				},
-			],
+			// $or: [
+			// 	{
+			// 		'userDuration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// 	{
+			// 		'userDuration.duration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// ],
 		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let duration: number | undefined = piece.playoutDuration
-				? piece.playoutDuration
-				: piece.userDuration && typeof piece.userDuration.duration === 'number'
-				? piece.userDuration.duration
-				: piece.userDuration && typeof piece.userDuration.end === 'string'
-				? 0 // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
+			let end: number | undefined = piece.playoutDuration
+				? piece.playoutDuration + piece.startedPlayback!
+				: pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
+				? pieceInstance.userDuration.end
 				: typeof piece.enable.duration === 'number'
-				? piece.enable.duration
+				? piece.enable.duration + piece.startedPlayback!
 				: undefined
 
-			if (duration !== undefined) {
-				const end = piece.startedPlayback! + duration
+			if (end !== undefined) {
 				if (end > now) {
 					nearestEnd = nearestEnd > end ? end : nearestEnd
 					return true

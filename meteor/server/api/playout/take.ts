@@ -293,7 +293,7 @@ function copyOverflowingPieces(
 				typeof instance.piece.enable.duration === 'number' &&
 				instance.piece.enable.duration > 0 &&
 				instance.piece.playoutDuration === undefined &&
-				instance.piece.userDuration === undefined
+				instance.userDuration === undefined
 			) {
 				// Subtract the amount played from the duration
 				const remainingDuration = Math.max(
@@ -314,7 +314,7 @@ function copyOverflowingPieces(
 						rundownId: instance.rundownId,
 						partInstanceId: nextPartInstance._id,
 						piece: {
-							...omit(instance.piece, 'startedPlayback', 'userDuration', 'overflows'),
+							...omit(instance.piece, 'startedPlayback', 'overflows'),
 							_id: getRandomId(),
 							startPartId: nextPartInstance.part._id,
 							enable: {
@@ -456,8 +456,9 @@ function completeHold(
 				// This is a continuation, so give it an end
 				cache.PieceInstances.update(pieceInstance._id, {
 					$set: {
-						// TODO - is this correct (both field and value)
-						'piece.userDuration.end': getCurrentTime(),
+						userDuration: {
+							end: getCurrentTime(),
+						},
 					},
 				})
 			}

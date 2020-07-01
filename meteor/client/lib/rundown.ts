@@ -511,8 +511,10 @@ export namespace RundownUtils {
 						? item.instance.piece.enable.duration || 0
 						: 0
 				const userDurationNumber =
-					item.instance.piece.userDuration && typeof item.instance.piece.userDuration.duration === 'number'
-						? item.instance.piece.userDuration.duration || 0
+					item.instance.userDuration &&
+					typeof item.instance.userDuration.end === 'number' &&
+					item.instance.piece.startedPlayback
+						? item.instance.userDuration.end - item.instance.piece.startedPlayback
 						: 0
 				return (
 					item.instance.piece.playoutDuration ||

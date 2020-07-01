@@ -817,7 +817,7 @@ describe('Test blueprint api context', () => {
 				expect(newPartInstance).toBeTruthy()
 				expect(newPartInstance.part._rank).toBeLessThan(9000)
 				expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
-				expect(newPartInstance.part.dynamicallyInserted).toBeTruthy()
+				expect(newPartInstance.part.dynamicallyInsertedAfterPartId).toBeTruthy()
 
 				const newNextPartInstances = context.getPieceInstances('next')
 				expect(newNextPartInstances).toHaveLength(1)
@@ -857,9 +857,10 @@ describe('Test blueprint api context', () => {
 
 				innerStopPiecesMock.mockClear()
 				let filter: (piece: PieceInstance) => boolean = null as any
-				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
+				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, nexPartInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
 					expect(partInstance).toBe(currentPartInstance)
+					expect(nexPartInstance).toBeFalsy()
 					expect(offset).toEqual(34)
 					filter = filter2
 
@@ -909,9 +910,10 @@ describe('Test blueprint api context', () => {
 
 				innerStopPiecesMock.mockClear()
 				let filter: (piece: PieceInstance) => boolean = null as any
-				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
+				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, nexPartInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
 					expect(partInstance).toBe(currentPartInstance)
+					expect(nexPartInstance).toBeFalsy()
 					expect(offset).toEqual(34)
 					filter = filter2
 
