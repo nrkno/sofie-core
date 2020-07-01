@@ -31,7 +31,8 @@ import { ShowStyleBase } from './ShowStyleBases'
 export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'> {
+export interface DBPart
+	extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -61,8 +62,8 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	 * This is set when Take:ing the next part
 	 */
 	duration?: number
-	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
-	previousPartEndState?: PartEndState
+	// /** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	// previousPartEndState?: PartEndState
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
@@ -125,7 +126,7 @@ export class Part implements DBPart {
 	public taken?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number
-	public previousPartEndState?: PartEndState
+	// public previousPartEndState?: PartEndState
 	public notes?: Array<PartNote>
 	public dynamicallyInsertedAfterPartId?: PartId
 	// public runtimeArguments?: BlueprintRuntimeArguments

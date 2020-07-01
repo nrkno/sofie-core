@@ -138,7 +138,7 @@ export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientA
 			previousPartEndState = blueprint.getEndStateForPart(
 				context,
 				playlist.previousPersistentState,
-				previousPartInstance.part.previousPartEndState,
+				previousPartInstance.previousPartEndState,
 				unprotectObjectArray(resolvedPieces),
 				time
 			)
@@ -179,11 +179,9 @@ export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientA
 			},
 		}
 		if (previousPartEndState) {
-			partInstanceM.$set['part.previousPartEndState'] = previousPartEndState
-			partM.$set.previousPartEndState = previousPartEndState
+			partInstanceM.$set.previousPartEndState = previousPartEndState
 		} else {
-			partInstanceM.$unset['part.previousPartEndState'] = 1
-			partM.$unset.previousPartEndState = 1
+			partInstanceM.$unset.previousPartEndState = 1
 		}
 		if (Object.keys(partM.$set).length === 0) delete partM.$set
 		if (Object.keys(partM.$unset).length === 0) delete partM.$unset

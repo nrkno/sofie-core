@@ -238,7 +238,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 						context,
 						timelineObjs,
 						playlist.previousPersistentState,
-						currentPart.part.previousPartEndState,
+						currentPart.previousPartEndState,
 						unprotectObjectArray(resolvedPieces.pieces)
 					)
 				)

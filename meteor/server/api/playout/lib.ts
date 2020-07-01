@@ -45,7 +45,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 		{
 			$unset: {
 				duration: 1,
-				previousPartEndState: 1,
 				startedPlayback: 1,
 				taken: 1,
 				timings: 1,
@@ -130,7 +129,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		{
 			$unset: {
 				duration: 1,
-				previousPartEndState: 1,
 				startedPlayback: 1,
 				timings: 1,
 				// runtimeArguments: 1,
@@ -510,7 +508,6 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 		{
 			$unset: {
 				duration: 1,
-				previousPartEndState: 1,
 				startedPlayback: 1,
 				taken: 1,
 				// runtimeArguments: 1,

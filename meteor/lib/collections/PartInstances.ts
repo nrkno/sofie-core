@@ -28,7 +28,10 @@ import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
-	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
+	part: ProtectedStringProperties<
+		IBlueprintPartInstance['part'],
+		'_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'
+	>
 }
 export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
@@ -42,6 +45,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	takeCount: number
 
 	part: DBPart
+
+	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	previousPartEndState?: PartEndState
 }
 
 export class PartInstance implements DBPartInstance {
@@ -52,6 +58,7 @@ export class PartInstance implements DBPartInstance {
 	public reset?: boolean
 
 	public takeCount: number
+	public previousPartEndState?: PartEndState
 
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	public isTaken?: boolean
