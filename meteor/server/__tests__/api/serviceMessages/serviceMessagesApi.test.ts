@@ -1,10 +1,14 @@
-import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
+import {
+	readAllMessages,
+	writeMessage,
+	convertExternalToServiceMessage,
+} from '../../../api/serviceMessages/serviceMessagesApi'
 import * as CoreSystem from '../../../../lib/collections/CoreSystem'
 import { protectString } from '../../../../lib/lib'
 
 jest.mock('../../../../lib/collections/CoreSystem')
 
-const message1: CoreSystem.ServiceMessage = {
+const message1: CoreSystem.ExternalServiceMessage = {
 	id: '294a7079efdce49fb553e52d9e352e24',
 	criticality: CoreSystem.Criticality.CRITICAL,
 	message: 'Something is wrong that should have been right',
@@ -12,7 +16,7 @@ const message1: CoreSystem.ServiceMessage = {
 	timestamp: new Date(),
 }
 
-const message2: CoreSystem.ServiceMessage = {
+const message2: CoreSystem.ExternalServiceMessage = {
 	id: '4d6fb1e005ac3364784acc7194e329c2',
 	criticality: CoreSystem.Criticality.WARNING,
 	message: 'Something is rotten in the state of Denmark',
@@ -68,8 +72,8 @@ describe('Service messages internal API', () => {
 
 		it('should return all service messages as an array', () => {
 			const cs = { ...fakeCoreSystem }
-			cs.serviceMessages[message1.id] = message1
-			cs.serviceMessages[message2.id] = message2
+			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
+			cs.serviceMessages[message2.id] = convertExternalToServiceMessage(message2)
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
 
 			const actual = readAllMessages()
@@ -105,10 +109,10 @@ describe('Service messages internal API', () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
-			cs.serviceMessages[message1.id] = message1
+			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
 
-			const actual = writeMessage(message1)
+			const actual = writeMessage(convertExternalToServiceMessage(message1))
 
 			expect(actual).toHaveProperty('isUpdate', true)
 			spy.mockRestore()
@@ -118,9 +122,9 @@ describe('Service messages internal API', () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
-			cs.serviceMessages[message1.id] = message1
+			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
-			const actual = writeMessage(message2)
+			const actual = writeMessage(convertExternalToServiceMessage(message2))
 
 			expect(actual).toHaveProperty('isUpdate', false)
 			spy.mockRestore()
@@ -134,7 +138,7 @@ describe('Service messages internal API', () => {
 			})
 			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
 
-			writeMessage(message2)
+			writeMessage(convertExternalToServiceMessage(message2))
 
 			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, { $set: { serviceMessages: expected } })
 			spyGetCoreSystem.mockRestore()
@@ -147,9 +151,9 @@ describe('Service messages internal API', () => {
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
-			cs.serviceMessages[message1.id] = message1
+			cs.serviceMessages[message1.id] = convertExternalToServiceMessage(message1)
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
-			const actual = writeMessage(message2)
+			const actual = writeMessage(convertExternalToServiceMessage(message2))
 
 			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, { $set: { serviceMessages: expected } })
 			spy.mockRestore()
@@ -165,7 +169,7 @@ describe('Service messages internal API', () => {
 			const spyGetCoreSystem = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
 
 			expect(() => {
-				writeMessage(message2)
+				writeMessage(convertExternalToServiceMessage(message2))
 			}).toThrow()
 
 			spyGetCoreSystem.mockRestore()

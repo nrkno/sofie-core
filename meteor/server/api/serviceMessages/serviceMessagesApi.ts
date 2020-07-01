@@ -1,7 +1,7 @@
-import { CoreSystem, getCoreSystem, ServiceMessage } from '../../../lib/collections/CoreSystem'
+import { CoreSystem, getCoreSystem, ServiceMessage, ExternalServiceMessage } from '../../../lib/collections/CoreSystem'
 import { logger } from '../../logging'
 
-export { deleteMessage, readAllMessages, writeMessage, WriteStatus }
+export { deleteMessage, readAllMessages, writeMessage, WriteStatus, convertExternalToServiceMessage }
 
 interface WriteStatus {
 	isUpdate?: boolean
@@ -25,6 +25,13 @@ function readAllMessages(): Array<ServiceMessage> {
 	const messages = Object.keys(serviceMessages).map((key) => serviceMessages[key])
 
 	return messages
+}
+
+function convertExternalToServiceMessage(message: ExternalServiceMessage): ServiceMessage {
+	return {
+		...message,
+		timestamp: new Date(message.timestamp).getTime(),
+	}
 }
 
 /**
