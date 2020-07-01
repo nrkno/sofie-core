@@ -29,6 +29,8 @@ export interface ISettings {
 	allowGrabbingTimeline: boolean
 	/** Allow Segments to become unsynced, rather than the entire rundown */
 	allowUnsyncedSegments: boolean
+	/** Allow resets while a rundown is on-air */
+	allowRundownResetOnAir: boolean
 }
 
 export let Settings: ISettings
@@ -45,6 +47,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
 	allowUnsyncedSegments: false,
+	allowRundownResetOnAir: false,
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
