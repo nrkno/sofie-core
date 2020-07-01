@@ -31,6 +31,8 @@ export interface ISettings {
 	allowUnsyncedSegments: boolean
 	/** Allow resets while a rundown is on-air */
 	allowRundownResetOnAir: boolean
+	/** Default duration to use to render parts when no duration is provided */
+	defaultDisplayDuration: number
 }
 
 export let Settings: ISettings
@@ -48,6 +50,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowGrabbingTimeline: true,
 	allowUnsyncedSegments: false,
 	allowRundownResetOnAir: false,
+	defaultDisplayDuration: 3000,
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)

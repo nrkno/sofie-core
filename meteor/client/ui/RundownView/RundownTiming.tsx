@@ -12,7 +12,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
+import { Settings } from '../../../lib/Settings'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
@@ -111,7 +111,6 @@ export namespace RundownTiming {
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
 // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
-const DEFAULT_DURATION = 3000
 
 /**
  * RundownTimingProvider properties.
@@ -348,7 +347,9 @@ export const RundownTimingProvider = withTracker<
 							Math.max(
 								0,
 								this.displayDurationGroups[partInstance.part.displayDurationGroup],
-								partInstance.part.gap ? MINIMAL_NONZERO_DURATION : this.props.defaultDuration || DEFAULT_DURATION
+								partInstance.part.gap
+									? MINIMAL_NONZERO_DURATION
+									: this.props.defaultDuration || Settings.defaultDisplayDuration
 							)
 						memberOfDisplayDurationGroup = true
 					}
@@ -374,7 +375,7 @@ export const RundownTimingProvider = withTracker<
 							partInstance.part.duration ||
 							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
 							this.props.defaultDuration ||
-							DEFAULT_DURATION
+							Settings.defaultDisplayDuration
 						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 					} else {
@@ -385,7 +386,7 @@ export const RundownTimingProvider = withTracker<
 								displayDurationFromGroup ||
 								partInstance.part.expectedDuration ||
 								this.props.defaultDuration ||
-								DEFAULT_DURATION
+								Settings.defaultDisplayDuration
 						)
 						partDisplayDurationNoPlayback = partDisplayDuration
 						this.partPlayed[unprotectString(partInstance.part._id)] = (partInstance.part.duration || 0) - playOffset
@@ -430,7 +431,7 @@ export const RundownTimingProvider = withTracker<
 
 					// Handle invalid parts by overriding the values to preset values for Invalid parts
 					if (partInstance.part.invalid && !partInstance.part.gap) {
-						partDisplayDuration = this.props.defaultDuration || DEFAULT_DURATION
+						partDisplayDuration = this.props.defaultDuration || Settings.defaultDisplayDuration
 						this.partPlayed[unprotectString(partInstance.part._id)] = 0
 					}
 
@@ -911,7 +912,7 @@ export function computeSegmentDuration(
 		const pId = unprotectString(partId)
 		const partDuration =
 			(partDurations ? (partDurations[pId] !== undefined ? partDurations[pId] : 0) : 0) ||
-			(display ? DEFAULT_DISPLAY_DURATION : 0)
+			(display ? Settings.defaultDisplayDuration : 0)
 		return memo + partDuration
 	}, 0)
 }
