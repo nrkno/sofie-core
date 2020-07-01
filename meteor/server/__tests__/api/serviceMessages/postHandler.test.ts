@@ -313,7 +313,7 @@ describe('ServiceMessages API POST endpoint', () => {
 		})
 
 		it('should call API writeMessage with the given timestamp', () => {
-			const expected = new Date(validInput.timestamp)
+			const expected = new Date(validInput.timestamp).getTime()
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
 			postHandler({}, mockRequest, mockResponse)

@@ -78,8 +78,8 @@ describe('Service messages internal API', () => {
 
 			const actual = readAllMessages()
 
-			expect(actual).toContainEqual(message1)
-			expect(actual).toContainEqual(message2)
+			expect(actual).toContainEqual(convertExternalToServiceMessage(message1))
+			expect(actual).toContainEqual(convertExternalToServiceMessage(message2))
 			spy.mockRestore()
 		})
 	})
@@ -132,7 +132,7 @@ describe('Service messages internal API', () => {
 
 		it('should write message to CoreSystem.serviceMessages', () => {
 			const expected = {}
-			expected[message2.id] = message2
+			expected[message2.id] = convertExternalToServiceMessage(message2)
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
@@ -140,14 +140,18 @@ describe('Service messages internal API', () => {
 
 			writeMessage(convertExternalToServiceMessage(message2))
 
-			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, { $set: { serviceMessages: expected } })
+			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, {
+				$set: {
+					serviceMessages: expected,
+				},
+			})
 			spyGetCoreSystem.mockRestore()
 		})
 
 		it('should leave existing messages untouched', () => {
 			const expected = {}
-			expected[message1.id] = message1
-			expected[message2.id] = message2
+			expected[message1.id] = convertExternalToServiceMessage(message1)
+			expected[message2.id] = convertExternalToServiceMessage(message2)
 			const cs = Object.assign({}, fakeCoreSystem, {
 				serviceMessages: {},
 			})
@@ -155,7 +159,11 @@ describe('Service messages internal API', () => {
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystem').mockImplementation(() => cs)
 			const actual = writeMessage(convertExternalToServiceMessage(message2))
 
-			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, { $set: { serviceMessages: expected } })
+			expect(CoreSystem.CoreSystem.update).toHaveBeenCalledWith(cs._id, {
+				$set: {
+					serviceMessages: expected,
+				},
+			})
 			spy.mockRestore()
 		})
 
