@@ -422,7 +422,6 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const resolvedPieces = getResolvedPieces(cache, currentPartInstance)
 		const stopAt = getCurrentTime() + (timeOffset || 0)
-		const relativeStop = stopAt - lastStartedPlayback
 
 		const stoppedInfiniteIds = new Set<PieceId>()
 
