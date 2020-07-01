@@ -22,7 +22,8 @@ import {
 	IBlueprintResolvedPieceInstance,
 	PieceLifespan,
 	OmitId,
-	AdlibActionMutatablePart,
+	IBlueprintMutatablePart,
+	PartHoldMode,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
@@ -70,17 +71,28 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof OmitId<IBlueprintPiece>>
 
-const AdlibActionMutatablePartSample: Required<AdlibActionMutatablePart> = {
+const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
+	title: '',
 	metaData: {},
-	expectedDuration: 0,
+	autoNext: false,
+	autoNextOverlap: 0,
 	prerollDuration: 0,
-	transitionDuration: 0,
-	transitionPrerollDuration: 0,
-	transitionKeepaliveDuration: 0,
+	transitionPrerollDuration: null,
+	transitionKeepaliveDuration: null,
+	transitionDuration: null,
+	disableOutTransition: false,
+	expectedDuration: 0,
+	holdMode: PartHoldMode.NONE,
+	shouldNotifyCurrentPlayingPart: false,
+	classes: [],
+	classesForNext: [],
+	displayDurationGroup: '',
+	displayDuration: 0,
+	identifier: '',
 }
 // Compile a list of the keys which are allowed to be set
-const AdlibActionMutatablePartSampleKeys = Object.keys(AdlibActionMutatablePartSample) as Array<
-	keyof AdlibActionMutatablePart
+const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSample) as Array<
+	keyof IBlueprintMutatablePart
 >
 
 /** Actions */
@@ -121,28 +133,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				throw new Error(`Unknown part "${part}"`)
 		}
 	}
-
-	// getNextShowStyleConfig (): {[key: string]: ConfigItemValue} {
-	// 	const partInstanceId = this.rundownPlaylist.nextPartInstanceId
-	// 	if (!partInstanceId) {
-	// 		throw new Error('Cannot get ShowStyle config when there is no next part')
-	// 	}
-
-	// 	const partInstance = this.cache.PartInstances.findOne(partInstanceId)
-	// 	const rundown = partInstance ? this.cache.Rundowns.findOne(partInstance.rundownId) : undefined
-	// 	if (!rundown) {
-	// 		throw new Error(`Failed to fetch rundown for PartInstance "${partInstanceId}"`)
-	// 	}
-
-	// 	const showStyleCompound = getShowStyleCompound(rundown.showStyleVariantId)
-	// 	if (!showStyleCompound) throw new Error(`Failed to compile showStyleCompound for "${rundown.showStyleVariantId}"`)
-
-	// 	const res: {[key: string]: ConfigItemValue} = {}
-	// 	_.each(showStyleCompound.config, (c) => {
-	// 		res[c._id] = c.value
-	// 	})
-	// 	return res
-	// }
 
 	getCurrentTime(): number {
 		return getCurrentTime()
@@ -397,9 +387,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(newPartInstance))
 	}
-	updatePartInstance(part: 'current' | 'next', props: AdlibActionMutatablePart): void {
+	updatePartInstance(part: 'current' | 'next', props: IBlueprintMutatablePart): void {
 		// filter the submission to the allowed ones
-		const trimmedProps: Partial<AdlibActionMutatablePart> = _.pick(props, AdlibActionMutatablePartSampleKeys)
+		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(props, IBlueprintMutatablePartSampleKeys)
 		if (Object.keys(trimmedProps).length === 0) {
 			throw new Error('Some valid properties must be defined')
 		}
