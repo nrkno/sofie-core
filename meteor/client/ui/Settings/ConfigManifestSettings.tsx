@@ -99,6 +99,21 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 					className="input text-input input-l"
 				/>
 			)
+		case ConfigManifestEntryType.MULTILINE_STRING:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="multiline"
+					collection={collection}
+					className="input text-input input-l"
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join('\n'))}
+					mutateUpdateValue={(v) =>
+						v === undefined || v.length === 0 ? undefined : v.split('\n').map((i) => i.trimStart())
+					}
+				/>
+			)
 		case ConfigManifestEntryType.NUMBER:
 			return (
 				<EditAttribute
