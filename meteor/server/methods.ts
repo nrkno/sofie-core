@@ -99,7 +99,9 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 						return result
 					}
 				} catch (err) {
-					logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
+					if (!_suppressExtraErrorLogging) {
+						logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
+					}
 					delete runningMethods[methodId]
 					throw err
 				}
@@ -119,4 +121,8 @@ export function getRunningMethods() {
 }
 export function resetRunningMethods() {
 	runningMethods = {}
+}
+let _suppressExtraErrorLogging: boolean = true
+export function suppressExtraErrorLogging(value: boolean) {
+	_suppressExtraErrorLogging = value
 }

@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { AllMeteorMethods } from '../../methods'
+import { AllMeteorMethods, suppressExtraErrorLogging } from '../../methods'
 import { disableChecks, enableChecks as restoreChecks } from '../../../lib/check'
 
 /** These function are used to verify that all methods defined are using security functions */
@@ -9,11 +9,14 @@ let writeAccessTest = false
 export function testWriteAccess() {
 	writeAccessTest = true
 }
+export function isInTestWrite() {
+	return writeAccessTest
+}
 /** Called inside access control function, to indicate that a check was made */
 export function triggerWriteAccess() {
 	if (writeAccessTest) {
 		writeAccess = true
-		throw new Meteor.Error(200, 'triggerWriteAccess')
+		throw new Meteor.Error(200, 'triggerWriteAccess') // to be ignored in verifyMethod
 	}
 }
 export function verifyWriteAccess() {
@@ -68,6 +71,7 @@ export async function verifyAllMethods() {
 }
 function verifyMethod(methodName: string) {
 	let ok = true
+	suppressExtraErrorLogging(true)
 	try {
 		disableChecks()
 		testWriteAccess()
@@ -81,6 +85,7 @@ function verifyMethod(methodName: string) {
 			ok = false
 		}
 	}
+	suppressExtraErrorLogging(false)
 	restoreChecks()
 	const verifyError = verifyWriteAccess()
 	if (ok && verifyError) {
