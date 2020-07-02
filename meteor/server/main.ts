@@ -40,7 +40,7 @@ import './api/systemTime/systemTime'
 import './Connections'
 import './coreSystem'
 import './cronjobs'
-import './smtp'
+import './email'
 // import './api/ExternalMessageQueue' // called above
 // import './performanceMonitor' // called above
 
