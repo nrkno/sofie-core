@@ -208,9 +208,7 @@ export function allowAccessToPeripheralDeviceContent(
 
 namespace AccessRules {
 	export function accessCoreSystem(cred: ResolvedCredentials): Access<null> {
-		if (!cred.organization) return noAccess('No organization in credentials')
-		if (!cred.user) return noAccess('Not logged in')
-		if (cred.user.superAdmin) {
+		if (cred.user && cred.user.superAdmin) {
 			return allAccess(null)
 		} else {
 			return {

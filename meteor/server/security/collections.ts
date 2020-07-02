@@ -38,7 +38,7 @@ import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { Timeline } from '../../lib/collections/Timeline'
 import { rundownContentAllowWrite } from './rundown'
-import { SystemReadAccess } from './system'
+import { SystemReadAccess, SystemWriteAccess } from './system'
 
 // Set up direct collection write access
 
@@ -61,7 +61,7 @@ Users.allow({
 		return false
 	},
 	update(userId, doc, fields, modifier) {
-		const access = SystemReadAccess.currentUser(userId, { userId })
+		const access = SystemWriteAccess.currentUser(userId, { userId })
 		if (!access) return logNotAllowed('CurrentUser', '')
 		return rejectFields(doc, fields, [
 			'_id',

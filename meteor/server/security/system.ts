@@ -43,6 +43,12 @@ export namespace SystemWriteAccess {
 
 		return true
 	}
+	export function currentUser(userId: UserId, cred: Credentials): boolean {
+		const access = allowAccessToCurrentUser(cred, userId)
+		if (!access.read) return logNotAllowed('Current user', access.reason)
+
+		return true
+	}
 	export function migrations(cred0: Credentials) {
 		return coreSystem(cred0)
 	}

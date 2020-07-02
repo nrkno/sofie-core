@@ -179,7 +179,7 @@ export namespace ServerPlayoutAPI {
 		rehearsal?: boolean
 	) {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			const dbPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+			const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 			if (!dbPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
 			if (dbPlaylist.active && !dbPlaylist.rehearsal && !Settings.allowRundownResetOnAir)
 				throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
