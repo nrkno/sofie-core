@@ -15,9 +15,6 @@ const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
 export async function fetchPiecesThatMayBeActiveForPart(
 	cache: CacheForRundownPlaylist,
-	// rundown: Rundown,
-	// segment: Segment,
-	// playingPartInstance: PartInstance | undefined,
 	part: DBPart
 ): Promise<Piece[]> {
 	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, { startPartId: part._id })
@@ -62,17 +59,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 		],
 	})
 
-	// const pieceInstancesInPrevious = playingPartInstance
-	// 	? cache.PieceInstances.findFetch({
-	// 			'piece.lifespan': {
-	// 				$in: [PieceLifespan.OutOnRundownChange, PieceLifespan.OutOnSegmentChange],
-	// 			},
-	// 			partInstanceId: playingPartInstance._id,
-	// 	  })
-	// 	: []
-
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
-
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 

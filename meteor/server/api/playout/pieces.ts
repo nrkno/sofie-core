@@ -39,28 +39,35 @@ import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
-export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[] {
-	pieces.sort((a, b) => {
-		if (a.enable.start < b.enable.start) {
+function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T): 0 | 1 | -1 {
+	if (a.enable.start < b.enable.start) {
+		return -1
+	} else if (a.enable.start > b.enable.start) {
+		return 1
+	} else {
+		// Transitions first
+		if (a.isTransition && !b.isTransition) {
 			return -1
-		} else if (a.enable.start > b.enable.start) {
+		} else if (!a.isTransition && b.isTransition) {
+			return 1
+		} else if (a._id < b._id) {
+			// Then go by id to make it consistent
+			return -1
+		} else if (a._id > b._id) {
 			return 1
 		} else {
-			// Transitions first
-			if (a.isTransition && !b.isTransition) {
-				return -1
-			} else if (!a.isTransition && b.isTransition) {
-				return 1
-			} else if (a._id < b._id) {
-				// Then go by id to make it consistent
-				return -1
-			} else if (a._id > b._id) {
-				return 1
-			} else {
-				return 0
-			}
+			return 0
 		}
-	})
+	}
+}
+
+export function sortPieceInstancesByStart(pieces: PieceInstance[]): PieceInstance[] {
+	pieces.sort((a, b) => comparePieceStart(a.piece, b.piece))
+	return pieces
+}
+
+export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[] {
+	pieces.sort(comparePieceStart)
 	return pieces
 }
 

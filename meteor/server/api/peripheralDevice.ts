@@ -188,6 +188,7 @@ export namespace ServerPeripheralDeviceAPI {
 				studioId: studioId,
 				active: true,
 			})
+			// TODO-INFINITE - This cache usage NEEDS to be inside a rundownPlaylistSyncFunction. otherwise the cache.saveAllToDatabase() could fight with another
 			const cache = activePlaylist
 				? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
 				: waitForPromise(initCacheForNoRundownPlaylist(studioId))
@@ -243,10 +244,10 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStarted(r.rundownId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(r.rundownPlaylistId, r.partInstanceId, r.time)
 	}
 	export function partPlaybackStopped(
 		deviceId: PeripheralDeviceId,
@@ -258,10 +259,10 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStopped(r.rundownId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStopped(r.rundownPlaylistId, r.partInstanceId, r.time)
 	}
 	export function piecePlaybackStarted(
 		deviceId: PeripheralDeviceId,
@@ -273,11 +274,11 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStarted(r.rundownPlaylistId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
 	}
 	export function piecePlaybackStopped(
 		deviceId: PeripheralDeviceId,
@@ -289,11 +290,11 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice) throw new Meteor.Error(404, "peripheralDevice '" + deviceId + "' not found!")
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
-		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
+		ServerPlayoutAPI.onPiecePlaybackStopped(r.rundownPlaylistId, r.pieceInstanceId, !!r.dynamicallyInserted, r.time)
 	}
 	export function pingWithCommand(deviceId: PeripheralDeviceId, token: string, message: string, cb?: Function) {
 		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)

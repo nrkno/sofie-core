@@ -448,23 +448,27 @@ export namespace ServerPlayoutAdLibAPI {
 				if (newEnd !== undefined) {
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${newEnd}`)
 
+					const up: any = {
+						userDuration: {
+							end: newEnd,
+						},
+					}
+					if (pieceInstance.infinite) {
+						// Mark where this ends
+						up['infinite.lastPartInstanceId'] = currentPartInstance._id
+						stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
+					}
+
 					cache.PieceInstances.update(
 						{
 							_id: pieceInstance._id,
 						},
 						{
-							$set: {
-								userDuration: {
-									end: newEnd,
-								},
-							},
+							$set: up,
 						}
 					)
 
 					changedInstances.push(pieceInstance._id)
-					if (pieceInstance.infinite) {
-						stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
-					}
 				}
 			}
 		}

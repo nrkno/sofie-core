@@ -51,6 +51,9 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		// TODO - more properties?
 		/** When the instance was a copy made from hold */
 		fromHold?: boolean
+
+		/** The last partInstance this should exist in */
+		lastPartInstanceId?: PartInstanceId
 	}
 
 	/** This is set when the duration needs to be overriden from some user action */

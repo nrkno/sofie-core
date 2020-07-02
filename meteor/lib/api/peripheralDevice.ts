@@ -11,6 +11,7 @@ import { PieceInstanceId } from '../collections/PieceInstances'
 import { MediaWorkFlowId, MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
+import { RundownPlaylistId } from '../collections/RundownPlaylists'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -409,13 +410,13 @@ export namespace PeripheralDeviceAPI {
 	export type TimelineTriggerTimeResult = Array<{ id: string; time: number }>
 
 	export interface PartPlaybackStartedResult {
-		rundownId: RundownId
+		rundownPlaylistId: RundownPlaylistId
 		partInstanceId: PartInstanceId
 		time: number
 	}
 	export type PartPlaybackStoppedResult = PartPlaybackStartedResult
 	export interface PiecePlaybackStartedResult {
-		rundownId: RundownId
+		rundownPlaylistId: RundownPlaylistId
 		pieceInstanceId: PieceInstanceId
 		dynamicallyInserted?: boolean
 		time: number

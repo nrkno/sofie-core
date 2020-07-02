@@ -143,6 +143,8 @@ export enum RundownSyncFunctionPriority {
 	USER_INGEST = 9,
 	/** Events initiated from user, for playout */
 	USER_PLAYOUT = 10,
+	/** Events initiated from playout-gateway callbacks */
+	CALLBACK_PLAYOUT = 20,
 }
 export function rundownPlaylistSyncFunction<T extends Function>(
 	rundownPlaylistId: RundownPlaylistId,
@@ -1254,7 +1256,7 @@ function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown
 
 	UpdateNext.ensureNextPartIsValid(cache, playlist)
 
-	triggerUpdateTimelineAfterIngestData(cache, rundown._id, changedSegmentIds)
+	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
 }
 
 export function handleRemovedPart(

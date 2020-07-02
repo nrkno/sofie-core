@@ -374,19 +374,6 @@ function startHold(
 		(i) => i.piece.extendOnHold
 	)
 	itemsToCopy.forEach((instance) => {
-		// TODO-PartInstance - temporary mutate existing piece, pending new data flow
-		// const rawPiece = cache.Pieces.findOne((p) => p._id === instance.piece._id)
-		// if (rawPiece) {
-		// 	rawPiece.infiniteId = rawPiece._id
-		// 	rawPiece.infiniteMode = PieceLifespan.OutOnNextPart
-		// 	cache.Pieces.update(rawPiece._id, {
-		// 		$set: {
-		// 			infiniteMode: PieceLifespan.OutOnNextPart,
-		// 			infiniteId: rawPiece._id,
-		// 		},
-		// 	})
-		// }
-
 		// mark current one as infinite
 		instance.infinite = {
 			infinitePieceId: instance.piece._id,
@@ -442,7 +429,7 @@ function completeHold(
 	if (playlist.currentPartInstanceId) {
 		if (!currentPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
 
-		// Remove the current extension line
+		// Clear the current extension line
 		const extendedPieceInstances = cache.PieceInstances.findFetch({
 			partInstanceId: currentPartInstance._id,
 			'piece.extendOnHold': true,

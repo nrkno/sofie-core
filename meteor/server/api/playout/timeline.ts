@@ -791,14 +791,11 @@ function transformPartIntoTimeline(
 		}
 		if (pieceInstance.definitelyEnded && pieceInstance.definitelyEnded < getCurrentTime()) return
 
-		const isInfiniteContinuation =
-			pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id // TODO-INFINITE this check doesnt work
-		if (isInfiniteContinuation && pieceInstance.infinite) {
-			pieceInstance.piece._id = pieceInstance.infinite.infinitePieceId
-		}
-
 		if (pieceInstance.piece.content && pieceInstance.piece.content.timelineObjects) {
 			let tos: TimelineObjectCoreExt[] = pieceInstance.piece.content.timelineObjects
+
+			const isInfiniteContinuation =
+				pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id // TODO-INFINITE this check doesnt work
 
 			const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
 			if (pieceEnable.start === 0 && !isInfiniteContinuation) {
