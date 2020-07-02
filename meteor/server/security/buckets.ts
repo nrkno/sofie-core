@@ -48,16 +48,3 @@ export namespace BucketSecurity {
 		return StudioContentWriteAccess.bucket(cred, bucketAdLib.studioId)
 	}
 }
-// Setup rules:
-
-Buckets.allow({
-	insert(userId: UserId, doc: Bucket): boolean {
-		return false
-	},
-	update(userId, doc, fields, modifier) {
-		return studioContentAllowWrite(userId, doc) && rejectFields(doc, fields, ['_id'])
-	},
-	remove(userId, doc) {
-		return false
-	},
-})
