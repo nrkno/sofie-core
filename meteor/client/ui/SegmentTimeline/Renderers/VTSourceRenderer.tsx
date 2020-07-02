@@ -54,11 +54,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			const innerPiece = this.props.piece.instance.piece
 			const vtContent = innerPiece.content as VTContent | undefined
 
-			const itemDuration =
-				(vtContent ? vtContent.sourceDuration : undefined) ||
-				innerPiece.playoutDuration ||
-				this.props.piece.renderedDuration ||
-				0
+			const itemDuration = (vtContent ? vtContent.sourceDuration : undefined) || this.props.piece.renderedDuration || 0
 			let targetTime = this.props.cursorTimePosition
 			let seek = (vtContent ? vtContent.seek : undefined) || 0
 			if (vtContent && vtContent.loop && this.vPreview.duration > 0) {

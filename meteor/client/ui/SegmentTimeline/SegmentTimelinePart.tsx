@@ -94,7 +94,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 					// filter only pieces belonging to this part
 					return piece.instance.partInstanceId === this.props.part.instance._id
 						? // filter only pieces, that have not been hidden from the UI
-						  piece.instance.piece.hidden !== true && piece.instance.piece.virtual !== true
+						  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
 						: false
 				})
 			)
@@ -157,7 +157,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 						// filter only pieces belonging to this part
 						return piece.instance.partInstanceId === this.props.part.instance._id
 							? // filter only pieces, that have not been hidden from the UI
-							  piece.instance.piece.hidden !== true && piece.instance.piece.virtual !== true
+							  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
 							: false
 					})
 				)

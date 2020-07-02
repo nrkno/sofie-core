@@ -70,37 +70,34 @@ export namespace ServerPlayoutAdLibAPI {
 			const newPieceInstance = convertAdLibToPieceInstance(pieceToCopy, partInstance, false)
 			if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 				newPieceInstance.piece.content.timelineObjects = prefixAllObjectIds(
-					_.compact(
-						_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
-							return literal<TimelineObjGeneric>({
-								...obj,
-								// @ts-ignore _id
-								_id: obj.id || obj._id,
-								studioId: protectString(''), // set later
-								objectType: TimelineObjType.RUNDOWN,
-							})
+					_.map(newPieceInstance.piece.content.timelineObjects, (obj) => {
+						return literal<TimelineObjGeneric>({
+							...obj,
+							// @ts-ignore _id
+							_id: obj.id || obj._id,
+							studioId: protectString(''), // set later
+							objectType: TimelineObjType.RUNDOWN,
 						})
-					),
+					}),
 					unprotectString(newPieceInstance._id)
 				)
 			}
 
 			// Disable the original piece if from the same Part
 			if (pieceInstanceToCopy && pieceInstanceToCopy.partInstanceId === partInstance._id) {
-				const pieces = getResolvedPieces(cache, partInstance)
-				const resolvedPieceBeingCopied = pieces.find((p) => p._id === pieceInstanceToCopy._id)
-
 				// Ensure the piece being copied isnt currently live
 				if (
 					pieceInstanceToCopy.piece.startedPlayback &&
 					pieceInstanceToCopy.piece.startedPlayback <= getCurrentTime()
 				) {
+					const resolvedPieces = getResolvedPieces(cache, partInstance)
+					const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
+
 					if (
 						resolvedPieceBeingCopied &&
-						resolvedPieceBeingCopied.piece.playoutDuration !== undefined &&
-						(pieceInstanceToCopy.infinite ||
-							pieceInstanceToCopy.piece.startedPlayback +
-								resolvedPieceBeingCopied.piece.playoutDuration >=
+						resolvedPieceBeingCopied.resolvedDuration !== undefined &&
+						(resolvedPieceBeingCopied.infinite ||
+							resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
 								getCurrentTime())
 					) {
 						// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
@@ -113,8 +110,8 @@ export namespace ServerPlayoutAdLibAPI {
 
 				cache.PieceInstances.update(pieceInstanceToCopy._id, {
 					$set: {
-						'piece.disabled': true,
-						'piece.hidden': true,
+						disabled: true,
+						hidden: true,
 					},
 				})
 			}

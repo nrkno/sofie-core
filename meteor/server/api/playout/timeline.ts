@@ -785,7 +785,7 @@ function transformPartIntoTimeline(
 		: 0
 
 	_.each(clone(pieceInstances), (pieceInstance: PieceInstance) => {
-		if (pieceInstance.piece.disabled) return
+		if (pieceInstance.disabled) return
 		if (pieceInstance.piece.isTransition && (!allowTransition || isHold)) {
 			return
 		}

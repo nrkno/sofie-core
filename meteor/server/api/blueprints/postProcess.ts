@@ -142,7 +142,6 @@ export function postProcessAdLibPieces(
 			rundownId: protectString(innerContext.rundown._id),
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			disabled: false,
 		}
 
 		if (!piece.externalId)

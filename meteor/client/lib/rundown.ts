@@ -516,12 +516,7 @@ export namespace RundownUtils {
 					item.instance.piece.startedPlayback
 						? item.instance.userDuration.end - item.instance.piece.startedPlayback
 						: 0
-				return (
-					item.instance.piece.playoutDuration ||
-					userDurationNumber ||
-					item.renderedDuration ||
-					expectedDurationNumber
-				)
+				return userDurationNumber || item.renderedDuration || expectedDurationNumber
 			}
 
 			_.each<PartExtended>(partsE, (part) => {

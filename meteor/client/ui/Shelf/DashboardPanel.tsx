@@ -647,9 +647,6 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 					},
 				},
 			],
-			'piece.playoutDuration': {
-				$exists: false,
-			},
 			'piece.adLibSourceId': {
 				$exists: true,
 			},
@@ -670,13 +667,12 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let end: number | undefined = piece.playoutDuration
-				? piece.playoutDuration + piece.startedPlayback!
-				: pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
-				? pieceInstance.userDuration.end
-				: typeof piece.enable.duration === 'number'
-				? piece.enable.duration + piece.startedPlayback!
-				: undefined
+			let end: number | undefined =
+				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
+					? pieceInstance.userDuration.end
+					: typeof piece.enable.duration === 'number'
+					? piece.enable.duration + piece.startedPlayback!
+					: undefined
 
 			if (end !== undefined) {
 				if (end > now) {

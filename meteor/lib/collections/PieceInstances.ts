@@ -44,6 +44,11 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 
 	piece: PieceInstancePiece
 
+	/** A flag to signal a given Piece has been deactivated manually */
+	disabled?: boolean
+	/** A flag to signal that a given Piece should be hidden from the UI */
+	hidden?: boolean
+
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: {
 		infinitePieceId: PieceId

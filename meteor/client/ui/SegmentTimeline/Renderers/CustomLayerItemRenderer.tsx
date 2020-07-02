@@ -84,7 +84,6 @@ export class CustomLayerItemRenderer<
 
 		const vtContent = innerPiece.content as VTContent | undefined
 		if (
-			!innerPiece.playoutDuration &&
 			vtContent &&
 			vtContent.sourceDuration &&
 			(uiPiece.renderedInPoint || 0) + vtContent.sourceDuration > (this.props.partDuration || 0)
@@ -134,9 +133,7 @@ export class CustomLayerItemRenderer<
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
-		return innerPiece.lifespan === PieceLifespan.OutOnRundownEnd &&
-			!innerPiece.playoutDuration &&
-			!uiPiece.instance.userDuration ? (
+		return innerPiece.lifespan === PieceLifespan.OutOnRundownEnd && !uiPiece.instance.userDuration ? (
 			<div className="segment-timeline__piece__label label-icon label-infinite-icon">
 				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#ffff00" viewBox="0 0 8 8">
 					<path

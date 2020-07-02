@@ -290,7 +290,6 @@ function copyOverflowingPieces(
 				instance.piece.overflows &&
 				typeof instance.piece.enable.duration === 'number' &&
 				instance.piece.enable.duration > 0 &&
-				instance.piece.playoutDuration === undefined &&
 				instance.userDuration === undefined
 			) {
 				// Subtract the amount played from the duration

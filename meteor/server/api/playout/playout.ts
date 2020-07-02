@@ -654,7 +654,7 @@ export namespace ServerPlayoutAPI {
 				return filteredPieces.find((piece) => {
 					return (
 						piece.piece.enable.start >= nowInPart &&
-						((!undo && !piece.piece.disabled) || (undo && piece.piece.disabled))
+						((!undo && !piece.disabled) || (undo && piece.disabled))
 					)
 				})
 			}
@@ -683,7 +683,7 @@ export namespace ServerPlayoutAPI {
 				logger.info((undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + nextPieceInstance._id)
 				cache.PieceInstances.update(nextPieceInstance._id, {
 					$set: {
-						'piece.disabled': !undo,
+						disabled: !undo,
 					},
 				})
 

@@ -324,7 +324,7 @@ export const SourceLayerItem = withTranslation()(
 					? piece.instance.userDuration.end - innerPiece.startedPlayback
 					: 0
 			let itemDuration = Math.min(
-				innerPiece.playoutDuration || userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0,
+				userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0,
 				this.props.partDuration - (piece.renderedInPoint || 0)
 			)
 
@@ -334,7 +334,6 @@ export const SourceLayerItem = withTranslation()(
 						innerPiece.enable.end === undefined &&
 						innerPiece.enable.duration === undefined)) &&
 				!piece.cropped &&
-				!innerPiece.playoutDuration &&
 				!piece.instance.userDuration
 			) {
 				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
@@ -716,9 +715,7 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0 &&
 								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
 
-							infinite: (innerPiece.playoutDuration === undefined &&
-								piece.instance.userDuration === undefined &&
-								innerPiece.infiniteMode) as boolean, // 0 is a special value
+							infinite: (piece.instance.userDuration === undefined && innerPiece.infiniteMode) as boolean, // 0 is a special value
 							'next-is-touching': !!(
 								this.props.piece.cropped ||
 								(innerPiece.enable.end && _.isString(innerPiece.enable.end))

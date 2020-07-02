@@ -23,10 +23,10 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 
 	/** Playback availability status */
 	status: RundownAPI.PieceStatusCode
-	/** A flag to signal a given Piece has been deactivated manually */
-	disabled?: boolean
-	/** A flag to signal that a given Piece should be hidden from the UI */
-	hidden?: boolean
+	// /** A flag to signal a given Piece has been deactivated manually */
+	// disabled?: boolean
+	// /** A flag to signal that a given Piece should be hidden from the UI */
+	// hidden?: boolean
 	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
@@ -39,8 +39,8 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartTimings
-	/** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
-	playoutDuration?: number
+	// /** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
+	// playoutDuration?: number
 
 	isTransition?: boolean
 	extendOnHold?: boolean
