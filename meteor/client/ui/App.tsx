@@ -21,7 +21,7 @@ import {
 	getUIZoom,
 } from '../lib/localStorage'
 import Status from './Status'
-import SettingsComponent from './Settings'
+import { Settings as SettingsComponent } from './Settings'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
@@ -33,11 +33,12 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 import { Settings } from '../../lib/Settings'
-import { LoginPage } from './LoginPage'
-import { SignupPage } from './SignupPage'
-import { RequestResetPage } from './RequestResetPage'
-import { ResetPage } from './ResetPage'
-import { AccountPage } from './AccountPage'
+import { LoginPage } from './Account/NotLoggedIn/LoginPage'
+import { SignupPage } from './Account/NotLoggedIn/SignupPage'
+import { LostPasswordPage } from './Account/NotLoggedIn/LostPassword'
+import { ResetPasswordPage } from './Account/NotLoggedIn/ResetPasswordPage'
+import { AccountPage } from './Account/AccountPage'
+import { OrganizationPage } from './Account/OrganizationPage'
 import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
@@ -59,6 +60,7 @@ interface IAppState {
 	allowTesting: boolean
 	allowDeveloper: boolean
 	allowService: boolean
+
 	subscriptionsReady: boolean
 	requestedRoute?: string
 }
@@ -66,7 +68,9 @@ interface IAppState {
 // App component - represents the whole app
 export const App = translateWithTracker(() => {
 	const user = getUser() // just for reactivity
-	meteorSubscribe(PubSub.organization, {})
+	if (user) {
+		meteorSubscribe(PubSub.organization, { organizationId: user.organizationId })
+	}
 	return { user }
 })(
 	class App extends MeteorReactComponent<Translated<IAppProps>, IAppState> {
@@ -78,19 +82,14 @@ export const App = translateWithTracker(() => {
 			const params = queryStringParse(location.search)
 			let requestedRoute: string = ''
 
-			if (params['studio']) setAllowStudio(params['studio'] === '1')
-			if (params['configure']) setAllowConfigure(params['configure'] === '1')
-			if (params['develop']) setAllowDeveloper(params['develop'] === '1')
-			if (params['testing']) setAllowTesting(params['testing'] === '1')
-			if (params['speak']) setAllowSpeaking(params['speak'] === '1')
-			if (params['service']) setAllowService(params['service'] === '1')
-			if (params['help']) setHelpMode(params['help'] === '1')
-			if (params['zoom'] && typeof params['zoom'] === 'string') {
-				setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
-			}
+			if (!Settings.enableUserAccounts) {
+				if (params['studio']) setAllowStudio(params['studio'] === '1')
+				if (params['configure']) setAllowConfigure(params['configure'] === '1')
+				if (params['develop']) setAllowDeveloper(params['develop'] === '1')
+				if (params['testing']) setAllowTesting(params['testing'] === '1')
+				if (params['service']) setAllowService(params['service'] === '1')
 
-			if (params['admin']) {
-				if (!Settings.enableUserAccounts) {
+				if (params['admin']) {
 					const val = params['admin'] === '1'
 					setAllowStudio(val)
 					setAllowConfigure(val)
@@ -99,9 +98,15 @@ export const App = translateWithTracker(() => {
 					setAllowService(val)
 				}
 			}
+			if (params['speak']) setAllowSpeaking(params['speak'] === '1')
+			if (params['help']) setHelpMode(params['help'] === '1')
+			if (params['zoom'] && typeof params['zoom'] === 'string') {
+				setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
+			}
 
-			if (Settings.enableUserAccounts && !this.props.user) {
-				if (window.location.pathname !== '/') {
+			if (!this.props.user) {
+				const path = window.location.pathname + ''
+				if (path.match(/verify-email/)) {
 					requestedRoute = window.location.pathname
 				}
 			}
@@ -123,6 +128,7 @@ export const App = translateWithTracker(() => {
 			if (!Settings.enableUserAccounts) {
 				return <Route {...args} render={(props) => <Component {...props} />} />
 			} else {
+				// If not logged in, redirect to "/":
 				return (
 					<Route {...args} render={(props) => (this.props.user ? <Component {...props} /> : <Redirect to="/" />)} />
 				)
@@ -173,6 +179,9 @@ export const App = translateWithTracker(() => {
 				const invalid = Object.keys(roles).findIndex((k) => roles[k] !== this.state[k])
 				if (invalid !== -1) this.setState({ ...roles })
 			}
+			if (this.props.user && this.state.requestedRoute) {
+				this.setState({ requestedRoute: '' })
+			}
 		}
 
 		render() {
@@ -215,10 +224,22 @@ export const App = translateWithTracker(() => {
 											component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute} />}
 										/>,
 										<Route key="1" exact path="/login" component={() => <Redirect to="/" />} />,
-										<Route key="2" exact path="/signup" component={SignupPage} />,
-										<Route key="3" exact path="/reset" component={RequestResetPage} />,
-										<Route key="4" exact path="/reset/:token" component={ResetPage} />,
+										<Route
+											key="2"
+											exact
+											path="/login/verify-email/:token"
+											component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute} />}
+										/>,
+										<Route key="3" exact path="/signup" component={SignupPage} />,
+										<Route key="4" exact path="/reset" component={LostPasswordPage} />,
+										<Route key="5" exact path="/reset/:token" component={ResetPasswordPage} />,
 										<this.protectedRoute key="5" exact path="/account" component={AccountPage} />,
+										<this.protectedRoute
+											key="6"
+											exact
+											path="/organization"
+											component={(props) => <OrganizationPage {...props} />}
+										/>,
 									]
 								) : (
 									<Route exact path="/" component={RundownList} />
@@ -229,17 +250,7 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />
 								<this.protectedRoute path="/countdowns/:studioId/presenter" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
-								<this.protectedRoute
-									path="/settings"
-									component={() => (
-										<SettingsComponent
-											userAccounts={Settings.enableUserAccounts}
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
-										/>
-									)}
-								/>
+								<this.protectedRoute path="/settings" component={(props) => <SettingsComponent {...props} />} />
 								<Route path="/testTools" component={TestTools} />
 							</Switch>
 						</ErrorBoundary>

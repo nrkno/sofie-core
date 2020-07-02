@@ -25,6 +25,8 @@ meteorPublish(PubSub.coreSystem, function(token) {
 
 meteorPublish(PubSub.loggedInUser, function(token) {
 	const currentUserId = this.userId
+
+	if (!currentUserId) return null
 	if (SystemReadAccess.currentUser(currentUserId, { userId: this.userId, token })) {
 		return Users.find(
 			{

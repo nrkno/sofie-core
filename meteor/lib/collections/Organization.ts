@@ -8,14 +8,17 @@ import { UserId } from './Users'
 export type OrganizationId = ProtectedString<'OrganizationId'>
 
 /** An organization is the entity that owns data (studios, rundowns, etc..) in Sofie */
-export interface DBOrganization {
-	_id: OrganizationId
+export interface DBOrganizationBase {
 	/** Name of the organization  */
 	name: string
-
-	admins: UserAdmin[]
 	applications: string[]
 	broadcastMediums: string[]
+}
+export interface DBOrganization extends DBOrganizationBase {
+	_id: OrganizationId
+
+	admins: UserAdmin[]
+
 	notes?: string
 
 	created: number
@@ -26,12 +29,6 @@ export interface UserAdmin {
 	// permissions: // add later
 }
 export type Organization = DBOrganization // to be replaced by a class some time later?
-
-export interface NewOrganization {
-	name: string
-	applications: string[]
-	broadcastMediums: string[]
-}
 
 export const Organizations: TransformedCollection<Organization, DBOrganization> = createMongoCollection<DBOrganization>(
 	'organizations'

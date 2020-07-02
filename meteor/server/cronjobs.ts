@@ -77,7 +77,7 @@ Meteor.startup(() => {
 
 			// Remove old entries in Snapshots:
 			const oldSnapshotsCount: number = Snapshots.find({
-				timestamp: { $lt: cleanLimitTime },
+				created: { $lt: cleanLimitTime },
 			}).count()
 			if (oldSnapshotsCount > 0) {
 				logger.info(`Cronjob: Will remove ${oldSnapshotsCount} entries from Snapshots`)

@@ -47,6 +47,10 @@ export namespace OrganizationReadAccess {
 export namespace OrganizationContentWriteAccess {
 	// These functions throws if access is not allowed.
 
+	export function organization(cred0: Credentials, organizationId: OrganizationId) {
+		return anyContent(cred0, { organizationId })
+	}
+
 	export function studio(cred0: Credentials, existingStudio?: Studio | StudioId) {
 		triggerWriteAccess()
 		if (existingStudio && isProtectedString(existingStudio)) {

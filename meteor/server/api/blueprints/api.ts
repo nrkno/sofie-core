@@ -28,7 +28,6 @@ export function insertBlueprint(
 			throw new Meteor.Error(401, 'Only super admins can create new blueprints')
 		}
 	}
-
 	return Blueprints.insert({
 		_id: getRandomId(),
 		organizationId: organizationId,
@@ -75,12 +74,12 @@ export function uploadBlueprint(
 	check(blueprintName, Match.Maybe(String))
 
 	// TODO: add access control here
-	const { organizationId, blueprint } = OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
+	const { organizationId } = OrganizationContentWriteAccess.blueprint(context, blueprintId, true)
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
 
-	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
+	return innerUploadBlueprint(organizationId, undefined, blueprintId, body, blueprintName, ignoreIdChange)
 }
 /** Only to be called from internal functions */
 export function internalUploadBlueprint(

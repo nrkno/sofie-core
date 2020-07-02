@@ -1,13 +1,15 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { StatusResponse } from '../../lib/api/systemStatus'
-import { MeteorCall } from '../../lib/api/methods'
-import { getUser } from '../../lib/collections/Users'
+import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
+import { StatusResponse } from '../../../../lib/api/systemStatus'
+import { MeteorCall } from '../../../../lib/api/methods'
+import { getUser } from '../../../../lib/collections/Users'
+import { NotLoggedInContainer } from './lib'
+import { Link } from 'react-router-dom'
+import { createUser } from '../../../../lib/api/user'
 
 interface ISignupPageProps extends RouteComponentProps {}
 
@@ -26,7 +28,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 	if (user) props.history.push('/rundowns')
 	return {}
 })(
-	class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
+	class SignupPage extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
 		private applications: string[] = [
 			'Doing TV shows from a studio',
 			'Doing streaming on the web from a studio',
@@ -90,37 +92,25 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 				this.handleError(error.message)
 				return
 			}
-
-			MeteorCall.user
-				.createUser(this.state.email, this.state.password, { name: this.state.name })
-				.then(() => {
-					Meteor.loginWithPassword(this.state.email, this.state.password, () => {
-						MeteorCall.organization
-							.insertOrganization({
-								name: this.state.organization,
-								applications: this.state.applications,
-								broadcastMediums: this.state.broadcastMediums,
-							})
-							.catch((error) => {
-								this.handleError('Error creating new organization')
-							})
-					})
-				})
-				.catch((error) => {
-					this.handleError('Error creating new user')
-				})
+			createUser({
+				email: this.state.email,
+				password: this.state.password,
+				profile: { name: this.state.name },
+				createOrganization: {
+					name: this.state.organization,
+					applications: this.state.applications,
+					broadcastMediums: this.state.broadcastMediums,
+				},
+			}).catch((error) => {
+				console.error('Error creating new User', error)
+				this.handleError('Error creating new user')
+			})
 		}
 		render() {
 			const { t } = this.props
 			return (
-				<div className="center-page">
-					<header className="mvs alc header">
-						<div className="badge">
-							<div className="sofie-logo"></div>
-						</div>
-						<h1>{t('Sofie - TV Automation System')}</h1>
-					</header>
-					<form className="frow">
+				<NotLoggedInContainer>
+					<form className="frow content-left">
 						<div className="mtl flex-col page">
 							<p>{t('Your Account')}</p>
 							<input
@@ -199,9 +189,9 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 						</div>
 					</form>
 					<div className="flex-row-center container pills">
-						<button className="btn" onClick={() => this.props.history.push('/')}>
-							{t('Go back to Login')}
-						</button>
+						<Link className="selectable" to="/">
+							<button className="btn">{t('Go back')}</button>
+						</Link>
 						<button
 							className="btn btn-primary"
 							onClick={(e: React.MouseEvent<HTMLButtonElement>) => this.createAccount(e)}>
@@ -211,7 +201,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 					<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
 						<p>{this.state.error ? this.state.error : ''}&nbsp;</p>
 					</div>
-				</div>
+				</NotLoggedInContainer>
 			)
 		}
 	}

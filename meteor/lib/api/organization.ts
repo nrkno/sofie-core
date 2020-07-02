@@ -1,11 +1,10 @@
-import { OrganizationId, NewOrganization } from '../../lib/collections/Organization'
+import { OrganizationId } from '../../lib/collections/Organization'
+import { UserId } from '../collections/Users'
 
 export interface NewOrganizationAPI {
-	insertOrganization(organization: NewOrganization): Promise<OrganizationId>
-	removeOrganization(): Promise<void>
+	removeOrganization(organizationId: OrganizationId): Promise<void>
 }
 
 export enum OrganizationAPIMethods {
-	'insertOrganization' = 'organization.insertOrganization',
 	'removeOrganization' = 'organization.removeOrganization',
 }
