@@ -1834,68 +1834,69 @@ function setRundownStartedPlayback(
 
 interface UpdateTimelineFromIngestDataTimeout {
 	timeout?: number
+	playlistId: RundownPlaylistId
 	changedSegments: SegmentId[]
 }
-let updateTimelineFromIngestDataTimeouts: {
-	[rundownId: string]: UpdateTimelineFromIngestDataTimeout
-} = {}
+const updateTimelineFromIngestDataTimeouts = new Map<RundownId, UpdateTimelineFromIngestDataTimeout>()
 export function triggerUpdateTimelineAfterIngestData(
-	cache: CacheForRundownPlaylist,
 	rundownId: RundownId,
+	playlistId: RundownPlaylistId,
 	changedSegmentIds: SegmentId[]
 ) {
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
-	let data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts[unprotectString(rundownId)]
-	if (data) {
-		if (data.timeout) Meteor.clearTimeout(data.timeout)
-		data.changedSegments = data.changedSegments.concat(changedSegmentIds)
-	} else {
-		data = {
-			changedSegments: changedSegmentIds,
-		}
+	const data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts.get(rundownId) ?? {
+		changedSegments: [],
+		playlistId,
 	}
 
+	if (data.timeout) Meteor.clearTimeout(data.timeout)
+	data.changedSegments = data.changedSegments.concat(changedSegmentIds)
+	data.playlistId = playlistId
+
 	data.timeout = Meteor.setTimeout(() => {
-		delete updateTimelineFromIngestDataTimeouts[unprotectString(rundownId)]
+		if (updateTimelineFromIngestDataTimeouts.delete(rundownId)) {
+			return rundownPlaylistSyncFunction(data.playlistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+				const playlist = RundownPlaylists.findOne(data.playlistId)
+				if (!playlist) {
+					throw new Meteor.Error(404, `RundownPlaylist "${data.playlistId}" not found!`)
+				}
 
-		// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
-		let prevPart: Part | undefined
-		if (data.changedSegments) {
-			const firstSegment = cache.Segments.findOne({
-				rundownId: rundownId,
-				_id: { $in: data.changedSegments },
-			})
-			if (firstSegment) {
-				prevPart = getPartBeforeSegment(rundownId, firstSegment)
-			}
-		}
+				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-		const rundown = cache.Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		const playlist = getRundownPlaylistFromCache(cache, rundown)
-		if (!playlist)
-			throw new Meteor.Error(501, `Rundown "${rundownId}" not a part of a playlist: "${rundown.playlistId}"`)
+				// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
+				let prevPart: Part | undefined
+				if (data.changedSegments) {
+					const firstSegment = cache.Segments.findOne({
+						rundownId: rundownId,
+						_id: { $in: data.changedSegments },
+					})
+					if (firstSegment) {
+						prevPart = getPartBeforeSegment(rundownId, firstSegment)
+					}
+				}
 
-		// TODO - test the input data for this
-		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart, true)
+				const rundown = cache.Rundowns.findOne(rundownId)
+				if (!rundown) {
+					throw new Meteor.Error(
+						404,
+						`Rundown "${rundownId}" not found in RundownPlaylist "${data.playlistId}"!`
+					)
+				}
 
-		return rundownPlaylistSyncFunction(playlist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			if (playlist.active && playlist.currentPartInstanceId) {
-				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-				if (
-					currentPartInstance &&
-					(currentPartInstance.rundownId === rundown._id ||
-						(currentPartInstance.part.autoNext &&
-							nextPartInstance &&
-							nextPartInstance.rundownId === rundownId))
-				) {
+				// TODO - test the input data for this
+				updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart, true)
+
+				if (playlist.active && playlist.currentPartInstanceId) {
+					// If the playlist is active, then updateTimeline as lookahead could have been affected
 					updateTimeline(cache, rundown.studioId)
 				}
-			}
-		})
+
+				waitForPromise(cache.saveAllToDatabase())
+			})
+		}
 	}, 1000)
 
-	updateTimelineFromIngestDataTimeouts[unprotectString(rundownId)] = data
+	updateTimelineFromIngestDataTimeouts.set(rundownId, data)
 }
 
 function getRundown(rundownId: RundownId): Rundown {
