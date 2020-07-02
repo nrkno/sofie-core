@@ -60,6 +60,7 @@ interface IAppState {
 	allowTesting: boolean
 	allowDeveloper: boolean
 	allowService: boolean
+
 	subscriptionsReady: boolean
 	requestedRoute?: string
 }
@@ -79,19 +80,14 @@ export const App = translateWithTracker(() => {
 			const params = queryStringParse(location.search)
 			let requestedRoute: string = ''
 
-			if (params['studio']) setAllowStudio(params['studio'] === '1')
-			if (params['configure']) setAllowConfigure(params['configure'] === '1')
-			if (params['develop']) setAllowDeveloper(params['develop'] === '1')
-			if (params['testing']) setAllowTesting(params['testing'] === '1')
-			if (params['speak']) setAllowSpeaking(params['speak'] === '1')
-			if (params['service']) setAllowService(params['service'] === '1')
-			if (params['help']) setHelpMode(params['help'] === '1')
-			if (params['zoom'] && typeof params['zoom'] === 'string') {
-				setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
-			}
+			if (!Settings.enableUserAccounts) {
+				if (params['studio']) setAllowStudio(params['studio'] === '1')
+				if (params['configure']) setAllowConfigure(params['configure'] === '1')
+				if (params['develop']) setAllowDeveloper(params['develop'] === '1')
+				if (params['testing']) setAllowTesting(params['testing'] === '1')
+				if (params['service']) setAllowService(params['service'] === '1')
 
-			if (params['admin']) {
-				if (!Settings.enableUserAccounts) {
+				if (params['admin']) {
 					const val = params['admin'] === '1'
 					setAllowStudio(val)
 					setAllowConfigure(val)
@@ -100,10 +96,15 @@ export const App = translateWithTracker(() => {
 					setAllowService(val)
 				}
 			}
+			if (params['speak']) setAllowSpeaking(params['speak'] === '1')
+			if (params['help']) setHelpMode(params['help'] === '1')
+			if (params['zoom'] && typeof params['zoom'] === 'string') {
+				setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
+			}
 
-			if (Settings.enableUserAccounts && !this.props.user) {
-				const path = window.location.pathname
-				if (path !== '/' && path.indexOf('verify-email') === -1) {
+			if (!this.props.user) {
+				const path = window.location.pathname + ''
+				if (path.match(/verify-email/)) {
 					requestedRoute = window.location.pathname
 				}
 			}
@@ -125,6 +126,7 @@ export const App = translateWithTracker(() => {
 			if (!Settings.enableUserAccounts) {
 				return <Route {...args} render={(props) => <Component {...props} />} />
 			} else {
+				// If not logged in, redirect to "/":
 				return (
 					<Route {...args} render={(props) => (this.props.user ? <Component {...props} /> : <Redirect to="/" />)} />
 				)

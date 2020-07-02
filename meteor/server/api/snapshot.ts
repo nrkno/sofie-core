@@ -246,7 +246,7 @@ function createSystemSnapshot(studioId: StudioId | null, organizationId: Organiz
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 
 	if (Settings.enableUserAccounts && !organizationId)
-		throw new Meteor.Error(500, 'Not able to create a systemSnaphost without studioId')
+		throw new Meteor.Error(500, 'Not able to create a systemSnaphost without organizationId')
 
 	let queryStudio: MongoQuery<Studio> = {}
 	let queryShowStyleBases: MongoQuery<ShowStyleBase> = {}

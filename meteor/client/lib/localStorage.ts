@@ -20,7 +20,6 @@ function checkUserRole(role: string): boolean {
 }
 
 export function setAllowStudio(studioMode: boolean) {
-	if (Settings.enableUserAccounts) return
 	localStorage.setItem(UiAllowAccess.STUDIO, studioMode ? '1' : '0')
 }
 export function getAllowStudio(): boolean {
@@ -31,7 +30,6 @@ export function getAllowStudio(): boolean {
 }
 
 export function setAllowConfigure(configureMode: boolean) {
-	if (Settings.enableUserAccounts) return
 	localStorage.setItem(UiAllowAccess.CONFIGURE, configureMode ? '1' : '0')
 }
 export function getAllowConfigure(): boolean {
@@ -49,7 +47,6 @@ export function getAllowService(): boolean {
 }
 
 export function setAllowDeveloper(developerMode: boolean) {
-	if (Settings.enableUserAccounts) return
 	localStorage.setItem(UiAllowAccess.DEVELOPER, developerMode ? '1' : '0')
 }
 export function getAllowDeveloper(): boolean {
@@ -60,7 +57,6 @@ export function getAllowDeveloper(): boolean {
 }
 
 export function setAllowTesting(testingMode: boolean) {
-	if (Settings.enableUserAccounts) return
 	localStorage.setItem(UiAllowAccess.TESTING, testingMode ? '1' : '0')
 }
 export function getAllowTesting(): boolean {
