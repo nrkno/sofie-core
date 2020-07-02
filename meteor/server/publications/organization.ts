@@ -25,6 +25,7 @@ meteorPublish(PubSub.organization, function(selector0, token) {
 					name: 1,
 					applications: 1,
 					broadcastMediums: 1,
+					admins: 1 /** @TODO check if this should be a method for organization page */,
 				},
 			}
 		)

@@ -5,6 +5,7 @@ import { RouteComponentProps } from 'react-router'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getUser } from '../../lib/collections/Users'
+import { MeteorCall } from '../../lib/api/methods'
 
 interface IRequestResetPageProps extends RouteComponentProps {}
 
@@ -35,19 +36,20 @@ export const RequestResetPage = translateWithTracker((props: IRequestResetPagePr
 			/** Find good email regex */
 		}
 
-		private resetPassword(e: React.MouseEvent<HTMLElement>): void {
+		private async resetPassword(e: React.MouseEvent<HTMLElement>): Promise<void> {
 			e.preventDefault()
 			if (!this.state.email) {
-				this.HandleError('Please enter a valid email')
+				this.handleError('Please enter a valid email')
 			} else {
-				/**
-				 * Attmept to get userid for email entered
-				 * Accounts.sendResetPasswordEmail(userid, *optional email*)
-				 */
+				const result = await MeteorCall.user.requestPasswordReset(this.state.email)
+				!result
+					? this.handleError(`No account found with email ${this.state.email}`)
+					: this.handleError(`Password reset email sent`)
+				setTimeout(() => this.handleError(''), 5000)
 			}
 		}
 
-		private HandleError(msg: string) {
+		private handleError(msg: string) {
 			this.setState({ error: msg })
 		}
 

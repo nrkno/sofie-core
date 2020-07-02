@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { StatusResponse } from '../../lib/api/systemStatus'
@@ -26,7 +25,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 	if (user) props.history.push('/rundowns')
 	return {}
 })(
-	class extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
+	class SignupPage extends MeteorReactComponent<Translated<ISignupPageProps>, ISignupPageState> {
 		private applications: string[] = [
 			'Doing TV shows from a studio',
 			'Doing streaming on the web from a studio',
@@ -90,23 +89,23 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 				this.handleError(error.message)
 				return
 			}
-
 			MeteorCall.user
 				.createUser(this.state.email, this.state.password, { name: this.state.name })
-				.then(() => {
-					Meteor.loginWithPassword(this.state.email, this.state.password, () => {
-						MeteorCall.organization
-							.insertOrganization({
-								name: this.state.organization,
-								applications: this.state.applications,
-								broadcastMediums: this.state.broadcastMediums,
-							})
-							.catch((error) => {
-								this.handleError('Error creating new organization')
-							})
-					})
+				.then((userId) => {
+					MeteorCall.organization
+						.insertOrganization(userId, {
+							name: this.state.organization,
+							applications: this.state.applications,
+							broadcastMediums: this.state.broadcastMediums,
+						})
+						.then(() => Meteor.loginWithPassword(this.state.email, this.state.password))
+						.catch((error) => {
+							console.error(error)
+							this.handleError('Error creating new organization')
+						})
 				})
 				.catch((error) => {
+					console.error(error)
 					this.handleError('Error creating new user')
 				})
 		}

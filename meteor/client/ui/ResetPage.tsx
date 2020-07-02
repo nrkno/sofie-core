@@ -1,10 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { StatusResponse } from '../../lib/api/systemStatus'
-import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { getUser } from '../../lib/collections/Users'
 interface IResetPageProps extends RouteComponentProps<{ token: string }> {}
 
@@ -47,7 +46,7 @@ export const ResetPage = translateWithTracker((props: IResetPageProps) => {
 			}
 			/** Add more password rules */
 			if (errors.length) {
-				this.HandleError(
+				this.handleError(
 					<React.Fragment>
 						{errors.map((e) => (
 							<span>{e}</span>
@@ -63,9 +62,17 @@ export const ResetPage = translateWithTracker((props: IResetPageProps) => {
 			e.preventDefault()
 			if (!this.validateChange()) return
 			const token = this.props.match.params.token
+			if (!this.state.password || this.state.password.length < 5)
+				return this.handleError('Please set a password with atleast 5 characters')
+			Accounts.resetPassword(token, this.state.password, (err) => {
+				if (err) {
+					console.error(err)
+					return this.handleError('Unable to reset password')
+				}
+			})
 		}
 
-		private HandleError(msg: string | React.ReactElement<HTMLElement>) {
+		private handleError(msg: string | React.ReactElement<HTMLElement>) {
 			this.setState({ error: msg })
 		}
 

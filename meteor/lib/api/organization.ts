@@ -1,7 +1,8 @@
 import { OrganizationId, NewOrganization } from '../../lib/collections/Organization'
+import { UserId } from '../collections/Users'
 
 export interface NewOrganizationAPI {
-	insertOrganization(organization: NewOrganization): Promise<OrganizationId>
+	insertOrganization(userId: UserId, organization: NewOrganization): Promise<OrganizationId>
 	removeOrganization(): Promise<void>
 }
 

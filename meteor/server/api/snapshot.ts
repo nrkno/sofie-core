@@ -536,7 +536,11 @@ function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapsh
 
 	return restoreFromRundownPlaylistSnapshot(snapshot)
 }
-function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
+export function restoreFromRundownPlaylistSnapshot(
+	snapshot: RundownPlaylistSnapshot,
+	studioId?: StudioId,
+	showStyleId?: ShowStyleBaseId
+) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
 	const oldPlaylistId = snapshot.playlistId
 
@@ -576,12 +580,15 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 
 	// const unsynced = dbRundowns.reduce((p, v) => (p || v.unsynced), false)
 	// if (unsynced) throw new Meteor.Error(500, `Not allowed to restore into synced Rundown!`)
-
-	const studios = Studios.find().fetch()
-	const snapshotStudioExists = studios.find((studio) => studio._id === snapshot.playlist.studioId)
-	if (studios.length >= 1 && !snapshotStudioExists) {
-		// TODO Choose better than just the fist
-		snapshot.playlist.studioId = studios[0]._id
+	if (!studioId) {
+		const studios = Studios.find().fetch()
+		const snapshotStudioExists = studios.find((studio) => studio._id === snapshot.playlist.studioId)
+		if (studios.length >= 1 && !snapshotStudioExists) {
+			// TODO Choose better than just the fist
+			snapshot.playlist.studioId = studios[0]._id
+		}
+	} else {
+		snapshot.playlist.studioId = studioId
 	}
 
 	const playlistId = (snapshot.playlist._id = getRandomId())
@@ -607,10 +614,14 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 		const snapshotShowStyleVariantExists = showStyleVariants.find(
 			(variant) => variant._id === rd.showStyleVariantId && variant.showStyleBaseId === rd.showStyleBaseId
 		)
-		if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
-			// TODO Choose better than just the fist
-			rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
-			rd.showStyleVariantId = showStyleVariants[0]._id
+		if (!showStyleId) {
+			if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
+				// TODO Choose better than just the fist
+				rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
+				rd.showStyleVariantId = showStyleVariants[0]._id
+			}
+		} else {
+			rd.showStyleBaseId = showStyleId
 		}
 	})
 

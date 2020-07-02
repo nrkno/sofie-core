@@ -9,8 +9,9 @@ import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
+import { Credentials } from '../security/lib/credentials'
 
-export function insertShowStyleBase(context: MethodContext): ShowStyleBaseId {
+export function insertShowStyleBase(context: MethodContext | Credentials): ShowStyleBaseId {
 	const access = OrganizationContentWriteAccess.studio(context)
 
 	let id = ShowStyleBases.insert(
@@ -30,7 +31,7 @@ export function insertShowStyleBase(context: MethodContext): ShowStyleBaseId {
 	return id
 }
 export function insertShowStyleVariant(
-	context: MethodContext,
+	context: MethodContext | Credentials,
 	showStyleBaseId: ShowStyleBaseId,
 	name?: string
 ): ShowStyleVariantId {

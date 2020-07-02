@@ -21,7 +21,7 @@ import {
 	getUIZoom,
 } from '../lib/localStorage'
 import Status from './Status'
-import SettingsComponent from './Settings'
+import { Settings as SettingsComponent } from './Settings'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
@@ -38,6 +38,7 @@ import { SignupPage } from './SignupPage'
 import { RequestResetPage } from './RequestResetPage'
 import { ResetPage } from './ResetPage'
 import { AccountPage } from './AccountPage'
+import { OrganizationPage } from './Organization'
 import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
@@ -101,7 +102,8 @@ export const App = translateWithTracker(() => {
 			}
 
 			if (Settings.enableUserAccounts && !this.props.user) {
-				if (window.location.pathname !== '/') {
+				const path = window.location.pathname
+				if (path !== '/' && path.indexOf('verify-email') === -1) {
 					requestedRoute = window.location.pathname
 				}
 			}
@@ -173,6 +175,9 @@ export const App = translateWithTracker(() => {
 				const invalid = Object.keys(roles).findIndex((k) => roles[k] !== this.state[k])
 				if (invalid !== -1) this.setState({ ...roles })
 			}
+			if (this.props.user && this.state.requestedRoute) {
+				this.setState({ requestedRoute: '' })
+			}
 		}
 
 		render() {
@@ -215,10 +220,22 @@ export const App = translateWithTracker(() => {
 											component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute} />}
 										/>,
 										<Route key="1" exact path="/login" component={() => <Redirect to="/" />} />,
-										<Route key="2" exact path="/signup" component={SignupPage} />,
-										<Route key="3" exact path="/reset" component={RequestResetPage} />,
-										<Route key="4" exact path="/reset/:token" component={ResetPage} />,
+										<Route
+											key="2"
+											exact
+											path="/login/verify-email/:token"
+											component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute} />}
+										/>,
+										<Route key="3" exact path="/signup" component={SignupPage} />,
+										<Route key="4" exact path="/reset" component={RequestResetPage} />,
+										<Route key="5" exact path="/reset/:token" component={ResetPage} />,
 										<this.protectedRoute key="5" exact path="/account" component={AccountPage} />,
+										<this.protectedRoute
+											key="6"
+											exact
+											path="/organization"
+											component={(props) => <OrganizationPage {...props} />}
+										/>,
 									]
 								) : (
 									<Route exact path="/" component={RundownList} />
@@ -231,14 +248,7 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/status" component={Status} />
 								<this.protectedRoute
 									path="/settings"
-									component={() => (
-										<SettingsComponent
-											userAccounts={Settings.enableUserAccounts}
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
-										/>
-									)}
+									component={(props) => <SettingsComponent userAccounts={Settings.enableUserAccounts} {...props} />}
 								/>
 								<Route path="/testTools" component={TestTools} />
 							</Switch>

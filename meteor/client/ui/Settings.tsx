@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { withTranslation } from 'react-i18next'
+import { WithTranslation, withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { Route, NavLink, Switch, Redirect } from 'react-router-dom'
+import { Route, NavLink, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 
 import { Studio, Studios } from '../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -29,6 +29,7 @@ import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { MeteorCall } from '../../lib/api/methods'
 import { getUser, User } from '../../lib/collections/Users'
 import { Settings as MeteorSettings } from '../../lib/Settings'
+import { getAllowConfigure } from '../lib/localStorage'
 
 class WelcomeToSettings extends React.Component {
 	render() {
@@ -439,67 +440,69 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 	}
 )
-interface ISettingsProps {
+interface ISettingsProps extends WithTranslation, RouteComponentProps {
 	userAccounts: boolean
-	match?: any
 }
-class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
-	private user: User | null
-	constructor(props: ISettingsProps) {
-		super(props)
-		this.user = getUser()
-	}
+export const Settings = withTranslation()(
+	class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
+		private user: User | null
+		constructor(props: ISettingsProps & WithTranslation) {
+			super(props)
+			this.user = getUser()
+		}
 
-	componentDidMount() {
-		// Subscribe to data:
-		this.subscribe(PubSub.peripheralDevices, {})
-		this.subscribe(PubSub.studios, {})
-		this.subscribe(PubSub.showStyleBases, {})
-		this.subscribe(PubSub.showStyleVariants, {})
-		this.subscribe(PubSub.blueprints, {})
-	}
-	render() {
-		const { t } = this.props
-
-		return (
-			<div className="mtl gutter has-statusbar">
-				<header className="mvs">
-					<h1>{t('System Settings')}</h1>
-				</header>
-				<div className="mod mvl mhs">
-					<div className="row">
-						<div className="col c12 rm-c3 settings-menu">
-							<ErrorBoundary>
-								<SettingsMenu
-									match={this.props.match}
-									userAccounts={this.props.userAccounts}
-									superAdmin={this.user ? this.user.superAdmin : false}
-								/>
-							</ErrorBoundary>
-						</div>
-						<div className="col c12 rm-c9 settings-dialog">
-							<ErrorBoundary>
-								<Switch>
-									<Route path="/settings" exact component={WelcomeToSettings} />
-									<Route path="/settings/studio/:studioId" component={StudioSettings} />
-									<Route path="/settings/showStyleBase/:showStyleBaseId" component={ShowStyleSettings} />
-									<Route path="/settings/peripheralDevice/:deviceId" component={DeviceSettings} />
-									<Route
-										path="/settings/blueprint/:blueprintId"
-										component={(props) => <BlueprintSettings {...props} userId={this.user && this.user._id} />}
+		componentDidMount() {
+			// Subscribe to data:
+			this.subscribe(PubSub.peripheralDevices, {})
+			this.subscribe(PubSub.studios, {})
+			this.subscribe(PubSub.showStyleBases, {})
+			this.subscribe(PubSub.showStyleVariants, {})
+			this.subscribe(PubSub.blueprints, {})
+			if (MeteorSettings.enableUserAccounts && this.user && this.user.roles) {
+				const access = getAllowConfigure()
+				if (!access) this.props.history.push('/')
+			}
+		}
+		render() {
+			const { t } = this.props
+			return (
+				<div className="mtl gutter has-statusbar">
+					<header className="mvs">
+						<h1>{t('System Settings')}</h1>
+					</header>
+					<div className="mod mvl mhs">
+						<div className="row">
+							<div className="col c12 rm-c3 settings-menu">
+								<ErrorBoundary>
+									<SettingsMenu
+										match={this.props.match}
+										userAccounts={this.props.userAccounts}
+										superAdmin={this.user ? this.user.superAdmin : false}
 									/>
-									<Route path="/settings/tools/snapshots" component={SnapshotsView} />
-									<Route path="/settings/tools/migration" component={MigrationView} />
-									<Route path="/settings/tools/messages" component={SystemMessages} />
-									<Redirect to="/settings" />
-								</Switch>
-							</ErrorBoundary>
+								</ErrorBoundary>
+							</div>
+							<div className="col c12 rm-c9 settings-dialog">
+								<ErrorBoundary>
+									<Switch>
+										<Route path="/settings" exact component={WelcomeToSettings} />
+										<Route path="/settings/studio/:studioId" component={StudioSettings} />
+										<Route path="/settings/showStyleBase/:showStyleBaseId" component={ShowStyleSettings} />
+										<Route path="/settings/peripheralDevice/:deviceId" component={DeviceSettings} />
+										<Route
+											path="/settings/blueprint/:blueprintId"
+											component={(props) => <BlueprintSettings {...props} userId={this.user && this.user._id} />}
+										/>
+										<Route path="/settings/tools/snapshots" component={SnapshotsView} />
+										<Route path="/settings/tools/migration" component={MigrationView} />
+										<Route path="/settings/tools/messages" component={SystemMessages} />
+										<Redirect to="/settings" />
+									</Switch>
+								</ErrorBoundary>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		)
+			)
+		}
 	}
-}
-
-export default Settings
+)

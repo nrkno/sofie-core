@@ -1,16 +1,20 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
+import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { getUser } from '../../lib/collections/Users'
+import { getUser, UserId, User } from '../../lib/collections/Users'
 
-interface ILoginPageProps extends RouteComponentProps {
+interface ILoginProps extends RouteComponentProps<{ token: string }> {
 	requestedRoute: string
+}
+
+interface ILoginPageProps extends ILoginProps {
+	user: User | null
 }
 
 interface ILoginPageState {
@@ -20,12 +24,9 @@ interface ILoginPageState {
 	error: string
 }
 
-export const LoginPage = translateWithTracker((props: ILoginPageProps) => {
+export const LoginPage = translateWithTracker((props: ILoginProps) => {
 	const user = getUser()
-	if (user) {
-		props.requestedRoute ? props.history.push(props.requestedRoute) : props.history.push('/rundowns')
-	}
-	return {}
+	return { user: user ? user : null }
 })(
 	class extends MeteorReactComponent<Translated<ILoginPageProps>, ILoginPageState> {
 		// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
@@ -69,6 +70,20 @@ export const LoginPage = translateWithTracker((props: ILoginPageProps) => {
 
 		private HandleError(msg: string) {
 			this.setState({ error: msg })
+		}
+
+		componentDidMount() {
+			const token = this.props.match.params.token
+			const user = this.props.user
+			if (token && (!user || (user && !user.emails[0].verified))) {
+				Accounts.verifyEmail(token, (e) => {
+					if (e) return this.setState({ error: e.message })
+				})
+			} else if (user) {
+				this.props.requestedRoute
+					? this.props.history.push(this.props.requestedRoute)
+					: this.props.history.push('/rundowns')
+			}
 		}
 
 		render() {
