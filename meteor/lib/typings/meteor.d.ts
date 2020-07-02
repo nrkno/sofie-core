@@ -52,9 +52,13 @@ export interface UpsertOptions {
 }
 /** Mongo Selector. Contains everything that can be sent into collection.find(selector) */
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
-export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
-export type MongoQuery<DBInterface> = Mongo.Query<DBInterface> // used for simplified expressions (ie not using $and, $or etc..)
+/**
+ * Subset of MongoSelector, only allows direct queries, not QueryWithModifiers such as $explain etc.
+ * Used for simplified expressions (ie not using $and, $or etc..)
+ * */
+export type MongoQuery<DBInterface> = Mongo.Query<DBInterface>
 export type MongoQueryKey<T> = RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
+export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
 
 export interface Mongocursor<DBInterface extends { _id: ProtectedString<any> }>
 	extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
@@ -127,6 +131,7 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 			[key: string]: any
 		}
 	): void
+
 	_dropIndex(
 		keys:
 			| {

@@ -66,5 +66,8 @@ Meteor.startup(() => {
 		Snapshots._ensureIndex({
 			organizationId: 1,
 		})
+		Snapshots._ensureIndex({
+			created: 1,
+		})
 	}
 })
