@@ -33,12 +33,12 @@ import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
 import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
 import { Settings } from '../../lib/Settings'
-import { LoginPage } from './LoginPage'
-import { SignupPage } from './SignupPage'
-import { RequestResetPage } from './RequestResetPage'
-import { ResetPage } from './ResetPage'
-import { AccountPage } from './AccountPage'
-import { OrganizationPage } from './Organization'
+import { LoginPage } from './Account/NotLoggedIn/LoginPage'
+import { SignupPage } from './Account/NotLoggedIn/SignupPage'
+import { LostPasswordPage } from './Account/NotLoggedIn/LostPassword'
+import { ResetPasswordPage } from './Account/NotLoggedIn/ResetPasswordPage'
+import { AccountPage } from './Account/AccountPage'
+import { OrganizationPage } from './Account/OrganizationPage'
 import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
@@ -227,8 +227,8 @@ export const App = translateWithTracker(() => {
 											component={(props) => <LoginPage {...props} requestedRoute={this.state.requestedRoute} />}
 										/>,
 										<Route key="3" exact path="/signup" component={SignupPage} />,
-										<Route key="4" exact path="/reset" component={RequestResetPage} />,
-										<Route key="5" exact path="/reset/:token" component={ResetPage} />,
+										<Route key="4" exact path="/reset" component={LostPasswordPage} />,
+										<Route key="5" exact path="/reset/:token" component={ResetPasswordPage} />,
 										<this.protectedRoute key="5" exact path="/account" component={AccountPage} />,
 										<this.protectedRoute
 											key="6"

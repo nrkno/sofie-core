@@ -2,12 +2,13 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
-import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { StatusResponse } from '../../lib/api/systemStatus'
-import { getUser, UserId, User } from '../../lib/collections/Users'
+import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
+import { StatusResponse } from '../../../../lib/api/systemStatus'
+import { getUser, UserId, User } from '../../../../lib/collections/Users'
+import { NotLoggedInContainer } from './lib'
 
 interface ILoginProps extends RouteComponentProps<{ token: string }> {
 	requestedRoute: string
@@ -90,50 +91,40 @@ export const LoginPage = translateWithTracker((props: ILoginProps) => {
 			const { t } = this.props
 
 			return (
-				<div className="center-page">
-					<div className="mtl gutter flex-col page">
-						<header className="mvs alc header">
-							<div className="badge">
-								<div className="sofie-logo"></div>
-							</div>
-							<h1>{t('Sofie - TV Automation System')}</h1>
-						</header>
-						<div className="container">
-							<form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.attempLogin(e)}>
-								<input
-									className="mdinput mas"
-									type="text"
-									value={this.state.email}
-									onChange={this.handleChange}
-									placeholder={t('Email Address')}
-									name="email"
-								/>
-								<input
-									className="mdinput mas"
-									type="password"
-									value={this.state.password}
-									onChange={this.handleChange}
-									placeholder={t('Password')}
-									name="password"
-								/>
-								<button type="submit" className="btn btn-primary">
-									{t('Login Now')}
-								</button>
-								<Link className="selectable right mas" to="/reset">
-									{t('Lost password?')}
-								</Link>
-							</form>
-						</div>
-						<div className="mas">
-							<Link className="selectable" to="/signup">
-								<button className="btn">{t('Create New Account')}</button>
-							</Link>
-						</div>
-						<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
-							<p>{this.state.error.length ? this.state.error : ''}&nbsp;</p>
-						</div>
+				<NotLoggedInContainer>
+					<form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.attempLogin(e)}>
+						<input
+							className="mdinput mas"
+							type="text"
+							value={this.state.email}
+							onChange={this.handleChange}
+							placeholder={t('Email Address')}
+							name="email"
+						/>
+						<input
+							className="mdinput mas"
+							type="password"
+							value={this.state.password}
+							onChange={this.handleChange}
+							placeholder={t('Password')}
+							name="password"
+						/>
+						<button type="submit" className="btn btn-primary">
+							{t('Sign in')}
+						</button>
+					</form>
+					<div className="mas">
+						<Link className="selectable" to="/signup">
+							<button className="btn">{t('Create New Account')}</button>
+						</Link>
+						<Link className="selectable" to="/reset">
+							{t('Lost password?')}
+						</Link>
 					</div>
-				</div>
+					<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
+						<p>{this.state.error.length ? this.state.error : ''}&nbsp;</p>
+					</div>
+				</NotLoggedInContainer>
 			)
 		}
 	}

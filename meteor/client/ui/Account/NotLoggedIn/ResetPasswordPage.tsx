@@ -1,10 +1,13 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getUser } from '../../lib/collections/Users'
+import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
+import { getUser } from '../../../../lib/collections/Users'
+import { NotLoggedInContainer } from './lib'
+import { Link } from 'react-router-dom'
+
 interface IResetPageProps extends RouteComponentProps<{ token: string }> {}
 
 interface IResetPageState {
@@ -12,7 +15,7 @@ interface IResetPageState {
 	error: string | React.ReactElement<HTMLElement>
 }
 
-export const ResetPage = translateWithTracker((props: IResetPageProps) => {
+export const ResetPasswordPage = translateWithTracker((props: IResetPageProps) => {
 	const user = getUser()
 	if (user) {
 		props.history.push('/rundowns')
@@ -79,40 +82,30 @@ export const ResetPage = translateWithTracker((props: IResetPageProps) => {
 		render() {
 			const { t } = this.props
 			return (
-				<div className="center-page">
-					<div className="mtl gutter flex-col page">
-						<header className="mvs alc header">
-							<div className="badge">
-								<div className="sofie-logo"></div>
-							</div>
-							<h1>{t('Sofie - TV Automation System')}</h1>
-						</header>
-						<div className="container">
-							<form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.handleReset(e)}>
-								<label htmlFor="password-reset">{t('Enter your new password')}</label>
-								<input
-									id="password-reset"
-									className="mdinput mas"
-									type="password"
-									name="password"
-									value={this.state.password}
-									onChange={this.handleChange}
-									onBlur={this.validateChange}
-									placeholder={t('Password')}
-								/>
-								<button type="submit" className="btn btn-primary" onClick={this.handleReset}>
-									{t('Set new password')}
-								</button>
-								<button className="btn" onClick={() => this.props.history.push('/')}>
-									{t('Sign In')}
-								</button>
-							</form>
-						</div>
-						<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
-							<p>{this.state.error ? this.state.error : ''}&nbsp;</p>
-						</div>
+				<NotLoggedInContainer>
+					<form onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.handleReset(e)}>
+						<label htmlFor="password-reset">{t('Enter your new password')}</label>
+						<input
+							id="password-reset"
+							className="mdinput mas"
+							type="password"
+							name="password"
+							value={this.state.password}
+							onChange={this.handleChange}
+							onBlur={this.validateChange}
+							placeholder={t('Password')}
+						/>
+						<button type="submit" className="btn btn-primary" onClick={this.handleReset}>
+							{t('Set new password')}
+						</button>
+						<Link className="selectable" to="/">
+							<button className="btn">{t('Go back')}</button>
+						</Link>
+					</form>
+					<div className={'error-msg ' + (this.state.error && 'error-msg-active')}>
+						<p>{this.state.error ? this.state.error : ''}&nbsp;</p>
 					</div>
-				</div>
+				</NotLoggedInContainer>
 			)
 		}
 	}
