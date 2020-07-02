@@ -201,6 +201,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					_id: rundowns[0].showStyleBaseId,
 				})
 				this.subscribe(PubSub.pieces, {
+					// TODO-INFINITES this needs to be pieceInstances now
 					rundownId: {
 						$in: rundownIds,
 					},
@@ -647,7 +648,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 					},
 				},
 			],
-			'piece.adLibSourceId': {
+			adLibSourceId: {
 				$exists: true,
 			},
 			// $or: [
@@ -691,7 +692,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	// Convert to array of ids as that is all that is needed
 	const unfinishedPieceInstances: { [adlibId: string]: PieceInstance[] } = {}
 	_.each(
-		_.groupBy(prospectivePieces, (piece) => piece.piece.adLibSourceId),
+		_.groupBy(prospectivePieces, (piece) => piece.adLibSourceId),
 		(grp, id) => (unfinishedPieceInstances[id] = _.map(grp, (instance) => instance))
 	)
 

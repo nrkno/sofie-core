@@ -644,7 +644,6 @@ function updateRundownFromIngestData(
 		cache.Pieces,
 		{
 			rundownId: rundownId,
-			dynamicallyInserted: { $ne: true }, // do not affect dynamically inserted pieces (such as adLib pieces)
 		},
 		segmentPieces
 	)
@@ -1097,7 +1096,7 @@ function updateSegmentFromIngestData(
 	const existingParts = cache.Parts.findFetch({
 		rundownId: rundown._id,
 		segmentId: segmentId,
-		dynamicallyInserted: { $ne: true },
+		dynamicallyInsertedAfterPartId: { $exists: false },
 	})
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
@@ -1129,7 +1128,7 @@ function updateSegmentFromIngestData(
 					_id: { $in: _.pluck(parts, '_id') },
 				},
 			],
-			dynamicallyInserted: { $ne: true }, // do not affect dynamically inserted parts (such as adLib parts)
+			dynamicallyInsertedAfterPartId: { $exists: false }, // do not affect dynamically inserted parts (such as adLib parts)
 		},
 		parts
 	)
@@ -1138,7 +1137,6 @@ function updateSegmentFromIngestData(
 		{
 			rundownId: rundown._id,
 			partId: { $in: parts.map((p) => p._id) },
-			dynamicallyInserted: { $ne: true }, // do not affect dynamically inserted pieces (such as adLib pieces)
 		},
 		segmentPieces
 	)

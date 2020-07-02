@@ -210,7 +210,7 @@ describe('Playout API', () => {
 			expect(playlist.nextPartInstanceId).toBeTruthy()
 			PartInstances.update(playlist.nextPartInstanceId!, {
 				$set: {
-					'part.dynamicallyInserted': true,
+					'part.dynamicallyInsertedAfterPartId': true,
 				},
 			})
 

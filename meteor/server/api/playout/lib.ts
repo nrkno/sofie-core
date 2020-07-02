@@ -35,7 +35,7 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 
 	cache.Parts.remove({
 		rundownId: rundown._id,
-		dynamicallyInserted: true,
+		dynamicallyInsertedAfterPartId: { $exists: true },
 	})
 
 	cache.Parts.update(
@@ -117,7 +117,7 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		rundownId: {
 			$in: rundownIDs,
 		},
-		dynamicallyInserted: true,
+		dynamicallyInsertedAfterPartId: { $exists: true },
 	})
 
 	cache.Parts.update(
@@ -714,14 +714,20 @@ export function getSelectedPartInstancesFromCache(
 		playlist.previousPartInstanceId,
 		playlist.nextPartInstanceId,
 	])
-	const instances =
-		ids.length > 0
-			? cache.PartInstances.findFetch({
-					rundownId: { $in: rundownIds },
-					_id: { $in: ids },
-					reset: { $ne: true },
-			  })
-			: []
+
+	if (ids.length === 0) {
+		return {
+			currentPartInstance: undefined,
+			nextPartInstance: undefined,
+			previousPartInstance: undefined,
+		}
+	}
+
+	const instances = cache.PartInstances.findFetch({
+		rundownId: { $in: rundownIds },
+		_id: { $in: ids },
+		reset: { $ne: true },
+	})
 
 	return {
 		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInstanceId),
@@ -756,8 +762,9 @@ export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: 
 	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
 
 	// These are not present in the cache because they do not directly affect output.
-	AdLibPieces.remove({ rundownId: rundown._id })
-	RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
+	// TODO - should this be a cache.defer??
+	AdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	RundownBaselineAdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
 	IngestDataCache.remove({ rundownId: rundown._id })
 	ExpectedMediaItems.remove({ rundownId: rundown._id })
 	ExpectedPlayoutItems.remove({ rundownId: rundown._id })

@@ -321,7 +321,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 		if (originalOnly) {
 			// Ignore adlibs if using original only
-			query['piece.dynamicallyInserted'] = {
+			query.dynamicallyInserted = {
 				$ne: true,
 			}
 		}
@@ -398,7 +398,7 @@ export namespace ServerPlayoutAdLibAPI {
 		// Ensure it is labelled as dynamic
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
-		newPieceInstance.piece.dynamicallyInserted = true
+		newPieceInstance.dynamicallyInserted = true
 
 		cache.PieceInstances.insert(newPieceInstance)
 	}

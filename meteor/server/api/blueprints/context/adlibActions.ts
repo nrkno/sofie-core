@@ -256,7 +256,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PieceInstance could not be found')
 		}
 
-		const changeLevel = pieceInstance.piece.dynamicallyInserted
+		const changeLevel = pieceInstance.dynamicallyInserted
 			? ActionPartChange.SAFE_CHANGE
 			: ActionPartChange.MARK_DIRTY
 		const updatesCurrentPart: ActionPartChange =

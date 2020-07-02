@@ -92,7 +92,7 @@ export function createPieceGroupFirstObject(
 			callBackData: {
 				rundownId: pieceInstance.rundownId,
 				pieceInstanceId: pieceInstance._id,
-				dynamicallyInserted: pieceInstance.piece.dynamicallyInserted,
+				dynamicallyInserted: pieceInstance.dynamicallyInserted,
 			},
 			callBackStopped: 'piecePlaybackStopped', // Will cause a callback to be called, when the object stops playing:
 		},
@@ -332,7 +332,6 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 		...omit(piece, 'timings', 'startedPlayback', 'stoppedPlayback'),
 		_id: protectString(newId),
 		_rank: 0,
-		disabled: false,
 		expectedDuration: piece.enable.duration,
 		rundownId: protectString(''),
 	})
@@ -373,6 +372,8 @@ export function convertAdLibToPieceInstance(
 		_id: protectString(`${partInstance._id}_${newPieceId}`),
 		rundownId: partInstance.rundownId,
 		partInstanceId: partInstance._id,
+		adLibSourceId: adLibPiece._id,
+		dynamicallyInserted: !queue,
 		piece: {
 			..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
 			_id: newPieceId,
@@ -382,8 +383,6 @@ export function convertAdLibToPieceInstance(
 				start: queue ? 0 : 'now',
 				duration: duration,
 			},
-			adLibSourceId: adLibPiece._id,
-			dynamicallyInserted: !queue,
 			timings: {
 				take: [getCurrentTime()],
 				startedPlayback: [],

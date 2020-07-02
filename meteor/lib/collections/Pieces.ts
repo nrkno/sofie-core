@@ -31,10 +31,10 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
-	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
-	adLibSourceId?: PieceId
-	/** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
-	dynamicallyInserted?: boolean
+	// /** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
+	// adLibSourceId?: PieceId
+	// /** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
+	// dynamicallyInserted?: boolean
 	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */

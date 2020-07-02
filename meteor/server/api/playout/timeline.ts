@@ -804,7 +804,7 @@ function transformPartIntoTimeline(
 					!pieceInstance.piece.isTransition &&
 					allowTransition &&
 					transition &&
-					!pieceInstance.piece.adLibSourceId
+					!pieceInstance.adLibSourceId
 				) {
 					const transitionContentsDelayStr =
 						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`

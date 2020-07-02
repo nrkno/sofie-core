@@ -327,6 +327,7 @@ describe('Test blueprint api context', () => {
 					_id: pieceId0,
 					rundownId: rundown._id,
 					partInstanceId: partInstances[0]._id,
+					dynamicallyInserted: true,
 					piece: {
 						_id: getRandomId(),
 						startPartId: partInstances[0].part._id,
@@ -337,7 +338,6 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 1000,
-						dynamicallyInserted: true,
 						lifespan: PieceLifespan.OutOnSegmentChange,
 						invalid: false,
 					},
@@ -354,6 +354,7 @@ describe('Test blueprint api context', () => {
 					_id: pieceId1,
 					rundownId: rundown._id,
 					partInstanceId: partInstances[0]._id,
+					dynamicallyInserted: true,
 					piece: {
 						_id: getRandomId(),
 						startPartId: partInstances[0].part._id,
@@ -364,7 +365,6 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 2000,
-						dynamicallyInserted: true,
 						lifespan: PieceLifespan.OutOnSegmentChange,
 						invalid: false,
 					},
@@ -400,6 +400,7 @@ describe('Test blueprint api context', () => {
 					_id: pieceId0,
 					rundownId: rundown._id,
 					partInstanceId: partInstances[0]._id,
+					dynamicallyInserted: true,
 					piece: {
 						_id: getRandomId(),
 						startPartId: partInstances[0].part._id,
@@ -410,7 +411,6 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 1000,
-						dynamicallyInserted: true,
 						lifespan: PieceLifespan.OutOnSegmentChange,
 						invalid: false,
 					},
@@ -420,6 +420,7 @@ describe('Test blueprint api context', () => {
 					_id: pieceId1,
 					rundownId: rundown._id,
 					partInstanceId: partInstances[2]._id,
+					dynamicallyInserted: true,
 					piece: {
 						_id: getRandomId(),
 						startPartId: partInstances[2].part._id,
@@ -430,7 +431,6 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 2000,
-						dynamicallyInserted: true,
 						lifespan: PieceLifespan.OutOnSegmentChange,
 						invalid: false,
 					},
@@ -469,6 +469,7 @@ describe('Test blueprint api context', () => {
 					_id: pieceId0,
 					rundownId: rundown._id,
 					partInstanceId: partInstances[0]._id,
+					dynamicallyInserted: true,
 					piece: {
 						_id: getRandomId(),
 						startPartId: partInstances[0].part._id,
@@ -479,7 +480,6 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 1000,
-						dynamicallyInserted: true,
 						lifespan: PieceLifespan.OutOnSegmentChange,
 						invalid: false,
 					},
@@ -489,6 +489,7 @@ describe('Test blueprint api context', () => {
 					_id: pieceId1,
 					rundownId: rundown._id,
 					partInstanceId: partInstances[2]._id,
+					dynamicallyInserted: true,
 					piece: {
 						_id: getRandomId(),
 						startPartId: partInstances[2].part._id,
@@ -499,7 +500,6 @@ describe('Test blueprint api context', () => {
 						status: -1,
 						enable: { start: 0 },
 						startedPlayback: 2000,
-						dynamicallyInserted: true,
 						metaData: {
 							prop1: 'hello',
 							prop2: '5',
@@ -590,7 +590,7 @@ describe('Test blueprint api context', () => {
 				const newPieceInstance = cache.PieceInstances.findOne(
 					protectString(newPieceInstanceId!)
 				) as PieceInstance
-				expect(newPieceInstance.piece.dynamicallyInserted).toBeTruthy()
+				expect(newPieceInstance.dynamicallyInserted).toBeTruthy()
 				expect(newPieceInstance.partInstanceId).toEqual(partInstance._id)
 			})
 		})

@@ -49,6 +49,11 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	/** A flag to signal that a given Piece should be hidden from the UI */
 	hidden?: boolean
 
+	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
+	adLibSourceId?: PieceId
+	/** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
+	dynamicallyInserted?: boolean
+
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: {
 		infinitePieceId: PieceId
