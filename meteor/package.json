@@ -142,8 +142,8 @@
     "tslint-plugin-prettier": "^2.1.0",
     "typedoc": "^0.8.0",
     "typescript": "2.8.3",
-    "xmldom": "^0.1.27",
-    "typescript-tslint-plugin": "^0.4.0"
+    "typescript-tslint-plugin": "^0.4.0",
+    "xmldom": "^0.1.27"
   },
   "husky": {
     "hooks": {
