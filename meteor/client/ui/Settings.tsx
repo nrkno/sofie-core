@@ -38,7 +38,6 @@ class WelcomeToSettings extends React.Component {
 }
 
 interface ISettingsMenuProps {
-	userAccounts?: boolean
 	superAdmin?: boolean
 	match?: any
 }
@@ -330,7 +329,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 							<hr className="vsubtle man" key={showStyleBase._id + '-hr'} />,
 						]
 					})}
-					{(!this.props.userAccounts || this.props.superAdmin) && (
+					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
 						<React.Fragment>
 							<h2 className="mhs">
 								<button className="action-btn right" onClick={() => this.onAddBlueprint()}>
@@ -413,7 +412,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						})}
 					<h2 className="mhs">{t('Tools')}</h2>
 					<hr className="vsubtle man" />
-					{(!this.props.userAccounts || this.props.superAdmin) && (
+					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
 						<React.Fragment>
 							<NavLink
 								activeClassName="selectable-selected"
@@ -440,9 +439,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 	}
 )
-interface ISettingsProps extends WithTranslation, RouteComponentProps {
-	userAccounts: boolean
-}
+interface ISettingsProps extends WithTranslation, RouteComponentProps {}
 export const Settings = withTranslation()(
 	class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
 		private user: User | null
@@ -474,11 +471,7 @@ export const Settings = withTranslation()(
 						<div className="row">
 							<div className="col c12 rm-c3 settings-menu">
 								<ErrorBoundary>
-									<SettingsMenu
-										match={this.props.match}
-										userAccounts={this.props.userAccounts}
-										superAdmin={this.user ? this.user.superAdmin : false}
-									/>
+									<SettingsMenu match={this.props.match} superAdmin={this.user ? this.user.superAdmin : false} />
 								</ErrorBoundary>
 							</div>
 							<div className="col c12 rm-c9 settings-dialog">

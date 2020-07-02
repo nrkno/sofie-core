@@ -248,10 +248,7 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />
 								<this.protectedRoute path="/countdowns/:studioId/presenter" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
-								<this.protectedRoute
-									path="/settings"
-									component={(props) => <SettingsComponent userAccounts={Settings.enableUserAccounts} {...props} />}
-								/>
+								<this.protectedRoute path="/settings" component={(props) => <SettingsComponent {...props} />} />
 								<Route path="/testTools" component={TestTools} />
 							</Switch>
 						</ErrorBoundary>
