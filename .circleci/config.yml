@@ -5,10 +5,6 @@ jobs:
       - image: sofietv/tv-automation-meteor-base:1.6.1.4
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - v3-node-cache-{{ .Branch }}-{{ checksum "meteor/package-lock.json" }}
-            - v3-node-cache-{{ .Branch }}
       - run:
           name: Meteor NPM install
           command: cd meteor && meteor npm install
@@ -21,16 +17,6 @@ jobs:
           name: Meteor Bundle NPM Build
           command: cd meteor/bundle/programs/server && npm install
           no_output_timeout: 60m
-      - save_cache:
-          key: v3-node-cache-{{ .Branch }}-{{ checksum "meteor/package-lock.json" }}
-          paths: 
-            - meteor/node_modules
-            - ~/.meteor
-      - save_cache:
-          key: v3-node-cache-{{ .Branch }}
-          paths: 
-            - meteor/node_modules
-            - ~/.meteor
       - persist_to_workspace:
           root: .
           paths:
