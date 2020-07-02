@@ -7,19 +7,20 @@ import { literal, getRandomId, makePromise, getCurrentTime, protectString } from
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
-import { Organizations, OrganizationId, DBOrganization, NewOrganization } from '../../lib/collections/Organization'
+import { Organizations, OrganizationId, DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { insertStudio } from './studios'
-import { insertShowStyleBase } from './showStyles'
+import { insertStudio, insertStudioInner } from './studios'
+import { insertShowStyleBase, insertShowStyleBaseInner } from './showStyles'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { Blueprints } from '../../lib/collections/Blueprints'
+import { Blueprints, BlueprintId } from '../../lib/collections/Blueprints'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { runMigration, prepareMigration } from '../migration/databaseMigration'
-import { UserId } from '../../lib/collections/Users'
+import { UserId, Users } from '../../lib/collections/Users'
 import { restoreFromRundownPlaylistSnapshot } from './snapshot'
 import { Snapshots } from '../../lib/collections/Snapshots'
+import { resetCredentials } from '../security/lib/credentials'
 
 function restoreSnapshotTEMP(orgId: OrganizationId, studioId: StudioId, showStyleId: ShowStyleBaseId) {
 	const snapshotId = protectString(Meteor.settings.SNAPSHOT_ID)
@@ -39,10 +40,13 @@ function restoreSnapshotTEMP(orgId: OrganizationId, studioId: StudioId, showStyl
 	restoreFromRundownPlaylistSnapshot(readSnapshot, studioId, showStyleId)
 }
 
-function createDefault(userId: UserId, orgId: OrganizationId) {
-	let systemBlueprintId, studioBlueprintId, showStyleBlueprintId
-	const studioId = insertStudio({ userId })
-	const showStyleId = insertShowStyleBase({ userId })
+function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
+	let systemBlueprintId: BlueprintId | undefined
+	let studioBlueprintId: BlueprintId | undefined
+	let showStyleBlueprintId: BlueprintId | undefined
+	const studioId = insertStudioInner(orgId)
+	const showStyleId = insertShowStyleBaseInner(orgId)
+
 	const core = CoreSystem.findOne()
 	Blueprints.find()
 		.fetch()
@@ -66,7 +70,7 @@ function createDefault(userId: UserId, orgId: OrganizationId) {
 		)
 	if (showStyleId && showStyleBlueprintId)
 		ShowStyleBases.update({ _id: showStyleId }, { $set: { blueprintId: showStyleBlueprintId } })
-	let migration = prepareMigration(true)
+	const migration = prepareMigration(true)
 	if (migration.migrationNeeded && migration.manualStepCount === 0) {
 		runMigration(migration.chunks, migration.hash, [])
 	}
@@ -75,43 +79,35 @@ function createDefault(userId: UserId, orgId: OrganizationId) {
 	}
 }
 
-export function insertOrganization(userId: UserId, organization: NewOrganization) {
+export function createOrganization(organization: DBOrganizationBase): OrganizationId {
 	triggerWriteAccessBecauseNoCheckNecessary()
-	// const userId = context.userId
-	//if (!userId) throw new Meteor.Error(401, 'User is not logged in')
-	const admin = { userId }
-	const id = Organizations.insert(
+
+	const orgId = Organizations.insert(
 		literal<DBOrganization>({
+			...organization,
 			_id: getRandomId(),
-			name: organization.name,
-			admins: [admin],
-			applications: organization.applications,
-			broadcastMediums: organization.broadcastMediums,
+			admins: [],
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
-		}),
-		() => {
-			insertStudio({ userId })
-			insertShowStyleBase({ userId })
-		}
+		})
 	)
-	Meteor.users.update(userId, { $set: { organizationId: id } })
-	createDefault(userId, id)
-	return id
+	// Setup default environment for the organization:
+	createDefaultEnvironmentForOrg(orgId)
+	return orgId
 }
 
-export function removeOrganization(context: MethodContext) {
-	const access = OrganizationContentWriteAccess.anyContent(context)
-	const organizationId = access.organizationId
+export function removeOrganization(context: MethodContext, organizationId: OrganizationId) {
+	OrganizationContentWriteAccess.organization(context, organizationId)
+	const users = Users.find({ organizationId }).fetch()
+	users.forEach((user) => {
+		resetCredentials({ userId: user._id })
+	})
 	Organizations.remove({ organizationId })
 }
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {
-	insertOrganization(userId: UserId, organization: NewOrganization) {
-		return makePromise(() => insertOrganization(userId, organization))
-	}
-	removeOrganization() {
-		return makePromise(() => removeOrganization(this))
+	removeOrganization(organizationId: OrganizationId) {
+		return makePromise(() => removeOrganization(this, organizationId))
 	}
 }
 

@@ -8,27 +8,20 @@ import { Snapshots } from '../../lib/collections/Snapshots'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
-import { Organizations } from '../../lib/collections/Organization'
+import { Organizations, DBOrganization } from '../../lib/collections/Organization'
 
 meteorPublish(PubSub.organization, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
-	const modifier: FindOptions<Blueprint> = {
+	const modifier: FindOptions<DBOrganization> = {
 		fields: {
-			code: 0,
+			name: 1,
+			applications: 1,
+			broadcastMediums: 1,
+			admins: 1 /** @TODO check if this should be a method for organization page */,
 		},
 	}
 	if (OrganizationReadAccess.organizationContent(selector, cred)) {
-		return Organizations.find(
-			{ _id: selector.organizationId },
-			{
-				fields: {
-					name: 1,
-					applications: 1,
-					broadcastMediums: 1,
-					admins: 1 /** @TODO check if this should be a method for organization page */,
-				},
-			}
-		)
+		return Organizations.find({ _id: selector.organizationId }, modifier)
 	}
 	return null
 })

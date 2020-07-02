@@ -1,41 +1,67 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { literal, getRandomId, makePromise, getCurrentTime, unprotectString, protectString } from '../../lib/lib'
+import { makePromise, unprotectString, waitForPromise, protectString } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { NewUserAPI, UserAPIMethods } from '../../lib/api/user'
+import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
-import { SystemReadAccess, SystemWriteAccess } from '../security/system'
+import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { resolveCredentials } from '../security/lib/credentials'
 import { logNotAllowed } from '../../server/security/lib/lib'
-import { UserProfile, User } from '../../lib/collections/Users'
+import { UserProfile, User, UserId, Users } from '../../lib/collections/Users'
+import { createOrganization } from './organizations'
+import { DBOrganizationBase, Organizations, OrganizationId } from '../../lib/collections/Organization'
+import { resetCredentials } from '../security/lib/credentials'
 
-export function createUser(email: string, password: string, profile: UserProfile, enroll?: boolean) {
+export function enrollUser(email: string, name: string): UserId {
 	triggerWriteAccessBecauseNoCheckNecessary()
-	const id = Accounts.createUser({
-		email: email,
-		password: password,
-		profile: profile,
-	})
-	if (!id) throw new Meteor.Error(500, 'Error creating user account')
-	if (Meteor.settings.MAIL_URL) {
-		if (enroll) {
-			try {
-				Accounts.sendEnrollmentEmail(id, email)
-			} catch (error) {
-				console.error('ERROR sending email enrollment', error)
-			}
-		} else {
-			try {
-				Accounts.sendVerificationEmail(id, email)
-			} catch (error) {
-				console.error('ERROR sending email verification', error)
-			}
-		}
+
+	const id = waitForPromise(
+		createUser({
+			email: email,
+			profile: { name: name },
+		})
+	)
+	try {
+		Accounts.sendEnrollmentEmail(unprotectString(id), email)
+	} catch (error) {
+		console.error('ERROR sending email enrollment', error)
 	}
 
-	return protectString(id)
+	return id
+}
+
+function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): OrganizationId {
+	triggerWriteAccessBecauseNoCheckNecessary()
+
+	sendVerificationEmail(userId)
+
+	// Create an organization for the user:
+	const orgId = createOrganization(organization)
+	// Add user to organization:
+	Users.update(userId, { $set: { organizationId: orgId } })
+	Organizations.update(orgId, {
+		$set: {
+			admins: [{ userId: userId }],
+		},
+	})
+
+	resetCredentials({ userId })
+
+	return orgId
+}
+function sendVerificationEmail(userId: UserId) {
+	const user = Users.findOne(userId)
+	if (!user) throw new Meteor.Error(404, `User "${userId}" not found!`)
+	try {
+		_.each(user.emails, (email) => {
+			if (!email.verified) {
+				Accounts.sendVerificationEmail(unprotectString(user._id), email.address)
+			}
+		})
+	} catch (error) {
+		console.error('ERROR sending email verification', error)
+	}
 }
 
 export function requestResetPassword(email: string): boolean {
@@ -52,13 +78,13 @@ export function removeUser(context: MethodContext) {
 	if (!context.userId) throw new Meteor.Error(403, `Not logged in`)
 	const access = SystemWriteAccess.currentUser(context.userId, context)
 	if (!access) return logNotAllowed('Current user', 'Invalid user id or permissions')
-	Meteor.users.remove(context.userId)
+	Users.remove(context.userId)
 	return true
 }
 
 class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
-	createUser(email: string, password: string, profile: UserProfile, enroll?: boolean) {
-		return makePromise(() => createUser(email, password, profile, enroll))
+	enrollUser(email: string, name: string) {
+		return makePromise(() => enrollUser(email, name))
 	}
 	requestPasswordReset(email: string) {
 		return makePromise(() => requestResetPassword(email))
@@ -69,3 +95,18 @@ class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
 }
 
 registerClassToMeteorMethods(UserAPIMethods, ServerUserAPI, false)
+
+Accounts.onCreateUser((options, user) => {
+	user.profile = options.profile
+
+	// @ts-ignore hack, add the property "createOrganization" to trigger creation of an org
+	const createOrganization = options.createOrganization
+	if (createOrganization) {
+		Meteor.defer(() => {
+			// To be run after the user has been inserted:
+			afterCreateNewUser(protectString(user._id), createOrganization)
+		})
+	}
+	// The user to-be-inserted:
+	return user
+})

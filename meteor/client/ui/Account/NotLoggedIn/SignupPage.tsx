@@ -9,6 +9,7 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
+import { createUser } from '../../../../lib/api/user'
 
 interface ISignupPageProps extends RouteComponentProps {}
 
@@ -91,25 +92,19 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 				this.handleError(error.message)
 				return
 			}
-			MeteorCall.user
-				.createUser(this.state.email, this.state.password, { name: this.state.name })
-				.then((userId) => {
-					MeteorCall.organization
-						.insertOrganization(userId, {
-							name: this.state.organization,
-							applications: this.state.applications,
-							broadcastMediums: this.state.broadcastMediums,
-						})
-						.then(() => Meteor.loginWithPassword(this.state.email, this.state.password))
-						.catch((error) => {
-							console.error(error)
-							this.handleError('Error creating new organization')
-						})
-				})
-				.catch((error) => {
-					console.error(error)
-					this.handleError('Error creating new user')
-				})
+			createUser({
+				email: this.state.email,
+				password: this.state.password,
+				profile: { name: this.state.name },
+				createOrganization: {
+					name: this.state.organization,
+					applications: this.state.applications,
+					broadcastMediums: this.state.broadcastMediums,
+				},
+			}).catch((error) => {
+				console.error('Error creating new User', error)
+				this.handleError('Error creating new user')
+			})
 		}
 		render() {
 			const { t } = this.props

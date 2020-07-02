@@ -14,17 +14,20 @@ import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue
 import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { Credentials } from '../security/lib/credentials'
+import { OrganizationId } from '../../lib/collections/Organization'
 
 export function insertStudio(context: MethodContext | Credentials, newId?: StudioId): StudioId {
 	if (newId) check(newId, String)
 
 	const access = OrganizationContentWriteAccess.studio(context)
-
-	let id = Studios.insert(
+	return insertStudioInner(access.organizationId, newId)
+}
+export function insertStudioInner(organizationId: OrganizationId | null, newId?: StudioId): StudioId {
+	return Studios.insert(
 		literal<DBStudio>({
 			_id: newId || getRandomId(),
 			name: 'New Studio',
-			organizationId: access.organizationId,
+			organizationId: organizationId,
 			// blueprintId?: BlueprintId
 			mappings: {},
 			supportedShowStyleBase: [],
@@ -37,7 +40,6 @@ export function insertStudio(context: MethodContext | Credentials, newId?: Studi
 			_rundownVersionHash: '',
 		})
 	)
-	return id
 }
 export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	check(studioId, String)

@@ -10,25 +10,27 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { Credentials } from '../security/lib/credentials'
+import { OrganizationId } from '../../lib/collections/Organization'
 
 export function insertShowStyleBase(context: MethodContext | Credentials): ShowStyleBaseId {
 	const access = OrganizationContentWriteAccess.studio(context)
-
-	let id = ShowStyleBases.insert(
-		literal<ShowStyleBase>({
-			_id: getRandomId(),
-			name: 'New show style',
-			organizationId: access.organizationId,
-			blueprintId: protectString(''),
-			outputLayers: [],
-			sourceLayers: [],
-			config: [],
-			runtimeArguments: [],
-			_rundownVersionHash: '',
-		})
-	)
-	insertShowStyleVariant(context, id, 'Default')
-	return id
+	return insertShowStyleBaseInner(access.organizationId)
+}
+export function insertShowStyleBaseInner(organizationId: OrganizationId | null): ShowStyleBaseId {
+	const showStyleBase: ShowStyleBase = {
+		_id: getRandomId(),
+		name: 'New show style',
+		organizationId: organizationId,
+		blueprintId: protectString(''),
+		outputLayers: [],
+		sourceLayers: [],
+		config: [],
+		runtimeArguments: [],
+		_rundownVersionHash: '',
+	}
+	ShowStyleBases.insert(showStyleBase)
+	insertShowStyleVariantInner(showStyleBase, 'Default')
+	return showStyleBase._id
 }
 export function insertShowStyleVariant(
 	context: MethodContext | Credentials,
@@ -41,6 +43,9 @@ export function insertShowStyleVariant(
 	const showStyleBase = access.showStyleBase
 	if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${showStyleBaseId}" not found`)
 
+	return insertShowStyleVariantInner(showStyleBase, name)
+}
+export function insertShowStyleVariantInner(showStyleBase: ShowStyleBase, name?: string): ShowStyleVariantId {
 	return ShowStyleVariants.insert({
 		_id: getRandomId(),
 		showStyleBaseId: showStyleBase._id,

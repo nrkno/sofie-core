@@ -68,7 +68,9 @@ interface IAppState {
 // App component - represents the whole app
 export const App = translateWithTracker(() => {
 	const user = getUser() // just for reactivity
-	meteorSubscribe(PubSub.organization, {})
+	if (user) {
+		meteorSubscribe(PubSub.organization, { organizationId: user.organizationId })
+	}
 	return { user }
 })(
 	class App extends MeteorReactComponent<Translated<IAppProps>, IAppState> {

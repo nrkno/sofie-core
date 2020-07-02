@@ -13,7 +13,7 @@ import {
 	NotificationAction,
 } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { getUser, User, UserRoleType } from '../../../lib/collections/Users'
+import { getUser, User, UserRoleType, Users } from '../../../lib/collections/Users'
 import { Organizations, DBOrganization } from '../../../lib/collections/Organization'
 import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
@@ -100,7 +100,7 @@ export const AccountPage = translateWithTracker(() => {
 			} else {
 				roles.splice(index, 1)
 			}
-			Meteor.users.update(this.props.user._id, { $set: { roles } })
+			Users.update(this.props.user._id, { $set: { roles } })
 		}
 
 		private handleNotif(error: string, lvl?: NoticeLevel) {

@@ -63,7 +63,7 @@ export const OrganizationPage = translateWithTracker((props: RouteComponentProps
 			}
 			const userRoles: UserRole[] = roles.map((role) => ({ type: role }))
 			console.log(userRoles, user)
-			Meteor.users.update({ _id: unprotectString(user._id) }, { $set: { roles: userRoles } })
+			Users.update({ _id: user._id }, { $set: { roles: userRoles } })
 		}
 
 		private async createAndEnrollUser() {
@@ -71,8 +71,8 @@ export const OrganizationPage = translateWithTracker((props: RouteComponentProps
 				return
 			}
 			if (!this.props.organization) return
-			const tempPass = this.props.organization.name + '_' + this.state.newUserName
-			await MeteorCall.user.createUser(this.state.newUserEmail, tempPass, { name: this.state.newUserName }, true)
+
+			await MeteorCall.user.enrollUser(this.state.newUserEmail, this.state.newUserName)
 			this.setState({ newUserEmail: '', newUserName: '' })
 		}
 

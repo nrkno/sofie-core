@@ -28,7 +28,6 @@ export function insertBlueprint(
 			throw new Meteor.Error(401, 'Only super admins can create new blueprints')
 		}
 	}
-
 	return Blueprints.insert({
 		_id: getRandomId(),
 		organizationId: organizationId,
