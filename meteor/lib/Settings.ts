@@ -50,7 +50,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
-	enableUserAccounts: true,
+	enableUserAccounts: false,
 	allowUnsyncedSegments: false,
 	allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
