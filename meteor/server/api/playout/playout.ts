@@ -731,7 +731,7 @@ export namespace ServerPlayoutAPI {
 					).toISOString()}`
 				)
 
-				reportPieceHasStarted(pieceInstance, startedPlayback)
+				reportPieceHasStarted(rundownPlaylistId, pieceInstance, startedPlayback)
 
 				// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 			}
@@ -773,7 +773,7 @@ export namespace ServerPlayoutAPI {
 					).toISOString()}`
 				)
 
-				reportPieceHasStopped(pieceInstance, stoppedPlayback)
+				reportPieceHasStopped(rundownPlaylistId, pieceInstance, stoppedPlayback)
 			}
 		})
 	}
@@ -952,7 +952,7 @@ export namespace ServerPlayoutAPI {
 						).toISOString()}`
 					)
 
-					reportPartHasStopped(partInstance, stoppedPlayback)
+					reportPartHasStopped(rundownPlaylistId, partInstance, stoppedPlayback)
 				}
 			} else {
 				throw new Meteor.Error(
