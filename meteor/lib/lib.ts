@@ -724,6 +724,19 @@ function cleanCacheResult() {
 		if (cache.ttl < Date.now()) delete cacheResultCache[name]
 	})
 }
+const lazyIgnoreCache: { [name: string]: number } = {}
+export function lazyIgnore(name: string, f1: () => void, t: number): void {
+	// Don't execute the function f1 until the time t has passed.
+	// Subsequent calls will extend the lazyness and ignore the previous call
+
+	if (lazyIgnoreCache[name]) {
+		Meteor.clearTimeout(lazyIgnoreCache[name])
+	}
+	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
+		delete lazyIgnoreCache[name]
+		f1()
+	}, t)
+}
 
 export function escapeHtml(text: string): string {
 	// Escape strings, so they are XML-compatible:
