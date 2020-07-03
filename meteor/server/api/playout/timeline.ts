@@ -39,7 +39,7 @@ import {
 	unprotectObject,
 	normalizeArrayFunc,
 } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
@@ -492,6 +492,7 @@ function buildTimelineObjsForRundown(
 				let prevObjs: TimelineObjRundown[] = [previousPartGroup]
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
+						activePlaylist._id,
 						previousContinuedPieces,
 						groupClasses,
 						previousPartGroup,
@@ -614,6 +615,7 @@ function buildTimelineObjsForRundown(
 			timelineObjs = timelineObjs.concat(
 				infiniteGroup,
 				transformPartIntoTimeline(
+					activePlaylist._id,
 					[piece],
 					groupClasses,
 					infiniteGroup,
@@ -631,9 +633,11 @@ function buildTimelineObjsForRundown(
 			transitionPreroll: currentPartInstance.part.transitionPrerollDuration,
 			transitionKeepalive: currentPartInstance.part.transitionKeepaliveDuration,
 		}
-		timelineObjs = timelineObjs.concat(
+		timelineObjs.push(
 			currentPartGroup,
-			transformPartIntoTimeline(
+			createPartGroupFirstObject(activePlaylist._id, currentPartInstance, currentPartGroup, previousPartInstance),
+			...transformPartIntoTimeline(
+				activePlaylist._id,
 				currentNormalItems,
 				groupClasses,
 				currentPartGroup,
@@ -641,8 +645,6 @@ function buildTimelineObjsForRundown(
 				activePlaylist.holdState
 			)
 		)
-
-		timelineObjs.push(createPartGroupFirstObject(currentPartInstance, currentPartGroup, previousPartInstance))
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextPartInstance && currentPartInstance.part.autoNext) {
@@ -668,11 +670,17 @@ function buildTimelineObjsForRundown(
 				transitionPreroll: nextPartInstance.part.transitionPrerollDuration,
 				transitionKeepalive: nextPartInstance.part.transitionKeepaliveDuration,
 			}
-			timelineObjs = timelineObjs.concat(
+			timelineObjs.push(
 				nextPartGroup,
-				transformPartIntoTimeline(nextPieceInstances, groupClasses, nextPartGroup, transProps)
+				createPartGroupFirstObject(activePlaylist._id, nextPartInstance, nextPartGroup, currentPartInstance),
+				...transformPartIntoTimeline(
+					activePlaylist._id,
+					nextPieceInstances,
+					groupClasses,
+					nextPartGroup,
+					transProps
+				)
 			)
-			timelineObjs.push(createPartGroupFirstObject(nextPartInstance, nextPartGroup, currentPartInstance))
 		}
 	}
 
@@ -711,6 +719,7 @@ function createPartGroup(
 	return partGrp
 }
 function createPartGroupFirstObject(
+	playlistId: RundownPlaylistId,
 	partInstance: PartInstance,
 	partGroup: TimelineObjRundown,
 	previousPart?: PartInstance
@@ -728,7 +737,7 @@ function createPartGroupFirstObject(
 			// Will cause the playout-gateway to run a callback, when the object starts playing:
 			callBack: 'partPlaybackStarted',
 			callBackData: {
-				rundownId: partInstance.rundownId,
+				rundownPlaylistId: playlistId,
 				partInstanceId: partInstance._id,
 			},
 			callBackStopped: 'partPlaybackStopped', // Will cause a callback to be called, when the object stops playing:
@@ -762,6 +771,7 @@ interface TransformTransitionProps {
 }
 
 function transformPartIntoTimeline(
+	playlistId: RundownPlaylistId,
 	pieceInstances: PieceInstance[],
 	firstObjClasses: string[],
 	partGroup?: TimelineObjRundown,
@@ -821,7 +831,7 @@ function transformPartIntoTimeline(
 			timelineObjs.push(pieceGroup)
 
 			if (!pieceInstance.piece.virtual) {
-				timelineObjs.push(createPieceGroupFirstObject(pieceInstance, pieceGroup, firstObjClasses))
+				timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
 				_.each(tos, (o: TimelineObjectCoreExt) => {
 					fixTimelineId(o)

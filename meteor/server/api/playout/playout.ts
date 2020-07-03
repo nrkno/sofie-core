@@ -1295,12 +1295,8 @@ interface UpdateTimelineFromIngestDataTimeout {
 const updateTimelineFromIngestDataTimeouts = new Map<RundownPlaylistId, UpdateTimelineFromIngestDataTimeout>()
 export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylistId) {
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
-	let data = updateTimelineFromIngestDataTimeouts.get(playlistId)
-	if (data) {
-		if (data.timeout) Meteor.clearTimeout(data.timeout)
-	} else {
-		data = {}
-	}
+	const data = updateTimelineFromIngestDataTimeouts.get(playlistId) ?? {}
+	if (data.timeout) Meteor.clearTimeout(data.timeout)
 
 	data.timeout = Meteor.setTimeout(() => {
 		if (updateTimelineFromIngestDataTimeouts.delete(playlistId)) {

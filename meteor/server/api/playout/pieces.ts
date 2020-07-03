@@ -28,12 +28,13 @@ import {
 	TimelineObjectCoreExt,
 	OnGenerateTimelineObj,
 	TSR,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
 import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { Random } from 'meteor/random'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
@@ -72,6 +73,7 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 }
 
 export function createPieceGroupFirstObject(
+	playlistId: RundownPlaylistId,
 	pieceInstance: PieceInstance,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
@@ -90,7 +92,7 @@ export function createPieceGroupFirstObject(
 			type: 'callback',
 			callBack: 'piecePlaybackStarted',
 			callBackData: {
-				rundownId: pieceInstance.rundownId,
+				rundownPlaylistId: playlistId,
 				pieceInstanceId: pieceInstance._id,
 				dynamicallyInserted: pieceInstance.dynamicallyInserted,
 			},
@@ -360,7 +362,7 @@ export function convertAdLibToPieceInstance(
 	partInstance: PartInstance,
 	queue: boolean
 ): PieceInstance {
-	let duration: number | string | undefined = undefined
+	let duration: number | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
 	} else if (adLibPiece['enable'] && adLibPiece['enable'].duration) {
@@ -374,11 +376,18 @@ export function convertAdLibToPieceInstance(
 		partInstanceId: partInstance._id,
 		adLibSourceId: adLibPiece._id,
 		dynamicallyInserted: !queue,
-		piece: {
-			..._.omit(adLibPiece, '_rank', 'expectedDuration', 'startedPlayback', 'stoppedPlayback'), // TODO - this could be typed stronger
-			_id: newPieceId,
-			rundownId: partInstance.rundownId,
-			partId: partInstance.part._id,
+		piece: literal<PieceInstancePiece>({
+			...(_.omit(
+				adLibPiece,
+				'_rank',
+				'expectedDuration',
+				'startedPlayback',
+				'stoppedPlayback',
+				'partId',
+				'rundownId'
+			) as PieceInstancePiece), // TODO - this could be typed stronger
+			_id: protectString(newPieceId),
+			startPartId: partInstance.part._id,
 			enable: {
 				start: queue ? 0 : 'now',
 				duration: duration,
@@ -392,8 +401,16 @@ export function convertAdLibToPieceInstance(
 				takeDone: [],
 				takeOut: [],
 			},
-		},
+		}),
 	})
+
+	if (newPieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
+		// Set it up as an infinite
+		newPieceInstance.infinite = {
+			infinitePieceId: newPieceInstance.piece._id,
+		}
+		// TODO-INSTANCES this needs propogating to the next partInstance
+	}
 
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {
 		let contentObjects = newPieceInstance.piece.content.timelineObjects

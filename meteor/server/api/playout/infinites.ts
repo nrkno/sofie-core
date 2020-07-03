@@ -103,6 +103,15 @@ export function getPieceInstancesForPart(
 				infinitePieceId: instance.piece._id,
 			}
 		}
+		if (instance.infinite && instance.piece.startPartId !== part._id) {
+			// If this is not the start point, it should start at 0
+			instance.piece = {
+				...instance.piece,
+				enable: {
+					start: 0,
+				},
+			}
+		}
 
 		return instance
 	}
@@ -111,6 +120,15 @@ export function getPieceInstancesForPart(
 		const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
 
 		instance.infinite = p.infinite
+		if (instance.infinite) {
+			// This was copied from before, so we know we can force the time to 0
+			instance.piece = {
+				...instance.piece,
+				enable: {
+					start: 0,
+				},
+			}
+		}
 
 		return instance
 	}
@@ -133,6 +151,8 @@ export function getPieceInstancesForPart(
 			return false
 		}
 	}
+
+	// TODO-INFINITES - this chunk needs rethinking to handle that not every infinite should stop every other type..
 
 	// Filter down to the last starting onEnd infinite per layer
 	const piecesOnSourceLayers: { [sourceLayerId: string]: Piece } = {}
@@ -170,8 +190,29 @@ export function getPieceInstancesForPart(
 		  })
 		: []
 	for (const onChangePiece of onChangePieceInstances) {
-		delete piecesOnSourceLayers[onChangePiece.piece.sourceLayerId]
-		onChangePiecesOnSourceLayers[onChangePiece.piece.sourceLayerId] = onChangePiece
+		// TODO-INFINITES it feels bad to have to do this just to get the segmentId..
+		const partForPiece = cache.PartInstances.findOne(onChangePiece.partInstanceId)
+
+		let isUsed = false
+		switch (onChangePiece.piece.lifespan) {
+			case PieceLifespan.OutOnSegmentChange:
+				if (partForPiece?.segmentId === part.segmentId) {
+					// Still in the same segment
+					isUsed = true
+				}
+				break
+			case PieceLifespan.OutOnRundownChange:
+				if (onChangePiece.rundownId === part.rundownId) {
+					// Still in the same rundown
+					isUsed = true
+				}
+				break
+		}
+
+		if (isUsed) {
+			delete piecesOnSourceLayers[onChangePiece.piece.sourceLayerId]
+			onChangePiecesOnSourceLayers[onChangePiece.piece.sourceLayerId] = onChangePiece
+		}
 	}
 
 	// Prune any on layers where the normalPiece starts at 0

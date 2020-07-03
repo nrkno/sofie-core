@@ -6,9 +6,9 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
+import { RundownPlaylistId } from './RundownPlaylists'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -87,7 +87,7 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 		callBack: 'partPlaybackStarted'
 		callBackStopped: 'partPlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			partInstanceId: PartInstanceId
 		}
 	}
@@ -100,7 +100,7 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown {
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			pieceInstanceId: PieceInstanceId
 			dynamicallyInserted?: boolean
 		}

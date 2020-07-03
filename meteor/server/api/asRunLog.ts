@@ -211,9 +211,7 @@ export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstanc
 export function reportPartHasStopped(partInstanceOrId: PartInstance | PartInstanceId, timestamp: Time) {
 	let partInstance = isProtectedString(partInstanceOrId) ? PartInstances.findOne(partInstanceOrId) : partInstanceOrId
 	if (partInstance) {
-		let rundown: Rundown | undefined
-
-		let r = waitForPromiseAll<any>([
+		const [_r, rundown] = waitForPromiseAll([
 			asyncCollectionUpdate(PartInstances, partInstance._id, {
 				$set: {
 					'part.stoppedPlayback': true,
@@ -234,7 +232,6 @@ export function reportPartHasStopped(partInstanceOrId: PartInstance | PartInstan
 				},
 			}),
 		])
-		rundown = r[1]
 		// also update local object:
 		partInstance.part.stoppedPlayback = true
 		pushOntoPath(partInstance.part, 'timings.stoppedPlayback', timestamp)
@@ -265,9 +262,7 @@ export function reportPieceHasStarted(pieceInstanceOrId: PieceInstance | PieceIn
 		? PieceInstances.findOne(pieceInstanceOrId)
 		: pieceInstanceOrId
 	if (pieceInstance) {
-		let rundown: Rundown | undefined
-		let partInstance: PartInstance | undefined
-		let r = waitForPromiseAll<any>([
+		const [_r, rundown, partInstance] = waitForPromiseAll([
 			asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
 				$set: {
 					'piece.startedPlayback': timestamp,
@@ -291,8 +286,6 @@ export function reportPieceHasStarted(pieceInstanceOrId: PieceInstance | PieceIn
 				},
 			}),
 		])
-		rundown = r[1]
-		partInstance = r[2]
 
 		// also update local object:
 		pieceInstance.piece.startedPlayback = timestamp
@@ -331,9 +324,7 @@ export function reportPieceHasStopped(pieceInstanceOrId: PieceInstance | PieceIn
 		? PieceInstances.findOne(pieceInstanceOrId)
 		: pieceInstanceOrId
 	if (pieceInstance) {
-		let rundown: Rundown
-		let partInstance: PartInstance
-		let r = waitForPromiseAll<any>([
+		const [_r, rundown, partInstance] = waitForPromiseAll([
 			asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
 				$set: {
 					'piece.stoppedPlayback': timestamp,
@@ -355,8 +346,6 @@ export function reportPieceHasStopped(pieceInstanceOrId: PieceInstance | PieceIn
 				},
 			}),
 		])
-		rundown = r[1]
-		partInstance = r[2]
 
 		// also update local object:
 		pieceInstance.piece.stoppedPlayback = timestamp
