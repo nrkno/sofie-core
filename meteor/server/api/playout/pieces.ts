@@ -127,6 +127,7 @@ export function createPieceGroup(
 		metaData: {
 			pieceId: pieceInstance._id,
 		},
+		// TODO-INSTANCES we might want to set a priority, BUT should a later starter always take priority?
 	})
 }
 

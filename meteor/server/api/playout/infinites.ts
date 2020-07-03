@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { asyncCollectionFindFetch, assertNever } from '../../../lib/lib'
+import { asyncCollectionFindFetch, assertNever, flatten } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance, rewrapPieceToInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -95,6 +95,105 @@ export function getPieceInstancesForPart(
 			: []
 	)
 
+	const orderedPartIds = getAllOrderedPartsFromCache(cache, playlist).map((p) => p._id)
+	const doesPieceAStartBeforePieceB = (pieceA: Piece, pieceB: Piece): boolean => {
+		if (pieceA.startPartId === pieceB.startPartId) {
+			return pieceA.enable.start < pieceB.enable.start
+		}
+		const pieceAIndex = orderedPartIds.indexOf(pieceA.startPartId)
+		const pieceBIndex = orderedPartIds.indexOf(pieceB.startPartId)
+
+		if (pieceAIndex === -1) {
+			return false
+		} else if (pieceBIndex === -1) {
+			return true
+		} else if (pieceAIndex < pieceBIndex) {
+			return true
+		} else {
+			return false
+		}
+	}
+
+	interface InfinitePieceSet {
+		[PieceLifespan.OutOnRundownEnd]?: Piece
+		[PieceLifespan.OutOnSegmentEnd]?: Piece
+		onChange?: PieceInstance
+	}
+	const piecesOnSourceLayers = new Map<string, InfinitePieceSet>()
+
+	// Filter down to the last starting onEnd infinite per layer
+	for (const candidatePiece of possiblePieces) {
+		if (
+			candidatePiece.startPartId !== part._id &&
+			(candidatePiece.lifespan === PieceLifespan.OutOnRundownEnd ||
+				candidatePiece.lifespan === PieceLifespan.OutOnSegmentEnd)
+		) {
+			const useIt = isPiecePotentiallyActiveInPart(
+				playingPartInstance,
+				partsBeforeThisInSegmentSet,
+				segmentsBeforeThisInRundownSet,
+				part,
+				candidatePiece
+			)
+
+			if (useIt) {
+				const pieceSet = piecesOnSourceLayers.get(candidatePiece.sourceLayerId) ?? {}
+				const existingPiece = pieceSet[candidatePiece.lifespan]
+				if (!existingPiece || doesPieceAStartBeforePieceB(existingPiece, candidatePiece)) {
+					pieceSet[candidatePiece.lifespan] = candidatePiece
+					piecesOnSourceLayers.set(candidatePiece.sourceLayerId, pieceSet)
+				}
+			}
+		}
+	}
+
+	// OnChange infinites take priority over onEnd, as they travel with the playhead
+	const playingPieceInstances = playingPartInstance
+		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
+		: []
+	const groupedPlayingPieceInstances = _.groupBy(playingPieceInstances, (p) => p.piece.sourceLayerId)
+	for (const [sourceLayerId, pieceInstances] of Object.entries(groupedPlayingPieceInstances)) {
+		// Find the one that starts last
+		const lastPieceInstance = _.max(pieceInstances, (p) => p.piece.enable.start)
+
+		// If it is an onChange, then it may want to continue
+		let isUsed = false
+		switch (lastPieceInstance.piece.lifespan) {
+			case PieceLifespan.OutOnSegmentChange:
+				if (playingPartInstance?.segmentId === part.segmentId) {
+					// Still in the same segment
+					isUsed = true
+				}
+				break
+			case PieceLifespan.OutOnRundownChange:
+				if (lastPieceInstance.rundownId === part.rundownId) {
+					// Still in the same rundown
+					isUsed = true
+				}
+				break
+		}
+
+		if (isUsed) {
+			const pieceSet = piecesOnSourceLayers.get(sourceLayerId) ?? {}
+			pieceSet.onChange = lastPieceInstance
+			piecesOnSourceLayers.set(sourceLayerId, pieceSet)
+			// This may get pruned later, if somethng else has a start of 0
+		}
+	}
+
+	// Prune any on layers where the normalPiece starts at 0
+	const normalPieces = possiblePieces.filter((p) => p.startPartId === part._id)
+	for (const normalPiece of normalPieces) {
+		if (normalPiece.enable.start === 0) {
+			const pieceSet = piecesOnSourceLayers.get(normalPiece.sourceLayerId) ?? {}
+			// If an onChange starts at 0, then we will replace it.
+			// onEnd can't can only be overridden, so dont prune those
+			delete pieceSet['onChange']
+		}
+	}
+
+	// Compile the resulting list
+
 	const wrapPiece = (p: PieceInstancePiece) => {
 		const instance = rewrapPieceToInstance(p, part.rundownId, newInstanceId, isTemporary)
 
@@ -133,102 +232,20 @@ export function getPieceInstancesForPart(
 		return instance
 	}
 
-	const orderedPartIds = getAllOrderedPartsFromCache(cache, playlist).map((p) => p._id)
-	const doesPieceAStartBeforePieceB = (pieceA: Piece, pieceB: Piece): boolean => {
-		if (pieceA.startPartId === pieceB.startPartId) {
-			return pieceA.enable.start < pieceB.enable.start
-		}
-		const pieceAIndex = orderedPartIds.indexOf(pieceA.startPartId)
-		const pieceBIndex = orderedPartIds.indexOf(pieceB.startPartId)
+	const result = normalPieces.map(wrapPiece)
+	for (const pieceSet of Array.from(piecesOnSourceLayers.values())) {
+		const basicPieces = _.compact([
+			pieceSet[PieceLifespan.OutOnRundownEnd],
+			pieceSet[PieceLifespan.OutOnSegmentEnd],
+		])
+		result.push(...basicPieces.map(wrapPiece))
 
-		if (pieceAIndex === -1) {
-			return false
-		} else if (pieceBIndex === -1) {
-			return true
-		} else if (pieceAIndex < pieceBIndex) {
-			return true
-		} else {
-			return false
+		if (pieceSet.onChange) {
+			result.push(rewrapInstance(pieceSet.onChange))
 		}
 	}
 
-	// TODO-INFINITES - this chunk needs rethinking to handle that not every infinite should stop every other type..
-
-	// Filter down to the last starting onEnd infinite per layer
-	const piecesOnSourceLayers: { [sourceLayerId: string]: Piece } = {}
-	const infinitePieces = possiblePieces.filter(
-		(p) =>
-			p.startPartId !== part._id &&
-			(p.lifespan === PieceLifespan.OutOnRundownEnd || p.lifespan === PieceLifespan.OutOnSegmentEnd)
-	)
-	for (const candidatePiece of infinitePieces) {
-		const useIt = isPiecePotentiallyActiveInPart(
-			playingPartInstance,
-			partsBeforeThisInSegmentSet,
-			segmentsBeforeThisInRundownSet,
-			part,
-			candidatePiece
-		)
-
-		if (useIt) {
-			const existingPiece = piecesOnSourceLayers[candidatePiece.sourceLayerId]
-			if (!existingPiece || doesPieceAStartBeforePieceB(existingPiece, candidatePiece)) {
-				piecesOnSourceLayers[candidatePiece.sourceLayerId] = candidatePiece
-			}
-		}
-	}
-
-	// OnChange infinites take priority over onEnd, as they travel with the playhead
-	const onChangePiecesOnSourceLayers: { [sourceLayerId: string]: PieceInstance } = {}
-	const onChangePieceInstances = playingPartInstance
-		? cache.PieceInstances.findFetch((p) => {
-				return (
-					p.partInstanceId === playingPartInstance._id &&
-					(p.piece.lifespan === PieceLifespan.OutOnRundownChange ||
-						p.piece.lifespan === PieceLifespan.OutOnSegmentChange)
-				)
-		  })
-		: []
-	for (const onChangePiece of onChangePieceInstances) {
-		// TODO-INFINITES it feels bad to have to do this just to get the segmentId..
-		const partForPiece = cache.PartInstances.findOne(onChangePiece.partInstanceId)
-
-		let isUsed = false
-		switch (onChangePiece.piece.lifespan) {
-			case PieceLifespan.OutOnSegmentChange:
-				if (partForPiece?.segmentId === part.segmentId) {
-					// Still in the same segment
-					isUsed = true
-				}
-				break
-			case PieceLifespan.OutOnRundownChange:
-				if (onChangePiece.rundownId === part.rundownId) {
-					// Still in the same rundown
-					isUsed = true
-				}
-				break
-		}
-
-		if (isUsed) {
-			delete piecesOnSourceLayers[onChangePiece.piece.sourceLayerId]
-			onChangePiecesOnSourceLayers[onChangePiece.piece.sourceLayerId] = onChangePiece
-		}
-	}
-
-	// Prune any on layers where the normalPiece starts at 0
-	const normalPieces = possiblePieces.filter((p) => p.startPartId === part._id)
-	for (const normalPiece of normalPieces) {
-		if (normalPiece.enable.start === 0) {
-			delete piecesOnSourceLayers[normalPiece.sourceLayerId]
-			delete onChangePiecesOnSourceLayers[normalPiece.sourceLayerId]
-		}
-	}
-
-	return [
-		...Object.values(piecesOnSourceLayers).map(wrapPiece),
-		...Object.values(onChangePiecesOnSourceLayers).map(rewrapInstance),
-		...normalPieces.map(wrapPiece),
-	]
+	return result
 }
 
 export function isPiecePotentiallyActiveInPart(
@@ -245,6 +262,7 @@ export function isPiecePotentiallyActiveInPart(
 
 	switch (pieceToCheck.lifespan) {
 		case PieceLifespan.WithinPart:
+			// This must be from another part
 			return false
 		case PieceLifespan.OutOnSegmentEnd:
 			return (

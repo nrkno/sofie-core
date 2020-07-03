@@ -23,6 +23,13 @@ export function clone<T>(o: T): T {
 	return cloneOrg(o)
 }
 
+export function flatten<T>(vals: Array<T[] | undefined>): T[] {
+	return _.flatten(
+		vals.filter((v) => v !== undefined),
+		true
+	)
+}
+
 export function getHash(str: string): string {
 	const hash = crypto.createHash('sha1')
 	return hash
