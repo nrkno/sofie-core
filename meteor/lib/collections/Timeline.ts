@@ -5,7 +5,7 @@ import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integ
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
+import { StudioId, ResultingMappingRoutes } from './Studios'
 import { RundownId } from './Rundowns'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
@@ -142,6 +142,36 @@ export function fixTimelineId(obj: TimelineObjectCoreExt) {
 		o.id = o._id
 		delete o._id
 	}
+}
+
+export function getRoutedTimeline(
+	inputTimelineObjs: TimelineObjGeneric[],
+	mappingRoutes: ResultingMappingRoutes
+): TimelineObjGeneric[] {
+	const outputTimelineObjs: TimelineObjGeneric[] = []
+
+	_.each(inputTimelineObjs, (obj) => {
+		const inputLayer = obj.layer + ''
+		const routes = mappingRoutes[inputLayer]
+		if (routes) {
+			_.each(routes, (route, i) => {
+				const routedObj: TimelineObjGeneric = {
+					...obj,
+					layer: route.outputMappedLayer,
+				}
+				if (i > 0) {
+					// If there are multiple routes we must rename the ids, so that they stay unique.
+					routedObj.id = `_${i}_${routedObj.id}`
+					routedObj._id = getTimelineId(obj)
+				}
+				outputTimelineObjs.push(routedObj)
+			})
+		} else {
+			// If no route is found at all, pass it through (backwards compatibility)
+			outputTimelineObjs.push(obj)
+		}
+	})
+	return outputTimelineObjs
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
