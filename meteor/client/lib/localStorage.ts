@@ -1,5 +1,5 @@
 import { Settings } from '../../lib/Settings'
-import { UserRoleType, getUser, User } from '../../lib/collections/Users'
+import { getUserRoles } from '../../lib/collections/Users'
 
 enum UiAllowAccess {
 	STUDIO = 'studioMode',
@@ -10,21 +10,12 @@ enum UiAllowAccess {
 	SERVICE = 'serviceMode',
 }
 
-function checkUserRole(role: string): boolean {
-	const user = getUser() as User
-	if (!user || !user.roles) return false
-	if (user.roles.find((r) => r.type === role)) {
-		return true
-	}
-	return false
-}
-
 export function setAllowStudio(studioMode: boolean) {
 	localStorage.setItem(UiAllowAccess.STUDIO, studioMode ? '1' : '0')
 }
 export function getAllowStudio(): boolean {
 	if (Settings.enableUserAccounts) {
-		return checkUserRole(UserRoleType.STUDIO_PLAYOUT)
+		return !!getUserRoles().studio
 	}
 	return localStorage.getItem(UiAllowAccess.STUDIO) === '1'
 }
@@ -34,7 +25,7 @@ export function setAllowConfigure(configureMode: boolean) {
 }
 export function getAllowConfigure(): boolean {
 	if (Settings.enableUserAccounts) {
-		return checkUserRole(UserRoleType.CONFIGURATOR)
+		return !!getUserRoles().configurator
 	}
 	return localStorage.getItem(UiAllowAccess.CONFIGURE) === '1'
 }
@@ -51,7 +42,7 @@ export function setAllowDeveloper(developerMode: boolean) {
 }
 export function getAllowDeveloper(): boolean {
 	if (Settings.enableUserAccounts) {
-		return checkUserRole(UserRoleType.DEVELOPER)
+		return !!getUserRoles().developer
 	}
 	return localStorage.getItem(UiAllowAccess.DEVELOPER) === '1'
 }
@@ -61,7 +52,7 @@ export function setAllowTesting(testingMode: boolean) {
 }
 export function getAllowTesting(): boolean {
 	if (Settings.enableUserAccounts) {
-		return checkUserRole(UserRoleType.DEVELOPER)
+		return !!getUserRoles().developer
 	}
 	return localStorage.getItem(UiAllowAccess.TESTING) === '1'
 }

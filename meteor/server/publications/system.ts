@@ -39,7 +39,6 @@ meteorPublish(PubSub.loggedInUser, function(token) {
 					emails: 1,
 					profile: 1,
 					organizationId: 1,
-					roles: 1,
 					superAdmin: 1,
 				},
 			}
@@ -57,7 +56,6 @@ meteorPublish(PubSub.usersInOrganization, function(selector, token) {
 				emails: 1,
 				profile: 1,
 				organizationId: 1,
-				roles: 1,
 				superAdmin: 1,
 			},
 		})

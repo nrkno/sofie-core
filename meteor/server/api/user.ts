@@ -42,7 +42,13 @@ function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): O
 	Users.update(userId, { $set: { organizationId: orgId } })
 	Organizations.update(orgId, {
 		$set: {
-			admins: [{ userId: userId }],
+			userRoles: {
+				[unprotectString(userId)]: {
+					admin: true,
+					studio: true,
+					configurator: true,
+				},
+			},
 		},
 	})
 

@@ -4,6 +4,7 @@ import {
 	allowAccessToStudio,
 	allowAccessToShowStyleBase,
 	allowAccessToRundown,
+	allowAccessToOrganization,
 } from './lib/security'
 import { logNotAllowed, allowOnlyFields, rejectFields } from './lib/lib'
 import { Users } from '../../lib/collections/Users'
@@ -86,7 +87,9 @@ Organizations.allow({
 		return false
 	},
 	update(userId, doc, fields, modifier) {
-		return false
+		const access = allowAccessToOrganization({ userId: userId }, doc._id)
+		if (!access.update) return logNotAllowed('Organization', access.reason)
+		return allowOnlyFields(doc, fields, ['userRoles'])
 	},
 	remove(userId, doc) {
 		return false

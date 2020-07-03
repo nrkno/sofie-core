@@ -17,7 +17,7 @@ export interface DBOrganizationBase {
 export interface DBOrganization extends DBOrganizationBase {
 	_id: OrganizationId
 
-	admins: UserAdmin[]
+	userRoles: { [userId: string]: UserRoles }
 
 	notes?: string
 
@@ -28,6 +28,17 @@ export interface UserAdmin {
 	userId: UserId
 	// permissions: // add later
 }
+export interface UserRoles {
+	/** Can play out things in a studio */
+	studio?: boolean
+	/** Can access and modify the settings */
+	configurator?: boolean
+	/** Can enable developer features including test tools */
+	developer?: boolean
+
+	admin?: boolean
+}
+
 export type Organization = DBOrganization // to be replaced by a class some time later?
 
 export const Organizations: TransformedCollection<Organization, DBOrganization> = createMongoCollection<DBOrganization>(

@@ -86,7 +86,7 @@ export function createOrganization(organization: DBOrganizationBase): Organizati
 		literal<DBOrganization>({
 			...organization,
 			_id: getRandomId(),
-			admins: [],
+			userRoles: {},
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
 		})

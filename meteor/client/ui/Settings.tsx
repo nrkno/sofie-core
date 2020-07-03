@@ -455,7 +455,7 @@ export const Settings = withTranslation()(
 			this.subscribe(PubSub.showStyleBases, {})
 			this.subscribe(PubSub.showStyleVariants, {})
 			this.subscribe(PubSub.blueprints, {})
-			if (MeteorSettings.enableUserAccounts && this.user && this.user.roles) {
+			if (MeteorSettings.enableUserAccounts && this.user) {
 				const access = getAllowConfigure()
 				if (!access) this.props.history.push('/')
 			}

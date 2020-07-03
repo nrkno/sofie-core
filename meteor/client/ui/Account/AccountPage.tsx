@@ -13,10 +13,11 @@ import {
 	NotificationAction,
 } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { getUser, User, UserRoleType, Users } from '../../../lib/collections/Users'
-import { Organizations, DBOrganization } from '../../../lib/collections/Organization'
+import { getUser, User, Users } from '../../../lib/collections/Users'
+import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
+import { unprotectString } from '../../../lib/lib'
 
 interface IAccountPageProps extends RouteComponentProps {
 	user: User
@@ -92,15 +93,13 @@ export const AccountPage = translateWithTracker(() => {
 				})
 		}
 
-		private toggleAccess(access: UserRoleType) {
-			const roles = this.props.user.roles ? this.props.user.roles : []
-			const index = roles.findIndex((r) => r.type === access)
-			if (index === -1) {
-				roles.push({ type: access })
-			} else {
-				roles.splice(index, 1)
-			}
-			Users.update(this.props.user._id, { $set: { roles } })
+		private toggleAccess(updatedRoles: UserRoles) {
+			const organization = this.props.organization
+			const user = this.props.user
+			const roles = this.props.organization?.userRoles[unprotectString(user._id)] || null
+			if (!user || !roles || !organization) return
+			const userRoles = { ...roles, ...updatedRoles }
+			Organizations.update({ _id: organization._id }, { $set: { [`userRoles.${user._id}`]: userRoles } })
 		}
 
 		private handleNotif(error: string, lvl?: NoticeLevel) {
@@ -110,7 +109,7 @@ export const AccountPage = translateWithTracker(() => {
 
 		render() {
 			const { t } = this.props
-			const roles = this.props.user && this.props.user.roles
+			const roles = this.props.organization?.userRoles[unprotectString(this.props.user._id)]
 			return (
 				<div className="center-page">
 					<div className="mtl page">
@@ -165,22 +164,16 @@ export const AccountPage = translateWithTracker(() => {
 								<button className="btn btn-primary">
 									<Link to="/organization">Edit Organization</Link>
 								</button>
-								{this.props.user && this.props.user.roles ? (
+								{this.props.user ? (
 									<React.Fragment>
-										<button className="btn" onClick={() => this.toggleAccess(UserRoleType.STUDIO_PLAYOUT)}>
-											{roles && roles.find((r) => r.type === UserRoleType.STUDIO_PLAYOUT)
-												? t('Remove Studio Access')
-												: t('Add Studio Access')}
+										<button className="btn" onClick={() => this.toggleAccess({ studio: !roles.studio })}>
+											{roles && roles.studio ? t('Remove Studio Access') : t('Add Studio Access')}
 										</button>
-										<button className="btn" onClick={() => this.toggleAccess(UserRoleType.CONFIGURATOR)}>
-											{roles && roles.find((r) => r.type === UserRoleType.CONFIGURATOR)
-												? t('Remove Configurator Access')
-												: t('Add Configurator Access')}
+										<button className="btn" onClick={() => this.toggleAccess({ configurator: !roles.configurator })}>
+											{roles && roles.configurator ? t('Remove Configurator Access') : t('Add Configurator Access')}
 										</button>
-										<button className="btn" onClick={() => this.toggleAccess(UserRoleType.DEVELOPER)}>
-											{roles && roles.find((r) => r.type === UserRoleType.DEVELOPER)
-												? t('Remove Developer Access')
-												: t('Add Developer Access')}
+										<button className="btn" onClick={() => this.toggleAccess({ developer: !roles.developer })}>
+											{roles && roles.developer ? t('Remove Developer Access') : t('Add Developer Access')}
 										</button>
 									</React.Fragment>
 								) : null}

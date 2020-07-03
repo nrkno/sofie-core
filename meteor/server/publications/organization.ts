@@ -17,7 +17,7 @@ meteorPublish(PubSub.organization, function(selector0, token) {
 			name: 1,
 			applications: 1,
 			broadcastMediums: 1,
-			admins: 1 /** @TODO check if this should be a method for organization page */,
+			userRoles: 1, // to not expose too much information consider [`userRoles.${this.userId}`]: 1, and a method/publication for getting all the roles, or limiting the returned roles based on requesting user's role
 		},
 	}
 	if (OrganizationReadAccess.organizationContent(selector, cred)) {

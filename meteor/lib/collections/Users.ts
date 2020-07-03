@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString, protectString } from '../lib'
-import { OrganizationId } from './Organization'
+import { registerCollection, ProtectedString, protectString, unprotectString } from '../lib'
+import { OrganizationId, UserRoles, Organizations } from './Organization'
 
 /** A string, identifying a User */
 export type UserId = ProtectedString<'UserId'>
@@ -30,19 +30,7 @@ export interface DBUser {
 	]
 	profile: UserProfile
 	organizationId: OrganizationId
-	roles: UserRole[]
 	superAdmin?: boolean
-}
-export interface UserRole {
-	type: UserRoleType
-}
-export enum UserRoleType {
-	/** Can play out things in a studio */
-	STUDIO_PLAYOUT = 'studio_playout',
-	/** Can access and modify the settings */
-	CONFIGURATOR = 'configurator',
-	/** Can enable devloper features including test tools */
-	DEVELOPER = 'developer',
 }
 
 export type User = DBUser // to be replaced by a class somet ime later?
@@ -66,4 +54,12 @@ export function getUser(): DBUser | null {
 }
 export function getUserId(): UserId | null {
 	return (Meteor.userId() as any) || null
+}
+export function getUserRoles(): UserRoles {
+	const user = getUser()
+	if (!user) {
+		return {}
+	}
+	const organization = Organizations.findOne({ _id: user.organizationId })
+	return (organization?.userRoles && organization?.userRoles[unprotectString(user._id)]) || {}
 }
