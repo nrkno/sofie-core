@@ -59,7 +59,7 @@ import {
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	getPartBeforeSegment,
+	getPartBeforeSegmentFromCache,
 	selectNextPart,
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
@@ -1871,7 +1871,7 @@ export function triggerUpdateTimelineAfterIngestData(
 						_id: { $in: data.changedSegments },
 					})
 					if (firstSegment) {
-						prevPart = getPartBeforeSegment(rundownId, firstSegment)
+						prevPart = getPartBeforeSegmentFromCache(cache, rundownId, firstSegment)
 					}
 				}
 
