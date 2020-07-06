@@ -28,6 +28,7 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
+import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -117,6 +118,8 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 
 			cache.PieceInstances.insert(newPieceInstance)
+
+			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
 
 			updateTimeline(cache, rundown.studioId)
 
@@ -253,6 +256,8 @@ export namespace ServerPlayoutAdLibAPI {
 			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
 		}
+
+		syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
 
 		updateTimeline(cache, rundownPlaylist.studioId)
 	}

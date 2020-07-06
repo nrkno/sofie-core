@@ -30,6 +30,14 @@ export function flatten<T>(vals: Array<T[] | undefined>): T[] {
 	)
 }
 
+export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
+	if (vals.length <= 1) {
+		return vals[0]
+	} else {
+		return _.max(vals, iterator)
+	}
+}
+
 export function getHash(str: string): string {
 	const hash = crypto.createHash('sha1')
 	return hash

@@ -62,6 +62,9 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		/** When the instance was a copy made from hold */
 		fromHold?: boolean
 
+		/** Whether this was 'copied' from the previous PartInstance, rather than from a Part */
+		fromPrevious?: boolean
+
 		// /** The first partInstance this existed in */
 		// firstPartInsanceId: PartInstanceId
 		/** The last partInstance this should exist in */

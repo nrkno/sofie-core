@@ -87,6 +87,7 @@ import {
 	CacheForStudio,
 } from '../../DatabaseCaches'
 import { takeNextPartInner, afterTake } from './take'
+import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1113,6 +1114,8 @@ export namespace ServerPlayoutAPI {
 			// }
 
 			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
+				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+
 				updateTimeline(cache, playlist.studioId)
 			}
 
@@ -1166,6 +1169,8 @@ export namespace ServerPlayoutAPI {
 				(pieceInstance) => sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1,
 				undefined
 			)
+
+			syncPlayheadInfinitesForNextPartInstance(cache, playlist)
 
 			updateTimeline(cache, playlist.studioId)
 
