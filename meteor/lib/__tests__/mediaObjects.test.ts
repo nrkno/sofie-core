@@ -342,6 +342,6 @@ describe('lib/mediaObjects', () => {
 
 		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudioSettings)
 		expect(status3.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_MISSING)
-		expect(status3.message).toContain('is missing')
+		expect(status3.message).toContain("it isn't present on the playout")
 	})
 })
