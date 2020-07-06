@@ -19,7 +19,7 @@ import { VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { PieceStatusIcon } from '../PieceStatusIcon'
 import { RundownAPI } from '../../../../lib/api/rundown'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
-import { CriticalIcon, WarningIcon } from '../../../lib/notificationIcons'
+import { CriticalIconSmall, WarningIconSmall } from '../../../lib/notificationIcons'
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
 	scenes?: Array<number>
@@ -260,9 +260,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			<>
 				<div className="segment-timeline__mini-inspector__notice-header">
 					{noticeLevel === NoticeLevel.CRITICAL ? (
-						<CriticalIcon />
+						<CriticalIconSmall />
 					) : noticeLevel === NoticeLevel.WARNING ? (
-						<WarningIcon />
+						<WarningIconSmall />
 					) : null}
 				</div>
 				<div className="segment-timeline__mini-inspector__notice">{this.props.piece.message}</div>

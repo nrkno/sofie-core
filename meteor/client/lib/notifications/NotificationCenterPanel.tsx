@@ -463,6 +463,7 @@ interface IToggleProps {
 	/** Use 'open' class for the button to signify that the notification center is open */
 	isOpen?: boolean
 	filter?: NoticeLevel
+	className?: string
 }
 
 interface ITrackedCountProps {
@@ -486,10 +487,15 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 		render() {
 			return (
 				<button
-					className={ClassNames('status-bar__controls__button', 'notifications__toggle-button', {
-						'status-bar__controls__button--open': this.props.isOpen,
-						'has-items': this.props.count > 0,
-					})}
+					className={ClassNames(
+						'status-bar__controls__button',
+						'notifications__toggle-button',
+						{
+							'status-bar__controls__button--open': this.props.isOpen,
+							'has-items': this.props.count > 0,
+						},
+						this.props.className
+					)}
 					role="button"
 					onClick={this.props.onClick}
 					tabIndex={0}>

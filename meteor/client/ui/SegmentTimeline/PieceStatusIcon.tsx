@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { NoticeLevel } from '../../lib/notifications/notifications'
-import { WarningIcon, CriticalIcon } from '../../lib/notificationIcons'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/notificationIcons'
 
 export interface IProps {
 	noticeLevel: NoticeLevel
@@ -10,9 +10,9 @@ export function PieceStatusIcon(props: IProps) {
 	return (
 		<div className="piece__status-icon">
 			{props.noticeLevel === NoticeLevel.CRITICAL ? (
-				<CriticalIcon />
+				<CriticalIconSmall />
 			) : props.noticeLevel === NoticeLevel.WARNING ? (
-				<WarningIcon />
+				<WarningIconSmall />
 			) : null}
 		</div>
 	)

@@ -63,11 +63,8 @@
 
 			> svg {
 				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-
-				&.type-notification {
-					width: 1.5em;
-					height: 1.5em;
-				}
+				width: 1.7em;
+				height: 1.7em;
 			}
 		}
 
@@ -205,11 +202,11 @@
 	.notifications__toggle-button__icon {
 		> svg {
 			position: absolute;
-			width: #{$fullscreen-controls__button--radius / 2};
-			height: #{$fullscreen-controls__button--radius / 2};
+			width: #{$fullscreen-controls__button--radius / 1.75};
+			height: #{$fullscreen-controls__button--radius / 1.75};
 			top: 50%;
-			right: 0;
-			transform: translate(-50%, -53%);
+			left: 50%;
+			transform: translate(-50%, -50%);
 			transition: 0.5s all ease-in-out;
 		}
 	}
@@ -217,7 +214,7 @@
 	&.has-items {
 		.notifications__toggle-button__icon:not(.notifications__toggle-button__icon--collapse) {
 			> svg {
-				transform: translate(-80%, -53%);
+				transform: translate(-60%, -50%);
 				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
 			}
 		}
@@ -225,17 +222,10 @@
 
 	&:not(.has-items) {
 		.notifications__toggle-button__icon:not(.notifications__toggle-button__icon--collapse) {
-			> svg.type-warning,
-			> svg.type-critical {
-				> path {
-					fill: transparent;
-					stroke: #fff;
-				}
-			}
-			> svg.type-notification {
+			> svg {
 				> path {
 					fill: #fff;
-					stroke: none;
+					opacity: 0.3;
 				}
 			}
 		}
@@ -246,7 +236,7 @@
 			fill: #525252;
 			width: 1.5em;
 			height: 1.5em;
-			transform: translate(-53%, -50%);
+			transform: translate(-34%, -50%);
 		}
 	}
 
@@ -262,22 +252,45 @@
 		display: block;
 		position: absolute;
 
-		right: 6%;
-		top: 50%;
-		transform: translate(0, -50%);
-		width: #{$fullscreen-controls__button--radius / 2.86};
+		top: 0;
+		left: 75%;
+		transform: translate(-50%, -100%);
 		text-align: center;
-		font-size: 0.8em;
+		font-size: 0.7em;
 		font-weight: 500;
 
 		opacity: 0;
 		transition: 0.2s opacity ease-in 0s;
+
+		color: #fff;
+		background: #000;
+		border-radius: 0.8em;
+		padding: 0 4px;
 	}
 
 	&.has-items {
 		.notifications__toggle-button__count {
 			opacity: 1;
 			transition: 0.2s opacity ease-out 0.4s;
+		}
+	}
+
+	&.type-critical {
+		.notifications__toggle-button__count {
+			background: #000;
+		}
+	}
+
+	&.type-warning {
+		.notifications__toggle-button__count {
+			background: #ffff00;
+			color: #000;
+		}
+	}
+
+	&.type-notification {
+		.notifications__toggle-button__count {
+			background: #00c9e4;
 		}
 	}
 }
@@ -321,7 +334,7 @@
 		top: ‭3.6875‬rem;
 		left: 0;
 		bottom: 0;
-		overflow: auto;
+		overflow: none auto;
 		width: calc(#{$notification-center-width} + 10px);
 		pointer-events: auto;
 

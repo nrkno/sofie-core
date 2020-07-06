@@ -54,6 +54,12 @@
 			transition: 0.3s background-color;
 		}
 
+		&.status-bar__controls__button--open {
+			&::after {
+				background: #fff;
+			}
+		}
+
 		&.status-bar__controls__button--inactive {
 			cursor: default;
 		}

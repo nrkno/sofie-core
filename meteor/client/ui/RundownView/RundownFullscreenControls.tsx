@@ -147,6 +147,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 						}
 						isOpen={this.props.isNotificationCenterOpen === NoticeLevel.CRITICAL}
 						filter={NoticeLevel.CRITICAL}
+						className="type-critical"
 					/>
 					<NotificationCenterPanelToggle
 						onClick={(e) =>
@@ -154,6 +155,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 						}
 						isOpen={this.props.isNotificationCenterOpen === NoticeLevel.WARNING}
 						filter={NoticeLevel.WARNING}
+						className="type-warning"
 					/>
 					<NotificationCenterPanelToggle
 						onClick={(e) =>
@@ -162,6 +164,7 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 						}
 						isOpen={this.props.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
 						filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
+						className="type-notification"
 					/>
 					<button
 						className="status-bar__controls__button"
