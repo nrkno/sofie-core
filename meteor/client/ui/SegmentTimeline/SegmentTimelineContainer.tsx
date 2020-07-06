@@ -285,7 +285,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					segmentId: this.props.segmentId,
 				}).map((instance) => instance._id)
 				this.subscribe(PubSub.pieces, {
-					partId: {
+					startPartId: {
 						$in: partIds,
 					},
 				})
@@ -349,6 +349,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 				if (this.props.segmentui && this.props.segmentui.unsynced) {
 					const { t } = this.props
+					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
+					// What is this supposed to do?
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
 						MeteorCall.userAction.resyncSegment('', this.props.segmentui!._id)
 					)
