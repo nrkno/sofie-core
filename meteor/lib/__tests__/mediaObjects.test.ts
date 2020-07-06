@@ -338,7 +338,7 @@ describe('lib/mediaObjects', () => {
 
 		const status2 = checkPieceContentStatus(piece2, sourcelayer1, mockStudioSettings)
 		expect(status2.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_BROKEN)
-		expect(status2.message).toContain('is not in accepted formats')
+		expect(status2.message).toContain('is not in one of the accepted formats')
 
 		const status3 = checkPieceContentStatus(piece3, sourcelayer1, mockStudioSettings)
 		expect(status3.status).toEqual(RundownAPI.PieceStatusCode.SOURCE_MISSING)
