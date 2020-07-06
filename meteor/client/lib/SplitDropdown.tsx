@@ -6,7 +6,6 @@ import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 interface IProps {
-	elements: Array<React.ReactNode>
 	selectedKey: string
 	className?: string
 }
@@ -32,9 +31,11 @@ export class SplitDropdown extends React.Component<IProps, IState> {
 
 	getSelected() {
 		return (
-			this.props.elements.find((element) => (element as React.ReactElement<{}>).key === this.props.selectedKey) || (
+			this.props.children &&
+			Array.isArray(this.props.children) &&
+			(this.props.children.find((element) => (element as React.ReactElement<{}>).key === this.props.selectedKey) || (
 				<div className="expco-item"></div>
-			)
+			))
 		)
 	}
 
@@ -52,7 +53,7 @@ export class SplitDropdown extends React.Component<IProps, IState> {
 				<div className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
 					<FontAwesomeIcon icon={faChevronUp} />
 				</div>
-				<div className="expco-body bd">{this.props.elements}</div>
+				<div className="expco-body bd">{this.props.children}</div>
 			</div>
 		)
 	}

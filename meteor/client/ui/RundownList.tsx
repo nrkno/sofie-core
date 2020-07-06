@@ -65,19 +65,19 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		}
 	}
 
-	getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId) {
+	private getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId) {
 		// double encoding so that "/" are handled correctly
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(unprotectString(rundownPlaylistId)))
 	}
-	getStudioLink(studioId: StudioId) {
+	private getStudioLink(studioId: StudioId) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(unprotectString(studioId)))
 	}
-	getshowStyleBaseLink(showStyleBaseId: ShowStyleBaseId) {
+	private getShowStyleBaseLink(showStyleBaseId: ShowStyleBaseId) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(unprotectString(showStyleBaseId)))
 	}
-	getShelfLink(rundownId, layoutId) {
+	private getShelfLink(rundownId, layoutId) {
 		// double encoding so that "/" are handled correctly
 		return (
 			'/rundown/' +
@@ -86,7 +86,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 			encodeURIComponent(encodeURIComponent(layoutId))
 		)
 	}
-	getRundownWithLayoutLink(rundownId, layoutId) {
+	private getRundownWithLayoutLink(rundownId, layoutId) {
 		// double encoding so that "/" are handled correctly
 		return (
 			'/rundown/' +
@@ -96,7 +96,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		)
 	}
 
-	confirmDeleteRundownPlaylist(rundownPlaylist: RundownPlaylist) {
+	private confirmDeleteRundownPlaylist(rundownPlaylist: RundownPlaylist) {
 		const { t } = this.props
 
 		doModalDialog({
@@ -115,7 +115,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		})
 	}
 
-	confirmReSyncRundownPlaylist(rundownPlaylist: RundownPlaylist) {
+	private confirmReSyncRundownPlaylist(rundownPlaylist: RundownPlaylist) {
 		const { t } = this.props
 		doModalDialog({
 			title: t('Re-Sync this rundownPlaylist?'),
@@ -132,11 +132,11 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		})
 	}
 
-	saveViewChoice(key: string) {
+	private saveViewChoice(key: string) {
 		UIStateStorage.setItem(`rundownList.${this.props.rundownPlaylist.studioId}`, 'defaultView', key)
 	}
 
-	renderLinkItem(layout: RundownLayoutBase, link: string, key: string) {
+	private renderViewLinkItem(layout: RundownLayoutBase, link: string, key: string) {
 		return (
 			<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
 				<div className="action-btn expco-item">
@@ -151,7 +151,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		)
 	}
 
-	renderViewLinks() {
+	private renderViewLinks() {
 		const { t } = this.props
 		const standaloneLayouts = this.props.rundownLayouts
 			.filter(
@@ -160,7 +160,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
 			)
 			.map((layout) => {
-				return this.renderLinkItem(
+				return this.renderViewLinkItem(
 					layout,
 					this.getShelfLink(this.props.rundownPlaylist._id, layout._id),
 					`standalone${layout._id}`
@@ -172,7 +172,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					layout.exposeAsShelf && this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
 			)
 			.map((layout) => {
-				return this.renderLinkItem(
+				return this.renderViewLinkItem(
 					layout,
 					this.getRundownWithLayoutLink(this.props.rundownPlaylist._id, layout._id),
 					`shelf${layout._id}`
@@ -194,11 +194,11 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				<div className="action-btn expco-item">{t('Default')}</div>
 			</Link>,
 		]
-		return (
+		return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
 			<React.Fragment>
-				<SplitDropdown selectedKey={this.state.selectedView} elements={allElements} />
+				<SplitDropdown selectedKey={this.state.selectedView}>{allElements}</SplitDropdown>
 			</React.Fragment>
-		)
+		) : null
 	}
 
 	render() {
@@ -234,7 +234,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						{getAllowConfigure() ? (
 							this.props.rundownPlaylist.showStyles.length === 1 ? (
 								<Link
-									to={this.getshowStyleBaseLink(
+									to={this.getShowStyleBaseLink(
 										this.props.rundownPlaylist.showStyles[0].id
 									)}>{`${this.props.rundownPlaylist.showStyles[0].baseName} - ${this.props.rundownPlaylist.showStyles[0].variantName}`}</Link>
 							) : (
@@ -607,7 +607,7 @@ export const RundownList = translateWithTracker(() => {
 									{unsyncedRundownPlaylists.length > 0 && (
 										<tbody>
 											<tr className="hl">
-												<th colSpan={9} className="pvn phn">
+												<th colSpan={10} className="pvn phn">
 													<h2 className="mtm mbs mhn">{t('Unsynced from MOS')}</h2>
 												</th>
 											</tr>
