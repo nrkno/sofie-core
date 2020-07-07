@@ -18,7 +18,7 @@ import { orderPieces } from './pieces'
 import { literal, clone, unprotectString, protectString } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
-import { selectNextPart, getSelectedPartInstancesFromCache } from './lib'
+import { selectNextPart, getSelectedPartInstancesFromCache, getAllOrderedPartsFromCache } from './lib'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
@@ -219,20 +219,13 @@ function findLookaheadForlayer(
 		return res
 	}
 
+	const parts = getAllOrderedPartsFromCache(cache, playlist)
+
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPart = selectNextPart(
-		playlist,
-		_.last(partInstancesOnTimeline) || previousPartInstance || null,
-		cache.Parts.findFetch()
-	)
+	const nextPart = selectNextPart(playlist, _.last(partInstancesOnTimeline) || previousPartInstance || null, parts)
 	const lastPartIndex =
 		nextPart && lookaheadMaxSearchDistance !== undefined ? nextPart.index + lookaheadMaxSearchDistance : undefined
-	const futureParts = nextPart
-		? cache.Parts.findFetch(undefined, {
-				skip: nextPart.index,
-				limit: lastPartIndex ? lastPartIndex - nextPart.index : undefined,
-		  })
-		: []
+	const futureParts = nextPart ? parts.slice(nextPart.index, lastPartIndex ? lastPartIndex : undefined) : []
 	if (futureParts.length === 0) {
 		return res
 	}
