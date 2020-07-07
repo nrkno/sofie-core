@@ -34,7 +34,7 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
-import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
+import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { Random } from 'meteor/random'
 import { RundownAPI } from '../../../lib/api/rundown'
 
@@ -413,6 +413,8 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
 		newPieceInstance.dynamicallyInserted = true
 
+		// TODO-INFINITES set definitelyEnded on any pieceInstances which are stopped by this
+
 		cache.PieceInstances.insert(newPieceInstance)
 	}
 
@@ -423,7 +425,7 @@ export namespace ServerPlayoutAdLibAPI {
 		filter: (pieceInstance: PieceInstance) => boolean,
 		timeOffset: number | undefined
 	) {
-		const changedInstances: PieceInstanceId[] = []
+		const stoppedInstances: PieceInstanceId[] = []
 
 		const lastStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
 		if (lastStartedPlayback === undefined) {
@@ -432,28 +434,54 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const resolvedPieces = getResolvedPieces(cache, currentPartInstance)
 		const stopAt = getCurrentTime() + (timeOffset || 0)
+		const definitelyEnded = stopAt + DEFINITELY_ENDED_FUTURE_DURATION
 
 		const stoppedInfiniteIds = new Set<PieceId>()
 
 		for (const pieceInstance of resolvedPieces) {
-			if (!pieceInstance.userDuration && filter(pieceInstance) && !pieceInstance.piece.virtual) {
-				let newEnd: number | undefined = undefined
-
+			if (!pieceInstance.userDuration && !pieceInstance.piece.virtual && filter(pieceInstance)) {
 				switch (pieceInstance.piece.lifespan) {
 					case PieceLifespan.WithinPart:
 					case PieceLifespan.OutOnSegmentChange:
-					case PieceLifespan.OutOnRundownChange:
-						newEnd = stopAt
+					case PieceLifespan.OutOnRundownChange: {
+						logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
+						const up: Partial<PieceInstance> = {
+							userDuration: {
+								end: stopAt,
+							},
+							definitelyEnded,
+						}
+						if (pieceInstance.infinite) {
+							// Mark where this ends
+							up['infinite.lastPartInstanceId'] = currentPartInstance._id
+							stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
+						}
+
+						cache.PieceInstances.update(
+							{
+								_id: pieceInstance._id,
+							},
+							{
+								$set: up,
+							}
+						)
+
+						stoppedInstances.push(pieceInstance._id)
 						break
+					}
 					case PieceLifespan.OutOnSegmentEnd:
 					case PieceLifespan.OutOnRundownEnd: {
+						logger.info(
+							`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
+						)
+
 						const pieceId: PieceId = protectString(Random.id())
 						cache.PieceInstances.insert({
 							...rewrapPieceToInstance(
 								{
 									_id: pieceId,
 									externalId: '-',
-									enable: { start: 'now' },
+									enable: { start: 'now' }, // TODO - this needs to be stopAt, but adjusted to be a relative number
 									lifespan: pieceInstance.piece.lifespan,
 									sourceLayerId: pieceInstance.piece.sourceLayerId,
 									outputLayerId: pieceInstance.piece.outputLayerId,
@@ -467,59 +495,23 @@ export namespace ServerPlayoutAdLibAPI {
 								currentPartInstance._id
 							),
 							dynamicallyInserted: true,
+							definitelyEnded,
 							infinite: {
 								infinitePieceId: pieceId,
 							},
 						})
+
+						// TODO-INFINITES check this is ok
+						stoppedInstances.push(pieceInstance._id)
 						break
 					}
 					default:
 						assertNever(pieceInstance.piece.lifespan)
 				}
-
-				if (newEnd !== undefined) {
-					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${newEnd}`)
-
-					const up: any = {
-						userDuration: {
-							end: newEnd,
-						},
-					}
-					if (pieceInstance.infinite) {
-						// Mark where this ends
-						up['infinite.lastPartInstanceId'] = currentPartInstance._id
-						stoppedInfiniteIds.add(pieceInstance.infinite.infinitePieceId)
-					}
-
-					cache.PieceInstances.update(
-						{
-							_id: pieceInstance._id,
-						},
-						{
-							$set: up,
-						}
-					)
-
-					changedInstances.push(pieceInstance._id)
-				}
 			}
 		}
 
-		// If any instances were infinite, we also need to prune them from the next part
-		if (nextPartInstance && stoppedInfiniteIds.size > 0) {
-			const nextPieceInstances = getAllPieceInstancesFromCache(cache, nextPartInstance)
-
-			// TODO-INFINITE will this be ok with onChange modes if replaying the origin part?
-
-			for (const instance of nextPieceInstances) {
-				// If infinite has been stopped just now
-				if (instance.infinite && stoppedInfiniteIds.has(instance.infinite.infinitePieceId)) {
-					cache.PieceInstances.remove(instance._id)
-				}
-			}
-		}
-
-		return changedInstances
+		return stoppedInstances
 	}
 	export function startBucketAdlibPiece(
 		rundownPlaylistId: RundownPlaylistId,

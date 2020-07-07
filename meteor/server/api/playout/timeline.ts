@@ -48,12 +48,12 @@ import { loadStudioBlueprints, getBlueprintOfRundownAsync } from '../blueprints/
 import { StudioContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { generateRecordingTimelineObjs } from '../testTools'
-import { Part } from '../../../lib/collections/Parts'
+import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
 import { createPieceGroup, createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
-import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
@@ -250,7 +250,6 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 						studioId: studio._id,
 					})
 				})
-				// TODO - is this the best place for this save?
 				if (tlGenRes.persistentState) {
 					cache.RundownPlaylists.update(playlist._id, {
 						$set: {
@@ -493,6 +492,7 @@ function buildTimelineObjsForRundown(
 				prevObjs = prevObjs.concat(
 					transformPartIntoTimeline(
 						activePlaylist._id,
+						previousPartInstance.part._id,
 						previousContinuedPieces,
 						groupClasses,
 						previousPartGroup,
@@ -616,6 +616,7 @@ function buildTimelineObjsForRundown(
 				infiniteGroup,
 				transformPartIntoTimeline(
 					activePlaylist._id,
+					currentPartInstance.part._id,
 					[piece],
 					groupClasses,
 					infiniteGroup,
@@ -638,6 +639,7 @@ function buildTimelineObjsForRundown(
 			createPartGroupFirstObject(activePlaylist._id, currentPartInstance, currentPartGroup, previousPartInstance),
 			...transformPartIntoTimeline(
 				activePlaylist._id,
+				currentPartInstance.part._id,
 				currentNormalItems,
 				groupClasses,
 				currentPartGroup,
@@ -675,6 +677,7 @@ function buildTimelineObjsForRundown(
 				createPartGroupFirstObject(activePlaylist._id, nextPartInstance, nextPartGroup, currentPartInstance),
 				...transformPartIntoTimeline(
 					activePlaylist._id,
+					nextPartInstance.part._id,
 					nextPieceInstances,
 					groupClasses,
 					nextPartGroup,
@@ -772,9 +775,10 @@ interface TransformTransitionProps {
 
 function transformPartIntoTimeline(
 	playlistId: RundownPlaylistId,
+	partId: PartId,
 	pieceInstances: PieceInstance[],
 	firstObjClasses: string[],
-	partGroup?: TimelineObjRundown,
+	partGroup: TimelineObjRundown,
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
@@ -799,12 +803,9 @@ function transformPartIntoTimeline(
 		if (pieceInstance.piece.isTransition && (!allowTransition || isHold)) {
 			return
 		}
-		if (pieceInstance.definitelyEnded && pieceInstance.definitelyEnded < getCurrentTime()) return
+		const hasDefinitelyEnded = pieceInstance.definitelyEnded && pieceInstance.definitelyEnded < getCurrentTime()
 
-		let tos: TimelineObjectCoreExt[] = pieceInstance.piece.content?.timelineObjects ?? []
-
-		const isInfiniteContinuation =
-			pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id // TODO-INFINITE this check doesnt work
+		const isInfiniteContinuation = pieceInstance.infinite && pieceInstance.piece.startPartId !== partId
 
 		const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
 		if (pieceEnable.start === 0 && !isInfiniteContinuation) {
@@ -813,7 +814,7 @@ function transformPartIntoTimeline(
 				const transitionContentsDelayStr =
 					transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
 				pieceEnable.start = `#${getPieceGroupId(
-					unprotectObject(transition.piece)
+					unprotectString(transition.piece._id)
 				)}.start ${transitionContentsDelayStr}`
 			} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 				pieceEnable.start = Math.max(0, transitionPieceDelay)
@@ -824,10 +825,10 @@ function transformPartIntoTimeline(
 		const pieceGroup = createPieceGroup(pieceInstance, partGroup, pieceEnable)
 		timelineObjs.push(pieceGroup)
 
-		if (!pieceInstance.piece.virtual) {
+		if (!pieceInstance.piece.virtual && pieceInstance.piece.content?.timelineObjects && !hasDefinitelyEnded) {
 			timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
-			_.each(tos, (o: TimelineObjectCoreExt) => {
+			_.each(pieceInstance.piece.content.timelineObjects, (o: TimelineObjectCoreExt) => {
 				fixTimelineId(o)
 				if (o.holdMode) {
 					if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
@@ -849,7 +850,7 @@ function transformPartIntoTimeline(
 					...o,
 					_id: protectString(''), // set later
 					studioId: protectString(''), // set later
-					inGroup: partGroup ? pieceGroup.id : undefined,
+					inGroup: pieceGroup.id,
 					objectType: TimelineObjType.RUNDOWN,
 					pieceInstanceId: unprotectString(pieceInstance._id),
 					infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),

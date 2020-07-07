@@ -9,7 +9,6 @@ import {
 	clone,
 	normalizeArray,
 	protectString,
-	unprotectObject,
 	unprotectString,
 	omit,
 } from '../../../lib/lib'
@@ -79,7 +78,7 @@ export function createPieceGroupFirstObject(
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObj {
 	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
-		id: getPieceFirstObjectId(unprotectObject(pieceInstance.piece)),
+		id: getPieceFirstObjectId(unprotectString(pieceInstance.piece._id)),
 		_id: protectString(''), // set later
 		studioId: protectString(''), // set later
 		pieceInstanceId: unprotectString(pieceInstance._id),
@@ -109,7 +108,7 @@ export function createPieceGroup(
 	pieceEnable?: TSR.Timeline.TimelineEnable
 ): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
 	return literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
-		id: getPieceGroupId(unprotectObject(pieceInstance.piece)),
+		id: getPieceGroupId(unprotectString(pieceInstance.piece._id)),
 		_id: protectString(''), // set later
 		studioId: protectString(''), // set later
 		content: {

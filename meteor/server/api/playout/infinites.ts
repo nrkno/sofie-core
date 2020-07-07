@@ -15,7 +15,7 @@ import {
 } from '../../../lib/rundown/infinites'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
-// const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
+export const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
 /**
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.
@@ -111,8 +111,6 @@ export function syncPlayheadInfinitesForNextPartInstance(
 	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
 	if (nextPartInstance && currentPartInstance) {
 		const infinites = getPlayheadTrackingInfinitesForPart(cache, playlist, currentPartInstance, nextPartInstance)
-
-		console.log(infinites)
 
 		saveIntoCache(
 			cache.PieceInstances,
