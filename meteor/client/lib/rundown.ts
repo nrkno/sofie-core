@@ -202,9 +202,11 @@ export namespace RundownUtils {
 		return true
 	}
 
-	export function getSourceLayerClassName(partType: SourceLayerType): string {
+	export function getSourceLayerClassName(sourceLayerType: SourceLayerType): string {
 		// CAMERA_MOVEMENT -> "camera-movement"
-		return ((SourceLayerType[partType] || 'unknown-sourceLayer-' + partType) + '').toLowerCase().replace(/_/g, '-')
+		return ((SourceLayerType[sourceLayerType] || 'unknown-sourceLayer-' + sourceLayerType) + '')
+			.toLowerCase()
+			.replace(/_/g, '-')
 	}
 
 	/**
