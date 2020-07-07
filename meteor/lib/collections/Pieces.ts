@@ -54,10 +54,18 @@ export interface RundownPieceGeneric extends PieceGeneric {
 	// partId?: PartId
 }
 
-export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'infiniteId'> {
+export interface Piece
+	extends RundownPieceGeneric,
+		Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'infiniteId' | 'enable'> {
 	startRundownId: RundownId
 	startSegmentId: SegmentId
 	startPartId: PartId
+
+	enable: {
+		// TODO-INFINITES this feels messy forcing it like this, and doesnt help the blueprints know that 'now' is valid
+		start: number | 'now'
+		duration?: number
+	}
 
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean

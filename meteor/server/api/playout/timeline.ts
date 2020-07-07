@@ -801,67 +801,60 @@ function transformPartIntoTimeline(
 		}
 		if (pieceInstance.definitelyEnded && pieceInstance.definitelyEnded < getCurrentTime()) return
 
-		if (pieceInstance.piece.content && pieceInstance.piece.content.timelineObjects) {
-			let tos: TimelineObjectCoreExt[] = pieceInstance.piece.content.timelineObjects
+		let tos: TimelineObjectCoreExt[] = pieceInstance.piece.content?.timelineObjects ?? []
 
-			const isInfiniteContinuation =
-				pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id // TODO-INFINITE this check doesnt work
+		const isInfiniteContinuation =
+			pieceInstance.infinite && pieceInstance.infinite.infinitePieceId !== pieceInstance.piece._id // TODO-INFINITE this check doesnt work
 
-			const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
-			if (pieceEnable.start === 0 && !isInfiniteContinuation) {
-				// If timed absolute and there is a transition delay, then apply delay
-				if (
-					!pieceInstance.piece.isTransition &&
-					allowTransition &&
-					transition &&
-					!pieceInstance.adLibSourceId
-				) {
-					const transitionContentsDelayStr =
-						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
-					pieceEnable.start = `#${getPieceGroupId(
-						unprotectObject(transition.piece)
-					)}.start ${transitionContentsDelayStr}`
-				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
-					pieceEnable.start = Math.max(0, transitionPieceDelay)
-				}
+		const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
+		if (pieceEnable.start === 0 && !isInfiniteContinuation) {
+			// If timed absolute and there is a transition delay, then apply delay
+			if (!pieceInstance.piece.isTransition && allowTransition && transition && !pieceInstance.adLibSourceId) {
+				const transitionContentsDelayStr =
+					transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
+				pieceEnable.start = `#${getPieceGroupId(
+					unprotectObject(transition.piece)
+				)}.start ${transitionContentsDelayStr}`
+			} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
+				pieceEnable.start = Math.max(0, transitionPieceDelay)
 			}
+		}
 
-			// create a piece group for the pieces and then place all of them there
-			const pieceGroup = createPieceGroup(pieceInstance, partGroup, pieceEnable)
-			timelineObjs.push(pieceGroup)
+		// create a piece group for the pieces and then place all of them there
+		const pieceGroup = createPieceGroup(pieceInstance, partGroup, pieceEnable)
+		timelineObjs.push(pieceGroup)
 
-			if (!pieceInstance.piece.virtual) {
-				timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
+		if (!pieceInstance.piece.virtual) {
+			timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
-				_.each(tos, (o: TimelineObjectCoreExt) => {
-					fixTimelineId(o)
-					if (o.holdMode) {
-						if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
-							return
-						}
-						if (!isHold && o.holdMode === TimelineObjHoldMode.ONLY) {
-							return
-						}
+			_.each(tos, (o: TimelineObjectCoreExt) => {
+				fixTimelineId(o)
+				if (o.holdMode) {
+					if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
+						return
 					}
-					// if (partGroup) {
-					// If we are leaving a HOLD, the transition was suppressed, so force it to run now
-					// if (item.isTransition && holdState === RundownHoldState.COMPLETE) {
-					// 	o.trigger.value = TriggerType.TIME_ABSOLUTE
-					// 	o.trigger.value = 'now'
-					// }
-					// }
+					if (!isHold && o.holdMode === TimelineObjHoldMode.ONLY) {
+						return
+					}
+				}
+				// if (partGroup) {
+				// If we are leaving a HOLD, the transition was suppressed, so force it to run now
+				// if (item.isTransition && holdState === RundownHoldState.COMPLETE) {
+				// 	o.trigger.value = TriggerType.TIME_ABSOLUTE
+				// 	o.trigger.value = 'now'
+				// }
+				// }
 
-					timelineObjs.push({
-						...o,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
-						inGroup: partGroup ? pieceGroup.id : undefined,
-						objectType: TimelineObjType.RUNDOWN,
-						pieceInstanceId: unprotectString(pieceInstance._id),
-						infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
-					})
+				timelineObjs.push({
+					...o,
+					_id: protectString(''), // set later
+					studioId: protectString(''), // set later
+					inGroup: partGroup ? pieceGroup.id : undefined,
+					objectType: TimelineObjType.RUNDOWN,
+					pieceInstanceId: unprotectString(pieceInstance._id),
+					infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 				})
-			}
+			})
 		}
 	})
 	return timelineObjs

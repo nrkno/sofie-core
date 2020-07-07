@@ -23,12 +23,20 @@ import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import {
+	PieceInstances,
+	PieceInstance,
+	PieceInstanceId,
+	wrapPieceToInstance,
+	rewrapPieceToInstance,
+} from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
+import { Random } from 'meteor/random'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -428,7 +436,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const stoppedInfiniteIds = new Set<PieceId>()
 
 		for (const pieceInstance of resolvedPieces) {
-			if (!pieceInstance.userDuration && filter(pieceInstance)) {
+			if (!pieceInstance.userDuration && filter(pieceInstance) && !pieceInstance.piece.virtual) {
 				let newEnd: number | undefined = undefined
 
 				switch (pieceInstance.piece.lifespan) {
@@ -436,13 +444,35 @@ export namespace ServerPlayoutAdLibAPI {
 					case PieceLifespan.OutOnSegmentChange:
 					case PieceLifespan.OutOnRundownChange:
 						newEnd = stopAt
-						// TODO - should this set a infinite.lastPartInstance property to describe where it stops?
 						break
 					case PieceLifespan.OutOnSegmentEnd:
-					case PieceLifespan.OutOnRundownEnd:
-						// TODO
-						logger.warn(`innerStopPieces failed due to unhandled lifespan: ${pieceInstance.piece.lifespan}`)
+					case PieceLifespan.OutOnRundownEnd: {
+						const pieceId: PieceId = protectString(Random.id())
+						cache.PieceInstances.insert({
+							...rewrapPieceToInstance(
+								{
+									_id: pieceId,
+									externalId: '-',
+									enable: { start: 'now' },
+									lifespan: pieceInstance.piece.lifespan,
+									sourceLayerId: pieceInstance.piece.sourceLayerId,
+									outputLayerId: pieceInstance.piece.outputLayerId,
+									invalid: false,
+									name: '',
+									startPartId: currentPartInstance.part._id,
+									status: RundownAPI.PieceStatusCode.UNKNOWN,
+									virtual: true,
+								},
+								currentPartInstance.rundownId,
+								currentPartInstance._id
+							),
+							dynamicallyInserted: true,
+							infinite: {
+								infinitePieceId: pieceId,
+							},
+						})
 						break
+					}
 					default:
 						assertNever(pieceInstance.piece.lifespan)
 				}
