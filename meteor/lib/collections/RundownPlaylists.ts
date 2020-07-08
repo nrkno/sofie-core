@@ -104,7 +104,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public active?: boolean
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
-	public nextSegmentId: SegmentId
+	public nextSegmentId?: SegmentId
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null

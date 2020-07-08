@@ -221,10 +221,12 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 				rundownId: activeRundown._id,
 			})
 
+			// next (on pvw (or on pgm if first))
+			const pLookaheadObjs = getLookeaheadObjects(cache, studio, playlist)
+
 			timelineObjs = timelineObjs.concat(buildTimelineObjsForRundown(cache, baselineItems, playlist))
 
-			// next (on pvw (or on pgm if first))
-			timelineObjs = timelineObjs.concat(getLookeaheadObjects(cache, studio, playlist))
+			timelineObjs = timelineObjs.concat(waitForPromise(pLookaheadObjs))
 
 			const showStyleBlueprint0 = waitForPromise(pshowStyleBlueprint)
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint

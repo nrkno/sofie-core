@@ -266,12 +266,21 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 // 	// updateSourceLayerInfinitesAfterPart(rundown, prevPart)
 // }
 
+export interface SelectNextPartResult {
+	part: Part
+	index: number
+	consumesNextSegmentId?: boolean
+}
+
 export function selectNextPart(
-	rundownPlaylist: RundownPlaylist,
+	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: PartInstance | null,
 	parts: Part[]
-): { part: Part; index: number } | undefined {
-	const findFirstPlayablePart = (offset: number, condition?: (part: Part) => boolean) => {
+): SelectNextPartResult | undefined {
+	const findFirstPlayablePart = (
+		offset: number,
+		condition?: (part: Part) => boolean
+	): SelectNextPartResult | undefined => {
 		// Filter to after and find the first playabale
 		for (let index = offset; index < parts.length; index++) {
 			const part = parts[index]
@@ -300,10 +309,15 @@ export function selectNextPart(
 			const nextPart2 = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
 			if (nextPart2) {
 				// If matched matched, otherwise leave on auto
-				nextPart = nextPart2
+				nextPart = {
+					...nextPart2,
+					consumesNextSegmentId: true,
+				}
 			}
 		}
 	}
+
+	// TODO - rundownPlaylist.loop
 
 	// Filter to after and find the first playabale
 	return nextPart || findFirstPlayablePart(offset)
@@ -470,6 +484,7 @@ export function setNextPart(
 	})
 
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
+		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
 			$unset: {
 				nextSegmentId: 1,
