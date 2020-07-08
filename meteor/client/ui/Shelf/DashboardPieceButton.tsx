@@ -15,6 +15,7 @@ import {
 	SourceLayerType,
 	VTContent,
 	LiveSpeakContent,
+	GraphicsContent,
 	SplitsContent,
 } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
@@ -87,6 +88,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						break
 					case SourceLayerType.LIVE_SPEAK:
 						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						break
+					case SourceLayerType.GRAPHICS:
+						if (piece.content.fileName) {
+							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
+						}
 						break
 				}
 			}

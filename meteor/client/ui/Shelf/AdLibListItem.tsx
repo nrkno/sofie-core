@@ -14,6 +14,7 @@ import {
 	IOutputLayer,
 	SourceLayerType,
 	VTContent,
+	GraphicsContent,
 	LiveSpeakContent,
 } from 'tv-automation-sofie-blueprints-integration'
 import { AdLibPieceUi } from './AdLibPanel'
@@ -91,6 +92,9 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 							break
 						case SourceLayerType.LIVE_SPEAK:
 							objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+							break
+						case SourceLayerType.GRAPHICS:
+							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
 							break
 					}
 				}

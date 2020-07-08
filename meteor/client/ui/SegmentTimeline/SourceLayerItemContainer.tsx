@@ -8,6 +8,7 @@ import {
 	SourceLayerType,
 	VTContent,
 	LiveSpeakContent,
+	GraphicsContent,
 	getPieceGroupId,
 } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -69,6 +70,11 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 				case SourceLayerType.LIVE_SPEAK:
 					objId = piece.instance.piece.content
 						? (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
+						: undefined
+					break
+				case SourceLayerType.GRAPHICS:
+					objId = piece.instance.piece.content
+						? (piece.instance.piece.content as GraphicsContent).fileName.toUpperCase()
 						: undefined
 					break
 			}
