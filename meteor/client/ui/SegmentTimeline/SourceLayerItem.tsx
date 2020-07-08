@@ -282,10 +282,14 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		this._forceSizingRecheck = true
 
 		if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
-			this.setState({
-				scrollLeftOffset: this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft),
-				cursorTimePosition: this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft),
-			})
+			const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
+			const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
+			if (this.state.scrollLeftOffset !== scrollLeftOffset && this.state.cursorTimePosition !== cursorTimePosition) {
+				this.setState({
+					scrollLeftOffset,
+					cursorTimePosition,
+				})
+			}
 		}
 
 		this.checkElementWidth()
@@ -296,8 +300,8 @@ export const SourceLayerItem = translate()(class SourceLayerItem extends React.C
 		e.preventDefault()
 		e.stopPropagation()
 		this.props.onClick && this.props.onClick(this.props.piece, e)
-
 	}
+
 	tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
 		// Note: This is a TEMPORARY way to set in & out points, will be replaced with a much nicer looking way at a later stage
 		doModalDialog({
