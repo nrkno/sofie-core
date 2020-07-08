@@ -12,6 +12,8 @@ import { saveIntoCache } from '../../DatabaseCache'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
+	buildPiecesStartingInThisPartQuery,
+	buildPastInfinitePiecesForThisPartQuery,
 } from '../../../lib/rundown/infinites'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
@@ -77,40 +79,14 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	cache: CacheForRundownPlaylist,
 	part: DBPart
 ): Promise<Piece[]> {
-	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, { startPartId: part._id })
+	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, buildPiecesStartingInThisPartQuery(part))
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
-	const pInfinitePieces = asyncCollectionFindFetch(Pieces, {
-		invalid: { $ne: true },
-		startPartId: { $ne: part._id },
-		$or: [
-			{
-				// same segment, and previous part
-				lifespan: {
-					$in: [
-						PieceLifespan.OutOnSegmentEnd,
-						PieceLifespan.OutOnSegmentChange,
-						PieceLifespan.OutOnRundownEnd,
-						PieceLifespan.OutOnRundownChange,
-					],
-				},
-				startRundownId: part.rundownId,
-				startSegmentId: part.segmentId,
-				startPartId: { $in: partsBeforeThisInSegment },
-			},
-			{
-				// same rundown, and previous segment
-				lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
-				startRundownId: part.rundownId,
-				startSegmentId: { $in: segmentsBeforeThisInRundown },
-			},
-			// {
-			// 	// previous rundown
-			//  // Potential future scope
-			// }
-		],
-	})
+	const pInfinitePieces = asyncCollectionFindFetch(
+		Pieces,
+		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown)
+	)
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 	return [...piecesStartingInPart, ...infinitePieces]
@@ -191,7 +167,7 @@ export function getPieceInstancesForPart(
 		new Set(partsBeforeThisInSegment),
 		new Set(segmentsBeforeThisInRundown),
 		possiblePieces,
-		orderedParts,
+		orderedParts.map((part) => part._id),
 		newInstanceId,
 		canContinueAdlibOnEnds,
 		isTemporary

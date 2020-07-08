@@ -18,7 +18,7 @@ import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
 } from '../../lib/Rundown'
-import { DBSegment } from '../../lib/collections/Segments'
+import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, unprotectObject } from '../../lib/lib'
@@ -26,6 +26,7 @@ import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartIns
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PieceInstancePiece } from '../../lib/collections/PieceInstances'
+import { DBPart, PartId } from '../../lib/collections/Parts'
 
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {
@@ -224,7 +225,9 @@ export namespace RundownUtils {
 	export function getResolvedSegment(
 		showStyleBase: ShowStyleBase,
 		playlist: RundownPlaylist,
-		segment: DBSegment
+		segment: DBSegment,
+		segmentsBeforeThisInRundownSet: Set<SegmentId>,
+		orderedAllPartIds: PartId[]
 	): {
 		/** A Segment with some additional information */
 		segmentExtended: SegmentExtended
@@ -281,7 +284,7 @@ export namespace RundownUtils {
 			segmentId: segment._id,
 		})
 
-		const partsInSegment = _.filter(segmentsAndParts.parts, (p) => p.segmentId === segment._id)
+		const partsInSegment = segmentsAndParts.parts
 
 		if (partsInSegment.length > 0) {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store
@@ -319,6 +322,8 @@ export namespace RundownUtils {
 			let startsAt = 0
 			let previousPart: PartExtended | undefined
 			// fetch all the pieces for the parts
+			const partIds = partsInSegment.map((part) => part._id)
+
 			partsE = _.map(partsInSegment, (part, itIndex) => {
 				const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
 				let partTimeline: SuperTimeline.TimelineObject[] = []
@@ -327,12 +332,20 @@ export namespace RundownUtils {
 				let partE = literal<PartExtended>({
 					partId: part._id,
 					instance: partInstance,
-					pieces: _.map(getPieceInstancesForPartInstance(partInstance), (piece) =>
-						literal<PieceExtended>({
-							instance: piece,
-							renderedDuration: 0,
-							renderedInPoint: 0,
-						})
+					pieces: _.map(
+						getPieceInstancesForPartInstance(
+							partInstance,
+							new Set(partIds.slice(0, itIndex)),
+							segmentsBeforeThisInRundownSet,
+							orderedAllPartIds,
+							false
+						),
+						(piece) =>
+							literal<PieceExtended>({
+								instance: piece,
+								renderedDuration: 0,
+								renderedInPoint: 0,
+							})
 					),
 					renderedDuration: 0,
 					startsAt: 0,
@@ -368,7 +381,9 @@ export namespace RundownUtils {
 						id: getPieceGroupId(unprotectObject(rawInnerPiece)),
 						enable: {
 							...rawInnerPiece.enable,
-							start: rawInnerPiece.enable.start + TIMELINE_TEMP_OFFSET,
+							start:
+								(typeof rawInnerPiece.enable.start === 'number' ? rawInnerPiece.enable.start : 0) +
+								TIMELINE_TEMP_OFFSET,
 						},
 						layer: rawInnerPiece.outputLayerId,
 						content: {

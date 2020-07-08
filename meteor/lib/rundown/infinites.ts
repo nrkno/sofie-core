@@ -1,5 +1,4 @@
 import _ from 'underscore'
-import { RundownPlaylist } from '../collections/RundownPlaylists'
 import { PartInstance, PartInstanceId } from '../collections/PartInstances'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../collections/PieceInstances'
 import { DBPart, PartId, Part } from '../collections/Parts'
@@ -7,6 +6,48 @@ import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { assertNever, max, flatten } from '../lib'
+import { Mongo } from 'meteor/mongo'
+
+export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
+	return { startPartId: part._id }
+}
+
+export function buildPastInfinitePiecesForThisPartQuery(
+	part: DBPart,
+	partsIdsBeforeThisInSegment: PartId[],
+	segmentsIdsBeforeThisInRundown: SegmentId[]
+): Mongo.Query<Piece> {
+	return {
+		invalid: { $ne: true },
+		startPartId: { $ne: part._id },
+		$or: [
+			{
+				// same segment, and previous part
+				lifespan: {
+					$in: [
+						PieceLifespan.OutOnSegmentEnd,
+						PieceLifespan.OutOnSegmentChange,
+						PieceLifespan.OutOnRundownEnd,
+						PieceLifespan.OutOnRundownChange,
+					],
+				},
+				startRundownId: part.rundownId,
+				startSegmentId: part.segmentId,
+				startPartId: { $in: partsIdsBeforeThisInSegment },
+			},
+			{
+				// same rundown, and previous segment
+				lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
+				startRundownId: part.rundownId,
+				startSegmentId: { $in: segmentsIdsBeforeThisInRundown },
+			},
+			// {
+			// 	// previous rundown
+			//  // Potential future scope
+			// }
+		],
+	}
+}
 
 export function getPlayheadTrackingInfinitesForPart(
 	partsBeforeThisInSegmentSet: Set<PartId>,
@@ -207,7 +248,7 @@ export function getPieceInstancesForPart(
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	possiblePieces: Piece[],
-	orderedParts: Part[],
+	orderedPartIds: PartId[],
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
 	isTemporary: boolean
@@ -224,7 +265,6 @@ export function getPieceInstancesForPart(
 	// TODO - this is also generated above..
 
 	// const partMap = normalizeArray(orderedParts, '_id')
-	const orderedPartIds = orderedParts.map((p) => p._id)
 	const doesPieceAStartBeforePieceB = (pieceA: PieceInstancePiece, pieceB: PieceInstancePiece): boolean => {
 		if (pieceA.startPartId === pieceB.startPartId) {
 			return pieceA.enable.start < pieceB.enable.start

@@ -3,10 +3,15 @@ import * as SuperTimeline from 'superfly-timeline'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from './lib'
-import { DBSegment } from './collections/Segments'
-import { PartId } from './collections/Parts'
+import { DBSegment, SegmentId } from './collections/Segments'
+import { PartId, Part, DBPart } from './collections/Parts'
 import { PartInstance } from './collections/PartInstances'
 import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
+import {
+	getPieceInstancesForPart,
+	buildPiecesStartingInThisPartQuery,
+	buildPastInfinitePiecesForThisPartQuery,
+} from './rundown/infinites'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -64,11 +69,47 @@ export interface PieceExtended {
 	maxLabelWidth?: number
 }
 
-export function getPieceInstancesForPartInstance(partInstance: PartInstance) {
+export function fetchPiecesThatMayBeActiveForPart(
+	part: DBPart,
+	partsBeforeThisInSegmentSet: Set<PartId>,
+	segmentsBeforeThisInRundownSet: Set<SegmentId>
+): Piece[] {
+	const piecesStartingInPart = Pieces.find(buildPiecesStartingInThisPartQuery(part)).fetch()
+
+	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
+	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
+
+	const infinitePieces = Pieces.find(
+		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown)
+	).fetch()
+
+	return [...piecesStartingInPart, ...infinitePieces]
+}
+
+export function getPieceInstancesForPartInstance(
+	partInstance: PartInstance,
+	partsBeforeThisInSegmentSet: Set<PartId>,
+	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	orderedAllParts: PartId[],
+	nextPartIsAfterCurrentPart: boolean
+) {
 	if (partInstance.isTemporary) {
-		return Pieces.find({
-			startPartId: partInstance.part._id,
-		}).map((p) => wrapPieceToTemporaryInstance(p, partInstance._id))
+		return getPieceInstancesForPart(
+			undefined,
+			undefined,
+			partInstance.part,
+			partsBeforeThisInSegmentSet,
+			segmentsBeforeThisInRundownSet,
+			fetchPiecesThatMayBeActiveForPart(
+				partInstance.part,
+				partsBeforeThisInSegmentSet,
+				segmentsBeforeThisInRundownSet
+			),
+			orderedAllParts,
+			partInstance._id,
+			nextPartIsAfterCurrentPart,
+			partInstance.isTemporary
+		)
 	} else {
 		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
 	}

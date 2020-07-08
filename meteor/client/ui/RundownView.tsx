@@ -1301,6 +1301,7 @@ interface ITrackedProps {
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
+	orderedPartsIds: PartId[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1313,9 +1314,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
 	let studio: Studio | undefined
+	let allParts: PartId[] = []
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = playlist.getRundowns()
+		allParts = playlist
+			.getAllOrderedParts(undefined, {
+				fields: {
+					_rank: 1,
+				},
+			})
+			.map((part) => part._id)
 	}
 
 	const params = queryStringParse(location.search)
@@ -1364,6 +1373,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch()) ||
 			undefined,
 		rundownLayoutId: protectString((params['layout'] as string) || ''),
+		orderedPartsIds: allParts,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -2057,6 +2067,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onTimeScaleChange={this.onTimeScaleChange}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
+												orderedAllPartIds={this.props.orderedPartsIds}
+												segmentsIdsBefore={
+													new Set([
+														..._.flatten(
+															rundownArray
+																.slice(0, rundownIndex)
+																.map((match) => match.segments.map((segment) => segment._id))
+														),
+														...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
+													])
+												}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
 												}

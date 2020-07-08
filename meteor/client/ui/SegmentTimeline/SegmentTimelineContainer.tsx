@@ -27,7 +27,7 @@ import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
+import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 
@@ -61,6 +61,8 @@ export interface PieceUi extends PieceExtended {
 interface IProps {
 	id: string
 	segmentId: SegmentId
+	segmentsIdsBefore: Set<SegmentId>
+	orderedAllPartIds: PartId[]
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
@@ -127,7 +129,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		let o = RundownUtils.getResolvedSegment(props.showStyleBase, props.playlist, segment)
+		let o = RundownUtils.getResolvedSegment(
+			props.showStyleBase,
+			props.playlist,
+			segment,
+			props.segmentsIdsBefore,
+			props.orderedAllPartIds
+		)
 		let notes: Array<SegmentNote> = []
 		_.each(o.parts, (part) => {
 			notes = notes.concat(
