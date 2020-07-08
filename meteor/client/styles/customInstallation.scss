@@ -316,4 +316,8 @@ body.tv2 {
 	.rundown-view + .notification-pop-ups {
 		top: 3.375rem;
 	}
+
+	.rundown-view__shelf__contents__pane.shelf-inspector {
+		display: none;
+	}
 }
