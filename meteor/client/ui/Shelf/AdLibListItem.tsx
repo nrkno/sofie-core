@@ -11,6 +11,7 @@ import {
 	IOutputLayer,
 	SourceLayerType,
 	VTContent,
+	GraphicsContent,
 	LiveSpeakContent,
 	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
