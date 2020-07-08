@@ -857,10 +857,9 @@ describe('Test blueprint api context', () => {
 
 				innerStopPiecesMock.mockClear()
 				let filter: (piece: PieceInstance) => boolean = null as any
-				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, nexPartInstance, filter2, offset) => {
+				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
 					expect(partInstance).toBe(currentPartInstance)
-					expect(nexPartInstance).toBeFalsy()
 					expect(offset).toEqual(34)
 					filter = filter2
 
@@ -910,10 +909,9 @@ describe('Test blueprint api context', () => {
 
 				innerStopPiecesMock.mockClear()
 				let filter: (piece: PieceInstance) => boolean = null as any
-				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, nexPartInstance, filter2, offset) => {
+				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
 					expect(partInstance).toBe(currentPartInstance)
-					expect(nexPartInstance).toBeFalsy()
 					expect(offset).toEqual(34)
 					filter = filter2
 

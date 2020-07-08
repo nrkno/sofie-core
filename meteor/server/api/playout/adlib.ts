@@ -421,7 +421,6 @@ export namespace ServerPlayoutAdLibAPI {
 	export function innerStopPieces(
 		cache: CacheForRundownPlaylist,
 		currentPartInstance: PartInstance,
-		nextPartInstance: PartInstance | undefined,
 		filter: (pieceInstance: PieceInstance) => boolean,
 		timeOffset: number | undefined
 	) {

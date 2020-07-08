@@ -1152,20 +1152,12 @@ export namespace ServerPlayoutAPI {
 			const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
 			if (!lastStartedPlayback) throw new Meteor.Error(405, `Part "${partInstanceId}" has yet to start playback!`)
 
-			const nextPartInstance = playlist.nextPartInstanceId
-				? cache.PartInstances.findOne(playlist.nextPartInstanceId)
-				: undefined
-			if (!nextPartInstance && playlist.nextPartInstanceId) {
-				throw new Meteor.Error(404, `PartInstance "${playlist.nextPartInstanceId}" not found!`)
-			}
-
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Meteor.Error(501, `Rundown "${partInstance.rundownId}" not found!`)
 
 			ServerPlayoutAdLibAPI.innerStopPieces(
 				cache,
 				partInstance,
-				nextPartInstance,
 				(pieceInstance) => sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1,
 				undefined
 			)
