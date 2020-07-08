@@ -19,7 +19,7 @@ import { literal, clone, unprotectString, protectString } from '../../../lib/lib
 import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import { selectNextPart, getSelectedPartInstancesFromCache, getAllOrderedPartsFromCache } from './lib'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
@@ -66,6 +66,41 @@ export function getLookeaheadObjects(
 		}
 	}
 
+	function getPartInstancePieces(partInstanceId: PartInstanceId) {
+		return cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
+			return !!(
+				pieceInstance.partInstanceId === partInstanceId &&
+				pieceInstance.piece.content &&
+				pieceInstance.piece.content.timelineObjects
+			)
+		})
+	}
+	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
+		cache,
+		playlist
+	)
+	// Get the PieceInstances which are on the timeline
+	const partInstancesOnTimeline: PartInstanceAndPieceInstances[] = _.compact([
+		currentPartInstance,
+		currentPartInstance && currentPartInstance.part.autoNext ? nextPartInstance : undefined,
+	]).map((part) => ({
+		part,
+		pieces: getPartInstancePieces(part._id),
+	}))
+	// Track the previous info for checking how the timeline will be built
+	let previousPartInfo: PartInstanceAndPieceInstances | undefined
+	if (previousPartInstance) {
+		const previousPieces = getPartInstancePieces(previousPartInstance._id)
+		previousPartInfo = {
+			part: previousPartInstance,
+			pieces: previousPieces,
+		}
+	}
+
+	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
+
+	const orderedPiecesCache = new Map<PartId, PieceResolved[]>()
+
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadMaxSearchDistance =
@@ -75,6 +110,10 @@ export function getLookeaheadObjects(
 		const lookaheadObjs = findLookaheadForlayer(
 			cache,
 			playlist,
+			partInstancesOnTimeline,
+			previousPartInfo,
+			orderedParts,
+			orderedPiecesCache,
 			layerId,
 			mapping.lookahead,
 			lookaheadTargetObjects,
@@ -141,6 +180,10 @@ export interface LookaheadResult {
 function findLookaheadForlayer(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
+	partInstancesOnTimeline: PartInstanceAndPieceInstances[],
+	previousPartInstanceInfo: PartInstanceAndPieceInstances | undefined,
+	orderedParts: Part[],
+	orderedPiecesCache: Map<PartId, PieceResolved[]>,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadTargetObjects: number,
@@ -222,10 +265,11 @@ function findLookaheadForlayer(
 	const parts = getAllOrderedPartsFromCache(cache, playlist)
 
 	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPart = selectNextPart(playlist, _.last(partInstancesOnTimeline) || previousPartInstance || null, parts)
+	const nextPartInstance = _.last(partInstancesOnTimeline) || previousPartInstanceInfo || null
+	const nextPart = selectNextPart(playlist, nextPartInstance ? nextPartInstance.part : null, orderedParts)
 	const lastPartIndex =
 		nextPart && lookaheadMaxSearchDistance !== undefined ? nextPart.index + lookaheadMaxSearchDistance : undefined
-	const futureParts = nextPart ? parts.slice(nextPart.index, lastPartIndex ? lastPartIndex : undefined) : []
+	const futureParts = nextPart ? orderedParts.slice(nextPart.index, lastPartIndex ? lastPartIndex : undefined) : []
 	if (futureParts.length === 0) {
 		return res
 	}
