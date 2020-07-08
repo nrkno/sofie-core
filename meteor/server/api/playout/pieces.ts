@@ -390,7 +390,7 @@ export function convertAdLibToPieceInstance(
 			startPartId: partInstance.part._id,
 			enable: {
 				start: queue ? 0 : 'now',
-				duration: duration,
+				duration: !queue && adLibPiece.infiniteMode === PieceLifespan.Normal ? duration : undefined,
 			},
 			timings: {
 				take: [getCurrentTime()],

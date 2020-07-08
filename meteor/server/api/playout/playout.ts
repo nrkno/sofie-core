@@ -46,8 +46,6 @@ import {
 	setNextPart as libsetNextPart,
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
-	// refreshPart,
-	getPartBeforeSegment,
 	selectNextPart,
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
@@ -88,6 +86,7 @@ import {
 } from '../../DatabaseCaches'
 import { takeNextPartInner, afterTake } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
+import { Settings } from '../../../lib/Settings'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -137,7 +136,7 @@ export namespace ServerPlayoutAPI {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-			if (playlist.active && !playlist.rehearsal)
+			if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
 				throw new Meteor.Error(401, `resetRundown can only be run in rehearsal!`)
 
 			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
@@ -160,7 +159,7 @@ export namespace ServerPlayoutAPI {
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			let playlist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-			if (playlist.active && !playlist.rehearsal)
+			if (playlist.active && !playlist.rehearsal && !Settings.allowRundownResetOnAir)
 				throw new Meteor.Error(402, `resetAndActivateRundownPlaylist cannot be run when active!`)
 
 			const cache = waitForPromise(initCacheForRundownPlaylist(playlist))

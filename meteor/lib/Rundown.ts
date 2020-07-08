@@ -8,8 +8,6 @@ import { PartId } from './collections/Parts'
 import { PartInstance } from './collections/PartInstances'
 import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
 
-export const DEFAULT_DISPLAY_DURATION = 3000
-
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
 	outputLayers: {

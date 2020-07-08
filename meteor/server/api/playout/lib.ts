@@ -88,6 +88,17 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 	const rundownIDs = rundowns.map((i) => i._id)
 	// const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
 
+	const partInstancesToRemove = cache.PartInstances.findFetch({
+		rundownId: { $in: rundownIDs },
+		rehearsal: true,
+	})
+	cache.PartInstances.remove({
+		_id: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+	cache.PieceInstances.remove({
+		partInstanceId: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+
 	cache.PartInstances.update(
 		{
 			rundownId: {
@@ -177,25 +188,25 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		setNextPart(cache, rundownPlaylist, null)
 	}
 }
-export function getPartBeforeSegment(rundownId: RundownId, dbSegment: DBSegment): Part | undefined {
-	const prevSegment = Segments.findOne(
-		{
-			rundownId: rundownId,
-			_rank: { $lt: dbSegment._rank },
-		},
-		{ sort: { _rank: -1 } }
-	)
-	if (prevSegment) {
-		return Parts.findOne(
-			{
-				rundownId: rundownId,
-				segmentId: prevSegment._id,
-			},
-			{ sort: { _rank: -1 } }
-		)
-	}
-	return undefined
-}
+// export function getPartBeforeSegment(rundownId: RundownId, dbSegment: DBSegment): Part | undefined {
+// 	const prevSegment = Segments.findOne(
+// 		{
+// 			rundownId: rundownId,
+// 			_rank: { $lt: dbSegment._rank },
+// 		},
+// 		{ sort: { _rank: -1 } }
+// 	)
+// 	if (prevSegment) {
+// 		return Parts.findOne(
+// 			{
+// 				rundownId: rundownId,
+// 				segmentId: prevSegment._id,
+// 			},
+// 			{ sort: { _rank: -1 } }
+// 		)
+// 	}
+// 	return undefined
+// }
 // export function getPartsAfter(part: Part, partsInRundownInOrder: Part[]): Part[] {
 // 	let found = false
 // 	// Only process parts after part:
@@ -326,15 +337,15 @@ export function setNextPart(
 		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
-		if (newNextPart && rundownIds.indexOf(newNextPart.rundownId)) {
+		if (newNextPart && !rundownIds.includes(newNextPart.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`Part "${newNextPart._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`Part "${newNextPart._id}" of rundown "${newNextPart.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
-		} else if (newNextPartInstance && rundownIds.indexOf(newNextPartInstance.rundownId)) {
+		} else if (newNextPartInstance && !rundownIds.includes(newNextPartInstance.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`PartInstance "${newNextPartInstance._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
 		}
 
@@ -378,6 +389,7 @@ export function setNextPart(
 				rundownId: nextPart.rundownId,
 				segmentId: nextPart.segmentId,
 				part: nextPart,
+				rehearsal: !!rundownPlaylist.rehearsal,
 			})
 
 			const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, nextPart))
@@ -843,3 +855,27 @@ export function getRundownsSegmentsAndPartsFromCache(
 		parts: parts,
 	}
 }
+
+// export function getPartBeforeSegmentFromCache(
+// 	cache: CacheForRundownPlaylist,
+// 	rundownId: RundownId,
+// 	dbSegment: DBSegment
+// ): Part | undefined {
+// 	const prevSegment = cache.Segments.findOne(
+// 		{
+// 			rundownId: rundownId,
+// 			_rank: { $lt: dbSegment._rank },
+// 		},
+// 		{ sort: { _rank: -1 } }
+// 	)
+// 	if (prevSegment) {
+// 		return cache.Parts.findOne(
+// 			{
+// 				rundownId: rundownId,
+// 				segmentId: prevSegment._id,
+// 			},
+// 			{ sort: { _rank: -1 } }
+// 		)
+// 	}
+// 	return undefined
+// }
