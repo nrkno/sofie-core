@@ -647,6 +647,10 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 		}
 	})
 
+	uiPartSegmentMap.forEach((segment) => {
+		segment.pieces = segment.pieces.sort((a, b) => a._rank - b._rank)
+	})
+
 	if (liveSegment) {
 		liveSegment.pieces.forEach((item) => {
 			let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
@@ -709,28 +713,30 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 							sort: { sourceLayerId: 1, _rank: 1, name: 1 },
 						}
 					).fetch()
-					rundownBaselineAdLibs = rundownAdLibItems.concat(
-						props.showStyleBase.sourceLayers
-							.filter((i) => i.isSticky)
-							.sort((a, b) => a._rank - b._rank)
-							.map((layer) =>
-								literal<AdLibPieceUi>({
-									_id: protectString(`sticky_${layer._id}`),
-									hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
-									name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
-									status: RundownAPI.PieceStatusCode.UNKNOWN,
-									isSticky: true,
-									isGlobal: true,
-									expectedDuration: 0,
-									disabled: false,
-									externalId: layer._id,
-									rundownId: protectString(''),
-									sourceLayerId: layer._id,
-									outputLayerId: '',
-									_rank: 0,
-								})
-							)
-					)
+					rundownBaselineAdLibs = rundownAdLibItems
+						.concat(
+							props.showStyleBase.sourceLayers
+								.filter((i) => i.isSticky)
+								.sort((a, b) => a._rank - b._rank)
+								.map((layer) =>
+									literal<AdLibPieceUi>({
+										_id: protectString(`sticky_${layer._id}`),
+										hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
+										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
+										status: RundownAPI.PieceStatusCode.UNKNOWN,
+										isSticky: true,
+										isGlobal: true,
+										expectedDuration: 0,
+										disabled: false,
+										externalId: layer._id,
+										rundownId: protectString(''),
+										sourceLayerId: layer._id,
+										outputLayerId: '',
+										_rank: 0,
+									})
+								)
+						)
+						.sort((a, b) => a._rank - b._rank)
 
 					const globalAdLibActions = memoizedIsolatedAutorun(
 						(rundownIds, partIds) =>
@@ -783,30 +789,33 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 						partIds
 					)
 
-					rundownBaselineAdLibs = rundownBaselineAdLibs.concat(globalAdLibActions).map((item) => {
-						// automatically assign hotkeys based on adLibItem index
-						const uiAdLib: AdLibPieceUi = _.clone(item)
-						uiAdLib.isGlobal = true
+					rundownBaselineAdLibs = rundownBaselineAdLibs
+						.concat(globalAdLibActions)
+						.map((item) => {
+							// automatically assign hotkeys based on adLibItem index
+							const uiAdLib: AdLibPieceUi = _.clone(item)
+							uiAdLib.isGlobal = true
 
-						let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
-						if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
-							let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
-							const sourceHotKeyUseLayerId =
-								sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
-							if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
-								uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
-								// add one to the usage hash table
-								sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+							let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]
+							if (sourceLayer && sourceLayer.activateKeyboardHotkeys && sourceLayer.assignHotkeysToGlobalAdlibs) {
+								let keyboardHotkeysList = sourceLayer.activateKeyboardHotkeys.split(',')
+								const sourceHotKeyUseLayerId =
+									sharedHotkeyList[sourceLayer.activateKeyboardHotkeys][0]._id || item.sourceLayerId
+								if ((sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) < keyboardHotkeysList.length) {
+									uiAdLib.hotkey = keyboardHotkeysList[sourceHotKeyUse[sourceHotKeyUseLayerId] || 0]
+									// add one to the usage hash table
+									sourceHotKeyUse[sourceHotKeyUseLayerId] = (sourceHotKeyUse[sourceHotKeyUseLayerId] || 0) + 1
+								}
 							}
-						}
 
-						if (sourceLayer && sourceLayer.isHidden) {
-							uiAdLib.isHidden = true
-						}
+							if (sourceLayer && sourceLayer.isHidden) {
+								uiAdLib.isHidden = true
+							}
 
-						// always add them to the list
-						return uiAdLib
-					})
+							// always add them to the list
+							return uiAdLib
+						})
+						.sort((a, b) => a._rank - b._rank)
 
 					return rundownBaselineAdLibs
 				},
