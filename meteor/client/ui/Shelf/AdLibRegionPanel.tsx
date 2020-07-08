@@ -204,17 +204,17 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 			const piece = (this.props.thumbnailPiece as any) as AdLibPieceUi
 			let objId: string | undefined = undefined
 
-			if (piece.content && this.props.layer) {
+			if (piece.content && piece.content.fileName && this.props.layer) {
 				switch (this.props.layer.type) {
 					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName.toUpperCase()
+						objId = (piece.content as VTContent).fileName?.toUpperCase()
 						break
 					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						objId = (piece.content as LiveSpeakContent).fileName?.toUpperCase()
 						break
 					case SourceLayerType.GRAPHICS:
 						if (piece.content.fileName) {
-							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
+							objId = (piece.content as GraphicsContent).fileName?.toUpperCase()
 						}
 						break
 				}

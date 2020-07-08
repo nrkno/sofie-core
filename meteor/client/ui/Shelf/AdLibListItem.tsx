@@ -88,13 +88,13 @@ export const AdLibListItem = translateWithTracker<IListViewItemProps, {}, IAdLib
 				if (piece.content && piece.content.fileName) {
 					switch (this.props.layer.type) {
 						case SourceLayerType.VT:
-							objId = (piece.content as VTContent).fileName.toUpperCase()
+							objId = (piece.content as VTContent).fileName?.toUpperCase()
 							break
 						case SourceLayerType.LIVE_SPEAK:
-							objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+							objId = (piece.content as LiveSpeakContent).fileName?.toUpperCase()
 							break
 						case SourceLayerType.GRAPHICS:
-							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
+							objId = (piece.content as GraphicsContent).fileName?.toUpperCase()
 							break
 					}
 				}

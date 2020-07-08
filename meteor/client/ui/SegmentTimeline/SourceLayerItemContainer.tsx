@@ -64,17 +64,17 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 			switch (this.props.piece.sourceLayer.type) {
 				case SourceLayerType.VT:
 					objId = piece.instance.piece.content
-						? (piece.instance.piece.content as VTContent).fileName.toUpperCase()
+						? (piece.instance.piece.content as VTContent).fileName?.toUpperCase()
 						: undefined
 					break
 				case SourceLayerType.LIVE_SPEAK:
 					objId = piece.instance.piece.content
-						? (piece.instance.piece.content as LiveSpeakContent).fileName.toUpperCase()
+						? (piece.instance.piece.content as LiveSpeakContent).fileName?.toUpperCase()
 						: undefined
 					break
 				case SourceLayerType.GRAPHICS:
 					objId = piece.instance.piece.content
-						? (piece.instance.piece.content as GraphicsContent).fileName.toUpperCase()
+						? (piece.instance.piece.content as GraphicsContent).fileName?.toUpperCase()
 						: undefined
 					break
 			}

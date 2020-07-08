@@ -84,14 +84,14 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			if (piece.content && piece.content.fileName) {
 				switch (this.props.layer.type) {
 					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName.toUpperCase()
+						objId = (piece.content as VTContent).fileName?.toUpperCase()
 						break
 					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
+						objId = (piece.content as LiveSpeakContent).fileName?.toUpperCase()
 						break
 					case SourceLayerType.GRAPHICS:
 						if (piece.content.fileName) {
-							objId = (piece.content as GraphicsContent).fileName.toUpperCase()
+							objId = (piece.content as GraphicsContent).fileName?.toUpperCase()
 						}
 						break
 				}
