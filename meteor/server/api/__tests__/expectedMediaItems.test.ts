@@ -190,7 +190,6 @@ describe('Expected Media Items', () => {
 				name: '',
 				_rank: 0,
 				adlibPreroll: 0,
-				disabled: false,
 				expectedDuration: 0,
 				externalId: '',
 				lifespan: PieceLifespan.WithinPart,

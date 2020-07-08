@@ -27,6 +27,7 @@ import {
 	IBlueprintPieceDB,
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -620,7 +621,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 							status: RundownAPI.PieceStatusCode.UNKNOWN,
 							isAction: true,
 							expectedDuration: 0,
-							disabled: false,
+							lifespan: PieceLifespan.WithinPart,
 							externalId: unprotectString(action._id),
 							rundownId: action.rundownId,
 							sourceLayerId,
@@ -744,7 +745,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 										isSticky: true,
 										isGlobal: true,
 										expectedDuration: 0,
-										disabled: false,
+										lifespan: PieceLifespan.WithinPart,
 										externalId: layer._id,
 										rundownId: protectString(''),
 										sourceLayerId: layer._id,
@@ -789,7 +790,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 										isAction: true,
 										isGlobal: true,
 										expectedDuration: 0,
-										disabled: false,
+										lifespan: PieceLifespan.WithinPart,
 										externalId: unprotectString(action._id),
 										rundownId: action.rundownId,
 										sourceLayerId,
@@ -832,7 +833,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 								isClearSourceLayer: true,
 								isGlobal: true,
 								expectedDuration: 0,
-								disabled: false,
+								lifespan: PieceLifespan.WithinPart,
 								externalId: layer._id,
 								rundownId: protectString(''),
 								sourceLayerId: layer._id,
