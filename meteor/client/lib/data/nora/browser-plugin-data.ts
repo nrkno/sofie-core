@@ -68,6 +68,13 @@ function objectToXML(obj: object, rootName: string): Document {
 
 function addNodes(obj: object, rootNode: Node): void {
 	const doc = rootNode.ownerDocument
+	if (!doc) {
+		// this should never happen, given that this is an internal function
+		// and that the rootNode is explicitly created from a document in
+		// both objectToXML() and createNode(), who are the only callers of
+		// this function
+		throw new Error('Root node has no owner document.')
+	}
 
 	for (const name of Object.keys(obj)) {
 		const value = obj[name]

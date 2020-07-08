@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+      - image: sofietv/tv-automation-meteor-base:1.10.2
     steps:
       - checkout
       - run:
@@ -24,7 +24,7 @@ jobs:
 
   tests:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+      - image: sofietv/tv-automation-meteor-base:1.10.2
     steps:
       - checkout
       - run:
@@ -33,13 +33,32 @@ jobs:
           no_output_timeout: 60m
   lint:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.6.1.4
+      - image: sofietv/tv-automation-meteor-base:1.10.2
     steps:
       - checkout
       - run:
           name: Typecheck and lint code
-          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci:lint
-          no_output_timeout: 60m
+          command: cd meteor && meteor npm install && meteor npm run ci:lint
+          no_output_timeout: 15m
+
+  validate-dependencies:
+    docker:
+      - image: sofietv/tv-automation-meteor-base:1.10.2
+    steps:
+      - checkout
+      - run:
+          name: Validate production dependencies for vulnerabilities and compatible licenses
+          command: cd meteor && meteor npm install && meteor npm run validate:dependencies
+          no_output_timeout: 15m
+  validate-all-dependencies:
+    docker:
+      - image: sofietv/tv-automation-meteor-base:1.10.2
+    steps:
+      - checkout
+      - run:
+          name: Validate all dependencies for vulnerabilities
+          command: cd meteor && meteor npm install && meteor npm run validate:dev-dependencies
+          no_output_timeout: 15m
 
   publish-tag:
     docker:
@@ -108,6 +127,18 @@ workflows:
   version: 2
   build-test-publish:
     jobs:
+      - validate-all-dependencies:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+      - validate-dependencies:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
       - build:
           filters:
             tags:
@@ -128,6 +159,8 @@ workflows:
               only: /.*/
       - publish-tag:
           requires:
+            - tests
+            - validate-dependencies
             - build
           filters:
             tags:

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { translate, InjectedI18nProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
@@ -49,7 +49,7 @@ const WINDOW_START_HOUR = 3
 const WINDOW_END_HOUR = 5
 
 // App component - represents the whole app
-class App extends React.Component<InjectedI18nProps, IAppState> {
+class App extends React.Component<WithTranslation, IAppState> {
 	private lastStart = 0
 
 	constructor(props) {
@@ -186,4 +186,4 @@ class App extends React.Component<InjectedI18nProps, IAppState> {
 	}
 }
 
-export default translate()(App)
+export default withTranslation()(App)

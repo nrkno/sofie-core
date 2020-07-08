@@ -1,13 +1,13 @@
 import * as objectPath from 'object-path'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as React from 'react'
 import * as _ from 'underscore'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import { Studio, Studios, MappingsExt, StudioId } from '../../../lib/collections/Studios'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { ModalDialog } from '../../lib/ModalDialog'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import {
 	ConfigManifestEntry,
@@ -38,10 +38,10 @@ import {
 	faCheck,
 	faPlus,
 	faUpload,
-	faSort,
 	faSortUp,
 	faSortDown,
-} from '@fortawesome/fontawesome-free-solid'
+	faSort,
+} from '@fortawesome/free-solid-svg-icons'
 import { UploadButton } from '../../lib/uploadButton'
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
@@ -684,13 +684,15 @@ export class ConfigManifestSettings<
 
 	renderEditableArea(item: ConfigManifestEntry, valIndex: number) {
 		const baseAttribute = `config.${valIndex}.value`
-		const { t, collection, object } = this.props
+		const { t, collection, object, i18n, tReady } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
 				const item2 = item as ConfigManifestEntryTable
 				return (
 					<ConfigManifestTable
 						t={t}
+						i18n={i18n}
+						tReady={tReady}
 						collection={collection}
 						object={object}
 						baseAttribute={baseAttribute}

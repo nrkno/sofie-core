@@ -70,6 +70,7 @@ export namespace RundownLayoutsAPI {
 			label: [],
 			displayStyle: PieceDisplayStyle.BUTTONS,
 			currentSegment: false,
+			showThumbnailsInList: false,
 		}
 	}
 }

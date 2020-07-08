@@ -1,9 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 
-import * as faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
 
 export interface ColorPickerEvent {
 	selectedValue: string

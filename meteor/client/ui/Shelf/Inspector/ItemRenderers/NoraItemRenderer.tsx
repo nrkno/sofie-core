@@ -5,7 +5,7 @@ import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
 import { RundownUtils } from '../../../../lib/rundown'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 
@@ -20,12 +20,9 @@ interface INoraSuperRendererState {
 	editMode: boolean
 }
 
-export default translate()(
-	class NoraItemRenderer extends React.Component<
-		INoraSuperRendererProps & InjectedTranslateProps,
-		INoraSuperRendererState
-	> {
-		constructor(props: INoraSuperRendererProps & InjectedTranslateProps) {
+export default withTranslation()(
+	class NoraItemRenderer extends React.Component<INoraSuperRendererProps & WithTranslation, INoraSuperRendererState> {
+		constructor(props: INoraSuperRendererProps & WithTranslation) {
 			super(props)
 
 			this.state = {

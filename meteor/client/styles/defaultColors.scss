@@ -7,7 +7,7 @@
 	--color-status-warning: gold;
 	--color-status-bad: #ff5e00;
 	--color-status-fatal: #e62421;
-	--color-status-fatal--translucent: transparentize(#e62421, 0.5);
+	--color-status-fatal--translucent: #{transparentize(#e62421, 0.5)};
 	--color-status-unknown: #777;
 
 	//--general-live-color: #FFE900;
@@ -21,7 +21,7 @@
 
 	--general-late-color: #ff0000;
 	--general-fast-color: #ff0000;
-	--general-fast-color--shadow: transparentize(#ff0000, 0.2);
+	--general-fast-color--shadow: #{transparentize(#ff0000, 0.2)};
 
 	--general-clock: #49c0fb;
 
@@ -29,26 +29,26 @@
 
 	--ui-button-primary: #1769ff;
 	--ui-button-primary--hover: #0050e3;
-	--ui-button-primary--translucent: transparentize(#1769ff, 0.5);
+	--ui-button-primary--translucent: #{transparentize(#1769ff, 0.5)};
 
 	--ui-dark-color: #252627;
 	--ui-dark-color-brighter: #5f6164;
 
-	--segment-timeline-background-color: $segment-timeline-background-color;
+	--segment-timeline-background-color: #{$segment-timeline-background-color};
 
-	--segment-layer-background-unknown: $segment-layer-background-unknown;
-	--segment-layer-background-camera: $segment-layer-background-camera;
-	--segment-layer-background-camera--second: $segment-layer-background-camera--second;
-	--segment-layer-background-lower-third: $segment-layer-background-lower-third;
-	--segment-layer-background-lower-third--second: $segment-layer-background-lower-third--second;
-	--segment-layer-background-graphics: $segment-layer-background-graphics;
-	--segment-layer-background-graphics--second: $segment-layer-background-graphics--second;
-	--segment-layer-background-live-speak: $segment-layer-background-live-speak;
-	--segment-layer-background-remote: $segment-layer-background-remote;
-	--segment-layer-background-remote--second: $segment-layer-background-remote--second;
-	--segment-layer-background-vt: $segment-layer-background-vt;
-	--segment-layer-background-vt--second: $segment-layer-background-vt--second;
-	--segment-layer-background-script: $segment-layer-background-script;
-	--segment-layer-background-mic: $segment-layer-background-mic;
-	--segment-layer-background-guest: $segment-layer-background-guest;
+	--segment-layer-background-unknown: #{$segment-layer-background-unknown};
+	--segment-layer-background-camera: #{$segment-layer-background-camera};
+	--segment-layer-background-camera--second: #{$segment-layer-background-camera--second};
+	--segment-layer-background-lower-third: #{$segment-layer-background-lower-third};
+	--segment-layer-background-lower-third--second: #{$segment-layer-background-lower-third--second};
+	--segment-layer-background-graphics: #{$segment-layer-background-graphics};
+	--segment-layer-background-graphics--second: #{$segment-layer-background-graphics--second};
+	--segment-layer-background-live-speak: #{$segment-layer-background-live-speak};
+	--segment-layer-background-remote: #{$segment-layer-background-remote};
+	--segment-layer-background-remote--second: #{$segment-layer-background-remote--second};
+	--segment-layer-background-vt: #{$segment-layer-background-vt};
+	--segment-layer-background-vt--second: #{$segment-layer-background-vt--second};
+	--segment-layer-background-script: #{$segment-layer-background-script};
+	--segment-layer-background-mic: #{$segment-layer-background-mic};
+	--segment-layer-background-guest: #{$segment-layer-background-guest};
 }

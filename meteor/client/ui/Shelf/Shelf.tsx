@@ -1,41 +1,25 @@
 import * as React from 'react'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
 import * as mousetrap from 'mousetrap'
 
-import * as faBars from '@fortawesome/fontawesome-free-solid/faBars'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faBars } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-import { AdLibPanel, AdLibPieceUi } from './AdLibPanel'
-import { GlobalAdLibPanel } from './GlobalAdLibPanel'
+import { AdLibPieceUi } from './AdLibPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
-import { HotkeyHelpPanel } from './HotkeyHelpPanel'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
-import {
-	RundownLayout,
-	RundownLayoutBase,
-	RundownLayoutType,
-	DashboardLayout,
-	DashboardLayoutFilter,
-	DashboardLayoutActionButton,
-	RundownLayoutFilter,
-} from '../../../lib/collections/RundownLayouts'
-import { OverflowingContainer } from './OverflowingContainer'
+import { RundownLayoutBase, RundownLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { DashboardPanel } from './DashboardPanel'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
-import { ExternalFramePanel } from './ExternalFramePanel'
-import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
@@ -53,7 +37,7 @@ export enum ShelfTabs {
 	SYSTEM_HOTKEYS = 'system_hotkeys',
 	KEYBOARD = 'keyboard_preview',
 }
-export interface IShelfProps {
+export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	isExpanded: boolean
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
@@ -183,6 +167,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.restoreDefaultTab()
 
 		window.addEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
+		window.addEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
 	}
 
 	componentWillUnmount() {
@@ -197,6 +182,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 
 		window.removeEventListener(RundownViewEvents.switchShelfTab, this.onSwitchShelfTab)
+		window.removeEventListener(RundownViewEvents.selectPiece, this.onSelectPiece)
 	}
 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
@@ -409,7 +395,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'shelfTab', tab)
 	}
 
-	selectPiece = (piece: PieceUi) => {
+	private onSelectPiece = (e: CustomEvent<{ piece: AdLibPieceUi | PieceUi | undefined }>) => {
+		this.selectPiece(e.detail.piece)
+	}
+
+	selectPiece = (piece: AdLibPieceUi | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
 		})
@@ -512,6 +502,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 }
 
-export const Shelf = translate(undefined, {
+export const Shelf = withTranslation(undefined, {
 	withRef: true,
 })(ShelfBase)

@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 
 import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { rejectFields } from './lib'
-import { protectString } from '../../lib/lib'
+import { protectString, check } from '../../lib/lib'
 import { MongoQuery } from '../../lib/typings/meteor'
 
 export namespace PeripheralDeviceSecurity {

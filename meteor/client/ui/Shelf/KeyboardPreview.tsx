@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as classNames from 'classnames'
+import ClassNames from 'classnames'
 import { ISourceLayer, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { IHotkeyAssignment, RegisteredHotkeys, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -324,7 +324,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 							return (
 								<div
 									key={'idx' + index}
-									className={classNames('keyboard-preview__blank-space', {
+									className={ClassNames('keyboard-preview__blank-space', {
 										'keyboard-preview__blank-space--spring': key.width < 0,
 									})}
 									style={{ fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}></div>
@@ -370,7 +370,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 							return (
 								<div
 									key={key.code}
-									className={classNames(
+									className={ClassNames(
 										'keyboard-preview__key',
 										customSourceLayer !== undefined
 											? RundownUtils.getSourceLayerClassName(customSourceLayer)

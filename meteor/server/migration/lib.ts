@@ -5,7 +5,7 @@ import {
 	MigrationStepInputFilteredResult,
 	MigrationStepBase,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Collections, objectPathGet } from '../../lib/lib'
+import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
@@ -36,7 +36,7 @@ export function ensureCollectionProperty<T = any>(
 	defaultValue?: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
-	let collection: Mongo.Collection<T> = Collections[collectionName]
+	let collection: TransformedCollection<T, any> = Collections[collectionName]
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
@@ -170,9 +170,9 @@ export function setExpectedVersion(
 interface RenameContent {
 	content: { [newValue: string]: string }
 }
-export function renamePropertiesInCollection<T extends any>(
+export function renamePropertiesInCollection<T extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	id: string,
-	collection: TransformedCollection<T, any>,
+	collection: TransformedCollection<T, DBInterface>,
 	collectionName: string,
 	renames: Partial<{ [newAttr in keyof T]: string | RenameContent }>,
 	dependOnResultFrom?: string

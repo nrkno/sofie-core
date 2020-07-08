@@ -14,7 +14,7 @@ import {
 } from '../../../lib/collections/Timeline'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
-import { orderPieces } from './pieces'
+import { orderPieces, PieceResolved } from './pieces'
 import { literal, clone, unprotectString, protectString } from '../../../lib/lib'
 import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
@@ -23,6 +23,15 @@ import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInsta
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
+
+interface PartInstanceAndPieceInstances {
+	part: PartInstance
+	pieces: PieceInstance[]
+}
+interface PartAndPieces {
+	part: Part
+	pieces: Piece[]
+}
 
 export function getLookeaheadObjects(
 	cache: CacheForRundownPlaylist,
@@ -119,6 +128,9 @@ export function getLookeaheadObjects(
 			lookaheadTargetObjects,
 			lookaheadMaxSearchDistance
 		)
+		if (!lookaheadObjs) {
+			return
+		}
 
 		// Add the objects that have some timing info
 		_.each(lookaheadObjs.timed, (entry, i) => {
@@ -162,11 +174,6 @@ export function getLookeaheadObjects(
 	return timelineObjs
 }
 
-interface PartAndPieces {
-	part: Part
-	pieces: Piece[]
-}
-
 export interface LookaheadObjectEntry {
 	obj: TimelineObjRundown
 	partId: PartId
@@ -188,65 +195,49 @@ function findLookaheadForlayer(
 	mode: LookaheadMode,
 	lookaheadTargetObjects: number,
 	lookaheadMaxSearchDistance?: number
-): LookaheadResult {
+): LookaheadResult | null {
 	const res: LookaheadResult = {
 		timed: [],
 		future: [],
 	}
 
 	if (mode === undefined || mode === LookaheadMode.NONE) {
-		return res
+		return null
 	}
 
-	function getPartInstancePieces(partInstanceId: PartInstanceId) {
-		return cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
-			return !!(
-				pieceInstance.partInstanceId === partInstanceId &&
-				pieceInstance.piece.content &&
-				pieceInstance.piece.content.timelineObjects &&
-				_.find(pieceInstance.piece.content.timelineObjects, (o) => o && o.layer === layer)
-			)
-		})
+	function filterPartInstancePieces(pieces: PieceInstance[]) {
+		return pieces.filter(
+			(p) => !!_.find((p.piece.content || {}).timelineObjects || [], (o) => o && o.layer === layer)
+		)
 	}
-
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-		cache,
-		playlist
-	)
 
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartAndPieces | undefined
-	if (previousPartInstance) {
-		const previousPieces = getPartInstancePieces(previousPartInstance._id)
+	if (previousPartInstanceInfo) {
+		const previousPieces = filterPartInstancePieces(previousPartInstanceInfo.pieces)
 		previousPartInfo = {
-			part: previousPartInstance.part,
+			part: previousPartInstanceInfo.part.part,
 			pieces: previousPieces.map((p) => p.piece),
 		}
 	}
 
-	// Get the PieceInstances which are on the timeline
-	const partInstancesOnTimeline = _.compact([
-		currentPartInstance,
-		currentPartInstance && currentPartInstance.part.autoNext ? nextPartInstance : undefined,
-	])
 	// Generate timed objects for parts on the timeline
 	_.each(partInstancesOnTimeline, (partInstance) => {
-		const pieces = cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
-			return !!(
-				pieceInstance.partInstanceId === partInstance._id &&
-				pieceInstance.piece.content &&
-				pieceInstance.piece.content.timelineObjects &&
-				_.find(pieceInstance.piece.content.timelineObjects, (o) => o && o.layer === layer)
-			)
-		})
+		const pieces = filterPartInstancePieces(partInstance.pieces)
 		const partInfo = {
-			part: partInstance.part,
+			part: partInstance.part.part,
 			pieces: pieces.map((p) => p.piece),
 		}
 
-		findObjectsForPart(cache, playlist, layer, previousPartInfo, partInfo, partInstance._id).forEach((o) =>
-			res.timed.push({ obj: o, partId: partInstance.part._id })
-		)
+		findObjectsForPart(
+			cache,
+			playlist,
+			orderedPiecesCache,
+			layer,
+			previousPartInfo,
+			partInfo,
+			partInstance.part._id
+		).forEach((o) => res.timed.push({ obj: o, partId: partInstance.part.part._id }))
 		previousPartInfo = partInfo
 	})
 
@@ -294,9 +285,15 @@ function findLookaheadForlayer(
 		const pieces = piecesUsingLayerByPart[unprotectString(part._id)] || []
 		if (pieces.length > 0 && part.isPlayable()) {
 			const partInfo = { part, pieces }
-			findObjectsForPart(cache, playlist, layer, previousPartInfo, partInfo, null).forEach((o) =>
-				res.future.push({ obj: o, partId: part._id })
-			)
+			findObjectsForPart(
+				cache,
+				playlist,
+				orderedPiecesCache,
+				layer,
+				previousPartInfo,
+				partInfo,
+				null
+			).forEach((o) => res.future.push({ obj: o, partId: part._id }))
 			previousPartInfo = partInfo
 		}
 	}
@@ -307,13 +304,13 @@ function findLookaheadForlayer(
 function findObjectsForPart(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
+	orderedPiecesCache: Map<PartId, PieceResolved[]>,
 	layer: string,
 	previousPartInfo: PartAndPieces | undefined,
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const activePlaylist = playlist
-	const activeRundown = cache.Rundowns.findOne(partInfo.part.rundownId)
 
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {
@@ -353,11 +350,15 @@ function findObjectsForPart(
 		return allObjs
 	} else {
 		// They need to be ordered
-		const orderedItems = orderPieces(
-			cache.Pieces.findFetch({ partId: partInfo.part._id }),
-			partInfo.part._id,
-			partInfo.part.getLastStartedPlayback()
-		)
+		let orderedItems = orderedPiecesCache.get(partInfo.part._id)
+		if (!orderedItems) {
+			orderedItems = orderPieces(
+				cache.Pieces.findFetch({ partId: partInfo.part._id }),
+				partInfo.part._id,
+				partInfo.part.getLastStartedPlayback()
+			)
+			orderedPiecesCache.set(partInfo.part._id, orderedItems)
+		}
 
 		let allowTransition = false
 		let classesFromPreviousPart: string[] = []

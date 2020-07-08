@@ -53,7 +53,7 @@ export enum UserAction {
 	MODIFY_BUCKET_ADLIB,
 }
 
-function userActionToLabel(userAction: UserAction, t: i18next.TranslationFunction<any, object, string>) {
+function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 	switch (userAction) {
 		case UserAction.SAVE_EVALUATION:
 			return t('Saving Evaluation')
@@ -152,7 +152,7 @@ function userActionToLabel(userAction: UserAction, t: i18next.TranslationFunctio
 }
 
 export function doUserAction<Result>(
-	t: i18next.TranslationFunction<any, object, string>,
+	t: i18next.TFunction,
 	userEvent: any,
 	action: UserAction,
 	fcn: (event: any) => Promise<ClientAPI.ClientResponse<Result>>,

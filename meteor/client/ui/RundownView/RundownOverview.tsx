@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, extendMandadory, normalizeArray, literal, unprotectString } from '../../../lib/lib'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -75,7 +75,6 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 					{
 						fields: {
 							_rank: 1,
-							name: 1,
 							rundownId: 1,
 							segmentId: 1,
 							duration: 1,

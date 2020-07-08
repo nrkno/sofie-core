@@ -9,8 +9,8 @@ interface MockedCollection<T, Y extends any[]> {
 }
 */
 interface MockedCollection {
-	mockClear: jest.MockInstance<void, any[]>['mockClear']
-	mockReset: jest.MockInstance<void, any[]>['mockReset']
+	mockClear: () => void
+	mockReset: () => void
 }
 
 export function mockupCollection<A extends B, B extends { _id: ProtectedString<any> }>(

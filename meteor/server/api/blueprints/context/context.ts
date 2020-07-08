@@ -8,14 +8,11 @@ import {
 	unprotectObject,
 	unprotectObjectArray,
 	protectString,
-	assertNever,
-	protectStringArray,
+	check,
 	getCurrentTime,
-	unprotectStringArray,
-	normalizeArray,
 } from '../../../../lib/lib'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
@@ -39,9 +36,8 @@ import {
 	IBlueprintPartDB,
 	IBlueprintRundownDB,
 	IBlueprintAsRunLogEvent,
-	IBlueprintPiece,
-	IBlueprintPart,
-	IBlueprintResolvedPieceInstance,
+	IBlueprintExternalMessageQueueObj,
+	ExtendedIngestRundown,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
@@ -65,9 +61,9 @@ import {
 	unprotectPartInstance,
 	PartInstance,
 } from '../../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getResolvedPieces } from '../../playout/pieces'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
+import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
+import { extendIngestRundownCore } from '../../ingest/lib'
 
 /** Common */
 
@@ -387,6 +383,22 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 			).fetch()
 		)
 	}
+	/** Get all unsent and queued messages in the rundown */
+	getAllQueuedMessages(): Readonly<IBlueprintExternalMessageQueueObj[]> {
+		return unprotectObjectArray(
+			ExternalMessageQueue.find(
+				{
+					rundownId: this._rundown._id,
+					queueForLaterReason: { $exists: true },
+				},
+				{
+					sort: {
+						created: 1,
+					},
+				}
+			).fetch()
+		)
+	}
 	/** Get all segments in this rundown */
 	getSegments(): Array<IBlueprintSegmentDB> {
 		return unprotectObjectArray(this._rundown.getSegments())
@@ -441,9 +453,10 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return this.getIngestDataForPart(partInstance.part)
 	}
 	/** Get the mos story related to the rundown */
-	getIngestDataForRundown(): IngestRundown | undefined {
+	getIngestDataForRundown(): ExtendedIngestRundown | undefined {
 		try {
-			return loadCachedRundownData(this._rundown._id, this.rundown.externalId)
+			const ingestRundown = loadCachedRundownData(this._rundown._id, this.rundown.externalId)
+			return extendIngestRundownCore(ingestRundown, this._rundown)
 		} catch (e) {
 			return undefined
 		}

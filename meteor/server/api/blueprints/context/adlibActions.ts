@@ -117,7 +117,7 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 	canCombineQueue: false,
 }
 // Compile a list of the keys which are allowed to be set
-const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample)
+const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof OmitId<IBlueprintPiece>>
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
@@ -271,7 +271,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error(`Piece with id "${rawPiece._id}" already exists`)
 		}
 
-		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, ['_id'].concat(IBlueprintPieceSampleKeys))
+		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, [...IBlueprintPieceSampleKeys, '_id'])
 
 		const piece = postProcessPieces(
 			this,
@@ -303,7 +303,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	}
 	updatePieceInstance(pieceInstanceId: string, piece: Partial<OmitId<IBlueprintPiece>>): IBlueprintPieceInstance {
 		// filter the submission to the allowed ones
-		const trimmedPiece: IBlueprintPiece = _.pick(piece, IBlueprintPieceSampleKeys)
+		const trimmedPiece: Partial<OmitId<IBlueprintPiece>> = _.pick(piece, IBlueprintPieceSampleKeys)
 		if (Object.keys(trimmedPiece).length === 0) {
 			throw new Error('Some valid properties must be defined')
 		}
@@ -394,6 +394,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			rundownId: currentPartInstance.rundownId,
 			segmentId: currentPartInstance.segmentId,
 			takeCount: -1, // Filled in later
+			rehearsal: currentPartInstance.rehearsal,
 			part: new Part({
 				...rawPart,
 				_id: getRandomId(),

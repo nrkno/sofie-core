@@ -21,7 +21,6 @@ import { PeripheralDevice, PeripheralDevices } from '../lib/collections/Peripher
 import { protectString, waitForPromiseAll, waitForPromise, makePromise } from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
-import { MongoSelector } from '../lib/typings/meteor'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'

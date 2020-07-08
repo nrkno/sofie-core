@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { Random } from 'meteor/random'
@@ -94,7 +94,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this._controller = new PrompterControlManager(this)
 	}
 
-	componentWillMount() {
+	componentDidMount() {
 		if (this.props.studioId) {
 			this.subscribe(PubSub.studios, {
 				_id: this.props.studioId,
@@ -126,9 +126,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				})
 			}
 		})
-	}
 
-	componentDidMount() {
 		document.body.classList.add(
 			'dark',
 			'xdark',
@@ -435,10 +433,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			}
 		}
 
-		componentWillUnmount() {
-			super.componentWillUnmount()
-		}
-
 		componentDidMount() {
 			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
 
@@ -510,7 +504,6 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 		shouldComponentUpdate(nextProps, nextState): boolean {
 			clearTimeout(this._debounceUpdate)
-			this.props = nextProps
 			this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
 			return false
 		}

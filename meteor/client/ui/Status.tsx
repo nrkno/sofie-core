@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
 import { Route, Switch, Redirect, Link, NavLink } from 'react-router-dom'
 import SystemStatus from './Status/SystemStatus'
@@ -22,7 +22,7 @@ interface IStatusMenuProps {
 	match?: any
 }
 interface IStatusMenuState {}
-const StatusMenu = translate()(
+const StatusMenu = withTranslation()(
 	class StatusMenu extends React.Component<Translated<IStatusMenuProps>, IStatusMenuState> {
 		render() {
 			const { t } = this.props
@@ -69,7 +69,7 @@ interface IStatusProps {
 	match?: any
 }
 class Status extends MeteorReactComponent<Translated<IStatusProps>> {
-	componentWillMount() {
+	componentDidMount() {
 		// Subscribe to data:
 
 		this.subscribe(PubSub.peripheralDevices, {})
@@ -113,4 +113,4 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 	}
 }
 
-export default translate()(Status)
+export default withTranslation()(Status)

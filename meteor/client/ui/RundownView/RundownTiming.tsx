@@ -9,7 +9,7 @@ import { getCurrentTime, literal, normalizeArray, unprotectString } from '../../
 import { RundownUtils } from '../../lib/rundown'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { Settings } from '../../../lib/Settings'

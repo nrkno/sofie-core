@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
@@ -252,6 +251,7 @@ export namespace ServerPlayoutAdLibAPI {
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
 				takeCount: currentPartInstance.takeCount + 1,
+				rehearsal: !!rundownPlaylist.rehearsal,
 				part: new Part({
 					_id: getRandomId(),
 					_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
@@ -361,6 +361,7 @@ export namespace ServerPlayoutAdLibAPI {
 		// TODO - will this cause problems?
 		return PieceInstances.findOne(query, {
 			sort: {
+				// @ts-ignore deep property
 				'piece.startedPlayback': -1,
 			},
 		})
@@ -387,7 +388,7 @@ export namespace ServerPlayoutAdLibAPI {
 				'part._rank': { $gt: currentPartInstance.part._rank },
 			},
 			{
-				sort: { _rank: -1, _id: -1 },
+				sort: { _id: -1 },
 			}
 		)
 		if (alreadyQueuedPartInstance) {

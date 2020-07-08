@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -121,7 +121,7 @@ export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	render() {
 		const { isDragging, connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
-		return connectDropTarget(connectDragSource(super.render()))
+		return connectDropTarget(connectDragSource(super.render())) as JSX.Element
 	}
 }
 
@@ -147,5 +147,5 @@ export const BucketPieceButton = translateWithTracker<
 			connectDragPreview: connect.dragPreview(),
 			isDragging: monitor.isDragging(),
 		}))(BucketPieceButtonBase)
-	)
+	) as any
 )

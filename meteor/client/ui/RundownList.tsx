@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import timer from 'react-timer-hoc'
 import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
@@ -10,9 +10,8 @@ import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
-import * as faTrash from '@fortawesome/fontawesome-free-solid/faTrash'
-import * as faSync from '@fortawesome/fontawesome-free-solid/faSync'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTrash, faSync } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
@@ -30,8 +29,9 @@ import { Spinner } from '../lib/Spinner'
 import { SplitDropdown } from '../lib/splitDropdown'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../lib/UIStateStorage'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { MeteorCall } from '../../lib/api/methods'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
 
 const PackageInfo = require('../../package.json')
 
@@ -144,7 +144,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					<div
 						className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
 						style={{ color: layout.iconColor || 'transparent' }}>
-						<FontAwesomeIcon icon={layout.icon || 'circle'} />
+						<FontAwesomeIcon icon={(layout.icon || 'circle') as IconProp} />
 					</div>
 					<span className="expco-text">{layout.name}</span>
 				</div>
@@ -511,15 +511,15 @@ export const RundownList = translateWithTracker(() => {
 		}
 
 		renderRundowns(list: RundownPlaylistUi[]) {
-			const { t } = this.props
+			const { t, i18n, tReady } = this.props
 
 			return list.length > 0 ? (
 				list.map((rundownPlaylist) => (
 					<RundownListItem
 						key={unprotectString(rundownPlaylist._id)}
 						rundownPlaylist={rundownPlaylist}
-						t={this.props.t}
 						rundownLayouts={this.props.rundownLayouts}
+						{...{ t, i18n, tReady }}
 					/>
 				))
 			) : (

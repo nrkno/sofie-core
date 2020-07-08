@@ -76,7 +76,7 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 	class PieceNameContainer extends MeteorReactComponent<
 		INamePropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
 	> {
-		componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.pieceInstancesSimple, {
 				rundownId: { $in: this.props.rundownIds },
 			})
@@ -113,7 +113,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 	class PieceIconContainer extends MeteorReactComponent<
 		IPropsHeader & { sourceLayer: ISourceLayer; pieceInstance: PieceInstance }
 	> {
-		componentWillMount() {
+		componentDidMount() {
 			this.subscribe(PubSub.pieceInstancesSimple, {
 				rundownId: { $in: this.props.rundownIds },
 			})

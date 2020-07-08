@@ -2,20 +2,18 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
 import { Part, Parts, PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
-import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
-import * as faList from '@fortawesome/fontawesome-free-solid/faList'
-import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -46,7 +44,6 @@ import { Piece, PieceGeneric } from '../../../lib/collections/Pieces'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShelfInspector } from './Inspector/ShelfInspector'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibActionCommon, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
@@ -56,6 +53,7 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -165,8 +163,8 @@ export function matchTags(item: AdLibPieceUi, tags?: string[]) {
 	return true
 }
 
-const AdLibListView = translate()(
-	class extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
+const AdLibListView = withTranslation()(
+	class AdLibListView extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
 		table: HTMLTableElement
 
 		constructor(props: Translated<IListViewPropsHeader>) {
@@ -353,7 +351,7 @@ interface IToolbarStateHader {
 	searchInputValue: string
 }
 
-export const AdLibPanelToolbar = translate()(
+export const AdLibPanelToolbar = withTranslation()(
 	class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 		searchInput: HTMLInputElement
 
@@ -474,7 +472,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse: { [key: string]: number } = {}
+	let sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -491,13 +489,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
 	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
-		(
-			currentPartId: PartId,
-			nextPartId: PartId,
-			segments: Segment[],
-			sourceLayerLookup: SourceLayerLookup,
-			sourceHotKeyUse: { [key: string]: number }
-		) => {
+		(currentPartId: PartId, nextPartId: PartId, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 
@@ -564,9 +556,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 		'uiSegments',
 		currentPartInstance ? currentPartInstance.part._id : undefined,
 		nextPartInstance ? nextPartInstance.part._id : undefined,
-		segments,
-		sourceLayerLookup,
-		sourceHotKeyUse
+		segments
 	)
 
 	uiSegments.forEach((segment) => (segment.pieces.length = 0))
@@ -608,7 +598,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 					},
 				},
 				{
-					sort: { _rank: 1 },
+					// @ts-ignore deep-property
+					sort: { 'display._rank': 1 },
 				}
 			)
 				.fetch()
@@ -753,7 +744,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 									},
 								},
 								{
-									sort: { _rank: 1 },
+									// @ts-ignore deep-property
+									sort: { 'display._rank': 1 },
 								}
 							)
 								.fetch()

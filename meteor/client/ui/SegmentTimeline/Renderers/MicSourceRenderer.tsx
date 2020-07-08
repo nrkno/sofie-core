@@ -6,7 +6,7 @@ import { FloatingInspector } from '../../FloatingInspector'
 import Moment from 'react-moment'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { translate, InjectedTranslateProps } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
@@ -16,8 +16,8 @@ const SCRIPT_PART_LENGTH = 250
 interface IProps extends ICustomLayerItemProps {}
 interface IState {}
 
-export const MicSourceRenderer = translate()(
-	class MicSourceRenderer extends CustomLayerItemRenderer<IProps & InjectedTranslateProps, IState> {
+export const MicSourceRenderer = withTranslation()(
+	class MicSourceRenderer extends CustomLayerItemRenderer<IProps & WithTranslation, IState> {
 		itemPosition: number
 		itemWidth: number
 		itemElement: HTMLElement | null
@@ -30,7 +30,7 @@ export const MicSourceRenderer = translate()(
 
 		private _forceSizingRecheck: boolean
 
-		constructor(props: IProps & InjectedTranslateProps) {
+		constructor(props: IProps & WithTranslation) {
 			super(props)
 		}
 
@@ -89,7 +89,7 @@ export const MicSourceRenderer = translate()(
 			this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 		}
 
-		componentDidUpdate(prevProps: Readonly<IProps & InjectedTranslateProps>, prevState: Readonly<IState>) {
+		componentDidUpdate(prevProps: Readonly<IProps & WithTranslation>, prevState: Readonly<IState>) {
 			let _forceSizingRecheck = false
 
 			if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {

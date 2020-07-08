@@ -1,13 +1,14 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 
-import * as faChevronUp from '@fortawesome/fontawesome-free-solid/faChevronUp'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faChevronUp } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import pack, { IconPack, IconDefinition } from '@fortawesome/fontawesome-free-solid'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
+import { IconProp } from '@fortawesome/fontawesome-svg-core'
 
 export interface IconPickerEvent {
 	selectedValue: string
@@ -28,7 +29,7 @@ interface IState {
 	searchText: string
 }
 
-export const IconPicker = translate()(
+export const IconPicker = withTranslation()(
 	class IconPicker extends React.Component<Translated<IProps>, IState> {
 		constructor(props: Translated<IProps>) {
 			super(props)
@@ -108,10 +109,10 @@ export const IconPicker = translate()(
 						this.props.className
 					)}>
 					<div className={ClassNames('expco-title focusable-main')} onClick={this.toggleExpco}>
-						{this.state.selectedValue && <FontAwesomeIcon icon={this.state.selectedValue} />}
+						{this.state.selectedValue && <FontAwesomeIcon icon={this.state.selectedValue as IconProp} />}
 					</div>
 					<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
-						<FontAwesomeIcon icon={faChevronUp} />
+						<FontAwesomeIcon icon={faChevronUp as IconProp} />
 					</a>
 					<div className="expco-body bd">
 						<input
@@ -132,7 +133,7 @@ export const IconPicker = translate()(
 									return (
 										<div className="expco-item" key={key}>
 											<label className="action-btn" title={value.iconName} onClick={() => this.handleChange(value)}>
-												<FontAwesomeIcon icon={value.iconName} />
+												<FontAwesomeIcon icon={value.iconName as IconProp} />
 											</label>
 										</div>
 									)

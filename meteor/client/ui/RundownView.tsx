@@ -4,16 +4,16 @@ import { parse as queryStringParse } from 'query-string'
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { VTContent, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { translate } from 'react-i18next'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import timer from 'react-timer-hoc'
-import * as CoreIcon from '@nrk/core-icons/jsx'
+import CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import * as _ from 'underscore'
-import * as Escape from 'react-escape'
+import Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-const Tooltip = require('rc-tooltip')
+import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
@@ -95,6 +95,7 @@ import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../lib/hotkeyRegistry'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
@@ -112,7 +113,7 @@ interface ITimingWarningState {
 	plannedStartCloseShown?: boolean
 	plannedStartCloseShow?: boolean
 }
-const WarningDisplay = translate()(
+const WarningDisplay = withTranslation()(
 	timer(5000)(
 		class WarningDisplay extends React.Component<Translated<ITimingWarningProps>, ITimingWarningState> {
 			private readonly REHEARSAL_MARGIN = 1 * 60 * 1000
@@ -228,8 +229,8 @@ export enum RundownViewKbdShortcuts {
 	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = '',
 }
 
-const TimingDisplay = translate()(
-	withTiming<ITimingDisplayProps, {}>()(
+const TimingDisplay = withTranslation()(
+	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
 			render() {
 				const { t } = this.props
@@ -440,7 +441,7 @@ interface IRundownHeaderState {
 	errorMessage?: string
 }
 
-const RundownHeader = translate()(
+const RundownHeader = withTranslation()(
 	class RundownHeader extends React.Component<Translated<IRundownHeaderProps>, IRundownHeaderState> {
 		bindKeys: Array<{
 			key: string
@@ -1210,7 +1211,7 @@ const RundownHeader = translate()(
 								<div className="flex-col right horizontal-align-right">
 									<div className="links mod close">
 										<NavLink to="/rundowns">
-											<CoreIcon id="nrk-close" />
+											<CoreIcon.NrkClose />
 										</NavLink>
 									</div>
 								</div>
@@ -1290,6 +1291,7 @@ export enum RundownViewEvents {
 	'switchShelfTab' = 'sofie:switchShelfTab',
 	'goToPart' = 'sofie:goToPart',
 	'goToPartInstance' = 'sofie:goToPartInstance',
+	'selectPiece' = 'sofie:selectPiece',
 }
 
 export interface IGoToPartEvent {
@@ -1301,11 +1303,16 @@ export interface IGoToPartInstanceEvent {
 	partInstanceId: PartInstanceId
 }
 
+type MatchedSegment = {
+	rundown: Rundown
+	segments: Segment[]
+}
+
 interface ITrackedProps {
 	rundownPlaylistId: RundownPlaylistId
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
-	segments: Segment[]
+	matchedSegments: MatchedSegment[]
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
@@ -1335,8 +1342,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownPlaylistId: playlistId,
 		rundowns,
-		segments: playlist
-			? playlist.getSegments({
+		matchedSegments: playlist
+			? playlist.getRundownsAndSegments({
 					isHidden: {
 						$ne: true,
 					},
@@ -1771,9 +1778,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						selectedPiece: piece,
 					})
 				} else {
-					if (this._inspectorShelf) {
-						this._inspectorShelf.getWrappedInstance().selectPiece(piece)
-					}
+					window.dispatchEvent(
+						new CustomEvent<{
+							piece: PieceUi | AdLibPieceUi | undefined
+						}>(RundownViewEvents.selectPiece, {
+							detail: {
+								piece: piece,
+							},
+						})
+					)
 				}
 			}
 		}
@@ -2046,40 +2059,53 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderSegments() {
-			if (this.props.segments) {
-				return this.props.segments.map((segment, index, array) => {
-					if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
-						return (
-							<ErrorBoundary key={unprotectString(segment._id)}>
-								<VirtualElement
-									id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-									margin={'100% 0px 100% 0px'}
-									initialShow={index < window.innerHeight / 260}
-									placeholderHeight={260}
-									placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
-									width="auto">
-									<SegmentTimelineContainer
-										id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-										studio={this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-										followLiveSegments={this.state.followLiveSegments}
-										segmentId={segment._id}
-										playlist={this.props.playlist}
-										liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
-										timeScale={this.state.timeScale}
-										onTimeScaleChange={this.onTimeScaleChange}
-										onContextMenu={this.onContextMenu}
-										onSegmentScroll={this.onSegmentScroll}
-										isLastSegment={index === array.length - 1}
-										onPieceClick={this.onSelectPiece}
-										onPieceDoubleClick={this.onPieceDoubleClick}
-										onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
-									/>
-								</VirtualElement>
-							</ErrorBoundary>
-						)
-					}
-				})
+			if (this.props.matchedSegments) {
+				let globalIndex = 0
+				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => (
+					<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
+						{this.props.matchedSegments.length > 1 && (
+							<RundownDividerHeader
+								key={`rundown_${rundownAndSegments.rundown._id}`}
+								rundown={rundownAndSegments.rundown}
+							/>
+						)}
+						{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
+							if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
+								return (
+									<ErrorBoundary key={unprotectString(segment._id)}>
+										<VirtualElement
+											id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+											margin={'100% 0px 100% 0px'}
+											initialShow={globalIndex++ < window.innerHeight / 260}
+											placeholderHeight={260}
+											placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
+											width="auto">
+											<SegmentTimelineContainer
+												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+												studio={this.props.studio}
+												showStyleBase={this.props.showStyleBase}
+												followLiveSegments={this.state.followLiveSegments}
+												segmentId={segment._id}
+												playlist={this.props.playlist}
+												liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
+												timeScale={this.state.timeScale}
+												onTimeScaleChange={this.onTimeScaleChange}
+												onContextMenu={this.onContextMenu}
+												onSegmentScroll={this.onSegmentScroll}
+												isLastSegment={
+													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
+												}
+												onPieceClick={this.onSelectPiece}
+												onPieceDoubleClick={this.onPieceDoubleClick}
+												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+											/>
+										</VirtualElement>
+									</ErrorBoundary>
+								)
+							}
+						})}
+					</React.Fragment>
+				))
 			} else {
 				return <div></div>
 			}
@@ -2418,6 +2444,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onSetNextSegment={this.onSetNextSegment}
 										onResyncSegment={this.onResyncSegment}
 										studioMode={this.state.studioMode}
+										enablePlayFromAnywhere={!!this.props.studio.settings.enablePlayFromAnywhere}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2436,7 +2463,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								</ErrorBoundary>
 								{this.renderSegmentsList()}
 								<ErrorBoundary>
-									{this.props.segments && this.props.segments.length > 0 && (
+									{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
 										<AfterBroadcastForm playlist={this.props.playlist} />
 									)}
 								</ErrorBoundary>
@@ -2511,6 +2538,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										? t('This rundown has been unpublished from Sofie.')
 										: !this.props.studio
 										? t('Error: The studio of this Rundown was not found.')
+										: !this.props.rundowns.length
+										? t('This playlist is empty')
 										: !this.props.showStyleBase
 										? t('Error: The ShowStyle of this Rundown was not found.')
 										: t('Unknown error')}
@@ -2544,7 +2573,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 )
 
 export function handleRundownPlaylistReloadResponse(
-	t: i18next.TranslationFunction<any, object, string>,
+	t: i18next.TFunction,
 	rundownPlaylist: RundownPlaylist,
 	result: ReloadRundownPlaylistResponse
 ): boolean {

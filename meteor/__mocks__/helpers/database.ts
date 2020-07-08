@@ -241,7 +241,7 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 
 		code = code.replace(new RegExp(constant, 'g'), newConstant)
 	})
-	return `{default: (${code})()}`
+	return `({default: (${code})()})`
 }
 export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blueprint {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -16,17 +16,7 @@ export interface IConfigManifestEntryComponentProps {
 	collection?: TransformedCollection<any, any>
 	className?: string
 }
-
-function isDeviceConfigField(
-	configField: ConfigManifestEntry | BlueprintConfigManifestEntry
-): configField is ConfigManifestEntry {
-	return (
-		(configField as ConfigManifestEntry).placeholder !== undefined ||
-		(configField as ConfigManifestEntry).values !== undefined
-	)
-}
-
-export const ConfigManifestEntryComponent = translate()(
+export const ConfigManifestEntryComponent = withTranslation()(
 	class ConfigManifestEntryComponent extends React.Component<Translated<IConfigManifestEntryComponentProps>, {}> {
 		renderEditAttribute(configField: ConfigManifestEntry | BlueprintConfigManifestEntry, obj: object, prefix?: string) {
 			let attribute = prefix + configField.id

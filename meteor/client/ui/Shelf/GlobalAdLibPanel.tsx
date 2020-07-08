@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment } from '../../../lib/collections/Segments'
 import { Part, Parts } from '../../../lib/collections/Parts'
@@ -10,13 +10,11 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
 
-import * as faTh from '@fortawesome/fontawesome-free-solid/faTh'
-import * as faList from '@fortawesome/fontawesome-free-solid/faList'
-import * as faTimes from '@fortawesome/fontawesome-free-solid/faTimes'
-import * as FontAwesomeIcon from '@fortawesome/react-fontawesome'
+import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
 
@@ -44,6 +42,7 @@ import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../l
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { ReactiveMap } from '../../../lib/reactiveMap'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -65,7 +64,7 @@ interface IListViewStateHeader {
 	}
 }
 
-const AdLibListView = translate()(
+const AdLibListView = withTranslation()(
 	class AdLibListView extends React.Component<Translated<IListViewPropsHeader>, IListViewStateHeader> {
 		table: HTMLTableElement
 
@@ -240,7 +239,7 @@ interface IToolbarStateHader {
 	searchInputValue: string
 }
 
-const AdLibPanelToolbar = translate()(
+const AdLibPanelToolbar = withTranslation()(
 	class AdLibPanelToolbar extends React.Component<Translated<IToolbarPropsHeader>, IToolbarStateHader> {
 		searchInput: HTMLInputElement
 
@@ -326,11 +325,15 @@ interface ITrackedProps {
 	currentRundown: Rundown | undefined
 }
 
+export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
+
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
-	let sourceHotKeyUse = {}
+	let sourceHotKeyUse: {
+		[key: string]: number
+	} = {}
 
 	let rundownAdLibs: Array<AdLibPieceUi> = []
 	let currentRundown: Rundown | undefined = undefined
@@ -372,7 +375,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				rundownId: currentRundown._id,
 			},
 			{
-				sort: { _rank: 1 },
+				// @ts-ignore deep-property
+				sort: { 'display._rank': 1 },
 			}
 		)
 			.fetch()
@@ -426,6 +430,10 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 			return uiAdLib
 		})
+	}
+
+	for (let [key, value] of Object.entries(sourceHotKeyUse)) {
+		GlobalAdLibHotkeyUseMap.set(key, value)
 	}
 
 	return {
