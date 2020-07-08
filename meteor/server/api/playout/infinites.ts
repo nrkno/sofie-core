@@ -54,20 +54,32 @@ function canContinueAdlibOnEndInfinites(
 	}
 }
 
+function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) {
+	const partsBeforeThisInSegment = cache.Parts.findFetch({
+		segmentId: nextPart.segmentId,
+		_rank: { $lt: nextPart._rank }, // TODO-INFINITES is this ok?
+	}).map((p) => p._id)
+	const currentSegment = cache.Segments.findOne(nextPart.segmentId)
+	const segmentsBeforeThisInRundown = currentSegment
+		? cache.Segments.findFetch({
+				rundownId: nextPart.rundownId,
+				_rank: { $lt: currentSegment._rank },
+		  }).map((p) => p._id)
+		: []
+
+	return {
+		partsBeforeThisInSegment,
+		segmentsBeforeThisInRundown,
+	}
+}
+
 export async function fetchPiecesThatMayBeActiveForPart(
 	cache: CacheForRundownPlaylist,
 	part: DBPart
 ): Promise<Piece[]> {
 	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, { startPartId: part._id })
 
-	const partsBeforeThisInSegment = cache.Parts.findFetch({ segmentId: part.segmentId, _rank: { $lt: part._rank } })
-	const currentSegment = cache.Segments.findOne(part.segmentId)
-	const segmentsBeforeThisInRundown = currentSegment
-		? cache.Segments.findFetch({
-				rundownId: part.rundownId,
-				_rank: { $lt: currentSegment._rank },
-		  })
-		: []
+	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
 	const pInfinitePieces = asyncCollectionFindFetch(Pieces, {
 		invalid: { $ne: true },
@@ -85,13 +97,13 @@ export async function fetchPiecesThatMayBeActiveForPart(
 				},
 				startRundownId: part.rundownId,
 				startSegmentId: part.segmentId,
-				startPartId: { $in: partsBeforeThisInSegment.map((p) => p._id) },
+				startPartId: { $in: partsBeforeThisInSegment },
 			},
 			{
 				// same rundown, and previous segment
 				lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
 				startRundownId: part.rundownId,
-				startSegmentId: { $in: segmentsBeforeThisInRundown.map((p) => p._id) },
+				startSegmentId: { $in: segmentsBeforeThisInRundown },
 			},
 			// {
 			// 	// previous rundown
@@ -129,30 +141,21 @@ function getPlayheadTrackingInfinitesForPart(
 	playingPartInstance: PartInstance,
 	nextPartInstance: PartInstance
 ): PieceInstance[] {
-	// TODO - this is also generated above..
-	const partsBeforeThisInSegmentSet = new Set(
-		cache.Parts.findFetch({
-			segmentId: nextPartInstance.segmentId,
-			_rank: { $lt: nextPartInstance.part._rank }, // TODO-INFINITES is this ok?
-		}).map((p) => p._id)
-	)
-	const currentSegment = cache.Segments.findOne(nextPartInstance.segmentId)
-	const segmentsBeforeThisInRundownSet = new Set(
-		currentSegment
-			? cache.Segments.findFetch({
-					rundownId: nextPartInstance.rundownId,
-					_rank: { $lt: currentSegment._rank },
-			  }).map((p) => p._id)
-			: []
-	)
+	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
+
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 
-	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(playlist, orderedParts, playingPartInstance, part)
+	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
+		playlist,
+		orderedParts,
+		playingPartInstance,
+		nextPartInstance.part
+	)
 	const playingPieceInstances = cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 
 	return libgetPlayheadTrackingInfinitesForPart(
-		partsBeforeThisInSegmentSet,
-		segmentsBeforeThisInRundownSet,
+		new Set(partsBeforeThisInSegment),
+		new Set(segmentsBeforeThisInRundown),
 		playingPartInstance,
 		playingPieceInstances,
 		nextPartInstance.part,
@@ -171,28 +174,8 @@ export function getPieceInstancesForPart(
 	newInstanceId: PartInstanceId,
 	isTemporary: boolean
 ): PieceInstance[] {
-	//    // IN the GUI
-	//    /*
-	//     if (I want to view the Part as-played) {
-	//        display latest PartInstance
-	//     } else {
-	//         Display "how it's going to look like, when it'll be played next time (by only doing TAKE:S) "
-	//     }
-	//    */
-
 	// TODO - this is also generated above..
-	const partsBeforeThisInSegmentSet = new Set(
-		cache.Parts.findFetch({ segmentId: part.segmentId, _rank: { $lt: part._rank } }).map((p) => p._id)
-	)
-	const currentSegment = cache.Segments.findOne(part.segmentId)
-	const segmentsBeforeThisInRundownSet = new Set(
-		currentSegment
-			? cache.Segments.findFetch({
-					rundownId: part.rundownId,
-					_rank: { $lt: currentSegment._rank },
-			  }).map((p) => p._id)
-			: []
-	)
+	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 	const playingPieceInstances = playingPartInstance
@@ -205,8 +188,8 @@ export function getPieceInstancesForPart(
 		playingPartInstance,
 		playingPieceInstances,
 		part,
-		partsBeforeThisInSegmentSet,
-		segmentsBeforeThisInRundownSet,
+		new Set(partsBeforeThisInSegment),
+		new Set(segmentsBeforeThisInRundown),
 		possiblePieces,
 		orderedParts,
 		newInstanceId,
