@@ -390,7 +390,7 @@ export function convertAdLibToPieceInstance(
 			startPartId: partInstance.part._id,
 			enable: {
 				start: queue ? 0 : 'now',
-				duration: !queue && adLibPiece.infiniteMode === PieceLifespan.Normal ? duration : undefined,
+				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,
 			},
 			timings: {
 				take: [getCurrentTime()],
@@ -409,7 +409,6 @@ export function convertAdLibToPieceInstance(
 		newPieceInstance.infinite = {
 			infinitePieceId: newPieceInstance.piece._id,
 		}
-		// TODO-INSTANCES this needs propogating to the next partInstance
 	}
 
 	if (newPieceInstance.piece.content && newPieceInstance.piece.content.timelineObjects) {

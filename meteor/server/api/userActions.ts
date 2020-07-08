@@ -3,14 +3,14 @@ import { Match } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { getCurrentTime, getHash, Omit, makePromise, check } from '../../lib/lib'
+import { getCurrentTime, getHash, Omit, makePromise, check, protectString } from '../../lib/lib'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { Studios, StudioId } from '../../lib/collections/Studios'
-import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
+import { Pieces, PieceId } from '../../lib/collections/Pieces'
 import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
@@ -25,7 +25,12 @@ import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
+import {
+	PieceInstances,
+	PieceInstanceId,
+	PieceInstancePiece,
+	omitPiecePropertiesForInstance,
+} from '../../lib/collections/PieceInstances'
 import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContext } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
@@ -36,7 +41,7 @@ import { BucketId, Buckets, Bucket } from '../../lib/collections/Buckets'
 import { updateBucketAdlibFromIngestData } from './ingest/bucketAdlibs'
 import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
-import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { Settings } from '../../lib/Settings'
 
 let MINIMUM_TAKE_SPAN = 1000
@@ -313,16 +318,25 @@ export function pieceTakeNow(
 	if (playlist.currentPartInstanceId !== partInstanceId)
 		return ClientAPI.responseError(`Part AdLib-pieces can be only placed in a current part!`)
 
+	let pieceToCopy: PieceInstancePiece | undefined
+	let rundownId: RundownId | undefined
 	const pieceInstanceToCopy = PieceInstances.findOne(pieceInstanceIdOrPieceIdToCopy)
-	const pieceToCopy = pieceInstanceToCopy
-		? pieceInstanceToCopy.piece
-		: (Pieces.findOne(pieceInstanceIdOrPieceIdToCopy) as Piece)
-	if (!pieceToCopy) {
+	if (pieceInstanceToCopy) {
+		pieceToCopy = pieceInstanceToCopy.piece
+		rundownId = pieceInstanceToCopy.rundownId
+	} else {
+		const piece = Pieces.findOne(pieceInstanceIdOrPieceIdToCopy)
+		if (piece) {
+			pieceToCopy = omitPiecePropertiesForInstance(piece)
+			rundownId = piece.startRundownId
+		}
+	}
+	if (!pieceToCopy || !rundownId) {
 		throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
 	}
 
-	const rundown = Rundowns.findOne(pieceToCopy.startRundownId)
-	if (!rundown) throw new Meteor.Error(404, `Rundown "${pieceToCopy.startRundownId}" not found!`)
+	const rundown = Rundowns.findOne(rundownId)
+	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
 
 	const partInstance = PartInstances.findOne({
 		_id: partInstanceId,
@@ -331,7 +345,8 @@ export function pieceTakeNow(
 	if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
 
 	let showStyleBase = rundown.getShowStyleBase()
-	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === pieceToCopy.sourceLayerId)
+	const sourceLayerId = pieceToCopy.sourceLayerId
+	const sourceL = showStyleBase.sourceLayers.find((i) => i._id === sourceLayerId)
 	if (sourceL && sourceL.type !== SourceLayerType.GRAPHICS)
 		return ClientAPI.responseError(
 			`PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" is not a GRAPHICS piece!`

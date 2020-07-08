@@ -6,7 +6,11 @@ import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/R
 import { Parts, Part } from '../../../lib/collections/Parts'
 import { getCurrentTime, Time, clone, literal, waitForPromise, protectString } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
-import { fetchPiecesThatMayBeActiveForPart, getPieceInstancesForPart } from './infinites'
+import {
+	fetchPiecesThatMayBeActiveForPart,
+	getPieceInstancesForPart,
+	syncPlayheadInfinitesForNextPartInstance,
+} from './infinites'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -388,11 +392,11 @@ export function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (newNextPartInstance) {
 			newInstanceId = newNextPartInstance._id
-			// TODO-INFINITES - where do the infinite parts for this come from?
+			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			// TODO-INFINITES - does anything need to be updated?
+			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
 		} else {
 			// Create new isntance
 			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${Random.id()}`)
@@ -416,7 +420,6 @@ export function setNextPart(
 				newInstanceId,
 				false
 			)
-			writeFileSync('tmp.json', JSON.stringify(newPieceInstances, undefined, 4))
 			for (const pieceInstance of newPieceInstances) {
 				cache.PieceInstances.insert(pieceInstance)
 			}

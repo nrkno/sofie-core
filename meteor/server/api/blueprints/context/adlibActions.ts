@@ -256,6 +256,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PieceInstance could not be found')
 		}
 
+		if (pieceInstance.infinite?.fromPrevious) {
+			throw new Error('Cannot update an infinite piece that is continued from a previous part')
+		}
+
 		const changeLevel = pieceInstance.dynamicallyInserted
 			? ActionPartChange.SAFE_CHANGE
 			: ActionPartChange.MARK_DIRTY

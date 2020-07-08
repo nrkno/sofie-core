@@ -50,7 +50,7 @@ function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): nu
 /**
  * Excludes the previous, current and next part
  */
-export function getOrderedPartsAfterPlayhead(
+function getOrderedPartsAfterPlayhead(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
 	partCount: number

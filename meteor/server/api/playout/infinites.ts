@@ -150,7 +150,6 @@ export function getPieceInstancesForPart(
 	newInstanceId: PartInstanceId,
 	isTemporary: boolean
 ): PieceInstance[] {
-	// TODO - this is also generated above..
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)

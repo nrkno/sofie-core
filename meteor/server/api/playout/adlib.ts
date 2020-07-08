@@ -481,7 +481,7 @@ export namespace ServerPlayoutAdLibAPI {
 								{
 									_id: pieceId,
 									externalId: '-',
-									enable: { start: 'now' }, // TODO - this needs to be stopAt, but adjusted to be a relative number
+									enable: { start: 'now' }, // TODO-INFINITE - this needs to be stopAt, but adjusted to be a relative number
 									lifespan: pieceInstance.piece.lifespan,
 									sourceLayerId: pieceInstance.piece.sourceLayerId,
 									outputLayerId: pieceInstance.piece.outputLayerId,
