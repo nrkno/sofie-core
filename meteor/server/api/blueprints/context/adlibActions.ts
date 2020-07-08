@@ -271,6 +271,20 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error(`Piece with id "${rawPiece._id}" already exists`)
 		}
 
+		const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
+		if (part === 'current' && lastStartedPlayback !== undefined) {
+			const time = getCurrentTime()
+			const playheadTime = time - lastStartedPlayback
+
+			if (rawPiece.enable.start !== undefined && _.isNumber(rawPiece.enable.start)) {
+				rawPiece.enable.start += playheadTime
+			}
+
+			if (rawPiece.enable.end !== undefined && _.isNumber(rawPiece.enable.end)) {
+				rawPiece.enable.end += playheadTime
+			}
+		}
+
 		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, [...IBlueprintPieceSampleKeys, '_id'])
 
 		const piece = postProcessPieces(
