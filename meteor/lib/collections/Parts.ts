@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
 import { Rundowns, Rundown, RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
-import { AdLibPieces } from './AdLibPieces'
+import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { Segments, SegmentId } from './Segments'
 import {
 	applyClassToDocument,
@@ -134,9 +134,9 @@ export class Part implements DBPart {
 	public identifier?: string
 
 	constructor(document: DBPart) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	getRundown() {
 		return Rundowns.findOne(this.rundownId)
@@ -148,42 +148,33 @@ export class Part implements DBPart {
 		selector = selector || {}
 		options = options || {}
 		return Pieces.find(
-			_.extend(
-				{
-					startRundownId: this.rundownId,
-					startPartId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
+			{
+				startRundownId: this.rundownId,
+				startPartId: this._id,
+				...selector,
+			},
+			{
+				...options,
+			}
 		).fetch()
 	}
 	getAllPieces() {
 		return this.getPieces()
 	}
 
-	getAdLibPieces(selector?: MongoQuery<Piece>, options?: FindOptions<Piece>) {
+	getAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<AdLibPiece>) {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(
-			_.extend(
-				{
-					rundownId: this.rundownId,
-					partId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1, name: 1 },
-				},
-				options
-			)
+			{
+				rundownId: this.rundownId,
+				partId: this._id,
+				...selector,
+			},
+			{
+				...options,
+				sort: { _rank: 1, name: 1, ...options?.sort },
+			}
 		).fetch()
 	}
 	getAllAdLibPieces() {
@@ -210,7 +201,7 @@ export class Part implements DBPart {
 
 		const pieces = this.getPieces()
 		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-		_.each(pieces, (piece) => {
+		for (let piece of pieces) {
 			// TODO: check statuses (like media availability) here
 
 			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
@@ -230,7 +221,7 @@ export class Part implements DBPart {
 					})
 				}
 			}
-		})
+		}
 		return notes
 	}
 	getLastTake() {

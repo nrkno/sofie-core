@@ -63,9 +63,9 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleVariant) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 }
 export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant> = createMongoCollection<

@@ -324,7 +324,7 @@ export namespace RundownUtils {
 			// fetch all the pieces for the parts
 			const partIds = partsInSegment.map((part) => part._id)
 
-			partsE = _.map(partsInSegment, (part, itIndex) => {
+			partsE = partsInSegment.map((part, itIndex) => {
 				const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
 				let partTimeline: SuperTimeline.TimelineObject[] = []
 
@@ -332,20 +332,18 @@ export namespace RundownUtils {
 				let partE = literal<PartExtended>({
 					partId: part._id,
 					instance: partInstance,
-					pieces: _.map(
-						getPieceInstancesForPartInstance(
-							partInstance,
-							new Set(partIds.slice(0, itIndex)),
-							segmentsBeforeThisInRundownSet,
-							orderedAllPartIds,
-							false
-						),
-						(piece) =>
-							literal<PieceExtended>({
-								instance: piece,
-								renderedDuration: 0,
-								renderedInPoint: 0,
-							})
+					pieces: getPieceInstancesForPartInstance(
+						partInstance,
+						new Set(partIds.slice(0, itIndex)),
+						segmentsBeforeThisInRundownSet,
+						orderedAllPartIds,
+						false
+					).map((piece) =>
+						literal<PieceExtended>({
+							instance: piece,
+							renderedDuration: 0,
+							renderedInPoint: 0,
+						})
 					),
 					renderedDuration: 0,
 					startsAt: 0,
@@ -375,7 +373,7 @@ export namespace RundownUtils {
 				}
 
 				// insert items into the timeline for resolution
-				_.each<PieceExtended>(partE.pieces, (piece) => {
+				partE.pieces.forEach((piece) => {
 					const rawInnerPiece: PieceInstancePiece = piece.instance.piece
 					partTimeline.push({
 						id: getPieceGroupId(unprotectObject(rawInnerPiece)),
@@ -413,7 +411,7 @@ export namespace RundownUtils {
 						if (!sourceLayer) {
 							sourceLayer = sourceLayers[piece.instance.piece.sourceLayerId]
 							if (sourceLayer) {
-								sourceLayer = _.clone(sourceLayer)
+								sourceLayer = { ...sourceLayer }
 								let part = sourceLayer
 								part.pieces = []
 								outputLayer.sourceLayers.push(part)
@@ -450,7 +448,7 @@ export namespace RundownUtils {
 				let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
-				_.each(tlResolved.objects, (obj) => {
+				for (let [key, obj] of Object.entries(tlResolved.objects)) {
 					if (obj.resolved.resolved) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						let piece = piecesLookup.get(obj.content.id)
@@ -472,7 +470,7 @@ export namespace RundownUtils {
 							// TODO - should this piece be removed?
 						}
 					}
-				})
+				}
 
 				// use the expectedDuration and fallback to the default display duration for the part
 				partE.renderedDuration = partE.instance.part.expectedDuration || Settings.defaultDisplayDuration // furthestDuration
@@ -535,10 +533,10 @@ export namespace RundownUtils {
 				return userDurationNumber || item.renderedDuration || expectedDurationNumber
 			}
 
-			_.each<PartExtended>(partsE, (part) => {
+			partsE.forEach((part) => {
 				if (part.pieces) {
 					// if an item is continued by another item, rendered duration may need additional resolution
-					_.each<PieceExtended>(part.pieces, (item) => {
+					part.pieces.forEach((item) => {
 						if (item.continuedByRef) {
 							item.renderedDuration = resolveDuration(item)
 						}
@@ -551,7 +549,7 @@ export namespace RundownUtils {
 					})
 					// check if the Pieces should be cropped (as should be the case if an item on a layer is placed after
 					// an infinite Piece) and limit the width of the labels so that they dont go under or over the next Piece.
-					_.each(itemsByLayer, (layerItems, outputSourceCombination) => {
+					for (let [outputSourceCombination, layerItems] of Object.entries(itemsByLayer)) {
 						const sortedItems = _.sortBy(layerItems, 'renderedInPoint')
 						for (let i = 1; i < sortedItems.length; i++) {
 							const currentItem = sortedItems[i]
@@ -583,7 +581,7 @@ export namespace RundownUtils {
 								previousItem.maxLabelWidth = currentItem.renderedInPoint - previousItem.renderedInPoint
 							}
 						}
-					})
+					}
 				}
 			})
 

@@ -114,9 +114,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPersistentState?: TimelinePersistentState
 
 	constructor(document: DBRundownPlaylist) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	/** Returns all Rundowns in the RundownPlaylist */
 	getRundowns(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): Rundown[] {
