@@ -128,10 +128,10 @@ export const RundownSystemStatus = translateWithTracker(
 		)
 		let playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
-		const [ingest, playout] = _.map([ingestDevices, playoutDevices], (devices) => {
-			const status = _.reduce(
-				devices.filter((i) => !i.ignore),
-				(memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
+		const [ingest, playout] = [ingestDevices, playoutDevices].map((devices) => {
+			const status = devices
+				.filter((i) => !i.ignore)
+				.reduce((memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
 					if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
 						return device.status.statusCode
 					} else if (!device.connected) {
@@ -139,9 +139,7 @@ export const RundownSystemStatus = translateWithTracker(
 					} else {
 						return memo
 					}
-				},
-				PeripheralDeviceAPI.StatusCode.UNKNOWN
-			)
+				}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
 			const onlineOffline: OnLineOffLineList = {
 				onLine: devices.filter(
 					(device) => device.connected && device.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR
@@ -150,7 +148,7 @@ export const RundownSystemStatus = translateWithTracker(
 					(device) => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR
 				),
 			}
-			const lastUpdate = _.reduce(devices, (memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
+			const lastUpdate = devices.reduce((memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
 			return {
 				status: status,
 				lastUpdate: lastUpdate,
@@ -282,7 +280,7 @@ export const RundownSystemStatus = translateWithTracker(
 								<div className="notes-tooltip">
 									<table>
 										<tbody>
-											{_.map(this.props.notes, (note, key) => {
+											{this.props.notes.map((note, key) => {
 												return (
 													<tr key={key}>
 														<th className="notes-tooltip__header">

@@ -64,24 +64,30 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 			rewindHover: false,
 		}
 
-		this.fullscreenOut = _.extend(_.clone(this.animationTemplate), {
+		this.fullscreenOut = {
+			...this.animationTemplate,
 			animationData: Fullscreen_MouseOut,
-		})
-		this.fullscreenOver = _.extend(_.clone(this.animationTemplate), {
+		}
+		this.fullscreenOver = {
+			...this.animationTemplate,
 			animationData: Fullscreen_MouseOver,
-		})
-		this.windowedOut = _.extend(_.clone(this.animationTemplate), {
+		}
+		this.windowedOut = {
+			...this.animationTemplate,
 			animationData: Windowed_MouseOut,
-		})
-		this.windowedOver = _.extend(_.clone(this.animationTemplate), {
+		}
+		this.windowedOver = {
+			...this.animationTemplate,
 			animationData: Windowed_MouseOver,
-		})
-		this.onAirOut = _.extend(_.clone(this.animationTemplate), {
+		}
+		this.onAirOut = {
+			...this.animationTemplate,
 			animationData: On_Air_MouseOut,
-		})
-		this.onAirOver = _.extend(_.clone(this.animationTemplate), {
+		}
+		this.onAirOver = {
+			...this.animationTemplate,
 			animationData: On_Air_MouseOver,
-		})
+		}
 	}
 
 	componentDidUpdate(prevProps: IProps, prevState: IState) {

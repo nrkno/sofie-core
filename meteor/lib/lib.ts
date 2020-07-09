@@ -1449,3 +1449,12 @@ export function isPromise<T extends any>(val: any): val is Promise<T> {
 export function assertNever(_never: never): void {
 	// Do nothing. This is a type guard
 }
+
+export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
+	if (a === b) return true
+	if (a.size !== b.size) return false
+	for (let val of a.values()) {
+		if (!b.has(val)) return false
+	}
+	return true
+}

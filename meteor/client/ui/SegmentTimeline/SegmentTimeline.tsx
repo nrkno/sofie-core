@@ -3,7 +3,6 @@ import * as PropTypes from 'prop-types'
 import { withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import * as _ from 'underscore'
 import { ContextMenuTrigger } from 'react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -650,11 +649,11 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 	renderOutputLayerControls() {
 		if (this.props.segment.outputLayers !== undefined) {
-			return _.map(
-				_.values(this.props.segment.outputLayers).sort((a, b) => {
+			return Object.values(this.props.segment.outputLayers)
+				.sort((a, b) => {
 					return a._rank - b._rank
-				}),
-				(outputLayer) => {
+				})
+				.map((outputLayer) => {
 					if (outputLayer.used) {
 						const isCollapsable =
 							outputLayer.sourceLayers !== undefined && outputLayer.sourceLayers.length > 1 && !outputLayer.isFlattened
@@ -704,8 +703,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							</div>
 						)
 					}
-				}
-			)
+				})
 		}
 	}
 
@@ -714,22 +712,14 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 		const { t } = this.props
 
-		const criticalNotes = _.reduce(
-			notes,
-			(prev, item) => {
-				if (item.type === NoteType.ERROR) return ++prev
-				return prev
-			},
-			0
-		)
-		const warningNotes = _.reduce(
-			notes,
-			(prev, item) => {
-				if (item.type === NoteType.WARNING) return ++prev
-				return prev
-			},
-			0
-		)
+		const criticalNotes = notes.reduce((prev, item) => {
+			if (item.type === NoteType.ERROR) return ++prev
+			return prev
+		}, 0)
+		const warningNotes = notes.reduce((prev, item) => {
+			if (item.type === NoteType.WARNING) return ++prev
+			return prev
+		}, 0)
 
 		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts.map((p) => {
 			return { partId: p.partId, ident: p.instance.part.identifier }

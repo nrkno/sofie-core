@@ -192,13 +192,12 @@ const AdLibListView = withTranslation()(
 					tSLayers[sourceLayer._id] = sourceLayer
 				})
 
-				return _.extend(state, {
+				return {
 					outputLayers: tOLayers,
 					sourceLayers: tSLayers,
-				})
-			} else {
-				return state
+				}
 			}
+			return null
 		}
 
 		scrollToCurrentSegment() {
@@ -710,7 +709,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 					rundownBaselineAdLibs = rundownAdLibItems
 						.map((item) => {
 							// automatically assign hotkeys based on adLibItem index
-							const uiAdLib: AdLibPieceUi = _.clone(item)
+							const uiAdLib: AdLibPieceUi = { ...item }
 							uiAdLib.isGlobal = true
 
 							let sourceLayer = item.sourceLayerId && sourceLayerLookup[item.sourceLayerId]

@@ -74,13 +74,13 @@ const ClockComponent = withTranslation()(
 
 				if (playlist) {
 					const allPartInstancesMap = playlist.getActivePartInstancesMap()
-					segments = _.map(playlist.getSegments(), (segment) => {
+					segments = playlist.getSegments().map((segment) => {
 						const displayDurationGroups: _.Dictionary<number> = {}
 						const parts = segment.getParts()
 						let displayDuration = 0
 
 						return extendMandadory<DBSegment, SegmentUi>(segment, {
-							items: _.map(parts, (part, index) => {
+							items: parts.map((part, index) => {
 								const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
 								if (
 									part.displayDurationGroup &&

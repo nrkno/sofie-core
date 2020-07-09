@@ -35,7 +35,7 @@ function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<Sourc
 
 	let sourceLayers = showStyleBase
 		? normalizeArray<ISourceLayer>(
-				showStyleBase.sourceLayers.map((layer) => _.clone(layer)),
+				showStyleBase.sourceLayers.map((layer) => ({ ...layer })),
 				'_id'
 		  )
 		: {}

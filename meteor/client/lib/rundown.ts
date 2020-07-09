@@ -448,7 +448,7 @@ export namespace RundownUtils {
 				let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
-				for (let [key, obj] of Object.entries(tlResolved.objects)) {
+				for (let obj of Object.values(tlResolved.objects)) {
 					if (obj.resolved.resolved) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						let piece = piecesLookup.get(obj.content.id)

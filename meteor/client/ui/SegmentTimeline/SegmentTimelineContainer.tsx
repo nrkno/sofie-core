@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
@@ -23,13 +24,14 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString, equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
+import { Tracker } from 'meteor/tracker'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -137,7 +139,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.orderedAllPartIds
 		)
 		let notes: Array<SegmentNote> = []
-		_.each(o.parts, (part) => {
+		o.parts.forEach((part) => {
 			notes = notes.concat(
 				part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase),
 				part.instance.part.getInvalidReasonNotes()
@@ -243,6 +245,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		mountedTime: number
 		playbackSimulationPercentage: number = 0
 
+		private pastInfinitesComp: Tracker.Computation | undefined
+
 		constructor(props: IProps & ITrackedProps) {
 			super(props)
 
@@ -292,6 +296,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const partInstanceIds = PartInstances.find({
 					segmentId: this.props.segmentId,
 				}).map((instance) => instance._id)
+
 				this.subscribe(PubSub.pieces, {
 					startPartId: {
 						$in: partIds,
@@ -305,6 +310,20 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						$ne: true,
 					},
 				})
+			})
+			// past inifnites subscription
+			this.pastInfinitesComp = this.autorun(() => {
+				const segment = Segments.findOne(this.props.segmentId)
+				segment &&
+					this.subscribe(PubSub.pieces, {
+						invalid: {
+							$ne: true,
+						},
+						// same rundown, and previous segment
+						lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
+						startRundownId: segment.rundownId,
+						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
+					})
 			})
 			SpeechSynthesiser.init()
 
@@ -439,6 +458,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
 				this.onFollowLiveLine(true, {})
 			}
+
+			if (this.pastInfinitesComp && !equalSets(this.props.segmentsIdsBefore, prevProps.segmentsIdsBefore)) {
+				this.pastInfinitesComp.invalidate()
+			}
 		}
 
 		componentWillUnmount() {
@@ -557,18 +580,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
 				}
 
-				this.setState(
-					_.extend(
-						{
-							livePosition: newLivePosition,
-						},
-						this.state.followLiveLine
-							? {
-									scrollLeft: Math.max(newLivePosition - this.props.liveLineHistorySize / this.props.timeScale, 0),
-							  }
-							: null
-					)
-				)
+				//@ts-ignore
+				this.setState({
+					livePosition: newLivePosition,
+					scrollLeft: this.state.followLiveLine
+						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.props.timeScale, 0)
+						: this.state.scrollLeft,
+				})
 			}
 		}
 
@@ -620,18 +638,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onShowEntireSegment = (event: any) => {
-			this.setState(
-				_.extend(
-					{
-						scrollLeft: 0,
-					},
-					this.props.isLiveSegment
-						? {
-								followLiveLine: false,
-						  }
-						: {}
-				)
-			)
+			this.setState({
+				scrollLeft: 0,
+				followLiveLine: this.props.isLiveSegment ? false : this.state.followLiveLine,
+			})
 			if (typeof this.props.onTimeScaleChange === 'function') {
 				this.props.onTimeScaleChange(
 					(getElementWidth(this.timelineDiv) || 1) /

@@ -132,13 +132,13 @@ class RundownViewNotifier extends WithManagedTracker {
 			this._rundownImportVersionStatusDep.depend()
 			this._unsentExternalMessageStatusDep.depend()
 
-			const notifications = _.compact(_.values(this._mediaStatus))
-				.concat(_.compact(_.values(this._deviceStatus)))
-				.concat(_.compact(_.values(this._notes)))
-				.concat(_.compact(_.values(this._rundownStatus)))
+			const notifications = _.compact(Object.values(this._mediaStatus))
+				.concat(_.compact(Object.values(this._deviceStatus)))
+				.concat(_.compact(Object.values(this._notes)))
+				.concat(_.compact(Object.values(this._rundownStatus)))
 				.concat(
 					_.compact([this._rundownImportVersionStatus, this._rundownStudioConfigStatus]),
-					_.compact(_.values(this._rundownShowStyleConfigStatuses))
+					_.compact(Object.values(this._rundownShowStyleConfigStatuses))
 				)
 				.concat(_.compact([this._unsentExternalMessagesStatus]))
 
@@ -153,7 +153,7 @@ class RundownViewNotifier extends WithManagedTracker {
 		if (this._rundownImportVersionAndConfigInterval)
 			Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
 
-		_.forEach(this._mediaStatusComps, (element, key) => element.stop())
+		Object.values(this._mediaStatusComps).forEach((element) => element.stop())
 		this._notifier.stop()
 	}
 
@@ -522,7 +522,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			pieces.forEach((piece) => {
 				const localStatus: IMediaObjectIssue[] = []
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
-				const part = Parts.findOne(piece.partId, {
+				const part = Parts.findOne(piece.startPartId, {
 					fields: {
 						_rank: 1,
 					},
@@ -761,9 +761,9 @@ class RundownViewNotifier extends WithManagedTracker {
 				}
 
 				// Check show styles for changes
-				const oldShowStyleIds = _.keys(this._rundownShowStyleConfigStatuses)
+				const oldShowStyleIds = Object.keys(this._rundownShowStyleConfigStatuses)
 				const newShowStyleIds: string[] = []
-				_.each(configErrors.showStyles, (showStyleErrors) => {
+				configErrors.showStyles.forEach((showStyleErrors) => {
 					let newNotification: Notification | undefined
 					if (showStyleErrors.checkFailed) {
 						const message = t('The Show Style configuration "{{name}}" could not be validated', {
@@ -837,7 +837,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					-1
 				)
 				if (
-					_.size(this._rundownShowStyleConfigStatuses) > 0 ||
+					Object.keys(this._rundownShowStyleConfigStatuses).length > 0 ||
 					!Notification.isEqual(this._rundownStudioConfigStatus, newNotification)
 				) {
 					this._rundownStudioConfigStatus = newNotification

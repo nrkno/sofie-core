@@ -208,10 +208,12 @@ class NotificationCenter0 {
 		notificationsDep.depend()
 
 		return _.flatten(
-			_.map(notifiers, (item, key) => {
-				item.result.forEach((i) => this._isOpen && !i.snoozed && i.snooze())
-				return item.result
-			}).concat(_.map(notifications, (item, key) => item))
+			Object.values(notifiers)
+				.map((item) => {
+					;(item.result || []).forEach((i) => this._isOpen && !i.snoozed && i.snooze())
+					return item.result
+				})
+				.concat(Object.values(notifications))
 		)
 	}
 
@@ -225,11 +227,9 @@ class NotificationCenter0 {
 		notificationsDep.depend()
 
 		return (
-			_.reduce(
-				_.map(notifiers, (item) => item.result.length),
-				(a, b) => a + b,
-				0
-			) + _.values(notifications).length
+			Object.values(notifiers)
+				.map((item) => (item.result || []).length)
+				.reduce((a, b) => a + b, 0) + Object.values(notifications).length
 		)
 	}
 

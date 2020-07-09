@@ -573,7 +573,7 @@ const RundownHeader = withTranslation()(
 				e.stopImmediatePropagation()
 				e.stopPropagation()
 			}
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
 				let lastUsed = Date.now()
 				if (k.up) {
@@ -620,7 +620,7 @@ const RundownHeader = withTranslation()(
 		}
 
 		componentWillUnmount() {
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				if (k.up) {
 					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
 					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
@@ -1436,7 +1436,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				followLiveSegments: true,
 				manualSetAsNext: false,
 				subsReady: false,
-				usedHotkeys: _.clone(this.bindKeys).concat([
+				usedHotkeys: [...this.bindKeys].concat([
 					// Register additional hotkeys or legend entries
 					{
 						key: 'Esc',
@@ -1567,7 +1567,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				e.stopImmediatePropagation()
 				e.stopPropagation()
 			}
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 				if (k.up) {
 					method(
@@ -1715,7 +1715,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.usedArgumentKeys = []
 
 			if (this.props.showStyleBase) {
-				_.each(this.props.showStyleBase.runtimeArguments, (i) => {
+				this.props.showStyleBase.runtimeArguments.forEach((i) => {
 					const combos = i.hotkeys.split(',')
 
 					const handler = (e: KeyboardEvent) => {
@@ -1727,7 +1727,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							)
 						}
 					}
-					_.each(combos, (combo: string) => {
+					combos.forEach((combo: string) => {
 						mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
 						mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 						this.usedArgumentKeys.push({
@@ -1772,7 +1772,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			// window.removeEventListener('scroll', this.onWindowScroll)
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				if (k.up) {
 					mousetrap.unbind(k.key, 'keyup')
 					mousetrap.unbind(k.key, 'keydown')
@@ -1782,7 +1782,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 
-			_.each(this.usedArgumentKeys, (k) => {
+			this.usedArgumentKeys.forEach((k) => {
 				if (k.up) {
 					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
 					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
@@ -2545,7 +2545,7 @@ export function handleRundownPlaylistReloadResponse(
 	let hasDoneSomething = false
 
 	let maybeMissingRundownId: RundownId | null = null
-	_.each(result.rundownsResponses, (r) => {
+	result.rundownsResponses.forEach((r) => {
 		if (r.response === TriggerReloadDataResponse.MISSING) {
 			maybeMissingRundownId = r.rundownId
 		}

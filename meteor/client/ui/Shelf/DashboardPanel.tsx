@@ -149,13 +149,12 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				tSLayers[sourceLayer._id] = sourceLayer
 			})
 
-			return _.extend(state, {
+			return {
 				outputLayers: tOLayers,
 				sourceLayers: tSLayers,
-			})
-		} else {
-			return state
+			}
 		}
+		return null
 	}
 
 	componentDidMount() {

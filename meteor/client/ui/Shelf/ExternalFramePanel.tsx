@@ -247,7 +247,7 @@ export const ExternalFramePanel = withTranslation()(
 			check(message.id, String)
 			check(message.type, String)
 
-			if (_.values(SofieExternalMessageType).indexOf(message.type) < 0) {
+			if (Object.values(SofieExternalMessageType).indexOf(message.type) < 0) {
 				console.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
 				return
 			}

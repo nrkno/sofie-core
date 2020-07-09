@@ -579,13 +579,14 @@ export const SegmentTimelinePart = withTranslation()(
 
 			renderTimelineOutputGroups(part: PartUi) {
 				if (this.props.segment.outputLayers !== undefined) {
-					return _.map(
-						_.filter(this.props.segment.outputLayers, (layer) => {
+					return Object.values(this.props.segment.outputLayers)
+						.filter((layer) => {
 							return layer.used ? true : false
-						}).sort((a, b) => {
+						})
+						.sort((a, b) => {
 							return a._rank - b._rank
-						}),
-						(layer, id) => {
+						})
+						.map((layer) => {
 							// Only render output layers used by the segment
 							if (layer.used) {
 								return (
@@ -619,8 +620,7 @@ export const SegmentTimelinePart = withTranslation()(
 									/>
 								)
 							}
-						}
-					)
+						})
 				}
 			}
 
@@ -686,7 +686,7 @@ export const SegmentTimelinePart = withTranslation()(
 							})}
 							data-obj-id={this.props.part.instance._id}
 							id={SegmentTimelinePartElementId + this.props.part.instance._id}
-							style={_.extend(this.getLayerStyle(), invalidReasonColorVars)}>
+							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}>
 							{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 							{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 
