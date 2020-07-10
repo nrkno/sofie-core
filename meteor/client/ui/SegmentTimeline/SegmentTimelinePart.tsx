@@ -103,9 +103,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 				.map((piece) => {
 					return (
 						<SourceLayerItemContainer
-							key={piece.instance._id}
-							{..._.omit(this.props, 'key')} // kz: TODO two keys is to many but which one to choose?
-							// The following code is fine, just withTracker HOC messing with available props
+							key={unprotectString(piece.instance._id)}
 							onClick={this.props.onPieceClick}
 							onDoubleClick={this.props.onPieceDoubleClick}
 							mediaPreviewUrl={this.props.mediaPreviewUrl}
@@ -121,6 +119,14 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							liveLinePadding={this.props.liveLinePadding}
 							scrollLeft={this.props.scrollLeft}
 							scrollWidth={this.props.scrollWidth}
+							playlist={this.props.playlist}
+							followLiveLine={this.props.followLiveLine}
+							isLiveLine={this.props.isLiveLine}
+							isNextLine={this.props.isNextLine}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							livePosition={this.props.livePosition}
+							outputGroupCollapsed={this.props.outputGroupCollapsed}
+							onFollowLiveLine={this.props.onFollowLiveLine}
 						/>
 					)
 				})
