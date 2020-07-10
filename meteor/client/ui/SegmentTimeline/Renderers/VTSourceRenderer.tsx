@@ -15,7 +15,7 @@ import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
 	scenes?: Array<number>
@@ -61,7 +61,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				targetTime =
 					targetTime %
 					((itemDuration > 0 ? Math.min(this.vPreview.duration, itemDuration) : this.vPreview.duration) * 1000)
-			} else if (itemDuration === 0 && innerPiece.infiniteMode) {
+			} else if (itemDuration === 0 && innerPiece.lifespan !== PieceLifespan.WithinPart) {
 				// noop
 			} else {
 				targetTime = Math.min(targetTime, itemDuration)

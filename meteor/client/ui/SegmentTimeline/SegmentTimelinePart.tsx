@@ -99,7 +99,6 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 				})
 			)
 				.sortBy((it) => it.renderedInPoint)
-				.sortBy((it) => it.instance.piece.infiniteMode)
 				.sortBy((it) => it.cropped)
 				.map((piece) => {
 					return (
@@ -162,7 +161,6 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 					})
 				)
 					.sortBy((it) => it.renderedInPoint)
-					.sortBy((it) => it.instance.piece.infiniteMode)
 					.sortBy((it) => it.cropped)
 					.map((piece) => {
 						return (
