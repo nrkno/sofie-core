@@ -1,10 +1,13 @@
-import {
-	readAllMessages,
-	writeMessage,
-	convertExternalToServiceMessage,
-} from '../../../api/serviceMessages/serviceMessagesApi'
+import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
 import * as CoreSystem from '../../../../lib/collections/CoreSystem'
 import { protectString } from '../../../../lib/lib'
+
+function convertExternalToServiceMessage(message: CoreSystem.ExternalServiceMessage): CoreSystem.ServiceMessage {
+	return {
+		...message,
+		timestamp: new Date(message.timestamp).getTime(),
+	}
+}
 
 jest.mock('../../../../lib/collections/CoreSystem')
 
