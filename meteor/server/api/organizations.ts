@@ -1,44 +1,19 @@
-import { Meteor } from 'meteor/meteor'
-import * as Path from 'path'
-import { fsReadFile } from '../lib'
-import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { literal, getRandomId, makePromise, getCurrentTime, protectString } from '../../lib/lib'
+import { literal, getRandomId, makePromise, getCurrentTime } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
 import { Organizations, OrganizationId, DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { insertStudio, insertStudioInner } from './studios'
-import { insertShowStyleBase, insertShowStyleBaseInner } from './showStyles'
-import { Studios, StudioId } from '../../lib/collections/Studios'
-import { ShowStyleBases, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import { insertStudioInner } from './studios'
+import { insertShowStyleBaseInner } from './showStyles'
+import { Studios } from '../../lib/collections/Studios'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints, BlueprintId } from '../../lib/collections/Blueprints'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { runMigration, prepareMigration } from '../migration/databaseMigration'
-import { UserId, Users } from '../../lib/collections/Users'
-import { restoreFromRundownPlaylistSnapshot } from './snapshot'
-import { Snapshots } from '../../lib/collections/Snapshots'
+import { Users } from '../../lib/collections/Users'
 import { resetCredentials } from '../security/lib/credentials'
-
-function restoreSnapshotTEMP(orgId: OrganizationId, studioId: StudioId, showStyleId: ShowStyleBaseId) {
-	const snapshotId = protectString(Meteor.settings.SNAPSHOT_ID)
-	let snapshot = Snapshots.findOne(snapshotId)
-	if (!snapshot) return
-
-	let filePath = Path.join(Meteor.settings.SNAPSHOT_PATH, snapshot.fileName)
-
-	let dataStr = fsReadFile(filePath).toString()
-
-	let readSnapshot = JSON.parse(dataStr)
-	readSnapshot.snapshot.organizationId = orgId
-	readSnapshot.playlist.organizationId = orgId
-	readSnapshot.rundowns.forEach((rundown) => {
-		rundown.organizationId = orgId
-	})
-	restoreFromRundownPlaylistSnapshot(readSnapshot, studioId, showStyleId)
-}
 
 function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 	let systemBlueprintId: BlueprintId | undefined
@@ -70,13 +45,10 @@ function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 		)
 	if (showStyleId && showStyleBlueprintId)
 		ShowStyleBases.update({ _id: showStyleId }, { $set: { blueprintId: showStyleBlueprintId } })
-	const migration = prepareMigration(true)
-	if (migration.migrationNeeded && migration.manualStepCount === 0) {
-		runMigration(migration.chunks, migration.hash, [])
-	}
-	if (Meteor.settings.SNAPSHOT_ID) {
-		restoreSnapshotTEMP(orgId, studioId, showStyleId)
-	}
+	// const migration = prepareMigration(true)
+	// if (migration.migrationNeeded && migration.manualStepCount === 0) {
+	// 	runMigration(migration.chunks, migration.hash, [])
+	// }
 }
 
 export function createOrganization(organization: DBOrganizationBase): OrganizationId {
