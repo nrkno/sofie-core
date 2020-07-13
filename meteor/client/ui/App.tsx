@@ -43,6 +43,7 @@ import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { read } from 'fs'
 
 const NullComponent = () => null
 
@@ -67,10 +68,7 @@ interface IAppState {
 
 // App component - represents the whole app
 export const App = translateWithTracker(() => {
-	const user = getUser() // just for reactivity
-	if (user) {
-		meteorSubscribe(PubSub.organization, { organizationId: user.organizationId })
-	}
+	const user = getUser()
 	return { user }
 })(
 	class App extends MeteorReactComponent<Translated<IAppProps>, IAppState> {
@@ -129,9 +127,14 @@ export const App = translateWithTracker(() => {
 				return <Route {...args} render={(props) => <Component {...props} />} />
 			} else {
 				// If not logged in, redirect to "/":
-				return (
-					<Route {...args} render={(props) => (this.props.user ? <Component {...props} /> : <Redirect to="/" />)} />
-				)
+				if (this.props.user || this.state.subscriptionsReady) {
+					console.log('redirecting', this.props.user)
+					return (
+						<Route {...args} render={(props) => (this.props.user ? <Component {...props} /> : <Redirect to="/" />)} />
+					)
+				} else {
+					return <div>Loading</div>
+				}
 			}
 		}
 		cronJob = () => {
@@ -157,6 +160,20 @@ export const App = translateWithTracker(() => {
 
 			// Global subscription of the currently logged in user:
 			this.subscribe(PubSub.loggedInUser, {})
+			this.autorun(() => {
+				const user = getUser()
+				if (user?.organizationId) {
+					this.subscribe(PubSub.organization, { _id: user.organizationId })
+				}
+			})
+			this.autorun(() => {
+				const ready = this.subscriptionsReady()
+				if (this.state.subscriptionsReady !== ready) {
+					this.setState({
+						subscriptionsReady: ready,
+					})
+				}
+			})
 
 			m.locale(i18n.language)
 			document.documentElement.lang = i18n.language
