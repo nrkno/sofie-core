@@ -35,7 +35,7 @@ export interface UserRoles {
 	configurator?: boolean
 	/** Can enable developer features including test tools */
 	developer?: boolean
-
+	/** Is Organization admin */
 	admin?: boolean
 }
 
