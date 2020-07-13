@@ -41,11 +41,18 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 
 	private handleLogout(e: React.MouseEvent<HTMLAnchorElement>) {
 		e.preventDefault()
-		Meteor.logout(() =>
-			NotificationCenter.push(
-				new Notification(undefined, NoticeLevel.NOTIFICATION, 'Successfully logged out', 'Page Header')
-			)
-		)
+		Meteor.logout((error) => {
+			if (error) {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						`Error when trying to log out: ${error.toString()}`,
+						'Page Header'
+					)
+				)
+			}
+		})
 	}
 
 	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
