@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { makePromise, unprotectString, waitForPromise, protectString } from '../../lib/lib'
+import { makePromise, unprotectString, waitForPromise, protectString, waitTime } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
@@ -110,7 +110,16 @@ Accounts.onCreateUser((options, user) => {
 	if (createOrganization) {
 		Meteor.defer(() => {
 			// To be run after the user has been inserted:
-			afterCreateNewUser(protectString(user._id), createOrganization)
+			for (let t = 10; t < 200; t *= 1.5) {
+				const dbUser = Users.findOne(protectString(user._id))
+				if (dbUser) {
+					afterCreateNewUser(dbUser._id, createOrganization)
+					return
+				} else {
+					// User has not been inserted into db (yet), wait
+					waitTime(t)
+				}
+			}
 		})
 	}
 	// The user to-be-inserted:
