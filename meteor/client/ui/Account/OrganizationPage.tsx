@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { StatusResponse } from '../../../lib/api/systemStatus'
-import { getUser, User, Users, getUserRoles } from '../../../lib/collections/Users'
+import { getUser, User, Users, getUserRoles, DBUser } from '../../../lib/collections/Users'
 import { Spinner } from '../../lib/Spinner'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
@@ -15,6 +15,7 @@ import { getAllowStudio, getAllowConfigure, getAllowDeveloper } from '../../lib/
 import { unprotectString } from '../../../lib/lib'
 import { throws } from 'assert'
 import { MeteorCall } from '../../../lib/api/methods'
+import { EditAttribute } from '../../lib/EditAttribute'
 
 interface OrganizationProps extends RouteComponentProps {
 	user: User | null
@@ -31,17 +32,12 @@ interface OrganizationState {
 export const OrganizationPage = translateWithTracker((props: RouteComponentProps) => {
 	const user = getUser()
 	const organization = user && Organizations.findOne({ _id: user.organizationId })
-	organization && meteorSubscribe(PubSub.usersInOrganization, { organizationId: organization._id })
-	const usersInOrg =
-		user &&
-		organization &&
-		Users.find({ organizationId: user.organizationId })
-			.fetch()
-			.filter((u) => u._id !== user._id)
+
+	const usersInOrg = user && organization && Users.find({ organizationId: user.organizationId }).fetch()
 	return {
 		user: user ? user : null,
 		organization: organization ? organization : null,
-		usersInOrg: usersInOrg || null,
+		usersInOrg: usersInOrg || [],
 	}
 })(
 	class OrganizationPage extends MeteorReactComponent<Translated<OrganizationProps>, OrganizationState> {
@@ -77,13 +73,38 @@ export const OrganizationPage = translateWithTracker((props: RouteComponentProps
 		}
 
 		componentDidMount() {
-			if (!getUserRoles().admin) this.props.history.push('/')
+			this.autorun(() => {
+				if (this.props.organization) {
+					this.subscribe(PubSub.usersInOrganization, { organizationId: this.props.organization._id })
+				}
+			})
+		}
+		private renderUserRole(user: DBUser, userRole: keyof UserRoles) {
+			const organization = this.props.organization
+
+			if (user && organization) {
+				const roles: UserRoles = organization.userRoles[unprotectString(user._id)] || {}
+				return getUserRoles(this.props.user, organization).admin ? (
+					<EditAttribute
+						attribute={`userRoles.${user._id}.${userRole}`}
+						obj={organization}
+						type="checkbox"
+						collection={Organizations}
+						className=""
+					/>
+				) : (
+					<input type="checkbox" disabled={true} checked={roles[userRole]}></input>
+				)
+			} else return null
 		}
 
 		render() {
 			const { t } = this.props
 			const org = this.props.organization
 			const { user, roles } = this.getUserAndRoles()
+			if (!getUserRoles().admin) {
+				return 'Not Allowed'
+			}
 			return (
 				<div className="center-page organization-page">
 					<div className="mtl page">
@@ -112,45 +133,34 @@ export const OrganizationPage = translateWithTracker((props: RouteComponentProps
 						)}
 					</div>
 					<div className="mtl page flex-col">
-						<h2>{t('Update User Roles')}</h2>
-						{this.props.usersInOrg.length ? (
-							<React.Fragment>
-								<select
-									value={this.state.editUser}
-									onChange={(e) => this.setState({ editUser: e.currentTarget.value })}>
-									<option value="">{t('Select an User')}</option>
-									{this.props.usersInOrg.map((user, index) => (
-										<option key={index} value={user.profile.name}>
-											{user.profile.name}
-										</option>
-									))}
-								</select>
-								{user && roles && (
-									<div className="edit-user-roles">
-										<p>{t('Allow access Configure Settings')}</p>
-										<input
-											type="checkbox"
-											checked={roles.configurator}
-											onChange={(e) => this.toggleAccess({ configurator: e.currentTarget.checked })}
-										/>
-										<p>{t('Allow to Edit Rundowns ( Studio Access )')}</p>
-										<input
-											type="checkbox"
-											checked={roles.studio}
-											onChange={(e) => this.toggleAccess({ studio: e.currentTarget.checked })}
-										/>
-										<p>{t('Allow access to Developer Tools')}</p>
-										<input
-											type="checkbox"
-											checked={roles.developer}
-											onChange={(e) => this.toggleAccess({ developer: e.currentTarget.checked })}
-										/>
-									</div>
-								)}
-							</React.Fragment>
-						) : (
-							<Spinner />
-						)}
+						<h2>{t('Users in organization')}</h2>
+						<table>
+							<thead>
+								<tr>
+									<th></th>
+									<th></th>
+									<th>{t('Studio')}</th>
+									<th>{t('Configurator')}</th>
+									<th>{t('Developer')}</th>
+									<th>{t('Admin')}</th>
+								</tr>
+							</thead>
+							<tbody>
+								{this.props.usersInOrg.map((user) => {
+									return (
+										<tr key={unprotectString(user._id)}>
+											<td>{user.profile.name}</td>
+											<td>{user.emails.map((e) => e.address).join(', ')}</td>
+
+											<td>{this.renderUserRole(user, 'studio')}</td>
+											<td>{this.renderUserRole(user, 'configurator')}</td>
+											<td>{this.renderUserRole(user, 'developer')}</td>
+											<td>{this.renderUserRole(user, 'admin')}</td>
+										</tr>
+									)
+								})}
+							</tbody>
+						</table>
 					</div>
 				</div>
 			)

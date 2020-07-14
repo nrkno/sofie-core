@@ -13,15 +13,16 @@ import {
 	NotificationAction,
 } from '../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { getUser, User, Users } from '../../../lib/collections/Users'
+import { getUser, User, Users, getUserRoles } from '../../../lib/collections/Users'
 import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
 import { unprotectString } from '../../../lib/lib'
+import { EditAttribute } from '../../lib/EditAttribute'
 
 interface IAccountPageProps extends RouteComponentProps {
-	user: User
-	organization: DBOrganization
+	user: User | null
+	organization: DBOrganization | null
 }
 
 interface IAccountPageState {
@@ -37,8 +38,8 @@ interface UserUI {
 }
 
 export const AccountPage = translateWithTracker(() => {
-	const user = getUser() as User
-	const organization = user && Organizations.findOne({ _id: user.organizationId })
+	const user = getUser()
+	const organization = user ? Organizations.findOne({ _id: user.organizationId }) : null
 	return {
 		user: user,
 		organization: organization,
@@ -93,35 +94,47 @@ export const AccountPage = translateWithTracker(() => {
 				})
 		}
 
-		private toggleAccess(updatedRoles: UserRoles) {
-			const organization = this.props.organization
-			const user = this.props.user
-			const roles = this.props.organization?.userRoles[unprotectString(user._id)] || null
-			if (!user || !roles || !organization) return
-			const userRoles = { ...roles, ...updatedRoles }
-			Organizations.update({ _id: organization._id }, { $set: { [`userRoles.${user._id}`]: userRoles } })
-		}
-
 		private handleNotif(error: string, lvl?: NoticeLevel) {
 			if (lvl === undefined) lvl = NoticeLevel.WARNING
 			NotificationCenter.push(new Notification(undefined, lvl, error, 'Account Page'))
 		}
+		private renderUserRole(userRole: keyof UserRoles) {
+			const user = this.props.user
+			const organization = this.props.organization
+
+			if (user && organization) {
+				const roles: UserRoles = organization.userRoles[unprotectString(user._id)] || {}
+				return getUserRoles(user, organization).admin ? (
+					<EditAttribute
+						attribute={`userRoles.${user._id}.${userRole}`}
+						obj={organization}
+						type="checkbox"
+						collection={Organizations}
+						className=""
+					/>
+				) : (
+					<input type="checkbox" disabled={true} checked={roles[userRole]}></input>
+				)
+			} else return null
+		}
 
 		render() {
 			const { t } = this.props
-			const roles = this.props.organization?.userRoles[unprotectString(this.props.user._id)]
+
+			const user = this.props.user
+			const organization = this.props.organization
 			return (
 				<div className="center-page">
 					<div className="mtl page">
 						<h1>{t('Account Page')}</h1>
-						{this.props.user ? (
+						{user ? (
 							<form
 								className="flex-col"
 								onSubmit={(e: React.MouseEvent<HTMLFormElement>) => this.handleChangePassword(e)}>
-								<p>{t('Account Name:')}</p>
-								<input type="text" value={this.props.user.profile.name} disabled={true} />
-								<p>{t('Account Email:')}</p>
-								<input type="text" value={this.props.user.emails.map((e) => e.address).join(', ')} disabled={true} />
+								<p>{t('Name:')}</p>
+								<input type="text" value={user.profile.name} disabled={true} />
+								<p>{t('Email:')}</p>
+								<input type="text" value={user.emails.map((e) => e.address).join(', ')} disabled={true} />
 								{this.state.edit && (
 									<React.Fragment>
 										<p>{t('Old Password')}</p>
@@ -155,27 +168,41 @@ export const AccountPage = translateWithTracker(() => {
 						) : (
 							<Spinner />
 						)}
-						<h3>{t('Organzation Info')}</h3>
-						{this.props.organization ? (
+						<h3>{t('Organization')}</h3>
+						{organization ? (
 							<React.Fragment>
 								<p>
-									{t('Name:')} {this.props.organization.name}
+									{t('Name:')} {organization.name}
 								</p>
-								<button className="btn btn-primary">
-									<Link to="/organization">Edit Organization</Link>
-								</button>
-								{this.props.user ? (
-									<React.Fragment>
-										<button className="btn" onClick={() => this.toggleAccess({ studio: !roles.studio })}>
-											{roles && roles.studio ? t('Remove Studio Access') : t('Add Studio Access')}
-										</button>
-										<button className="btn" onClick={() => this.toggleAccess({ configurator: !roles.configurator })}>
-											{roles && roles.configurator ? t('Remove Configurator Access') : t('Add Configurator Access')}
-										</button>
-										<button className="btn" onClick={() => this.toggleAccess({ developer: !roles.developer })}>
-											{roles && roles.developer ? t('Remove Developer Access') : t('Add Developer Access')}
-										</button>
-									</React.Fragment>
+								{user && getUserRoles(user, organization).admin ? (
+									<button className="btn btn-primary">
+										<Link to="/organization">Edit Organization</Link>
+									</button>
+								) : null}
+								{user ? (
+									<div>
+										<h4>{t('User roles in organization')}</h4>
+										<table>
+											<tbody>
+												<tr>
+													<td>{t('Studio')}</td>
+													<td>{this.renderUserRole('studio')}</td>
+												</tr>
+												<tr>
+													<td>{t('Configurator')}</td>
+													<td>{this.renderUserRole('configurator')}</td>
+												</tr>
+												<tr>
+													<td>{t('Developer')}</td>
+													<td>{this.renderUserRole('developer')}</td>
+												</tr>
+												<tr>
+													<td>{t('Admin')}</td>
+													<td>{this.renderUserRole('admin')}</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
 								) : null}
 							</React.Fragment>
 						) : (
