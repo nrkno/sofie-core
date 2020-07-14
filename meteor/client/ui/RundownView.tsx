@@ -649,10 +649,7 @@ const RundownHeader = withTranslation()(
 			})
 		}
 		keyTake = (e: ExtendedKeyboardEvent) => {
-			if (e.key !== 'Enter' || e.location === 3) {
-				// only allow the rightmost enter key
-				if (!isModalShowing()) this.take(e)
-			}
+			if (!isModalShowing()) this.take(e)
 		}
 		keyHold = (e: ExtendedKeyboardEvent) => {
 			this.hold(e)
