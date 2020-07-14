@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, protectString, unprotectString } from '../lib'
-import { OrganizationId, UserRoles, Organizations } from './Organization'
+import { OrganizationId, UserRoles, Organizations, Organization } from './Organization'
 
 /** A string, identifying a User */
 export type UserId = ProtectedString<'UserId'>
@@ -48,18 +48,18 @@ Meteor.startup(() => {
 })
 
 /** Returns the currently logged in user, or null if not logged in */
-export function getUser(): DBUser | null {
+export function getUser(): User | null {
 	const user = Meteor.user() as any
 	return user
 }
 export function getUserId(): UserId | null {
 	return (Meteor.userId() as any) || null
 }
-export function getUserRoles(): UserRoles {
-	const user = getUser()
+export function getUserRoles(user?: User | null, organization?: Organization | null): UserRoles {
+	if (user === undefined) user = getUser()
 	if (!user) {
 		return {}
 	}
-	const organization = Organizations.findOne({ _id: user.organizationId })
-	return (organization?.userRoles && organization?.userRoles[unprotectString(user._id)]) || {}
+	if (organization === undefined) organization = Organizations.findOne({ _id: user.organizationId }) || null
+	return (organization?.userRoles && organization.userRoles[unprotectString(user._id)]) || {}
 }
