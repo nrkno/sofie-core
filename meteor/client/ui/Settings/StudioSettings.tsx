@@ -32,6 +32,7 @@ import {
 	BlueprintManifestType,
 	TSR,
 	ConfigManifestEntry,
+	BlueprintMapping,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
@@ -55,6 +56,7 @@ import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
+import { TransformedCollection } from '../../../lib/typings/meteor'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -196,6 +198,320 @@ const StudioDevices = withTranslation()(
 	}
 )
 
+interface IDeviceMappingSettingsProps {
+	studio: Studio
+	layerId: string
+	mapping: BlueprintMapping
+	prefix?: string
+	showOptional?: boolean
+}
+
+const DeviceMappingSettings = withTranslation()(
+	class DeviceMappingSettings extends React.Component<Translated<IDeviceMappingSettingsProps>> {
+		renderOptionalInput(attribute: string, obj: any, collection: TransformedCollection<any, any>) {
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={obj}
+					type="checkbox"
+					collection={collection}
+					className="mod mvn mhs"
+					mutateDisplayValue={(v) => (v === undefined ? false : true)}
+					mutateUpdateValue={(v) => undefined}
+				/>
+			)
+		}
+
+		renderCasparCGMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+			const { t } = this.props
+			prefix = prefix || 'mappings.' + layerId
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('CasparCG Channel')}
+							{showOptional && this.renderOptionalInput(prefix + '.channel', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.channel'}
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+							<span className="text-s dimmed">{t('The CasparCG channel to use (1 is the first)')}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('CasparCG Layer')}
+							{showOptional && this.renderOptionalInput(prefix + '.layer', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.layer'}
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+							<span className="text-s dimmed">{t('The layer in a channel to use')}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Preview when not on air')}
+							{showOptional && this.renderOptionalInput(prefix + '.previewWhenNotOnAir', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.previewWhenNotOnAir'}
+								obj={this.props.studio}
+								type="checkbox"
+								collection={Studios}
+								className="input"></EditAttribute>
+							<span className="text-s dimmed">{t('Whether to load to first frame')}</span>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+
+		renderAtemMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+			const { t } = this.props
+			prefix = prefix || 'mappings.' + layerId
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Mapping type')}
+							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.mappingType'}
+								obj={this.props.studio}
+								type="dropdown"
+								options={TSR.MappingAtemType}
+								optionsAreNumbers={true}
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Index')}
+							{showOptional && this.renderOptionalInput(prefix + '.index', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.index'}
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+		renderLawoMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+			const { t } = this.props
+			prefix = prefix || 'mappings.' + layerId
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Mapping type')}
+							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.mappingType'}
+								obj={this.props.studio}
+								type="dropdown"
+								options={TSR.MappingLawoType}
+								optionsAreNumbers={false}
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Identifier')}
+							{showOptional && this.renderOptionalInput(prefix + '.identifier', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.identifier'}
+								obj={this.props.studio}
+								type="text"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Priority')}
+							{showOptional && this.renderOptionalInput(prefix + '.priority', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.priority'}
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+		renderPanasonicPTZSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+			const { t } = this.props
+			prefix = prefix || 'mappings.' + layerId
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Mapping type')}
+							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.mappingType'}
+								obj={this.props.studio}
+								type="dropdown"
+								options={TSR.MappingPanasonicPtzType}
+								optionsAreNumbers={false}
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+		renderTCPSendSettings(layerId: string, prefix?: string, _showOptional?: boolean) {
+			const { t } = this.props
+			return <React.Fragment></React.Fragment>
+		}
+
+		renderHyperdeckMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+			const { t } = this.props
+			prefix = prefix || 'mappings.' + layerId
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Mapping type')}
+							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.mappingType'}
+								obj={this.props.studio}
+								type="dropdown"
+								options={TSR.MappingHyperdeckType}
+								optionsAreNumbers={false}
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+		renderPharosMappingSettings(layerId: string, prefix?: string, _showOptional?: boolean) {
+			return <React.Fragment></React.Fragment>
+		}
+		renderSisyfosMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+			const { t } = this.props
+			prefix = prefix || 'mappings.' + layerId
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Sisyfos Channel')}
+							{showOptional && this.renderOptionalInput(prefix + '.channel', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.channel'}
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+		renderQuantelMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+			const { t } = this.props
+			prefix = prefix || 'mappings.' + layerId
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Quantel Port ID')}
+							{showOptional && this.renderOptionalInput(prefix + '.portId', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.portId'}
+								obj={this.props.studio}
+								type="text"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+							<span className="text-s dimmed">{t("The name you'd like the port to have")}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Quantel Channel ID')}
+							{showOptional && this.renderOptionalInput(prefix + '.channelId', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.channelId'}
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+							<span className="text-s dimmed">{t('The channel to use for output (0 is the first one)')}</span>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Mode')}
+							{showOptional && this.renderOptionalInput(prefix + '.mode', this.props.studio, Studios)}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={prefix + '.mode'}
+								obj={this.props.studio}
+								type="dropdown"
+								options={TSR.QuantelControlMode}
+								optionsAreNumbers={false}
+								collection={Studios}
+								className="input text-input input-l"></EditAttribute>
+						</label>
+					</div>
+				</React.Fragment>
+			)
+		}
+		render() {
+			const { layerId, mapping, prefix, showOptional } = this.props
+
+			return mappingIsCasparCG(mapping)
+				? this.renderCasparCGMappingSettings(layerId, prefix, showOptional)
+				: mappingIsAtem(mapping)
+				? this.renderAtemMappingSettings(layerId, prefix, showOptional)
+				: mappingIsLawo(mapping)
+				? this.renderLawoMappingSettings(layerId, prefix, showOptional)
+				: mappingIsPanasonicPtz(mapping)
+				? this.renderPanasonicPTZSettings(layerId, prefix, showOptional)
+				: mappingIsTCPSend(mapping)
+				? this.renderTCPSendSettings(layerId, prefix, showOptional)
+				: mappingIsHyperdeck(mapping)
+				? this.renderHyperdeckMappingSettings(layerId, prefix, showOptional)
+				: mappingIsPharos(mapping)
+				? this.renderPharosMappingSettings(layerId, prefix, showOptional)
+				: mappingIsSisyfos(mapping)
+				? this.renderSisyfosMappingSettings(layerId, prefix, showOptional)
+				: mappingIsQuantel(mapping)
+				? this.renderQuantelMappingSettings(layerId, prefix, showOptional)
+				: null
+		}
+	}
+)
+
 interface IStudioMappingsProps {
 	studio: Studio
 }
@@ -298,254 +614,6 @@ const StudioMappings = withTranslation()(
 
 			this.finishEditItem(oldLayerId)
 			this.editItem(newLayerId)
-		}
-
-		renderCasparCGMappingSettings(layerId: string) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('CasparCG Channel')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.channel'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t('The CasparCG channel to use (1 is the first)')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('CasparCG Layer')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.layer'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t('The layer in a channel to use')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Preview when not on air')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.previewWhenNotOnAir'}
-								obj={this.props.studio}
-								type="checkbox"
-								collection={Studios}
-								className="input"></EditAttribute>
-							<span className="text-s dimmed">{t('Whether to load to first frame')}</span>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-
-		renderAtemMappingSettings(layerId: string) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingAtemType}
-								optionsAreNumbers={true}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Index')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.index'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderLawoMappingSettings(layerId: string) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingLawoType}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Identifier')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.identifier'}
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Priority')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.priority'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderPanasonicPTZSettings(layerId: string) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingPanasonicPtzType}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderTCPSendSettings(layerId: string) {
-			const { t } = this.props
-			return <React.Fragment></React.Fragment>
-		}
-
-		renderHyperdeckMappingSettings(layerId: string) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mapping type')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.mappingType'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.MappingHyperdeckType}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderPharosMappingSettings(layerId: string) {
-			return (
-				<React.Fragment>
-					<div></div>
-				</React.Fragment>
-			)
-		}
-		renderSisyfosMappingSettings(layerId: string) {
-			const { t } = this.props
-
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('QuanSisyfos Channel')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.channel'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
-		}
-		renderQuantelMappingSettings(layerId: string) {
-			const { t } = this.props
-
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Quantel Port ID')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.portId'}
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t("The name you'd like the port to have")}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Quantel Channel ID')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.channelId'}
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-							<span className="text-s dimmed">{t('The channel to use for output (0 is the first one)')}</span>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Mode')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'mappings.' + layerId + '.mode'}
-								obj={this.props.studio}
-								type="dropdown"
-								options={TSR.QuantelControlMode}
-								optionsAreNumbers={false}
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-				</React.Fragment>
-			)
 		}
 
 		renderMappings() {
@@ -706,25 +774,7 @@ const StudioMappings = withTranslation()(
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
-										{mappingIsCasparCG(mapping)
-											? this.renderCasparCGMappingSettings(layerId)
-											: mappingIsAtem(mapping)
-											? this.renderAtemMappingSettings(layerId)
-											: mappingIsLawo(mapping)
-											? this.renderLawoMappingSettings(layerId)
-											: mappingIsPanasonicPtz(mapping)
-											? this.renderPanasonicPTZSettings(layerId)
-											: mappingIsTCPSend(mapping)
-											? this.renderTCPSendSettings(layerId)
-											: mappingIsHyperdeck(mapping)
-											? this.renderHyperdeckMappingSettings(layerId)
-											: mappingIsPharos(mapping)
-											? this.renderPharosMappingSettings(layerId)
-											: mappingIsSisyfos(mapping)
-											? this.renderSisyfosMappingSettings(layerId)
-											: mappingIsQuantel(mapping)
-											? this.renderQuantelMappingSettings(layerId)
-											: null}
+										<DeviceMappingSettings layerId={layerId} mapping={mapping} studio={this.props.studio} />
 									</div>
 									<div className="mod alright">
 										<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
@@ -861,6 +911,7 @@ const StudioRoutings = withTranslation()(
 			let newRoute: RouteMapping = {
 				mappedLayer: '',
 				outputMappedLayer: '',
+				remapping: {},
 			}
 			let setObject = {}
 			setObject['routeSets.' + routeId + '.routes'] = newRoute
@@ -982,6 +1033,44 @@ const StudioRoutings = withTranslation()(
 											<span className="mls dimmed">{t('Source Layer not found')}</span>
 										)}
 									</div>
+									{sourceMapping && route.remapping !== undefined && (
+										<>
+											<div className="mod mvs mhs">
+												<label className="field">
+													{t('Device ID')}
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`routeSets.${routeSetId}.routes.${index}.remapping.deviceId`}
+														obj={this.props.studio}
+														type="checkbox"
+														collection={Studios}
+														className="mod mvn mhs"
+														mutateDisplayValue={(v) => (v === undefined ? false : true)}
+														mutateUpdateValue={(v) => undefined}
+													/>
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`routeSets.${routeSetId}.routes.${index}.remapping.deviceId`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"></EditAttribute>
+												</label>
+											</div>
+											<DeviceMappingSettings
+												layerId={route.mappedLayer}
+												mapping={
+													{
+														device: sourceMapping.device,
+														...route.remapping,
+													} as BlueprintMapping
+												}
+												studio={this.props.studio}
+												prefix={`routeSets.${routeSetId}.routes.${index}.remapping`}
+												showOptional={true}
+											/>
+										</>
+									)}
 								</div>
 							</div>
 						)
