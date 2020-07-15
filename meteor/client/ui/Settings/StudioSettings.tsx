@@ -9,7 +9,7 @@ import {
 	MappingExt,
 	StudioId,
 	DBStudio,
-	StudioRoute,
+	StudioRouteSet,
 	StudioRouteToggleable,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
@@ -821,11 +821,11 @@ const StudioRoutings = withTranslation()(
 			// find free key name
 			let newRouteKeyName = 'newRoute'
 			let iter: number = 0
-			while ((this.props.studio.routes || {})[newRouteKeyName + iter]) {
+			while ((this.props.studio.routeSets || {})[newRouteKeyName + iter]) {
 				iter++
 			}
 
-			let newRoute: StudioRoute = {
+			let newRoute: StudioRouteSet = {
 				name: 'New Route',
 				active: false,
 				routes: [],
@@ -840,16 +840,16 @@ const StudioRoutings = withTranslation()(
 		updateRouteId = (edit: EditAttributeBase, newValue: string) => {
 			let oldRouteId = edit.props.overrideDisplayValue
 			let newRouteId = newValue + ''
-			let route = this.props.studio.routes[oldRouteId]
+			let route = this.props.studio.routeSets[oldRouteId]
 
-			if (this.props.studio.routes[newRouteId]) {
+			if (this.props.studio.routeSets[newRouteId]) {
 				throw new Meteor.Error(400, 'Route "' + newRouteId + '" already exists')
 			}
 
 			let mSet = {}
 			let mUnset = {}
-			mSet['routes.' + newRouteId] = route
-			mUnset['routes.' + oldRouteId] = 1
+			mSet['routeSets.' + newRouteId] = route
+			mUnset['routeSets.' + oldRouteId] = 1
 
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
@@ -878,7 +878,7 @@ const StudioRoutings = withTranslation()(
 		renderRoutes() {
 			const { t } = this.props
 
-			return _.map(this.props.studio.routes, (route: StudioRoute, routeId: string) => {
+			return _.map(this.props.studio.routeSets, (route: StudioRouteSet, routeId: string) => {
 				return (
 					<React.Fragment key={routeId}>
 						<tr

@@ -56,10 +56,10 @@ export interface DBStudio {
 
 	_rundownVersionHash: string
 
-	routes: StudioRoute[]
+	routeSets: StudioRouteSet[]
 }
 
-export interface StudioRoute {
+export interface StudioRouteSet {
 	/** User-presentable name */
 	name: string
 	/** Whether this group is active or not */
@@ -91,18 +91,18 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {}
 
 	const exclusivityGroups: { [groupId: string]: true } = {}
-	_.each(studio.routes, (route) => {
-		if (route.active) {
+	_.each(studio.routeSets, (routeSet) => {
+		if (routeSet.active) {
 			let useRoute: boolean = true
-			if (route.exclusivityGroup) {
+			if (routeSet.exclusivityGroup) {
 				// Fail-safe: To really make sure we're not using more than one route in the same exclusivity group:
-				if (exclusivityGroups[route.exclusivityGroup]) {
+				if (exclusivityGroups[routeSet.exclusivityGroup]) {
 					useRoute = false
 				}
-				exclusivityGroups[route.exclusivityGroup] = true
+				exclusivityGroups[routeSet.exclusivityGroup] = true
 			}
 			if (useRoute) {
-				_.each(route.routes, (routeMapping) => {
+				_.each(routeSet.routes, (routeMapping) => {
 					if (routeMapping.mappedLayer && routeMapping.outputMappedLayer) {
 						if (!routes[routeMapping.mappedLayer]) {
 							routes[routeMapping.mappedLayer] = []
@@ -159,7 +159,7 @@ export class Studio implements DBStudio {
 
 	public _rundownVersionHash: string
 
-	public routes: StudioRoute[]
+	public routeSets: StudioRouteSet[]
 
 	constructor(document: DBStudio) {
 		_.each(_.keys(document), (key) => {
