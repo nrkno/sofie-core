@@ -1005,12 +1005,10 @@ const StudioRoutings = withTranslation()(
 												modifiedClassName="bghl"
 												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
 												obj={this.props.studio}
-												type="text"
+												type="dropdown"
+												options={Object.keys(this.props.studio.mappings)}
 												collection={Studios}
 												className="input text-input input-l"></EditAttribute>
-											<span className="text-s dimmed">
-												{t('This needs to match one of the layers set up in Layer Mappings')}
-											</span>
 										</label>
 									</div>
 									<div className="mod mvs mhs">
