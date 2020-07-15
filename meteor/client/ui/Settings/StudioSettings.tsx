@@ -10,7 +10,8 @@ import {
 	StudioId,
 	DBStudio,
 	StudioRouteSet,
-	StudioRouteToggleable,
+	StudioRouteBehavior,
+	RouteMapping,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -313,7 +314,7 @@ const StudioMappings = withTranslation()(
 								type="int"
 								collection={Studios}
 								className="input text-input input-l"></EditAttribute>
-							<i>{t('The CasparCG channel to use (1 is the first)')}</i>
+							<span className="text-s dimmed">{t('The CasparCG channel to use (1 is the first)')}</span>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -326,7 +327,7 @@ const StudioMappings = withTranslation()(
 								type="int"
 								collection={Studios}
 								className="input text-input input-l"></EditAttribute>
-							<i>{t('The layer in a channel to use')}</i>
+							<span className="text-s dimmed">{t('The layer in a channel to use')}</span>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -339,7 +340,7 @@ const StudioMappings = withTranslation()(
 								type="checkbox"
 								collection={Studios}
 								className="input"></EditAttribute>
-							<i>{t('Whether to load to first frame')}</i>
+							<span className="text-s dimmed">{t('Whether to load to first frame')}</span>
 						</label>
 					</div>
 				</React.Fragment>
@@ -513,7 +514,7 @@ const StudioMappings = withTranslation()(
 								type="text"
 								collection={Studios}
 								className="input text-input input-l"></EditAttribute>
-							<i>{t("The name you'd like the port to have")}</i>
+							<span className="text-s dimmed">{t("The name you'd like the port to have")}</span>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -526,7 +527,7 @@ const StudioMappings = withTranslation()(
 								type="int"
 								collection={Studios}
 								className="input text-input input-l"></EditAttribute>
-							<i>{t('The channel to use for output (0 is the first one)')}</i>
+							<span className="text-s dimmed">{t('The channel to use for output (0 is the first one)')}</span>
 						</label>
 					</div>
 					<div className="mod mvs mhs">
@@ -634,7 +635,7 @@ const StudioMappings = withTranslation()(
 													collection={Studios}
 													updateFunction={this.updateLayerId}
 													className="input text-input input-l"></EditAttribute>
-												<i>{t('ID of the timeline-layer to map to some output')}</i>
+												<span className="text-s dimmed">{t('ID of the timeline-layer to map to some output')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -649,7 +650,7 @@ const StudioMappings = withTranslation()(
 													optionsAreNumbers={true}
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
-												<i>{t('The type of device to use for the output')}</i>
+												<span className="text-s dimmed">{t('The type of device to use for the output')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -662,7 +663,9 @@ const StudioMappings = withTranslation()(
 													type="text"
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
-												<i>{t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}</i>
+												<span className="text-s dimmed">
+													{t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
+												</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -693,7 +696,7 @@ const StudioMappings = withTranslation()(
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Lookahead Maximum Search Distance (Default = unlimited/-1')}
+												{t('Lookahead Maximum Search Distance (Default = unlimited/-1)')}
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={'mappings.' + layerId + '.lookaheadMaxSearchDistance'}
@@ -759,7 +762,7 @@ interface IStudioRoutingsProps {
 	studio: Studio
 }
 interface IStudioRoutingsState {
-	editedRoutes: Array<string>
+	editedRouteSets: Array<string>
 }
 
 const StudioRoutings = withTranslation()(
@@ -768,82 +771,132 @@ const StudioRoutings = withTranslation()(
 			super(props)
 
 			this.state = {
-				editedRoutes: [],
+				editedRouteSets: [],
 			}
 		}
-		isItemEdited = (routeId: string) => {
-			return this.state.editedRoutes.indexOf(routeId) >= 0
+		isItemEdited = (routeSetId: string) => {
+			return this.state.editedRouteSets.indexOf(routeSetId) >= 0
 		}
-		finishEditItem = (routeId: string) => {
-			let index = this.state.editedRoutes.indexOf(routeId)
+		finishEditItem = (routeSetId: string) => {
+			let index = this.state.editedRouteSets.indexOf(routeSetId)
 			if (index >= 0) {
-				this.state.editedRoutes.splice(index, 1)
+				this.state.editedRouteSets.splice(index, 1)
 				this.setState({
-					editedRoutes: this.state.editedRoutes,
+					editedRouteSets: this.state.editedRouteSets,
 				})
 			}
 		}
-		editItem = (routeId: string) => {
-			if (this.state.editedRoutes.indexOf(routeId) < 0) {
-				this.state.editedRoutes.push(routeId)
+		editItem = (routeSetId: string) => {
+			if (this.state.editedRouteSets.indexOf(routeSetId) < 0) {
+				this.state.editedRouteSets.push(routeSetId)
 				this.setState({
-					editedRoutes: this.state.editedRoutes,
+					editedRouteSets: this.state.editedRouteSets,
 				})
 			} else {
-				this.finishEditItem(routeId)
+				this.finishEditItem(routeSetId)
 			}
 		}
-		confirmRemove = (routeId: string) => {
+		confirmRemoveRoute = (routeSetId: string, route: RouteMapping, index: number) => {
 			const { t } = this.props
 			doModalDialog({
-				title: t('Remove this Route?'),
+				title: t('Remove this Route from this Route Set?'),
 				yes: t('Remove'),
 				no: t('Cancel'),
 				onAccept: () => {
-					this.removeRoute(routeId)
+					this.removeRouteSetRoute(routeSetId, index)
 				},
 				message: (
 					<React.Fragment>
-						<p>{t('Are you sure you want to remove the Route "{{routeId}}" ?', { routeId: routeId })}</p>
+						<p>
+							{t('Are you sure you want to remove the Route from "{{sourceLayerId}}" to "{{newLayerId}}"?', {
+								sourceLayerId: route.mappedLayer,
+								newLayerId: route.outputMappedLayer,
+							})}
+						</p>
 						<p>{t('Please note: This action is irreversible!')}</p>
 					</React.Fragment>
 				),
 			})
 		}
-		removeRoute = (routeId: string) => {
+		confirmRemove = (routeSetId: string) => {
+			const { t } = this.props
+			doModalDialog({
+				title: t('Remove this Route Set?'),
+				yes: t('Remove'),
+				no: t('Cancel'),
+				onAccept: () => {
+					this.removeRouteSet(routeSetId)
+				},
+				message: (
+					<React.Fragment>
+						<p>{t('Are you sure you want to remove the Route Set "{{routeId}}"?', { routeId: routeSetId })}</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+			})
+		}
+		removeRouteSetRoute = (routeId: string, index: number) => {
 			let unsetObject = {}
-			unsetObject['routes.' + routeId] = ''
+			const newRoutes = this.props.studio.routeSets[routeId].routes.slice()
+			newRoutes.splice(index, 1)
+			unsetObject['routeSets.' + routeId + '.routes'] = newRoutes
+			Studios.update(this.props.studio._id, {
+				$set: unsetObject,
+			})
+		}
+		removeRouteSet = (routeId: string) => {
+			let unsetObject = {}
+			unsetObject['routeSets.' + routeId] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
 		}
-		addNewRoute = () => {
+		addNewRouteInSet = (routeId: string) => {
+			let newRouteKeyName = 'newRouteSet'
+			let iter: number = 0
+			while ((this.props.studio.routeSets || {})[newRouteKeyName + iter]) {
+				iter++
+			}
+
+			let newRoute: RouteMapping = {
+				mappedLayer: '',
+				outputMappedLayer: '',
+			}
+			let setObject = {}
+			setObject['routeSets.' + routeId + '.routes'] = newRoute
+
+			Studios.update(this.props.studio._id, {
+				$push: setObject,
+			})
+		}
+		addNewRouteSet = () => {
 			// find free key name
-			let newRouteKeyName = 'newRoute'
+			let newRouteKeyName = 'newRouteSet'
 			let iter: number = 0
 			while ((this.props.studio.routeSets || {})[newRouteKeyName + iter]) {
 				iter++
 			}
 
 			let newRoute: StudioRouteSet = {
-				name: 'New Route',
+				name: 'New Route Set',
 				active: false,
 				routes: [],
+				behavior: StudioRouteBehavior.ACTIVATE_ONLY,
 			}
 			let setObject: Partial<DBStudio> = {}
-			setObject['routes.' + newRouteKeyName + iter] = newRoute
+			setObject['routeSets.' + newRouteKeyName + iter] = newRoute
 
 			Studios.update(this.props.studio._id, {
 				$set: setObject,
 			})
 		}
-		updateRouteId = (edit: EditAttributeBase, newValue: string) => {
+		updateRouteSetId = (edit: EditAttributeBase, newValue: string) => {
 			let oldRouteId = edit.props.overrideDisplayValue
 			let newRouteId = newValue + ''
 			let route = this.props.studio.routeSets[oldRouteId]
 
 			if (this.props.studio.routeSets[newRouteId]) {
-				throw new Meteor.Error(400, 'Route "' + newRouteId + '" already exists')
+				throw new Meteor.Error(400, 'Route Set "' + newRouteId + '" already exists')
 			}
 
 			let mSet = {}
@@ -861,7 +914,7 @@ const StudioRoutings = withTranslation()(
 			this.finishEditItem(oldRouteId)
 			this.editItem(newRouteId)
 		}
-		updateRouteActive = (edit: EditAttributeBase, newValue: boolean) => {
+		updateRouteSetActive = (edit: EditAttributeBase, newValue: boolean) => {
 			// TODO: handle exclusivity groups?
 			if (edit.props.attribute) {
 				let mSet = {}
@@ -875,10 +928,72 @@ const StudioRoutings = withTranslation()(
 			}
 		}
 
-		renderRoutes() {
+		renderRoutes(routeSet: StudioRouteSet, routeSetId: string) {
 			const { t } = this.props
 
-			return _.map(this.props.studio.routeSets, (route: StudioRouteSet, routeId: string) => {
+			return (
+				<React.Fragment>
+					<h4 className="mod mhs">{t('Routes')}</h4>
+					{routeSet.routes.length === 0 ? (
+						<p className="text-s dimmed mhs">{t('There are no routes set up yet')}</p>
+					) : null}
+					{routeSet.routes.map((route, index) => {
+						const sourceMapping = this.props.studio.mappings[route.mappedLayer]
+						return (
+							<div className="route-sets-editor mod pan mas" key={index}>
+								<button
+									className="action-btn right mod man pas"
+									onClick={(e) => this.confirmRemoveRoute(routeSetId, route, index)}>
+									<FontAwesomeIcon icon={faTrash} />
+								</button>
+								<div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Source Layer ID')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
+												obj={this.props.studio}
+												type="text"
+												collection={Studios}
+												className="input text-input input-l"></EditAttribute>
+											<span className="text-s dimmed">
+												{t('This needs to match one of the layers set up in Layer Mappings')}
+											</span>
+										</label>
+									</div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('New Layer ID')}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeSetId}.routes.${index}.outputMappedLayer`}
+												obj={this.props.studio}
+												type="text"
+												collection={Studios}
+												className="input text-input input-l"></EditAttribute>
+										</label>
+									</div>
+									<div className="mod mvs mhs">
+										{t('Device Type')}
+										{sourceMapping ? (
+											<span className="mls">{TSR.DeviceType[sourceMapping.device]}</span>
+										) : (
+											<span className="mls dimmed">{t('Source Layer not found')}</span>
+										)}
+									</div>
+								</div>
+							</div>
+						)
+					})}
+				</React.Fragment>
+			)
+		}
+
+		renderRouteSets() {
+			const { t } = this.props
+
+			return _.map(this.props.studio.routeSets, (routeSet: StudioRouteSet, routeId: string) => {
 				return (
 					<React.Fragment key={routeId}>
 						<tr
@@ -886,10 +1001,12 @@ const StudioRoutings = withTranslation()(
 								hl: this.isItemEdited(routeId),
 							})}>
 							<th className="settings-studio-device__name c3">{routeId}</th>
-							<td className="settings-studio-device__id c2">{route.name}</td>
-							<td className="settings-studio-device__id c2">{route.exclusivityGroup}</td>
-							<td className="settings-studio-device__id c1">{route.routes.length}</td>
-							<td className="settings-studio-device__id c4"></td>
+							<td className="settings-studio-device__id c2">{routeSet.name}</td>
+							<td className="settings-studio-device__id c2">{routeSet.exclusivityGroup}</td>
+							<td className="settings-studio-device__id c2">{routeSet.routes.length}</td>
+							<td className="settings-studio-device__id c2">
+								{routeSet.active ? <span className="pill">{t('Active')}</span> : null}
+							</td>
 
 							<td className="settings-studio-device__actions table-item-actions c3">
 								<button className="action-btn" onClick={(e) => this.editItem(routeId)}>
@@ -902,47 +1019,47 @@ const StudioRoutings = withTranslation()(
 						</tr>
 						{this.isItemEdited(routeId) && (
 							<tr className="expando-details hl">
-								<td colSpan={5}>
+								<td colSpan={6}>
 									<div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Route ID')}
+												{t('Route Set ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routes'}
+													attribute={'routeSets'}
 													overrideDisplayValue={routeId}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
-													updateFunction={this.updateRouteId}
+													updateFunction={this.updateRouteSetId}
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Active')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routes.' + routeId + '.active'}
+													attribute={'routeSets.' + routeId + '.active'}
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
-													updateFunction={this.updateRouteActive}
-													className="input"></EditAttribute>
-												<i>{t('Display name of the route')}</i>
+													updateFunction={this.updateRouteSetActive}
+													className=""></EditAttribute>
+												{t('Active')}
+												<span className="mlm text-s dimmed">{t('Is this Route Set currently active')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Route Name')}
+												{t('Route Set Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routes.' + routeId + '.name'}
+													attribute={'routeSets.' + routeId + '.name'}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
-												<i>{t('Display name of the route')}</i>
+												<span className="text-s dimmed">{t('Display name of the Route Set')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
@@ -950,35 +1067,41 @@ const StudioRoutings = withTranslation()(
 												{t('Exclusivity group')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routes.' + routeId + '.exclusivityGroup'}
+													attribute={'routeSets.' + routeId + '.exclusivityGroup'}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
-												<i>{t('If set, only one Route will be active per exclusivity group.')}</i>
+												<span className="text-s dimmed">
+													{t('If set, only one Route Set will be active per exclusivity group')}
+												</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">
 											<label className="field">
-												{t('Toggleable')}
+												{t('Behavior')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routes.' + routeId + '.toggleable'}
+													attribute={'routeSets.' + routeId + '.behavior'}
 													obj={this.props.studio}
 													type="dropdown"
-													options={StudioRouteToggleable}
+													options={StudioRouteBehavior}
 													optionsAreNumbers={true}
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
-												<i>{t('If the Route should be visible to user for toggling during playout')}</i>
+												<span className="text-s dimmed">
+													{t('The way this Route Set should behave towards the user')}
+												</span>
 											</label>
 										</div>
-
-										<div className="mod mvs mhs">Routes:</div>
 									</div>
-									<div className="mod alright">
-										<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(routeId)}>
+									{this.renderRoutes(routeSet, routeId)}
+									<div className="mod">
+										<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(routeId)}>
 											<FontAwesomeIcon icon={faCheck} />
+										</button>
+										<button className="btn btn-secondary" onClick={(e) => this.addNewRouteInSet(routeId)}>
+											<FontAwesomeIcon icon={faPlus} />
 										</button>
 									</div>
 								</td>
@@ -993,12 +1116,12 @@ const StudioRoutings = withTranslation()(
 			const { t } = this.props
 			return (
 				<div>
-					<h2 className="mhn">{t('Routes')}</h2>
+					<h2 className="mhn">{t('Route Sets')}</h2>
 					<table className="expando settings-studio-mappings-table">
-						<tbody>{this.renderRoutes()}</tbody>
+						<tbody>{this.renderRouteSets()}</tbody>
 					</table>
 					<div className="mod mhs">
-						<button className="btn btn-primary" onClick={(e) => this.addNewRoute()}>
+						<button className="btn btn-primary" onClick={(e) => this.addNewRouteSet()}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
 					</div>

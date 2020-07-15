@@ -67,11 +67,11 @@ export interface StudioRouteSet {
 	/** Only one Route can be active at the same time in the exclusivity-group */
 	exclusivityGroup?: string
 	/** If true, should be displayed and toggleable by user */
-	toggleable?: StudioRouteToggleable
+	behavior: StudioRouteBehavior
 
 	routes: RouteMapping[]
 }
-export enum StudioRouteToggleable {
+export enum StudioRouteBehavior {
 	HIDDEN = 0,
 	TOGGLE = 1,
 	ACTIVATE_ONLY = 2,
