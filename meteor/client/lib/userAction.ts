@@ -146,7 +146,7 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Removing Bucket AdLib')
 		case UserAction.START_BUCKET_ADLIB:
 			return t('Starting Bucket AdLib')
-		case UserAction.START_BUCKET_ADLIB:
+		case UserAction.SWITCH_ROUTE_SET:
 			return t('Switching routing')
 		case UserAction.UNKNOWN_ACTION:
 		default:

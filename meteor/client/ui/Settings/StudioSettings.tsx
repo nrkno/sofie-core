@@ -619,6 +619,20 @@ const StudioMappings = withTranslation()(
 
 		renderMappings() {
 			const { t } = this.props
+			const activeRouteSets = Object.entries(this.props.studio.routeSets).filter(([_id, routeSet]) => routeSet.active)
+			const layerOverrides: {
+				[id: string]: string[]
+			} = {}
+			for (let [routeSetId, routeSet] of activeRouteSets) {
+				for (let routeMap of routeSet.routes) {
+					if (layerOverrides[routeMap.mappedLayer] === undefined) {
+						layerOverrides[routeMap.mappedLayer] = []
+					}
+					if (!layerOverrides[routeMap.mappedLayer].includes(routeSetId)) {
+						layerOverrides[routeMap.mappedLayer].push(routeSetId)
+					}
+				}
+			}
 
 			return _.map(this.props.studio.mappings, (mapping: MappingExt, layerId: string) => {
 				// If an internal mapping, then hide it
@@ -630,7 +644,19 @@ const StudioMappings = withTranslation()(
 							className={ClassNames({
 								hl: this.isItemEdited(layerId),
 							})}>
-							<th className="settings-studio-device__name c3">{layerId}</th>
+							<th className="settings-studio-device__name c3 notifications-s notifications-text">
+								{layerId}
+								{layerOverrides[layerId] !== undefined ? (
+									<Tooltip
+										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
+											routeSets: layerOverrides[layerId].join(', '),
+											count: layerOverrides[layerId].length,
+										})}
+										placement="right">
+										<span className="notification">{layerOverrides[layerId].length}</span>
+									</Tooltip>
+								) : null}
+							</th>
 							<td className="settings-studio-device__id c2">{TSR.DeviceType[mapping.device]}</td>
 							<td className="settings-studio-device__id c2">{mapping.deviceId}</td>
 							<td className="settings-studio-device__id c4">
@@ -933,7 +959,7 @@ const StudioRoutings = withTranslation()(
 				name: 'New Route Set',
 				active: false,
 				routes: [],
-				behavior: StudioRouteBehavior.ACTIVATE_ONLY,
+				behavior: StudioRouteBehavior.TOGGLE,
 			}
 			let setObject: Partial<DBStudio> = {}
 			setObject['routeSets.' + newRouteKeyName + iter] = newRoute
@@ -1125,6 +1151,7 @@ const StudioRoutings = withTranslation()(
 													type="checkbox"
 													collection={Studios}
 													updateFunction={(_ctx, value) => this.updateRouteSetActive(routeId, value)}
+													disabled={routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && routeSet.active}
 													className=""></EditAttribute>
 												{t('Active')}
 												<span className="mlm text-s dimmed">{t('Is this Route Set currently active')}</span>
