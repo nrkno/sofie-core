@@ -57,6 +57,7 @@ import { unprotectString, protectString } from '../../../lib/lib'
 import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
+import { doUserAction, UserAction } from '../../lib/userAction'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -965,18 +966,11 @@ const StudioRoutings = withTranslation()(
 			this.finishEditItem(oldRouteId)
 			this.editItem(newRouteId)
 		}
-		updateRouteSetActive = (edit: EditAttributeBase, newValue: boolean) => {
-			// TODO: handle exclusivity groups?
-			if (edit.props.attribute) {
-				let mSet = {}
-				mSet[edit.props.attribute] = newValue
-
-				if (edit.props.collection) {
-					edit.props.collection.update(this.props.studio._id, {
-						$set: mSet,
-					})
-				}
-			}
+		updateRouteSetActive = (routeSetId: string, value: boolean) => {
+			const { t } = this.props
+			doUserAction(t, 'StudioSettings', UserAction.SWITCH_ROUTE_SET, (e) =>
+				MeteorCall.userAction.switchRouteSet(e, this.props.studio._id, routeSetId, value)
+			)
 		}
 
 		renderRoutes(routeSet: StudioRouteSet, routeSetId: string) {
@@ -1130,7 +1124,7 @@ const StudioRoutings = withTranslation()(
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
-													updateFunction={this.updateRouteSetActive}
+													updateFunction={(_ctx, value) => this.updateRouteSetActive(routeId, value)}
 													className=""></EditAttribute>
 												{t('Active')}
 												<span className="mlm text-s dimmed">{t('Is this Route Set currently active')}</span>

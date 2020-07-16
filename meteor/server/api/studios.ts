@@ -23,6 +23,7 @@ export function insertStudio(newId?: StudioId): StudioId {
 				sofieUrl: '',
 			},
 			_rundownVersionHash: '',
+			routeSets: {},
 		})
 	)
 	return id

@@ -1753,7 +1753,9 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 
-		Studios.update(studioId, modification)
+		Studios.update(studioId, {
+			$set: modification,
+		})
 
 		// TODO: Run update timeline here
 

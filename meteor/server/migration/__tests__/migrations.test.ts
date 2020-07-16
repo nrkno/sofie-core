@@ -162,6 +162,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						mappings: {},
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
@@ -186,6 +187,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						mappings: {},
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
@@ -210,6 +212,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						mappings: {},
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
