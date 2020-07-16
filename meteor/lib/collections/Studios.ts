@@ -56,7 +56,9 @@ export interface DBStudio {
 
 	_rundownVersionHash: string
 
-	routeSets: StudioRouteSet[]
+	routeSets: {
+		[id: string]: StudioRouteSet
+	}
 }
 
 export interface StudioRouteSet {
@@ -159,7 +161,9 @@ export class Studio implements DBStudio {
 
 	public _rundownVersionHash: string
 
-	public routeSets: StudioRouteSet[]
+	public routeSets: {
+		[id: string]: StudioRouteSet
+	}
 
 	constructor(document: DBStudio) {
 		_.each(_.keys(document), (key) => {

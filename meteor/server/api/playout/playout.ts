@@ -31,7 +31,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { PieceLifespan, PartHoldMode, VTContent, PartEndState } from 'tv-automation-sofie-blueprints-integration'
-import { Studios, StudioId } from '../../../lib/collections/Studios'
+import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -1692,14 +1692,14 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 	export function shouldUpdateStudioBaseline(studioId: StudioId) {
+		check(studioId, String)
+
 		let cache: CacheForStudio | CacheForRundownPlaylist = waitForPromise(initCacheForStudio(studioId))
 		const result = shouldUpdateStudioBaselineInner(cache, studioId)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
 	function shouldUpdateStudioBaselineInner(cache: CacheForStudio, studioId: StudioId): string | false {
-		check(studioId, String)
-
 		const studio = cache.Studios.findOne(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 
@@ -1725,6 +1725,39 @@ export namespace ServerPlayoutAPI {
 		}
 
 		return false
+	}
+
+	export function switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean) {
+		check(studioId, String)
+		check(routeSetId, String)
+		check(state, Boolean)
+
+		const studio = Studios.findOne(studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+
+		if (studio.routeSets[routeSetId] === undefined)
+			throw new Meteor.Error(404, `RouteSet "${routeSetId}" not found!`)
+		const routeSet = studio.routeSets[routeSetId]
+		if (routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && state === false)
+			throw new Meteor.Error(400, `RouteSet "${routeSetId}" is ACTIVATE_ONLY`)
+
+		const modification = {}
+		modification[`routeSets.${routeSetId}.active`] = state
+
+		if (studio.routeSets[routeSetId].exclusivityGroup && state === true) {
+			_.each(studio.routeSets, (otherRouteSet, otherRouteSetId) => {
+				if (otherRouteSetId === routeSetId) return
+				if (otherRouteSet.exclusivityGroup === routeSet.exclusivityGroup) {
+					modification[`routeSets.${otherRouteSet}.active`] = false
+				}
+			})
+		}
+
+		Studios.update(studioId, modification)
+
+		// TODO: Run update timeline here
+
+		return ClientAPI.responseSuccess(undefined)
 	}
 }
 

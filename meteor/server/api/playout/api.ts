@@ -102,6 +102,9 @@ class ServerPlayoutAPIClass implements NewPlayoutAPI {
 	shouldUpdateStudioBaseline(studioId: StudioId) {
 		return makePromise(() => ServerPlayoutAPI.shouldUpdateStudioBaseline(studioId))
 	}
+	switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean) {
+		return makePromise(() => ServerPlayoutAPI.switchRouteSet(studioId, routeSetId, state))
+	}
 }
 registerClassToMeteorMethods(PlayoutAPIMethods, ServerPlayoutAPIClass, false)
 
