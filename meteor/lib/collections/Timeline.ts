@@ -162,7 +162,7 @@ export function getRoutedTimeline(
 				if (i > 0) {
 					// If there are multiple routes we must rename the ids, so that they stay unique.
 					routedObj.id = `_${i}_${routedObj.id}`
-					routedObj._id = getTimelineId(obj)
+					routedObj._id = getTimelineId(routedObj)
 				}
 				outputTimelineObjs.push(routedObj)
 			})

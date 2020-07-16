@@ -170,14 +170,10 @@ export function afterUpdateTimeline(
 	timelineObjs?: Array<TimelineObjGeneric>
 ) {
 	// logger.info('afterUpdateTimeline')
-	if (!timelineObjs) {
-		timelineObjs = cache.Timeline.findFetch({
-			studioId: studioId,
-			objectType: { $ne: TimelineObjType.STAT },
-		})
-	}
-
-	// Number of objects
+	// Nothing here anymore, to be removed?
+}
+// Number of objects
+export function generateTimelineStatObj(studioId: StudioId, timelineObjs: Array<TimelineObjGeneric>) {
 	let objCount = timelineObjs.length
 	// Hash of all objects
 	timelineObjs.sort((a, b) => {
@@ -204,8 +200,7 @@ export function afterUpdateTimeline(
 		layer: '__stat',
 	}
 	statObj._id = getTimelineId(statObj)
-
-	cache.Timeline.upsert(statObj._id, statObj)
+	return statObj
 }
 export function getActiveRundownPlaylist(cache: CacheForStudio, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({

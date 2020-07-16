@@ -1,14 +1,16 @@
 import { Meteor } from 'meteor/meteor'
-import { lazyIgnore } from '../../lib/lib'
+import { lazyIgnore, unprotectString } from '../../lib/lib'
 import { TimelineSecurity } from '../security/timeline'
-import { Timeline, TimelineObjGeneric, getRoutedTimeline } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, getRoutedTimeline, TimelineObjType } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
-import { Studios, getActiveRoutes } from '../../lib/collections/Studios'
+import { Studios, getActiveRoutes, StudioId } from '../../lib/collections/Studios'
+import { generateTimelineStatObj } from '../api/playout/timeline'
+import * as _ from 'underscore'
 
 meteorPublish(PubSub.timeline, function(selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -28,21 +30,51 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', (pub, devic
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
 		const studioId = peripheralDevice.studioId
+		if (!studioId) return []
 
+		const observer = setUpPrepareObserver(
+			studioId,
+			() => {
+				const timeline = Timeline.find({
+					studioId: studioId,
+					objectType: { $ne: TimelineObjType.STAT },
+				}).fetch()
+				const studio = Studios.findOne(studioId)
+				if (!studio) {
+					return []
+				} else {
+					const routes = getActiveRoutes(studio)
+					const routedTimeline = getRoutedTimeline(timeline, routes)
+
+					const statObj = generateTimelineStatObj(studio._id, routedTimeline)
+					routedTimeline.push(statObj)
+
+					return routedTimeline
+				}
+			},
+			(routedTimeline) => {
+				pub.updatedDocs(routedTimeline)
+			}
+		)
+
+		pub.onStop(() => {
+			observer.stop()
+		})
+	}
+})
+const callbacks: { [studioId: string]: { stop: Function; callbacks: Function[] } } = {}
+function setUpPrepareObserver<T>(studioId: StudioId, prepareData: () => T, callback: (T) => void) {
+	const sid = unprotectString(studioId)
+	if (!callbacks[sid]) {
 		const triggerUpdate = () => {
 			lazyIgnore(
 				`studioTimeline_${studioId}`,
 				() => {
-					const timeline = Timeline.find({
-						studioId: studioId,
-					}).fetch()
-					const studio = Studios.findOne(studioId)
-					if (!studio) {
-						pub.updatedDocs([])
-					} else {
-						const routes = getActiveRoutes(studio)
-						const routedTimeline = getRoutedTimeline(timeline, routes)
-						pub.updatedDocs(routedTimeline)
+					const o = callbacks[sid]
+					if (o) {
+						const result = prepareData()
+
+						_.each(o.callbacks, (cb) => cb(result))
 					}
 				},
 				3 // ms
@@ -61,10 +93,30 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', (pub, devic
 			changed: triggerUpdate,
 			removed: triggerUpdate,
 		})
-		pub.onStop(() => {
-			observeStudio.stop()
-			observeTimeline.stop()
-		})
-		triggerUpdate()
+
+		callbacks[sid] = {
+			stop: () => {
+				observeStudio.stop()
+				observeTimeline.stop()
+			},
+			callbacks: [],
+		}
 	}
-})
+	callbacks[sid].callbacks.push(callback)
+	return {
+		stop: () => {
+			const o = callbacks[sid]
+			if (o) {
+				const i = o.callbacks.indexOf(callback)
+				if (i != -1) {
+					o.callbacks.splice(i, 1)
+				}
+				// clean up if empty:
+				if (!o.callbacks.length) {
+					o.stop()
+					delete callbacks[sid]
+				}
+			}
+		},
+	}
+}

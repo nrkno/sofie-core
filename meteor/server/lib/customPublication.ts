@@ -1,8 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { reject } from 'underscore'
 import { PubSub } from '../../lib/api/pubsub'
-import { Studios, StudioId } from '../../lib/collections/Studios'
-import { DBObj, unprotectString, protectString } from '../../lib/lib'
+import { DBObj, unprotectString } from '../../lib/lib'
 import _ from 'underscore'
 
 class CustomPublish {
@@ -24,12 +22,12 @@ class CustomPublish {
 		this._meteorPublication.added(this._collectionName, _id, document)
 	}
 	/** Changed document */
-	changed(_id: string, document: any) {
-		this._meteorPublication.changed(this._collectionName, _id, document)
+	changed(_id: string, doc: any) {
+		this._meteorPublication.changed(this._collectionName, _id, doc)
 	}
 	/** Removed document */
 	removed(_id: string) {
-		this._meteorPublication.added(this._collectionName, _id)
+		this._meteorPublication.removed(this._collectionName, _id)
 	}
 }
 
@@ -59,27 +57,32 @@ class CustomPublishArray {
 	onStop(callback: () => void) {
 		this._publication.onStop(callback)
 	}
-	updatedDocs(docs: DBObj[]) {
+	updatedDocs(newDocs: DBObj[]) {
 		const newIds: { [id: string]: true } = {}
 		// figure out which documents have changed
 
-		for (const doc of docs) {
-			const id = unprotectString(doc._id)
+		const oldIds = Object.keys(this._docs)
+
+		for (const newDoc of newDocs) {
+			const id = unprotectString(newDoc._id)
+			if (newIds[id]) {
+				throw new Meteor.Error(`Error in custom publication: _id "${id}" is not unique!`)
+			}
 			newIds[id] = true
 			if (!this._docs[id]) {
 				// added
-				this._docs[id] = _.clone(doc)
+				this._docs[id] = _.clone(newDoc)
 
-				this._publication.added(id, doc)
-			} else if (!_.isEqual(this._docs[id], doc)) {
+				this._publication.added(id, newDoc)
+			} else if (!_.isEqual(this._docs[id], newDoc)) {
 				// changed
-				this._docs[id] = _.clone(doc)
 
-				this._publication.changed(id, doc)
+				this._publication.changed(id, newDoc)
+				this._docs[id] = _.clone(newDoc)
 			}
 		}
 
-		for (const id of Object.keys(this._docs)) {
+		for (const id of oldIds) {
 			if (!newIds[id]) {
 				// Removed
 				delete this._docs[id]
