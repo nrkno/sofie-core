@@ -709,6 +709,14 @@ export function noop() {
 	return ClientAPI.responseSuccess(undefined)
 }
 
+export function switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean): ClientAPI.ClientResponse<void> {
+	check(studioId, String)
+	check(routeSetId, String)
+	check(state, Boolean)
+
+	return ServerPlayoutAPI.switchRouteSet(studioId, routeSetId, state)
+}
+
 class ServerUserActionAPI implements NewUserActionAPI {
 	take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
 		return makePromise(() => take(rundownPlaylistId))
@@ -911,6 +919,14 @@ class ServerUserActionAPI implements NewUserActionAPI {
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
 		return makePromise(() => bucketsModifyBucketAdLib(id, bucketAdlib))
+	}
+	switchRouteSet(
+		_userEvent: string,
+		studioId: StudioId,
+		routeSetId: string,
+		state: boolean
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => switchRouteSet(studioId, routeSetId, state))
 	}
 }
 registerClassToMeteorMethods(
