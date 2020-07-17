@@ -150,8 +150,17 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 
 	render() {
 		const availableRouteSets = Object.entries(this.props.studioRouteSets).filter(
-			([id, routeSet]) => routeSet.behavior !== StudioRouteBehavior.HIDDEN
+			([_id, routeSet]) => routeSet.behavior !== StudioRouteBehavior.HIDDEN
 		)
+		const activeRoutes = availableRouteSets.filter(([id, routeSet]) => routeSet.active).length
+		const exclusivityGroups: {
+			[id: string]: Array<[string, StudioRouteSet]>
+		} = {}
+		for (let [id, routeSet] of availableRouteSets) {
+			const group = routeSet.exclusivityGroup || '__noGroup'
+			if (exclusivityGroups[group] === undefined) exclusivityGroups[group] = []
+			exclusivityGroups[group].push([id, routeSet])
+		}
 		return (
 			<div className="status-bar">
 				<VelocityReact.VelocityTransitionGroup
@@ -223,15 +232,69 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 								</button>
 							))
 						) : (
-							<button
-								className={classNames('status-bar__controls__button', {
-									'status-bar__controls__button--open': this.state.isRouteSetsOpen,
-								})}
-								role="button"
-								onClick={this.onRouteSetsToggle}
-								tabIndex={0}>
-								<FontAwesomeIcon icon={faRandom} />
-							</button>
+							<>
+								<button
+									className={classNames(
+										'status-bar__controls__button',
+										'status-bar__controls__button--route-set-panel',
+										'notifications-s notifications-text',
+										{
+											'status-bar__controls__button--open': this.state.isRouteSetsOpen,
+										}
+									)}
+									role="button"
+									onClick={this.onRouteSetsToggle}
+									tabIndex={0}>
+									<FontAwesomeIcon icon={faRandom} />
+									{activeRoutes > 0 && <span className="notification">{activeRoutes}</span>}
+								</button>
+								<VelocityReact.VelocityTransitionGroup
+									enter={{
+										animation: {
+											width: ['21.875rem', '0rem'],
+										},
+										easing: 'ease-out',
+										duration: 300,
+									}}
+									leave={{
+										animation: {
+											width: ['0rem'],
+										},
+										easing: 'ease-in',
+										duration: 500,
+									}}>
+									{this.state.isRouteSetsOpen && (
+										<div className="route-set-pop-up-panel">
+											{Object.entries(exclusivityGroups).map(([key, routeSets]) => (
+												<div className="route-set-pop-up-panel__group" key={key}>
+													{routeSets.map(([id, routeSet]) => (
+														<button
+															className={classNames(
+																'status-bar__controls__button',
+																'status-bar__controls__button--route-set',
+																{
+																	active: routeSet.active,
+																	'status-bar__controls__button--inactive':
+																		routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY,
+																}
+															)}
+															role="button"
+															onClick={(e) =>
+																!(routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY) &&
+																this.props.onStudioRouteSetSwitch &&
+																this.props.onStudioRouteSetSwitch(e, id, !routeSet.active)
+															}
+															tabIndex={0}
+															key={id}>
+															{routeSet.name}
+														</button>
+													))}
+												</div>
+											))}
+										</div>
+									)}
+								</VelocityReact.VelocityTransitionGroup>
+							</>
 						))}
 					<SupportPopUpToggle onClick={this.props.onToggleSupportPanel} isOpen={this.props.isSupportPanelOpen} />
 				</VelocityReact.VelocityTransitionGroup>

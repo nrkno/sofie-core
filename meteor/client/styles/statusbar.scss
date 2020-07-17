@@ -40,6 +40,15 @@
 		padding: 0;
 		cursor: pointer;
 
+		&.notifications-text {
+			> .notification {
+				position: absolute;
+				top: 15%;
+				right: 15%;
+				left: auto;
+			}
+		}
+
 		&::after {
 			content: ' ';
 			position: absolute;
@@ -169,6 +178,10 @@
 			border: none !important;
 			margin-left: 0 !important;
 			background-color: #eee;
+		}
+
+		&.status-bar__controls__button--route-set-panel {
+			z-index: 310;
 		}
 	}
 }
