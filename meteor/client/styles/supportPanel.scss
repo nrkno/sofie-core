@@ -79,5 +79,9 @@
 		color: #000;
 		background: #eee;
 		z-index: -1;
+
+		.status-bar__controls__button {
+			color: #fff;
+		}
 	}
 }
