@@ -1748,7 +1748,7 @@ export namespace ServerPlayoutAPI {
 			_.each(studio.routeSets, (otherRouteSet, otherRouteSetId) => {
 				if (otherRouteSetId === routeSetId) return
 				if (otherRouteSet.exclusivityGroup === routeSet.exclusivityGroup) {
-					modification[`routeSets.${otherRouteSet}.active`] = false
+					modification[`routeSets.${otherRouteSetId}.active`] = false
 				}
 			})
 		}
