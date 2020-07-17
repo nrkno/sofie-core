@@ -111,6 +111,14 @@
 				display: inline !important;
 			}
 		}
+
+		&.status-bar__controls__button--route-set {
+			display: inline;
+			opacity: 1;
+			font-size: 0.7em;
+			text-transform: uppercase;
+			font-weight: 600;
+		}
 	}
 
 	.status-bar__controls__label {
