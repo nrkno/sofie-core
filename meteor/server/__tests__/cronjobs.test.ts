@@ -18,10 +18,7 @@ import * as lib from '../../lib/lib'
 
 // Set up mocks for tests in this suite
 let mockCurrentTime = 0
-//@ts-ignore
-lib.getCurrentTime = jest.fn(() => {
-	return mockCurrentTime
-})
+let origGetCurrentTime
 jest.mock('../logging')
 
 import '../cronjobs'
@@ -32,6 +29,15 @@ describe('cronjobs', () => {
 		// set time to 2020/07/19 00:00 Local Time
 		mockCurrentTime = new Date(2020, 6, 19, 0, 0, 0).getTime()
 		MeteorMock.mockRunMeteorStartup()
+		origGetCurrentTime = lib.getCurrentTime
+		//@ts-ignore Mock getCurrentTime for tests
+		lib.getCurrentTime = jest.fn(() => {
+			return mockCurrentTime
+		})
+	})
+	afterAll(() => {
+		//@ts-ignore Return getCurrentTime to orig
+		lib.getCurrentTime = origGetCurrentTime
 	})
 	describe('Runs at the appropriate time', () => {
 		testInFiber("Doesn't run during the day", () => {
