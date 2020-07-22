@@ -787,7 +787,12 @@ export function asyncCollectionFindFetch<
 ): Promise<Array<DocClass>> {
 	// Make the collection fethcing in another Fiber:
 	const p = makePromise(() => {
-		return collection.find(selector as any, options).fetch()
+		const cursor = collection.find(selector as any, options)
+		if (cursor === undefined) {
+			debugger
+			collection.find(selector as any, options)
+		}
+		return cursor.fetch()
 	})
 	// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
 	waitTime(0)
