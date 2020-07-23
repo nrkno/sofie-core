@@ -33,6 +33,8 @@ export interface ISettings {
 	allowRundownResetOnAir: boolean
 	/** Default duration to use to render parts when no duration is provided */
 	defaultDisplayDuration: number
+	/** NRCS name displayed in various places */
+	nrcsName: string
 }
 
 export let Settings: ISettings
@@ -51,6 +53,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowUnsyncedSegments: false,
 	allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,
+	nrcsName: 'ENPS',
 }
 
 Settings = _.clone(DEFAULT_SETTINGS)
