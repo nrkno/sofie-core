@@ -407,144 +407,218 @@ describe('Playout API', () => {
 
 		IngestActions.reloadRundown = origReloadRundown
 	})
-	testInFiber('onPartPlaybackStarted & onPiecePlaybackStarted', async () => {
-		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
-			env,
-			undefined,
-			setupRundownWithAutoplayPart0
-		)
-		expect(rundownId0).toBeTruthy()
-		expect(playlistId0).toBeTruthy()
-
-		const getRundown0 = () => {
-			return Rundowns.findOne(rundownId0) as Rundown
-		}
-		const getPlaylist0 = () => {
-			return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
-		}
-
-		// Prepare and activate in rehersal:
-		ServerPlayoutAPI.resetAndActivateRundownPlaylist(playlistId0, true)
-
-		expect(getPlaylist0()).toMatchObject({
-			active: true,
-			rehearsal: true,
-		})
-
-		const parts = getPlaylist0().getAllOrderedParts()
-
-		// just any time, such as 2020-01-01 12:00:00
-		let now = new Date(2020, 0, 1, 12, 0, 0).getTime()
-
-		//@ts-ignore set up a mock for this test
-		lib.getCurrentTime = jest.fn(() => {
-			return now
-		})
-
-		{
-			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(playlistId0)
-
-			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
-			expect(currentPartInstance).toBeTruthy()
-			expect(nextPartInstance).toBeTruthy()
-			expect(currentPartInstance?.part._id).toBe(parts[0]._id)
-			expect(currentPartInstance?.part.autoNext).toBe(true) // the current part should autonext
-			expect(currentPartInstance?.part.expectedDuration).toBeGreaterThan(0)
-			expect(nextPartInstance?.part._id).toBe(parts[1]._id)
-
-			// simulate TSR starting part playback
-			const currentPartInstanceId = currentPartInstance?._id || protectString('')
-			ServerPlayoutAPI.onPartPlaybackStarted(rundownId0, currentPartInstanceId, now)
-
-			// simulate TSR starting each piece
-			const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceId)
-			expect(pieceInstances).toHaveLength(2)
-			pieceInstances.forEach((pieceInstance) =>
-				ServerPlayoutAPI.onPiecePlaybackStarted(
-					rundownId0,
-					pieceInstance._id,
-					false,
-					(_.isNumber(pieceInstance.piece.enable.start) ? now + pieceInstance.piece.enable.start : now) +
-						Math.random() * 5
-				)
+	testInFiber(
+		'onPartPlaybackStarted, onPiecePlaybackStarted, onPartPlaybackStopped, onPiecePlaybackStopped',
+		async () => {
+			const TIME_RANDOM = 5
+			const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
+				env,
+				undefined,
+				setupRundownWithAutoplayPart0
 			)
-		}
+			expect(rundownId0).toBeTruthy()
+			expect(playlistId0).toBeTruthy()
 
-		{
-			// the rundown timings are set
-			const playlist = getPlaylist0()
-			expect(playlist.startedPlayback).toBe(now)
+			const getRundown0 = () => {
+				return Rundowns.findOne(rundownId0) as Rundown
+			}
+			const getPlaylist0 = () => {
+				return RundownPlaylists.findOne(playlistId0) as RundownPlaylist
+			}
 
-			// the currentPartInstance timings are set
-			const { currentPartInstance } = playlist.getSelectedPartInstances()
-			expect(currentPartInstance!.part.startedPlayback).toBe(true)
-			expect(currentPartInstance!.part.timings).toBeDefined()
-			expect(_.last(currentPartInstance!.part.timings!.startedPlayback)).toBe(now)
+			// Prepare and activate in rehersal:
+			ServerPlayoutAPI.resetAndActivateRundownPlaylist(playlistId0, true)
 
-			// AsRunLog is updated
-			const entry = AsRunLog.find({
-				studioId: env.studio._id,
-				rundownId: rundownId0,
-				segmentId: currentPartInstance?.part.segmentId,
-				partInstanceId: currentPartInstance?._id,
-				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
-			}).fetch()
-			expect(entry[0]).toMatchObject({
-				timestamp: now,
+			expect(getPlaylist0()).toMatchObject({
+				active: true,
+				rehearsal: true,
 			})
-		}
 
-		{
-			// the piece instances timings are set
-			const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
-			const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance?._id!)
-			expect(pieceInstances).toHaveLength(2)
-			pieceInstances.forEach((pieceInstance) => {
-				expect(pieceInstance.piece.timings?.startedPlayback).toBeTruthy()
-				expect(_.last(pieceInstance.piece.timings?.startedPlayback!)).toBeWithinRange(now, now + 5)
+			const parts = getPlaylist0().getAllOrderedParts()
+
+			// just any time, such as 2020-01-01 12:00:00
+			let now = new Date(2020, 0, 1, 12, 0, 0).getTime()
+
+			//@ts-ignore set up a mock for this test
+			lib.getCurrentTime = jest.fn(() => {
+				return now
 			})
+
+			{
+				// Take the first Part:
+				ServerPlayoutAPI.takeNextPart(playlistId0)
+
+				const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
+				expect(currentPartInstance).toBeTruthy()
+				expect(nextPartInstance).toBeTruthy()
+				expect(currentPartInstance?.part._id).toBe(parts[0]._id)
+				expect(currentPartInstance?.part.autoNext).toBe(true) // the current part should autonext
+				expect(currentPartInstance?.part.expectedDuration).toBeGreaterThan(0)
+				expect(nextPartInstance?.part._id).toBe(parts[1]._id)
+
+				// simulate TSR starting part playback
+				const currentPartInstanceId = currentPartInstance?._id || protectString('')
+				ServerPlayoutAPI.onPartPlaybackStarted(rundownId0, currentPartInstanceId, now)
+
+				// simulate TSR starting each piece
+				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceId)
+				expect(pieceInstances).toHaveLength(2)
+				pieceInstances.forEach((pieceInstance) =>
+					ServerPlayoutAPI.onPiecePlaybackStarted(
+						rundownId0,
+						pieceInstance._id,
+						false,
+						(_.isNumber(pieceInstance.piece.enable.start) ? now + pieceInstance.piece.enable.start : now) +
+							Math.random() * TIME_RANDOM
+					)
+				)
+			}
+
+			{
+				// the rundown timings are set
+				const playlist = getPlaylist0()
+				expect(playlist.startedPlayback).toBe(now)
+
+				// the currentPartInstance timings are set
+				const { currentPartInstance } = playlist.getSelectedPartInstances()
+				expect(currentPartInstance!.part.startedPlayback).toBe(true)
+				expect(currentPartInstance!.part.timings).toBeDefined()
+				expect(_.last(currentPartInstance!.part.timings!.startedPlayback)).toBe(now)
+
+				// AsRunLog is updated
+				const entry0 = AsRunLog.find({
+					studioId: env.studio._id,
+					rundownId: rundownId0,
+					segmentId: currentPartInstance?.part.segmentId,
+					partInstanceId: currentPartInstance?._id,
+					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
+					content2: 'part',
+				}).fetch()
+				expect(entry0[0]).toMatchObject({
+					timestamp: now,
+				})
+
+				const entry1 = AsRunLog.find({
+					studioId: env.studio._id,
+					rundownId: rundownId0,
+					content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
+					content2: 'rundown',
+				}).fetch()
+				expect(entry1[0]).toMatchObject({
+					timestamp: now,
+				})
+
+				// Check that AsRunLog contains piece started playback entries
+				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance!._id)
+				expect(pieceInstances).toHaveLength(2)
+				pieceInstances.forEach((pieceInstance) => {
+					const entry = AsRunLog.find({
+						studioId: env.studio._id,
+						rundownId: rundownId0,
+						segmentId: currentPartInstance?.part.segmentId,
+						partInstanceId: currentPartInstance?._id,
+						pieceInstanceId: pieceInstance._id,
+						content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
+						content2: 'piece',
+					}).fetch()
+					expect(entry).toHaveLength(1)
+					expect(entry[0].timestamp).toBeWithinRange(now, now + TIME_RANDOM)
+				})
+			}
+
+			{
+				// the piece instances timings are set
+				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
+				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance?._id!)
+				expect(pieceInstances).toHaveLength(2)
+				pieceInstances.forEach((pieceInstance) => {
+					expect(pieceInstance.piece.timings?.startedPlayback).toBeTruthy()
+					expect(_.last(pieceInstance.piece.timings?.startedPlayback!)).toBeWithinRange(
+						now,
+						now + TIME_RANDOM
+					)
+				})
+			}
+
+			{
+				const nowBuf = now
+				const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
+				now += currentPartInstance?.part.expectedDuration! - 500
+				// try to take just before an autonext
+				const response = ServerPlayoutAPI.takeNextPart(playlistId0)
+				expect(response).toBeTruthy()
+				expect((response as ClientAPI.ClientResponseError).message).toMatch(/cannot take shortly before/gi)
+				now = nowBuf
+			}
+
+			{
+				// simulate an autonext
+				const {
+					currentPartInstance: currentPartInstanceBeforeTake,
+					nextPartInstance: nextPartInstanceBeforeTake,
+				} = getPlaylist0().getSelectedPartInstances()
+				const currentPartInstanceBeforeTakeId = currentPartInstanceBeforeTake?._id
+				const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
+
+				now += currentPartInstanceBeforeTake?.part.expectedDuration!
+				ServerPlayoutAPI.onPartPlaybackStarted(rundownId0, nextPartInstanceBeforeTakeId!, now)
+				ServerPlayoutAPI.onPartPlaybackStopped(rundownId0, currentPartInstanceBeforeTakeId!, now)
+				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
+				expect(pieceInstances).toHaveLength(2)
+				pieceInstances.forEach((pieceInstance) =>
+					ServerPlayoutAPI.onPiecePlaybackStopped(
+						rundownId0,
+						pieceInstance._id,
+						false,
+						(_.isNumber(pieceInstance.piece.enable.start) ? now + pieceInstance.piece.enable.start : now) +
+							Math.random() * TIME_RANDOM
+					)
+				)
+
+				const {
+					currentPartInstance: currentPartInstanceAfterTake,
+					nextPartInstance: nextPartInstanceAfterTake,
+				} = getPlaylist0().getSelectedPartInstances()
+				expect(currentPartInstanceAfterTake).toBeTruthy()
+				expect(currentPartInstanceAfterTake?.part._id).toBe(parts[1]._id)
+				expect(nextPartInstanceAfterTake).toBeTruthy()
+				expect(nextPartInstanceAfterTake?.part._id).toBe(parts[2]._id)
+
+				const previousPartInstanceAfterTake = PartInstances.findOne(currentPartInstanceBeforeTakeId)
+				expect(previousPartInstanceAfterTake).toBeTruthy()
+				expect(previousPartInstanceAfterTake?.part.timings?.stoppedPlayback!).toBeTruthy()
+				expect(_.last(previousPartInstanceAfterTake?.part.timings?.stoppedPlayback!)).toBe(now)
+
+				// verify AsRunLog is updated
+				const entry = AsRunLog.find({
+					studioId: env.studio._id,
+					rundownId: rundownId0,
+					segmentId: previousPartInstanceAfterTake?.part.segmentId,
+					partInstanceId: previousPartInstanceAfterTake?._id,
+					content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
+					content2: 'part',
+				}).fetch()
+				expect(entry[0]).toMatchObject({
+					timestamp: now,
+				})
+
+				// Check that AsRunLog contains piece started playback entries
+				pieceInstances.forEach((pieceInstance) => {
+					const entry = AsRunLog.find({
+						studioId: env.studio._id,
+						rundownId: rundownId0,
+						segmentId: previousPartInstanceAfterTake?.part.segmentId,
+						partInstanceId: previousPartInstanceAfterTake?._id,
+						pieceInstanceId: pieceInstance._id,
+						content: IBlueprintAsRunLogEventContent.STOPPEDPLAYBACK,
+						content2: 'piece',
+					}).fetch()
+					expect(entry).toHaveLength(1)
+					expect(entry[0].timestamp).toBeWithinRange(now, now + TIME_RANDOM)
+				})
+			}
 		}
-
-		{
-			const nowBuf = now
-			const { currentPartInstance } = getPlaylist0().getSelectedPartInstances()
-			now += currentPartInstance?.part.expectedDuration! - 500
-			// try to take just before an autonext
-			const response = ServerPlayoutAPI.takeNextPart(playlistId0)
-			expect(response).toBeTruthy()
-			expect((response as ClientAPI.ClientResponseError).message).toMatch(/cannot take shortly before/gi)
-			now = nowBuf
-		}
-
-		{
-			// simulate an autonext
-			const {
-				currentPartInstance: currentPartInstanceBeforeTake,
-				nextPartInstance: nextPartInstanceBeforeTake,
-			} = getPlaylist0().getSelectedPartInstances()
-			const currentPartInstanceBeforeTakeId = currentPartInstanceBeforeTake?._id
-			const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
-
-			now += currentPartInstanceBeforeTake?.part.expectedDuration!
-			ServerPlayoutAPI.onPartPlaybackStarted(rundownId0, nextPartInstanceBeforeTakeId!, now)
-			ServerPlayoutAPI.onPartPlaybackStopped(rundownId0, currentPartInstanceBeforeTakeId!, now)
-
-			const {
-				currentPartInstance: currentPartInstanceAfterTake,
-				nextPartInstance: nextPartInstanceAfterTake,
-			} = getPlaylist0().getSelectedPartInstances()
-			expect(currentPartInstanceAfterTake).toBeTruthy()
-			expect(currentPartInstanceAfterTake?.part._id).toBe(parts[1]._id)
-			expect(nextPartInstanceAfterTake).toBeTruthy()
-			expect(nextPartInstanceAfterTake?.part._id).toBe(parts[2]._id)
-
-			const previousPartInstanceAfterTake = PartInstances.findOne(currentPartInstanceBeforeTakeId)
-			expect(previousPartInstanceAfterTake).toBeTruthy()
-			expect(previousPartInstanceAfterTake?.part.timings?.stoppedPlayback!).toBeTruthy()
-			expect(_.last(previousPartInstanceAfterTake?.part.timings?.stoppedPlayback!)).toBe(now)
-		}
-	})
+	)
 	testInFiber('moveNextPart', async () => {
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(
 			env,
