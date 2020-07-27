@@ -63,7 +63,7 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, UserActionAPIMethods } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
 import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
@@ -81,6 +81,7 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { UserAction } from '../../../client/lib/userAction'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1055,7 +1056,9 @@ export namespace ServerPlayoutAPI {
 			currentPartInstance: PartInstance
 		) => void
 	) {
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+		let takeAfterExecute = false
+
+		rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 			if (!tmpPlaylist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
@@ -1101,7 +1104,13 @@ export namespace ServerPlayoutAPI {
 			}
 
 			waitForPromise(cache.saveAllToDatabase())
+
+			takeAfterExecute = context.takeAfterExecute
 		})
+
+		if (takeAfterExecute) {
+			Meteor.call(UserActionAPIMethods.take, 'e', rundownPlaylistId)
+		}
 	}
 	export function sourceLayerOnPartStop(
 		context: MethodContext,
