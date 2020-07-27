@@ -228,6 +228,14 @@ body.tv2 {
 				}
 			}
 		}
+
+		.segment-timeline__piece-appendage {
+			&.script-line {
+				&.at-end {
+					opacity: 0;
+				}
+			}
+		}
 	}
 	.segment-timeline.next,
 	.segment-timeline.live {
