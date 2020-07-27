@@ -216,7 +216,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 			this.getNoticeLevelForCriticality(message.criticality),
 			message.message,
 			message.sender || '(service message)',
-			message.timestamp.getMilliseconds(),
+			message.timestamp,
 			true
 		)
 	}
