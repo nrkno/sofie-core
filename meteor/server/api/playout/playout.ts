@@ -1491,7 +1491,7 @@ export namespace ServerPlayoutAPI {
 		})
 
 		if (takeAfterExecute) {
-			Meteor.call(UserActionAPIMethods.take, 'e', rundownPlaylistId)
+			ServerPlayoutAPI.takeNextPart(rundownPlaylistId)
 		}
 	}
 	export function sourceLayerOnPartStop(
