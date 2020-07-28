@@ -245,7 +245,7 @@ msgstr ""
 msgid "Air Status"
 msgstr ""
 
-msgid "Unsynced from MOS"
+msgid "Unsynced from {{nrcsName}}"
 msgstr ""
 
 msgid "Sofie Automation"
@@ -579,7 +579,7 @@ msgstr ""
 msgid "More than a day ago"
 msgstr ""
 
-msgid "MOS Connection"
+msgid "{{nrcsName}} Connection"
 msgstr ""
 
 msgid "Last update"
@@ -687,7 +687,7 @@ msgstr ""
 msgid "Disconnected"
 msgstr ""
 
-msgid "MOS Gateway"
+msgid "{{nrcsName}} Gateway"
 msgstr ""
 
 msgid "Spreadsheet Gateway"

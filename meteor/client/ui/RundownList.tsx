@@ -27,6 +27,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
+import { Settings } from '../../lib/Settings'
 
 const PackageInfo = require('../../package.json')
 
@@ -497,7 +498,9 @@ export const RundownList = translateWithTracker(() => {
 										<tbody>
 											<tr className="hl">
 												<th colSpan={9} className="pvn phn">
-													<h2 className="mtm mbs mhn">{t('Unsynced from MOS')}</h2>
+													<h2 className="mtm mbs mhn">
+														{(t('Unsynced from {{nrcsName}}'), { nrcsName: Settings.nrcsName })}
+													</h2>
 												</th>
 											</tr>
 										</tbody>
