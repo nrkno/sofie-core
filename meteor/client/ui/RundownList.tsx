@@ -32,6 +32,7 @@ import { UIStateStorage } from '../lib/UIStateStorage'
 import ClassNames from 'classnames'
 import { MeteorCall } from '../../lib/api/methods'
 import { IconProp } from '@fortawesome/fontawesome-svg-core'
+import { Settings } from '../../lib/Settings'
 
 const PackageInfo = require('../../package.json')
 
@@ -609,7 +610,9 @@ export const RundownList = translateWithTracker(() => {
 										<tbody>
 											<tr className="hl">
 												<th colSpan={9} className="pvn phn">
-													<h2 className="mtm mbs mhn">{t('Unsynced from MOS')}</h2>
+													<h2 className="mtm mbs mhn">
+														{(t('Unsynced from {{nrcsName}}'), { nrcsName: Settings.nrcsName })}
+													</h2>
 												</th>
 											</tr>
 										</tbody>

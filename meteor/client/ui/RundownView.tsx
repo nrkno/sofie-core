@@ -1162,7 +1162,9 @@ const RundownHeader = withTranslation()(
 									) ? (
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
-									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>{t('Reload ENPS Data')}</MenuItem>
+									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
+										{t('Reload {{nrcsName}} Data', { nrcsName: Settings.nrcsName })}
+									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
 							) : (

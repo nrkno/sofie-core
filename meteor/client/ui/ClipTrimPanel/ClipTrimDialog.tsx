@@ -12,6 +12,7 @@ import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
+import { Settings } from '../../../lib/Settings'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
@@ -73,7 +74,7 @@ export const ClipTrimDialog = withTranslation()(
 										<strong>{selectedPiece.name}</strong>:&ensp;
 										{t(
 											"Trimming this clip has timed out. It's possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.",
-											{ nrcsName: 'ENPS' }
+											{ nrcsName: Settings.nrcsName }
 										)}
 									</>
 								),
@@ -125,7 +126,7 @@ export const ClipTrimDialog = withTranslation()(
 								<strong>{selectedPiece.name}</strong>:&ensp;
 								{t(
 									"Trimming this clip is taking longer than expected. It's possible that the story is locked for writing in {{nrcsName}}.",
-									{ nrcsName: 'ENPS' }
+									{ nrcsName: Settings.nrcsName }
 								)}
 							</>
 						),
