@@ -1,89 +1,42 @@
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import {
-	getHash,
-	formatDateAsTimecode,
-	formatDurationAsTimecode,
 	unprotectString,
 	unprotectObject,
-	unprotectObjectArray,
 	protectString,
 	assertNever,
 	protectStringArray,
 	getCurrentTime,
 	unprotectStringArray,
-	normalizeArray,
-	literal,
 	getRandomId,
-	omit,
 } from '../../../../lib/lib'
-import { DBPart, PartId, Part } from '../../../../lib/collections/Parts'
-import { check, Match } from 'meteor/check'
+import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
-	ICommonContext,
-	NotesContext as INotesContext,
-	ShowStyleContext as IShowStyleContext,
-	RundownContext as IRundownContext,
-	SegmentContext as ISegmentContext,
 	EventContext as IEventContext,
-	AsRunEventContext as IAsRunEventContext,
-	PartEventContext as IPartEventContext,
 	ActionExecutionContext as IActionExecutionContext,
-	IStudioConfigContext,
-	ConfigItemValue,
-	IStudioContext,
-	BlueprintMappings,
-	BlueprintRuntimeArguments,
-	IBlueprintSegmentDB,
-	IngestRundown,
-	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
-	IBlueprintPartDB,
-	IBlueprintRundownDB,
-	IBlueprintAsRunLogEvent,
 	IBlueprintPiece,
 	IBlueprintPart,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintPieceDB,
 	PieceLifespan,
 	OmitId,
+	AdlibActionMutatablePart,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig } from '../config'
-import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { PartNote, NoteType, INoteBase } from '../../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { Segment, SegmentId } from '../../../../lib/collections/Segments'
-import {
-	PieceInstances,
-	unprotectPieceInstance,
-	PieceInstanceId,
-	PieceInstance,
-	wrapPieceToInstance,
-} from '../../../../lib/collections/PieceInstances'
-import {
-	InternalIBlueprintPartInstance,
-	PartInstanceId,
-	unprotectPartInstance,
-	PartInstance,
-	wrapPartToTemporaryInstance,
-} from '../../../../lib/collections/PartInstances'
+import { Rundown } from '../../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
+import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { StudioContext, NotesContext, ShowStyleContext, EventContext } from './context'
-import { setNextPart, getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
+import { NotesContext, ShowStyleContext, EventContext } from './context'
+import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
-import { Piece } from '../../../../lib/collections/Pieces'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -118,6 +71,19 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 }
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof OmitId<IBlueprintPiece>>
+
+const AdlibActionMutatablePartSample: Required<AdlibActionMutatablePart> = {
+	metaData: {},
+	expectedDuration: 0,
+	prerollDuration: 0,
+	transitionDuration: 0,
+	transitionPrerollDuration: 0,
+	transitionKeepaliveDuration: 0,
+}
+// Compile a list of the keys which are allowed to be set
+const AdlibActionMutatablePartSampleKeys = Object.keys(AdlibActionMutatablePartSample) as Array<
+	keyof AdlibActionMutatablePart
+>
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
@@ -449,6 +415,55 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(newPartInstance))
 	}
+	updatePartInstance(part: 'current' | 'next', props: AdlibActionMutatablePart): void {
+		// filter the submission to the allowed ones
+		const trimmedProps: Partial<AdlibActionMutatablePart> = _.pick(props, AdlibActionMutatablePartSampleKeys)
+		if (Object.keys(trimmedProps).length === 0) {
+			throw new Error('Some valid properties must be defined')
+		}
+
+		const partInstanceId = this._getPartInstanceId(part)
+		if (!partInstanceId) {
+			throw new Error('Cannot insert piece when no active part')
+		}
+
+		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
+		if (!partInstance) {
+			throw new Error('Cannot queue part when no partInstance')
+		}
+
+		const update = {
+			$set: {},
+			$unset: {},
+		}
+		const legacyUpdate = {
+			$set: {},
+			$unset: {},
+		}
+
+		for (const [k, val] of Object.entries(trimmedProps)) {
+			if (val === undefined) {
+				update.$unset[`part.${k}`] = val
+				legacyUpdate.$unset[`${k}`] = val
+			} else {
+				update.$set[`part.${k}`] = val
+				legacyUpdate.$set[`${k}`] = val
+			}
+		}
+
+		this.cache.PartInstances.update(partInstance._id, update)
+		this.cache.Parts.update(partInstance.part._id, legacyUpdate)
+
+		this.nextPartState = Math.max(
+			this.nextPartState,
+			part === 'next' ? ActionPartChange.MARK_DIRTY : ActionPartChange.NONE
+		)
+		this.currentPartState = Math.max(
+			this.currentPartState,
+			part === 'current' ? ActionPartChange.MARK_DIRTY : ActionPartChange.NONE
+		)
+	}
+
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
 		if (sourceLayerIds.length == 0) {
 			return []
@@ -468,6 +483,26 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			(pieceInstance) => pieceInstanceIds.indexOf(unprotectString(pieceInstance._id)) !== -1,
 			timeOffset
 		)
+	}
+	removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): void {
+		const partInstanceId = this._getPartInstanceId(part)
+		if (!partInstanceId) {
+			return
+		}
+
+		const pieceInstances = this.cache.PieceInstances.findFetch({
+			partInstanceId: partInstanceId,
+			_id: { $in: protectStringArray(pieceInstanceIds) },
+		})
+
+		this.cache.PieceInstances.remove({
+			partInstanceId: partInstanceId,
+			_id: { $in: pieceInstances.map((p) => p._id) },
+		})
+		this.cache.Pieces.remove({
+			partInstanceId: partInstanceId,
+			_id: { $in: pieceInstances.map((p) => p.piece._id) },
+		})
 	}
 
 	takeAfterExecuteAction(take: boolean): boolean {
