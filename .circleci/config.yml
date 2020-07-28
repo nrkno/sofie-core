@@ -178,4 +178,5 @@ workflows:
                 - master
                 - develop
                 - stage
+                - /merge-upstream-changes/
                 - /release\d+/
