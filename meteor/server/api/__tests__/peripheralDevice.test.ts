@@ -12,8 +12,8 @@ import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/ap
 
 import { getCurrentTime, literal, protectString } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLoggerLevel } from '../../../server/api/logger'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import {
@@ -21,19 +21,29 @@ import {
 	IngestDeviceSecretSettings,
 } from '../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
 
+jest.mock('../playout/playout.ts')
+const { ServerPlayoutAPI: ActualServerPlayoutAPI } = jest.requireActual('../playout/playout.ts')
+import { ServerPlayoutAPI } from '../playout/playout'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
+
 describe('test peripheralDevice general API methods', () => {
 	let device: PeripheralDevice
+	let rundownID: RundownId
+	let rundownPlaylistID: RundownPlaylistId
+	let env: DefaultEnvironment
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
-		let rundownID: RundownId = protectString('rundown0')
+		env = setupDefaultStudioEnvironment()
+		device = env.ingestDevice
+		rundownID = protectString('rundown0')
+		rundownPlaylistID = protectString('rundownPlaylist0')
 		let rundownExternalID: string = 'rundown0'
-		let rundownPlaylistID: RundownPlaylistId = protectString('rundownPlaylist0')
 		RundownPlaylists.insert({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',
 			name: 'Mock',
-			studioId: protectString(''),
-			peripheralDeviceId: protectString(''),
+			studioId: env.studio._id,
+			peripheralDeviceId: env.ingestDevice._id,
 			created: 0,
 			modified: 0,
 			currentPartInstanceId: null,
@@ -44,15 +54,15 @@ describe('test peripheralDevice general API methods', () => {
 		Rundowns.insert({
 			_id: rundownID,
 			externalId: rundownExternalID,
-			studioId: protectString('studio0'),
-			showStyleBaseId: protectString('showStyle0'),
-			showStyleVariantId: protectString('variant0'),
+			studioId: env.studio._id,
+			showStyleBaseId: env.showStyleBaseId,
+			showStyleVariantId: env.showStyleVariantId,
 			name: 'test rundown',
 			created: 1000,
 			playlistId: rundownPlaylistID,
 			_rank: 0,
 			dataSource: 'mock',
-			peripheralDeviceId: protectString('testMosDevice'),
+			peripheralDeviceId: env.ingestDevice._id,
 			modified: getCurrentTime(),
 			importVersions: {
 				studio: 'wibble',
@@ -79,6 +89,19 @@ describe('test peripheralDevice general API methods', () => {
 			segmentId: segmentID,
 			rundownId: rundownID,
 			title: 'Part 000',
+		})
+		Pieces.insert({
+			_id: protectString('piece0001'),
+			enable: {
+				start: 0,
+			},
+			externalId: '',
+			name: 'Mock',
+			sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+			outputLayerId: env.showStyleBase.outputLayers[0]._id,
+			partId: protectString('part000'),
+			rundownId: rundownID,
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
 		})
 		Parts.insert({
 			_id: protectString('part001'),
@@ -161,6 +184,33 @@ describe('test peripheralDevice general API methods', () => {
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 	})
 
+	testInFiber('determineDiffTime', () => {
+		const response = Meteor.call(PeripheralDeviceAPIMethods.determineDiffTime)
+		expect(response).toBeTruthy()
+		expect(response.mean).toBeTruthy()
+		expect(response.stdDev).toBeTruthy()
+	})
+
+	testInFiber('getTimeDiff', () => {
+		const now = getCurrentTime()
+		const response = Meteor.call(PeripheralDeviceAPIMethods.getTimeDiff)
+		expect(response).toBeTruthy()
+		console.dir(response)
+		expect(response.currentTime).toBeGreaterThan(now - 30)
+		expect(response.currentTime).toBeLessThan(now + 30)
+		expect(response.systemRawTime).toBeGreaterThan(0)
+		expect(response.diff).toBeDefined()
+		expect(response.stdDev).toBeDefined()
+		expect(response.good).toBeDefined()
+	})
+
+	testInFiber('getTime', () => {
+		const now = getCurrentTime()
+		const response = Meteor.call(PeripheralDeviceAPIMethods.getTime)
+		expect(response).toBeGreaterThan(now - 30)
+		expect(response).toBeLessThan(now + 30)
+	})
+
 	testInFiber('pingWithCommand and functionReply', () => {
 		setLoggerLevel('debug')
 
@@ -206,51 +256,104 @@ describe('test peripheralDevice general API methods', () => {
 		expect(resultMessage).toEqual(replyMessage)
 	})
 
-	/*
 	testInFiber('partPlaybackStarted', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
 		setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
 		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
-			rundownId: 'rundown0',
-			partId: 'part000',
-			time: getCurrentTime()
+			rundownId: rundownID,
+			partInstanceId: currentPartInstance?._id!,
+			time: getCurrentTime(),
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStarted, device._id, device.token, partPlaybackStartedResult)
-	}) */
 
-	/* testInFiber('partPlaybackStopped', () => {
-		setLoggerLevel('debug')
-		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
-			rundownId: 'rundown0',
-			partId: 'part000',
-			time: getCurrentTime()
-		}
-		console.log(Parts.findOne(partPlaybackStoppedResult.partId))
-		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStopped, device._id, device.token, partPlaybackStoppedResult)
-		console.log(Parts.findOne(partPlaybackStoppedResult.partId))
-	}) */
+		expect(ServerPlayoutAPI.onPartPlaybackStarted).toHaveBeenCalled()
 
-	/* testInFiber('piecePlaybackStarted', () => {
-		setLoggerLevel('debug')
-		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
-			rundownId: 'rundown0',
-			pieceId: 'piece000',
-			time: getCurrentTime()
-		}
-		Meteor.call(PeripheralDeviceAPIMethods.piecePlaybackStarted, device._id, device.token, piecePlaybackStartedResult)
-	}) */
-
-	/* testInFiber('piecePlaybackStopped', () => {
-		setLoggerLevel('debug')
-		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
-			rundownId: 'rundown0',
-			pieceId: 'piece000',
-			time: getCurrentTime()
-		}
-		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
-		Meteor.call(PeripheralDeviceAPIMethods.piecePlaybackStopped, device._id, device.token, piecePlaybackStoppedResult)
-		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
 	})
-	*/
+
+	testInFiber('partPlaybackStopped', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
+			rundownId: rundownID,
+			partInstanceId: currentPartInstance?._id!,
+			time: getCurrentTime(),
+		}
+
+		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStopped, device._id, device.token, partPlaybackStoppedResult)
+
+		expect(ServerPlayoutAPI.onPartPlaybackStopped).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
+
+	testInFiber('piecePlaybackStarted', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const pieces = PieceInstances.find({
+			partInstanceId: currentPartInstance?._id!,
+		}).fetch()
+		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
+			rundownId: rundownID,
+			pieceInstanceId: pieces[0]._id,
+			time: getCurrentTime(),
+		}
+
+		Meteor.call(
+			PeripheralDeviceAPIMethods.piecePlaybackStarted,
+			device._id,
+			device.token,
+			piecePlaybackStartedResult
+		)
+
+		expect(ServerPlayoutAPI.onPiecePlaybackStarted).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
+
+	testInFiber('piecePlaybackStopped', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const pieces = PieceInstances.find({
+			partInstanceId: currentPartInstance?._id!,
+		}).fetch()
+		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
+			rundownId: rundownID,
+			pieceInstanceId: pieces[0]._id,
+			time: getCurrentTime(),
+		}
+
+		Meteor.call(
+			PeripheralDeviceAPIMethods.piecePlaybackStopped,
+			device._id,
+			device.token,
+			piecePlaybackStoppedResult
+		)
+
+		expect(ServerPlayoutAPI.onPiecePlaybackStopped).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
 
 	testInFiber('killProcess with a rundown present', () => {
 		// test this does not shutdown because Rundown stored
