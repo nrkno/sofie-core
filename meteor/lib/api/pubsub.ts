@@ -40,6 +40,7 @@ export enum PubSub {
 	rundownLayouts = 'rundownLayouts',
 	buckets = 'buckets',
 	bucketAdLibPieces = 'bucketAdLibPieces',
+	translationsBundles = 'translationsBundles',
 }
 
 export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {
