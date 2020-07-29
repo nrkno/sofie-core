@@ -356,7 +356,7 @@ describe('test peripheralDevice general API methods', () => {
 		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
 	})
 
-	testInFiberOnly('timelineTriggerTime', () => {
+	testInFiber('timelineTriggerTime', () => {
 		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
 		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
 
@@ -542,80 +542,20 @@ describe('test peripheralDevice general API methods', () => {
 			expect(e.message).toBe(`[400] device status code is not known`)
 		}
 	})
-	// it('peripheralDevice.initialize() with bad arguments', async function () {
-	// 	let deviceId = Random.id()
-	// 	let token = Random.id()
-	//
-	// 	let options: PeripheralDeviceAPI.InitOptions = {
-	// 		type: 0,
-	// 		name: 'test',
-	// 		connectionId: 'test'
-	// 	}
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.initialize('', token, options) // missing id
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.initialize(deviceId, '', options) // missing token
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	//
-	// 		return ServerPeripheralDeviceAPI.initialize(deviceId, token, null as any) // missing options
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	//
-	// 		return ServerPeripheralDeviceAPI.initialize(deviceId, token, {} as any) // bad options
-	// 	}).to.throw()
-	// })
-	//
-	// it('peripheralDevice.setStatus() with bad arguments', async function () {
-	// 	let deviceId = Random.id()
-	// 	let token = Random.id()
-	// 	let options: PeripheralDeviceAPI.InitOptions = {
-	// 		type: 0,
-	// 		name: 'test',
-	// 		connectionId: 'test'
-	// 	}
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.throw() // because device is not initialized yet
-	//
-	// 	let returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token, options)
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.not.throw()
-	//
-	// 	// try with bad arguments:
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {} as any ) // missing statusCode
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, null as any) // missing status
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, '', { // missing token
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus('', token, { // missing id
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.throw()
-	//
-	// })
+
+	testInFiber('removePeripheralDevice', () => {
+		{
+			const deviceObj = PeripheralDevices.findOne(device?._id)
+			expect(deviceObj).toBeDefined()
+
+			Meteor.call(PeripheralDeviceAPIMethods.removePeripheralDevice, device?._id)
+		}
+
+		{
+			const deviceObj = PeripheralDevices.findOne(device?._id)
+			expect(deviceObj).toBeUndefined()
+		}
+	})
 })
 
 // Note: The data below is copied straight from the test data in mos-connection
