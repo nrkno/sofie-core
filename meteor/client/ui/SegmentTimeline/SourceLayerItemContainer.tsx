@@ -68,11 +68,11 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 						? (piece.instance.piece.content as LiveSpeakContent).fileName?.toUpperCase()
 						: undefined
 					break
-				/*case SourceLayerType.GRAPHICS:
+				case SourceLayerType.GRAPHICS:
 					objId = piece.instance.piece.content
 						? (piece.instance.piece.content as GraphicsContent).fileName?.toUpperCase()
 						: undefined
-					break*/
+					break
 			}
 
 			if (objId && objId !== this.objId) {

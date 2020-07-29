@@ -108,11 +108,11 @@ export function getMediaObjectMediaId(piece: IBlueprintPieceGeneric, sourceLayer
 				return (piece.content as VTContent).fileName?.toUpperCase()
 			}
 			return undefined
-		/*case SourceLayerType.GRAPHICS:
+		case SourceLayerType.GRAPHICS:
 			if (piece.content && piece.content.fileName) {
 				return (piece.content as GraphicsContent).fileName?.toUpperCase()
 			}
-			return undefined*/
+			return undefined
 	}
 	return undefined
 }

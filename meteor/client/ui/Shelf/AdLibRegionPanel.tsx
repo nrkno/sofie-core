@@ -201,11 +201,11 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					case SourceLayerType.LIVE_SPEAK:
 						objId = (piece.content as LiveSpeakContent).fileName?.toUpperCase()
 						break
-					/*case SourceLayerType.GRAPHICS:
+					case SourceLayerType.GRAPHICS:
 						if (piece.content.fileName) {
 							objId = (piece.content as GraphicsContent).fileName?.toUpperCase()
 						}
-						break*/
+						break
 				}
 			}
 
