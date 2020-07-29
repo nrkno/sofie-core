@@ -10,7 +10,7 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -26,6 +26,7 @@ const { ServerPlayoutAPI: ActualServerPlayoutAPI } = jest.requireActual('../play
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { Timeline } from '../../../lib/collections/Timeline'
 
 describe('test peripheralDevice general API methods', () => {
 	let device: PeripheralDevice
@@ -351,6 +352,43 @@ describe('test peripheralDevice general API methods', () => {
 		)
 
 		expect(ServerPlayoutAPI.onPiecePlaybackStopped).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
+
+	testInFiberOnly('timelineTriggerTime', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const timelineObjs = Timeline.find({
+			studioId: env.studio._id,
+			enable: {
+				start: 'now',
+			},
+		}).fetch()
+		expect(timelineObjs.length).toBe(1)
+		console.dir(timelineObjs)
+		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
+			id: tObj.id,
+			time: getCurrentTime(),
+		}))
+
+		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
+
+		const timelineUpdatedObjs = Timeline.find({
+			_id: {
+				$in: timelineObjs.map((tlObj) => tlObj._id),
+			},
+		})
+		timelineUpdatedObjs.forEach((tlObj) => {
+			expect(tlObj.enable.setFromNow).toBe(true)
+			expect(tlObj.enable.start).toBeGreaterThan(0)
+		})
+
+		expect(ServerPlayoutAPI.timelineTriggerTimeUpdateCallback).toHaveBeenCalled()
 
 		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
 	})
