@@ -30,6 +30,8 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { MediaObjects } from '../../../lib/collections/MediaObjects'
+import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
 
 const DEBUG = false
 
@@ -728,6 +730,130 @@ describe('test peripheralDevice general API methods', () => {
 
 				const updatedWorkFlow = MediaWorkFlowSteps.findOne(workStepIds[0])
 				expect(updatedWorkFlow).toBeFalsy()
+			})
+		})
+	})
+
+	// test Media Scanner API
+	describe('Media Scanner API', () => {
+		let deviceId: ProtectedString<any>
+		const MOCK_COLLECTION = 'MockCollection'
+		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
+		const MOCK_OBJID = Random.id()
+		beforeEach(() => {
+			deviceId = protectString(Random.id())
+			env = setupDefaultStudioEnvironment()
+			PeripheralDevices.insert({
+				_id: deviceId,
+				name: 'Mock Media Manager',
+				studioId: env.studio._id,
+				category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '0',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				subType: '_process',
+				token: 'MockToken',
+				type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+			})
+			device = PeripheralDevices.findOne(deviceId)!
+
+			MediaObjects.remove({
+				collectionId: MOCK_COLLECTION,
+			})
+			MediaObjects.insert({
+				_id: protectString(MOCK_COLLECTION + '_' + MOCK_OBJID),
+				_rev: '1',
+				_attachments: {},
+				cinf: '',
+				collectionId: MOCK_COLLECTION,
+				mediaId: MOCK_MEDIA_ID,
+				mediaPath: '',
+				mediaSize: 10,
+				mediaTime: 0,
+				objId: MOCK_OBJID,
+				studioId: device.studioId!,
+				thumbSize: 0,
+				thumbTime: 0,
+				tinf: '',
+			})
+		})
+		testInFiber('getMediaObjectRevisions', () => {
+			const mobjects = MediaObjects.find({
+				studioId: device.studioId,
+			})
+				.fetch()
+				.map((mo) => ({
+					_id: mo._id,
+					_rev: mo._rev,
+				}))
+			expect(mobjects.length).toBeGreaterThan(0)
+
+			const revs = Meteor.call(
+				PeripheralDeviceAPIMethods.getMediaObjectRevisions,
+				device._id,
+				device.token,
+				MOCK_COLLECTION
+			)
+
+			expect(revs.length).toBe(mobjects.length)
+			expect(mobjects).toMatchObject(mobjects)
+		})
+		describe('updateMediaObject', () => {
+			testInFiber('update', () => {
+				const mo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(mo).toBeTruthy()
+
+				const newMo = Object.assign({}, mo)
+				newMo._rev = '2'
+				newMo.cinf = 'MOCK CINF'
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaObject,
+					device._id,
+					device.token,
+					MOCK_COLLECTION,
+					mo?.objId,
+					newMo
+				)
+
+				const updateMo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(updateMo).toMatchObject(newMo)
+			})
+			testInFiber('remove', () => {
+				const mo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(mo).toBeTruthy()
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaObject,
+					device._id,
+					device.token,
+					MOCK_COLLECTION,
+					mo?.objId,
+					null
+				)
+
+				const updateMo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(updateMo).toBeFalsy()
 			})
 		})
 	})
