@@ -272,9 +272,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 		onKeyClick = (e: any, hotkeys: IBaseHotkeyAssignment[]) => {
 			hotkeys.forEach((hotkey) => {
 				if (hotkey.eventHandlerArguments) {
-					hotkey.eventHandler(e, ...hotkey.eventHandlerArguments)
-				} else {
-					hotkey.eventHandler(e)
+					hotkey.eventHandler(...hotkey.eventHandlerArguments, e)
 				}
 			})
 		}

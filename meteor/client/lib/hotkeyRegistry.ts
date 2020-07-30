@@ -15,7 +15,7 @@ export interface IHotkeyAssignment {
 	label: string
 	type: HotkeyAssignmentType
 	sourceLayer: ISourceLayer | undefined
-	eventHandler: (e: any, ...args: any[]) => void
+	eventHandler: (...args: any[]) => void
 	eventHandlerArguments?: any[]
 	willQueue?: boolean
 }
@@ -33,7 +33,7 @@ export function registerHotkey(
 	type: HotkeyAssignmentType,
 	sourceLayer: ISourceLayer | undefined,
 	willQueue: boolean,
-	eventHandler: (e: any, ...args: any[]) => void,
+	eventHandler: (...args: any[]) => void,
 	eventHandlerArguments?: any[],
 	tag?: string
 ) {
