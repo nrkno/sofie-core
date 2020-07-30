@@ -255,30 +255,34 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 				const currentPart = currentPartInstance
 				const context = new PartEventContext(activeRundown, studio, currentPart)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
-				const tlGenRes = waitForPromise(
-					showStyleBlueprintManifest.onTimelineGenerate(
-						context,
-						timelineObjs,
-						playlist.previousPersistentState,
-						currentPart.part.previousPartEndState,
-						unprotectObjectArray(resolvedPieces.pieces)
+				try {
+					const tlGenRes = waitForPromise(
+						showStyleBlueprintManifest.onTimelineGenerate(
+							context,
+							timelineObjs,
+							playlist.previousPersistentState,
+							currentPart.part.previousPartEndState,
+							unprotectObjectArray(resolvedPieces.pieces)
+						)
 					)
-				)
-				timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
-					return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
-						...object,
-						_id: protectString(''), // set later
-						objectType: TimelineObjType.RUNDOWN,
-						studioId: studio._id,
+					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
+						return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
+							...object,
+							_id: protectString(''), // set later
+							objectType: TimelineObjType.RUNDOWN,
+							studioId: studio._id,
+						})
 					})
-				})
-				// TODO - is this the best place for this save?
-				if (tlGenRes.persistentState) {
-					cache.RundownPlaylists.update(playlist._id, {
-						$set: {
-							previousPersistentState: tlGenRes.persistentState,
-						},
-					})
+					// TODO - is this the best place for this save?
+					if (tlGenRes.persistentState) {
+						cache.RundownPlaylists.update(playlist._id, {
+							$set: {
+								previousPersistentState: tlGenRes.persistentState,
+							},
+						})
+					}
+				} catch (e) {
+					logger.error(`Error in onTimelineGenerate during getTimelineRundown`, e)
 				}
 			}
 
