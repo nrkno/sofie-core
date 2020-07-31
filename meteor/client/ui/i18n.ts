@@ -58,7 +58,9 @@ class I18nContainer extends WithManagedTracker {
 
 		this.subscribe(PubSub.translationsBundles, null)
 		this.autorun(() => {
+			console.debug('ManagedTracker autorun...')
 			const bundles = TranslationsBundles.find().fetch()
+			console.debug(`Got ${bundles.length} bundles from database`)
 			for (const bundle of bundles) {
 				this.i18nInstance.addResourceBundle(
 					bundle.language,
@@ -67,6 +69,7 @@ class I18nContainer extends WithManagedTracker {
 					true,
 					true
 				)
+				console.debug('i18instance updated', { bundle: { lang: bundle.language, ns: bundle.namespace } })
 			}
 		})
 	}

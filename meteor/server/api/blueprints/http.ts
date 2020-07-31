@@ -23,6 +23,8 @@ PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessa
 	check(blueprintId, String)
 	check(blueprintName, Match.Maybe(String))
 
+	logger.debug(`/blueprints/restore/:${blueprintId}`)
+
 	let content = ''
 	try {
 		const body = req.body
