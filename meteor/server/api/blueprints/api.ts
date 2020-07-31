@@ -3,13 +3,18 @@ import { getCurrentTime, protectString, unprotectString, getRandomId, makePromis
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
-import { BlueprintManifestType, SomeBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
+import {
+	BlueprintManifestType,
+	SomeBlueprintManifest,
+	TranslationsBundle,
+} from 'tv-automation-sofie-blueprints-integration'
 import { check, Match } from 'meteor/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'
 import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprints } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
+import { upsertBundles } from '../translationsBundles'
 
 export function insertBlueprint(type?: BlueprintManifestType, name?: string): BlueprintId {
 	return Blueprints.insert({
@@ -147,6 +152,16 @@ export function uploadBlueprint(
 	}
 	if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
 		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
+	}
+
+	// extract and store translations bundled with the manifest if any
+	logger.debug(`blueprintManifest for ${newBlueprint.name} translations`, {
+		translations: (blueprintManifest as any).translations,
+		type: typeof (blueprintManifest as any).translations,
+	})
+	if ((blueprintManifest as any).translations) {
+		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
+		upsertBundles(translations)
 	}
 
 	// Parse the versions, just to verify that the format is correct:
