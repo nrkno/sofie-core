@@ -21,7 +21,7 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
-import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/viewPort'
+import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
@@ -580,7 +580,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 				// is viewport. This seems like an implementation bug and IntersectionObserver is
 				// an Experimental Feature in Chrome, so this might change in the future.
-				rootMargin: `-${HEADER_HEIGHT * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
+				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
 			this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)
