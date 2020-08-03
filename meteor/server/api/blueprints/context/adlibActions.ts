@@ -387,7 +387,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(newPartInstance))
 	}
-	updatePartInstance(part: 'current' | 'next', props: IBlueprintMutatablePart): void {
+	updatePartInstance(part: 'current' | 'next', props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
 		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(props, IBlueprintMutatablePartSampleKeys)
 		if (Object.keys(trimmedProps).length === 0) {
@@ -396,12 +396,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		const partInstanceId = this._getPartInstanceId(part)
 		if (!partInstanceId) {
-			throw new Error('Cannot insert piece when no active part')
+			throw new Error('PartInstance could not be found')
 		}
 
 		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
 		if (!partInstance) {
-			throw new Error('Cannot queue part when no partInstance')
+			throw new Error('PartInstance could not be found')
 		}
 
 		const update = {
@@ -434,6 +434,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			this.currentPartState,
 			part === 'current' ? ActionPartChange.MARK_DIRTY : ActionPartChange.NONE
 		)
+
+		return clone(unprotectObject(this.cache.PartInstances.findOne(partInstance._id)!))
 	}
 
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
@@ -456,10 +458,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			timeOffset
 		)
 	}
-	removePieceInstances(part: 'current' | 'next', pieceInstanceIds: string[]): void {
-		const partInstanceId = this._getPartInstanceId(part)
+	removePieceInstances(_part: 'next', pieceInstanceIds: string[]): void {
+		const partInstanceId = this.rundownPlaylist.nextPartInstanceId // this._getPartInstanceId(part)
 		if (!partInstanceId) {
-			return
+			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
 
 		const pieceInstances = this.cache.PieceInstances.findFetch({
@@ -471,10 +473,19 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			partInstanceId: partInstanceId,
 			_id: { $in: pieceInstances.map((p) => p._id) },
 		})
+
+		// TODO-PartInstances - we wont need to remove the pieces anymore
 		this.cache.Pieces.remove({
-			partInstanceId: partInstanceId,
+			rundownId: { $in: pieceInstances.map((p) => p.rundownId) },
 			_id: { $in: pieceInstances.map((p) => p.piece._id) },
 		})
+
+		// Track the severity of this change
+		const preprogrammedPieces = pieceInstances.filter((p) => !p.piece.dynamicallyInserted)
+		// TODO-PartInstances - this will always be SAFE_CHANGE
+		const changeLevel = preprogrammedPieces.length > 0 ? ActionPartChange.MARK_DIRTY : ActionPartChange.SAFE_CHANGE
+
+		this.nextPartState = Math.max(this.nextPartState, changeLevel)
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
