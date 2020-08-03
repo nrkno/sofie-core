@@ -687,7 +687,7 @@ msgstr ""
 msgid "Disconnected"
 msgstr ""
 
-msgid "{{nrcsName}} Gateway"
+msgid "MOS Gateway"
 msgstr ""
 
 msgid "Spreadsheet Gateway"
