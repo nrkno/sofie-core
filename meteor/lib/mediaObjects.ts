@@ -202,6 +202,7 @@ export function checkPieceContentStatus(
 										audioStreams++
 									}
 								}
+
 								if (timebase) {
 									mediaObject.mediainfo.timebase = timebase
 								}
@@ -263,20 +264,26 @@ export function checkPieceContentStatus(
 										}
 									}
 									if (mediaObject.mediainfo.blacks) {
-										addFrameWarning(mediaObject.mediainfo.blacks, 'black', t)
+										addFrameWarning(mediaObject.mediainfo!.blacks, 'black', t)
 									}
 									if (mediaObject.mediainfo.freezes) {
-										addFrameWarning(mediaObject.mediainfo.freezes, 'freeze', t)
+										addFrameWarning(mediaObject.mediainfo!.freezes, 'freeze', t)
 									}
 								}
+							} else {
+								messages.push(t('Clip is being ingested', { fileName: displayName }))
+								newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 							}
 						} else {
 							messages.push(t('Clip is being ingested', { fileName: displayName }))
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 						}
-
-						metadata = mediaObject
+						message = t('{{displayName}}: {{messages}}', {
+							displayName: displayName,
+							messages: messages.join(', '),
+						})
 					}
+					break
 				}
 				break
 			case SourceLayerType.GRAPHICS:
@@ -292,7 +299,6 @@ export function checkPieceContentStatus(
 						metadata = mediaObject
 					}
 				}
-				break
 		}
 
 		if (messages.length) {
