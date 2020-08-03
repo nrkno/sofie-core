@@ -159,8 +159,8 @@ workflows:
               only: /.*/
       - publish-tag:
           requires:
-            - tests
-            - validate-dependencies
+            # - tests
+            # - validate-dependencies
             - build
           filters:
             tags:
