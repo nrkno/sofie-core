@@ -1,74 +1,28 @@
 import * as _ from 'underscore'
 import {
 	setupDefaultStudioEnvironment,
-	setupMockStudio,
-	setupDefaultRundown,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
-import {
-	getHash,
-	literal,
-	protectString,
-	unprotectObject,
-	unprotectString,
-	waitForPromise,
-	getRandomId,
-	getCurrentTime,
-} from '../../../../lib/lib'
+import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
+import { IBlueprintPart, IBlueprintPiece } from 'tv-automation-sofie-blueprints-integration'
+import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
+import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
-	LookaheadMode,
-	NotesContext as INotesContext,
-	IBlueprintPart,
-	IBlueprintPartDB,
-	IBlueprintAsRunLogEventContent,
-	IBlueprintSegment,
-	IBlueprintSegmentDB,
-	IBlueprintPieceDB,
-	TSR,
-	IBlueprintPartInstance,
-	IBlueprintPieceInstance,
-	IBlueprintPiece,
-} from 'tv-automation-sofie-blueprints-integration'
-import {
-	CommonContext,
-	StudioConfigContext,
-	StudioContext,
-	ShowStyleContext,
-	NotesContext,
-	SegmentContext,
-	PartEventContext,
-	AsRunEventContext,
-	ActionExecutionContext,
-	ActionPartChange,
-} from '../context'
-import { ConfigRef } from '../config'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
-import { Pieces } from '../../../../lib/collections/Pieces'
-import {
-	wrapPartToTemporaryInstance,
-	PartInstance,
-	PartInstances,
-	unprotectPartInstance,
-	PartInstanceId,
-} from '../../../../lib/collections/PartInstances'
-import {
-	PieceInstances,
 	PieceInstance,
 	ResolvedPieceInstance,
 	PieceInstanceId,
+	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
-import { SegmentId } from '../../../../lib/collections/Segments'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import {
+	initCacheForRundownPlaylist,
+	CacheForRundownPlaylist,
+	wrapWithCacheForRundownPlaylist,
+} from '../../../DatabaseCaches'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { RundownAPI } from '../../../../lib/api/rundown'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
@@ -92,7 +46,7 @@ const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
-import { isTooCloseToAutonext } from '../../playout/lib'
+import { isTooCloseToAutonext, getRundownIDsFromCache } from '../../playout/lib'
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
@@ -130,10 +84,72 @@ describe('Test blueprint api context', () => {
 		})
 	}
 
+	function generateSparsePieceInstances2(rundown: Rundown) {
+		rundown.getParts().forEach((part, i) => {
+			// make into a partInstance
+			PartInstances.insert({
+				_id: protectString(`${part._id}_instance`),
+				rundownId: part.rundownId,
+				segmentId: part.segmentId,
+				takeCount: i,
+				rehearsal: false,
+				part,
+			})
+
+			const count = ((i + 2) % 4) + 1 // Some consistent randomness
+			for (let i = 0; i < count; i++) {
+				PieceInstances.insert({
+					_id: protectString(`${part._id}_piece${i}`),
+					rundownId: rundown._id,
+					partInstanceId: protectString(`${part._id}_instance`),
+					piece: {
+						_id: protectString(`${part._id}_piece_inner${i}`),
+						externalId: '-',
+						enable: { start: 0 },
+						name: 'mock',
+						status: -1,
+						sourceLayerId: '',
+						outputLayerId: '',
+						rundownId: rundown._id,
+						partId: part._id,
+						content: {
+							index: i,
+						},
+					},
+				})
+			}
+		})
+	}
+
 	let env: DefaultEnvironment
 	beforeAll(() => {
 		env = setupDefaultStudioEnvironment()
 	})
+
+	function getActionExecutionContext2(cache: CacheForRundownPlaylist) {
+		const playlist = cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist) as RundownPlaylist
+		expect(playlist).toBeTruthy()
+		const rundown = cache.Rundowns.findOne({ playlistId: cache.containsDataFromPlaylist }) as Rundown
+		expect(rundown).toBeTruthy()
+
+		const studio = cache.Studios.findOne(rundown.studioId) as Studio
+		expect(studio).toBeTruthy()
+
+		// Load all the PieceInstances, as we set the selected instances later
+		const rundownIds = getRundownIDsFromCache(cache, playlist)
+		waitForPromise(cache.PieceInstances.fillWithDataFromDatabase({ rundownId: { $in: rundownIds } }))
+
+		const notesContext = new NotesContext('fakeContext', `fakeContext`, true)
+		const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+		expect(context.getStudio()).toBeTruthy()
+
+		return {
+			playlist,
+			rundown,
+			notesContext,
+			context,
+		}
+	}
 
 	function getActionExecutionContext() {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
@@ -164,6 +180,19 @@ describe('Test blueprint api context', () => {
 			notesContext,
 			context,
 		}
+	}
+
+	function wrapWithCache<T>(fcn: (cache: CacheForRundownPlaylist, playlist: RundownPlaylist) => T) {
+		const defaultSetup = setupDefaultRundownPlaylist(env)
+		const tmpPlaylist = RundownPlaylists.findOne(defaultSetup.playlistId) as RundownPlaylist
+		expect(tmpPlaylist).toBeTruthy()
+
+		const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
+		expect(rundown).toBeTruthy()
+
+		generateSparsePieceInstances2(rundown)
+
+		return wrapWithCacheForRundownPlaylist(tmpPlaylist, (cache) => fcn(cache, tmpPlaylist))
 	}
 
 	describe('ActionExecutionContext', () => {
@@ -924,6 +953,123 @@ describe('Test blueprint api context', () => {
 
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 				expect(context.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
+			})
+		})
+		describe('removePieceInstances', () => {
+			testInFiber('invalid parameters', () => {
+				wrapWithCache((cache) => {
+					const { context, playlist } = getActionExecutionContext2(cache)
+
+					// No instance id
+					playlist.nextPartInstanceId = null
+					expect(() => context.removePieceInstances('next', ['lay1'])).toThrowError(
+						'Cannot remove pieceInstances when no selected partInstance'
+					)
+
+					// Ensure missing/bad ids dont delete anything
+					const beforePiecesCount = cache.Pieces.findFetch().length
+					const beforePieceInstancesCount = cache.PieceInstances.findFetch().length // Because only those frm current, next, prev are included..
+					expect(beforePiecesCount).not.toEqual(0)
+					expect(beforePieceInstancesCount).not.toEqual(0)
+
+					playlist.nextPartInstanceId = protectString('abc')
+					context.removePieceInstances('next', [])
+					context.removePieceInstances('next', [unprotectString(cache.PieceInstances.findOne()!._id)]) // Try and remove something belonging to a different part
+
+					expect(cache.Pieces.findFetch().length).toEqual(beforePiecesCount)
+					expect(cache.PieceInstances.findFetch().length).toEqual(beforePieceInstancesCount)
+				})
+			})
+
+			testInFiber('good', () => {
+				wrapWithCache((cache) => {
+					const { context, playlist } = getActionExecutionContext2(cache)
+
+					expect(cache.PieceInstances.findFetch().length).not.toEqual(0)
+					expect(cache.Pieces.findFetch().length).not.toEqual(0)
+
+					// Find the instance, and create its backing piece
+					const targetPieceInstance = cache.PieceInstances.findOne() as PieceInstance
+					expect(targetPieceInstance).toBeTruthy()
+					cache.Pieces.insert(targetPieceInstance.piece)
+
+					playlist.nextPartInstanceId = targetPieceInstance.partInstanceId
+					context.removePieceInstances('next', [unprotectString(targetPieceInstance._id)])
+
+					// Ensure it was all removed
+					expect(cache.PieceInstances.findOne(targetPieceInstance._id)).toBeFalsy()
+					expect(cache.Pieces.findOne(targetPieceInstance.piece._id)).toBeFalsy()
+					expect(context.nextPartState).toEqual(ActionPartChange.MARK_DIRTY)
+				})
+			})
+		})
+
+		describe('updatePartInstance', () => {
+			testInFiber('bad parameters', () => {
+				const { context, cache, playlist } = getActionExecutionContext()
+
+				const partInstance = cache.PartInstances.findOne() as PartInstance
+				expect(partInstance).toBeTruthy()
+				const partInstanceOther = cache.PartInstances.findOne({
+					_id: { $ne: partInstance._id },
+				}) as PartInstance
+				expect(partInstanceOther).toBeTruthy()
+
+				expect(() => context.updatePartInstance('current', {})).toThrowError(
+					'Some valid properties must be defined'
+				)
+				expect(() => context.updatePartInstance('current', { _id: 'bad', nope: 'ok' } as any)).toThrowError(
+					'Some valid properties must be defined'
+				)
+				expect(() => context.updatePartInstance('current', { title: 'new' })).toThrowError(
+					'PartInstance could not be found'
+				)
+
+				// Set a current part instance
+				playlist.currentPartInstanceId = partInstance._id
+				expect(() => context.updatePartInstance('next', { title: 'new' })).toThrowError(
+					'PartInstance could not be found'
+				)
+				context.updatePartInstance('current', { title: 'new' })
+			})
+			testInFiber('good', () => {
+				const { context, cache, playlist } = getActionExecutionContext()
+
+				// Setup the rundown and find an instance to modify
+				const partInstance0 = cache.PartInstances.findOne() as PartInstance
+				expect(partInstance0).toBeTruthy()
+				playlist.nextPartInstanceId = partInstance0._id
+
+				// Ensure there are no pending updates already
+				expect(Object.values(cache.PartInstances.documents).filter((doc) => !!doc.updated)).toHaveLength(0)
+
+				// Update it and expect it to match
+				const partInstance0Before = _.clone(partInstance0)
+				const partInstance0Delta = {
+					_id: 'sdf', // This will be dropped
+					title: 'abc',
+					expectedDuration: 1234,
+					classes: ['123'],
+					badProperty: 9, // This will be dropped
+				}
+				expect(context.updatePartInstance('next', partInstance0Delta)).toEqual(partInstance0)
+				const pieceInstance0After = {
+					...partInstance0Before,
+					part: {
+						...partInstance0Before.part,
+						..._.omit(partInstance0Delta, 'badProperty', '_id'),
+					},
+				}
+				expect(partInstance0).toEqual(pieceInstance0After)
+				expect(Object.values(cache.PartInstances.documents).filter((doc) => !!doc.updated)).toMatchObject([
+					{
+						updated: true,
+						document: { _id: partInstance0._id },
+					},
+				])
+
+				expect(context.nextPartState).toEqual(ActionPartChange.MARK_DIRTY)
+				expect(context.currentPartState).toEqual(ActionPartChange.NONE)
 			})
 		})
 	})
