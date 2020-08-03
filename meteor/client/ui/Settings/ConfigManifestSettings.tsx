@@ -88,6 +88,15 @@ function getEditAttribute<TObj, TObj2> (collection: TransformedCollection<TObj2,
 				options={item2.options || []}
 				collection={collection}
 				className='input text-input input-l' />
+		case ConfigManifestEntryType.JSON:
+			return <EditAttribute
+				modifiedClassName='bghl'
+				invalidClassName='warn'
+				attribute={attribute}
+				obj={object}
+				type='json'
+				collection={collection}
+				className='input text-input input-l' />
 		case ConfigManifestEntryType.SELECT:
 			const selectFromOptions = item as ConfigManifestEntrySelectFromOptions<true | false>
 			return <EditAttribute
