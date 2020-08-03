@@ -104,7 +104,7 @@ Meteor.startup(() => {
 
 						ps.push(
 							new Promise((resolve, reject) => {
-								PeripheralDeviceAPI.executeFunction(
+								PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 									subDevice._id,
 									(err) => {
 										if (err) {
@@ -127,6 +127,7 @@ Meteor.startup(() => {
 											resolve()
 										}
 									},
+									10000,
 									'restartCasparCG'
 								)
 							})

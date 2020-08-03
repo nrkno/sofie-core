@@ -1310,7 +1310,7 @@ function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown
 	}
 	UpdateNext.ensureNextPartIsValid(cache, playlist)
 
-	triggerUpdateTimelineAfterIngestData(cache, rundown._id, changedSegmentIds)
+	triggerUpdateTimelineAfterIngestData(rundown._id, rundown.playlistId, changedSegmentIds)
 }
 
 export function handleRemovedPart(

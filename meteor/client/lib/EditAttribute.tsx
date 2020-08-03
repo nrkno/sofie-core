@@ -639,7 +639,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 )
 
 const EditAttributeJson = wrapEditAttribute(
-	class extends EditAttributeBase {
+	class EditAttributeJson extends EditAttributeBase {
 		constructor(props) {
 			super(props)
 

@@ -302,7 +302,7 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
 		}
 	)
 
-	triggerUpdateTimelineAfterIngestData(cache, rundownId, segmentIds)
+	triggerUpdateTimelineAfterIngestData(rundownId, cache.containsDataFromPlaylist, segmentIds)
 }
 
 /**

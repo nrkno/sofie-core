@@ -28,7 +28,7 @@
     "lint": "tslint --project tsconfig.json --config tslint.json",
     "lintfix": "npm run lint -- --fix",
     "quickformat": "prettier \"__mocks__/**\" --write ; prettier \"lib/**\" --write ; prettier \"server/**\" --write ; prettier \"client/**\" --write ; prettier \"*.json\" --write ; prettier \"*.js\" --write ; prettier \"*.md\" --write",
-    "i18n-extract-pot": "i18next-extract-gettext --files=\"{./client/ui/**/*.+(ts|tsx),./lib/mediaObjects.ts}\" --output=i18n/template.pot",
+    "i18n-extract-pot": "node ./scripts/extract-i18next-pot.js -f \"{./client/ui/**/*.+(ts|tsx),./lib/mediaObjects.ts}\" -o i18n/template.pot",
     "i18n-compile-json": "npm run i18n-compile-json-nb & npm run i18n-compile-json-nn & npm run i18n-compile-json-sv",
     "i18n-compile-json-nb": "i18next-conv -l nb -s i18n/nb.po -t public/locales/nb/translations.json --skipUntranslated",
     "i18n-compile-json-nn": "i18next-conv -l nn -s i18n/nn.po -t public/locales/nn/translations.json --skipUntranslated",
@@ -132,9 +132,10 @@
     "codecov": "^3.7.0",
     "ejson": "^2.2.0",
     "fibers-npm": "npm:fibers@4.0.3",
+    "glob": "^7.1.6",
     "husky": "^4.2.5",
     "i18next-conv": "^10.0.2",
-    "i18next-extract-gettext": "^3.2.1",
+    "i18next-scanner": "^2.11.0",
     "jest": "^26.0.1",
     "legally": "^3.5.5",
     "lint-staged": "^10.2.11",
@@ -145,14 +146,15 @@
     "prettier": "^1.19.1",
     "simple-git": "^2.7.0",
     "sinon": "^9.0.2",
-    "standard-version": "^8.0.0",
+    "standard-version": "^8.0.2",
     "ts-jest": "^26.1.0",
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.1.0",
     "typedoc": "^0.17.7",
     "typescript": "~3.8.3",
-    "xmldom": "^0.3.0"
+    "xmldom": "^0.3.0",
+    "yargs": "^15.4.1"
   },
   "husky": {
     "hooks": {
