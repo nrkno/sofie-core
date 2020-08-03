@@ -2,39 +2,49 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal } from '../../../../lib/lib'
+import { literal, protectString } from '../../../../lib/lib'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
-import { postProcessStudioBaselineObjects, postProcessRundownBaselineItems, postProcessAdLibPieces, postProcessPieces } from '../postProcess'
-import { TSRTimelineObjBase, DeviceType } from 'timeline-state-resolver-types'
-import { RundownContext } from '../context'
-import { IBlueprintPiece, IBlueprintAdLibPiece, TimelineObjectCoreExt, IBlueprintPieceDB } from 'tv-automation-sofie-blueprints-integration'
+import {
+	postProcessStudioBaselineObjects,
+	postProcessRundownBaselineItems,
+	postProcessAdLibPieces,
+	postProcessPieces,
+} from '../postProcess'
+import { RundownContext, NotesContext } from '../context'
+import {
+	IBlueprintPiece,
+	IBlueprintAdLibPiece,
+	TimelineObjectCoreExt,
+	IBlueprintPieceDB,
+	TSR,
+} from 'tv-automation-sofie-blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
 
 describe('Test blueprint post-process', () => {
-
 	beforeAll(() => {
 		setupDefaultStudioEnvironment()
 	})
 
-	function getStudio () {
+	function getStudio() {
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()
 		return studio
 	}
-	function getContext () {
+	function getContext() {
 		const rundown = {
 			externalId: 'fakeRo',
 			_id: 'fakeRo',
 			name: 'Fake RO',
 			showStyleBaseId: '',
-			showStyleVariantId: ''
+			showStyleVariantId: '',
 		}
-		return new RundownContext(new Rundown(rundown as any), getStudio())
+		const rundownNotesContext = new NotesContext(rundown.name, `rundownId=${rundown._id}`, true)
+		return new RundownContext(new Rundown(rundown as any), rundownNotesContext, getStudio())
 	}
 
-	function ensureAllKeysDefined<T> (template: T, objects: T[]) {
+	function ensureAllKeysDefined<T>(template: T, objects: T[]) {
 		const errs: string[] = []
 		_.each(objects, (obj, i) => {
 			for (const key of _.keys(template)) {
@@ -49,7 +59,6 @@ describe('Test blueprint post-process', () => {
 	}
 
 	describe('postProcessStudioBaselineObjects', () => {
-
 		testInFiber('no objects', () => {
 			const studio = getStudio()
 
@@ -67,39 +76,39 @@ describe('Test blueprint post-process', () => {
 		testInFiber('some no ids', () => {
 			const studio = getStudio()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
-					}
+						deviceType: TSR.DeviceType.ABSTRACT,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
-					}
+						deviceType: TSR.DeviceType.CASPARCG,
+					},
 				},
 				{
 					id: 'finalObj',
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
-					}
+						deviceType: TSR.DeviceType.ATEM,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
-					}
-				}
+						deviceType: TSR.DeviceType.HYPERDECK,
+					},
+				},
 			])
 
 			// TODO - mock getHash?
@@ -107,63 +116,65 @@ describe('Test blueprint post-process', () => {
 			const res = postProcessStudioBaselineObjects(studio, _.clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
-			_.each(rawObjects, obj => {
+			_.each(rawObjects, (obj) => {
 				// 'Hack' off the invalid fields to make the MatchObject pass
 				if (obj.id === '') delete obj.id
 			})
 			expect(res).toMatchObject(rawObjects)
 
 			// Certain fields should be defined by simple rules
-			expect(_.filter(res, r => r.id === '')).toHaveLength(0)
-			expect(_.filter(res, r => r.objectType !== 'rundown')).toHaveLength(0)
+			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0)
+			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0)
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, obj => obj.id)
+			const ids = _.map(res, (obj) => obj.id)
 			expect(ids).toHaveLength(_.uniq(ids).length)
 		})
 		testInFiber('duplicate ids', () => {
 			const studio = getStudio()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
-					}
+						deviceType: TSR.DeviceType.ABSTRACT,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
-					}
+						deviceType: TSR.DeviceType.CASPARCG,
+					},
 				},
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
-					}
+						deviceType: TSR.DeviceType.ATEM,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
-					}
-				}
+						deviceType: TSR.DeviceType.HYPERDECK,
+					},
+				},
 			])
 
 			try {
 				postProcessStudioBaselineObjects(studio, _.clone(rawObjects))
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[400] Error in blueprint "${studio.blueprintId}": ids of timelineObjs must be unique! ("testObj")`)
+				expect(e.message).toBe(
+					`[400] Error in blueprint "${studio.blueprintId}": ids of timelineObjs must be unique! ("testObj")`
+				)
 			}
 		})
 	})
@@ -173,71 +184,71 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessRundownBaselineItems(context, [])
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [])
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null object', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessRundownBaselineItems(context, [null as any])
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [null as any])
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('some no ids', () => {
 			const context = getContext()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
-					}
+						deviceType: TSR.DeviceType.ABSTRACT,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
-					}
+						deviceType: TSR.DeviceType.CASPARCG,
+					},
 				},
 				{
 					id: 'finalObj',
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
-					}
+						deviceType: TSR.DeviceType.ATEM,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
-					}
-				}
+						deviceType: TSR.DeviceType.HYPERDECK,
+					},
+				},
 			])
 
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
-			const expectedIds = _.compact(_.map(rawObjects, obj => obj.id)).concat(mockedIds)
+			const expectedIds = _.compact(_.map(rawObjects, (obj) => obj.id)).concat(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessRundownBaselineItems(context, _.clone(rawObjects))
+			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), _.clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
-			_.each(rawObjects, obj => {
+			_.each(rawObjects, (obj) => {
 				// 'Hack' off the invalid fields to make the MatchObject pass
 				if (obj.id === '') delete obj.id
 			})
 			expect(res).toMatchObject(rawObjects)
 
 			// Certain fields should be defined by simple rules
-			expect(_.filter(res, r => r.id === '')).toHaveLength(0)
-			expect(_.filter(res, r => r.objectType !== 'rundown')).toHaveLength(0)
+			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0)
+			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0)
 
 			// Ensure getHashId was called as expected
 			expect(context.getHashId).toHaveBeenCalledTimes(2)
@@ -245,64 +256,67 @@ describe('Test blueprint post-process', () => {
 			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'baseline_3')
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, obj => obj.id).sort()
+			const ids = _.map(res, (obj) => obj.id).sort()
 			expect(ids).toEqual(expectedIds.sort())
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<TimelineObjGeneric>({
-				_id: '',
+				_id: protectString(''),
 				id: '',
 				layer: '',
 				enable: {},
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
-				studioId: ''
+				studioId: protectString(''),
 			})
 			ensureAllKeysDefined(tmpObj, res)
 		})
 		testInFiber('duplicate ids', () => {
 			const context = getContext()
 
-			const rawObjects = literal<TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'one',
 					content: {
-						deviceType: DeviceType.ABSTRACT
-					}
+						deviceType: TSR.DeviceType.ABSTRACT,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'two',
 					content: {
-						deviceType: DeviceType.CASPARCG
-					}
+						deviceType: TSR.DeviceType.CASPARCG,
+					},
 				},
 				{
 					id: 'testObj',
 					enable: {},
 					layer: 'three',
 					content: {
-						deviceType: DeviceType.ATEM
-					}
+						deviceType: TSR.DeviceType.ATEM,
+					},
 				},
 				{
 					id: '',
 					enable: {},
 					layer: 'four',
 					content: {
-						deviceType: DeviceType.HYPERDECK
-					}
-				}
+						deviceType: TSR.DeviceType.HYPERDECK,
+					},
+				},
 			])
 
+			const blueprintId = 'some-blueprints'
 			try {
-				postProcessRundownBaselineItems(context, _.clone(rawObjects))
+				postProcessRundownBaselineItems(context, protectString(blueprintId), _.clone(rawObjects))
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
-				expect(e.message).toBe(`[400] Error in baseline blueprint: ids of timelineObjs must be unique! ("testObj")`)
+				expect(e.message).toBe(
+					`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
+				)
 			}
 		})
 	})
@@ -312,14 +326,14 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessAdLibPieces(context, [], 'blueprint9')
+			const res = postProcessAdLibPieces(context, [], protectString('blueprint9'))
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null piece', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessAdLibPieces(context, [null as any], 'blueprint9')
+			const res = postProcessAdLibPieces(context, [null as any], protectString('blueprint9'))
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('various pieces', () => {
@@ -331,7 +345,7 @@ describe('Test blueprint post-process', () => {
 					name: 'test',
 					externalId: 'eid0',
 					sourceLayerId: 'sl0',
-					outputLayerId: 'ol0'
+					outputLayerId: 'ol0',
 				},
 				{
 					_rank: 2,
@@ -339,7 +353,7 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid1',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {}
+					content: {},
 				},
 				{
 					_rank: 1,
@@ -348,8 +362,8 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {
-						timelineObjects: []
-					}
+						timelineObjects: [],
+					},
 				},
 				{
 					_rank: 9,
@@ -358,11 +372,9 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {
-						timelineObjects: [
-							null as any
-						]
-					}
-				}
+						timelineObjects: [null as any],
+					},
+				},
 			])
 
 			// mock getHash, to track the returned ids
@@ -370,21 +382,21 @@ describe('Test blueprint post-process', () => {
 			const expectedIds = _.clone(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessAdLibPieces(context, pieces, 'blueprint9')
+			const res = postProcessAdLibPieces(context, pieces, protectString('blueprint9'))
 			// expect(res).toHaveLength(3)
-			expect(res).toMatchObject(pieces.map(p => _.omit(p, '_id')))
+			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<AdLibPiece>({
-				_id: '',
+				_id: protectString(''),
 				_rank: 0,
 				disabled: false,
 				name: '',
 				externalId: '',
 				sourceLayerId: '',
 				outputLayerId: '',
-				rundownId: '',
-				status: 0
+				rundownId: protectString(''),
+				status: 0,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
@@ -396,7 +408,7 @@ describe('Test blueprint post-process', () => {
 			expect(context.getHashId).toHaveBeenNthCalledWith(4, 'blueprint9_undefined_adlib_piece_3')
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, obj => obj._id).sort()
+			const ids = _.map(res, (obj) => obj._id).sort()
 			expect(ids).toEqual(expectedIds.sort())
 		})
 		testInFiber('piece with content', () => {
@@ -415,14 +427,14 @@ describe('Test blueprint post-process', () => {
 							enable: {},
 							layer: 'four',
 							content: {
-								deviceType: DeviceType.HYPERDECK
-							}
-						})
-					]
-				}
+								deviceType: TSR.DeviceType.HYPERDECK,
+							},
+						}),
+					],
+				},
 			})
 
-			const res = postProcessAdLibPieces(context, [piece], 'blueprint9')
+			const res = postProcessAdLibPieces(context, [piece], protectString('blueprint9'))
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([piece])
 
@@ -436,14 +448,26 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			// Ensure that an empty array works ok
-			const res = postProcessPieces(context, [], 'blueprint9', 'part8')
+			const res = postProcessPieces(
+				context,
+				[],
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part8')
+			)
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('null piece', () => {
 			const context = getContext()
 
 			// Ensure that a null object gets dropped
-			const res = postProcessPieces(context, [null as any], 'blueprint9', 'part8')
+			const res = postProcessPieces(
+				context,
+				[null as any],
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part8')
+			)
 			expect(res).toHaveLength(0)
 		})
 		testInFiber('various pieces', () => {
@@ -456,7 +480,7 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid0',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
-					outputLayerId: 'ol0'
+					outputLayerId: 'ol0',
 				},
 				{
 					_id: '',
@@ -465,7 +489,7 @@ describe('Test blueprint post-process', () => {
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
-					content: {}
+					content: {},
 				},
 				{
 					_id: '',
@@ -475,8 +499,8 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {
-						timelineObjects: []
-					}
+						timelineObjects: [],
+					},
 				},
 				{
 					_id: 'id3',
@@ -486,32 +510,36 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {
-						timelineObjects: [
-							null as any
-						]
-					}
-				}
+						timelineObjects: [null as any],
+					},
+				},
 			])
 
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
-			const expectedIds = _.compact(_.map(pieces, obj => obj._id)).concat(mockedIds)
+			const expectedIds = _.compact(_.map(pieces, (obj) => obj._id)).concat(mockedIds)
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
-			const res = postProcessPieces(context, pieces, 'blueprint9', 'part8')
-			expect(res).toMatchObject(pieces.map(p => _.omit(p, '_id')))
+			const res = postProcessPieces(
+				context,
+				pieces,
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part8')
+			)
+			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<Piece>({
-				_id: '',
+				_id: protectString(''),
 				name: '',
 				externalId: '',
-				enable: {},
+				enable: { start: 0 },
 				sourceLayerId: '',
 				outputLayerId: '',
-				partId: '',
-				rundownId: '',
-				status: 0
+				partId: protectString(''),
+				rundownId: protectString(''),
+				status: 0,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
@@ -521,7 +549,7 @@ describe('Test blueprint post-process', () => {
 			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_1')
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, obj => obj._id).sort()
+			const ids = _.map(res, (obj) => obj._id).sort()
 			expect(ids).toEqual(expectedIds.sort())
 		})
 		testInFiber('piece with content', () => {
@@ -541,14 +569,20 @@ describe('Test blueprint post-process', () => {
 							enable: {},
 							layer: 'four',
 							content: {
-								deviceType: DeviceType.HYPERDECK
-							}
-						})
-					]
-				}
+								deviceType: TSR.DeviceType.HYPERDECK,
+							},
+						}),
+					],
+				},
 			})
 
-			const res = postProcessPieces(context, [piece], 'blueprint9', 'part6')
+			const res = postProcessPieces(
+				context,
+				[piece],
+				protectString('blueprint9'),
+				context._rundown._id,
+				protectString('part6')
+			)
 			expect(res).toHaveLength(1)
 			expect(res).toMatchObject([_.omit(piece, '_id')])
 

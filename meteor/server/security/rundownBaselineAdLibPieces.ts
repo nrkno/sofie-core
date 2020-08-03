@@ -2,13 +2,13 @@ import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from '../../lib/
 
 // Setup rules:
 RundownBaselineAdLibPieces.allow({
-	insert (userId: string, doc: RundownBaselineAdLibItem): boolean {
+	insert(userId: string, doc: RundownBaselineAdLibItem): boolean {
 		return true // TODO: Decide rules
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return true // TODO: Decide rules
 	},
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return true // TODO: Decide rules
-	}
+	},
 })

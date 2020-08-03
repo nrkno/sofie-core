@@ -1,4 +1,3 @@
-import * as elementResizeEvent from 'element-resize-event'
 import * as React from 'react'
 import * as _ from 'underscore'
 
@@ -6,13 +5,14 @@ import { RundownUtils } from '../../lib/rundown'
 
 import { Settings } from '../../../lib/Settings'
 import { getElementWidth, getElementHeight } from '../../utils/dimensions'
+import { onElementResize, offElementResize } from '../../lib/resizeObserver'
 
 // We're cheating a little: Fontface
 declare class FontFace {
 	loaded: Promise<FontFace>
-	constructor (font: string, url: string, options: object)
+	constructor(font: string, url: string, options: object)
 
-	load (): void
+	load(): void
 }
 
 const LABEL_FONT_URL = 'url("/fonts/roboto-gh-pages/fonts/Light/Roboto-Light.woff")'
@@ -37,14 +37,16 @@ let gridFont: any | undefined = undefined
 let gridFontAvailable: boolean = false
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
-	canvasElement: HTMLCanvasElement
-	parentElement: HTMLDivElement
+	canvasElement: HTMLCanvasElement | null
+	parentElement: HTMLDivElement | null
 	ctx: CanvasRenderingContext2D | null
 
 	width: number
 	height: number
 	pixelRatio: number
 	scheduledRepaint?: number | null
+
+	private _resizeObserver: ResizeObserver
 
 	fontSize: number = FONT_SIZE
 	labelTop: number = LABEL_TOP
@@ -56,28 +58,30 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	labelColor: string = LABEL_COLOR
 	shortLineColor: string = SHORT_LINE_GRID_COLOR
 	longLineColor: string = LONG_LINE_GRID_COLOR
-	
-	contextResize = _.throttle(() => {
-		if (this.ctx) {
+
+	contextResize = _.throttle((parentElementWidth: number, parentElementHeight: number) => {
+		if (this.ctx && this.canvasElement) {
 			let devicePixelRatio = window.devicePixelRatio || 1
 
-			let backingStoreRatio = (this.ctx as any).webkitBackingStorePixelRatio ||
+			let backingStoreRatio =
+				(this.ctx as any).webkitBackingStorePixelRatio ||
 				(this.ctx as any).mozBackingStorePixelRatio ||
 				(this.ctx as any).msBackingStorePixelRatio ||
 				(this.ctx as any).oBackingStorePixelRatio ||
-				(this.ctx as any).backingStorePixelRatio || 1
+				(this.ctx as any).backingStorePixelRatio ||
+				1
 
 			this.pixelRatio = devicePixelRatio / backingStoreRatio
 
-			this.width = (this.canvasElement.scrollWidth || 0) * this.pixelRatio
-			this.height = (this.canvasElement.scrollHeight || 0) * this.pixelRatio
+			this.width = (parentElementWidth || 0) * this.pixelRatio
+			this.height = (parentElementHeight || 0) * this.pixelRatio
 			this.canvasElement.width = this.width
 			this.canvasElement.height = this.height
 
 			this.repaint()
 		}
 		if (this.props.onResize) {
-			this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
+			this.props.onResize([parentElementWidth || 1, parentElementHeight || 1])
 		}
 	}, Math.ceil(1000 / 15)) // don't repaint faster than 15 fps
 
@@ -90,27 +94,55 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 
 		if (this.canvasElement) {
 			const style = getComputedStyle(this.canvasElement)
-			
+
 			this.fontSize = parseFloat(style.fontSize || FONT_SIZE.toString())
 			this.labelTop = parseFloat(style.getPropertyValue('--timeline-grid-label-top') || LABEL_TOP.toString())
 
 			this.labelColor = style.color || LABEL_COLOR
 			this.longLineColor = style.getPropertyValue('--timeline-grid-long-line-color') || LONG_LINE_GRID_COLOR
 			this.shortLineColor = style.getPropertyValue('--timeline-grid-short-line-color') || SHORT_LINE_GRID_COLOR
-			
+
 			this.longLineTop = parseFloat(style.getPropertyValue('--timeline-grid-long-line-top') || LONG_LINE_TOP.toString())
-			this.longLineHeight = parseFloat(style.getPropertyValue('--timeline-grid-long-line-height') || LONG_LINE_HEIGHT.toString())
-			this.shortLineTop = parseFloat(style.getPropertyValue('--timeline-grid-short-line-top') || SHORT_LINE_TOP.toString())
-			this.shortLineHeight = parseFloat(style.getPropertyValue('--timeline-grid-short-line-height') || SHORT_LINE_HEIGHT.toString())
+			this.longLineHeight = parseFloat(
+				style.getPropertyValue('--timeline-grid-long-line-height') || LONG_LINE_HEIGHT.toString()
+			)
+			this.shortLineTop = parseFloat(
+				style.getPropertyValue('--timeline-grid-short-line-top') || SHORT_LINE_TOP.toString()
+			)
+			this.shortLineHeight = parseFloat(
+				style.getPropertyValue('--timeline-grid-short-line-height') || SHORT_LINE_HEIGHT.toString()
+			)
 		}
 	}
 
-	onCanvasResize = (event: Event) => {
-		this.contextResize()
+	onCanvasResize = (entries: ResizeObserverEntry[]) => {
+		let box: DOMRectReadOnly | undefined
+
+		if (
+			entries &&
+			entries.length &&
+			entries[0].contentBoxSize !== undefined &&
+			entries[0].contentBoxSize!.width !== undefined
+		) {
+			box = entries[0].contentBoxSize
+		} else if (
+			entries &&
+			entries.length &&
+			entries[0].contentRect !== undefined &&
+			entries[0].contentRect!.width !== undefined
+		) {
+			box = entries[0].contentRect
+		}
+
+		if (box && box.width !== undefined) {
+			this.contextResize(box.width, box.height)
+		} else if (this.parentElement) {
+			this.contextResize(getElementWidth(this.parentElement), getElementHeight(this.parentElement))
+		}
 	}
 
-	ring (value, ringMax) {
-		return (value < 0) ? (ringMax + (value % ringMax)) : value % ringMax
+	ring(value, ringMax) {
+		return value < 0 ? ringMax + (value % ringMax) : value % ringMax
 	}
 
 	requestRepaint = () => {
@@ -124,7 +156,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	clearRound = (a: number) => {
-		return (Math.floor(a * 1000) / 1000)
+		return Math.floor(a * 1000) / 1000
 	}
 
 	repaint = () => {
@@ -143,31 +175,31 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			let secondsStep = 5 * 60
 			// interStep - draw X lines between every big line
 			let interStep = 5
-			if ((secondTimeScale > 0) && (secondTimeScale < 1)) {
+			if (secondTimeScale > 0 && secondTimeScale < 1) {
 				secondsStep = 600
 				interStep = 60
-			} else if ((secondTimeScale >= 1) && (secondTimeScale < 3)) {
+			} else if (secondTimeScale >= 1 && secondTimeScale < 3) {
 				secondsStep = 300
 				interStep = 10
-			} else if ((secondTimeScale >= 3) && (secondTimeScale < 10)) {
+			} else if (secondTimeScale >= 3 && secondTimeScale < 10) {
 				secondsStep = 30
 				interStep = 10
-			} else if ((secondTimeScale >= 10) && (secondTimeScale < 20)) {
+			} else if (secondTimeScale >= 10 && secondTimeScale < 20) {
 				secondsStep = 10
 				interStep = 10
-			} else if ((secondTimeScale >= 20) && (secondTimeScale < 45)) {
+			} else if (secondTimeScale >= 20 && secondTimeScale < 45) {
 				secondsStep = 5
 				interStep = 5
-			} else if ((secondTimeScale >= 45) && (secondTimeScale < 90)) {
+			} else if (secondTimeScale >= 45 && secondTimeScale < 90) {
 				secondsStep = 2
 				interStep = 2
-			} else if ((secondTimeScale >= 90) && (secondTimeScale < 120)) {
+			} else if (secondTimeScale >= 90 && secondTimeScale < 120) {
 				secondsStep = 2
 				interStep = 1
-			} else if ((secondTimeScale >= 120) && (secondTimeScale < 250)) {
+			} else if (secondTimeScale >= 120 && secondTimeScale < 250) {
 				secondsStep = 1
 				interStep = 1
-			} else if ((secondTimeScale >= 250)) {
+			} else if (secondTimeScale >= 250) {
 				secondsStep = 1
 				interStep = fps || 25
 			}
@@ -181,8 +213,8 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			// "large" ticks (one's with label), so we divide the display width by the amount of large steps (step / interStep)
 			// and then after getting the ceil of the value, multiply it back for all the inter-steps,
 			// beacuse we do the paint iteration for every line
-			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + (interStep)
-			const scrollLeftSec = (this.props.scrollLeft / 1000)
+			let maxTicks = Math.ceil(this.width / (step * interStep)) * interStep + interStep
+			const scrollLeftSec = this.props.scrollLeft / 1000
 			let base = Math.floor(scrollLeftSec / maxTicks) * maxTicks
 			const baseN = (Math.floor(scrollLeftSec / maxTicks) + 1) * maxTicks
 
@@ -196,17 +228,21 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 			for (i = 0; i < maxTicks; i++) {
 				// we should offset the first step -1, as this is the one that will be dissaperaing as the
 				// timeline is moving
-				let xPosition = this.ring((i * step) - pixelOffset, maxTicks * step) - (step * interStep)
+				let xPosition = this.ring(i * step - pixelOffset, maxTicks * step) - step * interStep
 				if (i === 0) breakX = xPosition
 
-				let isLabel = (i % interStep === 0)
+				let isLabel = i % interStep === 0
 
 				if (isLabel === true) {
-					let t = ((xPosition > breakX) && (this.props.scrollLeft > 0) ? baseN : base) + (this.ring((i - interStep), maxTicks) * (secondsStep / interStep))
-					
+					let t =
+						(xPosition > breakX && this.props.scrollLeft > 0 ? baseN : base) +
+						this.ring(i - interStep, maxTicks) * (secondsStep / interStep)
+
 					this.ctx.fillText(
 						RundownUtils.formatDiffToTimecode(t * 1000, false, false, true, false, true),
-						xPosition, this.labelTop * this.pixelRatio)
+						xPosition,
+						this.labelTop * this.pixelRatio
+					)
 
 					this.ctx.strokeStyle = this.longLineColor
 				} else {
@@ -214,86 +250,98 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				}
 
 				this.ctx.beginPath()
-				this.ctx.moveTo(xPosition, isLabel ?
-					(this.longLineTop * this.pixelRatio) :
-					(this.shortLineTop * this.pixelRatio)
-				)
-				this.ctx.lineTo(xPosition, isLabel ?
-					(this.longLineHeight > 0 ?
-						(this.longLineTop + this.longLineHeight) * this.pixelRatio :
-						this.height) :
-					(this.shortLineHeight > 0 ?
-						(this.shortLineTop + this.shortLineHeight) * this.pixelRatio :
-						this.height)
+				this.ctx.moveTo(xPosition, isLabel ? this.longLineTop * this.pixelRatio : this.shortLineTop * this.pixelRatio)
+				this.ctx.lineTo(
+					xPosition,
+					isLabel
+						? this.longLineHeight > 0
+							? (this.longLineTop + this.longLineHeight) * this.pixelRatio
+							: this.height
+						: this.shortLineHeight > 0
+						? (this.shortLineTop + this.shortLineHeight) * this.pixelRatio
+						: this.height
 				)
 				this.ctx.stroke()
 			}
 		}
 	}
 
-	render () {
+	render() {
 		return (
-			<div className='segment-timeline__timeline-grid' ref={this.setParentRef}>
-				<canvas className='segment-timeline__timeline-grid__canvas' ref={this.setCanvasRef}></canvas>
+			<div className="segment-timeline__timeline-grid" ref={this.setParentRef}>
+				<canvas className="segment-timeline__timeline-grid__canvas" ref={this.setCanvasRef}></canvas>
 			</div>
 		)
 	}
 
-	componentDidMount () {
-		// console.log('TimelineGrid mounted, render the grid & attach resize notifiers')
-		this.ctx = this.canvasElement.getContext('2d', {
-			// alpha: false
-		})
-		if (this.ctx) {
-			this.contextResize()
+	initialize() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.ctx = this.canvasElement.getContext('2d', {
+				// alpha: false
+			})
+			if (this.ctx) {
+				const parentWidth = getElementWidth(this.parentElement)
+				const parentHeight = getElementHeight(this.parentElement)
+				this.contextResize(parentWidth, parentHeight)
 
-			// $(window).on('resize', this.onCanvasResize)
-			elementResizeEvent(this.parentElement, this.onCanvasResize)
+				// $(window).on('resize', this.onCanvasResize)
+				this._resizeObserver = onElementResize(this.parentElement, this.onCanvasResize)
 
-			if (!gridFont && typeof FontFace !== 'undefined') {
-
-				gridFont = new FontFace('GridTimecodeFont', LABEL_FONT_URL, {
-					style: 'normal',
-					weight: 100
-				})
-				gridFont.load()
-				gridFont.loaded.then((fontFace) => {
-					// console.log('Grid font loaded: ' + fontFace.status)
-					gridFontAvailable = true
-					window.requestAnimationFrame(() => {
-						this.repaint()
+				if (!gridFont && typeof FontFace !== 'undefined') {
+					gridFont = new FontFace('GridTimecodeFont', LABEL_FONT_URL, {
+						style: 'normal',
+						weight: 100,
 					})
-				}).catch(err => console.log(err))
-				document['fonts'].add(gridFont)
-			} else if (gridFont && !gridFontAvailable) {
-				gridFont.loaded.then((fontFace) => {
-					window.requestAnimationFrame(() => {
-						this.repaint()
+					gridFont.load()
+					gridFont.loaded
+						.then((fontFace) => {
+							// console.log('Grid font loaded: ' + fontFace.status)
+							gridFontAvailable = true
+							window.requestAnimationFrame(() => {
+								this.repaint()
+							})
+						})
+						.catch((err) => console.log(err))
+					document['fonts'].add(gridFont)
+				} else if (gridFont && !gridFontAvailable) {
+					gridFont.loaded.then((fontFace) => {
+						window.requestAnimationFrame(() => {
+							this.repaint()
+						})
 					})
-				})
-			}
+				}
 
-			if (this.props.onResize) {
-				this.props.onResize([getElementWidth(this.parentElement) || 1, getElementHeight(this.parentElement) || 1])
+				if (this.props.onResize) {
+					this.props.onResize([parentWidth || 1, parentHeight || 1])
+				}
 			}
 		}
 	}
 
-	shouldComponentUpdate (nextProps, nextState) {
-		if ((nextProps.timeScale !== this.props.timeScale) || (nextProps.scrollLeft !== this.props.scrollLeft)) {
+	componentDidMount() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.initialize()
+		}
+	}
+
+	shouldComponentUpdate(nextProps, nextState) {
+		if (nextProps.timeScale !== this.props.timeScale || nextProps.scrollLeft !== this.props.scrollLeft) {
 			return true
 		}
 		return false
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
+		if (this.canvasElement && this.parentElement && !this.ctx) {
+			this.initialize()
+		}
 		this.requestRepaint()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		// console.log('Detach resize notifiers')
 
 		// $(window).off('resize', this.onCanvasResize)
-		elementResizeEvent.unbind(this.parentElement, this.onCanvasResize)
+		this._resizeObserver.disconnect()
 	}
 }

@@ -1,17 +1,22 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
-
+import { StudioId } from './Studios'
+import { RundownId } from './Rundowns'
+import { RundownPlaylistId } from './RundownPlaylists'
 
 export enum SnapshotType {
-	RUNDOWN = 'rundown',
+	RUNDOWN = 'rundown', // to be deprecated?
+	RUNDOWNPLAYLIST = 'rundownplaylist',
 	SYSTEM = 'system',
-	DEBUG = 'debug'
+	DEBUG = 'debug',
 }
+/** A string, identifying a Snapshot */
+export type SnapshotId = ProtectedString<'SnapshotId'>
 
 export interface SnapshotBase {
-	_id: string
+	_id: SnapshotId
 	type: SnapshotType
 	created: Time
 	name: string
@@ -24,14 +29,21 @@ export interface SnapshotItem extends SnapshotBase {
 	fileName: string
 	comment: string
 
-	studioId?: string
-	rundownId?: string
+	studioId?: StudioId
+	rundownId?: RundownId
+	playlistId?: RundownPlaylistId
 }
 
-export interface SnapshotRundown extends SnapshotBase {
+export interface DeprecatedSnapshotRundown extends SnapshotBase {
+	// From the times before rundownPlaylists
 	type: SnapshotType.RUNDOWN
-	studioId: string
-	rundownId: string
+	studioId: StudioId
+	rundownId: RundownId
+}
+export interface SnapshotRundownPlaylist extends SnapshotBase {
+	type: SnapshotType.RUNDOWNPLAYLIST
+	studioId: StudioId
+	playlistId: RundownPlaylistId
 }
 export interface SnapshotSystem extends SnapshotBase {
 	type: SnapshotType.SYSTEM
@@ -40,14 +52,15 @@ export interface SnapshotDebug extends SnapshotBase {
 	type: SnapshotType.DEBUG
 }
 
-export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem>
-	= createMongoCollection<SnapshotItem>('snapshots')
+export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem> = createMongoCollection<SnapshotItem>(
+	'snapshots'
+)
 registerCollection('Snapshots', Snapshots)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Snapshots._ensureIndex({
-			timestamp: 1
+			created: 1,
 		})
 	}
 })

@@ -3,29 +3,39 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { Tracker } from 'meteor/tracker'
 import { PubSub } from '../../../lib/api/pubsub'
 import { Meteor } from 'meteor/meteor'
+import { getHash } from '../../../lib/lib'
 
 export namespace ReactiveDataHelper {
 	const rVarCache: _.Dictionary<ReactiveVar<any>> = {}
 
-	function cacheId (...params): string {
+	function cacheId(...params): string {
 		return params.join('_')
 	}
 
-	export function simpleObjCompare (objA, objB) {
+	export function simpleObjCompare(objA, objB) {
 		if (objA === objB) {
 			return true
 		} else if (objA && objB) {
-			return (JSON.stringify(objA) === JSON.stringify(objB))
+			return JSON.stringify(objA) === JSON.stringify(objB)
 		} else {
 			return false
 		}
 	}
 
-	export function memoizeRVar<T, A0> (computation: (a0: A0) => ReactiveVar<T>, ...labels): ((a0: A0) => ReactiveVar<T>)
-	export function memoizeRVar<T, A0, A1> (computation: (a0: A0, a1: A1) => ReactiveVar<T>, ...labels): ((a0: A0, a1: A1) => ReactiveVar<T>)
-	export function memoizeRVar<T, A0, A1, A2> (computation: (a0: A0, a1: A1, a2: A2) => ReactiveVar<T>, ...labels): ((a0: A0, a1: A1, a2: A2) => ReactiveVar<T>)
-	export function memoizeRVar<T> (computation: (...params) => ReactiveVar<T>, ...labels): ((...params) => ReactiveVar<T>) {
-		return function (...params): ReactiveVar<T> {
+	export function memoizeRVar<T, A0>(computation: (a0: A0) => ReactiveVar<T>, ...labels): (a0: A0) => ReactiveVar<T>
+	export function memoizeRVar<T, A0, A1>(
+		computation: (a0: A0, a1: A1) => ReactiveVar<T>,
+		...labels
+	): (a0: A0, a1: A1) => ReactiveVar<T>
+	export function memoizeRVar<T, A0, A1, A2>(
+		computation: (a0: A0, a1: A1, a2: A2) => ReactiveVar<T>,
+		...labels
+	): (a0: A0, a1: A1, a2: A2) => ReactiveVar<T>
+	export function memoizeRVar<T>(
+		computation: (...params) => ReactiveVar<T>,
+		...labels
+	): (...params) => ReactiveVar<T> {
+		return function(...params): ReactiveVar<T> {
 			const cId = cacheId(computation.name, ...labels, ...params)
 			if (rVarCache[cId]) {
 				return rVarCache[cId]
@@ -38,27 +48,87 @@ export namespace ReactiveDataHelper {
 	}
 }
 
+const isolatedAutorunsMem: {
+	[key: string]: {
+		dependancy: Tracker.Dependency
+		value: any
+	}
+} = {}
+
+export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: string, ...params): T {
+	function hashFncAndParams(fName: string, p: any): string {
+		return fName + '_' + JSON.stringify(p)
+	}
+
+	let result: T
+	const fId = hashFncAndParams(functionName, params)
+	const parentComputation = Tracker.currentComputation
+	if (isolatedAutorunsMem[fId] === undefined) {
+		// console.log(`${fId}: Tracker.nonreactive`)
+		const dep = new Tracker.Dependency()
+		dep.depend()
+		const computation = Tracker.nonreactive(() => {
+			const computation = Tracker.autorun(() => {
+				result = fnc(...params)
+
+				if (!Tracker.currentComputation.firstRun) {
+					if (!_.isEqual(isolatedAutorunsMem[fId].value, result)) {
+						// console.log(`${fId}: Tracker.autorun, dependancy changed.`)
+						dep.changed()
+					}
+				}
+
+				isolatedAutorunsMem[fId] = {
+					dependancy: dep,
+					value: result,
+				}
+				// console.log(`${fId}: Tracker.autorun`, params, result)
+			})
+			computation.onStop(() => {
+				// console.log(`${fId}: Tracker.autorun stopped`)
+				delete isolatedAutorunsMem[fId]
+			})
+			return computation
+		})
+		let gc = setInterval(() => {
+			if (!dep.hasDependents()) {
+				clearInterval(gc)
+				computation.stop()
+			}
+		}, 5000)
+	} else {
+		result = isolatedAutorunsMem[fId].value
+		isolatedAutorunsMem[fId].dependancy.depend()
+		// console.log(`${fId}: Using memoized value`, result)
+	}
+	// console.log(`${fId}: Returning value`, result!)
+	return result!
+}
+
 export abstract class WithManagedTracker {
 	private _autoruns: Tracker.Computation[] = []
 	private _subs: Meteor.SubscriptionHandle[] = []
 
-	stop () {
+	stop() {
 		this._autoruns.forEach((comp) => comp.stop())
 		setTimeout(() => {
 			this._subs.forEach((comp) => comp.stop())
 		}, 2000) // wait for a couple of seconds, before unsubscribing
 	}
 
-	protected subscribe (sub: PubSub, ...args: any[]) {
+	protected subscribe(sub: PubSub, ...args: any[]) {
 		this._subs.push(Meteor.subscribe(sub, ...args))
 	}
 
-	protected autorun (func: (comp: Tracker.Computation) => void, options?: { onError: Function | undefined } | undefined): Tracker.Computation {
-		return Tracker.nonreactive(() => {
+	protected autorun(
+		func: (comp: Tracker.Computation) => void,
+		options?: { onError: Function | undefined } | undefined
+	): Tracker.Computation {
+		return (Tracker.nonreactive(() => {
 			const comp = Tracker.autorun(func, options)
 			this._autoruns.push(comp)
 			return comp
-		}) as any as Tracker.Computation
+		}) as any) as Tracker.Computation
 	}
 }
 

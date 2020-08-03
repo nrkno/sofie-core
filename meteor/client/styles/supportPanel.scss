@@ -3,55 +3,55 @@
 
 .status-bar__controls__button.support__toggle-button {
 	position: fixed;
-    right: rem(5px);
-    bottom: rem(5px);
-    z-index: 310;
-    text-align: left;
+	right: rem(5px);
+	bottom: rem(5px);
+	z-index: 310;
+	text-align: left;
 
-    > svg {
-        position: absolute !important;
-        width: #{$fullscreen-controls__button--radius / 2} !important;
-        height: #{$fullscreen-controls__button--radius / 2.86} !important;
-        right: 0 !important;
-        left: auto !important;
-        transform: translate(-50%, -53%) !important;
-        transition: 0.5s all ease-in-out !important;
+	> svg {
+		position: absolute !important;
+		width: #{$fullscreen-controls__button--radius / 2} !important;
+		height: #{$fullscreen-controls__button--radius / 2.86} !important;
+		right: 0 !important;
+		left: auto !important;
+		transform: translate(-50%, -53%) !important;
+		transition: 0.5s all ease-in-out !important;
 
-        > path {
-            fill: rgb(255, 255, 255);
-            transition: 0.5s all linear;
-        }
-    }
+		> path {
+			fill: rgb(255, 255, 255);
+			transition: 0.5s all linear;
+		}
+	}
 }
 
 .support-pop-up-panel {
 	position: fixed;
-    bottom: rem(13px);
-    right: 0;
-    left: auto;
-    margin-right: rem(60px);
-    background: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-    padding: rem(15px) rem(20px);
-    z-index: 290;
+	bottom: rem(13px);
+	right: 0;
+	left: auto;
+	margin-right: rem(60px);
+	background: #fff;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+	padding: rem(15px) rem(20px);
+	z-index: 290;
 	min-height: rem(50px);
-    max-width: rem(350px);
-    
-    .support-pop-up-panel__actions {
-        margin-top: 1em;
+	max-width: rem(350px);
 
-        > button {
-            display: block;
-            width: 100%;
-            margin-top: 0.4em;
-        }
-    }
+	.support-pop-up-panel__actions {
+		margin-top: 1em;
+
+		> button {
+			display: block;
+			width: 100%;
+			margin-top: 0.4em;
+		}
+	}
 }
 
 .rundown-view {
-    .support-pop-up-panel {
-        color: #000;
-        background: #eee;
-        z-index: 1900;
-    }
+	.support-pop-up-panel {
+		color: #000;
+		background: #eee;
+		z-index: 1900;
+	}
 }

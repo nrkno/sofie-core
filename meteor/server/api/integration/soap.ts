@@ -7,7 +7,7 @@ import {
 	ExternalMessageQueueObjSOAPMessageAttrFcn,
 	iterateDeeplyEnum,
 	iterateDeeplyAsync,
-	iterateDeeply
+	iterateDeeply,
 } from 'tv-automation-sofie-blueprints-integration'
 import { throwFatalError } from '../ExternalMessageQueue'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
@@ -17,21 +17,20 @@ import { escapeHtml } from '../../../lib/lib'
 // const entities = new Entities()
 
 type ExternalMessageQueueObjSOAP0 = ExternalMessageQueueObjSOAP & ExternalMessageQueueObj
-export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP0 & ExternalMessageQueueObj) {
-
+export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & ExternalMessageQueueObj) {
 	logger.info('sendSOAPMessage ' + msg._id)
-	if (!msg.receiver) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))
-	if (!msg.receiver.url) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver.url missing!'))
-	if (!msg.message) 		throwFatalError(msg, new Meteor.Error(401, 'attribute .message missing!'))
-	if (!msg.message.fcn) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .message.fcn missing!'))
-	if (!msg.message.clip_key) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip_key missing!'))
-	if (!msg.message.clip) 	throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip missing!'))
+	if (!msg.receiver) throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver missing!'))
+	if (!msg.receiver.url) throwFatalError(msg, new Meteor.Error(401, 'attribute .receiver.url missing!'))
+	if (!msg.message) throwFatalError(msg, new Meteor.Error(401, 'attribute .message missing!'))
+	if (!msg.message.fcn) throwFatalError(msg, new Meteor.Error(401, 'attribute .message.fcn missing!'))
+	if (!msg.message.clip_key) throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip_key missing!'))
+	if (!msg.message.clip) throwFatalError(msg, new Meteor.Error(401, 'attribute .message.clip missing!'))
 
 	let url = msg.receiver.url
 
 	// console.log('url', url)
 
-	let soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client,) => any, reject) => {
+	let soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client) => any, reject) => {
 		soap.createClient(url, (err, client: soap.Client) => {
 			// console.log('callback', err)
 			// console.log('keys', _.keys(client))
@@ -58,36 +57,33 @@ export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP0 & Exter
 			return val
 		}
 	}
-	msg.message.clip_key = 	await iterateDeeplyAsync(msg.message.clip_key, 	iteratee)
-	msg.message.clip = 		await iterateDeeplyAsync(msg.message.clip, 		iteratee)
+	msg.message.clip_key = await iterateDeeplyAsync(msg.message.clip_key, iteratee)
+	msg.message.clip = await iterateDeeplyAsync(msg.message.clip, iteratee)
 
 	// Send the message:
 
 	await new Promise((resolve, reject) => {
-		let fcn = soapClient[msg.message.fcn ] as soap.ISoapMethod | undefined
+		let fcn = soapClient[msg.message.fcn] as soap.ISoapMethod | undefined
 		if (fcn) {
-
 			let args = _.omit(msg.message, ['fcn'])
 
 			// console.log('SOAP', msg.message.fcn, args)
 
-			fcn(
-				args, (err: any, result: any, raw: any, soapHeader: any) => {
-					if (err) {
-						logger.debug('Sent SOAP message', args)
-						reject(err)
-					} else {
-						let resultValue = result[msg.message.fcn + 'Result']
-						resolve(resultValue)
-					}
+			fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
+				if (err) {
+					logger.debug('Sent SOAP message', args)
+					reject(err)
+				} else {
+					let resultValue = result[msg.message.fcn + 'Result']
+					resolve(resultValue)
 				}
-			)
+			})
 		} else {
 			reject(new Meteor.Error(401, 'SOAP method "' + msg.message.fcn + '" missing on endpoint!'))
 		}
 	})
 }
-async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn) {
+async function resolveSOAPFcnData(soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn) {
 	return new Promise((resolve, reject) => {
 		// console.log('resolveSOAPFcnData')
 
@@ -95,21 +91,18 @@ async function resolveSOAPFcnData (soapClient: soap.Client, valFcn: ExternalMess
 			let fetchFrom = valFcn._fcn.soapFetchFrom
 			let fcn = soapClient[fetchFrom.fcn] as soap.ISoapMethod | undefined
 			if (fcn) {
-
 				let args = fetchFrom.attrs
 				// console.log('SOAP', fetchFrom.fcn, args)
 
-				fcn(
-					args, (err: any, result: any, raw: any, soapHeader: any) => {
-						if (err) {
-							reject(err)
-						} else {
-							// console.log('reply', result)
-							let resultValue = result[fetchFrom.fcn + 'Result']
-							resolve(resultValue)
-						}
+				fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
+					if (err) {
+						reject(err)
+					} else {
+						// console.log('reply', result)
+						let resultValue = result[fetchFrom.fcn + 'Result']
+						resolve(resultValue)
 					}
-				)
+				})
 			} else {
 				reject(new Meteor.Error(401, 'SOAP method "' + fetchFrom.fcn + '" missing on endpoint!'))
 			}

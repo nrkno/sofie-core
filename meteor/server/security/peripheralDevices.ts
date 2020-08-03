@@ -1,24 +1,23 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 
-import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { rejectFields } from './lib'
-import { Mongo } from 'meteor/mongo'
+import { protectString, check } from '../../lib/lib'
+import { MongoQuery } from '../../lib/typings/meteor'
 
 export namespace PeripheralDeviceSecurity {
-
-	export function getPeripheralDevice (id: string, token: string, context: any): PeripheralDevice {
+	export function getPeripheralDevice(deviceId: PeripheralDeviceId, token: string, context: any): PeripheralDevice {
 		context = context || {}
-		if (!id) throw new Meteor.Error(400,'id missing!')
-		check(id, String)
+		if (!deviceId) throw new Meteor.Error(400, 'id missing!')
+		check(deviceId, String)
 
-		if (! (context || {}).userId) {
-			if (!token) throw new Meteor.Error(400,'token missing!')
+		if (!(context || {}).userId) {
+			if (!token) throw new Meteor.Error(400, 'token missing!')
 			check(token, String)
 		}
 
-		let peripheralDevice = PeripheralDevices.findOne(id)
-		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + id + '" not found')
+		let peripheralDevice = PeripheralDevices.findOne(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, 'PeripheralDevice "' + deviceId + '" not found')
 		// if (!peripheralDevice) return null
 
 		if (peripheralDevice.token === token) return peripheralDevice
@@ -32,19 +31,17 @@ export namespace PeripheralDeviceSecurity {
 			}
 		}*/
 
-		throw new Meteor.Error(401,'Not allowed access to peripheralDevice')
+		throw new Meteor.Error(401, 'Not allowed access to peripheralDevice')
 	}
-	export function allowReadAccess (selector: Mongo.Query<PeripheralDevice>, token: string, context: any) {
+	export function allowReadAccess(selector: MongoQuery<PeripheralDevice>, token: string, context: any) {
 		if (selector._id && token) {
-
 			check(selector['_id'], String)
-			selector._id = selector._id + ''
+			selector._id = protectString(selector._id + '')
 
 			getPeripheralDevice(selector._id, token, context)
 
 			return true
 		} else {
-
 			// TODO: implement access logic here
 			// use context.userId
 
@@ -52,17 +49,17 @@ export namespace PeripheralDeviceSecurity {
 			return true
 		}
 	}
-	export function allowWriteAccess () {
+	export function allowWriteAccess() {
 		// TODO
 	}
 }
 // Setup rules:
 
 PeripheralDevices.allow({
-	insert (userId: string, doc: PeripheralDevice): boolean {
+	insert(userId: string, doc: PeripheralDevice): boolean {
 		return true
 	},
-	update (userId, doc, fields, modifier) {
+	update(userId, doc, fields, modifier) {
 		return rejectFields(fields, [
 			'type',
 			'parentDeviceId',
@@ -79,7 +76,7 @@ PeripheralDevices.allow({
 		])
 	},
 
-	remove (userId, doc) {
+	remove(userId, doc) {
 		return false
-	}
+	},
 })

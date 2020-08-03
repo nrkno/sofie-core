@@ -1,22 +1,21 @@
 import { Meteor } from 'meteor/meteor'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../lib/collections/ExternalMessageQueue'
-import {
-	ExternalMessageQueueObjSOAP
-} from 'tv-automation-sofie-blueprints-integration'
+import { ExternalMessageQueueObjSOAP } from 'tv-automation-sofie-blueprints-integration'
 // Cyclic dependency issues with import of throwFatalError
 // import { throwFatalError } from '../server/api/ExternalMessageQueue'
 import { Fiber } from './Fibers'
 
-export function throwFatalError (msg: ExternalMessageQueueObj, e: Meteor.Error) {
-
-	ExternalMessageQueue.update(msg._id, {$set: {
-		errorFatal: true
-	}})
+export function throwFatalError(msg: ExternalMessageQueueObj, e: Meteor.Error) {
+	ExternalMessageQueue.update(msg._id, {
+		$set: {
+			errorFatal: true,
+		},
+	})
 
 	throw e
 }
 
-export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP & ExternalMessageQueueObj) {
+export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP & ExternalMessageQueueObj) {
 	return new Promise((resolve, reject) => {
 		process.nextTick(() => {
 			if (msg.message.fcn.match(/fatal/)) {
@@ -36,8 +35,8 @@ export async function sendSOAPMessage (msg: ExternalMessageQueueObjSOAP & Extern
 
 const sendSOAPMock = jest.fn(sendSOAPMessage)
 
-export function setup () {
+export function setup() {
 	return {
-		sendSOAPMessage: sendSOAPMock
+		sendSOAPMessage: sendSOAPMock,
 	}
 }

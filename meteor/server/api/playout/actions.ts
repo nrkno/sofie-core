@@ -10,143 +10,187 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime } from '../../../lib/lib'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
-import { setNextPart, onPartHasStoppedPlaying } from './lib'
+import {
+	setNextPart,
+	onPartHasStoppedPlaying,
+	selectNextPart,
+	getSelectedPartInstancesFromCache,
+	getStudioFromCache,
+	getAllOrderedPartsFromCache,
+} from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
-import { areThereActiveRundownsInStudio } from './studio'
+import { getActiveRundownPlaylistsInStudio } from './studio'
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PartInstances } from '../../../lib/collections/PartInstances'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
-export function activateRundown (rundown: Rundown, rehearsal: boolean) {
-	logger.info('Activating rundown ' + rundown._id + (rehearsal ? ' (Rehearsal)' : ''))
+export function activateRundownPlaylist(
+	cache: CacheForRundownPlaylist,
+	rundownPlaylist: RundownPlaylist,
+	rehearsal: boolean
+): void {
+	logger.info('Activating rundown ' + rundownPlaylist._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
 
-	let newRundown = Rundowns.findOne(rundown._id) // fetch new from db, to make sure its up to date
+	let newRundown = cache.RundownPlaylists.findOne(rundownPlaylist._id) // fetch new from db, to make sure its up to date
 
-	if (!newRundown) throw new Meteor.Error(404, `Rundown "${rundown._id}" not found!`)
-	rundown = newRundown
+	if (!newRundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylist._id}" not found!`)
+	rundownPlaylist = newRundown
 
-	let studio = rundown.getStudio()
+	let studio = getStudioFromCache(cache, rundownPlaylist)
 
-	const anyOtherActiveRundowns = areThereActiveRundownsInStudio(studio._id, rundown._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id, rundownPlaylist._id)
 
 	if (anyOtherActiveRundowns.length) {
 		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
-		throw new Meteor.Error(409, 'Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id), _.map(anyOtherActiveRundowns, rundown => rundown._id).join(','))
+		throw new Meteor.Error(
+			409,
+			'Only one rundown can be active at the same time. Active rundown playlists: ' +
+				_.map(anyOtherActiveRundowns, (playlist) => playlist._id),
+			JSON.stringify(_.map(anyOtherActiveRundowns, (playlist) => playlist._id))
+		)
 	}
 
-	let m = {
-		active: true,
-		rehearsal: rehearsal,
-	}
-	Rundowns.update(rundown._id, {
-		$set: m
+	cache.RundownPlaylists.update(rundownPlaylist._id, {
+		$set: {
+			active: true,
+			rehearsal: rehearsal,
+		},
 	})
-	// Update local object:
-	rundown.active = true
-	rundown.rehearsal = rehearsal
 
-	if (!rundown.nextPartId) {
-		const firstValidPart = rundown.getParts().find(p => !p.invalid)
-		if (firstValidPart) {
-			setNextPart(rundown, firstValidPart, null)
-		}
+	let rundown: Rundown | undefined
+
+	if (!rundownPlaylist.nextPartInstanceId) {
+		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
+		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
+	} else {
+		const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
+		if (!nextPartInstance)
+			throw new Meteor.Error(404, `Could not find nextPartInstance "${rundownPlaylist.nextPartInstanceId}"`)
+		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Could not find rundown "${nextPartInstance.rundownId}"`)
 	}
 
-	updateTimeline(studio._id)
+	updateTimeline(cache, studio._id)
 
-	Meteor.defer(() => {
+	cache.defer(() => {
+		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const { blueprint } = getBlueprintOfRundown(rundown)
 		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, studio)))
-			.catch(logger.error)
+			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, undefined, studio))).catch(
+				logger.error
+			)
 		}
 	})
 }
-export function deactivateRundown (rundown: Rundown) {
+export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): void {
+	const rundown = deactivateRundownPlaylistInner(cache, rundownPlaylist)
 
-	deactivateRundownInner(rundown)
+	updateTimeline(cache, rundownPlaylist.studioId)
 
-	updateTimeline(rundown.studioId)
-
-	Meteor.defer(() => {
-		const { blueprint } = getBlueprintOfRundown(rundown)
-		if (blueprint.onRundownDeActivate) {
-			Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown)))
-			.catch(logger.error)
-		}
-	})
-}
-export function deactivateRundownInner (rundown: Rundown) {
-	logger.info('Deactivating rundown ' + rundown._id)
-
-	const previousPart = (rundown.currentPartId ?
-		Parts.findOne(rundown.currentPartId)
-		: null
-	)
-
-	if (previousPart) onPartHasStoppedPlaying(previousPart, getCurrentTime())
-
-	Rundowns.update(rundown._id, {
-		$set: {
-			active: false,
-			previousPartId: null,
-			currentPartId: null,
-			holdState: RundownHoldState.NONE,
-		}
-	})
-	setNextPart(rundown, null, null)
-
-	if (rundown.currentPartId) {
-		Parts.update(rundown.currentPartId, {
-			$push: {
-				'timings.takeOut': getCurrentTime()
+	cache.defer(() => {
+		if (rundown) {
+			const { blueprint } = getBlueprintOfRundown(rundown)
+			if (blueprint.onRundownDeActivate) {
+				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, undefined))).catch(
+					logger.error
+				)
 			}
-		})
+		}
+	})
+}
+export function deactivateRundownPlaylistInner(
+	cache: CacheForRundownPlaylist,
+	rundownPlaylist: RundownPlaylist
+): Rundown | undefined {
+	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
+
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+
+	let rundown: Rundown | undefined
+	if (currentPartInstance) {
+		// defer so that an error won't prevent deactivate
+		Meteor.setTimeout(() => {
+			rundown = Rundowns.findOne(currentPartInstance.rundownId)
+
+			if (rundown) {
+				IngestActions.notifyCurrentPlayingPart(rundown, null)
+			} else {
+				logger.error(
+					`Could not find owner Rundown "${currentPartInstance.rundownId}" of PartInstance "${currentPartInstance._id}"`
+				)
+			}
+		}, 40)
+	} else {
+		if (nextPartInstance) {
+			rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
+		}
 	}
 
-	IngestActions.notifyCurrentPlayingPart(rundown, null)
+	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
+
+	cache.RundownPlaylists.update(rundownPlaylist._id, {
+		$set: {
+			active: false,
+			previousPartInstanceId: null,
+			currentPartInstanceId: null,
+			holdState: RundownHoldState.NONE,
+		},
+	})
+	// rundownPlaylist.currentPartInstanceId = null
+	// rundownPlaylist.previousPartInstanceId = null
+	setNextPart(cache, rundownPlaylist, null)
+
+	if (currentPartInstance) {
+		cache.PartInstances.update(currentPartInstance._id, {
+			$push: {
+				'part.timings.takeOut': getCurrentTime(),
+			},
+		})
+
+		// TODO-PartInstance - pending new data flow
+		cache.Parts.update(currentPartInstance.part._id, {
+			$push: {
+				'timings.takeOut': getCurrentTime(),
+			},
+		})
+	}
+	return rundown
 }
 /**
  * Prepares studio before a broadcast is about to start
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boolean, rundownToBeActivated: Rundown) {
+export function prepareStudioForBroadcast(
+	cache: CacheForRundownPlaylist,
+	studio: Studio,
+	okToDestoryStuff: boolean,
+	rundownPlaylistToBeActivated: RundownPlaylist
+): void {
 	logger.info('prepareStudioForBroadcast ' + studio._id)
 
-	const ssrcBgs: Array<IConfigItem> = _.compact([
-		studio.config.find((o) => o._id === 'atemSSrcBackground'),
-		studio.config.find((o) => o._id === 'atemSSrcBackground2')
-	])
-	if (ssrcBgs.length > 1) logger.info(ssrcBgs[0].value + ' and ' + ssrcBgs[1].value + ' will be loaded to atems')
-	if (ssrcBgs.length > 0) logger.info(ssrcBgs[0].value + ' will be loaded to atems')
-
-	let playoutDevices = PeripheralDevices.find({
+	let playoutDevices = cache.PeripheralDevices.findFetch({
 		studioId: studio._id,
-		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-	}).fetch()
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+	})
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
-		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-			if (err) {
-				logger.error(err)
-			} else {
-				logger.info('devicesMakeReady OK')
-			}
-		}, 'devicesMakeReady', okToDestoryStuff, rundownToBeActivated._id)
-
-		if (okToDestoryStuff) {
-			if (ssrcBgs.length > 0) {
-				PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-					if (err) {
-						logger.error(err)
-					} else {
-						logger.info('Added Super Source BG to Atem')
-					}
-				}, 'uploadFileToAtem', ssrcBgs)
-			}
-		}
+		PeripheralDeviceAPI.executeFunction(
+			device._id,
+			(err) => {
+				if (err) {
+					logger.error(err)
+				} else {
+					logger.info('devicesMakeReady OK')
+				}
+			},
+			'devicesMakeReady',
+			okToDestoryStuff,
+			rundownPlaylistToBeActivated._id
+		)
 	})
 }
 /**
@@ -154,21 +198,26 @@ export function prepareStudioForBroadcast (studio: Studio, okToDestoryStuff: boo
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function standDownStudio (studio: Studio, okToDestoryStuff: boolean) {
+export function standDownStudio(cache: CacheForRundownPlaylist, studio: Studio, okToDestoryStuff: boolean): void {
 	logger.info('standDownStudio ' + studio._id)
 
-	let playoutDevices = PeripheralDevices.find({
+	let playoutDevices = cache.PeripheralDevices.findFetch({
 		studioId: studio._id,
-		type: PeripheralDeviceAPI.DeviceType.PLAYOUT
-	}).fetch()
+		type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+	})
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
-		PeripheralDeviceAPI.executeFunction(device._id, (err) => {
-			if (err) {
-				logger.error(err)
-			} else {
-				logger.info('devicesStandDown OK')
-			}
-		}, 'devicesStandDown', okToDestoryStuff)
+		PeripheralDeviceAPI.executeFunction(
+			device._id,
+			(err) => {
+				if (err) {
+					logger.error(err)
+				} else {
+					logger.info('devicesStandDown OK')
+				}
+			},
+			'devicesStandDown',
+			okToDestoryStuff
+		)
 	})
 }

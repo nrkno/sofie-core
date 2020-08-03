@@ -1,16 +1,16 @@
-@import "colorScheme";
-@import "itemTypeColors";
-@import "_variables";
+@import 'colorScheme';
+@import 'itemTypeColors';
+@import '_variables';
 
-$output-layer-group-line: 1px solid #5C5C5C;
+$output-layer-group-line: 1px solid #5c5c5c;
 $output-layer-group-collapse-animation-duration: 0.3s;
 
 $segment-header-height: 2.3em;
 $segment-header-width: 12.5rem;
 $segment-background-color: #000;
-$segment-timeline-background-color: #1F1F1F;
+$segment-timeline-background-color: #1f1f1f;
 $segment-next-preview-background-color: #181818;
-$segment-title-background-color: #4B4B4B;
+$segment-title-background-color: #4b4b4b;
 $segment-title-background-color-next: $general-next-color;
 $segment-title-text-color-live: #ffffff;
 $segment-title-background-color-live: $general-live-color;
@@ -22,9 +22,11 @@ $segment-item-disabled-background: #898989;
 $segment-item-disabled-color: #c9c9c9;
 
 $segment-nextline-shade-width: 1.875rem;
-$segment-nextline-shade-fill: linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.5));
+$segment-nextline-shade-fill: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
 
-$liveline-timecode-color:  #ffff00; //$general-live-color;
+$rundown-divider-background-color: rgba(0, 0, 0, 0.2);
+
+$liveline-timecode-color: #ffff00; //$general-live-color;
 $hold-status-color: $liveline-timecode-color;
 
 $previewline-color: rgb(38, 137, 186);
@@ -68,12 +70,13 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 		lighten($segment-background-color, 10%) 0%,
 		lighten($segment-background-color, 14%) 20%,
 		lighten($segment-background-color, 10%) 40%,
-		lighten($segment-background-color, 10%) 100%);
+		lighten($segment-background-color, 10%) 100%
+	);
 	background-repeat: repeat-y;
 	background-size: 800px 1px;
 
 	animation-duration: 1s;
-	animation-fill-mode: forwards; 
+	animation-fill-mode: forwards;
 	animation-iteration-count: infinite;
 	animation-name: placeholder-shimmer;
 	animation-timing-function: linear;
@@ -97,7 +100,7 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	100% {
-		background-position: 100vw 0; 
+		background-position: 100vw 0;
 	}
 }
 
@@ -106,6 +109,52 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	padding-bottom: 50vh;
 	padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
+
+	.rundown-view__part__icon {
+		display: inline-block;
+		margin-left: 0.2em;
+
+		&.rundown-view__part__icon--next {
+			position: relative;
+			width: 0;
+			height: 0;
+			top: -2px;
+			border-width: 5px 0 5px 9px;
+			border-style: solid;
+			border-color: transparent transparent transparent $general-next-color;
+
+			&::after {
+				content: ' ';
+				position: absolute;
+				top: -5px;
+				right: -1px;
+				height: 10px;
+				width: 0;
+				border-left: 2px solid $general-next-color;
+			}
+		}
+
+		&.rundown-view__part__icon--auto-next {
+			position: relative;
+			width: 0;
+			height: 0;
+			top: -2px;
+			left: 4px;
+			border-width: 5px 0 5px 9px;
+			border-style: solid;
+			border-color: transparent transparent transparent $general-next-color;
+
+			&::after {
+				content: ' ';
+				position: absolute;
+				top: -5px;
+				left: -13px;
+				height: 10px;
+				width: 0;
+				border-left: 2px solid $general-next-color;
+			}
+		}
+	}
 
 	.header.rundown .notification-pop-ups {
 		top: 65px;
@@ -128,12 +177,21 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 
 body.vertical-overflow-only {
 	overflow-x: hidden;
-    overflow-y: auto;
+	overflow-y: auto;
 }
 
 body.no-overflow {
 	overflow-x: hidden;
-    overflow-y: hidden;
+	overflow-y: hidden;
+}
+
+@keyframes border-dance {
+	0% {
+		background-position: 0 0, 300px 100%, 0 150px, 100% 0;
+	}
+	100% {
+		background-position: 300px 0, 0 100%, 0 0, 100% 150px;
+	}
 }
 
 .rundown-view__focus-lost-frame {
@@ -143,23 +201,30 @@ body.no-overflow {
 	bottom: 0;
 	right: 0;
 
-	border: 8px dashed $color-status-fatal;
-	border-image: repeating-linear-gradient(
-		315deg,
-		transparent,
-		transparent 10px,
-		$color-status-fatal 11px,
-		$color-status-fatal 31px,
-		transparent 32px) 8;
+	background: linear-gradient(
+			-45deg,
+			$color-status-fatal 33%,
+			transparent 33%,
+			transparent 66%,
+			$color-status-fatal 66%
+		),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%),
+		linear-gradient(-45deg, $color-status-fatal 33%, transparent 33%, transparent 66%, $color-status-fatal 66%);
+	background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+	background-size: 30px 8px, 30px 8px, 8px 30px, 8px 30px;
+	background-position: 0 0, 100% 100%, 0 100%, 100% 0;
+	animation: border-dance 3s infinite linear;
+
 	z-index: 10000;
 	pointer-events: none;
 }
 
 .header.rundown {
 	position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+	top: 0;
+	left: 0;
+	right: 0;
 	z-index: 200;
 	user-select: none;
 
@@ -174,13 +239,13 @@ body.no-overflow {
 	.flex-col.col-timing {
 		flex: 1 1;
 	}
-	
+
 	.timing {
 		margin: 0 0;
 		min-width: auto;
 		width: 100%;
 		text-align: center;
-	
+
 		.timing-clock {
 			position: relative;
 			margin-right: 1em;
@@ -222,10 +287,23 @@ body.no-overflow {
 				text-align: center;
 			}
 
+			&.current-remaining {
+				position: absolute;
+				left: calc(50% + 3.5em);
+				text-align: left;
+				color: $liveline-timecode-color;
+				font-weight: 500;
+
+				.overtime {
+					color: $general-fast-color;
+					text-shadow: 0px 0px 6px $general-fast-color--shadow;
+				}
+			}
+
 			.timing-clock-label {
 				position: absolute;
 				top: -1em;
-				color: #B8B8B8;
+				color: #b8b8b8;
 				text-transform: uppercase;
 				white-space: nowrap;
 				font-weight: 300;
@@ -261,13 +339,13 @@ body.no-overflow {
 
 				&.heavy {
 					// color: $general-late-color;
-					color: #FFE900;
+					color: #ffe900;
 					background: none;
 				}
 
 				&.light {
 					color: $general-fast-color;
-					text-shadow: 0px 0px 6px var(--general-fast-color--shadow);
+					text-shadow: 0px 0px 6px $general-fast-color--shadow;
 					background: none;
 				}
 			}
@@ -279,11 +357,11 @@ body.no-overflow {
 			text-transform: uppercase;
 			background: #fff;
 			border-radius: 1rem;
+			line-height: 1em;
 			font-weight: 700;
 			color: #000;
-			top: 13px;
-			right: -5px;
-			transform: translateX(100%);
+			top: 2.4em;
+			left: 0;
 			padding: 2px 5px 1px;
 
 			&.rundown__header-status--hold {
@@ -293,7 +371,6 @@ body.no-overflow {
 
 		.timing-clock-header-label {
 			font-weight: 100px;
-
 		}
 	}
 
@@ -305,19 +382,20 @@ body.no-overflow {
 	@media screen and (max-width: 1024px) {
 		.timing {
 			.timing-clock.plan-end:not(.countdown) {
-				display: none;			
+				display: none;
 			}
-	
+
 			.timing-clock.countdown.plan-end {
 				margin-right: 0;
-			} 
+			}
 		}
 	}
 
 	/* RWD: Anything below an iPad */
 	@media screen and (max-width: 1023px) {
 		.timing {
-			.timing-clock.plan-end:not(.countdown), .timing-clock.plan-start:not(.countdown) {
+			.timing-clock.plan-end:not(.countdown),
+			.timing-clock.plan-start:not(.countdown) {
 				display: none;
 			}
 		}
@@ -328,7 +406,7 @@ body.no-overflow {
 			.timing-clock.heavy-light {
 				margin-right: 0;
 			}
-	
+
 			.timing-clock.plan-end {
 				display: none;
 			}
@@ -340,7 +418,7 @@ body.no-overflow {
 			.timing-clock.plan-start.countdown {
 				display: none;
 			}
-	
+
 			.timing-clock.time-now {
 				left: 2em;
 				transform: none;
@@ -349,21 +427,21 @@ body.no-overflow {
 	}
 }
 
-.first-row  {
-	cursor:	default;
+.first-row {
+	cursor: default;
 }
 
-.header.rundown.not-active .first-row  {
+.header.rundown.not-active .first-row {
 	background-color: rgb(38, 137, 186);
 }
-.header.rundown.not-active .first-row span  {
-	color: #FFF !important;
+.header.rundown.not-active .first-row span {
+	color: #fff !important;
 }
 // .header.rundown.active .first-row  {
-	// background-color: #600
+// background-color: #600
 // }
-.header.rundown.active.rehearsal .first-row  {
-	background-color: #660
+.header.rundown.active.rehearsal .first-row {
+	background-color: #660;
 }
 
 .segment-timeline-placeholder {
@@ -382,18 +460,19 @@ body.no-overflow {
 	user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
-	
+
 	width: auto;
 	margin: 1.5em;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
-	-webkit-box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
-	-moz-box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
-	box-shadow: 7px 6px 20px 0px rgba(0,0,0,0.7);
+	-webkit-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
+	-moz-box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
+	box-shadow: 7px 6px 20px 0px rgba(0, 0, 0, 0.7);
 
 	// padding has to be the same on both of these elements so that the layers and their controls line up
-	.segment-timeline__output-layers, .segment-timeline__timeline {
+	.segment-timeline__output-layers,
+	.segment-timeline__timeline {
 		padding: $segment-timeline-padding;
 	}
 
@@ -402,12 +481,12 @@ body.no-overflow {
 		margin: 0;
 		padding: 0;
 		overflow: hidden;
-		
+
 		grid-column: segment-name / segment-group-controls;
 		grid-row: main-view / end;
 
 		transition: $output-layer-group-collapse-animation-duration opacity,
-					$output-layer-group-collapse-animation-duration visibility 0s;
+			$output-layer-group-collapse-animation-duration visibility 0s;
 
 		background: $segment-title-background-color;
 
@@ -423,7 +502,7 @@ body.no-overflow {
 			-webkit-hyphens: auto;
 			-ms-hyphens: auto;
 		}
-		
+
 		.segment-timeline__title__notes {
 			margin: 0 0 0.5em;
 			padding: 0.5em;
@@ -463,7 +542,8 @@ body.no-overflow {
 			}
 		}
 
-		&.live, &.next {
+		&.live,
+		&.next {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
@@ -482,7 +562,8 @@ body.no-overflow {
 			}
 		}
 
-		&.live, &.next {
+		&.live,
+		&.next {
 			.segment-timeline__title {
 				> h2 {
 					border-bottom: 1px solid rgba(0, 0, 0, 0.3);
@@ -525,7 +606,6 @@ body.no-overflow {
 		}
 	}
 
-
 	&.has-played {
 		.segment-timeline__title {
 			font-weight: 200;
@@ -556,7 +636,7 @@ body.no-overflow {
 
 		cursor: pointer;
 
-		font-size: 1.0em;
+		font-size: 1em;
 		line-height: 2.45em;
 		padding-left: 25px;
 		margin-left: 0.3em;
@@ -576,7 +656,6 @@ body.no-overflow {
 		padding: 0;
 		text-align: right;
 
-
 		grid-column: segment-name / segment-group-controls;
 		grid-row: header / main-view;
 
@@ -584,7 +663,7 @@ body.no-overflow {
 
 		font-size: 1.3em;
 		font-weight: 400;
-		line-height: 2.0em;
+		line-height: 2em;
 		padding-right: 0px;
 		margin-right: 0em;
 		letter-spacing: 0px;
@@ -645,8 +724,9 @@ body.no-overflow {
 		margin: $segment-header-height 0 1.5em 1em;
 		background: $segment-next-preview-background-color;
 		opacity: 1;
-		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
-					$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
+		transition: $output-layer-group-collapse-animation-duration opacity
+				($output-layer-group-collapse-animation-duration * 1/2),
+			$output-layer-group-collapse-animation-duration margin ($output-layer-group-collapse-animation-duration * 1/2);
 	}
 
 	.segment-timeline__zoom-area-container {
@@ -662,7 +742,7 @@ body.no-overflow {
 		padding: 1px 0;
 
 		transition: $output-layer-group-collapse-animation-duration max-height ease-in-out,
-					$output-layer-group-collapse-animation-duration margin ease-in-out;
+			$output-layer-group-collapse-animation-duration margin ease-in-out;
 
 		.segment-timeline__timeline {
 			overflow: hidden;
@@ -676,7 +756,8 @@ body.no-overflow {
 				.segment-timeline__part__nextline {
 					border-left-width: 1px;
 
-					&::before, &::after {
+					&::before,
+					&::after {
 						display: none;
 					}
 
@@ -691,7 +772,8 @@ body.no-overflow {
 
 				&.next {
 					.segment-timeline__part__nextline {
-						&::before, &::after {
+						&::before,
+						&::after {
 							display: none;
 						}
 
@@ -741,7 +823,7 @@ body.no-overflow {
 				}
 
 				.segment-timeline__part__difference {
-					background: rgba(0, 0, 0, 0.5);	
+					background: rgba(0, 0, 0, 0.5);
 				}
 			}
 		}
@@ -786,7 +868,7 @@ body.no-overflow {
 				top: 0;
 				bottom: 0;
 				width: 250px;
-				cursor: move;		
+				cursor: move;
 				cursor: -webkit-grab;
 				background: none;
 
@@ -839,7 +921,7 @@ body.no-overflow {
 						left: -3px;
 						bottom: 0;
 						width: 10px;
-						cursor: move;				
+						cursor: move;
 						cursor: -webkit-grab;
 						z-index: 20;
 						display: block;
@@ -849,9 +931,20 @@ body.no-overflow {
 		}
 		.segment-timeline__part {
 			.segment-timeline__part__invalid-cover {
-				background-image:
-					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px),
-					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 4px, rgba(0, 0, 0, 1) 4px, rgba(0, 0, 0, 1) 8px) !important;
+				background-image: repeating-linear-gradient(
+						45deg,
+						var(--invalid-reason-color-transparent) 0%,
+						var(--invalid-reason-color-transparent) 4px,
+						var(--invalid-reason-color-opaque) 4px,
+						var(--invalid-reason-color-opaque) 8px
+					),
+					repeating-linear-gradient(
+						-45deg,
+						var(--invalid-reason-color-transparent) 0%,
+						var(--invalid-reason-color-transparent) 4px,
+						var(--invalid-reason-color-opaque) 4px,
+						var(--invalid-reason-color-opaque) 8px
+					) !important;
 			}
 		}
 		.segment-timeline__part.gap {
@@ -874,7 +967,10 @@ body.no-overflow {
 		overflow: hidden;
 		background: $segment-timeline-background-color;
 		opacity: 1;
-		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2), $output-layer-group-collapse-animation-duration margin-bottom ($output-layer-group-collapse-animation-duration * 1/2);
+		transition: $output-layer-group-collapse-animation-duration opacity
+				($output-layer-group-collapse-animation-duration * 1/2),
+			$output-layer-group-collapse-animation-duration margin-bottom
+				($output-layer-group-collapse-animation-duration * 1/2);
 		margin-bottom: 2.5em;
 	}
 
@@ -887,10 +983,11 @@ body.no-overflow {
 
 		opacity: 1;
 		visibility: visible;
-		transition: $output-layer-group-collapse-animation-duration opacity ($output-layer-group-collapse-animation-duration * 1/2),
-					$output-layer-group-collapse-animation-duration visibility 0s;
+		transition: $output-layer-group-collapse-animation-duration opacity
+				($output-layer-group-collapse-animation-duration * 1/2),
+			$output-layer-group-collapse-animation-duration visibility 0s;
 
-		color: rgb(175,175,175);
+		color: rgb(175, 175, 175);
 
 		font-size: 15px;
 		--timeline-grid-label-top: 18px;
@@ -923,13 +1020,13 @@ body.no-overflow {
 	.segment-timeline__liveline {
 		width: 2px;
 		background: $general-live-color;
-		box-shadow: -3px 0 20px rgba(0,0,0,1);
+		box-shadow: -3px 0 20px rgba(0, 0, 0, 1);
 		transition: $output-layer-group-collapse-animation-duration top ease-in-out,
-					$output-layer-group-collapse-animation-duration bottom ease-in-out;
+			$output-layer-group-collapse-animation-duration bottom ease-in-out;
 
 		.segment-timeline__liveline__label {
 			position: absolute;
-			top: -1.10em;
+			top: -1.1em;
 			left: -0.2px;
 			color: #fff;
 			background-color: $general-live-color;
@@ -954,56 +1051,11 @@ body.no-overflow {
 			word-wrap: none;
 			opacity: 1;
 
-			transition: $output-layer-group-collapse-animation-duration opacity ease-in-out $output-layer-group-collapse-animation-duration;
+			transition: $output-layer-group-collapse-animation-duration opacity ease-in-out
+				$output-layer-group-collapse-animation-duration;
 
-			&.overtime {
+			> .overtime {
 				color: $general-late-color;
-			}
-		}
-
-		.segment-timeline__liveline__icon {
-			display: inline-block;
-			margin-left: 0.2em;
-
-			&.segment-timeline__liveline__icon--next {
-				position: relative;
-				width: 0;
-				height: 0;
-				top: -2px;
-				border-width: 5px 0 5px 9px;
-				border-style: solid;
-				border-color: transparent transparent transparent $general-next-color;
-
-				&::after {
-					content: ' ';
-					position: absolute;
-					top: -5px;
-					right: -1px;
-					height: 10px;
-					width: 0;
-					border-left: 2px solid $general-next-color;
-				}
-			}
-
-			&.segment-timeline__liveline__icon--auto-next {
-				position: relative;
-				width: 0;
-				height: 0;
-				top: 1px;
-				left: 4px;
-				border-width: 5px 0 5px 9px;
-				border-style: solid;
-				border-color: transparent transparent transparent $general-next-color;
-
-				&::after {
-					content: ' ';
-					position: absolute;
-					top: -5px;
-					left: -13px;
-					height: 10px;
-					width: 0;
-					border-left: 2px solid $general-next-color;
-				}
 			}
 		}
 
@@ -1013,7 +1065,7 @@ body.no-overflow {
 			text-transform: uppercase;
 			font-size: 0.7rem;
 			padding: 2px 5px 1px;
-			line-height: 1.2em;
+			line-height: 1em;
 			margin-top: 2px;
 			font-weight: 700;
 			color: #000;
@@ -1030,15 +1082,19 @@ body.no-overflow {
 	/** This is a child element of the .segment-timeline__timeline-container.
 	    This is the parent of all segment items
 	*/
-	.segment-timeline__timeline, .segment-timeline__next-preview {
+	.segment-timeline__timeline,
+	.segment-timeline__next-preview {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
 
-		// Part is an element grouping all parts
+		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: relative;
 			z-index: 1;
 			transform-style: preserve-3d;
+
+			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
+			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
 
 			* {
 				backface-visibility: hidden;
@@ -1052,6 +1108,7 @@ body.no-overflow {
 				min-width: 200%;
 				z-index: 0;
 			}
+
 			&.invalid {
 				background-color: #333;
 			}
@@ -1075,7 +1132,7 @@ body.no-overflow {
 				flex: 0;
 				border-left: 2px solid $part-start-color;
 				box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.7);
-				transform: translate3d(0,0,50px);
+				transform: translate3d(0, 0, 50px);
 
 				&.segment-timeline__part__nextline--endline {
 					left: auto;
@@ -1087,7 +1144,7 @@ body.no-overflow {
 					text-transform: uppercase;
 					position: absolute;
 					top: -2px;
-    				left: 2px;
+					left: 2px;
 					text-transform: uppercase;
 					font-weight: bold;
 					line-height: 1em;
@@ -1104,7 +1161,7 @@ body.no-overflow {
 						height: 15px;
 						position: relative;
 						top: 12px;
-    					right: 11px;
+						right: 11px;
 						display: inline-block;
 
 						> svg {
@@ -1118,7 +1175,7 @@ body.no-overflow {
 					display: block;
 					position: absolute;
 					top: 0px;
-    				left: -10px;
+					left: -10px;
 					width: 0;
 					height: 0;
 					border-style: solid;
@@ -1131,7 +1188,7 @@ body.no-overflow {
 					display: block;
 					position: absolute;
 					bottom: 4px;
-    				left: -10px;
+					left: -10px;
 					width: 0;
 					height: 0;
 					border-style: solid;
@@ -1148,10 +1205,38 @@ body.no-overflow {
 				right: 0;
 				z-index: 1;
 				pointer-events: none;
-				background-image:
-					repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
-					repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+				background-image: repeating-linear-gradient(
+						45deg,
+						var(--invalid-reason-color-transparent) 0%,
+						var(--invalid-reason-color-transparent) 5px,
+						var(--invalid-reason-color-opaque) 5px,
+						var(--invalid-reason-color-opaque) 10px
+					),
+					repeating-linear-gradient(
+						-45deg,
+						var(--invalid-reason-color-transparent) 0%,
+						var(--invalid-reason-color-transparent) 5px,
+						var(--invalid-reason-color-opaque) 5px,
+						var(--invalid-reason-color-opaque) 10px
+					);
+			}
 
+			.segment-timeline__part__floated-cover {
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				right: 0;
+				z-index: 1;
+				pointer-events: none;
+				background-image: repeating-linear-gradient(
+					-45deg,
+					transparent 0%,
+					transparent 8px,
+					darken($part-start-color, 50%) 8px,
+					darken($part-start-color, 50%) 10px
+				);
+				backdrop-filter: saturate(0%) brightness(50%);
 			}
 
 			&.gap {
@@ -1160,7 +1245,7 @@ body.no-overflow {
 					background: #000;
 					background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTA4IDI3IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3R5bGU9ImZpbGwtcnVsZTpldmVub2RkO2NsaXAtcnVsZTpldmVub2RkOyI+PHBhdGggaWQ9IlBhdGgiIGQ9Ik0xMDEuMDYzLDEuNTc3Yy0yMC44MzcsMy42NzUgLTIzLjQwNCwyNC4zNTMgLTQ3Ljk3LDI0LjM1M2MtMjYuODg1LDAgLTI2LjQxOCwtMjQuNjI5IC01My4wOTMsLTI0LjkzbTEwMS4wNjMsMC41NzdjMi4xMTEsLTAuMzcyIDQuNDA5LC0wLjU3NyA2LjkzNywtMC41NzciIHN0eWxlPSJmaWxsOiNkOGQ4ZDg7ZmlsbC1vcGFjaXR5OjA7c3Ryb2tlOiM5Nzk3OTc7c3Ryb2tlLXdpZHRoOjJweDsiLz48L3N2Zz4=);
 					background-repeat: repeat-x;
-    				background-position: right center;
+					background-position: right center;
 					background-attachment: local;
 					background-size: 1.8em 1em;
 				}
@@ -1171,7 +1256,7 @@ body.no-overflow {
 					&::before {
 						display: none;
 					}
-					
+
 					&::after {
 						display: none;
 					}
@@ -1187,7 +1272,8 @@ body.no-overflow {
 				.segment-timeline__part__nextline.invalid:not(.segment-timeline__part__nextline--endline) {
 					border-left-width: 1px;
 
-					&::before, &::after {
+					&::before,
+					&::after {
 						left: -1px;
 					}
 
@@ -1200,7 +1286,8 @@ body.no-overflow {
 
 			&.live {
 				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline) {
-					&::after, &::before {
+					&::after,
+					&::before {
 						display: none;
 					}
 				}
@@ -1209,7 +1296,8 @@ body.no-overflow {
 			.segment-timeline__part__nextline.auto-next.segment-timeline__part__nextline--endline {
 				border-left-width: 1px;
 
-				&::before, &::after {
+				&::before,
+				&::after {
 					left: -1px;
 				}
 
@@ -1244,8 +1332,8 @@ body.no-overflow {
 				top: 0;
 				bottom: 0;
 				right: 0;
-				background: linear-gradient(to left, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%);
-				transform: translate3d(0, 0, 10px)
+				background: linear-gradient(to left, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0) 50%);
+				transform: translate3d(0, 0, 10px);
 			}
 
 			&.next {
@@ -1262,7 +1350,8 @@ body.no-overflow {
 					border-left-color: $general-next-color;
 					color: $general-next-color;
 
-					&::before, &::after {
+					&::before,
+					&::after {
 						border-color: transparent transparent transparent $general-next-color;
 					}
 
@@ -1280,7 +1369,8 @@ body.no-overflow {
 			}
 
 			.segment-timeline__part__nextline--endline.show-end {
-				&::before, &::after {
+				&::before,
+				&::after {
 					display: none;
 				}
 			}
@@ -1289,7 +1379,8 @@ body.no-overflow {
 				border-left-color: $general-next-color;
 				color: $general-next-color;
 
-				&::before, &::after {
+				&::before,
+				&::after {
 					border-color: transparent transparent transparent $general-next-color;
 				}
 
@@ -1304,7 +1395,7 @@ body.no-overflow {
 					}
 				}
 			}
-			
+
 			// Group all layers belonging to an output group
 			.segment-timeline__output-group {
 				min-height: $segment-layer-height;
@@ -1312,7 +1403,7 @@ body.no-overflow {
 				transform-style: preserve-3d;
 
 				transition: $output-layer-group-collapse-animation-duration border ease-in-out;
-						
+
 				// The layer container for all pieces
 				.segment-timeline__layer {
 					min-height: $segment-layer-height;
@@ -1321,12 +1412,12 @@ body.no-overflow {
 					transform-style: preserve-3d;
 
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
-								$output-layer-group-collapse-animation-duration border ease-in-out;
+						$output-layer-group-collapse-animation-duration border ease-in-out;
 
 					.segment-timeline__piece {
 						background: $segment-layer-background-unknown;
 						transition: box-shadow 0.5s ease-out;
-						box-shadow: 0 0 0 0 rgba(255,255,255,0.5);
+						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 						transform-style: preserve-3d;
 
@@ -1344,14 +1435,15 @@ body.no-overflow {
 							color: $segment-item-disabled-color;
 						}
 						&.next-is-touching {
-							border-right: 1px solid $segment-timeline-background-color; 
+							border-right: 1px solid $segment-timeline-background-color;
 						}
 
 						&.next-is-touching:hover {
 							border-right: none;
 						}
 
-						&.splits, &.live-speak {
+						&.splits,
+						&.live-speak {
 							.segment-timeline__piece__preview {
 								position: absolute;
 								top: 0;
@@ -1382,9 +1474,16 @@ body.no-overflow {
 							top: -2px;
 							width: 2px;
 							bottom: 0;
-							background: linear-gradient(to bottom, #0000ff 0, #fff 1.9px, #000 2px , #000 4px, rgba(0, 0, 0, 0.2) 4.1px);
+							background: linear-gradient(
+								to bottom,
+								#0000ff 0,
+								#fff 1.9px,
+								#000 2px,
+								#000 4px,
+								rgba(0, 0, 0, 0.2) 4.1px
+							);
 							overflow: hidden;
-							transform: translate3d(0,0,2px)
+							transform: translate3d(0, 0, 2px);
 						}
 
 						.segment-timeline__piece__anomaly-marker {
@@ -1397,8 +1496,8 @@ body.no-overflow {
 								90deg,
 								black,
 								black 3px,
-								rgba(0, 0, 0, .2) 3px,
-								rgba(0, 0, 0, .2) 6px
+								rgba(0, 0, 0, 0.2) 3px,
+								rgba(0, 0, 0, 0.2) 6px
 							);
 							overflow: hidden;
 							// transform: translate3d(0,0,-2px)
@@ -1428,8 +1527,8 @@ body.no-overflow {
 								0deg,
 								black,
 								black 3px,
-								rgba(0, 0, 0, .2) 3px,
-								rgba(0, 0, 0, .2) 6px
+								rgba(0, 0, 0, 0.2) 3px,
+								rgba(0, 0, 0, 0.2) 6px
 							);
 						}
 
@@ -1438,7 +1537,13 @@ body.no-overflow {
 							top: 0;
 							right: 0;
 							bottom: 0;
-							background: repeating-linear-gradient(to right, $segment-timeline-background-color 0, $segment-timeline-background-color 5px, transparent 5.1px, transparent 10px);
+							background: repeating-linear-gradient(
+								to right,
+								$segment-timeline-background-color 0,
+								$segment-timeline-background-color 5px,
+								transparent 5.1px,
+								transparent 10px
+							);
 							z-index: 2;
 						}
 
@@ -1448,7 +1553,8 @@ body.no-overflow {
 							margin: 0 0.3em;
 							text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 							font-weight: 400;
-							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 2/3);
+							transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
+								($output-layer-group-collapse-animation-duration * 2/3);
 							pointer-events: none;
 							display: inline-block;
 							white-space: nowrap;
@@ -1477,7 +1583,7 @@ body.no-overflow {
 							}
 
 							&.missing {
-								color: orange
+								color: orange;
 							}
 
 							&.first-words {
@@ -1499,7 +1605,7 @@ body.no-overflow {
 								max-width: calc(100% - 10px);
 								overflow: hidden;
 								text-overflow: clip;
-								
+
 								> * {
 									position: relative;
 								}
@@ -1553,16 +1659,15 @@ body.no-overflow {
 							}
 
 							.segment-timeline__piece__label__transition-icon {
-								    max-width: 16px;
-									max-height: 1.4em;
-									vertical-align: top;
-									height: 1.4em;
-									object-fit: contain;
-									object-position: center center;
-									margin-left: 0.5em;
+								max-width: 16px;
+								max-height: 1.4em;
+								vertical-align: top;
+								height: 1.4em;
+								object-fit: contain;
+								object-position: center center;
+								margin-left: 0.5em;
 							}
 						}
-
 
 						&.hide-overflow-labels {
 							.segment-timeline__piece__label {
@@ -1598,24 +1703,24 @@ body.no-overflow {
 									bottom: 0;
 									right: 0;
 								}
-								
+
 								&.in {
 									clip-path: polygon(100% 100%, 100% 0, 1% 100%);
-									
+
 									&::before {
-										background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
+										background: linear-gradient(to right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
 									}
 								}
 								&.out {
 									clip-path: polygon(99% 100%, 0 100%, 0 0);
 
 									&::before {
-										background: linear-gradient(to left, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))
+										background: linear-gradient(to left, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
 									}
 								}
 							}
 
-							&.wipe {								
+							&.wipe {
 								&.in {
 									clip-path: polygon(1% 101%, 1% 49%, 100% 49%, 100% 101%);
 								}
@@ -1625,7 +1730,7 @@ body.no-overflow {
 							}
 						}
 
-						@include missing-overlay()
+						@include missing-overlay();
 					}
 				}
 
@@ -1638,13 +1743,13 @@ body.no-overflow {
 							// min-height: 0 causes the layers to collapse and divide the output-group min-height amongst themselves
 							min-height: 0;
 							border-bottom: 0px solid $segment-layer-separator-color;
-	
+
 							.segment-timeline__piece {
 								.segment-timeline__piece__label {
 									opacity: 0;
 									visibility: hidden;
 									transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-												0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+										0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
 								}
 							}
 						}
@@ -1660,13 +1765,31 @@ body.no-overflow {
 					border-left: 2px dotted $segment-layer-background-mic;
 					margin-left: -2px;
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
+
+					&.hidden {
+						opacity: 0;
+					}
 				}
+			}
+
+			.segment-timeline__identifier {
+				position: absolute;
+				bottom: 0;
+				z-index: -1;
+				padding: 0 10px 0 10px;
+				box-sizing: border-box;
+				background-color: #7400d5;
+				border-radius: 0 10px 10px 0;
 			}
 		}
 	}
 
 	.segment-timeline__next-preview {
-		.segment-timeline__part .segment-timeline__output-group .segment-timeline__layer .segment-timeline__piece .segment-timeline__piece__label {
+		.segment-timeline__part
+			.segment-timeline__output-group
+			.segment-timeline__layer
+			.segment-timeline__piece
+			.segment-timeline__piece__label {
 			max-width: calc(100% - 0.6em);
 		}
 	}
@@ -1684,7 +1807,7 @@ body.no-overflow {
 		.segment-timeline__output-layer-control {
 			line-height: $segment-layer-height;
 			min-height: $segment-layer-height;
-			
+
 			// the label with the name for the output layer
 			.segment-timeline__output-layer-control__label {
 				font-weight: 500;
@@ -1696,7 +1819,7 @@ body.no-overflow {
 				transition: $output-layer-group-collapse-animation-duration opacity;
 
 				text-shadow: 0 0 5px $segment-background-color;
-    			z-index: 2;
+				z-index: 2;
 			}
 
 			// the label for the source-layer within this output group
@@ -1706,17 +1829,15 @@ body.no-overflow {
 				min-height: $segment-layer-height;
 				letter-spacing: 0em;
 				color: rgb(207, 207, 207);
-	
+
 				transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
-							$output-layer-group-collapse-animation-duration height ease-in-out,
-							$output-layer-group-collapse-animation-duration line-height ease-in-out,
-							$output-layer-group-collapse-animation-duration opacity,
-							0s visibility 0s;
+					$output-layer-group-collapse-animation-duration height ease-in-out,
+					$output-layer-group-collapse-animation-duration line-height ease-in-out,
+					$output-layer-group-collapse-animation-duration opacity, 0s visibility 0s;
 			}
 
 			// the output layer group is collapsable if it has more than one source layer assinged
 			&.collapsable {
-
 				// this is the "line" grouping source layers together
 				&::after {
 					content: ' ';
@@ -1730,7 +1851,8 @@ body.no-overflow {
 					width: 50px;
 					box-sizing: border-box;
 					opacity: 1;
-					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity ($output-layer-group-collapse-animation-duration * 1/3);
+					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
+						($output-layer-group-collapse-animation-duration * 1/3);
 				}
 
 				.segment-timeline__output-layer-control__label {
@@ -1746,10 +1868,10 @@ body.no-overflow {
 
 					.segment-timeline__output-layer-control__layer {
 						transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
-									$output-layer-group-collapse-animation-duration height ease-in-out,
-									$output-layer-group-collapse-animation-duration line-height ease-in-out,
-									$output-layer-group-collapse-animation-duration opacity,
-									0s visibility $output-layer-group-collapse-animation-duration;
+							$output-layer-group-collapse-animation-duration height ease-in-out,
+							$output-layer-group-collapse-animation-duration line-height ease-in-out,
+							$output-layer-group-collapse-animation-duration opacity,
+							0s visibility $output-layer-group-collapse-animation-duration;
 						height: 0;
 						min-height: 0;
 						opacity: 0;
@@ -1773,8 +1895,9 @@ body.no-overflow {
 		.segment-timeline__duration {
 			@include collapse-triangle-collapsed();
 		}
-		
-		.segment-timeline__title { // TODO: This is just temporary, to have some aciton on collapsed
+
+		.segment-timeline__title {
+			// TODO: This is just temporary, to have some aciton on collapsed
 			text-overflow: ellipsis;
 			overflow: hidden;
 			white-space: nowrap;
@@ -1787,20 +1910,21 @@ body.no-overflow {
 				padding: 0;
 			}
 		}
-		
+
 		.segment-timeline__timeline-background {
 			opacity: 0;
 			margin-bottom: 0;
 
-			transition: $output-layer-group-collapse-animation-duration opacity, $output-layer-group-collapse-animation-duration margin-bottom;
+			transition: $output-layer-group-collapse-animation-duration opacity,
+				$output-layer-group-collapse-animation-duration margin-bottom;
 		}
 
 		.segment-timeline__timeline-grid {
 			opacity: 0;
 			visibility: hidden;
-			
+
 			transition: $output-layer-group-collapse-animation-duration opacity,
-						0s visibility $output-layer-group-collapse-animation-duration;
+				0s visibility $output-layer-group-collapse-animation-duration;
 		}
 
 		.segment-timeline__liveline {
@@ -1812,7 +1936,7 @@ body.no-overflow {
 				visibility: hidden;
 
 				transition: $output-layer-group-collapse-animation-duration opacity,
-							0s visibility $output-layer-group-collapse-animation-duration;
+					0s visibility $output-layer-group-collapse-animation-duration;
 			}
 		}
 
@@ -1823,35 +1947,36 @@ body.no-overflow {
 		/** segment-timeline__output-layer & segment-timeline__timelien will have a different
 			padding in the collapsed state, but it still matches
 		*/
-		.segment-timeline__timeline, .segment-timeline__output-layers {
+		.segment-timeline__timeline,
+		.segment-timeline__output-layers {
 			padding: 0.2em 0 0;
 		}
 		.segment-timeline__output-layers {
 			.segment-timeline__output-layer-control {
 				min-height: 0;
 				transition: $output-layer-group-collapse-animation-duration line-height ease-out,
-							$output-layer-group-collapse-animation-duration min-height ease-out;
+					$output-layer-group-collapse-animation-duration min-height ease-out;
 
 				.segment-timeline__output-layer-control__label {
 					opacity: 0;
 					visibility: hidden;
 
 					transition: $output-layer-group-collapse-animation-duration opacity 0s,
-								0s visibility $output-layer-group-collapse-animation-duration;
+						0s visibility $output-layer-group-collapse-animation-duration;
 				}
-				
+
 				&::after {
 					transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-								0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+						0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
 					opacity: 0 !important;
 					visibility: hidden;
 				}
 
 				.segment-timeline__output-layer-control__layer {
 					transition: $output-layer-group-collapse-animation-duration min-height ease-in-out,
-								$output-layer-group-collapse-animation-duration height ease-in-out,
-								$output-layer-group-collapse-animation-duration opacity,
-								0s visibility $output-layer-group-collapse-animation-duration;
+						$output-layer-group-collapse-animation-duration height ease-in-out,
+						$output-layer-group-collapse-animation-duration opacity,
+						0s visibility $output-layer-group-collapse-animation-duration;
 					height: 0.3em;
 					min-height: 0.3em;
 					line-height: 0.3em;
@@ -1861,7 +1986,8 @@ body.no-overflow {
 			}
 		}
 
-		> .segment-timeline__timeline-container > .segment-timeline__timeline, > .segment-timeline__next-preview {
+		> .segment-timeline__timeline-container > .segment-timeline__timeline,
+		> .segment-timeline__next-preview {
 			.segment-timeline__part {
 				.segment-timeline__part__nextline {
 					top: -1em;
@@ -1870,7 +1996,8 @@ body.no-overflow {
 						display: none;
 					}
 
-					&::after, &::before {
+					&::after,
+					&::before {
 						display: none;
 					}
 				}
@@ -1887,7 +2014,7 @@ body.no-overflow {
 								opacity: 0;
 								visibility: hidden;
 								transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity,
-											0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
+									0s visibility ($output-layer-group-collapse-animation-duration * 1/3);
 							}
 						}
 					}
@@ -1919,8 +2046,36 @@ body.no-overflow {
 			margin: 0.2em 0 0 1em;
 			opacity: 0;
 			transition: $output-layer-group-collapse-animation-duration opacity 0,
-						$output-layer-group-collapse-animation-duration margin 0;
+				$output-layer-group-collapse-animation-duration margin 0;
 		}
+	}
+}
+
+.rundown-divider-timeline {
+	display: grid;
+	grid-column-gap: 0;
+	grid-row-gap: 0;
+	grid-template-columns: [rundown-name] 50% [rundown-details] auto;
+	grid-template-rows: auto;
+	overflow: hidden;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+
+	width: auto;
+	margin: 1.5em;
+	// padding: 0 0 0.15em 0.15em;
+
+	background: $rundown-divider-background-color;
+	.rundown-divider-timeline__title {
+		margin: auto 0 auto 0; // center vertically
+		padding: 0.3em;
+		line-height: 1.2em;
+		letter-spacing: 0px;
+		font-weight: 400;
+		hyphens: auto;
+		-webkit-hyphens: auto;
+		-ms-hyphens: auto;
 	}
 }
 
@@ -1947,7 +2102,7 @@ body.no-overflow {
 		top: auto;
 		bottom: -1.5em;
 		right: auto;
-		left: 0
+		left: 0;
 	}
 }
 
@@ -2023,7 +2178,9 @@ body.no-overflow {
 			display: none;
 		}
 
-		> video, > .video-preview, > .thumbnail {
+		> video,
+		> .video-preview,
+		> .thumbnail {
 			display: block;
 			width: 160px;
 			height: 90px;
@@ -2036,10 +2193,10 @@ body.no-overflow {
 			top: 0;
 			right: 0;
 			font-weight: 400;
-			text-shadow: 0 0 1px rgba(0,0,0,1);
+			text-shadow: 0 0 1px rgba(0, 0, 0, 1);
 			font-size: 0.75em;
 			padding: 0.2em 0.3em;
-			background: rgba(0,0,0,0.25);
+			background: rgba(0, 0, 0, 0.25);
 			border-bottom-left-radius: 3px;
 		}
 
@@ -2050,10 +2207,10 @@ body.no-overflow {
 			bottom: 0;
 			max-width: 100%;
 			font-weight: 400;
-			text-shadow: 0 0 1px rgba(0,0,0,1);
+			text-shadow: 0 0 1px rgba(0, 0, 0, 1);
 			font-size: 0.75em;
 			padding: 0.2em 0.3em;
-			background: rgba(0,0,0,0.25);
+			background: rgba(0, 0, 0, 0.25);
 			border-top-right-radius: 3px;
 		}
 
@@ -2095,7 +2252,7 @@ body.no-overflow {
 		font-weight: 500;
 		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 		margin-top: -6px;
-    	margin-bottom: 6px;
+		margin-bottom: 6px;
 
 		> .mini-inspector__sub-header {
 			margin-left: 0.5em;
@@ -2145,13 +2302,13 @@ body.no-overflow {
 		margin-right: 1em;
 		letter-spacing: 0.3px;
 		font-weight: 400;
-  		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 	}
 	.mini-inspector__duration {
 		margin-right: 1em;
 		letter-spacing: 0.3px;
 		font-weight: 300;
-  		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 	}
 	.mini-inspector__changed {
 		font-size: 0.8em;
@@ -2180,16 +2337,16 @@ body.no-overflow {
 	opacity: 0.7;
 	position: fixed;
 	cursor: pointer;
-    top: 160px;
-    right: 1.5em;
-    background: $general-live-color;
-    color: #000;
-    padding: 0.7em 1em;
-    border-radius: 3px;
-    font-weight: 500;
+	top: 160px;
+	right: 1.5em;
+	background: $general-live-color;
+	color: #000;
+	padding: 0.7em 1em;
+	border-radius: 3px;
+	font-weight: 500;
 	box-shadow: 10px 5px 5px #000;
 	z-index: 100;
-	
+
 	&:hover {
 		opacity: 1;
 	}
@@ -2197,7 +2354,7 @@ body.no-overflow {
 
 .rundown-view--unpublished {
 	margin-top: 0;
-	
+
 	> .rundown-view__label {
 		position: absolute;
 		top: 50%;
@@ -2244,4 +2401,4 @@ body.no-overflow {
 	}
 }
 
-@import "rundownOverview";
+@import 'rundownOverview';

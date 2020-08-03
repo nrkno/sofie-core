@@ -1,30 +1,28 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import * as Velocity from 'velocity-animate'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { Random } from 'meteor/random'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { objectPathGet, firstIfArray } from '../../../lib/lib'
-import { Parts } from '../../../lib/collections/Parts'
-import { PrompterData, PrompterAPI } from '../../../lib/api/prompter'
-import { Segments } from '../../../lib/collections/Segments'
+import { objectPathGet, firstIfArray, literal, protectString } from '../../../lib/lib'
+import { PrompterData, PrompterAPI, PrompterDataPart } from '../../../lib/api/prompter'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
 
 interface PrompterConfig {
 	mirror?: boolean
 	mirrorv?: boolean
-
-	mode?: PrompterConfigMode | string
+	mode?: Array<PrompterConfigMode | string | undefined>
 	controlMode?: string
 	followTake?: boolean
 	fontSize?: number
@@ -37,19 +35,20 @@ interface PrompterConfig {
 export enum PrompterConfigMode {
 	MOUSE = 'mouse',
 	KEYBOARD = 'keyboard',
-	SHUTTLEKEYBOARD = 'shuttlekeyboard'
+	SHUTTLEKEYBOARD = 'shuttlekeyboard',
+	JOYCON = 'joycon',
 }
 interface IProps {
 	match?: {
 		params?: {
-			studioId: string
+			studioId: StudioId
 		}
 	}
 }
 interface ITrackedProps {
-	rundown?: Rundown
+	rundownPlaylist?: RundownPlaylist
 	studio?: Studio
-	studioId?: string
+	studioId?: StudioId
 	// isReady: boolean
 }
 interface IState {
@@ -58,7 +57,7 @@ interface IState {
 export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
-	autoScrollPreviousPartId: string | null = null
+	autoScrollPreviousPartInstanceId: PartInstanceId | null = null
 
 	configOptions: PrompterConfig
 
@@ -66,10 +65,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	private checkWindowScroll: number | null = null
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
-			subsReady: false
+			subsReady: false,
 		}
 		// Disable the context menu:
 		document.addEventListener('contextmenu', (e) => {
@@ -79,84 +78,99 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const queryParams = queryStringParse(location.search)
 
 		this.configOptions = {
-			mirror:				firstIfArray(queryParams['mirror']) === '1',
-			mirrorv:			firstIfArray(queryParams['mirrorv']) === '1',
-			mode:				firstIfArray(queryParams['mode']) || undefined,
-			controlMode:		firstIfArray(queryParams['controlmode']) || undefined,
-			followTake:			(queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1'),
-			fontSize:			parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
-			margin:				parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
+			mirror: firstIfArray(queryParams['mirror']) === '1',
+			mirrorv: firstIfArray(queryParams['mirrorv']) === '1',
+			mode: new Array().concat(queryParams['mode']),
+			controlMode: firstIfArray(queryParams['controlmode']) || undefined,
+			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
+			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
+			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
 
-			marker:				firstIfArray(queryParams['marker']) as any || undefined,
-			showMarker:			(queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1'),
-			showScroll:			(queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1')
+			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
+			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
+			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
 	}
 
-	componentWillMount () {
-		this.subscribe(PubSub.rundowns, _.extend({
-			active: true
-		}, this.props.studioId ? {
-			studioId: this.props.studioId
-		} : {}))
+	componentDidMount() {
 		if (this.props.studioId) {
 			this.subscribe(PubSub.studios, {
-				_id: this.props.studioId
+				_id: this.props.studioId,
+			})
+
+			this.subscribe(PubSub.rundownPlaylists, {
+				active: true,
+				studioId: this.props.studioId,
 			})
 		}
+
+		let playlistId: RundownPlaylistId =
+			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
+
+		this.autorun(() => {
+			let playlist = RundownPlaylists.findOne(playlistId)
+			if (playlistId) {
+				this.subscribe(PubSub.rundowns, {
+					playlistId: playlistId,
+				})
+			}
+		})
+
 		this.autorun(() => {
 			let subsReady = this.subscriptionsReady()
 			if (subsReady !== this.state.subsReady) {
 				this.setState({
-					subsReady: subsReady
+					subsReady: subsReady,
 				})
 			}
 		})
-	}
 
-	componentDidMount () {
-		document.body.classList.add('dark', 'xdark', 'prompter-scrollbar',
-			this.configOptions.showScroll ?
-				'vertical-overflow-only' :
-				'no-overflow')
+		document.body.classList.add(
+			'dark',
+			'xdark',
+			'prompter-scrollbar',
+			this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
+		)
 		window.addEventListener('scroll', this.onWindowScroll)
 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		super.componentWillUnmount()
 
-		document.body.classList.remove('dark', 'xdark', 'prompter-scrollbar',
-			this.configOptions.showScroll ?
-				'vertical-overflow-only' :
-				'no-overflow')
+		document.body.classList.remove(
+			'dark',
+			'xdark',
+			'prompter-scrollbar',
+			this.configOptions.showScroll ? 'vertical-overflow-only' : 'no-overflow'
+		)
 		window.removeEventListener('scroll', this.onWindowScroll)
 	}
 
-	componentDidUpdate () {
+	componentDidUpdate() {
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
+	checkScrollToCurrent() {
+		let playlistId: RundownPlaylistId =
+			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
+		let playlist = RundownPlaylists.findOne(playlistId)
 
-	checkScrollToCurrent () {
-		let rundownId = this.props.rundown && this.props.rundown._id
-		let rundown = Rundowns.findOne(rundownId || '')
 		if (this.configOptions.followTake) {
-			if (rundown) {
-
-				if (rundown.currentPartId !== this.autoScrollPreviousPartId) {
-					this.autoScrollPreviousPartId = rundown.currentPartId
+			if (playlist) {
+				if (playlist.currentPartInstanceId !== this.autoScrollPreviousPartInstanceId) {
+					this.autoScrollPreviousPartInstanceId = playlist.currentPartInstanceId
 
 					this.scrollToLive()
 				}
 			}
 		}
 	}
-	calculateScrollPosition () {
+	calculateScrollPosition() {
 		let pixelMargin = this.calculateMarginPosition()
 		switch (this.configOptions.marker) {
 			case 'top':
@@ -172,11 +186,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 		return pixelMargin
 	}
-	calculateMarginPosition () {
-		let pixelMargin = (this.configOptions.margin || 0) * window.innerHeight / 100
+	calculateMarginPosition() {
+		let pixelMargin = ((this.configOptions.margin || 0) * window.innerHeight) / 100
 		return pixelMargin
 	}
-	scrollToLive () {
+	scrollToLive() {
 		const scrollMargin = this.calculateScrollPosition()
 		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
 
@@ -185,7 +199,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			Velocity(current, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
-	scrollToNext () {
+	scrollToNext() {
 		const scrollMargin = this.calculateScrollPosition()
 		const next = document.querySelector('.prompter .next')
 
@@ -194,7 +208,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			Velocity(next, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
-	scrollToPrevious () {
+	scrollToPrevious() {
 		const scrollMargin = this.calculateScrollPosition()
 		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
@@ -203,9 +217,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		if (!target) return
 
 		Velocity(document.body, 'finish')
-		Velocity(document.body, 'scroll', { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: 'ease-out' })
+		Velocity(document.body, 'scroll', {
+			offset: window.scrollY - scrollMargin + target[0],
+			duration: 200,
+			easing: 'ease-out',
+		})
 	}
-	scrollToFollowing () {
+	scrollToFollowing() {
 		const scrollMargin = this.calculateScrollPosition()
 		const screenMargin = this.calculateMarginPosition()
 		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
@@ -214,25 +232,28 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		if (!target) return
 
 		Velocity(document.body, 'finish')
-		Velocity(document.body, 'scroll', { offset: window.scrollY - scrollMargin + target[0], duration: 200, easing: 'ease-out' })
+		Velocity(document.body, 'scroll', {
+			offset: window.scrollY - scrollMargin + target[0],
+			duration: 200,
+			easing: 'ease-out',
+		})
 	}
-	listAnchorPositions (startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
+	listAnchorPositions(startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
 		let foundPositions: [number, Element][] = []
 		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
-		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
+		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
 			const { top } = anchor.getBoundingClientRect()
-			if ((startY === -1 || top > startY) &&
-				(endY === -1 || top <= endY)) {
+			if ((startY === -1 || top > startY) && (endY === -1 || top <= endY)) {
 				foundPositions.push([top, anchor])
 			}
 		})
 
-		foundPositions = _.sortBy(foundPositions, v => sortDirection * v[0])
+		foundPositions = _.sortBy(foundPositions, (v) => sortDirection * v[0])
 
 		return foundPositions
 	}
-	findAnchorPosition (startY: number, endY: number, sortDirection: number = 1): number | null {
+	findAnchorPosition(startY: number, endY: number, sortDirection: number = 1): number | null {
 		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
 	}
 	onWindowScroll = () => {
@@ -249,11 +270,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 	checkCurrentTakeMarkers = () => {
-		const rundownId = this.props.rundown && this.props.rundown._id
-		const rundown = Rundowns.findOne(rundownId || '')
+		let playlistId: RundownPlaylistId =
+			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
+		const playlist = RundownPlaylists.findOne(playlistId || '')
 
-		if (rundown !== undefined) {
-
+		if (playlist !== undefined) {
 			const positionTop = window.scrollY
 			const positionBottom = positionTop + window.innerHeight
 
@@ -267,19 +288,25 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				const current = anchors[index]
 				const next = index + 1 < anchors.length ? anchors[index + 1] : null
 
-				if (rundown.currentPartId && current.classList.contains(`part-${rundown.currentPartId}`)) {
+				if (playlist.currentPartInstanceId && current.classList.contains(`part-${playlist.currentPartInstanceId}`)) {
 					currentPartElement = current
 					currentPartElementAfter = next
 				}
-				if (rundown.nextPartId && current.classList.contains(`part-${rundown.nextPartId}`)) {
+				if (playlist.nextPartInstanceId && current.classList.contains(`part-${playlist.nextPartInstanceId}`)) {
 					nextPartElementAfter = next
 				}
 			}
 
-			const currentPositionStart = currentPartElement ? currentPartElement.getBoundingClientRect().top + positionTop : null
-			const currentPositionEnd = currentPartElementAfter ? currentPartElementAfter.getBoundingClientRect().top + positionTop : null
+			const currentPositionStart = currentPartElement
+				? currentPartElement.getBoundingClientRect().top + positionTop
+				: null
+			const currentPositionEnd = currentPartElementAfter
+				? currentPartElementAfter.getBoundingClientRect().top + positionTop
+				: null
 
-			const nextPositionEnd = nextPartElementAfter ? nextPartElementAfter.getBoundingClientRect().top + positionTop : null
+			const nextPositionEnd = nextPartElementAfter
+				? nextPartElementAfter.getBoundingClientRect().top + positionTop
+				: null
 
 			const takeIndicator = document.querySelector('.take-indicator')
 			if (takeIndicator) {
@@ -308,305 +335,308 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 
-	renderMessage (message: string) {
+	renderMessage(message: string) {
 		const { t } = this.props
 
 		return (
-			<div className='rundown-view rundown-view--unpublished'>
-				<div className='rundown-view__label'>
+			<div className="rundown-view rundown-view--unpublished">
+				<div className="rundown-view__label">
+					<p>{message}</p>
 					<p>
-						{message}
-					</p>
-					<p>
-						<Route render={({ history }) => (
-							<button className='btn btn-primary' onClick={() => { history.push('/rundowns') }}>
-								{t('Return to list')}
-							</button>
-						)} />
+						<Route
+							render={({ history }) => (
+								<button
+									className="btn btn-primary"
+									onClick={() => {
+										history.push('/rundowns')
+									}}>
+									{t('Return to list')}
+								</button>
+							)}
+						/>
 					</p>
 				</div>
 			</div>
 		)
 	}
 
-	render () {
+	render() {
 		const { t } = this.props
 
-		return <React.Fragment>
-			{
-				!this.state.subsReady ?
-					<div className='rundown-view rundown-view--loading' >
+		return (
+			<React.Fragment>
+				{!this.state.subsReady ? (
+					<div className="rundown-view rundown-view--loading">
 						<Spinner />
-					</div> :
-					(
-						this.props.rundown ?
-							<Prompter rundownId={this.props.rundown._id} config={this.configOptions} /> :
-							this.props.studio ?
-								this.renderMessage(t('There is no rundown active in this studio.')) :
-								this.props.studioId ?
-									this.renderMessage(t('This studio doesn\'t exist.')) :
-									this.renderMessage(t('There are no active rundowns.'))
-					)
-			}
-		</React.Fragment>
+					</div>
+				) : this.props.rundownPlaylist ? (
+					<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions} />
+				) : this.props.studio ? (
+					this.renderMessage(t('There is no rundown active in this studio.'))
+				) : this.props.studioId ? (
+					this.renderMessage(t("This studio doesn't exist."))
+				) : (
+					this.renderMessage(t('There are no active rundowns.'))
+				)}
+			</React.Fragment>
+		)
 	}
 }
 export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
+	const studioId = objectPathGet(props, 'match.params.studioId')
+	const studio = studioId ? Studios.findOne(studioId) : undefined
 
-	let studioId = objectPathGet(props, 'match.params.studioId')
-	let studio
-	if (studioId) {
-		studio = Studios.findOne(studioId)
-	}
-	const rundown = Rundowns.findOne(_.extend({
-		active: true
-	}, {
-		studioId: studioId
-	}))
+	const rundownPlaylist = RundownPlaylists.findOne({
+		active: true,
+		studioId: studioId,
+	})
 
-	return {
-		rundown,
+	return literal<ITrackedProps>({
+		rundownPlaylist,
 		studio,
 		studioId,
 		// isReady: rundownSubscription.ready() && (studioSubscription ? studioSubscription.ready() : true)
-	}
+	})
 })(PrompterViewInner)
 
 interface IPrompterProps {
-	rundownId: string
+	rundownPlaylistId: RundownPlaylistId
 	config: PrompterConfig
 }
 interface IPrompterTrackedProps {
-	rundown: Rundown | undefined,
-	currentPartId: string,
-	nextPartId: string,
-	prompterData: PrompterData
+	prompterData: PrompterData | undefined
 }
 
 type ScrollAnchor = [number, string] | null
 
 export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>((props: IPrompterProps) => {
+	const playlist = RundownPlaylists.findOne(props.rundownPlaylistId)
 
-	const rundown = Rundowns.findOne(props.rundownId)
-
-	let prompterData = PrompterAPI.getPrompterData(props.rundownId)
-
-	return {
-		rundown: rundown,
-		currentPartId: rundown && rundown.currentPartId || '',
-		nextPartId: rundown && rundown.nextPartId || '',
-		prompterData
-	}
-})(class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
-	private _debounceUpdate: NodeJS.Timer
-
-	constructor (props) {
-		super(props)
-		this.state = {
-			subsReady: false
+	if (playlist) {
+		const prompterData = PrompterAPI.getPrompterData(props.rundownPlaylistId)
+		return {
+			prompterData,
+		}
+	} else {
+		return {
+			prompterData: undefined,
 		}
 	}
-	
-	componentWillUnmount () {
-		super.componentWillUnmount()
-	}
+})(
+	class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
+		private _debounceUpdate: NodeJS.Timer
 
-	componentDidMount () {
-		this.subscribe(PubSub.rundowns, { _id: this.props.rundownId })
-		this.subscribe(PubSub.segments, { rundownId: this.props.rundownId })
-		this.subscribe(PubSub.parts, { rundownId: this.props.rundownId })
-		this.subscribe(PubSub.pieces, { rundownId: this.props.rundownId })
-	}
-
-	getScrollAnchor = () => {
-		let readPosition = (this.props.config.margin || 0) * window.innerHeight / 100
-		switch (this.props.config.marker) {
-			case 'top':
-			case 'hide':
-				break
-			case 'center':
-				readPosition = window.innerHeight / 2
-				break
-			case 'bottom':
-				readPosition = window.innerHeight - readPosition
-				break
+		constructor(props) {
+			super(props)
+			this.state = {
+				subsReady: false,
+			}
 		}
 
-		let foundPositions: [number, string][] = []
-		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
+		componentDidMount() {
+			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
 
-		Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach(anchor => {
-			const { top } = anchor.getBoundingClientRect()
-			if ((top + readPosition) <= 10) foundPositions.push([top, '.' + anchor.className.replace(/\s/g, '.')])
-		})
-
-		foundPositions = _.sortBy(foundPositions, v => 1 * v[0])
-
-		if (foundPositions.length > 0) {
-			return foundPositions[foundPositions.length - 1]
-		}
-		return null
-	}
-
-	restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
-		if (scrollAnchor === null) return
-		const anchor = document.querySelector(scrollAnchor[1])
-		if (anchor) {
-			const { top } = anchor.getBoundingClientRect()
-
-			window.scrollBy({
-				top: top - scrollAnchor[0]
+			// TODO-PartInstance the prompter should probably consider instances
+			this.autorun(() => {
+				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId)
+				if (playlist) {
+					const rundownIDs = playlist.getRundownIDs()
+					this.subscribe(PubSub.segments, {
+						rundownId: { $in: rundownIDs },
+					})
+					this.subscribe(PubSub.parts, {
+						rundownId: { $in: rundownIDs },
+					})
+					this.subscribe(PubSub.partInstances, {
+						rundownId: { $in: rundownIDs },
+						reset: { $ne: true },
+					})
+					this.subscribe(PubSub.pieces, {
+						rundownId: { $in: rundownIDs },
+					})
+				}
 			})
-		} else {
-			console.warn('Read anchor could not be found: ' + scrollAnchor[1])
 		}
-	}
 
-	shouldComponentUpdate(nextProps, nextState): boolean {
-		clearTimeout(this._debounceUpdate)
-		this.props = nextProps
-		this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
-		return false
-	}
+		getScrollAnchor = () => {
+			let readPosition = ((this.props.config.margin || 0) * window.innerHeight) / 100
+			switch (this.props.config.marker) {
+				case 'top':
+				case 'hide':
+					break
+				case 'center':
+					readPosition = window.innerHeight / 2
+					break
+				case 'bottom':
+					readPosition = window.innerHeight - readPosition
+					break
+			}
 
-	getSnapshotBeforeUpdate () {
-		return this.getScrollAnchor() as any
-	}
+			let foundPositions: [number, string][] = []
+			// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
-	componentDidUpdate (prevProps, prevState, snapshot) {
-		this.restoreScrollAnchor(snapshot)
-	}
+			Array.from(document.querySelectorAll('.prompter .scroll-anchor')).forEach((anchor) => {
+				const { top } = anchor.getBoundingClientRect()
+				if (top + readPosition <= 10) foundPositions.push([top, '.' + anchor.className.replace(/\s/g, '.')])
+			})
 
-	renderPrompterData (prompterData: PrompterData) {
+			foundPositions = _.sortBy(foundPositions, (v) => 1 * v[0])
 
-		let lines: React.ReactNode[] = []
-		let previousSegmentId = ''
-		let previousPartId = ''
-		_.each(prompterData.lines, (line, i: number) => {
+			if (foundPositions.length > 0) {
+				return foundPositions[foundPositions.length - 1]
+			}
+			return null
+		}
 
-			let currentNextLine: 'live' | 'next' | null = null
+		restoreScrollAnchor = (scrollAnchor: ScrollAnchor) => {
+			if (scrollAnchor === null) return
+			const anchor = document.querySelector(scrollAnchor[1])
+			if (anchor) {
+				const { top } = anchor.getBoundingClientRect()
 
-			currentNextLine = (
-				this.props.currentPartId === line.partId ? 'live' :
-					this.props.nextPartId === line.partId ? 'next' :
-						null
-			)
+				window.scrollBy({
+					top: top - scrollAnchor[0],
+				})
+			} else {
+				console.warn('Read anchor could not be found: ' + scrollAnchor[1])
+			}
+		}
 
-			if (line.segmentId !== previousSegmentId) {
-				let segment = Segments.findOne(line.segmentId)
+		shouldComponentUpdate(nextProps, nextState): boolean {
+			clearTimeout(this._debounceUpdate)
+			this._debounceUpdate = setTimeout(() => this.forceUpdate(), 250)
+			return false
+		}
+
+		getSnapshotBeforeUpdate() {
+			return this.getScrollAnchor() as any
+		}
+
+		componentDidUpdate(prevProps, prevState, snapshot) {
+			this.restoreScrollAnchor(snapshot)
+		}
+
+		renderPrompterData(prompterData: PrompterData) {
+			const getPartStatus = (part: PrompterDataPart) => {
+				if (prompterData.currentPartId === part.id) {
+					return 'live'
+				} else if (prompterData.nextPartId === part.id) {
+					return 'next'
+				} else {
+					return null
+				}
+			}
+
+			let lines: React.ReactNode[] = []
+
+			_.each(prompterData.segments, (segment) => {
+				if (segment.parts.length === 0) {
+					return
+				}
+
+				const firstPart = segment.parts[0]
+				const firstPartStatus = getPartStatus(firstPart)
 
 				lines.push(
 					<div
-						key={'segment_' + line.segmentId + '_' + line.id}
+						key={'segment_' + segment.id}
 						className={ClassNames(
 							'prompter-segment',
 							'scroll-anchor',
-							'segment-' + line.segmentId,
-							'part-' + line.partId,
-							currentNextLine
-						)}
-					>
-						{segment ? segment.name : 'N/A'}
+							'segment-' + segment.id,
+							'part-' + firstPart.id,
+							firstPartStatus
+						)}>
+						{segment.title || 'N/A'}
 					</div>
 				)
-			} else if (line.partId !== previousPartId) {
 
-				let part = Parts.findOne(line.partId)
-				let title: string = part ? part.title : 'N/A'
-				if (part && part.typeVariant && part.typeVariant.toString && part.typeVariant.toString().toLowerCase().trim() === 'full') {
-					title = 'FULL'
-				}
-				title = title.replace(/.*;/, '') // DIREKTE PUNKT FESTIVAL;Split
+				_.each(segment.parts, (part) => {
+					lines.push(
+						<div
+							key={'part_' + part.id}
+							className={ClassNames('prompter-part', 'scroll-anchor', 'part-' + part.id, getPartStatus(part))}>
+							{part.title || 'N/A'}
+						</div>
+					)
 
-				lines.push(
+					_.each(part.pieces, (line) => {
+						lines.push(
+							<div
+								key={'line_' + part.id + '_' + segment.id + '_' + line.id}
+								className={ClassNames('prompter-line', !line.text ? 'empty' : undefined)}>
+								{line.text || ''}
+							</div>
+						)
+					})
+				})
+			})
+
+			return lines
+		}
+		render() {
+			const { t } = this.props
+
+			if (this.props.prompterData) {
+				return (
 					<div
-						key={'part_' + line.partId + '_' + line.id}
 						className={ClassNames(
-							'prompter-part',
-							'scroll-anchor',
-							'part-' + line.partId,
-							currentNextLine
+							'prompter',
+							this.props.config.mirror ? 'mirror' : undefined,
+							this.props.config.mirrorv ? 'mirrorv' : undefined
 						)}
-					>
-						{title}
+						style={{
+							fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
+						}}>
+						<div className="overlay-fix">
+							<div
+								className={
+									'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')
+								}></div>
+
+							<div className="take-indicator hidden"></div>
+							<div className="next-indicator hidden"></div>
+						</div>
+
+						<div
+							className="prompter-display"
+							style={{
+								paddingLeft: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
+								paddingRight: this.props.config.margin ? this.props.config.margin + 'vw' : undefined,
+								paddingTop:
+									this.props.config.marker === 'center'
+										? '50vh'
+										: this.props.config.marker === 'bottom'
+										? '100vh'
+										: this.props.config.margin
+										? this.props.config.margin + 'vh'
+										: undefined,
+								paddingBottom:
+									this.props.config.marker === 'center'
+										? '50vh'
+										: this.props.config.marker === 'top'
+										? '100vh'
+										: this.props.config.margin
+										? this.props.config.margin + 'vh'
+										: undefined,
+							}}>
+							<div className="prompter-break begin">{this.props.prompterData.title}</div>
+
+							{this.renderPrompterData(this.props.prompterData)}
+
+							{this.props.prompterData.segments.length ? (
+								<div className="prompter-break end">—{t('End of script')}—</div>
+							) : null}
+						</div>
+					</div>
+				)
+			} else {
+				return (
+					<div className="prompter prompter--loading">
+						<Spinner />
 					</div>
 				)
 			}
-			previousSegmentId = line.segmentId
-			previousPartId = line.partId
-
-			lines.push(
-				<div
-					key={'line_' + line.partId + '_' + line.segmentId + '_' + line.id}
-					className={ClassNames(
-						'prompter-line',
-						(!line.text ? 'empty' : undefined)
-					)}
-				>
-					{line.text || ''}
-				</div>
-			)
-		})
-
-		return lines
-	}
-	render () {
-		const { t } = this.props
-
-		if (this.props.prompterData && this.props.rundown) {
-			return (
-				<div
-					className={ClassNames('prompter', this.props.config.mirror ? 'mirror' : undefined, this.props.config.mirrorv ? 'mirrorv' : undefined)}
-					style={{
-						fontSize: (this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined),
-					}}
-				>
-					<div className='overlay-fix'>
-						<div className={'read-marker ' + (
-							!this.props.config.showMarker ? 'hide' : (this.props.config.marker || 'hide')
-						)}></div>
-
-						<div className='take-indicator hidden'></div>
-						<div className='next-indicator hidden'></div>
-					</div>
-
-					<div className='prompter-display'
-						style={{
-							paddingLeft: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
-							paddingRight: (this.props.config.margin ? this.props.config.margin + 'vw' : undefined),
-							paddingTop: this.props.config.marker === 'center' ?
-											'50vh' :
-										this.props.config.marker === 'bottom' ?
-												'100vh' :
-										(this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
-							paddingBottom: this.props.config.marker === 'center' ?
-													'50vh' :
-											this.props.config.marker === 'top' ?
-													'100vh' :
-											(this.props.config.margin ? this.props.config.margin + 'vh' : undefined),
-						}}
-					>
-						<div className='prompter-break begin'>
-							{this.props.rundown.name}
-						</div>
-
-						{this.renderPrompterData(this.props.prompterData)}
-
-						{
-							this.props.prompterData.lines.length ?
-								<div className='prompter-break end'>
-									—{t('End of script')}—
-							</div> : null
-						}
-					</div>
-				</div >
-			)
-		} else {
-			return (
-				<div className='prompter prompter--loading' >
-					<Spinner />
-				</div >
-			)
 		}
 	}
-})
+)

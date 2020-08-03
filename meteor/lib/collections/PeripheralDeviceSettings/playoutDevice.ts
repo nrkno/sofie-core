@@ -1,15 +1,11 @@
-import {
-	DeviceOptionsAny
-} from 'timeline-state-resolver-types'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 
+/**
+ * The basic PlayoutDevice settings structure.
+ * Note: playout-gateway will likely have more than this here, but this is that core needs to know about
+ */
 export interface PlayoutDeviceSettings {
 	devices: {
-		[deviceId: string]: DeviceOptionsAny
+		[deviceId: string]: TSR.DeviceOptionsAny
 	}
-	mediaScanner: {
-		host: string
-		port: number
-	}
-	multiThreading?: boolean
-	multiThreadedResolver?: boolean
 }

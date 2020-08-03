@@ -3,16 +3,15 @@ import {
 	getCoreSystem,
 	setCoreSystemVersion,
 	Version,
-	GENESIS_SYSTEM_VERSION
+	GENESIS_SYSTEM_VERSION,
 } from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
-	MigrationMethods,
 	RunMigrationResult,
 	MigrationChunk,
 	MigrationStepType,
-	GetMigrationStatusResult
+	GetMigrationStatusResult,
 } from '../../lib/api/migration'
 import {
 	MigrationStepInput,
@@ -33,18 +32,18 @@ import {
 	MigrationContextShowStyle as IMigrationContextShowStyle,
 	BlueprintManifestType,
 	ShowStyleBlueprintManifest,
-	StudioBlueprintManifest
+	StudioBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
-import { setMeteorMethods } from '../methods'
 import { logger } from '../../lib/logging'
 import { storeSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios } from '../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints/migrationContext'
-import { getHash } from '../../lib/lib'
+import { getHash, unprotectString, protectString } from '../../lib/lib'
 import * as semver from 'semver'
 import { evalBlueprints } from '../api/blueprints/cache'
+import { SnapshotId } from '../../lib/collections/Snapshots'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)
@@ -61,9 +60,16 @@ import { evalBlueprints } from '../api/blueprints/cache'
  * 1.0.0: Release 12  (2019-09-11)
  * 1.1.0: Release 13  (2019-10-17)
  * 1.2.0: Release 14  (2019-11-06)
- * 1.3.0: Release 15  (TBD)
+ * 1.3.0: Release 15  (2019-11-25)
+ * 1.4.0: Release 16  (2019-01-02)
+ * 1.5.0: Release 17  (2019-01-24)
+ * 1.6.0: Release 18  (2019-03-04)
+ * 1.7.0: Release 19  (2019-03-31)
+ * 1.8.0: Release 20  (2019-05-12)
+ * 1.9.0: Release 21  (never released)
+ * 1.10.0: Release 22  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.3.0'
+export const CURRENT_SYSTEM_VERSION = '1.10.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -74,10 +80,10 @@ export const UNSUPPORTED_VERSIONS = [
 	//    ShowStyleVariant, configs & layers wher emoved from studio to ShowStyles)
 	'<=0.18',
 	// 0.24.0 to 0.25.0: Major refactoring, Renaming of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
-	'<=0.24'
+	'<=0.24',
 ]
 
-export function isVersionSupported (version: Version) {
+export function isVersionSupported(version: Version) {
 	let isSupported: boolean = true
 	_.each(UNSUPPORTED_VERSIONS, (uv) => {
 		if (semver.satisfies(version, uv)) {
@@ -100,7 +106,7 @@ const coreMigrationSteps: Array<MigrationStep> = []
  * Add new system Migration step
  * @param step
  */
-export function addMigrationStep (step: MigrationStep) {
+export function addMigrationStep(step: MigrationStep) {
 	coreMigrationSteps.push(step)
 }
 /**
@@ -108,16 +114,32 @@ export function addMigrationStep (step: MigrationStep) {
  * @param version
  * @param steps
  */
-export function addMigrationSteps (version: string, steps: Array<MigrationStepBase>) {
+export function addMigrationSteps(version: string, steps: Array<MigrationStepBase>) {
 	_.each(steps, (step) => {
-		addMigrationStep(_.extend(step, {
-			version: version
-		}))
+		addMigrationStep(
+			_.extend(step, {
+				version: version,
+			})
+		)
 	})
 }
+/** Removes all migration steps (used in tests) */
+export function clearMigrationSteps() {
+	coreMigrationSteps.splice(0, 99999)
+}
 
-export function prepareMigration (returnAllChunks?: boolean) {
-
+export interface PreparedMigration {
+	hash: string
+	chunks: MigrationChunk[]
+	steps: MigrationStepInternal[]
+	migrationNeeded: boolean
+	automaticStepCount: number
+	manualStepCount: number
+	ignoredStepCount: number
+	manualInputs: MigrationStepInput[]
+	partialMigration: boolean
+}
+export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 	let databaseSystem = getCoreSystem()
 	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up')
 
@@ -134,29 +156,29 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 	// Collect migration steps from core system:
 	let chunk: MigrationChunk = {
-		sourceType:				MigrationStepType.CORE,
-		sourceName:				'system',
-		_dbVersion: 			databaseVersion,
-		_targetVersion: 		targetVersion,
-		_steps:					[]
+		sourceType: MigrationStepType.CORE,
+		sourceName: 'system',
+		_dbVersion: databaseVersion,
+		_targetVersion: targetVersion,
+		_steps: [],
 	}
 	migrationChunks.push(chunk)
 
 	// Collect migration steps from system:
 	_.each(coreMigrationSteps, (step) => {
 		allMigrationSteps.push({
-			id:						step.id,
-			overrideSteps:			step.overrideSteps,
-			validate:				step.validate,
-			canBeRunAutomatically:	step.canBeRunAutomatically,
-			migrate:				step.migrate,
-			input:					step.input,
-			dependOnResultFrom:		step.dependOnResultFrom,
-			version: 				step.version,
-			_version: 				parseVersion(step.version),
-			_validateResult: 		false, // to be set later
-			_rank: 					rank++,
-			chunk: 					chunk
+			id: step.id,
+			overrideSteps: step.overrideSteps,
+			validate: step.validate,
+			canBeRunAutomatically: step.canBeRunAutomatically,
+			migrate: step.migrate,
+			input: step.input,
+			dependOnResultFrom: step.dependOnResultFrom,
+			version: step.version,
+			_version: parseVersion(step.version),
+			_validateResult: false, // to be set later
+			_rank: rank++,
+			chunk: chunk,
 		})
 	})
 
@@ -175,68 +197,76 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 				// Find all showStyles that uses this blueprint:
 				ShowStyleBases.find({
-					blueprintId: blueprint._id
+					blueprintId: blueprint._id,
 				}).forEach((showStyleBase) => {
 					let chunk: MigrationChunk = {
-						sourceType:				MigrationStepType.SHOWSTYLE,
-						sourceName:				'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
-						blueprintId: 			blueprint._id,
-						sourceId: 				showStyleBase._id,
-						_dbVersion: 			parseVersion(blueprint.databaseVersion.showStyle[showStyleBase._id] || '0.0.0'),
-						_targetVersion: 		parseVersion(bp.blueprintVersion),
-						_steps:					[]
+						sourceType: MigrationStepType.SHOWSTYLE,
+						sourceName: 'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
+						blueprintId: blueprint._id,
+						sourceId: showStyleBase._id,
+						_dbVersion: parseVersion(
+							blueprint.databaseVersion.showStyle[unprotectString(showStyleBase._id)] || '0.0.0'
+						),
+						_targetVersion: parseVersion(bp.blueprintVersion),
+						_steps: [],
 					}
 					migrationChunks.push(chunk)
 					// Add show-style migration steps from blueprint:
 					_.each(bp.showStyleMigrations, (step) => {
-						allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_showStyle_' + showStyleBase._id + '_', {
-							id:						step.id,
-							overrideSteps:			step.overrideSteps,
-							validate:				step.validate,
-							canBeRunAutomatically:	step.canBeRunAutomatically,
-							migrate:				step.migrate,
-							input:					step.input,
-							dependOnResultFrom:		step.dependOnResultFrom,
-							version: 				step.version,
-							_version: 				parseVersion(step.version),
-							_validateResult: 		false, // to be set later
-							_rank: 					rank++,
-							chunk: 					chunk
-						}))
+						allMigrationSteps.push(
+							prefixIdsOnStep('blueprint_' + blueprint._id + '_showStyle_' + showStyleBase._id + '_', {
+								id: step.id,
+								overrideSteps: step.overrideSteps,
+								validate: step.validate,
+								canBeRunAutomatically: step.canBeRunAutomatically,
+								migrate: step.migrate,
+								input: step.input,
+								dependOnResultFrom: step.dependOnResultFrom,
+								version: step.version,
+								_version: parseVersion(step.version),
+								_validateResult: false, // to be set later
+								_rank: rank++,
+								chunk: chunk,
+							})
+						)
 					})
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
 				const bp = rawBlueprint as StudioBlueprintManifest
 				// Find all studios that use this blueprint
 				Studios.find({
-					blueprintId: blueprint._id
+					blueprintId: blueprint._id,
 				}).forEach((studio) => {
 					let chunk: MigrationChunk = {
-						sourceType:				MigrationStepType.STUDIO,
-						sourceName:				'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
-						blueprintId: 			blueprint._id,
-						sourceId: 				studio._id,
-						_dbVersion: 			parseVersion(blueprint.databaseVersion.studio[studio._id] || '0.0.0'),
-						_targetVersion: 		parseVersion(bp.blueprintVersion),
-						_steps:					[]
+						sourceType: MigrationStepType.STUDIO,
+						sourceName: 'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
+						blueprintId: blueprint._id,
+						sourceId: studio._id,
+						_dbVersion: parseVersion(
+							blueprint.databaseVersion.studio[unprotectString(studio._id)] || '0.0.0'
+						),
+						_targetVersion: parseVersion(bp.blueprintVersion),
+						_steps: [],
 					}
 					migrationChunks.push(chunk)
 					// Add studio migration steps from blueprint:
 					_.each(bp.studioMigrations, (step) => {
-						allMigrationSteps.push(prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
-							id:						step.id,
-							overrideSteps:			step.overrideSteps,
-							validate:				step.validate,
-							canBeRunAutomatically:	step.canBeRunAutomatically,
-							migrate:				step.migrate,
-							input:					step.input,
-							dependOnResultFrom:		step.dependOnResultFrom,
-							version: 				step.version,
-							_version: 				parseVersion(step.version),
-							_validateResult: 		false, // to be set later
-							_rank: 					rank++,
-							chunk: 					chunk
-						}))
+						allMigrationSteps.push(
+							prefixIdsOnStep('blueprint_' + blueprint._id + '_studio_' + studio._id + '_', {
+								id: step.id,
+								overrideSteps: step.overrideSteps,
+								validate: step.validate,
+								canBeRunAutomatically: step.canBeRunAutomatically,
+								migrate: step.migrate,
+								input: step.input,
+								dependOnResultFrom: step.dependOnResultFrom,
+								version: step.version,
+								_version: parseVersion(step.version),
+								_validateResult: false, // to be set later
+								_rank: rank++,
+								chunk: chunk,
+							})
+						)
 					})
 				})
 			} else {
@@ -247,17 +277,31 @@ export function prepareMigration (returnAllChunks?: boolean) {
 
 	// Sort, smallest version first:
 	allMigrationSteps.sort((a, b) => {
+		// First, sort by type:
+		if (a.chunk.sourceType === MigrationStepType.CORE && b.chunk.sourceType !== MigrationStepType.CORE) return -1
+		if (a.chunk.sourceType !== MigrationStepType.CORE && b.chunk.sourceType === MigrationStepType.CORE) return 1
 
+		// if (a.chunk.sourceType === MigrationStepType.SYSTEM && b.chunk.sourceType !== MigrationStepType.SYSTEM) return -1
+		// if (a.chunk.sourceType !== MigrationStepType.SYSTEM && b.chunk.sourceType === MigrationStepType.SYSTEM) return 1
+
+		if (a.chunk.sourceType === MigrationStepType.STUDIO && b.chunk.sourceType !== MigrationStepType.STUDIO)
+			return -1
+		if (a.chunk.sourceType !== MigrationStepType.STUDIO && b.chunk.sourceType === MigrationStepType.STUDIO) return 1
+
+		if (a.chunk.sourceType === MigrationStepType.SHOWSTYLE && b.chunk.sourceType !== MigrationStepType.SHOWSTYLE)
+			return -1
+		if (a.chunk.sourceType !== MigrationStepType.SHOWSTYLE && b.chunk.sourceType === MigrationStepType.SHOWSTYLE)
+			return 1
+
+		// Then, sort by version:
 		if (semver.gt(a._version, b._version)) return 1
 		if (semver.lt(a._version, b._version)) return -1
 
-		// Keep ranking within version:
+		// Lastly, keep ranking:
 		if (a._rank > b._rank) return 1
 		if (a._rank < b._rank) return -1
 		return 0
 	})
-
-	// console.log('allMigrationSteps', allMigrationSteps)
 
 	let automaticStepCount: number = 0
 	let manualStepCount: number = 0
@@ -266,10 +310,11 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	let partialMigration: boolean = false
 
 	// Filter steps:
-	let migrationSteps: {[id: string]: MigrationStepInternal} = {}
-	let ignoredSteps: {[id: string]: true} = {}
+	let migrationSteps: { [id: string]: MigrationStepInternal } = {}
+	let ignoredSteps: { [id: string]: true } = {}
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
-		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length))) throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
+		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length)))
+			throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
 
 		if (partialMigration) return
 		if (
@@ -288,7 +333,8 @@ export function prepareMigration (returnAllChunks?: boolean) {
 				})
 			}
 
-			if (migrationSteps[step.id] || ignoredSteps[step.id]) throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
+			if (migrationSteps[step.id] || ignoredSteps[step.id])
+				throw new Meteor.Error(500, `Error: MigrationStep.id must be unique: "${step.id}"`)
 
 			if (step.dependOnResultFrom) {
 				if (ignoredSteps[step.dependOnResultFrom]) {
@@ -310,7 +356,7 @@ export function prepareMigration (returnAllChunks?: boolean) {
 					step._validateResult = validate(getMigrationStudioContext(step.chunk), false)
 				} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 					let validate = step.validate as ValidateFunctionShowStyle
-					step._validateResult = validate(getMigrationShowStyleContext(step.chunk),false)
+					step._validateResult = validate(getMigrationShowStyleContext(step.chunk), false)
 				} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
 			} catch (error) {
 				throw new Meteor.Error(500, `Error in migration step "${step.id}": ${error.reason || error.toString()}`)
@@ -327,7 +373,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 			// Step is not applicable
 		}
 	})
-	// console.log('migrationSteps', migrationSteps)
 
 	// check if there are any manual steps:
 	// (this makes an automatic migration impossible)
@@ -348,7 +393,6 @@ export function prepareMigration (returnAllChunks?: boolean) {
 						input.push(_.clone(i))
 					})
 				} else if (_.isFunction(step.input)) {
-
 					if (step.chunk.sourceType === MigrationStepType.CORE) {
 						let inputFunction = step.input as InputFunctionCore
 						input = inputFunction()
@@ -362,16 +406,17 @@ export function prepareMigration (returnAllChunks?: boolean) {
 				}
 				if (input.length) {
 					_.each(input, (i) => {
-
 						if (i.label && _.isString(step._validateResult)) {
 							i.label = (i.label + '').replace(/\$validation/g, step._validateResult)
 						}
 						if (i.description && _.isString(step._validateResult)) {
 							i.description = (i.description + '').replace(/\$validation/g, step._validateResult)
 						}
-						manualInputs.push(_.extend({}, i, {
-							stepId: step.id
-						}))
+						manualInputs.push(
+							_.extend({}, i, {
+								stepId: step.id,
+							})
+						)
 					})
 				}
 			}
@@ -381,13 +426,11 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	})
 
 	// Only return the chunks which has steps in them:
-	const activeChunks = (
-		returnAllChunks ?
-		migrationChunks :
-		_.filter(migrationChunks, (chunk) => {
-			return chunk._steps.length > 0
-		})
-	)
+	const activeChunks = returnAllChunks
+		? migrationChunks
+		: _.filter(migrationChunks, (chunk) => {
+				return chunk._steps.length > 0
+		  })
 	const hash = getHash(stepsHash.join(','))
 
 	const steps = _.values(migrationSteps)
@@ -395,18 +438,18 @@ export function prepareMigration (returnAllChunks?: boolean) {
 	if (steps.length > 0) migrationNeeded = true
 
 	return {
-		hash:				hash,
-		chunks: 			activeChunks,
-		steps: 				steps,
-		migrationNeeded: 	migrationNeeded,
+		hash: hash,
+		chunks: activeChunks,
+		steps: steps,
+		migrationNeeded: migrationNeeded,
 		automaticStepCount: automaticStepCount,
-		manualStepCount: 	manualStepCount,
-		ignoredStepCount: 	ignoredStepCount,
-		manualInputs: 		manualInputs,
-		partialMigration: 	partialMigration
+		manualStepCount: manualStepCount,
+		ignoredStepCount: ignoredStepCount,
+		manualInputs: manualInputs,
+		partialMigration: partialMigration,
 	}
 }
-function prefixIdsOnStep (prefix: string, step: MigrationStepInternal): MigrationStepInternal {
+function prefixIdsOnStep(prefix: string, step: MigrationStepInternal): MigrationStepInternal {
 	step.id = prefix + step.id
 	if (step.overrideSteps) {
 		step.overrideSteps = _.map(step.overrideSteps, (override) => {
@@ -419,13 +462,17 @@ function prefixIdsOnStep (prefix: string, step: MigrationStepInternal): Migratio
 	return step
 }
 
-export function runMigration (
+export function runMigration(
 	chunks: Array<MigrationChunk>,
 	hash: string,
 	inputResults: Array<MigrationStepInputResult>,
-	isFirstOfPartialMigrations = true
+	isFirstOfPartialMigrations: boolean = true,
+	chunksLeft: number = 20
 ): RunMigrationResult {
-
+	if (chunksLeft < 0) {
+		logger.error(`Migration: Bailing out, looks like we're in a loop`)
+		throw new Meteor.Error(500, 'Infinite loop in migrations')
+	}
 	logger.info(`Migration: Starting`)
 	// logger.info(`Migration: Starting, from "${baseVersion}" to "${targetVersion}".`)
 
@@ -435,11 +482,15 @@ export function runMigration (
 	let manualInputsWithUserPrompt = _.filter(migration.manualInputs, (manualInput) => {
 		return !!(manualInput.stepId && manualInput.attribute)
 	})
-	if (migration.hash !== hash) throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
-	if (manualInputsWithUserPrompt.length !== inputResults.length) throw new Meteor.Error(500, `Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`)
+	if (migration.hash !== hash)
+		throw new Meteor.Error(500, `Migration input hash differ from expected: "${hash}", "${migration.hash}"`)
 
-	// console.log('migration.chunks', migration.chunks)
-	// console.log('chunks', chunks)
+	if (manualInputsWithUserPrompt.length !== inputResults.length) {
+		throw new Meteor.Error(
+			500,
+			`Migration manualInput lengths differ from expected: "${inputResults.length}", "${migration.manualInputs.length}"`
+		)
+	}
 
 	// Check that chunks match:
 	let unmatchedChunk = _.find(migration.chunks, (migrationChunk) => {
@@ -447,22 +498,35 @@ export function runMigration (
 			return _.isEqual(_.omit(chunk, ['_steps']), _.omit(migrationChunk, ['_steps']))
 		})
 	})
-	if (unmatchedChunk) throw new Meteor.Error(500, `Migration input chunks differ from expected, chunk "${JSON.stringify(unmatchedChunk)}" not found in input`)
+	if (unmatchedChunk)
+		throw new Meteor.Error(
+			500,
+			`Migration input chunks differ from expected, chunk "${JSON.stringify(unmatchedChunk)}" not found in input`
+		)
 	unmatchedChunk = _.find(chunks, (chunk) => {
 		return !_.find(migration.chunks, (migrationChunk) => {
 			return _.isEqual(_.omit(chunk, ['_steps']), _.omit(migrationChunk, ['_steps']))
 		})
 	})
-	if (unmatchedChunk) throw new Meteor.Error(500, `Migration input chunks differ from expected, chunk in input "${JSON.stringify(unmatchedChunk)}" not found in migration.chunks`)
+	if (unmatchedChunk)
+		throw new Meteor.Error(
+			500,
+			`Migration input chunks differ from expected, chunk in input "${JSON.stringify(
+				unmatchedChunk
+			)}" not found in migration.chunks`
+		)
 	if (migration.chunks.length !== chunks.length) throw new Meteor.Error(500, `Migration input chunk lengths differ`)
 
 	_.each(migration.chunks, (chunk) => {
-		logger.info(`Migration: Chunk: ${chunk.sourceType}, ${chunk.sourceName}, from ${chunk._dbVersion} to ${chunk._targetVersion}`)
+		logger.info(
+			`Migration: Chunk: ${chunk.sourceType}, ${chunk.sourceName}, from ${chunk._dbVersion} to ${chunk._targetVersion}`
+		)
 	})
 
 	let warningMessages: Array<string> = []
-	let snapshotId: string = ''
-	if (isFirstOfPartialMigrations) { // First, take a system snapshot:
+	let snapshotId: SnapshotId = protectString('')
+	if (isFirstOfPartialMigrations) {
+		// First, take a system snapshot:
 		let system = getCoreSystem()
 		if (system && system.storePath) {
 			try {
@@ -474,12 +538,13 @@ export function runMigration (
 		}
 	}
 
-	logger.info(`Migration: ${migration.automaticStepCount} automatic and ${migration.manualStepCount} manual steps (${migration.ignoredStepCount} ignored).`)
+	logger.info(
+		`Migration: ${migration.automaticStepCount} automatic and ${migration.manualStepCount} manual steps (${migration.ignoredStepCount} ignored).`
+	)
 
 	logger.debug(inputResults)
 
 	_.each(migration.steps, (step: MigrationStepInternal) => {
-
 		try {
 			// Prepare input from user
 			let stepInput: MigrationStepInputFilteredResult = {}
@@ -519,7 +584,7 @@ export function runMigration (
 				validateMessage = validate(getMigrationStudioContext(step.chunk), true)
 			} else if (step.chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 				let validate = step.validate as ValidateFunctionShowStyle
-				validateMessage = validate(getMigrationShowStyleContext(step.chunk),true)
+				validateMessage = validate(getMigrationShowStyleContext(step.chunk), true)
 			} else throw new Meteor.Error(500, `Unknown step.chunk.sourceType "${step.chunk.sourceType}"`)
 
 			// let validate = step.validate as ValidateFunctionCore
@@ -541,14 +606,21 @@ export function runMigration (
 
 	let migrationCompleted: boolean = false
 
-	if (migration.manualStepCount === 0 && !warningMessages.length) { // continue automatically with the next batch
+	if (migration.manualStepCount === 0 && !warningMessages.length) {
+		// continue automatically with the next batch
 		logger.info('Migration: Automatically continuing with next batch..')
 		migration.partialMigration = false
 		const s = getMigrationStatus()
 		if (s.migration.automaticStepCount > 0 || s.migration.manualStepCount > 0) {
-			const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false)
-			if (res.migrationCompleted) {
-				return res
+			try {
+				const res = runMigration(s.migration.chunks, s.migration.hash, inputResults, false, chunksLeft - 1)
+				if (res.migrationCompleted) {
+					return res
+				}
+				_.each(res.warnings, (w) => warningMessages.push(w))
+			} catch (e) {
+				warningMessages.push(`When running next chunk: ${e}`)
+				migration.partialMigration = true
 			}
 		}
 	}
@@ -567,18 +639,14 @@ export function runMigration (
 		migrationCompleted: migrationCompleted,
 		partialMigration: migration.partialMigration,
 		warnings: warningMessages,
-		snapshot: snapshotId
+		snapshot: snapshotId,
 	}
 }
-function completeMigration (chunks: Array<MigrationChunk>) {
+function completeMigration(chunks: Array<MigrationChunk>) {
 	_.each(chunks, (chunk) => {
 		if (chunk.sourceType === MigrationStepType.CORE) {
 			setCoreSystemVersion(chunk._targetVersion)
-		} else if (
-			chunk.sourceType === MigrationStepType.STUDIO ||
-			chunk.sourceType === MigrationStepType.SHOWSTYLE
-		) {
-
+		} else if (chunk.sourceType === MigrationStepType.STUDIO || chunk.sourceType === MigrationStepType.SHOWSTYLE) {
 			if (!chunk.blueprintId) throw new Meteor.Error(500, `chunk.blueprintId missing!`)
 			if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing!`)
 
@@ -587,78 +655,86 @@ function completeMigration (chunks: Array<MigrationChunk>) {
 
 			let m: any = {}
 			if (chunk.sourceType === MigrationStepType.STUDIO) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.studio[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				logger.info(
+					`Updating Blueprint "${chunk.sourceName}" version, from "${
+						blueprint.databaseVersion.studio[unprotectString(chunk.sourceId)]
+					}" to "${chunk._targetVersion}".`
+				)
 				m[`databaseVersion.studio.${chunk.sourceId}`] = chunk._targetVersion
-
 			} else if (chunk.sourceType === MigrationStepType.SHOWSTYLE) {
-				logger.info(`Updating Blueprint "${chunk.sourceName}" version, from "${blueprint.databaseVersion.showStyle[chunk.sourceId]}" to "${chunk._targetVersion}".`)
+				logger.info(
+					`Updating Blueprint "${chunk.sourceName}" version, from "${
+						blueprint.databaseVersion.showStyle[unprotectString(chunk.sourceId)]
+					}" to "${chunk._targetVersion}".`
+				)
 				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion
-
 			} else throw new Meteor.Error(500, `Bad chunk.sourcetype: "${chunk.sourceType}"`)
 
 			Blueprints.update(chunk.blueprintId, { $set: m })
 		} else throw new Meteor.Error(500, `Unknown chunk.sourcetype: "${chunk.sourceType}"`)
 	})
 }
-export function updateDatabaseVersion (targetVersionStr: string) {
+export function updateDatabaseVersion(targetVersionStr: string) {
 	let targetVersion = parseVersion(targetVersionStr)
 	setCoreSystemVersion(targetVersion)
 }
 
-export function updateDatabaseVersionToSystem () {
+export function updateDatabaseVersionToSystem() {
 	updateDatabaseVersion(CURRENT_SYSTEM_VERSION)
 }
 
-function getMigrationStatus (): GetMigrationStatusResult {
-
+export function getMigrationStatus(): GetMigrationStatusResult {
 	let migration = prepareMigration(true)
 
 	return {
 		// databaseVersion:	 		databaseVersion,
 		// databasePreviousVersion:	system.previousVersion,
 		// systemVersion:		 		systemVersion,
-		migrationNeeded:	 			migration.migrationNeeded,
+		migrationNeeded: migration.migrationNeeded,
 
 		migration: {
-			canDoAutomaticMigration:	migration.manualStepCount === 0,
+			canDoAutomaticMigration: migration.manualStepCount === 0,
 
-			manualInputs:				migration.manualInputs,
-			hash:						migration.hash,
-			chunks:						migration.chunks,
+			manualInputs: migration.manualInputs,
+			hash: migration.hash,
+			chunks: migration.chunks,
 
-			automaticStepCount: 		migration.automaticStepCount,
-			manualStepCount: 			migration.manualStepCount,
-			ignoredStepCount: 			migration.ignoredStepCount,
-			partialMigration: 			migration.partialMigration
-		}
+			automaticStepCount: migration.automaticStepCount,
+			manualStepCount: migration.manualStepCount,
+			ignoredStepCount: migration.ignoredStepCount,
+			partialMigration: migration.partialMigration,
+		},
 	}
-
 }
-function forceMigration (chunks: Array<MigrationChunk>) {
+export function forceMigration(chunks: Array<MigrationChunk>) {
 	logger.info(`Force migration`)
 
 	_.each(chunks, (chunk) => {
-		logger.info(`Force migration: Chunk: ${chunk.sourceType}, ${chunk.sourceName}, from ${chunk._dbVersion} to ${chunk._targetVersion}`)
+		logger.info(
+			`Force migration: Chunk: ${chunk.sourceType}, ${chunk.sourceName}, from ${chunk._dbVersion} to ${chunk._targetVersion}`
+		)
 	})
 
 	return completeMigration(chunks)
 }
-function resetDatabaseVersions () {
+export function resetDatabaseVersions() {
 	updateDatabaseVersion(GENESIS_SYSTEM_VERSION)
 
 	Blueprints.find().forEach((blueprint) => {
-		Blueprints.update(blueprint._id, {$set: {
-			databaseVersion: {
-				studio: {},
-				showStyle: {}
-			}
-		}})
+		Blueprints.update(blueprint._id, {
+			$set: {
+				databaseVersion: {
+					studio: {},
+					showStyle: {},
+				},
+			},
+		})
 	})
 }
 
-function getMigrationStudioContext (chunk: MigrationChunk): IMigrationContextStudio {
-
-	if (chunk.sourceType !== MigrationStepType.STUDIO) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected STUDIO`)
+function getMigrationStudioContext(chunk: MigrationChunk): IMigrationContextStudio {
+	if (chunk.sourceType !== MigrationStepType.STUDIO)
+		throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected STUDIO`)
 	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing`)
 
 	let studio = Studios.findOne(chunk.sourceId)
@@ -666,8 +742,9 @@ function getMigrationStudioContext (chunk: MigrationChunk): IMigrationContextStu
 
 	return new MigrationContextStudio(studio)
 }
-function getMigrationShowStyleContext (chunk: MigrationChunk): IMigrationContextShowStyle {
-	if (chunk.sourceType !== MigrationStepType.SHOWSTYLE) throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected SHOWSTYLE`)
+function getMigrationShowStyleContext(chunk: MigrationChunk): IMigrationContextShowStyle {
+	if (chunk.sourceType !== MigrationStepType.SHOWSTYLE)
+		throw new Meteor.Error(500, `wrong chunk.sourceType "${chunk.sourceType}", expected SHOWSTYLE`)
 	if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing`)
 
 	let showStyleBase = ShowStyleBases.findOne(chunk.sourceId)
@@ -675,14 +752,3 @@ function getMigrationShowStyleContext (chunk: MigrationChunk): IMigrationContext
 
 	return new MigrationContextShowStyle(showStyleBase)
 }
-
-let methods = {}
-methods[MigrationMethods.getMigrationStatus] = getMigrationStatus
-methods[MigrationMethods.runMigration] = runMigration
-methods[MigrationMethods.forceMigration] = forceMigration
-methods[MigrationMethods.resetDatabaseVersions] = resetDatabaseVersions
-methods['debug_setVersion'] = (version: string) => {
-	return updateDatabaseVersion(version)
-}
-
-setMeteorMethods(methods)

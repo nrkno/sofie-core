@@ -1,9 +1,8 @@
-
 // import * as chai from 'chai'
 import * as _ from 'underscore'
 // import {} from 'mocha'
 
-import { Rundown, DBRundown, RundownData } from '../../../lib/collections/Rundowns'
+import { Rundown, DBRundown } from '../../../lib/collections/Rundowns'
 import { Part, DBPart } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
 
@@ -15,7 +14,7 @@ import { Piece } from '../../../lib/collections/Pieces'
 // const expect = chai.expect
 // const assert = chai.assert
 
-describe('playout: buildTimelineObjsForRundown', function () {
+describe('playout: buildTimelineObjsForRundown', function() {
 	test('mockTest', () => {
 		expect(1).toEqual(1)
 	})
@@ -619,10 +618,10 @@ function createEmptyRundownData () {
 	const rundown: DBRundown = {
 		_id: 'mock',
 		externalId: '',
-		studioId: '',
+		studioId: protectString(''),
 		showStyleBaseId: '',
 		showStyleVariantId: '',
-		peripheralDeviceId: '',
+		peripheralDeviceId: protectString(''),
 		name: 'Mock',
 		created: 0,
 		modified: 0,
@@ -654,10 +653,9 @@ function createEmptyPart (id: string, rundownData: RundownData) {
 		_id: id,
 		_rank: 1,
 		externalId: '',
-		segmentId: '',
+		segmentId: protectString(''),
 		rundownId: rundownData.rundown._id,
 		title: '',
-		typeVariant: ''
 	}
 	const part2 = part as Part
 	part2.getAllPieces = () => {
@@ -691,7 +689,7 @@ function addStartedPlayback (part: Part, time: number) {
 	part.timings.startedPlayback.push(time)
 }
 
-function createEmptyPiece (id: string, partId: string) {
+function createEmptyPiece (id: string, partId: PartId) {
 	const piece: Piece = {
 		_id: id,
 		externalId: id,

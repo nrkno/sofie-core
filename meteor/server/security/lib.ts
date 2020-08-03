@@ -4,7 +4,7 @@ import * as _ from 'underscore'
  * @param fieldNames
  * @param allowFields
  */
-export function allowOnlyFields (fieldNames: string[], allowFields: string[]) {
+export function allowOnlyFields(fieldNames: string[], allowFields: string[]) {
 	let allow: boolean = true
 	_.find(fieldNames, (field) => {
 		if (allowFields.indexOf(field) === -1) {
@@ -19,7 +19,7 @@ export function allowOnlyFields (fieldNames: string[], allowFields: string[]) {
  * @param fieldNames
  * @param rejectFields
  */
-export function rejectFields (fieldNames: string[], rejectFields: string[]) {
+export function rejectFields(fieldNames: string[], rejectFields: string[]) {
 	let allow: boolean = true
 	_.find(fieldNames, (field) => {
 		if (rejectFields.indexOf(field) !== -1) {

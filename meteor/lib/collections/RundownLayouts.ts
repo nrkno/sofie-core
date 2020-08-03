@@ -1,8 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection } from '../lib'
+import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { BlueprintId } from './Blueprints'
+import { ShowStyleBaseId } from './ShowStyleBases'
 
 /**
  * The view targeted by this layout:
@@ -15,7 +17,7 @@ import { createMongoCollection } from './lib'
  */
 export enum RundownLayoutType {
 	RUNDOWN_LAYOUT = 'rundown_layout',
-	DASHBOARD_LAYOUT = 'dashboard_layout'
+	DASHBOARD_LAYOUT = 'dashboard_layout',
 }
 
 /**
@@ -27,14 +29,14 @@ export enum RundownLayoutType {
 export enum PieceDisplayStyle {
 	LIST = 'list',
 	BUTTONS = 'buttons',
-	OFFTUBE_LIST = 'offtube_list'
 }
 
 export enum RundownLayoutElementType {
 	FILTER = 'filter',
 	EXTERNAL_FRAME = 'external_frame',
 	ADLIB_REGION = 'adlib_region',
-	KEYBOARD_PREVIEW = 'keyboard_preview'
+	KEYBOARD_PREVIEW = 'keyboard_preview',
+	PART_COUNTDOWN = 'part_countdown',
 }
 
 export interface RundownLayoutElementBase {
@@ -53,16 +55,21 @@ export interface RundownLayoutExternalFrame extends RundownLayoutElementBase {
 export enum RundownLayoutAdLibRegionRole {
 	QUEUE = 'queue',
 	TAKE = 'take',
-	PROGRAM = 'program'
+	PROGRAM = 'program',
 }
 
 export interface RundownLayoutAdLibRegion extends RundownLayoutElementBase {
 	type: RundownLayoutElementType.ADLIB_REGION
-	windowNumber: number
 	tags: string[] | undefined
 	role: RundownLayoutAdLibRegionRole
 	adlibRank: number
+	labelBelowPanel: boolean
 	thumbnailSourceLayerIds: string[] | undefined
+}
+
+export interface RundownLayoutPartCountdown extends RundownLayoutElementBase {
+	type: RundownLayoutElementType.PART_COUNTDOWN
+	sourceLayerIds: string[] | undefined
 }
 
 /**
@@ -80,6 +87,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	label: string[] | undefined
 	tags: string[] | undefined
 	displayStyle: PieceDisplayStyle
+	showThumbnailsInList: boolean
 	currentSegment: boolean
 	/**
 	 * true: include Rundown Baseline AdLib Pieces
@@ -111,6 +119,13 @@ export interface DashboardLayoutAdLibRegion extends RundownLayoutAdLibRegion {
 	height: number
 }
 
+export interface DashboardLayoutPartCountdown extends RundownLayoutPartCountdown {
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
 export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	x: number
 	y: number
@@ -127,7 +142,11 @@ export interface DashboardLayoutFilter extends RundownLayoutFilterBase {
 	showAsTimeline?: boolean
 	hide?: boolean
 	displayTakeButtons?: boolean
+	queueAllAdlibs?: boolean
 }
+
+/** A string, identifying a RundownLayout */
+export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
 export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPreview {
 	x: number
@@ -137,9 +156,9 @@ export interface DashboardLayoutKeyboardPreview extends RundownLayoutKeyboardPre
 }
 
 export interface RundownLayoutBase {
-	_id: string
-	showStyleBaseId: string
-	blueprintId?: string
+	_id: RundownLayoutId
+	showStyleBaseId: ShowStyleBaseId
+	blueprintId?: BlueprintId
 	userId?: string
 	name: string
 	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
@@ -167,8 +186,8 @@ export enum ActionButtonType {
 	DEACTIVATE = 'deactivate',
 	RESET_RUNDOWN = 'reset_rundown',
 	QUEUE_ADLIB = 'queue_adlib', // The idea for it is that you would be able to press and hold this button
-								// and then click on whatever adlib you would like
-	KLAR_ON_AIR = 'klar_on_air'
+	// and then click on whatever adlib you would like
+	KLAR_ON_AIR = 'klar_on_air',
 }
 
 export interface DashboardLayoutActionButton {
@@ -183,14 +202,14 @@ export interface DashboardLayoutActionButton {
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
-	// TODO: Interface to be defined later
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
 	actionButtons?: DashboardLayoutActionButton[]
 }
 
-export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase>
-	= createMongoCollection<RundownLayoutBase>('rundownLayouts')
+export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLayoutBase> = createMongoCollection<
+	RundownLayoutBase
+>('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
@@ -201,7 +220,7 @@ Meteor.startup(() => {
 		// 	mediaId: 1
 		// })
 		RundownLayouts._ensureIndex({
-			showStyleBaseId: 1
+			showStyleBaseId: 1,
 		})
 	}
 })

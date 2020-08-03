@@ -1,17 +1,19 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, ProtectedString } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 
-import { MediaManagerDeviceSettings } from './PeripheralDeviceSettings/mediaManager'
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
-import { MosDeviceSettings } from './PeripheralDeviceSettings/mosDevice'
-import { SpreadsheetDeviceSettings, SpreadsheetDeviceSecretSettings } from './PeripheralDeviceSettings/spreadsheet'
-import { INewsDeviceSettings } from './PeripheralDeviceSettings/iNews'
+import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
 import { createMongoCollection } from './lib'
+import { DeviceConfigManifest } from '../api/deviceConfig'
+import { StudioId } from './Studios'
+
+/** A string, identifying a PeripheralDevice */
+export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
 
 export interface PeripheralDevice {
-	_id: string
+	_id: PeripheralDeviceId
 
 	name: string
 
@@ -20,8 +22,8 @@ export interface PeripheralDevice {
 	subType: PeripheralDeviceAPI.DeviceSubType
 
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioId?: string
-	parentDeviceId?: string
+	studioId?: StudioId
+	parentDeviceId?: PeripheralDeviceId
 	/** Versions reported from the device */
 	versions?: {
 		[libraryName: string]: string
@@ -41,63 +43,35 @@ export interface PeripheralDevice {
 
 	token: string
 
-	settings?: MosDeviceSettings | PlayoutDeviceSettings | MediaManagerDeviceSettings | SpreadsheetDeviceSettings | INewsDeviceSettings
+	settings?: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
 
-	secretSettings?: any | SpreadsheetDeviceSecretSettings
+	secretSettings?: IngestDeviceSecretSettings | { [key: string]: any }
 
 	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
 	ignore?: boolean
-}
 
-export interface MosParentDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	type: PeripheralDeviceAPI.DeviceType.MOS,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-	settings?: MosDeviceSettings
-	secretSettings: undefined
+	configManifest: DeviceConfigManifest
+
+	/** If this is an ingest gateway, the last tiem data was received */
 	lastDataReceived?: Time
-}
-export interface PlayoutParentDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-	type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-	secretSettings: undefined
-	settings?: PlayoutDeviceSettings
-}
-export interface MediaManagerDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
-	type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-	secretSettings: undefined
-	settings?: MediaManagerDeviceSettings
-}
-export interface SpreadsheetDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	type: PeripheralDeviceAPI.DeviceType.SPREADSHEET,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-	settings?: SpreadsheetDeviceSettings
-	secretSettings?: SpreadsheetDeviceSecretSettings
+
+	/** If an ingest device performing an oauth flow */
 	accessTokenUrl?: string
 }
-export interface INewsDevice extends PeripheralDevice {
-	category: PeripheralDeviceAPI.DeviceCategory.INGEST,
-	type: PeripheralDeviceAPI.DeviceType.INEWS,
-	subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-	settings?: INewsDeviceSettings
-}
 
-export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice>
-	= createMongoCollection<PeripheralDevice>('peripheralDevices')
+export const PeripheralDevices: TransformedCollection<PeripheralDevice, PeripheralDevice> = createMongoCollection<
+	PeripheralDevice
+>('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PeripheralDevices._ensureIndex({
-			studioId: 1
+			studioId: 1,
 		})
 	}
 })
 
-export function getStudioIdFromDevice (peripheralDevice: PeripheralDevice): string | undefined {
+export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId | undefined {
 	if (peripheralDevice.studioId) {
 		return peripheralDevice.studioId
 	}

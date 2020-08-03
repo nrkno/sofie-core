@@ -13,10 +13,13 @@ export interface IProps {
 
 declare global {
 	interface Window {
-		requestIdleCallback (callback: Function, options?: {
-			timeout: number
-		}): number
-		cancelIdleCallback (callback: number)
+		requestIdleCallback(
+			callback: Function,
+			options?: {
+				timeout: number
+			}
+		): number
+		cancelIdleCallback(callback: number)
 	}
 }
 
@@ -43,7 +46,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 	private refreshSizingTimeout: NodeJS.Timer | null = null
 	private styleObj: CSSStyleDeclaration | undefined
 
-	constructor (props: IProps) {
+	constructor(props: IProps) {
 		super(props)
 		this.state = {
 			inView: props.initialShow || false,
@@ -54,7 +57,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 			marginTop: undefined,
 			marginLeft: undefined,
 			marginRight: undefined,
-			id: undefined
+			id: undefined,
 		}
 	}
 
@@ -66,13 +69,13 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		}
 		if (inView && !this.state.inView) {
 			this.setState({
-				inView
+				inView,
 			})
 		} else if (!inView && this.state.inView) {
 			this.optimizeTimeout = setTimeout(() => {
 				this.optimizeTimeout = null
 				this.setState({
-					inView
+					inView,
 				})
 			}, OPTIMIZE_PERIOD)
 		}
@@ -91,7 +94,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 				marginBottom: style.marginBottom || undefined,
 				marginLeft: style.marginLeft || undefined,
 				marginRight: style.marginRight || undefined,
-				id: this.el.id
+				id: this.el.id,
 			})
 			this.props.debug && console.log(this.props.id, 'Re-measuring child', this.el.clientHeight)
 		}
@@ -99,7 +102,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 
 	findChildElement = () => {
 		if (!this.el || !this.el.parentElement) {
-			const el = this.instance ? this.instance.firstElementChild as HTMLElement : null
+			const el = this.instance ? (this.instance.firstElementChild as HTMLElement) : null
 			if (el && !el.classList.contains('virtual-element-placeholder')) {
 				this.el = el
 				this.styleObj = undefined
@@ -113,31 +116,38 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		this.findChildElement()
 	}
 
-	componentDidUpdate (prevProps, prevState: IState) {
+	componentDidUpdate(prevProps, prevState: IState) {
 		if (this.state.inView && prevState.inView !== this.state.inView) {
 			// console.log('Find actual child')
 			this.findChildElement()
 		}
 	}
 
-	UNSAFE_componentWillUpdate (newProps, newState: IState) {
+	UNSAFE_componentWillUpdate(newProps, newState: IState) {
 		if (this.state.inView && !newState.inView) {
 			this.props.debug && console.log(this.props.id, 'Item is going away from viewport, refreshSizing')
 			this.refreshSizing()
 		}
 	}
 
-	componentWillUnmount () {
+	componentWillUnmount() {
 		if (this.optimizeTimeout) clearTimeout(this.optimizeTimeout)
 		if (this.refreshSizingTimeout) clearTimeout(this.refreshSizingTimeout)
 	}
 
-	render () {
-		this.props.debug && console.log(this.props.id, this.state.inView, this.props.initialShow, this.state.isMeasured, (!this.state.inView && (!this.props.initialShow || this.state.isMeasured)))
+	render() {
+		this.props.debug &&
+			console.log(
+				this.props.id,
+				this.state.inView,
+				this.props.initialShow,
+				this.state.isMeasured,
+				!this.state.inView && (!this.props.initialShow || this.state.isMeasured)
+			)
 		return (
 			<InView threshold={0} rootMargin={this.props.margin || '50% 0px 50% 0px'} onChange={this.visibleChanged}>
 				<div ref={this.setRef}>
-					{(!this.state.inView && (!this.props.initialShow || this.state.isMeasured)) ?
+					{!this.state.inView && (!this.props.initialShow || this.state.isMeasured) ? (
 						<div
 							id={this.state.id || this.props.id}
 							className={'virtual-element-placeholder ' + (this.props.placeholderClassName || '')}
@@ -147,9 +157,11 @@ export class VirtualElement extends React.Component<IProps, IState> {
 								marginTop: this.state.marginTop,
 								marginLeft: this.state.marginLeft,
 								marginRight: this.state.marginRight,
-								marginBottom: this.state.marginBottom
-							}}></div> :
-						this.props.children}
+								marginBottom: this.state.marginBottom,
+							}}></div>
+					) : (
+						this.props.children
+					)}
 				</div>
 			</InView>
 		)

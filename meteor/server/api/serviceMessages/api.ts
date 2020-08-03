@@ -1,32 +1,21 @@
 import { CoreSystem } from '../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
-import { Picker } from 'meteor/meteorhacks:picker'
 import { postHandler } from './postHandler'
 import { logger } from '../../logging'
-import * as bodyParser from 'body-parser'
 import { deleteMessage, readAllMessages } from './serviceMessagesApi'
+import { PickerPOST, PickerGET, PickerDELETE } from '../http'
 
-const postRoute = Picker.filter((req, res) => req.method === 'POST')
-postRoute.middleware(bodyParser.json())
-postRoute.route('/serviceMessages', postHandler)
+PickerPOST.route('/serviceMessages', postHandler)
 
-const getRoute = Picker.filter((req, res) => req.method === 'GET')
-getRoute.route('/serviceMessages', getHandler)
-getRoute.route('/serviceMessages/:id', getMessageHandler)
+PickerGET.route('/serviceMessages', getHandler)
+PickerGET.route('/serviceMessages/:id', getMessageHandler)
 
-const deleteRoute = Picker.filter((req, res) => req.method === 'DELETE')
-deleteRoute.route('/serviceMessages/:id', deleteHandler)
-
+PickerDELETE.route('/serviceMessages/:id', deleteHandler)
 
 /**
  * List all current messages stored on this instance
  */
-function getHandler (
-	params,
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void
-) {
+function getHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
 	try {
 		const valuesArray = readAllMessages()
 		res.setHeader('Content-Type', 'application/json; charset-utf8')
@@ -41,15 +30,10 @@ function getHandler (
 /**
  * Delete a message
  */
-function deleteHandler (
-	params,
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void
-) {
+function deleteHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
 	const { id } = params
 	try {
-		if (readAllMessages().find(m => m.id === id)) {
+		if (readAllMessages().find((m) => m.id === id)) {
 			const deleted = deleteMessage(id)
 			res.setHeader('Content-Type', 'application/json; charset-utf8')
 			res.end(JSON.stringify(deleted), 'utf-8')
@@ -66,15 +50,10 @@ function deleteHandler (
 /**
  * Retrieves a single message based on a given id
  */
-function getMessageHandler (
-	params,
-	req: IncomingMessage,
-	res: ServerResponse,
-	next: () => void
-) {
+function getMessageHandler(params, req: IncomingMessage, res: ServerResponse, next: () => void) {
 	const { id } = params
 	try {
-		const message = readAllMessages().find(m => m.id === id)
+		const message = readAllMessages().find((m) => m.id === id)
 		if (message) {
 			res.setHeader('Content-Type', 'application/json; charset-utf8')
 			res.end(JSON.stringify(message), 'utf-8')

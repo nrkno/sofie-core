@@ -1,4 +1,4 @@
-@import "_itemTypeColors";
+@import '_itemTypeColors';
 
 .keyboard-preview {
 	position: relative;
@@ -38,7 +38,7 @@
 			position: relative;
 			min-width: 1em;
 			max-width: 1em;
-			
+
 			height: var(--keyboard-preview-height);
 
 			font-size: 3em;
@@ -57,7 +57,8 @@
 				flex-grow: 1;
 			}
 
-			&.keyboard-preview__key--down, &:active {
+			&.keyboard-preview__key--down,
+			&:active {
 				&::after {
 					content: ' ';
 					display: block;
@@ -107,13 +108,18 @@
 
 	.keyboard-preview__control-pad {
 		position: absolute;
-		top: calc(var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin));
+		top: calc(
+			var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin)
+		);
 		left: 52em;
 	}
 
 	.keyboard-preview__arrow-pad {
 		position: absolute;
-		top: calc(var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin) + (3 * (var(--keyboard-preview-height) + var(--keyboard-preview-key-margin))));
+		top: calc(
+			var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin) +
+				(3 * (var(--keyboard-preview-height) + var(--keyboard-preview-key-margin)))
+		);
 		left: 52em;
 	}
 }
@@ -123,7 +129,7 @@
 
 	> .keyboard-preview {
 		--keyboard-preview-height: calc(100vw / 23 * var(--dashboard-panel-scale));
-	
+
 		.keyboard-preview__key-row .keyboard-preview__key > .keyboard-preview__key__function-label {
 			font-size: calc(var(--dashboard-panel-scale) * 16px);
 		}

@@ -3,9 +3,9 @@ import { compileStudioConfig, ConfigRef } from '../config'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { protectString } from '../../../../lib/lib'
 
 describe('Test blueprint config', () => {
-
 	beforeAll(() => {
 		setupDefaultStudioEnvironment()
 	})
@@ -14,27 +14,27 @@ describe('Test blueprint config', () => {
 		const studio = setupMockStudio({
 			settings: {
 				sofieUrl: 'host url',
-				mediaPreviewsUrl: ''
+				mediaPreviewsUrl: '',
 			},
 			config: [
 				{ _id: 'sdfsdf', value: 'one' },
-				{ _id: 'another', value: 5 }
-			]
+				{ _id: 'another', value: 5 },
+			],
 		})
 
 		const res = compileStudioConfig(studio)
 		expect(res).toEqual({
 			SofieHostURL: 'host url',
 			sdfsdf: 'one',
-			another: 5
+			another: 5,
 		})
 	})
 
 	test('getStudioConfigRef', () => {
-		expect(ConfigRef.getStudioConfigRef('st0', 'key0')).toEqual('${studio.st0.key0}')
+		expect(ConfigRef.getStudioConfigRef(protectString('st0'), 'key0')).toEqual('${studio.st0.key0}')
 	})
 	test('getShowStyleConfigRef', () => {
-		expect(ConfigRef.getShowStyleConfigRef('var0', 'key1')).toEqual('${showStyle.var0.key1}')
+		expect(ConfigRef.getShowStyleConfigRef(protectString('var0'), 'key1')).toEqual('${showStyle.var0.key1}')
 	})
 
 	describe('retrieveRefs', () => {
@@ -50,7 +50,7 @@ describe('Test blueprint config', () => {
 		})
 
 		test('undefined - normal', () => {
-			const modifier = jest.fn(v => v)
+			const modifier = jest.fn((v) => v)
 
 			expect(ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier)).toEqual('undefined_extra')
 			expect(ConfigRef.retrieveRefs('${showStyle.one.two}_extra', modifier)).toEqual('undefined_extra')
@@ -58,7 +58,7 @@ describe('Test blueprint config', () => {
 			expect(modifier).toHaveBeenCalledTimes(2)
 		})
 		test('undefined - bail', () => {
-			const modifier = jest.fn(v => v)
+			const modifier = jest.fn((v) => v)
 
 			try {
 				expect(ConfigRef.retrieveRefs('${studio.one.two}_extra', modifier, true)).toEqual('undefined_extra')
@@ -93,26 +93,32 @@ describe('Test blueprint config', () => {
 					config: [
 						{
 							_id: 'two',
-							value: 'abc'
+							value: 'abc',
 						},
 						{
 							_id: 'number',
-							value: 99
+							value: 99,
 						},
 						{
 							_id: 'bool',
-							value: true
+							value: true,
 						},
 						{
 							_id: 'obj',
-							value: [{ _id: '0', a: 1 }]
-						}
-					]
-				}
+							value: [{ _id: '0', a: 1 }],
+						},
+					],
+				},
 			})
 
-			expect(ConfigRef.retrieveRefs(`\${studio.${studio._id}.two} = \${studio.${studio._id}.number}. Correct = \${studio.${studio._id}.bool}`)).toEqual('abc = 99. Correct = true')
-			expect(ConfigRef.retrieveRefs(`\${studio.${studio._id}.name} = \${studio.${studio._id}.obj}`)).toEqual('undefined = [object Object]') // Not pretty, but expected
+			expect(
+				ConfigRef.retrieveRefs(
+					`\${studio.${studio._id}.two} = \${studio.${studio._id}.number}. Correct = \${studio.${studio._id}.bool}`
+				)
+			).toEqual('abc = 99. Correct = true')
+			expect(ConfigRef.retrieveRefs(`\${studio.${studio._id}.name} = \${studio.${studio._id}.obj}`)).toEqual(
+				'undefined = [object Object]'
+			) // Not pretty, but expected
 		})
 		test('showstyle with data', () => {
 			const variant = ShowStyleVariants.findOne() as ShowStyleVariant
@@ -123,37 +129,42 @@ describe('Test blueprint config', () => {
 					config: [
 						{
 							_id: 'number',
-							value: 56
+							value: 56,
 						},
 						{
 							_id: 'bool',
-							value: true
+							value: true,
 						},
-					]
-				}
+					],
+				},
 			})
 			ShowStyleVariants.update(variant._id, {
 				$set: {
 					config: [
 						{
 							_id: 'two',
-							value: 'abc'
+							value: 'abc',
 						},
 						{
 							_id: 'number',
-							value: 88
+							value: 88,
 						},
 						{
 							_id: 'obj',
-							value: [{ _id: '0', a: 1 }]
-						}
-					]
-				}
+							value: [{ _id: '0', a: 1 }],
+						},
+					],
+				},
 			})
 
-			expect(ConfigRef.retrieveRefs(`\${showStyle.${variant._id}.two} = \${showStyle.${variant._id}.number}. Correct = \${showStyle.${variant._id}.bool}`)).toEqual('abc = 88. Correct = true')
-			expect(ConfigRef.retrieveRefs(`\${showStyle.${variant._id}.name} = \${showStyle.${variant._id}.obj}`)).toEqual('undefined = [object Object]') // Not pretty, but expected
+			expect(
+				ConfigRef.retrieveRefs(
+					`\${showStyle.${variant._id}.two} = \${showStyle.${variant._id}.number}. Correct = \${showStyle.${variant._id}.bool}`
+				)
+			).toEqual('abc = 88. Correct = true')
+			expect(
+				ConfigRef.retrieveRefs(`\${showStyle.${variant._id}.name} = \${showStyle.${variant._id}.obj}`)
+			).toEqual('undefined = [object Object]') // Not pretty, but expected
 		})
 	})
-
 })

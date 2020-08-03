@@ -1,8 +1,20 @@
-export enum SnapshotFunctionsAPI {
-	STORE_SYSTEM_SNAPSHOT = 'snapshot.systemSnapshot',
-	STORE_RUNDOWN_SNAPSHOT = 'snapshot.rundownSnapshot',
-	STORE_DEBUG_SNAPSHOT = 'snapshot.debugSnaphot',
+import { StudioId } from '../collections/Studios'
+import { SnapshotId } from '../collections/Snapshots'
+import { RundownPlaylistId } from '../collections/RundownPlaylists'
 
-	RESTORE_SNAPSHOT = 'snapshot.restoreSnaphot',
-	REMOVE_SNAPSHOT = 'snapshot.removeSnaphot'
+export interface NewSnapshotAPI {
+	storeSystemSnapshot(studioId: StudioId | null, reason: string): Promise<SnapshotId>
+	storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string): Promise<SnapshotId>
+	storeDebugSnapshot(studioId: StudioId, reason: string): Promise<SnapshotId>
+	restoreSnapshot(snapshotId: SnapshotId): Promise<void>
+	removeSnapshot(snapshotId: SnapshotId): Promise<void>
+}
+
+export enum SnapshotAPIMethods {
+	storeSystemSnapshot = 'snapshot.systemSnapshot',
+	storeRundownPlaylist = 'snapshot.rundownPlaylistSnapshot',
+	storeDebugSnapshot = 'snapshot.debugSnaphot',
+
+	restoreSnapshot = 'snapshot.restoreSnaphot',
+	removeSnapshot = 'snapshot.removeSnaphot',
 }

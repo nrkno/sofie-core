@@ -1,44 +1,53 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, Omit, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintAsRunLogEvent,
-	IBlueprintAsRunLogEventContent
-} from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintAsRunLogEvent, IBlueprintAsRunLogEventContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { RundownId } from './Rundowns'
+import { StudioId } from './Studios'
+import { SegmentId } from './Segments'
+import { PartInstanceId } from './PartInstances'
+import { PieceInstanceId } from './PieceInstances'
+import { TimelineObjId } from './Timeline'
 
-export interface AsRunLogEventBase {
-	studioId: string,
-	rundownId: string,
-	segmentId?: string,
-	partId?: string,
-	pieceId?: string,
-	timelineObjectId?: string
+export type AsRunLogEventBase = Omit<
+	ProtectedStringProperties<
+		IBlueprintAsRunLogEvent,
+		'rundownId' | 'studioId' | 'segmentId' | 'partInstanceId' | 'pieceInstanceId' | 'timelineObjectId'
+	>,
+	'_id' | 'timestamp' | 'rehersal'
+>
 
-	/** Name/id of the content */
-	content: IBlueprintAsRunLogEventContent
-	/** Name/id of the sub-content */
-	content2?: string
-	/** Metadata about the content */
-	metadata?: any
-}
-export interface AsRunLogEvent extends AsRunLogEventBase, IBlueprintAsRunLogEvent {
-	_id: string,
+/** A string, identifying a AsRunLogEvent */
+export type AsRunLogEventId = ProtectedString<'AsRunLogEventId'>
+
+export interface AsRunLogEvent extends AsRunLogEventBase {
+	_id: AsRunLogEventId
 	/** Timestamp of the event */
 	timestamp: Time
 	/** If the event was done in rehersal */
-	rehersal: boolean,
+	rehersal: boolean
+
+	rundownId: RundownId
+	studioId: StudioId
+	segmentId?: SegmentId
+	partInstanceId?: PartInstanceId
+	pieceInstanceId?: PieceInstanceId
+	timelineObjectId?: TimelineObjId
 }
 
-export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent>
-	= createMongoCollection<AsRunLogEvent>('asRunLog')
+export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent> = createMongoCollection<AsRunLogEvent>(
+	'asRunLog'
+)
 registerCollection('AsRunLog', AsRunLog)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		AsRunLog._ensureIndex({
-			studioId: 1,
-			rundownId: 1
+			rundownId: 1,
+		})
+		AsRunLog._ensureIndex({
+			timestamp: 1,
 		})
 	}
 })

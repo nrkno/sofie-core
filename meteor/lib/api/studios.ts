@@ -1,64 +1,52 @@
-import {
-	MappingCasparCG,
-	MappingAtem,
-	MappingLawo,
-	MappingHyperdeck,
-	MappingPanasonicPtz,
-	MappingQuantel,
-	DeviceType,
-	Mapping,
-	MappingAbstract,
-	MappingHTTPSend,
-	MappingHTTPWatcher,
-	MappingTCPSend,
-	MappingPharos,
-	MappingOSC
-} from 'timeline-state-resolver-types'
-import { MappingSisyfos } from 'timeline-state-resolver-types/dist/sisyfos'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { StudioId } from '../collections/Studios'
 
-export namespace StudiosAPI {
-		export enum methods {
-		'insertStudio' = 'showstyles.insertStudio',
-		'removeStudio' = 'showstyles.removeStudio',
-	}
+export interface NewStudiosAPI {
+	insertStudio(): Promise<StudioId>
+	removeStudio(studioId: StudioId): Promise<void>
 }
 
-export function mappingIsAbstract (mapping: Mapping): mapping is MappingAbstract {
-	return mapping.device === DeviceType.ABSTRACT
+export enum StudiosAPIMethods {
+	'insertStudio' = 'studio.insertStudio',
+	'removeStudio' = 'studio.removeStudio',
 }
-export function mappingIsCasparCG (mapping: Mapping): mapping is MappingCasparCG {
-	return mapping.device === DeviceType.CASPARCG
+
+export function mappingIsAbstract(mapping: TSR.Mapping): mapping is TSR.MappingAbstract {
+	return mapping.device === TSR.DeviceType.ABSTRACT
 }
-export function mappingIsAtem (mapping: Mapping): mapping is MappingAtem {
-	return mapping.device === DeviceType.ATEM
+export function mappingIsCasparCG(mapping: TSR.Mapping): mapping is TSR.MappingCasparCG {
+	return mapping.device === TSR.DeviceType.CASPARCG
 }
-export function mappingIsLawo (mapping: Mapping): mapping is MappingLawo {
-	return mapping.device === DeviceType.LAWO
+export function mappingIsAtem(mapping: TSR.Mapping): mapping is TSR.MappingAtem {
+	return mapping.device === TSR.DeviceType.ATEM
 }
-export function mappingIsHTTPSend (mapping: Mapping): mapping is MappingHTTPSend {
-	return mapping.device === DeviceType.HTTPSEND
+export function mappingIsLawo(mapping: TSR.Mapping): mapping is TSR.MappingLawo {
+	return mapping.device === TSR.DeviceType.LAWO
 }
-export function mappingIsPanasonicPtz (mapping: Mapping): mapping is MappingPanasonicPtz {
-	return mapping.device === DeviceType.PANASONIC_PTZ
+export function mappingIsHTTPSend(mapping: TSR.Mapping): mapping is TSR.MappingHTTPSend {
+	return mapping.device === TSR.DeviceType.HTTPSEND
 }
-export function mappingIsTCPSend (mapping: Mapping): mapping is MappingTCPSend {
-	return mapping.device === DeviceType.TCPSEND
+export function mappingIsPanasonicPtz(mapping: TSR.Mapping): mapping is TSR.MappingPanasonicPtz {
+	return mapping.device === TSR.DeviceType.PANASONIC_PTZ
 }
-export function mappingIsHyperdeck (mapping: Mapping): mapping is MappingHyperdeck {
-	return mapping.device === DeviceType.HYPERDECK
+export function mappingIsTCPSend(mapping: TSR.Mapping): mapping is TSR.MappingTCPSend {
+	return mapping.device === TSR.DeviceType.TCPSEND
 }
-export function mappingIsPharos (mapping: Mapping): mapping is MappingPharos {
-	return mapping.device === DeviceType.PHAROS
+export function mappingIsHyperdeck(mapping: TSR.Mapping): mapping is TSR.MappingHyperdeck {
+	return mapping.device === TSR.DeviceType.HYPERDECK
 }
-export function mappingIsOSC (mapping: Mapping): mapping is MappingOSC {
-	return mapping.device === DeviceType.OSC
+export function mappingIsPharos(mapping: TSR.Mapping): mapping is TSR.MappingPharos {
+	return mapping.device === TSR.DeviceType.PHAROS
 }
-export function mappingIsHTTPWatcher (mapping: Mapping): mapping is MappingHTTPWatcher {
-	return mapping.device === DeviceType.HTTPWATCHER
+export function mappingIsOSC(mapping: TSR.Mapping): mapping is TSR.MappingOSC {
+	return mapping.device === TSR.DeviceType.OSC
 }
-export function mappingIsSisyfos (mapping: Mapping): mapping is MappingSisyfos {
-	return mapping.device === DeviceType.SISYFOS
+export function mappingIsHTTPWatcher(mapping: TSR.Mapping): mapping is TSR.MappingHTTPWatcher {
+	return mapping.device === TSR.DeviceType.HTTPWATCHER
 }
-export function mappingIsQuantel (mapping: Mapping): mapping is MappingQuantel {
-	return mapping.device === DeviceType.QUANTEL
+export function mappingIsSisyfos(mapping: TSR.Mapping): mapping is TSR.MappingSisyfos {
+	return mapping.device === TSR.DeviceType.SISYFOS
+}
+export function mappingIsQuantel(mapping: TSR.Mapping): mapping is TSR.MappingQuantel {
+	return mapping.device === TSR.DeviceType.QUANTEL
 }

@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { PeripheralDeviceAPI } from './api/peripheralDevice'
 import { systemTime } from './lib'
+import { MeteorCall } from './api/methods'
 
 if (Meteor.isServer) {
 	// handled in systemTime
@@ -10,16 +11,21 @@ if (Meteor.isServer) {
 	// fetch time from server:
 	let updateDiffTime = () => {
 		let sentTime = Date.now()
-		Meteor.call(PeripheralDeviceAPI.methods.getTimeDiff, (err, stat) => {
-			let replyTime = Date.now()
-			if (err) {
-				logger.error(err)
-			} else {
-				let diffTime = ((sentTime + replyTime) / 2) - stat.currentTime
+		MeteorCall.peripheralDevice
+			.getTimeDiff()
+			.then((stat) => {
+				let replyTime = Date.now()
+				let diffTime = (sentTime + replyTime) / 2 - stat.currentTime
 
 				systemTime.diff = diffTime
 				systemTime.stdDev = Math.abs(sentTime - replyTime) / 2
-				logger.debug('time diff to server: ' + systemTime.diff + 'ms (stdDev: ' + (Math.floor(systemTime.stdDev * 10) / 10) + 'ms)')
+				logger.debug(
+					'time diff to server: ' +
+						systemTime.diff +
+						'ms (stdDev: ' +
+						Math.floor(systemTime.stdDev * 10) / 10 +
+						'ms)'
+				)
 				if (!stat.good) {
 					Meteor.setTimeout(() => {
 						updateDiffTime()
@@ -29,8 +35,10 @@ if (Meteor.isServer) {
 						updateDiffTime()
 					}, 2000)
 				}
-			}
-		})
+			})
+			.catch((err) => {
+				logger.error(err)
+			})
 	}
 
 	Meteor.startup(() => {

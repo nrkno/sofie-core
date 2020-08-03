@@ -1,39 +1,44 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { literal } from '../../../../lib/lib'
-import { LookaheadMode, BlueprintMapping, IConfigItem, ShowStyleVariantPart, ISourceLayer, SourceLayerType, IOutputLayer, IBlueprintRuntimeArgumentsItem } from 'tv-automation-sofie-blueprints-integration'
+import { literal, getRandomId, protectString } from '../../../../lib/lib'
+import {
+	LookaheadMode,
+	BlueprintMapping,
+	IConfigItem,
+	ISourceLayer,
+	SourceLayerType,
+	IOutputLayer,
+	IBlueprintRuntimeArgumentsItem,
+	TSR,
+	IBlueprintShowStyleVariant,
+} from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
-import { DeviceType } from 'timeline-state-resolver-types'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 
-// require('../api.ts') // include in order to create the Meteor methods needed
-
 describe('Test blueprint migrationContext', () => {
-
 	beforeAll(() => {
 		setupDefaultStudioEnvironment()
 	})
 
 	describe('MigrationContextStudio', () => {
-		function getContext () {
+		function getContext() {
 			const studio = Studios.findOne() as Studio
 			expect(studio).toBeTruthy()
 			return new MigrationContextStudio(studio)
 		}
-		function getStudio (context: MigrationContextStudio): Studio {
+		function getStudio(context: MigrationContextStudio): Studio {
 			const studio = (context as any).studio
 			expect(studio).toBeTruthy()
 			return studio
 		}
 		describe('mappings', () => {
-			function getMappingFromDb (studio: Studio, mappingId: string): MappingExt | undefined {
+			function getMappingFromDb(studio: Studio, mappingId: string): MappingExt | undefined {
 				const studio2 = Studios.findOne(studio._id) as Studio
 				expect(studio2).toBeTruthy()
 				return studio2.mappings[mappingId]
@@ -53,9 +58,9 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
-					lookahead: LookaheadMode.NONE
+					lookahead: LookaheadMode.NONE,
 				}
 				studio.mappings['mapping1'] = rawMapping
 
@@ -71,9 +76,9 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
-					lookahead: LookaheadMode.NONE
+					lookahead: LookaheadMode.NONE,
 				}
 
 				const mappingId = ctx.insertMapping('mapping2', rawMapping)
@@ -91,9 +96,9 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 
 				const rawMapping = {
-					device: DeviceType.ABSTRACT,
+					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
-					lookahead: LookaheadMode.NONE
+					lookahead: LookaheadMode.NONE,
 				}
 
 				try {
@@ -117,9 +122,9 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeTruthy()
 
 				const rawMapping = {
-					device: DeviceType.ATEM,
+					device: TSR.DeviceType.ATEM,
 					deviceId: 'dev2',
-					lookahead: LookaheadMode.PRELOAD
+					lookahead: LookaheadMode.PRELOAD,
 				}
 				expect(rawMapping).not.toEqual(existingMapping)
 
@@ -145,14 +150,14 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeTruthy()
 
 				const rawMapping = {
-					device: DeviceType.HYPERDECK,
-					deviceId: 'hyper0'
+					device: TSR.DeviceType.HYPERDECK,
+					deviceId: 'hyper0',
 				}
 				ctx.updateMapping('mapping2', rawMapping)
 
 				const expectedMapping = {
 					...existingMapping,
-					...rawMapping
+					...rawMapping,
 				}
 
 				// get should return the same
@@ -177,7 +182,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(existingMapping).toBeFalsy()
 
 				try {
-					ctx.updateMapping('', { device: DeviceType.HYPERDECK })
+					ctx.updateMapping('', { device: TSR.DeviceType.HYPERDECK })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Mapping "" cannot be updated as it does not exist`)
@@ -188,8 +193,8 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getMapping('mapping1')).toBeFalsy()
 
 				const rawMapping = {
-					device: DeviceType.HYPERDECK,
-					deviceId: 'hyper0'
+					device: TSR.DeviceType.HYPERDECK,
+					deviceId: 'hyper0',
 				}
 
 				try {
@@ -239,7 +244,7 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('config', () => {
-			function getAllConfigFromDb (studio: Studio): IConfigItem[] {
+			function getAllConfigFromDb(studio: Studio): IConfigItem[] {
 				const studio2 = Studios.findOne(studio._id) as Studio
 				expect(studio2).toBeTruthy()
 				return studio2.config
@@ -261,13 +266,13 @@ describe('Test blueprint migrationContext', () => {
 
 				studio.config.push({
 					_id: 'conf1',
-					value: 5
+					value: 5,
 				})
 				expect(ctx.getConfig('conf1')).toEqual(5)
 
 				studio.config.push({
 					_id: 'conf2',
-					value: '   af '
+					value: '   af ',
 				})
 				expect(ctx.getConfig('conf2')).toEqual('af')
 			})
@@ -298,7 +303,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'conf1',
-					value: 34
+					value: 34,
 				}
 				expect(ctx.getConfig('conf1')).toEqual(expectedItem.value)
 
@@ -317,7 +322,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'confUndef',
-					value: undefined as any
+					value: undefined as any,
 				}
 				expect(ctx.getConfig('confUndef')).toEqual(expectedItem.value)
 
@@ -337,7 +342,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'conf1',
-					value: 'hello'
+					value: 'hello',
 				}
 				expect(ctx.getConfig('conf1')).toEqual(expectedItem.value)
 
@@ -356,7 +361,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'conf1',
-					value: undefined as any
+					value: undefined as any,
 				}
 				expect(ctx.getConfig('conf1')).toEqual(expectedItem.value)
 
@@ -411,9 +416,9 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('devices', () => {
-			function createPlayoutDevice (studio: Studio) {
+			function createPlayoutDevice(studio: Studio) {
 				return PeripheralDevices.insert({
-					_id: Random.id(),
+					_id: getRandomId(),
 					name: 'Fake parent device',
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -423,31 +428,30 @@ describe('Test blueprint migrationContext', () => {
 					lastConnected: 0,
 					lastSeen: 0,
 					status: {
-						statusCode: 0
+						statusCode: 0,
 					},
 					connected: false,
 					connectionId: null,
 					token: '',
 					settings: literal<PlayoutDeviceSettings>({
-						mediaScanner: {
-							host: '',
-							port: 0
-						},
 						devices: {
-							'device01': {
-								type: DeviceType.ABSTRACT,
-								options: {}
-							}
-						}
-					})
+							device01: {
+								type: TSR.DeviceType.ABSTRACT,
+								options: {},
+							},
+						},
+					}),
+					configManifest: {
+						deviceConfig: [], // can be empty as it's only useful for UI.
+					},
 				})
 			}
-			function getPlayoutDevice (studio: Studio): PeripheralDevice {
+			function getPlayoutDevice(studio: Studio): PeripheralDevice {
 				const device = PeripheralDevices.findOne({
 					studioId: studio._id,
 					type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 					category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
-					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS
+					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
 				})
 				expect(device).toBeTruthy()
 				return device as PeripheralDevice
@@ -492,7 +496,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				try {
-					ctx.insertDevice('', { type: DeviceType.ABSTRACT } as any)
+					ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -507,7 +511,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.insertDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -523,7 +527,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				try {
-					ctx.insertDevice('device01', { type: DeviceType.CASPARCG } as any)
+					ctx.insertDevice('device01', { type: TSR.DeviceType.CASPARCG } as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device01" cannot be inserted as it already exists`)
@@ -537,7 +541,7 @@ describe('Test blueprint migrationContext', () => {
 				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
 				expect(ctx.getDevice('device11')).toBeFalsy()
 
-				const rawDevice: any = { type: DeviceType.CASPARCG }
+				const rawDevice: any = { type: TSR.DeviceType.CASPARCG }
 
 				const deviceId = ctx.insertDevice('device11', rawDevice)
 				expect(deviceId).toEqual('device11')
@@ -556,7 +560,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				try {
-					ctx.updateDevice('', { type: DeviceType.ABSTRACT })
+					ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -571,7 +575,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.updateDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -587,7 +591,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device22')).toBeFalsy()
 
 				try {
-					ctx.updateDevice('device22', { type: DeviceType.ATEM })
+					ctx.updateDevice('device22', { type: TSR.DeviceType.ATEM })
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
 					expect(e.message).toBe(`[404] Device "device22" cannot be updated as it does not exist`)
@@ -602,11 +606,11 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				const rawDevice: any = {
-					type: DeviceType.HYPERDECK
+					type: TSR.DeviceType.HYPERDECK,
 				}
 				const expectedDevice = {
 					...initialSettings.devices['device01'],
-					...rawDevice
+					...rawDevice,
 				}
 
 				ctx.updateDevice('device01', rawDevice)
@@ -639,7 +643,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	const initialSettings = getPlayoutDevice(studio).settings
 
 			// 	try {
-			// 		ctx.removeDevice('', { type: DeviceType.ABSTRACT })
+			// 		ctx.removeDevice('', { type: TSR.DeviceType.ABSTRACT })
 			// 		expect(true).toBe(false) // Please throw and don't get here
 			// 	} catch (e) {
 			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
@@ -676,25 +680,25 @@ describe('Test blueprint migrationContext', () => {
 	})
 
 	describe('MigrationContextShowStyle', () => {
-		function getContext () {
+		function getContext() {
 			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
 			expect(showStyle).toBeTruthy()
 			return new MigrationContextShowStyle(showStyle)
 		}
-		function getShowStyle (context: MigrationContextShowStyle): ShowStyleBase {
+		function getShowStyle(context: MigrationContextShowStyle): ShowStyleBase {
 			const showStyleBase = (context as any).showStyleBase
 			expect(showStyleBase).toBeTruthy()
 			return showStyleBase
 		}
-		function createVariant (ctx: MigrationContextShowStyle, id: string, config?: IConfigItem[]) {
+		function createVariant(ctx: MigrationContextShowStyle, id: string, config?: IConfigItem[]) {
 			const showStyle = getShowStyle(ctx)
 
 			const rawVariant = literal<ShowStyleVariant>({
-				_id: ctx.getVariantId(id),
+				_id: protectString(ctx.getVariantId(id)),
 				name: 'test',
 				showStyleBaseId: showStyle._id,
 				config: config || [],
-				_rundownVersionHash: ''
+				_rundownVersionHash: '',
 			})
 			ShowStyleVariants.insert(rawVariant)
 
@@ -763,7 +767,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.insertVariant('', {
-						name: 'test2'
+						name: 'test2',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -779,7 +783,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.insertVariant('variant1', {
-						name: 'test2'
+						name: 'test2',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -795,18 +799,20 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getVariant('variant2')).toBeFalsy()
 
 				const variantId = ctx.insertVariant('variant2', {
-					name: 'test2'
+					name: 'test2',
 				})
 				expect(variantId).toBeTruthy()
 				expect(variantId).toEqual(ctx.getVariantId('variant2'))
 
-				initialVariants.push(literal<ShowStyleVariant>({
-					_id: variantId,
-					showStyleBaseId: getShowStyle(ctx)._id,
-					name: 'test2',
-					config: [],
-					_rundownVersionHash: '',
-				}))
+				initialVariants.push(
+					(literal<ShowStyleVariant>({
+						_id: protectString(variantId),
+						showStyleBaseId: getShowStyle(ctx)._id,
+						name: 'test2',
+						config: [],
+						_rundownVersionHash: '',
+					}) as any) as IBlueprintShowStyleVariant
+				)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)
 			})
 
@@ -816,7 +822,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.updateVariant('', {
-						name: 'test12'
+						name: 'test12',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -832,7 +838,7 @@ describe('Test blueprint migrationContext', () => {
 
 				try {
 					ctx.updateVariant('variant11', {
-						name: 'test2'
+						name: 'test2',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -848,10 +854,10 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getVariant('variant1')).toBeTruthy()
 
 				ctx.updateVariant('variant1', {
-					name: 'newname'
+					name: 'newname',
 				})
 
-				_.each(initialVariants, variant => {
+				_.each(initialVariants, (variant) => {
 					if (variant._id === ctx.getVariantId('variant1')) {
 						variant.name = 'newname'
 					}
@@ -890,13 +896,16 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeVariant('variant1')
 
-				const expectedVariants = _.filter(initialVariants, variant => variant._id !== ctx.getVariantId('variant1'))
+				const expectedVariants = _.filter(
+					initialVariants,
+					(variant) => variant._id !== ctx.getVariantId('variant1')
+				)
 				expect(ctx.getAllVariants()).toEqual(expectedVariants)
 			})
 		})
 
 		describe('sourcelayer', () => {
-			function getAllSourceLayersFromDb (showStyle: ShowStyleBase): ISourceLayer[] {
+			function getAllSourceLayersFromDb(showStyle: ShowStyleBase): ISourceLayer[] {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
 				return showStyle2.sourceLayers
@@ -939,7 +948,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertSourceLayer('', {
 						name: 'test',
 						_rank: 10,
-						type: SourceLayerType.UNKNOWN
+						type: SourceLayerType.UNKNOWN,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -958,7 +967,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertSourceLayer('vt0', {
 						name: 'test',
 						_rank: 10,
-						type: SourceLayerType.UNKNOWN
+						type: SourceLayerType.UNKNOWN,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -976,14 +985,14 @@ describe('Test blueprint migrationContext', () => {
 				const rawLayer = {
 					name: 'test',
 					_rank: 10,
-					type: SourceLayerType.UNKNOWN
+					type: SourceLayerType.UNKNOWN,
 				}
 
 				ctx.insertSourceLayer('lay1', rawLayer)
 
 				initialSourceLayers.push({
 					...rawLayer,
-					_id: 'lay1'
+					_id: 'lay1',
 				})
 				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
@@ -998,7 +1007,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateSourceLayer('', {
 						name: 'test',
 						_rank: 10,
-						type: SourceLayerType.UNKNOWN
+						type: SourceLayerType.UNKNOWN,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1017,7 +1026,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateSourceLayer('fake99', {
 						name: 'test',
 						_rank: 10,
-						type: SourceLayerType.UNKNOWN
+						type: SourceLayerType.UNKNOWN,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1035,7 +1044,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const rawLayer = {
 					name: 'test98',
-					type: SourceLayerType.VT
+					type: SourceLayerType.VT,
 				}
 
 				ctx.updateSourceLayer('lay1', rawLayer)
@@ -1044,7 +1053,7 @@ describe('Test blueprint migrationContext', () => {
 					if (layer._id === 'lay1') {
 						initialSourceLayers[i] = {
 							...layer,
-							...rawLayer
+							...rawLayer,
 						}
 					}
 				})
@@ -1088,14 +1097,14 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeSourceLayer('lay1')
 
-				const expectedSourceLayers = _.filter(initialSourceLayers, layer => layer._id !== 'lay1')
+				const expectedSourceLayers = _.filter(initialSourceLayers, (layer) => layer._id !== 'lay1')
 				expect(getShowStyle(ctx).sourceLayers).toEqual(expectedSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(expectedSourceLayers)
 			})
 		})
 
 		describe('outputlayer', () => {
-			function getAllOutputLayersFromDb (showStyle: ShowStyleBase): IOutputLayer[] {
+			function getAllOutputLayersFromDb(showStyle: ShowStyleBase): IOutputLayer[] {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
 				return showStyle2.outputLayers
@@ -1134,7 +1143,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertOutputLayer('', {
 						name: 'test',
 						_rank: 10,
-						isPGM: true
+						isPGM: true,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1153,7 +1162,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertOutputLayer('pgm', {
 						name: 'test',
 						_rank: 10,
-						isPGM: true
+						isPGM: true,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1171,14 +1180,14 @@ describe('Test blueprint migrationContext', () => {
 				const rawLayer = {
 					name: 'test',
 					_rank: 10,
-					isPGM: true
+					isPGM: true,
 				}
 
 				ctx.insertOutputLayer('lay1', rawLayer)
 
 				initialOutputLayers.push({
 					...rawLayer,
-					_id: 'lay1'
+					_id: 'lay1',
 				})
 				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
@@ -1193,7 +1202,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateOutputLayer('', {
 						name: 'test',
 						_rank: 10,
-						isPGM: true
+						isPGM: true,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1212,7 +1221,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.updateOutputLayer('fake99', {
 						name: 'test',
 						_rank: 10,
-						isPGM: true
+						isPGM: true,
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1229,7 +1238,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getOutputLayer('lay1')).toBeTruthy()
 
 				const rawLayer = {
-					name: 'test98'
+					name: 'test98',
 				}
 
 				ctx.updateOutputLayer('lay1', rawLayer)
@@ -1238,7 +1247,7 @@ describe('Test blueprint migrationContext', () => {
 					if (layer._id === 'lay1') {
 						initialOutputLayers[i] = {
 							...layer,
-							...rawLayer
+							...rawLayer,
 						}
 					}
 				})
@@ -1282,14 +1291,14 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeOutputLayer('lay1')
 
-				const expectedOutputLayers = _.filter(initialOutputLayers, layer => layer._id !== 'lay1')
+				const expectedOutputLayers = _.filter(initialOutputLayers, (layer) => layer._id !== 'lay1')
 				expect(getShowStyle(ctx).outputLayers).toEqual(expectedOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(expectedOutputLayers)
 			})
 		})
 
 		describe('base-config', () => {
-			function getAllBaseConfigFromDb (showStyle: ShowStyleBase): IConfigItem[] {
+			function getAllBaseConfigFromDb(showStyle: ShowStyleBase): IConfigItem[] {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
 				return showStyle2.config
@@ -1311,13 +1320,13 @@ describe('Test blueprint migrationContext', () => {
 
 				showStyle.config.push({
 					_id: 'conf1',
-					value: 5
+					value: 5,
 				})
 				expect(ctx.getBaseConfig('conf1')).toEqual(5)
 
 				showStyle.config.push({
 					_id: 'conf2',
-					value: '   af '
+					value: '   af ',
 				})
 				expect(ctx.getBaseConfig('conf2')).toEqual('af')
 			})
@@ -1348,7 +1357,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'conf1',
-					value: 34
+					value: 34,
 				}
 				expect(ctx.getBaseConfig('conf1')).toEqual(expectedItem.value)
 
@@ -1385,7 +1394,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'conf1',
-					value: 'hello'
+					value: 'hello',
 				}
 				expect(ctx.getBaseConfig('conf1')).toEqual(expectedItem.value)
 
@@ -1456,8 +1465,10 @@ describe('Test blueprint migrationContext', () => {
 			})
 		})
 		describe('variant-config', () => {
-			function getAllVariantConfigFromDb (ctx: MigrationContextShowStyle, variantId: string): IConfigItem[] {
-				const variant = ShowStyleVariants.findOne(ctx.getVariantId(variantId)) as ShowStyleVariant
+			function getAllVariantConfigFromDb(ctx: MigrationContextShowStyle, variantId: string): IConfigItem[] {
+				const variant = ShowStyleVariants.findOne(
+					protectString(ctx.getVariantId(variantId))
+				) as ShowStyleVariant
 				expect(variant).toBeTruthy()
 				return variant.config
 			}
@@ -1487,12 +1498,12 @@ describe('Test blueprint migrationContext', () => {
 				createVariant(ctx, 'configVariant', [
 					{
 						_id: 'conf1',
-						value: 5
+						value: 5,
 					},
 					{
 						_id: 'conf2',
-						value: '   af '
-					}
+						value: '   af ',
+					},
 				])
 
 				expect(ctx.getVariantConfig('configVariant', 'conf11')).toBeFalsy()
@@ -1549,7 +1560,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'conf19',
-					value: 34
+					value: 34,
 				}
 				expect(ctx.getVariantConfig('configVariant', 'conf19')).toEqual(expectedItem.value)
 
@@ -1566,7 +1577,9 @@ describe('Test blueprint migrationContext', () => {
 					ctx.setVariantConfig('configVariant', 'confUndef', undefined as any)
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
-					expect(e.message).toBe(`[400] setVariantConfig \"configVariant\", \"confUndef\": value is undefined`)
+					expect(e.message).toBe(
+						`[400] setVariantConfig \"configVariant\", \"confUndef\": value is undefined`
+					)
 				}
 
 				// VariantConfig should not have changed
@@ -1582,7 +1595,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const expectedItem = {
 					_id: 'conf1',
-					value: 'hello'
+					value: 'hello',
 				}
 				expect(ctx.getVariantConfig('configVariant', 'conf1')).toEqual(expectedItem.value)
 
@@ -1665,7 +1678,7 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('runtimeArguments', () => {
-			function getAllRuntimeArgumentsFromDb (showStyle: ShowStyleBase): IBlueprintRuntimeArgumentsItem[] {
+			function getAllRuntimeArgumentsFromDb(showStyle: ShowStyleBase): IBlueprintRuntimeArgumentsItem[] {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
 				return showStyle2.runtimeArguments
@@ -1704,7 +1717,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertRuntimeArgument('', {
 						hotkeys: 'test',
 						property: 'bcd',
-						value: '1'
+						value: '1',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1723,7 +1736,7 @@ describe('Test blueprint migrationContext', () => {
 					ctx.insertRuntimeArgument('ra0', {
 						hotkeys: 'test',
 						property: 'bcd',
-						value: '1'
+						value: '1',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1741,14 +1754,14 @@ describe('Test blueprint migrationContext', () => {
 				const rawRa = {
 					hotkeys: 'test',
 					property: 'bcd',
-					value: '1'
+					value: '1',
 				}
 
 				ctx.insertRuntimeArgument('lay1', rawRa)
 
 				initialRuntimeArguments.push({
 					...rawRa,
-					_id: 'lay1'
+					_id: 'lay1',
 				})
 				expect(getShowStyle(ctx).runtimeArguments).toEqual(initialRuntimeArguments)
 				expect(getAllRuntimeArgumentsFromDb(showStyle)).toEqual(initialRuntimeArguments)
@@ -1762,7 +1775,7 @@ describe('Test blueprint migrationContext', () => {
 				try {
 					ctx.updateRuntimeArgument('', {
 						hotkeys: 'new',
-						value: '9'
+						value: '9',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1780,7 +1793,7 @@ describe('Test blueprint migrationContext', () => {
 				try {
 					ctx.updateRuntimeArgument('fake99', {
 						hotkeys: 'new',
-						value: '9'
+						value: '9',
 					})
 					expect(true).toBe(false) // Please throw and don't get here
 				} catch (e) {
@@ -1798,7 +1811,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const rawRa = {
 					hotkeys: 'new',
-					value: '9'
+					value: '9',
 				}
 
 				ctx.updateRuntimeArgument('lay1', rawRa)
@@ -1807,7 +1820,7 @@ describe('Test blueprint migrationContext', () => {
 					if (ra._id === 'lay1') {
 						initialRuntimeArguments[i] = {
 							...ra,
-							...rawRa
+							...rawRa,
 						}
 					}
 				})
@@ -1851,12 +1864,10 @@ describe('Test blueprint migrationContext', () => {
 				// Should not error
 				ctx.removeRuntimeArgument('lay1')
 
-				const expectedRuntimeArguments = _.filter(initialRuntimeArguments, ra => ra._id !== 'lay1')
+				const expectedRuntimeArguments = _.filter(initialRuntimeArguments, (ra) => ra._id !== 'lay1')
 				expect(getShowStyle(ctx).runtimeArguments).toEqual(expectedRuntimeArguments)
 				expect(getAllRuntimeArgumentsFromDb(showStyle)).toEqual(expectedRuntimeArguments)
 			})
 		})
-
 	})
-
 })

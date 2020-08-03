@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import * as React from 'react'
 
-import Lottie from 'react-lottie'
+import { Lottie } from '@crello/react-lottie'
 
 interface IProps {
 	inAnimation?: any
@@ -22,18 +22,18 @@ export class LottieButton extends React.Component<IProps, IState> {
 		autoplay: true,
 		animationData: {},
 		rendererSettings: {
-			preserveAspectRatio: 'xMidYMid meet'
-		}
+			preserveAspectRatio: 'xMidYMid meet',
+		},
 	}
 
-	overAnimation: object | undefined
-	outAnimation: object | undefined
+	overAnimation: { animationData: object } & object
+	outAnimation: { animationData: object } & object
 
-	constructor (props: IProps) {
+	constructor(props: IProps) {
 		super(props)
 
 		this.state = {
-			hover: false
+			hover: false,
 		}
 
 		this.buildAnimationObjects(props)
@@ -47,33 +47,39 @@ export class LottieButton extends React.Component<IProps, IState> {
 
 	onMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState({
-			hover: true
+			hover: true,
 		})
 	}
 
 	onMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState({
-			hover: false
+			hover: false,
 		})
 	}
 
-	buildAnimationObjects (props: IProps) {
+	buildAnimationObjects(props: IProps) {
 		this.overAnimation = _.extend(_.clone(this.base), {
-			animationData: props.inAnimation
+			animationData: props.inAnimation,
 		})
 		this.outAnimation = _.extend(_.clone(this.base), {
-			animationData: props.outAnimation
+			animationData: props.outAnimation,
 		})
 	}
 
-	render () {
+	render() {
 		return (
-			<div className={this.props.className} role='button'
+			<div
+				className={this.props.className}
+				role="button"
 				style={{ position: 'relative' }}
-				onClick={this.onClick} tabIndex={0}>
-				<Lottie options={this.state.hover ? this.overAnimation : this.outAnimation} isStopped={false} isPaused={false} />
+				onClick={this.onClick}
+				tabIndex={0}>
+				<Lottie config={this.state.hover ? this.overAnimation : this.outAnimation} />
 				{this.props.children}
-				<div style={{ position: 'absolute', top: '0', left: '0', right: '0', bottom: '0' }} onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}></div>
+				<div
+					style={{ position: 'absolute', top: '0', left: '0', right: '0', bottom: '0' }}
+					onMouseEnter={this.onMouseEnter}
+					onMouseLeave={this.onMouseLeave}></div>
 			</div>
 		)
 	}

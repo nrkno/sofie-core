@@ -3,7 +3,6 @@ import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 
 Meteor.onConnection((conn: Meteor.Connection) => {
-
 	let connectionId = conn.id
 	// var clientAddress = conn.clientAddress; // ip-adress
 
@@ -11,18 +10,18 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 		// called when a connection is closed
 
 		if (connectionId) {
-
 			PeripheralDevices.find({
-				connectionId: connectionId
+				connectionId: connectionId,
 			}).forEach((p) => {
-
 				// set the status of the machine to offline:
 
-				PeripheralDevices.update(p._id, {$set: {
-					lastSeen: getCurrentTime(),
-					connected: false,
-					// connectionId: ''
-				}})
+				PeripheralDevices.update(p._id, {
+					$set: {
+						lastSeen: getCurrentTime(),
+						connected: false,
+						// connectionId: ''
+					},
+				})
 			})
 		}
 	})
@@ -34,8 +33,10 @@ Meteor.startup(() => {
 		connected: true,
 		lastSeen: { $lt: getCurrentTime() - 60 * 1000 },
 	}).forEach((device: PeripheralDevice) => {
-		PeripheralDevices.update(device._id, {$set: {
-			connected: false
-		}})
+		PeripheralDevices.update(device._id, {
+			$set: {
+				connected: false,
+			},
+		})
 	})
 })

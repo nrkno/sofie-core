@@ -1,15 +1,23 @@
 import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection } from '../lib'
+import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintExternalMessageQueueObj, IBlueprintExternalMessageQueueType } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IBlueprintExternalMessageQueueObj,
+	IBlueprintExternalMessageQueueType,
+} from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { StudioId } from './Studios'
+import { RundownId } from './Rundowns'
 
-export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueObj {
-	_id: string
+/** A string, identifying a ExternalMessageQueueObj */
+export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>
+
+export interface ExternalMessageQueueObj extends ProtectedStringProperties<IBlueprintExternalMessageQueueObj, '_id'> {
+	_id: ExternalMessageQueueObjId
 	/** Id of the studio this message originates from */
-	studioId: string
+	studioId: StudioId
 	/** (Optional) id of the rundown this message originates from */
-	rundownId?: string
+	rundownId?: RundownId
 	/** At this time the message will be removed */
 	expires: Time
 	/** Time of message creation */
@@ -33,6 +41,11 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 
 	/** Type of message */
 	type: IBlueprintExternalMessageQueueType
+	/**
+	 * If set, the message won't be sent automatically.
+	 * Contains the reason for why the message was queued and not sent.
+	 */
+	queueForLaterReason?: string
 	/** Receiver details */
 	receiver: any
 	/** Messate details */
@@ -43,22 +56,24 @@ export interface ExternalMessageQueueObj extends IBlueprintExternalMessageQueueO
 	manualRetry?: boolean
 }
 
-export const ExternalMessageQueue: TransformedCollection<ExternalMessageQueueObj, ExternalMessageQueueObj>
-	= createMongoCollection<ExternalMessageQueueObj>('externalMessageQueue')
+export const ExternalMessageQueue: TransformedCollection<
+	ExternalMessageQueueObj,
+	ExternalMessageQueueObj
+> = createMongoCollection<ExternalMessageQueueObj>('externalMessageQueue')
 registerCollection('ExternalMessageQueue', ExternalMessageQueue)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		ExternalMessageQueue._ensureIndex({
 			studioId: 1,
-			created: 1
+			created: 1,
 		})
 		ExternalMessageQueue._ensureIndex({
 			sent: 1,
-			lastTry: 1
+			lastTry: 1,
 		})
 		ExternalMessageQueue._ensureIndex({
 			studioId: 1,
-			rundownId: 1
+			rundownId: 1,
 		})
 	}
 })

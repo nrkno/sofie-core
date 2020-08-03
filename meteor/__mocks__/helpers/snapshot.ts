@@ -5,18 +5,16 @@ import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns
 import { DBSegment } from '../../lib/collections/Segments'
 import { Part } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
+import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 
 // About snapshot testing: https://jestjs.io/docs/en/snapshot-testing
 
-type Data = undefined | TimelineObjGeneric | DBRundown | DBSegment | Part | Piece
+type Data = undefined | TimelineObjGeneric | DBRundownPlaylist | DBRundown | DBSegment | Part | Piece
 /**
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data
  */
-export function fixSnapshot (
-	data: Data | Array<Data>,
-	sortData?: boolean
-) {
+export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 	if (_.isArray(data)) {
 		let dataArray = _.map(data, fixSnapshot)
 		if (sortData) {
@@ -47,16 +45,14 @@ export function fixSnapshot (
 			if (o.content) {
 				delete o.content['modified']
 				delete o.content['objHash']
-
 			}
-			if (
-				o.metadata &&
-				o.metadata.versions &&
-				o.metadata.versions.core
-			) {
+			if (o.metaData && o.metaData.versions && o.metaData.versions.core) {
 				// re-write the core version so something static, so tests won't fail just because the version has changed
-				o.metadata.versions.core = '0.0.0-test'
+				o.metaData.versions.core = '0.0.0-test'
 			}
+		} else if (isPlaylist(o)) {
+			delete o['created']
+			delete o['modified']
 		} else if (isRundown(o)) {
 			delete o['created']
 			delete o['modified']
@@ -64,41 +60,28 @@ export function fixSnapshot (
 				// re-write the core version so something static, so tests won't fail just because the version has changed
 				o.importVersions.core = '0.0.0-test'
 			}
-		// } else if (isPiece(o)) {
-		// } else if (isPart(o)) {
-		// } else if (isSegment(o)) {
+			// } else if (isPiece(o)) {
+			// } else if (isPart(o)) {
+			// } else if (isSegment(o)) {
 		}
 		return o
 	}
 }
-function isTimelineObj (o): o is TimelineObjGeneric {
+function isTimelineObj(o): o is TimelineObjGeneric {
 	return o.enable && o._id && o.id && o.studioId
 }
-function isRundown (o): o is DBRundown {
-	return o._id && _.has(o, 'currentPartId')
+function isPlaylist(o): o is DBRundownPlaylist {
+	return o._id && _.has(o, 'currentPartInstanceId')
 }
-function isSegment (o): o is DBSegment {
-	return (
-		o._id &&
-		_.has(o, 'rundownId') &&
-		_.has(o, 'externalId') &&
-		_.has(o, 'name')
-	)
+function isRundown(o): o is DBRundown {
+	return o._id && _.has(o, 'playlistId')
 }
-function isPart (o): o is Part {
-	return (
-		o._id &&
-		_.has(o, 'rundownId') &&
-		_.has(o, 'externalId') &&
-		_.has(o, 'segmentId') &&
-		_.has(o, 'title')
-	)
+function isSegment(o): o is DBSegment {
+	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'name')
 }
-function isPiece (o): o is Piece {
-	return (
-		o._id &&
-		_.has(o, 'rundownId') &&
-		_.has(o, 'externalId') &&
-		_.has(o, 'partId')
-	)
+function isPart(o): o is Part {
+	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'segmentId') && _.has(o, 'title')
+}
+function isPiece(o): o is Piece {
+	return o._id && _.has(o, 'rundownId') && _.has(o, 'externalId') && _.has(o, 'partId')
 }

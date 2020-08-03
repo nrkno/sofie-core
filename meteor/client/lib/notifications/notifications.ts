@@ -1,13 +1,12 @@
-/// <reference path="../../../lib/typings/reactivearray.d.ts" />
-
 import { ReactiveVar } from 'meteor/reactive-var'
 import * as _ from 'underscore'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import { EventEmitter } from 'events'
-import { Time } from '../../../lib/lib'
+import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
 import { HTMLAttributes } from 'react'
+import { SegmentId } from '../../../lib/collections/Segments'
 
 /**
  * Priority level for Notifications.
@@ -23,7 +22,7 @@ export enum NoticeLevel {
 	/** Confirmation of a successful operation and general informations. */
 	NOTIFICATION = 3,
 	/** Tips to the user */
-	TIP = 4
+	TIP = 4,
 }
 
 /**
@@ -46,13 +45,13 @@ export interface NotificationAction {
 /** A source of notifications */
 export type Notifier = () => NotificationList
 
-const notifiers: {[index: string]: NotifierHandle} = {}
+const notifiers: { [index: string]: NotifierHandle } = {}
 
-const notifications: {[index: string]: Notification} = {}
+const notifications: { [index: string]: Notification } = {}
 const notificationsDep: Tracker.Dependency = new Tracker.Dependency()
 
 interface NotificationHandle {
-	id: string,
+	id: string
 	stop: () => void
 }
 
@@ -63,9 +62,7 @@ interface NotificationHandle {
  * @class NotificationList
  * @extends {ReactiveVar<Notification[]>}
  */
-export class NotificationList extends ReactiveVar<Notification[]> {
-
-}
+export class NotificationList extends ReactiveVar<Notification[]> {}
 
 /**
  * A handle object to a registered notifier.
@@ -85,15 +82,15 @@ export class NotifierHandle {
 	 * @param {Notifier} source
 	 * @memberof NotifierHandle
 	 */
-	constructor (notifierId: string, source: Notifier) {
+	constructor(notifierId: string, source: Notifier) {
 		this.id = notifierId
 		this.source = source
-		this.handle = Tracker.nonreactive(() => {
+		this.handle = (Tracker.nonreactive(() => {
 			return Tracker.autorun(() => {
 				this.result = source().get()
 				notificationsDep.changed()
 			})
-		}) as any as Tracker.Computation
+		}) as any) as Tracker.Computation
 
 		notifiers[notifierId] = this
 	}
@@ -103,7 +100,7 @@ export class NotifierHandle {
 	 *
 	 * @memberof NotifierHandle
 	 */
-	stop (): void {
+	stop(): void {
 		this.handle.stop()
 
 		delete notifiers[this.id]
@@ -112,6 +109,7 @@ export class NotifierHandle {
 	}
 }
 
+type NotificationsSource = SegmentId | string | undefined
 /**
  * Singleton handling all the notifications.
  *
@@ -121,22 +119,22 @@ class NotificationCenter0 {
 	/** Default notification timeout for non-persistent notifications */
 	private NOTIFICATION_TIMEOUT = 5000
 	/** The highlighted source of notifications */
-	private highlightedSource: ReactiveVar<string | undefined>
+	private highlightedSource: ReactiveVar<NotificationsSource>
 	/** The highlighted level of highlighted level */
 	private highlightedLevel: ReactiveVar<NoticeLevel>
 
 	private _isOpen: boolean = false
 
-	constructor () {
-		this.highlightedSource = new ReactiveVar<string>('')
+	constructor() {
+		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
 	}
 
-	get isOpen (): boolean {
+	get isOpen(): boolean {
 		return this._isOpen
 	}
 
-	set isOpen (value: boolean) {
+	set isOpen(value: boolean) {
 		this._isOpen = value
 
 		if (value) NotificationCenter.snoozeAll()
@@ -149,7 +147,7 @@ class NotificationCenter0 {
 	 * @returns {NotifierHandle} The handler than can be used to unregister a notifier.
 	 * @memberof NotificationCenter0
 	 */
-	registerNotifier (source: Notifier): NotifierHandle {
+	registerNotifier(source: Notifier): NotifierHandle {
 		const notifierId = Random.id()
 
 		return new NotifierHandle(notifierId, source)
@@ -162,7 +160,7 @@ class NotificationCenter0 {
 	 * @returns {NotificationHandle} The handler that can be used to drop the notification.
 	 * @memberof NotificationCenter0
 	 */
-	push (notice: Notification): NotificationHandle {
+	push(notice: Notification): NotificationHandle {
 		const id = notice.id || Random.id()
 		notifications[id] = notice
 		notice.id = id
@@ -180,7 +178,7 @@ class NotificationCenter0 {
 			id,
 			stop: () => {
 				this.drop(id)
-			}
+			},
 		}
 	}
 
@@ -190,7 +188,7 @@ class NotificationCenter0 {
 	 * @param {string} id The ID of a notification
 	 * @memberof NotificationCenter0
 	 */
-	drop (id: string): void {
+	drop(id: string): void {
 		if (notifications[id]) {
 			notifications[id].emit('dropped')
 			delete notifications[id]
@@ -206,14 +204,15 @@ class NotificationCenter0 {
 	 * @returns {Array<Notification>}
 	 * @memberof NotificationCenter0
 	 */
-	getNotifications (): Array<Notification> {
+	getNotifications(): Array<Notification> {
 		notificationsDep.depend()
 
-		return _.flatten(_.map(notifiers, (item, key) => {
-			item.result.forEach(i => this._isOpen && !i.snoozed && i.snooze())
-			return item.result
-		})
-		.concat(_.map(notifications, (item, key) => item)))
+		return _.flatten(
+			_.map(notifiers, (item, key) => {
+				item.result.forEach((i) => this._isOpen && !i.snoozed && i.snooze())
+				return item.result
+			}).concat(_.map(notifications, (item, key) => item))
+		)
 	}
 
 	/**
@@ -222,10 +221,16 @@ class NotificationCenter0 {
 	 * @returns {number}
 	 * @memberof NotificationCenter0
 	 */
-	count (): number {
+	count(): number {
 		notificationsDep.depend()
 
-		return _.reduce(_.map(notifiers, (item) => item.result.length), (a, b) => a + b, 0) + _.values(notifications).length
+		return (
+			_.reduce(
+				_.map(notifiers, (item) => item.result.length),
+				(a, b) => a + b,
+				0
+			) + _.values(notifications).length
+		)
 	}
 
 	/**
@@ -233,7 +238,7 @@ class NotificationCenter0 {
 	 *
 	 * @memberof NotificationCenter0
 	 */
-	snoozeAll () {
+	snoozeAll() {
 		const n = this.getNotifications()
 		n.forEach((item) => item.snooze())
 	}
@@ -245,7 +250,7 @@ class NotificationCenter0 {
 	 * @param {NoticeLevel} level
 	 * @memberof NotificationCenter0
 	 */
-	highlightSource (source: string | undefined, level: NoticeLevel) {
+	highlightSource(source: SegmentId | undefined, level: NoticeLevel) {
 		this.highlightedSource.set(source)
 		this.highlightedLevel.set(level)
 	}
@@ -256,7 +261,7 @@ class NotificationCenter0 {
 	 * @returns
 	 * @memberof NotificationCenter0
 	 */
-	getHighlightedSource () {
+	getHighlightedSource() {
 		return this.highlightedSource.get()
 	}
 
@@ -266,7 +271,7 @@ class NotificationCenter0 {
 	 * @returns
 	 * @memberof NotificationCenter0
 	 */
-	getHighlightedLevel () {
+	getHighlightedLevel() {
 		return this.highlightedLevel.get()
 	}
 
@@ -276,7 +281,7 @@ class NotificationCenter0 {
 	 * @param {Notification} notice
 	 * @memberof NotificationCenter0
 	 */
-	private timeout (notice: Notification): void {
+	private timeout(notice: Notification): void {
 		Meteor.setTimeout(() => {
 			if (notice) {
 				const id = notice.id
@@ -301,7 +306,7 @@ export class Notification extends EventEmitter {
 	id: string | undefined
 	status: NoticeLevel
 	message: string | React.ReactElement<HTMLElement> | null
-	source: string
+	source: NotificationsSource
 	persistent?: boolean
 	timeout?: number
 	snoozed?: boolean
@@ -309,11 +314,11 @@ export class Notification extends EventEmitter {
 	created: Time
 	rank: number
 
-	constructor (
-		id: string | undefined,
+	constructor(
+		id: string | ProtectedString<any> | undefined,
 		status: NoticeLevel,
 		message: string | React.ReactElement<HTMLElement> | null,
-		source: string,
+		source: NotificationsSource,
 		created?: Time,
 		persistent?: boolean,
 		actions?: Array<NotificationAction>,
@@ -322,7 +327,7 @@ export class Notification extends EventEmitter {
 	) {
 		super()
 
-		this.id = id
+		this.id = isProtectedString(id) ? unprotectString(id) : id
 		this.status = status
 		this.message = message
 		this.source = source
@@ -342,9 +347,12 @@ export class Notification extends EventEmitter {
 	 * @returns {boolean}
 	 * @memberof Notification
 	 */
-	static isEqual (a: Notification | undefined, b: Notification | undefined): boolean {
-		if ((typeof a) !== (typeof b)) return false
-		return _.isEqual(_.omit(a, ['created', 'snoozed', 'actions', '_events']), _.omit(b, ['created', 'snoozed', 'actions', '_events']))
+	static isEqual(a: Notification | undefined, b: Notification | undefined): boolean {
+		if (typeof a !== typeof b) return false
+		return _.isEqual(
+			_.omit(a, ['created', 'snoozed', 'actions', '_events']),
+			_.omit(b, ['created', 'snoozed', 'actions', '_events'])
+		)
 	}
 
 	/**
@@ -356,9 +364,13 @@ export class Notification extends EventEmitter {
 	 * @returns {number}
 	 * @memberof Notification
 	 */
-	static compare (a: Notification, b: Notification): number {
-		return (!!a.persistent === !!b.persistent ? 0 : a.persistent && !b.persistent ? 1 : -1) ||
-			   (a.status - b.status) || (a.rank - b.rank) || (a.created - b.created)
+	static compare(a: Notification, b: Notification): number {
+		return (
+			(!!a.persistent === !!b.persistent ? 0 : a.persistent && !b.persistent ? 1 : -1) ||
+			a.status - b.status ||
+			a.rank - b.rank ||
+			a.created - b.created
+		)
 	}
 
 	/**
@@ -366,7 +378,7 @@ export class Notification extends EventEmitter {
 	 *
 	 * @memberof Notification
 	 */
-	snooze () {
+	snooze() {
 		this.snoozed = true
 		notificationsDep.changed()
 		this.emit('snoozed', this)
@@ -377,7 +389,7 @@ export class Notification extends EventEmitter {
 	 *
 	 * @memberof Notification
 	 */
-	drop () {
+	drop() {
 		if (this.id) {
 			NotificationCenter.drop(this.id)
 		}
@@ -390,12 +402,11 @@ export class Notification extends EventEmitter {
 	 * @param {*} event
 	 * @memberof Notification
 	 */
-	action (type: string, event: any) {
+	action(type: string, event: any) {
 		this.emit('action', this, type, event)
 	}
-
 }
 
-window['testNotification'] = function () {
-	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', 'test'))
+window['testNotification'] = function() {
+	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', protectString('test')))
 }

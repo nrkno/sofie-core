@@ -1,12 +1,12 @@
 import * as _ from 'underscore'
-import * as moment from 'moment'
-import { SaferEval } from 'safer-eval'
+import moment from 'moment'
+import { VM } from 'vm2'
 import { logger } from '../../logging'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
 	SomeBlueprintManifest,
@@ -15,32 +15,35 @@ import {
 	SystemBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
-import { makePromise, rateLimit, cacheResult } from '../../../lib/lib'
+import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../lib/lib'
 
-const blueprintCache: {[id: string]: Cache} = {}
+const blueprintCache: { [id: string]: Cache } = {}
 interface Cache {
-	modified: number,
-	fcn: SomeBlueprintManifest
+	modified: number
+	manifest: SomeBlueprintManifest
 }
 
+export const BLUEPRINT_CACHE_CONTROL = { disable: false }
+
 export interface WrappedSystemBlueprint {
-	blueprintId: string
+	blueprintId: BlueprintId
 	blueprint: SystemBlueprintManifest
 }
 export interface WrappedStudioBlueprint {
-	blueprintId: string
+	blueprintId: BlueprintId
 	blueprint: StudioBlueprintManifest
 }
 export interface WrappedShowStyleBlueprint {
-	blueprintId: string
+	blueprintId: BlueprintId
 	blueprint: ShowStyleBlueprintManifest
 }
 
-export function loadSystemBlueprints (system: ICoreSystem): WrappedSystemBlueprint | undefined {
+export function loadSystemBlueprints(system: ICoreSystem): WrappedSystemBlueprint | undefined {
 	if (!system.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(system.blueprintId)
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${system.blueprintId}" not found! (referenced by CoreSystem)`)
+	if (!blueprint)
+		throw new Meteor.Error(404, `Blueprint "${system.blueprintId}" not found! (referenced by CoreSystem)`)
 
 	if (blueprint.blueprintType !== BlueprintManifestType.SYSTEM) {
 		throw new Meteor.Error(500, `Blueprint "${system.blueprintId}" is not valid for a CoreSystem!`)
@@ -48,16 +51,19 @@ export function loadSystemBlueprints (system: ICoreSystem): WrappedSystemBluepri
 
 	return {
 		blueprintId: system.blueprintId,
-		blueprint: blueprint
+		blueprint: blueprint,
 	}
 }
 
-export function loadStudioBlueprints (studio: Studio): WrappedStudioBlueprint | undefined {
+export function loadStudioBlueprints(studio: Studio): WrappedStudioBlueprint | undefined {
 	if (!studio.blueprintId) return undefined
 
 	const blueprint = loadBlueprintsById(studio.blueprintId)
 	if (!blueprint) {
-		throw new Meteor.Error(404, `Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+		throw new Meteor.Error(
+			404,
+			`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`
+		)
 	}
 
 	if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) {
@@ -66,53 +72,63 @@ export function loadStudioBlueprints (studio: Studio): WrappedStudioBlueprint | 
 
 	return {
 		blueprintId: studio.blueprintId,
-		blueprint: blueprint
+		blueprint: blueprint,
 	}
 }
 
-export function getBlueprintOfRundownAsync (rundown: Rundown): Promise<WrappedShowStyleBlueprint> {
+export function getBlueprintOfRundownAsync(rundown: Rundown): Promise<WrappedShowStyleBlueprint> {
 	return makePromise(() => {
 		return getBlueprintOfRundown(rundown)
 	})
 }
-export function getBlueprintOfRundown (rundown: Rundown, noCache?: boolean): WrappedShowStyleBlueprint {
-
+export function getBlueprintOfRundown(rundown: Rundown, noCache?: boolean): WrappedShowStyleBlueprint {
 	const fcn = () => {
-		if (!rundown.showStyleBaseId) throw new Meteor.Error(400, `Rundown "${rundown._id}" is missing showStyleBaseId!`)
+		if (!rundown.showStyleBaseId)
+			throw new Meteor.Error(400, `Rundown "${rundown._id}" is missing showStyleBaseId!`)
 		let showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`)
+		if (!showStyleBase)
+			throw new Meteor.Error(
+				404,
+				`ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`
+			)
 		return loadShowStyleBlueprints(showStyleBase)
 	}
 
-	if (noCache) {
+	if (noCache || BLUEPRINT_CACHE_CONTROL.disable) {
 		return fcn()
 	} else {
 		return cacheResult(`rundownBlueprint_${rundown._id}`, fcn, 1000)
 	}
 }
 
-export function loadShowStyleBlueprints (showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
+export function loadShowStyleBlueprints(showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
 	if (!showStyleBase.blueprintId) {
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
 	}
 
 	const blueprint = loadBlueprintsById(showStyleBase.blueprintId)
 	if (!blueprint) {
-		throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`)
+		throw new Meteor.Error(
+			404,
+			`Blueprint "${showStyleBase.blueprintId}" not found! (referenced by ShowStyleBase "${showStyleBase._id}")`
+		)
 	}
 
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) {
-		throw new Meteor.Error(500, `Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}"!`)
+		throw new Meteor.Error(
+			500,
+			`Blueprint "${showStyleBase.blueprintId}" is not valid for a ShowStyle "${showStyleBase._id}"!`
+		)
 	}
 
 	return {
 		blueprintId: showStyleBase.blueprintId,
-		blueprint: blueprint
+		blueprint: blueprint,
 	}
 }
 
-function loadBlueprintsById (id: string): SomeBlueprintManifest | undefined {
-	const blueprint = Blueprints.findOne(id)
+function loadBlueprintsById(blueprintId: BlueprintId): SomeBlueprintManifest | undefined {
+	const blueprint = Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
 
 	if (blueprint.code) {
@@ -122,14 +138,14 @@ function loadBlueprintsById (id: string): SomeBlueprintManifest | undefined {
 			throw new Meteor.Error(402, 'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
 		}
 	} else {
-		throw new Meteor.Error(500, `Blueprint "${id}" code not set!`)
+		throw new Meteor.Error(500, `Blueprint "${blueprintId}" code not set!`)
 	}
 }
-export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
+export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	let cached: Cache | null = null
-	if (!noCache) {
+	if (!noCache && !BLUEPRINT_CACHE_CONTROL.disable) {
 		// First, check if we've got the function cached:
-		cached = blueprintCache[blueprint._id] ? blueprintCache[blueprint._id] : null
+		cached = blueprintCache[unprotectString(blueprint._id)] ? blueprintCache[unprotectString(blueprint._id)] : null
 		if (cached && (!cached.modified || cached.modified !== blueprint.modified)) {
 			// the function has been updated, invalidate it then:
 			cached = null
@@ -137,16 +153,17 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBl
 	}
 
 	if (cached) {
-		return cached.fcn
+		return cached.manifest
 	} else {
-		// Inject some commonly used libraries, so that they don't have to be bundled into the blueprints
-		const context = {
-			_,
-			moment,
-		}
+		const vm = new VM({
+			sandbox: {
+				_,
+				moment,
+			},
+		})
 
-		const entry = new SaferEval(context, { filename: (blueprint.name || blueprint._id) + '.js' }).runInContext(blueprint.code)
-		let manifest = entry.default
+		const entry = vm.run(blueprint.code, `db/blueprint/${blueprint.name || blueprint._id}.js`)
+		const manifest: SomeBlueprintManifest = entry.default
 
 		// Wrap the functions, to emit better errors
 		_.each(_.keys(manifest), (key) => {
@@ -165,6 +182,10 @@ export function evalBlueprints (blueprint: Blueprint, noCache?: boolean): SomeBl
 			}
 		})
 
+		blueprintCache[unprotectString(blueprint._id)] = {
+			manifest,
+			modified: blueprint.modified,
+		}
 		return manifest
 	}
 }

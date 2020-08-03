@@ -1,23 +1,23 @@
 body.tv2 {
-	--general-live-color: #C40000;
+	--general-live-color: #c40000;
 	//--general-next-color: #FF0000;
-	--general-next-color: #00AC17;
+	--general-next-color: #00ac17;
 
 	//--general-live-remote-color: #8d008d;
-	--general-live-remote-color: #AC29A5;
+	--general-live-remote-color: #ac29a5;
 	--general-live-guest-color: #00a97f;
 
 	--segment-layer-background-camera: #005919;
 	--segment-layer-background-camera--second: lighten(#005919, 20%);
-	--segment-layer-background-lower-third: #AF4900;
-	--segment-layer-background-lower-third--second: darken(#AF4900, 20%);
-	--segment-layer-background-graphics: #CA9D00;
-	--segment-layer-background-graphics--second: darken(#CA9D00, 20%);
+	--segment-layer-background-lower-third: #af4900;
+	--segment-layer-background-lower-third--second: darken(#af4900, 20%);
+	--segment-layer-background-graphics: #ca9d00;
+	--segment-layer-background-graphics--second: darken(#ca9d00, 20%);
 	--segment-layer-background-live-speak: #370020;
-	--segment-layer-background-remote: #AC29A5;
-	--segment-layer-background-remote--second: darken(#AC29A5, 20%);
-	--segment-layer-background-vt: #1769FF;
-	--segment-layer-background-vt--second: darken(#1769FF, 20%);
+	--segment-layer-background-remote: #ac29a5;
+	--segment-layer-background-remote--second: darken(#ac29a5, 20%);
+	--segment-layer-background-vt: #1769ff;
+	--segment-layer-background-vt--second: darken(#1769ff, 20%);
 	--segment-layer-background-script: #370020;
 	--segment-layer-background-mic: #00a97f;
 	--segment-layer-background-guest: #00a97f;
@@ -48,9 +48,13 @@ body.tv2 {
 		grid-template-columns: [segment-name] 16.875em [segment-group-controls] 10em [timeline] auto [end];
 		grid-template-rows: [header] 1.8em [main-view] auto [zoom-area] auto [end];
 
+		.segment-timeline__title__label.identifier::before {
+			display: none;
+		}
+
 		.segment-timeline__liveline {
 			bottom: 0;
-			
+
 			.segment-timeline__liveline__label {
 				z-index: 3;
 			}
@@ -117,7 +121,8 @@ body.tv2 {
 			padding-top: 0.2em;
 		}
 
-		.segment-timeline__output-layers, .segment-timeline__timeline {
+		.segment-timeline__output-layers,
+		.segment-timeline__timeline {
 			padding: 1.8em 0 0em;
 		}
 
@@ -168,14 +173,22 @@ body.tv2 {
 			&.live {
 				.segment-timeline__title {
 					> h2 {
-						background: linear-gradient(to top, var(--segment-layer-background-guest) 5px, var(--general-live-color) 5px);
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-guest) 5px,
+							var(--general-live-color) 5px
+						);
 					}
 				}
 			}
 			&.next {
 				.segment-timeline__title {
 					> h2 {
-						background: linear-gradient(to top, var(--segment-layer-background-guest) 5px, var(--general-next-color) 5px);
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-guest) 5px,
+							var(--general-next-color) 5px
+						);
 					}
 				}
 			}
@@ -195,20 +208,37 @@ body.tv2 {
 			&.live {
 				.segment-timeline__title {
 					> h2 {
-						background: linear-gradient(to top, var(--segment-layer-background-remote) 5px, var(--general-live-color) 5px);
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-remote) 5px,
+							var(--general-live-color) 5px
+						);
 					}
 				}
 			}
 			&.next {
 				.segment-timeline__title {
 					> h2 {
-						background: linear-gradient(to top, var(--segment-layer-background-remote) 5px, var(--general-next-color) 5px);
+						background: linear-gradient(
+							to top,
+							var(--segment-layer-background-remote) 5px,
+							var(--general-next-color) 5px
+						);
 					}
 				}
 			}
 		}
+
+		.segment-timeline__piece-appendage {
+			&.script-line {
+				&.at-end {
+					opacity: 0;
+				}
+			}
+		}
 	}
-	.segment-timeline.next, .segment-timeline.live {
+	.segment-timeline.next,
+	.segment-timeline.live {
 		.segment-timeline__timeUntil {
 			transition: 0s color;
 			color: #fff;
@@ -219,14 +249,13 @@ body.tv2 {
 		top: 16px;
 	}
 	.header.rundown.not-active .first-row {
-		background-color: #1F2021;
+		background-color: #1f2021;
 
 		.timing .timing-clock .timing-clock-label {
-
 		}
 	}
 	.header.rundown.active.rehearsal .first-row {
-		background-color: #CBCCCD;
+		background-color: #cbcccd;
 
 		.links > a {
 			color: #333;
@@ -243,9 +272,8 @@ body.tv2 {
 			.timing-clock-label {
 				font-weight: 400;
 				color: #000;
-
 			}
-			
+
 			&.heavy-light {
 				font-weight: 600;
 
@@ -253,7 +281,7 @@ body.tv2 {
 					color: var(--general-fast-color);
 				}
 				&.heavy {
-					color: #FFE900;
+					color: #ffe900;
 				}
 			}
 		}
@@ -274,7 +302,8 @@ body.tv2 {
 		}
 	}
 	.dashboard-panel__panel__button {
-		&.source-broken, &.source-missing {
+		&.source-broken,
+		&.source-missing {
 			&::after {
 				border-radius: 3px;
 				top: 4px;
@@ -309,5 +338,9 @@ body.tv2 {
 	}
 	.rundown-view + .notification-pop-ups {
 		top: 3.375rem;
+	}
+
+	.rundown-view__shelf__contents__pane.shelf-inspector {
+		display: none;
 	}
 }

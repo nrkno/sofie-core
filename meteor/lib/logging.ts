@@ -1,4 +1,6 @@
 import { Meteor } from 'meteor/meteor'
+import { MeteorCall } from './api/methods'
+import * as _ from 'underscore'
 
 export interface LoggerInstanceFixed {
 	error: LeveledLogMethodFixed
@@ -29,6 +31,20 @@ let logger: LoggerInstanceFixed
 if (Meteor.isServer) {
 	let getLogMethod = (type) => {
 		return (...args) => {
+			args = _.map(args, (arg) => {
+				if (_.isObject(arg)) {
+					if (arg.toString) {
+						return arg.toString() + ' ' + arg.stack
+					}
+					try {
+						return JSON.stringify(arg)
+					} catch (e) {
+						return `[object: cant stringify: ${e}]`
+					}
+				} else {
+					return '' + arg
+				}
+			})
 			return Meteor.call('logger', type, ...args)
 		}
 	}
@@ -49,14 +65,12 @@ if (Meteor.isServer) {
 		alert: getLogMethod('alert'),
 		crit: getLogMethod('crit'),
 		warning: getLogMethod('warn'),
-		notice: getLogMethod('notice')
+		notice: getLogMethod('notice'),
 	}
 } else {
 	let getLogMethod = (type) => {
 		return (...args) => {
 			console.log(type, ...args)
-			// TODO: Maybe add sending logs to server here?
-			// Meteor.call('logger', type, ...args)
 			return logger
 		}
 	}
@@ -82,7 +96,7 @@ if (Meteor.isServer) {
 		alert: getLogMethod('alert'),
 		crit: getLogMethod('crit'),
 		warning: getLogMethod('warn'),
-		notice: getLogMethod('notice')
+		notice: getLogMethod('notice'),
 	}
 	// @ts-ignore localStorage
 	if (localStorage && localStorage.getItem('developerMode') !== '1') {

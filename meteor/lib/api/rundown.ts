@@ -1,11 +1,50 @@
-import { Rundown } from '../collections/Rundowns'
+import { Rundown, RundownId } from '../collections/Rundowns'
 import { NoteType } from './notes'
 import * as _ from 'underscore'
+import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
+import { SegmentId } from '../collections/Segments'
+
+export interface RundownPlaylistValidateBlueprintConfigResult {
+	studio: string[]
+	showStyles: Array<{
+		id: string
+		name: string
+		checkFailed: boolean
+		fields: string[]
+	}>
+}
+
+export interface NewRundownAPI {
+	removeRundownPlaylist(playlistId: RundownPlaylistId): Promise<void>
+	resyncRundownPlaylist(playlistId: RundownPlaylistId): Promise<ReloadRundownPlaylistResponse>
+	rundownPlaylistNeedsResync(playlistId: RundownPlaylistId): Promise<string[]>
+	rundownPlaylistValidateBlueprintConfig(
+		playlistId: RundownPlaylistId
+	): Promise<RundownPlaylistValidateBlueprintConfigResult>
+	removeRundown(rundownId: RundownId): Promise<void>
+	resyncRundown(rundownId: RundownId): Promise<TriggerReloadDataResponse>
+	resyncSegment(segmentId: SegmentId): Promise<TriggerReloadDataResponse>
+	unsyncRundown(rundownId: RundownId): Promise<void>
+	unsyncSegment(rundownId: RundownId, segmentId: SegmentId): Promise<void>
+}
+
+export enum RundownAPIMethods {
+	'removeRundownPlaylist' = 'rundown.removeRundownPlaylist',
+	'resyncRundownPlaylist' = 'rundown.resyncRundownPlaylist',
+	'rundownPlaylistNeedsResync' = 'rundown.rundownPlaylistNeedsResync',
+	'rundownPlaylistValidateBlueprintConfig' = 'rundown.rundownPlaylistValidateBlueprintConfig',
+
+	'removeRundown' = 'rundown.removeRundown',
+	'resyncRundown' = 'rundown.resyncRundown',
+	'resyncSegment' = 'rundown.resyncSegment',
+	'unsyncRundown' = 'rundown.unsyncRundown',
+	'unsyncSegment' = 'rundown.unsyncSegment',
+}
 
 export namespace RundownAPI {
 	/** A generic list of playback availability statuses for a Piece */
 	export enum PieceStatusCode {
-
 		/** No status has been determined (yet) */
 		UNKNOWN = -1,
 		/** No fault with piece, can be played */
@@ -15,19 +54,12 @@ export namespace RundownAPI {
 		/** The source is present, but should not be played due to a technical malfunction (file is broken, camera robotics failed, REMOTE input is just bars, etc.) */
 		SOURCE_BROKEN = 2,
 		/** Source not set - the source object is not set to an actual source */
-		SOURCE_NOT_SET = 3
-	}
-
-	export enum methods {
-		'removeRundown' = 'rundown.removeRundown',
-		'resyncRundown' = 'rundown.resyncRundown',
-		'unsyncRundown' = 'rundown.unsyncRundown',
-		'rundownNeedsUpdating' = 'rundown.rundownNeedsUpdating'
+		SOURCE_NOT_SET = 3,
 	}
 }
 
 /** Run function in context of a rundown. If an error is encountered, the runnningOrder will be notified */
-export function runInRundownContext<T> (rundown: Rundown, fcn: () => T, errorInformMessage?: string): T {
+export function runInRundownContext<T>(rundown: Rundown, fcn: () => T, errorInformMessage?: string): T {
 	try {
 		const result = fcn() as any
 		if (_.isObject(result) && result.then && result.catch) {
@@ -46,17 +78,14 @@ export function runInRundownContext<T> (rundown: Rundown, fcn: () => T, errorInf
 		throw e
 	}
 }
-function handleRundownContextError (rundown: Rundown, errorInformMessage: string | undefined, error: any) {
+function handleRundownContextError(rundown: Rundown, errorInformMessage: string | undefined, error: any) {
 	rundown.appendNote({
 		type: NoteType.ERROR,
-		message: (
-			errorInformMessage ?
-			errorInformMessage :
-			'Something went wrong when processing data this rundown.'
-		) + `Error message: ${(error || 'N/A').toString()}`,
+		message:
+			(errorInformMessage ? errorInformMessage : 'Something went wrong when processing data this rundown.') +
+			`Error message: ${(error || 'N/A').toString()}`,
 		origin: {
 			name: rundown.name,
-			rundownId: rundown._id
-		}
+		},
 	})
 }

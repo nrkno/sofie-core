@@ -1,8 +1,8 @@
-@import "../colorScheme";
-@import "../itemTypeColors";
+@import '../colorScheme';
+@import '../itemTypeColors';
 
 :root {
-	--adlib-item-selected-color: #009DFF; 
+	--adlib-item-selected-color: #009dff;
 }
 
 $adlib-item-selected-color: var(--adlib-item-selected-color);
@@ -39,7 +39,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				display: none;
 				content: ' ';
 				background: inherit;
-				width:0.7em;
+				width: 0.7em;
 				top: 0;
 				right: -0.7em;
 				bottom: 0;
@@ -89,14 +89,14 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 			> .adlib-panel__list-view__toolbar__filter__input {
 				width: 100%;
-				background: #2D2D2D;
+				background: #2d2d2d;
 				border: 1px solid #424242;
 				border-radius: 2em;
 				box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) inset, 1px 1px 2px rgba(0, 0, 0, 0.2);
 				line-height: 1.8em;
 				padding: 0 1em;
 				color: #fff;
-				
+
 				&:hover {
 					background: #3b3b3b;
 					transition: 0.2s background-color;
@@ -139,6 +139,9 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 	}
 
 	> .adlib-panel__list-view__list {
+		display: grid;
+		grid-template-columns: 3fr 1fr;
+
 		grid-column: list-view / end;
 		grid-row: list-view / end;
 		position: relative;
@@ -152,10 +155,10 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 		> .adlib-panel__list-view__list__table {
 			position: relative;
 			display: block;
-			width: 100%;
 			max-height: 100%;
 			overflow-y: auto;
-    		overflow-x: hidden;
+			overflow-x: hidden;
+			grid-column: 1 / 3;
 
 			&.adlib-panel__list-view__list__table--header {
 				position: relative;
@@ -175,7 +178,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 					> th {
 						font-weight: 400;
 						border-left: 1px solid transparent;
-    					border-right: 1px solid transparent;
+						border-right: 1px solid transparent;
 					}
 				}
 			}
@@ -190,11 +193,19 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 				@include missing-overlay();
 
 				&.live-speak {
-					background: linear-gradient(to bottom, var(--segment-layer-background-vt) 50%, var(--$segment-layer-background-camera) 50.0001%);
+					background: linear-gradient(
+						to bottom,
+						var(--segment-layer-background-vt) 50%,
+						var(--$segment-layer-background-camera) 50.0001%
+					);
 				}
 
 				&.splits {
-					background: linear-gradient(to right, var(--$segment-layer-background-camera) 50%, var(--$segment-layer-background-remote) 50.0001%);
+					background: linear-gradient(
+						to right,
+						var(--$segment-layer-background-camera) 50%,
+						var(--$segment-layer-background-remote) 50.0001%
+					);
 				}
 			}
 			.adlib-panel__list-view__list__table__cell--shortcut {
@@ -210,9 +221,6 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			.adlib-panel__list-view__list__table__cell--name {
 				width: auto;
 				max-width: none;
-			}
-			.adlib-panel__list-view__list__table__cell--data {
-
 			}
 			.adlib-panel__list-view__list__table__cell--resolution {
 				width: 9%;
@@ -239,7 +247,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 				border-collapse: separate;
 				position: relative;
-				
+
 				> .adlib-panel__list-view__list__seg-header {
 					display: table;
 					width: 100%;
@@ -254,7 +262,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 				&.live {
 					border-left: 2px solid $general-live-color;
-					
+
 					> .adlib-panel__list-view__list__seg-header > td {
 						background: $general-live-color;
 						color: #000;
@@ -264,7 +272,7 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 				&.next {
 					border-left: 2px solid $general-next-color;
-					
+
 					> .adlib-panel__list-view__list__seg-header > td {
 						background: $general-next-color;
 						color: #fff;
@@ -275,9 +283,9 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 				> .adlib-panel__list-view__list__segment__item {
 					display: table;
-    				position: relative;
+					position: relative;
 					width: 100%;
-					
+
 					> td {
 						border: 1px solid #000;
 						line-height: 2em;
@@ -308,13 +316,14 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 							border: 1px solid $adlib-item-selected-color;
 						}
 					}
-					
+
 					@include invalid-overlay();
+					@include floated-overlay();
 				}
 
 				.adlib-panel__list-view__list__table__cell--icon {
 					border-right-width: 3px !important;
-    				border-left-width: 3px !important;
+					border-left-width: 3px !important;
 				}
 			}
 		}
@@ -322,10 +331,10 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 	> .adlib-panel__hotkeys {
 		grid-column: template-list / end;
-    	grid-row: tool-bar / end;
+		grid-row: tool-bar / end;
 		column-count: 3;
 		padding: 2em;
-		
+
 		> .adlib-panel__hotkeys__hotkey {
 			display: flex;
 			line-height: 2em;

@@ -5,7 +5,14 @@
 		border: none;
 		pointer-events: auto;
 
-		p, center, .table {
+		.big {
+			max-width: 500px;
+			width: 100%;
+		}
+
+		p,
+		center,
+		.table {
 			font-weight: 300;
 		}
 	}
@@ -16,12 +23,12 @@
 }
 
 .btn.btn-primary.btn-warn {
-	background: #E62421;
-	border-color: #E62421;
-	color: #FFFFFF;
+	background: #e62421;
+	border-color: #e62421;
+	color: #ffffff;
 }
 
 .btn.btn-secondary.btn-warn {
-	border-color: #E62421;
-	color: #E62421;
+	border-color: #e62421;
+	color: #e62421;
 }

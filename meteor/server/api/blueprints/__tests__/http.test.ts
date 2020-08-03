@@ -1,44 +1,49 @@
 import * as _ from 'underscore'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal } from '../../../../lib/lib'
+import { literal, unprotectString } from '../../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 
 import * as api from '../api'
+import { BlueprintId } from '../../../../lib/collections/Blueprints'
 jest.mock('../api.ts')
 
 require('../http.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint http api', () => {
 	describe('router restore single', () => {
-		function callRoute (blueprintId: string, body: any, name?: string): MockResponseDataString {
+		function callRoute(blueprintId: string, body: any, name?: string, force?: boolean): MockResponseDataString {
 			const routeName = '/blueprints/restore/:blueprintId'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
 
+			const queryParams = _.compact([name ? `name=${name}` : undefined, force ? 'force=1' : undefined])
+
 			const res = new MockResponse()
 			const req = new MockRequest({
 				method: 'POST',
-				url: `/blueprints/restore/${blueprintId}` + (name ? `?name=${name}` : '')
+				url: `/blueprints/restore/${blueprintId}?` + queryParams.join('&'),
 			})
-			;(req as any).body = body
+			req.body = body
 
 			route.handler({ blueprintId }, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
-			expect(resStr).toMatchObject(literal<Partial<MockResponseDataString>>({
-				headers: {
-					'content-type': 'text/plain'
-				},
-				timedout: false,
-				ended: true
-			}))
+			expect(resStr).toMatchObject(
+				literal<Partial<MockResponseDataString>>({
+					headers: {
+						'content-type': 'text/plain',
+					},
+					timedout: false,
+					ended: true,
+				})
+			)
 			return resStr
 		}
 
-		function resetUploadMock () {
-			const uploadBlueprint = api.uploadBlueprint as any as jest.MockInstance<any, any>
+		function resetUploadMock() {
+			const uploadBlueprint = (api.uploadBlueprint as any) as jest.MockInstance<any, any>
 			uploadBlueprint.mockClear()
 			return uploadBlueprint
 		}
@@ -80,7 +85,18 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined, false)
+		})
+		testInFiber('with body & force', () => {
+			const id = 'id1'
+			const body = '0123456789'
+
+			const res = callRoute(id, body, undefined, true)
+			expect(res.statusCode).toEqual(200)
+			expect(res.bufferStr).toEqual('')
+
+			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined, true)
 		})
 		testInFiber('internal error', () => {
 			const id = 'id1'
@@ -98,7 +114,7 @@ describe('Test blueprint http api', () => {
 				expect(res.bufferStr).toEqual('[505] Some thrown error')
 
 				expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-				expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined)
+				expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, undefined, false)
 			} finally {
 				uploadBlueprint.mockRestore()
 			}
@@ -113,13 +129,12 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, name)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(id, body, name, false)
 		})
-
 	})
 
 	describe('router restore bulk', () => {
-		function callRoute (body: any): MockResponseDataString {
+		function callRoute(body: any): MockResponseDataString {
 			const routeName = '/blueprints/restore'
 			const route = PickerMock.mockRoutes[routeName]
 			expect(route).toBeTruthy()
@@ -127,24 +142,27 @@ describe('Test blueprint http api', () => {
 			const res = new MockResponse()
 			const req = new MockRequest({
 				method: 'POST',
+				url: `${routeName}?force=1`,
 			})
-			;(req as any).body = body
+			req.body = body
 
 			route.handler({}, req, res, jest.fn())
 
 			const resStr = parseResponseBuffer(res)
-			expect(resStr).toMatchObject(literal<Partial<MockResponseDataString>>({
-				headers: {
-					'content-type': 'text/plain'
-				},
-				timedout: false,
-				ended: true
-			}))
+			expect(resStr).toMatchObject(
+				literal<Partial<MockResponseDataString>>({
+					headers: {
+						'content-type': 'text/plain',
+					},
+					timedout: false,
+					ended: true,
+				})
+			)
 			return resStr
 		}
 
-		function resetUploadMock () {
-			const uploadBlueprint = api.uploadBlueprint as any as jest.MockInstance<any, any>
+		function resetUploadMock() {
+			const uploadBlueprint = (api.uploadBlueprint as any) as jest.MockInstance<any, any>
 			uploadBlueprint.mockClear()
 			return uploadBlueprint
 		}
@@ -260,7 +278,9 @@ describe('Test blueprint http api', () => {
 			try {
 				const res = callRoute(JSON.stringify(payload))
 				expect(res.statusCode).toEqual(500)
-				expect(res.bufferStr).toEqual('Errors were encountered: \n[505] Some thrown error\n[505] Some thrown error\n')
+				expect(res.bufferStr).toEqual(
+					'Errors were encountered: \n[505] Some thrown error\n[505] Some thrown error\n'
+				)
 
 				expect(api.uploadBlueprint).toHaveBeenCalledTimes(count)
 				for (let i = 0; i < count; i++) {
@@ -270,6 +290,5 @@ describe('Test blueprint http api', () => {
 				uploadBlueprint.mockRestore()
 			}
 		})
-
 	})
 })

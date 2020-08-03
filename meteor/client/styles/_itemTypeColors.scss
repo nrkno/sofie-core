@@ -1,7 +1,7 @@
-$segment-timeline-background-color: #1F1F1F;
+$segment-timeline-background-color: #1f1f1f;
 
 $segment-layer-background-unknown: #4b4b4b;
-$segment-layer-background-camera:#18791c;
+$segment-layer-background-camera: #18791c;
 $segment-layer-background-camera--second: darken($segment-layer-background-camera, 10%);
 $segment-layer-background-lower-third: #ff6f00;
 $segment-layer-background-lower-third--second: darken($segment-layer-background-lower-third, 10%);
@@ -13,7 +13,7 @@ $segment-layer-background-remote--second: darken($segment-layer-background-remot
 $segment-layer-background-vt: #1769ff;
 $segment-layer-background-vt--second: darken($segment-layer-background-vt, 10%);
 $segment-layer-background-script: #005a25;
-$segment-layer-background-mic:#1e6820;
+$segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
 
 @mixin item-type-colors {
@@ -42,7 +42,11 @@ $segment-layer-background-guest: #008a92;
 	}
 
 	&.live-speak {
-		background: linear-gradient(to bottom, var(--segment-layer-background-vt) 50%, var(--segment-layer-background-camera) 50.0001%);
+		background: linear-gradient(
+			to bottom,
+			var(--segment-layer-background-vt) 50%,
+			var(--segment-layer-background-camera) 50.0001%
+		);
 	}
 
 	&.vt {
@@ -158,15 +162,41 @@ $segment-layer-background-guest: #008a92;
 	&.invalid {
 		opacity: 0.5;
 		background-color: #333;
-		background-image:
-			repeating-linear-gradient(45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px),
-			repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 5px, rgba(0, 0, 0, 1) 5px, rgba(0, 0, 0, 1) 10px);
+		background-image: repeating-linear-gradient(
+				45deg,
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 0) 5px,
+				rgba(0, 0, 0, 1) 5px,
+				rgba(0, 0, 0, 1) 10px
+			),
+			repeating-linear-gradient(
+				-45deg,
+				rgba(0, 0, 0, 0) 0%,
+				rgba(0, 0, 0, 0) 5px,
+				rgba(0, 0, 0, 1) 5px,
+				rgba(0, 0, 0, 1) 10px
+			);
+	}
+}
+
+@mixin floated-overlay {
+	$part-start-color: #a5a5a5;
+
+	&.floated {
+		background-image: repeating-linear-gradient(
+			-45deg,
+			transparent 0%,
+			transparent 8px,
+			darken($part-start-color, 50%) 8px,
+			darken($part-start-color, 50%) 10px
+		);
+		backdrop-filter: saturate(0%) brightness(50%);
 	}
 }
 
 @mixin missing-overlay {
-	
-	&.source-broken, &.source-missing {
+	&.source-broken,
+	&.source-missing {
 		&::after {
 			content: ' ';
 			display: block;
@@ -176,27 +206,27 @@ $segment-layer-background-guest: #008a92;
 			right: 0;
 			bottom: 0;
 			z-index: 1;
-			mix-blend-mode: overlay; 
+			mix-blend-mode: overlay;
 			background-image: repeating-linear-gradient(
-			45deg,
-			transparent,
-			transparent 10px,
-			black 11px,
-			black 15px,
-			transparent 16px
-			);						
+				45deg,
+				transparent,
+				transparent 10px,
+				black 11px,
+				black 15px,
+				transparent 16px
+			);
 		}
 	}
 
 	&.source-broken {
 		&::after {
 			background-image: repeating-linear-gradient(
-			-45deg,
-			transparent,
-			transparent 2px,
-			rgba(0,0,0,.54) 3px,
-			rgba(0,0,0,.54) 4px,
-			transparent 5px
+				-45deg,
+				transparent,
+				transparent 2px,
+				rgba(0, 0, 0, 0.54) 3px,
+				rgba(0, 0, 0, 0.54) 4px,
+				transparent 5px
 			);
 		}
 	}

@@ -1,79 +1,96 @@
+import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
-import { fetchAfter } from '../../../lib/lib'
+import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
-
-function getRundownValidParts (rundown: Rundown) {
-	return rundown.getParts({
-		$or: [
-			{ invalid: false },
-			{ invalid: { $exists: false } }
-		]
-	})
-}
+import {
+	selectNextPart,
+	isTooCloseToAutonext,
+	getSelectedPartInstancesFromCache,
+	getAllOrderedPartsFromCache,
+} from '../playout/lib'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
 export namespace UpdateNext {
-	export function ensureNextPartIsValid (rundown: Rundown) {
+	export function ensureNextPartIsValid(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
 		// Ensure the next-id is still valid
-		if (rundown && rundown.active && rundown.nextPartId) {
-			const allValidParts = getRundownValidParts(rundown)
+		if (playlist && playlist.active && playlist.nextPartInstanceId) {
+			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+			const allParts = getAllOrderedPartsFromCache(cache, playlist)
 
-			const currentPart = allValidParts.find(part => part._id === rundown.currentPartId)
-			const currentNextPart = allValidParts.find(part => part._id === rundown.nextPartId)
-
-			// If the current part is missing, then we can't know what the next is
-			if (!currentPart && rundown.currentPartId !== null) {
-				if (!currentNextPart) {
-					// Clear the invalid data
-					ServerPlayoutAPI.setNextPartInner(rundown, null)
+			if (currentPartInstance) {
+				// Leave the manually chosen part
+				const oldNextPart = nextPartInstance
+					? allParts.find((p) => p._id === nextPartInstance.part._id)
+					: undefined
+				if (playlist.nextPartManual && oldNextPart && nextPartInstance && nextPartInstance.part.isPlayable()) {
+					return
 				}
-			} else {
-				const expectedAutoNextPart = fetchAfter(allValidParts, {}, currentPart ? currentPart._rank : null)
-				const expectedAutoNextPartId = expectedAutoNextPart ? expectedAutoNextPart._id : null
 
-				// If not manually set, make sure that next is done by rank
-				if (!rundown.nextPartManual && expectedAutoNextPartId !== rundown.nextPartId) {
-					ServerPlayoutAPI.setNextPartInner(rundown, expectedAutoNextPart || null)
-
-				} else if (rundown.nextPartId && !currentNextPart) {
-					// If the specified next is not valid, then reset
-					ServerPlayoutAPI.setNextPartInner(rundown, expectedAutoNextPart || null)
+				// Check if the part is the same
+				const newNextPart = selectNextPart(playlist, currentPartInstance, allParts)
+				if (newNextPart && nextPartInstance && newNextPart.part._id === nextPartInstance.part._id) {
+					return
 				}
+
+				// If we are close to an autonext, then leave it to avoid glitches
+				if (isTooCloseToAutonext(currentPartInstance) && nextPartInstance) {
+					return
+				}
+
+				// Set to the newly selected part
+				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
+			} else if (!nextPartInstance) {
+				// Don't have a currentPart or a nextPart, so set next to first in the show
+				const newNextPart = selectNextPart(playlist, null, allParts)
+				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
 			}
 		}
 	}
-	export function afterInsertParts (rundown: Rundown, newPartExternalIds: string[], removePrevious: boolean) {
-		if (rundown && rundown.active) {
-
-			if (!rundown.nextPartId && rundown.currentPartId) {
+	export function afterInsertParts(
+		cache: CacheForRundownPlaylist,
+		playlist: RundownPlaylist,
+		newPartExternalIds: string[],
+		removePrevious: boolean
+	) {
+		if (playlist && playlist.active) {
+			// If manually chosen, and could have been removed then special case handling
+			if (!playlist.nextPartInstanceId && playlist.currentPartInstanceId) {
 				// The playhead is probably at the end of the rundown
 
-				// Set Next forward
-				moveNext(rundown._id, 1, 0, false)
-
-			} else if (rundown.nextPartManual && removePrevious) {
-				// If a part was manually chosen as Next, that could have been removed by a Replacement
-
-				const allValidParts = getRundownValidParts(rundown)
+				// Try and choose something
+				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+				const newNextPart = selectNextPart(
+					playlist,
+					currentPartInstance || null,
+					getAllOrderedPartsFromCache(cache, playlist)
+				)
+				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
+			} else if (playlist.nextPartManual && removePrevious) {
+				const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+				const allParts = getAllOrderedPartsFromCache(cache, playlist)
 
 				// If the manually chosen part does not exist, assume it was the one that was removed
-				const currentNextPart = allValidParts.find(part => part._id === rundown.nextPartId)
+				const currentNextPart = nextPartInstance
+					? allParts.find((part) => part._id === nextPartInstance.part._id)
+					: undefined
 				if (!currentNextPart) {
 					// Set to the first of the inserted parts
-					const firstNewPart = allValidParts.find(part => newPartExternalIds.indexOf(part.externalId) !== -1)
+					const firstNewPart = allParts.find(
+						(part) => newPartExternalIds.indexOf(part.externalId) !== -1 && part.isPlayable()
+					)
 					if (firstNewPart) {
 						// Matched a part that replaced the old, so set to it
-						ServerPlayoutAPI.setNextPartInner(rundown, firstNewPart)
-
+						ServerPlayoutAPI.setNextPartInner(cache, playlist, firstNewPart)
 					} else {
 						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
-						UpdateNext.ensureNextPartIsValid(rundown)
+						UpdateNext.ensureNextPartIsValid(cache, playlist)
 					}
 				}
 			} else {
 				// Ensure next is valid
-				UpdateNext.ensureNextPartIsValid(rundown)
+				UpdateNext.ensureNextPartIsValid(cache, playlist)
 			}
 		}
 	}
