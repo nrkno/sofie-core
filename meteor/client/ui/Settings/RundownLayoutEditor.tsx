@@ -1396,6 +1396,19 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
+							{t('Show Buckets')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'showBuckets'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
 							{t('Expose layout as a standalone page')}
 							<EditAttribute
 								modifiedClassName="bghl"

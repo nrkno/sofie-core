@@ -59,6 +59,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 		inspector: boolean
 	}
 	bucketDisplayFilter: number[] | undefined
+	showBuckets: boolean
 
 	onChangeExpanded: (value: boolean) => void
 	onRegisterHotkeys: (
