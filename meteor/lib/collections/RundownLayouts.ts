@@ -167,6 +167,7 @@ export interface RundownLayoutBase {
 	exposeAsShelf: boolean
 	icon: string
 	iconColor: string
+	showBuckets: boolean
 }
 
 export interface RundownLayout extends RundownLayoutBase {
