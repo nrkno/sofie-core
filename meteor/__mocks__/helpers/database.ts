@@ -702,6 +702,8 @@ export function setupRundownWithAutoplayPart0(
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
 
+		organizationId: null,
+
 		playlistId: playlistId,
 		_rank: 0,
 

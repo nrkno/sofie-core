@@ -9,6 +9,8 @@ import * as api from '../api'
 import { BlueprintId } from '../../../../lib/collections/Blueprints'
 jest.mock('../api.ts')
 
+const DEFAULT_CONTEXT = { userId: '' }
+
 require('../http.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint http api', () => {
@@ -85,7 +87,7 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith({}, id, body, undefined, false)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, false)
 		})
 		testInFiber('with body & force', () => {
 			const id = 'id1'
@@ -96,7 +98,7 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith({}, id, body, undefined, true)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, true)
 		})
 		testInFiber('internal error', () => {
 			const id = 'id1'
@@ -114,7 +116,7 @@ describe('Test blueprint http api', () => {
 				expect(res.bufferStr).toEqual('[505] Some thrown error')
 
 				expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-				expect(api.uploadBlueprint).toHaveBeenCalledWith({}, id, body, undefined, false)
+				expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, false)
 			} finally {
 				uploadBlueprint.mockRestore()
 			}
@@ -129,7 +131,7 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith({}, id, body, name, false)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, name, false)
 		})
 	})
 
@@ -225,7 +227,7 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith({}, id, body, id)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, id)
 		})
 		testInFiber('with json body as object', () => {
 			const id = 'id1'
@@ -239,7 +241,7 @@ describe('Test blueprint http api', () => {
 			expect(res.bufferStr).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith({}, id, body, id)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, id)
 		})
 		testInFiber('with json body - multiple', () => {
 			const count = 10
@@ -255,7 +257,7 @@ describe('Test blueprint http api', () => {
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(count)
 			for (let i = 0; i < count; i++) {
-				expect(api.uploadBlueprint).toHaveBeenCalledWith({}, `id${i}`, `body${i}`, `id${i}`)
+				expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, `id${i}`, `body${i}`, `id${i}`)
 			}
 		})
 		testInFiber('with errors', () => {
@@ -284,7 +286,7 @@ describe('Test blueprint http api', () => {
 
 				expect(api.uploadBlueprint).toHaveBeenCalledTimes(count)
 				for (let i = 0; i < count; i++) {
-					expect(api.uploadBlueprint).toHaveBeenCalledWith({}, `id${i}`, `body${i}`, `id${i}`)
+					expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, `id${i}`, `body${i}`, `id${i}`)
 				}
 			} finally {
 				uploadBlueprint.mockRestore()
