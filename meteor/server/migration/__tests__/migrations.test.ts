@@ -41,7 +41,7 @@ require('fs')
 		}
 	})
 
-describe('Test ingest actions for rundowns and segments', () => {
+describe('Migrations', () => {
 	beforeAll(() => {
 		setupEmptyEnvironment()
 	})
