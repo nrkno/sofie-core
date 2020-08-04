@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, testInFiberOnly, runAllTimers } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
-import { mockupCollection } from '../../../../__mocks__/helpers/lib'
+import { mockupCollection, resetMockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
@@ -33,8 +33,6 @@ import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import * as lib from '../../../../lib/lib'
 import { ClientAPI } from '../../../../lib/api/client'
 
-const Timeline = mockupCollection(OrgTimeline)
-
 describe('Playout API', () => {
 	let env: DefaultEnvironment
 	let playoutDevice: PeripheralDevice
@@ -63,6 +61,10 @@ describe('Playout API', () => {
 			partInstanceId: partInstanceId,
 		}).fetch()
 	}
+	let Timeline = mockupCollection(OrgTimeline)
+	beforeAll(() => {
+		Timeline = mockupCollection(OrgTimeline)
+	})
 	beforeEach(() => {
 		env = setupDefaultStudioEnvironment()
 		playoutDevice = setupMockPeripheralDevice(
@@ -83,6 +85,10 @@ describe('Playout API', () => {
 	afterEach(() => {
 		//@ts-ignore restore getCurrentTime to original
 		lib.getCurrentTime = origGetCurrentTime
+	})
+	afterAll(() => {
+		// Clean up after ourselves:
+		resetMockupCollection(OrgTimeline)
 	})
 	testInFiber('Basic rundown control', () => {
 		const { rundownId: rundownId0, playlistId: playlistId0 } = setupDefaultRundownPlaylist(env)
