@@ -78,8 +78,9 @@ export function uploadBlueprint(
 	if (!Meteor.isTest) logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
 
 	if (!blueprintId) throw new Meteor.Error(400, `Blueprint id "${blueprintId}" is not valid`)
+	const blueprint = Blueprints.findOne(blueprintId)
 
-	return innerUploadBlueprint(organizationId, undefined, blueprintId, body, blueprintName, ignoreIdChange)
+	return innerUploadBlueprint(organizationId, blueprint, blueprintId, body, blueprintName, ignoreIdChange)
 }
 /** Only to be called from internal functions */
 export function internalUploadBlueprint(
@@ -101,8 +102,6 @@ export function innerUploadBlueprint(
 	blueprintName?: string,
 	ignoreIdChange?: boolean
 ): Blueprint {
-	logger.info(`Got blueprint '${blueprintId}'. ${body.length} bytes`)
-
 	const newBlueprint: Blueprint = {
 		_id: blueprintId,
 		organizationId: organizationId,

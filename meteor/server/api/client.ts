@@ -10,7 +10,7 @@ import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
-import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { UserId } from '../../lib/typings/meteor'
 import { OrganizationId } from '../../lib/collections/Organization'
@@ -240,9 +240,19 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, location))
 	}
 	callPeripheralDeviceFunction(context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) {
-		return makePromise(() =>
-			ServerClientAPI.callPeripheralDeviceFunction(this, context, deviceId, functionName, ...args)
-		)
+		return makePromise(() => {
+			const methodContext: MethodContext = this
+			if (!Settings.enableUserAccounts) {
+				// Note: This is a temporary hack to keep backwards compatibility.
+				// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
+				const device = PeripheralDevices.findOne(deviceId)
+				if (device) {
+					// @ts-ignore hack
+					methodContext.token = device.token
+				}
+			}
+			return ServerClientAPI.callPeripheralDeviceFunction(methodContext, context, deviceId, functionName, ...args)
+		})
 	}
 }
 registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)

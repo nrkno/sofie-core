@@ -68,14 +68,12 @@ export namespace PeripheralDeviceContentWriteAccess {
 		triggerWriteAccess()
 		check(deviceId, String)
 		const device = PeripheralDevices.findOne(deviceId)
-		if (Settings.enableUserAccounts && !cred0.userId && device) {
-			// External = from an external device. For backwards compability, this extra procedure is done:
+		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+
+		if (!Settings.enableUserAccounts) {
 			if (device.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
 			}
-		}
-
-		if (!Settings.enableUserAccounts) {
 			return {
 				userId: null,
 				organizationId: null,
@@ -83,18 +81,22 @@ export namespace PeripheralDeviceContentWriteAccess {
 				device: device || null,
 				cred: cred0,
 			}
-		}
-		const cred = resolveCredentials(cred0)
-		const access = allowAccessToPeripheralDeviceContent(cred, deviceId)
-		if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
-		if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
+		} else {
+			if (!cred0.userId && device.token !== cred0.token) {
+				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
+			}
+			const cred = resolveCredentials(cred0)
+			const access = allowAccessToPeripheralDeviceContent(cred, deviceId)
+			if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
+			if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
 
-		return {
-			userId: cred.user ? cred.user._id : null,
-			organizationId: cred.organization ? cred.organization._id : null,
-			deviceId: deviceId,
-			device: access.document,
-			cred: cred,
+			return {
+				userId: cred.user ? cred.user._id : null,
+				organizationId: cred.organization ? cred.organization._id : null,
+				deviceId: deviceId,
+				device: access.document,
+				cred: cred,
+			}
 		}
 	}
 }
