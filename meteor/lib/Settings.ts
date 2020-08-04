@@ -58,6 +58,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	allowUnsyncedSegments: false,
 	defaultDisplayDuration: 3000,
 	allowRundownResetOnAir: false,
+	showKeyboardMap: true,
 	keyboardMapLayout: KeyboardLayouts.Names.STANDARD_102_TKL,
 	nrcsName: 'ENPS',
 }
