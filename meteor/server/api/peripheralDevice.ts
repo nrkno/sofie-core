@@ -438,9 +438,12 @@ export namespace ServerPeripheralDeviceAPI {
 
 					const totalLatency = endTime - startTime
 
+					/** How many latencies we store for statistics */
 					const LATENCIES_MAX_LENGTH = 100
-					// more than that is not realistic:
+
+					/** Any latency higher than this is not realistic */
 					const MAX_REALISTIC_LATENCY = 1000 // ms
+
 					if (totalLatency < MAX_REALISTIC_LATENCY) {
 						if (!peripheralDevice.latencies) peripheralDevice.latencies = []
 						peripheralDevice.latencies.push(totalLatency)

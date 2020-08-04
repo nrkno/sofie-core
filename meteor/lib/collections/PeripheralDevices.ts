@@ -87,6 +87,10 @@ export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): Studi
 	}
 	return undefined
 }
+/**
+ * Calculate what the expected latency is going to be for a device.
+ * The returned latency represents the amount of time we expect the device will need to receive, process and execute a timeline
+ */
 export function getExpectedLatency(
 	peripheralDevice: PeripheralDevice
 ): { average: number; safe: number; fastest: number } {
