@@ -35,7 +35,7 @@
     "visualize": "meteor --production --extra-packages bundle-visualizer",
     "release": "standard-version",
     "prepareChangelog": "standard-version --prerelease",
-    "validate:dependencies": "npm run validate:prod-dependencies && npm run license-validate",
+    "validate:all-dependencies": "npm run validate:prod-dependencies && npm run validate:dev-dependencies && npm run license-validate",
     "validate:prod-dependencies": "npm audit --production",
     "validate:dev-dependencies": "npm audit --only=dev --audit-level=moderate",
     "check-types": "tsc --noEmit -p tsconfig.json",
