@@ -6,6 +6,7 @@ import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	setupMockPeripheralDevice,
 } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
@@ -21,6 +22,7 @@ import {
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromStudio,
 } from '../../../DatabaseCaches'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 
 const DEFAULT_CONTEXT: MethodContext = {
 	userId: null,
@@ -40,6 +42,12 @@ describe('Timeline', () => {
 	let env: DefaultEnvironment
 	beforeEach(() => {
 		env = setupDefaultStudioEnvironment()
+		const device = setupMockPeripheralDevice(
+			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			env.studio
+		)
 	})
 	testInFiber('non-existing studio', () => {
 		expect(() => {
