@@ -161,7 +161,7 @@ export function uploadBlueprint(
 	})
 	if ((blueprintManifest as any).translations) {
 		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
-		upsertBundles(translations)
+		upsertBundles(translations, newBlueprint.blueprintId)
 	}
 
 	// Parse the versions, just to verify that the format is correct:

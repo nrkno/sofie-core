@@ -2,15 +2,17 @@ import { TranslationsBundles, TranslationsBundleId } from '../../lib/collections
 import { TranslationsBundle, TranslationsBundleType } from 'tv-automation-sofie-blueprints-integration'
 import { getRandomId } from '../../lib/lib'
 import { logger } from '../logging'
+import { BlueprintId } from '../../lib/collections/Blueprints'
 
-export function upsertBundles(bundles: TranslationsBundle[]) {
+export function upsertBundles(bundles: TranslationsBundle[], parentBlueprintId: BlueprintId) {
 	for (const bundle of bundles) {
-		const { type, namespace, language, data } = bundle
+		const { type, language, data } = bundle
 
 		if (type !== TranslationsBundleType.I18NEXT) {
 			throw new Error(`Unknown bundle type ${type}`)
 		}
 
+		const namespace = (parentBlueprintId as any) as string //unwrap ProtectedString
 		const _id = getExistingId(namespace, language) || getRandomId<'TranslationsBundleId'>()
 
 		TranslationsBundles.upsert(
@@ -30,7 +32,7 @@ export function upsertBundles(bundles: TranslationsBundle[]) {
 				}
 				const dbCursor = TranslationsBundles.find({})
 				const availableBundles = dbCursor.count()
-				const bundles = dbCursor.fetch()
+				const bundles = dbCursor.fetch().map(({ _id, namespace, language }) => ({ _id, namespace, language }))
 				logger.debug(`${availableBundles} bundles in database:`, { bundles })
 			}
 		)
