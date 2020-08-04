@@ -15,7 +15,7 @@ import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Ru
 import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getAllPieceInstancesFromCache } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
@@ -27,7 +27,6 @@ import {
 	PieceInstances,
 	PieceInstance,
 	PieceInstanceId,
-	wrapPieceToInstance,
 	rewrapPieceToInstance,
 } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -53,11 +52,18 @@ export namespace ServerPlayoutAdLibAPI {
 				throw new Meteor.Error(403, `Part AdLib-pieces can be only placed in a current part!`)
 
 			const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
+			const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 
-			const pieceInstanceToCopy = cache.PieceInstances.findOne(pieceInstanceIdOrPieceIdToCopy)
+			const pieceInstanceToCopy = cache.PieceInstances.findOne({
+				_id: pieceInstanceIdOrPieceIdToCopy as PieceInstanceId,
+				rundownId: { $in: rundownIds },
+			})
 			const pieceToCopy = pieceInstanceToCopy
 				? pieceInstanceToCopy.piece
-				: (cache.Pieces.findOne(pieceInstanceIdOrPieceIdToCopy) as Piece)
+				: (Pieces.findOne({
+						_id: pieceInstanceIdOrPieceIdToCopy as PieceId,
+						startRundownId: { $in: rundownIds },
+				  }) as Piece)
 			if (!pieceToCopy) {
 				throw new Meteor.Error(404, `PieceInstance or Piece "${pieceInstanceIdOrPieceIdToCopy}" not found!`)
 			}
@@ -415,6 +421,7 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.dynamicallyInserted = true
 
 		// TODO-INFINITES set definitelyEnded on any pieceInstances which are stopped by this
+		// TODO-INFINITES stop other pieces in the exclusivityGroup
 
 		cache.PieceInstances.insert(newPieceInstance)
 	}
@@ -435,6 +442,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const resolvedPieces = getResolvedPieces(cache, currentPartInstance)
 		const stopAt = getCurrentTime() + (timeOffset || 0)
 		const definitelyEnded = stopAt + DEFINITELY_ENDED_FUTURE_DURATION
+		const relativeStopAt = stopAt - lastStartedPlayback
 
 		const stoppedInfiniteIds = new Set<PieceId>()
 
@@ -481,7 +489,7 @@ export namespace ServerPlayoutAdLibAPI {
 								{
 									_id: pieceId,
 									externalId: '-',
-									enable: { start: 'now' }, // TODO-INFINITE - this needs to be stopAt, but adjusted to be a relative number
+									enable: { start: relativeStopAt },
 									lifespan: pieceInstance.piece.lifespan,
 									sourceLayerId: pieceInstance.piece.sourceLayerId,
 									outputLayerId: pieceInstance.piece.outputLayerId,

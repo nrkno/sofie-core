@@ -39,10 +39,12 @@ import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 
-function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T): 0 | 1 | -1 {
-	if (a.enable.start < b.enable.start) {
+function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
+	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
+	const bStart = b.enable.start === 'now' ? nowInPart : b.enable.start
+	if (aStart < bStart) {
 		return -1
-	} else if (a.enable.start > b.enable.start) {
+	} else if (aStart > bStart) {
 		return 1
 	} else {
 		// Transitions first
@@ -61,13 +63,13 @@ function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T): 0 | 1 | -1
 	}
 }
 
-export function sortPieceInstancesByStart(pieces: PieceInstance[]): PieceInstance[] {
-	pieces.sort((a, b) => comparePieceStart(a.piece, b.piece))
+export function sortPieceInstancesByStart(pieces: PieceInstance[], nowInPart: number): PieceInstance[] {
+	pieces.sort((a, b) => comparePieceStart(a.piece, b.piece, nowInPart))
 	return pieces
 }
 
 export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[] {
-	pieces.sort(comparePieceStart)
+	pieces.sort((a, b) => comparePieceStart(a, b, 0))
 	return pieces
 }
 
@@ -271,7 +273,7 @@ export function getResolvedPiecesFromFullTimeline(
 		(p) => partInstanceIds.indexOf(p.partInstanceId) !== -1
 	)
 
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist) // todo: should these be passed as a parameter from getTimelineRundown?
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist) // todo: should these be passed as a parameter from getTimelineRundown?
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))

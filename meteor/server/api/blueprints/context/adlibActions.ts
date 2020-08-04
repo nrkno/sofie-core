@@ -38,10 +38,7 @@ import { clone } from '../../../../lib/lib'
 
 export enum ActionPartChange {
 	NONE = 0,
-	/** Inserted/updated a piece which can be simply pruned */
 	SAFE_CHANGE = 1,
-	/** Inserted/updated a piece which requires a blueprint call to reset */
-	MARK_DIRTY = 2,
 }
 
 const IBlueprintPieceSample: Required<IBlueprintPiece> = {
@@ -260,16 +257,13 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot update an infinite piece that is continued from a previous part')
 		}
 
-		const changeLevel = pieceInstance.dynamicallyInserted
-			? ActionPartChange.SAFE_CHANGE
-			: ActionPartChange.MARK_DIRTY
 		const updatesCurrentPart: ActionPartChange =
 			pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId
-				? changeLevel
+				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
 			pieceInstance.partInstanceId === this.rundownPlaylist.nextPartInstanceId
-				? changeLevel
+				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
 			throw new Error('Can only update piece instances in current or next part instance')
@@ -290,23 +284,16 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			$set: {},
 			$unset: {},
 		}
-		const legacyUpdate = {
-			$set: {},
-			$unset: {},
-		}
 
 		for (const [k, val] of Object.entries(trimmedPiece)) {
 			if (val === undefined) {
 				update.$unset[`piece.${k}`] = val
-				legacyUpdate.$unset[`${k}`] = val
 			} else {
 				update.$set[`piece.${k}`] = val
-				legacyUpdate.$set[`${k}`] = val
 			}
 		}
 
 		this.cache.PieceInstances.update(pieceInstance._id, update)
-		this.cache.Pieces.update(pieceInstance.piece._id, legacyUpdate)
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)

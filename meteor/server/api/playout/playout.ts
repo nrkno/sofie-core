@@ -8,12 +8,8 @@ import {
 	getCurrentTime,
 	Time,
 	waitForPromise,
-	makePromise,
-	clone,
-	literal,
 	normalizeArray,
 	unprotectString,
-	unprotectObjectArray,
 	protectString,
 	isStringOrProtectedString,
 	getRandomId,
@@ -23,7 +19,7 @@ import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Time
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { PieceLifespan, PartHoldMode, VTContent, PartEndState } from 'tv-automation-sofie-blueprints-integration'
+import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
 import { StudioId } from '../../../lib/collections/Studios'
 import { ClientAPI } from '../../../lib/api/client'
 import {
@@ -36,7 +32,6 @@ import {
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { getBlueprintOfRundown } from '../blueprints/cache'
-import { PartEventContext, RundownContext } from '../blueprints/context'
 import { NotesContext } from '../blueprints/context/context'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
@@ -47,14 +42,12 @@ import {
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	selectNextPart,
-	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
 	getSelectedPartInstancesFromCache,
 	getRundownIDsFromCache,
 	getRundownsFromCache,
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
-	getRundownPlaylistFromCache,
 	getAllPieceInstancesFromCache,
 } from './lib'
 import {
@@ -64,17 +57,12 @@ import {
 	deactivateRundownPlaylistInner,
 	standDownStudio,
 } from './actions'
-import { getResolvedPieces, sortPiecesByStart, sortPieceInstancesByStart } from './pieces'
+import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudio } from './studio'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
-import {
-	PieceInstances,
-	PieceInstance,
-	PieceInstanceId,
-	PieceInstancePiece,
-} from '../../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import {
@@ -628,7 +616,7 @@ export namespace ServerPlayoutAPI {
 				}
 
 				const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance)
-				const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(pieceInstances)
+				const sortedPieces: PieceInstance[] = sortPieceInstancesByStart(pieceInstances, nowInPart)
 
 				let findLast: boolean = !!undo
 
