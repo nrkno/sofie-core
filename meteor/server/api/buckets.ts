@@ -96,9 +96,6 @@ export namespace BucketsAPI {
 	}
 
 	export function modifyBucketAdLib(id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		check(id, String)
-		check(adlib, Object)
-
 		const oldAdLib = BucketAdLibs.findOne(id)
 		if (!oldAdLib) {
 			throw new Meteor.Error(404, `Bucket AdLib not found: ${id}`)

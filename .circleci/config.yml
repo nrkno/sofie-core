@@ -17,6 +17,16 @@ jobs:
           name: Meteor Bundle NPM Build
           command: cd meteor/bundle/programs/server && npm install
           no_output_timeout: 60m
+      - save_cache:
+          key: v3-node-cache-{{ .Branch }}-{{ checksum "meteor/package-lock.json" }}
+          paths:
+            - meteor/node_modules
+            - ~/.meteor
+      - save_cache:
+          key: v3-node-cache-{{ .Branch }}
+          paths:
+            - meteor/node_modules
+            - ~/.meteor
       - persist_to_workspace:
           root: .
           paths:
@@ -41,14 +51,14 @@ jobs:
           command: cd meteor && meteor npm install && meteor npm run ci:lint
           no_output_timeout: 15m
 
-  validate-dependencies:
+  validate-prod-dependencies:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.10.2
     steps:
       - checkout
       - run:
           name: Validate production dependencies for vulnerabilities and compatible licenses
-          command: cd meteor && meteor npm install && meteor npm run validate:dependencies
+          command: cd meteor && meteor npm install && meteor npm run validate:prod-dependencies
           no_output_timeout: 15m
   validate-all-dependencies:
     docker:
@@ -57,7 +67,7 @@ jobs:
       - checkout
       - run:
           name: Validate all dependencies for vulnerabilities
-          command: cd meteor && meteor npm install && meteor npm run validate:dev-dependencies
+          command: cd meteor && meteor npm install && meteor npm run validate:all-dependencies
           no_output_timeout: 15m
 
   publish-tag:
@@ -72,25 +82,25 @@ jobs:
           name: Build Docker Image
           command: docker build -f Dockerfile.circle . -t server-core:$CIRCLE_TAG
       - run:
-           name: Publish Docker Image to Docker Hub
-           command: |
-             if [ -z "$DOCKERHUB_PASS" ]; then
-               echo "Skipping"
-             else
-               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-               docker tag server-core:$CIRCLE_TAG $DOCKERHUB_IMAGE:$CIRCLE_TAG
-               docker push $DOCKERHUB_IMAGE:$CIRCLE_TAG
-             fi
+          name: Publish Docker Image to Docker Hub
+          command: |
+            if [ -z "$DOCKERHUB_PASS" ]; then
+              echo "Skipping"
+            else
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker tag server-core:$CIRCLE_TAG $DOCKERHUB_IMAGE:$CIRCLE_TAG
+              docker push $DOCKERHUB_IMAGE:$CIRCLE_TAG
+            fi
       - run:
-           name: Publish Docker Image to Github Package Registry
-           command: |
-             if [ -z "$GITHUB_PASS" ]; then
-               echo "Skipping"
-             else
-               echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
-               docker tag server-core:$CIRCLE_TAG docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
-               docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
-             fi
+          name: Publish Docker Image to Github Package Registry
+          command: |
+            if [ -z "$GITHUB_PASS" ]; then
+              echo "Skipping"
+            else
+              echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
+              docker tag server-core:$CIRCLE_TAG docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
+              docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_TAG
+            fi
   publish-branch:
     docker:
       - image: circleci/buildpack-deps:buster
@@ -103,25 +113,25 @@ jobs:
           name: Build Docker Image
           command: docker build -f Dockerfile.circle . -t server-core:$CIRCLE_BRANCH
       - run:
-           name: Publish Docker Image to Docker Hub
-           command: |
-             if [ -z "$DOCKERHUB_PASS" ]; then
-               echo "Skipping"
-             else
-               echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-               docker tag server-core:$CIRCLE_BRANCH $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
-               docker push $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
-             fi
+          name: Publish Docker Image to Docker Hub
+          command: |
+            if [ -z "$DOCKERHUB_PASS" ]; then
+              echo "Skipping"
+            else
+              echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+              docker tag server-core:$CIRCLE_BRANCH $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
+              docker push $DOCKERHUB_IMAGE:$CIRCLE_BRANCH
+            fi
       - run:
-           name: Publish Docker Image to Github Package Registry
-           command: |
-             if [ -z "$GITHUB_PASS" ]; then
-               echo "Skipping"
-             else
-               echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
-               docker tag server-core:$CIRCLE_BRANCH docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
-               docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
-             fi
+          name: Publish Docker Image to Github Package Registry
+          command: |
+            if [ -z "$GITHUB_PASS" ]; then
+              echo "Skipping"
+            else
+              echo "$GITHUB_PASS" | docker login docker.pkg.github.com -u "$GITHUB_USERNAME" --password-stdin
+              docker tag server-core:$CIRCLE_BRANCH docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
+              docker push docker.pkg.github.com/$GITHUB_IMAGE:$CIRCLE_BRANCH
+            fi
 
 workflows:
   version: 2
@@ -133,7 +143,7 @@ workflows:
               only: /v.*/
             branches:
               only: /.*/
-      - validate-dependencies:
+      - validate-prod-dependencies:
           filters:
             tags:
               only: /v.*/
@@ -159,8 +169,8 @@ workflows:
               only: /.*/
       - publish-tag:
           requires:
-            # - tests
-            # - validate-dependencies
+            - tests
+            - validate-prod-dependencies
             - build
           filters:
             tags:
@@ -174,7 +184,7 @@ workflows:
             tags:
               ignore: /.*/
             branches:
-              only: 
+              only:
                 - master
                 - develop
                 - stage
