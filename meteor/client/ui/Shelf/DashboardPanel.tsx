@@ -83,7 +83,9 @@ interface DashboardPositionableElement {
 	scale?: number
 }
 
-export function dashboardElementPosition(el: DashboardPositionableElement): React.CSSProperties {
+export function dashboardElementPosition(
+	el: DashboardPositionableElement
+): React.CSSProperties & { '--dashboard-panel-scale': number | undefined } {
 	return {
 		width:
 			el.width >= 0

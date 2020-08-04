@@ -24,7 +24,6 @@ import { mousetrapHelper } from '../../lib/mousetrapHelper'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { Link } from 'react-router-dom'
 import RundownLayoutEditor from './RundownLayoutEditor'
-import { faExclamationTriangle } from '@fortawesome/fontawesome-free-solid'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -40,12 +39,6 @@ import {
 	IOutputLayer,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
-import { Link } from 'react-router-dom'
-import RundownLayoutEditor from './RundownLayoutEditor'
-import { getHelpMode } from '../../lib/localStorage'
-import { SettingsNavigation } from '../../lib/SettingsNavigation'
-import { MeteorCall } from '../../../lib/api/methods'
 import { Settings } from '../../../lib/Settings'
 
 interface IProps {

@@ -505,6 +505,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		this.nextPartState = Math.max(this.nextPartState, changeLevel)
 	}
+	takeAfterExecuteAction(take: boolean): boolean {
+		this.takeAfterExecute = take
+
+		return this.takeAfterExecute
+	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
 		if (!this.rundownPlaylist.currentPartInstanceId) {

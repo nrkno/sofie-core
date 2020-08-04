@@ -132,11 +132,16 @@ export const BucketPieceButton = translateWithTracker<
 >((props: IDashboardButtonProps) => {
 	const piece = (props.adLibListItem as any) as AdLibPieceUi
 
-	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
+	const { status, metadata, contentDuration } = checkPieceContentStatus(
+		piece,
+		props.layer,
+		props.playlist.getStudio().settings
+	)
 
 	return {
 		status,
 		metadata,
+		contentDuration,
 	}
 })(
 	DropTarget(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonTarget, (connect) => ({
