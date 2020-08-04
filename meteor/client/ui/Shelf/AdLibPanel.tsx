@@ -711,30 +711,28 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 							sort: { sourceLayerId: 1, _rank: 1, name: 1 },
 						}
 					).fetch()
-					rundownBaselineAdLibs = rundownAdLibItems
-						.concat(
-							props.showStyleBase.sourceLayers
-								.filter((i) => i.isSticky)
-								.sort((a, b) => a._rank - b._rank)
-								.map((layer) =>
-									literal<AdLibPieceUi>({
-										_id: protectString(`sticky_${layer._id}`),
-										hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
-										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
-										status: RundownAPI.PieceStatusCode.UNKNOWN,
-										isSticky: true,
-										isGlobal: true,
-										expectedDuration: 0,
-										disabled: false,
-										externalId: layer._id,
-										rundownId: protectString(''),
-										sourceLayerId: layer._id,
-										outputLayerId: '',
-										_rank: 0,
-									})
-								)
-						)
-						.sort((a, b) => a._rank - b._rank)
+					rundownBaselineAdLibs = rundownAdLibItems.concat(
+						props.showStyleBase.sourceLayers
+							.filter((i) => i.isSticky && i.activateStickyKeyboardHotkey)
+							.sort((a, b) => a._rank - b._rank)
+							.map((layer) =>
+								literal<AdLibPieceUi>({
+									_id: protectString(`sticky_${layer._id}`),
+									hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
+									name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
+									status: RundownAPI.PieceStatusCode.UNKNOWN,
+									isSticky: true,
+									isGlobal: true,
+									expectedDuration: 0,
+									disabled: false,
+									externalId: layer._id,
+									rundownId: protectString(''),
+									sourceLayerId: layer._id,
+									outputLayerId: '',
+									_rank: 0,
+								})
+							)
+					)
 
 					const globalAdLibActions = memoizedIsolatedAutorun(
 						(rundownIds, partIds) =>
@@ -815,7 +813,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 						})
 						.sort((a, b) => a._rank - b._rank)
 
-					return rundownBaselineAdLibs
+					return rundownBaselineAdLibs.sort((a, b) => a._rank - b._rank)
 				},
 				'rundownBaselineAdLibs',
 				currentRundown._id,
