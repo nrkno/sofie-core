@@ -4,14 +4,13 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
-import { Segments as _Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
-import { Parts as _Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
+import { Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
+import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal, waitForPromise, protectString } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
 import { UpdateNext } from '../../updateNext'
-import { mockupCollection } from '../../../../../__mocks__/helpers/lib'
 import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
@@ -21,9 +20,6 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 jest.mock('../../updateNext')
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
-
-const Segments = mockupCollection(_Segments)
-const Parts = mockupCollection(_Parts)
 
 function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
@@ -1032,13 +1028,9 @@ describe('Test recieved mos ingest payloads', () => {
 			RunningOrderID: new MOS.MosString128(rundown.externalId),
 		})
 
-		Segments.mockClear()
-		Parts.mockClear()
-
 		// This should only remove the first part in the segment. No other parts should be affected
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, [partExternalId]))
 
-		expect(Segments.remove).toHaveBeenCalled()
 		expect(Segments.findOne(partToBeRemoved.segmentId)).toBeFalsy()
 
 		const partAfter = Parts.findOne(partsInSegmentBefore[2]._id) as Part
