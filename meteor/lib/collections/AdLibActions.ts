@@ -28,7 +28,6 @@ Meteor.startup(() => {
 		AdLibActions._ensureIndex({
 			rundownId: 1,
 			partId: 1,
-			_rank: 1,
 		})
 	}
 })

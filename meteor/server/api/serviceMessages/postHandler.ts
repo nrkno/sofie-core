@@ -66,7 +66,7 @@ function postHandler(params, req: BodyParsingIncomingMessage, res: ServerRespons
 		criticality: Number(criticality),
 		message,
 		sender,
-		timestamp: new Date(timestamp),
+		timestamp: new Date(timestamp).getTime(),
 	} as ServiceMessage
 
 	try {

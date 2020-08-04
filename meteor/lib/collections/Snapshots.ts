@@ -60,7 +60,7 @@ registerCollection('Snapshots', Snapshots)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Snapshots._ensureIndex({
-			timestamp: 1,
+			created: 1,
 		})
 	}
 })

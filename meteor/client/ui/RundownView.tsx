@@ -42,7 +42,6 @@ import { RundownUtils } from '../lib/rundown'
 import * as mousetrap from 'mousetrap'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
-import { DEFAULT_DISPLAY_DURATION } from '../../lib/Rundown'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { getAllowStudio, getAllowDeveloper, getHelpMode, getAllowConfigure, getAllowService } from '../lib/localStorage'
 import { ClientAPI } from '../../lib/api/client'
@@ -95,6 +94,7 @@ import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
 import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1029,7 +1029,7 @@ const RundownHeader = withTranslation()(
 					}
 				)
 			}
-			if (this.props.playlist.active && !this.props.playlist.rehearsal) {
+			if (this.props.playlist.active && !this.props.playlist.rehearsal && !Settings.allowRundownResetOnAir) {
 				// The rundown is active and not in rehersal
 				doModalDialog({
 					title: this.props.playlist.name,
@@ -1140,7 +1140,11 @@ const RundownHeader = withTranslation()(
 									) : null}
 									{this.props.playlist.active ? <MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem> : null}
 									{this.props.playlist.active ? <MenuItem onClick={(e) => this.hold(e)}>{t('Hold')}</MenuItem> : null}
-									{!(this.props.playlist.active && !this.props.playlist.rehearsal) ? (
+									{!(
+										this.props.playlist.active &&
+										!this.props.playlist.rehearsal &&
+										!Settings.allowRundownResetOnAir
+									) ? (
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>{t('Reload ENPS Data')}</MenuItem>
@@ -1281,11 +1285,16 @@ export interface IGoToPartInstanceEvent {
 	partInstanceId: PartInstanceId
 }
 
+type MatchedSegment = {
+	rundown: Rundown
+	segments: Segment[]
+}
+
 interface ITrackedProps {
 	rundownPlaylistId: RundownPlaylistId
 	rundowns: Rundown[]
 	playlist?: RundownPlaylist
-	segments: Segment[]
+	matchedSegments: MatchedSegment[]
 	studio?: Studio
 	showStyleBase?: ShowStyleBase
 	rundownLayouts?: Array<RundownLayoutBase>
@@ -1315,8 +1324,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	return {
 		rundownPlaylistId: playlistId,
 		rundowns,
-		segments: playlist
-			? playlist.getSegments({
+		matchedSegments: playlist
+			? playlist.getRundownsAndSegments({
 					isHidden: {
 						$ne: true,
 					},
@@ -2015,40 +2024,53 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderSegments() {
-			if (this.props.segments) {
-				return this.props.segments.map((segment, index, array) => {
-					if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
-						return (
-							<ErrorBoundary key={unprotectString(segment._id)}>
-								<VirtualElement
-									id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-									margin={'100% 0px 100% 0px'}
-									initialShow={index < window.innerHeight / 260}
-									placeholderHeight={260}
-									placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
-									width="auto">
-									<SegmentTimelineContainer
-										id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-										studio={this.props.studio}
-										showStyleBase={this.props.showStyleBase}
-										followLiveSegments={this.state.followLiveSegments}
-										segmentId={segment._id}
-										playlist={this.props.playlist}
-										liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
-										timeScale={this.state.timeScale}
-										onTimeScaleChange={this.onTimeScaleChange}
-										onContextMenu={this.onContextMenu}
-										onSegmentScroll={this.onSegmentScroll}
-										isLastSegment={index === array.length - 1}
-										onPieceClick={this.onSelectPiece}
-										onPieceDoubleClick={this.onPieceDoubleClick}
-										onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
-									/>
-								</VirtualElement>
-							</ErrorBoundary>
-						)
-					}
-				})
+			if (this.props.matchedSegments) {
+				let globalIndex = 0
+				return this.props.matchedSegments.map((rundownAndSegments, rundownIndex, rundownArray) => (
+					<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
+						{this.props.matchedSegments.length > 1 && (
+							<RundownDividerHeader
+								key={`rundown_${rundownAndSegments.rundown._id}`}
+								rundown={rundownAndSegments.rundown}
+							/>
+						)}
+						{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
+							if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
+								return (
+									<ErrorBoundary key={unprotectString(segment._id)}>
+										<VirtualElement
+											id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+											margin={'100% 0px 100% 0px'}
+											initialShow={globalIndex++ < window.innerHeight / 260}
+											placeholderHeight={260}
+											placeholderClassName="placeholder-shimmer-element segment-timeline-placeholder"
+											width="auto">
+											<SegmentTimelineContainer
+												id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
+												studio={this.props.studio}
+												showStyleBase={this.props.showStyleBase}
+												followLiveSegments={this.state.followLiveSegments}
+												segmentId={segment._id}
+												playlist={this.props.playlist}
+												liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
+												timeScale={this.state.timeScale}
+												onTimeScaleChange={this.onTimeScaleChange}
+												onContextMenu={this.onContextMenu}
+												onSegmentScroll={this.onSegmentScroll}
+												isLastSegment={
+													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
+												}
+												onPieceClick={this.onSelectPiece}
+												onPieceDoubleClick={this.onPieceDoubleClick}
+												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+											/>
+										</VirtualElement>
+									</ErrorBoundary>
+								)
+							}
+						})}
+					</React.Fragment>
+				))
 			} else {
 				return <div></div>
 			}
@@ -2247,7 +2269,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (this.state.subsReady) {
 				if (this.props.playlist && this.props.studio && this.props.showStyleBase && !this.props.onlyShelf) {
 					return (
-						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={DEFAULT_DISPLAY_DURATION}>
+						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<div
 								className={ClassNames('rundown-view', {
 									'notification-center-open': this.state.isNotificationsCenterOpen,
@@ -2366,6 +2388,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onSetNextSegment={this.onSetNextSegment}
 										onResyncSegment={this.onResyncSegment}
 										studioMode={this.state.studioMode}
+										enablePlayFromAnywhere={!!this.props.studio.settings.enablePlayFromAnywhere}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2384,7 +2407,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								</ErrorBoundary>
 								{this.renderSegmentsList()}
 								<ErrorBoundary>
-									{this.props.segments && this.props.segments.length > 0 && (
+									{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
 										<AfterBroadcastForm playlist={this.props.playlist} />
 									)}
 								</ErrorBoundary>
@@ -2459,6 +2482,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										? t('This rundown has been unpublished from Sofie.')
 										: !this.props.studio
 										? t('Error: The studio of this Rundown was not found.')
+										: !this.props.rundowns.length
+										? t('This playlist is empty')
 										: !this.props.showStyleBase
 										? t('Error: The ShowStyle of this Rundown was not found.')
 										: t('Unknown error')}
