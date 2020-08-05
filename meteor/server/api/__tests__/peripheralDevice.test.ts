@@ -61,6 +61,7 @@ describe('test peripheralDevice general API methods', () => {
 				blueprint: 'on',
 				core: 'plate',
 			},
+			externalNRCSName: 'mock',
 		})
 		let segmentID: SegmentId = protectString('segment0')
 		let segmentExternalID = 'segment0'

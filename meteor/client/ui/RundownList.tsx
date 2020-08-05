@@ -28,6 +28,7 @@ import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
 import { Settings } from '../../lib/Settings'
+import { languageOr } from '../lib/language'
 
 const PackageInfo = require('../../package.json')
 
@@ -499,7 +500,20 @@ export const RundownList = translateWithTracker(() => {
 											<tr className="hl">
 												<th colSpan={9} className="pvn phn">
 													<h2 className="mtm mbs mhn">
-														{(t('Unsynced from {{nrcsName}}'), { nrcsName: Settings.nrcsName })}
+														{
+															(t('Unsynced from {{nrcsNames}}'),
+															{
+																nrcsNames:
+																	languageOr(
+																		t,
+																		_.flatten(
+																			unsyncedRundownPlaylists.map((p) =>
+																				p.unsyncedRundowns.map((r) => r.externalNRCSName)
+																			)
+																		)
+																	) || 'NRCS',
+															})
+														}
 													</h2>
 												</th>
 											</tr>

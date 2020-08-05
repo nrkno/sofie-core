@@ -52,6 +52,7 @@ function createMockRO() {
 		importVersions: {} as any,
 		playlistId: rundownPlaylistId,
 		_rank: 0,
+		externalNRCSName: 'mock',
 	})
 
 	saveIntoDb(

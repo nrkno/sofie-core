@@ -60,6 +60,7 @@ describe('Test external message queue static methods', () => {
 					core: 'plate',
 				},
 				dataSource: 'frank',
+				externalNRCSName: 'mock',
 			})
 			rundown = Rundowns.findOne() as Rundown
 		})
@@ -208,6 +209,7 @@ describe('Test sending messages to mocked endpoints', () => {
 					core: 'plate',
 				},
 				dataSource: 'frank',
+				externalNRCSName: 'mock',
 			})
 			rundown = Rundowns.findOne() as Rundown
 

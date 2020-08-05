@@ -393,6 +393,7 @@ describe('Test blueprint cache', () => {
 					modified: 0,
 					importVersions: {} as any,
 					name: 'test',
+					externalNRCSName: 'mock',
 				})
 			)
 		}

@@ -64,6 +64,7 @@ interface IProps {
 	studio: Studio
 	playlist: RundownPlaylist
 	rundownIds: RundownId[]
+	firstRundown: Rundown | undefined
 }
 
 interface IState {
@@ -317,7 +318,9 @@ export const RundownSystemStatus = translateWithTracker(
 								fatal: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
 							})}>
 							<div className="indicator__tooltip">
-								<h4>{t('{{nrcsName}} Connection', { nrcsName: Settings.nrcsName })}</h4>
+								<h4>
+									{t('{{nrcsName}} Connection', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+								</h4>
 								<div>
 									<h5>{t('Last update')}</h5>
 									<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />
