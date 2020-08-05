@@ -499,7 +499,7 @@ export const RundownList = translateWithTracker(() => {
 											<tr className="hl">
 												<th colSpan={9} className="pvn phn">
 													<h2 className="mtm mbs mhn">
-														{(t('Unsynced from {{nrcsName}}'), { nrcsName: Settings.nrcsName })}
+														{t('Unsynced from {{nrcsName}}', { nrcsName: Settings.nrcsName })}
 													</h2>
 												</th>
 											</tr>
