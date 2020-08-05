@@ -649,6 +649,8 @@ export function mediaAbortAllWorkflows(context: MethodContext) {
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows(context, access.organizationId))
 }
 export function bucketsRemoveBucket(context: MethodContext, id: BucketId) {
+	check(id, String)
+
 	return ClientAPI.responseSuccess(BucketsAPI.removeBucket(context, id))
 }
 export function bucketsModifyBucket(context: MethodContext, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {

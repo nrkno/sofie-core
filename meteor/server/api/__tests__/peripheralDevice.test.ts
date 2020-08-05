@@ -10,10 +10,10 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, ProtectedString } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLoggerLevel } from '../../../server/api/logger'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import {
@@ -21,19 +21,37 @@ import {
 	IngestDeviceSecretSettings,
 } from '../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
 
+jest.mock('../playout/playout.ts')
+const { ServerPlayoutAPI: ActualServerPlayoutAPI } = jest.requireActual('../playout/playout.ts')
+import { ServerPlayoutAPI } from '../playout/playout'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { Timeline } from '../../../lib/collections/Timeline'
+import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { MediaObjects } from '../../../lib/collections/MediaObjects'
+import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
+
+const DEBUG = false
+
 describe('test peripheralDevice general API methods', () => {
 	let device: PeripheralDevice
+	let rundownID: RundownId
+	let rundownPlaylistID: RundownPlaylistId
+	let env: DefaultEnvironment
 	beforeAll(() => {
-		device = setupDefaultStudioEnvironment().ingestDevice
-		let rundownID: RundownId = protectString('rundown0')
+		env = setupDefaultStudioEnvironment()
+		device = env.ingestDevice
+		rundownID = protectString('rundown0')
+		rundownPlaylistID = protectString('rundownPlaylist0')
 		let rundownExternalID: string = 'rundown0'
-		let rundownPlaylistID: RundownPlaylistId = protectString('rundownPlaylist0')
 		RundownPlaylists.insert({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',
 			name: 'Mock',
-			studioId: protectString(''),
-			peripheralDeviceId: protectString(''),
+			studioId: env.studio._id,
+			peripheralDeviceId: env.ingestDevice._id,
 			created: 0,
 			modified: 0,
 			currentPartInstanceId: null,
@@ -44,15 +62,15 @@ describe('test peripheralDevice general API methods', () => {
 		Rundowns.insert({
 			_id: rundownID,
 			externalId: rundownExternalID,
-			studioId: protectString('studio0'),
-			showStyleBaseId: protectString('showStyle0'),
-			showStyleVariantId: protectString('variant0'),
+			studioId: env.studio._id,
+			showStyleBaseId: env.showStyleBaseId,
+			showStyleVariantId: env.showStyleVariantId,
 			name: 'test rundown',
 			created: 1000,
 			playlistId: rundownPlaylistID,
 			_rank: 0,
 			dataSource: 'mock',
-			peripheralDeviceId: protectString('testMosDevice'),
+			peripheralDeviceId: env.ingestDevice._id,
 			modified: getCurrentTime(),
 			importVersions: {
 				studio: 'wibble',
@@ -81,6 +99,19 @@ describe('test peripheralDevice general API methods', () => {
 			rundownId: rundownID,
 			title: 'Part 000',
 		})
+		Pieces.insert({
+			_id: protectString('piece0001'),
+			enable: {
+				start: 0,
+			},
+			externalId: '',
+			name: 'Mock',
+			sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
+			outputLayerId: env.showStyleBase.outputLayers[0]._id,
+			partId: protectString('part000'),
+			rundownId: rundownID,
+			status: RundownAPI.PieceStatusCode.UNKNOWN,
+		})
 		Parts.insert({
 			_id: protectString('part001'),
 			_rank: 1,
@@ -108,7 +139,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('initialize', () => {
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
@@ -162,8 +193,35 @@ describe('test peripheralDevice general API methods', () => {
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 	})
 
+	testInFiber('determineDiffTime', () => {
+		const response = Meteor.call(PeripheralDeviceAPIMethods.determineDiffTime)
+		expect(response).toBeTruthy()
+		expect(response.mean).toBeTruthy()
+		expect(response.stdDev).toBeTruthy()
+	})
+
+	testInFiber('getTimeDiff', () => {
+		const now = getCurrentTime()
+		const response = Meteor.call(PeripheralDeviceAPIMethods.getTimeDiff)
+		expect(response).toBeTruthy()
+		console.dir(response)
+		expect(response.currentTime).toBeGreaterThan(now - 30)
+		expect(response.currentTime).toBeLessThan(now + 30)
+		expect(response.systemRawTime).toBeGreaterThan(0)
+		expect(response.diff).toBeDefined()
+		expect(response.stdDev).toBeDefined()
+		expect(response.good).toBeDefined()
+	})
+
+	testInFiber('getTime', () => {
+		const now = getCurrentTime()
+		const response = Meteor.call(PeripheralDeviceAPIMethods.getTime)
+		expect(response).toBeGreaterThan(now - 30)
+		expect(response).toBeLessThan(now + 30)
+	})
+
 	testInFiber('pingWithCommand and functionReply', () => {
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 
 		let resultErr = undefined
 		let resultMessage = undefined
@@ -207,55 +265,145 @@ describe('test peripheralDevice general API methods', () => {
 		expect(resultMessage).toEqual(replyMessage)
 	})
 
-	/*
 	testInFiber('partPlaybackStarted', () => {
-		setLoggerLevel('debug')
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		if (DEBUG) setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
 		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
-			rundownId: 'rundown0',
-			partId: 'part000',
-			time: getCurrentTime()
+			rundownId: rundownID,
+			partInstanceId: currentPartInstance?._id!,
+			time: getCurrentTime(),
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStarted, device._id, device.token, partPlaybackStartedResult)
-	}) */
 
-	/* testInFiber('partPlaybackStopped', () => {
-		setLoggerLevel('debug')
-		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
-			rundownId: 'rundown0',
-			partId: 'part000',
-			time: getCurrentTime()
-		}
-		console.log(Parts.findOne(partPlaybackStoppedResult.partId))
-		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStopped, device._id, device.token, partPlaybackStoppedResult)
-		console.log(Parts.findOne(partPlaybackStoppedResult.partId))
-	}) */
+		expect(ServerPlayoutAPI.onPartPlaybackStarted).toHaveBeenCalled()
 
-	/* testInFiber('piecePlaybackStarted', () => {
-		setLoggerLevel('debug')
-		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
-			rundownId: 'rundown0',
-			pieceId: 'piece000',
-			time: getCurrentTime()
-		}
-		Meteor.call(PeripheralDeviceAPIMethods.piecePlaybackStarted, device._id, device.token, piecePlaybackStartedResult)
-	}) */
-
-	/* testInFiber('piecePlaybackStopped', () => {
-		setLoggerLevel('debug')
-		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
-			rundownId: 'rundown0',
-			pieceId: 'piece000',
-			time: getCurrentTime()
-		}
-		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
-		Meteor.call(PeripheralDeviceAPIMethods.piecePlaybackStopped, device._id, device.token, piecePlaybackStoppedResult)
-		console.log(Pieces.findOne(piecePlaybackStoppedResult.pieceId))
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
 	})
-	*/
+
+	testInFiber('partPlaybackStopped', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		if (DEBUG) setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
+			rundownId: rundownID,
+			partInstanceId: currentPartInstance?._id!,
+			time: getCurrentTime(),
+		}
+
+		Meteor.call(PeripheralDeviceAPIMethods.partPlaybackStopped, device._id, device.token, partPlaybackStoppedResult)
+
+		expect(ServerPlayoutAPI.onPartPlaybackStopped).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
+
+	testInFiber('piecePlaybackStarted', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		if (DEBUG) setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const pieces = PieceInstances.find({
+			partInstanceId: currentPartInstance?._id!,
+		}).fetch()
+		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
+			rundownId: rundownID,
+			pieceInstanceId: pieces[0]._id,
+			time: getCurrentTime(),
+		}
+
+		Meteor.call(
+			PeripheralDeviceAPIMethods.piecePlaybackStarted,
+			device._id,
+			device.token,
+			piecePlaybackStartedResult
+		)
+
+		expect(ServerPlayoutAPI.onPiecePlaybackStarted).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
+
+	testInFiber('piecePlaybackStopped', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		if (DEBUG) setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
+		const pieces = PieceInstances.find({
+			partInstanceId: currentPartInstance?._id!,
+		}).fetch()
+		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
+			rundownId: rundownID,
+			pieceInstanceId: pieces[0]._id,
+			time: getCurrentTime(),
+		}
+
+		Meteor.call(
+			PeripheralDeviceAPIMethods.piecePlaybackStopped,
+			device._id,
+			device.token,
+			piecePlaybackStoppedResult
+		)
+
+		expect(ServerPlayoutAPI.onPiecePlaybackStopped).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
+
+	testInFiber('timelineTriggerTime', () => {
+		ActualServerPlayoutAPI.activateRundownPlaylist(rundownPlaylistID, false)
+		ActualServerPlayoutAPI.takeNextPart(rundownPlaylistID)
+
+		if (DEBUG) setLoggerLevel('debug')
+		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
+		expect(playlist).toBeTruthy()
+		const timelineObjs = Timeline.find({
+			studioId: env.studio._id,
+			enable: {
+				start: 'now',
+			},
+		}).fetch()
+		expect(timelineObjs.length).toBe(1)
+		console.dir(timelineObjs)
+		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
+			id: tObj.id,
+			time: getCurrentTime(),
+		}))
+
+		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
+
+		const timelineUpdatedObjs = Timeline.find({
+			_id: {
+				$in: timelineObjs.map((tlObj) => tlObj._id),
+			},
+		})
+		timelineUpdatedObjs.forEach((tlObj) => {
+			expect(tlObj.enable.setFromNow).toBe(true)
+			expect(tlObj.enable.start).toBeGreaterThan(0)
+		})
+
+		expect(ServerPlayoutAPI.timelineTriggerTimeUpdateCallback).toHaveBeenCalled()
+
+		ActualServerPlayoutAPI.deactivateRundownPlaylist(rundownPlaylistID)
+	})
 
 	testInFiber('killProcess with a rundown present', () => {
 		// test this does not shutdown because Rundown stored
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.killProcess, device._id, device.token, true)
 			fail('expected to throw')
@@ -265,7 +413,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('testMethod', () => {
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 		let throwPlease = false
 		try {
 			let result = Meteor.call(PeripheralDeviceAPIMethods.testMethod, device._id, device.token, 'european')
@@ -284,7 +432,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	/*
 	testInFiber('timelineTriggerTime', () => {
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = [
 			{ id: 'wibble', time: getCurrentTime() }, { id: 'wobble', time: getCurrentTime() - 100 }]
 		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
@@ -292,7 +440,7 @@ describe('test peripheralDevice general API methods', () => {
 	*/
 
 	testInFiber('requestUserAuthToken', () => {
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.requestUserAuthToken, device._id, device.token, 'http://auth.url/')
@@ -320,7 +468,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	// Should only really work for SpreadsheetDevice
 	testInFiber('storeAccessToken', () => {
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'http://auth.url/')
 			fail('expected to throw')
@@ -346,7 +494,7 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('uninitialize', () => {
-		setLoggerLevel('debug')
+		if (DEBUG) setLoggerLevel('debug')
 		Meteor.call(PeripheralDeviceAPIMethods.unInitialize, device._id, device.token)
 		expect(PeripheralDevices.findOne()).toBeFalsy()
 
@@ -396,80 +544,314 @@ describe('test peripheralDevice general API methods', () => {
 			expect(e.message).toBe(`[400] device status code is not known`)
 		}
 	})
-	// it('peripheralDevice.initialize() with bad arguments', async function () {
-	// 	let deviceId = Random.id()
-	// 	let token = Random.id()
-	//
-	// 	let options: PeripheralDeviceAPI.InitOptions = {
-	// 		type: 0,
-	// 		name: 'test',
-	// 		connectionId: 'test'
-	// 	}
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.initialize('', token, options) // missing id
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.initialize(deviceId, '', options) // missing token
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	//
-	// 		return ServerPeripheralDeviceAPI.initialize(deviceId, token, null as any) // missing options
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	//
-	// 		return ServerPeripheralDeviceAPI.initialize(deviceId, token, {} as any) // bad options
-	// 	}).to.throw()
-	// })
-	//
-	// it('peripheralDevice.setStatus() with bad arguments', async function () {
-	// 	let deviceId = Random.id()
-	// 	let token = Random.id()
-	// 	let options: PeripheralDeviceAPI.InitOptions = {
-	// 		type: 0,
-	// 		name: 'test',
-	// 		connectionId: 'test'
-	// 	}
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.throw() // because device is not initialized yet
-	//
-	// 	let returnedId = ServerPeripheralDeviceAPI.initialize(deviceId, token, options)
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.not.throw()
-	//
-	// 	// try with bad arguments:
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, {} as any ) // missing statusCode
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, token, null as any) // missing status
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus(deviceId, '', { // missing token
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.throw()
-	//
-	// 	expect(() => {
-	// 		return ServerPeripheralDeviceAPI.setStatus('', token, { // missing id
-	// 			statusCode: PeripheralDeviceAPI.StatusCode.GOOD
-	// 		})
-	// 	}).to.throw()
-	//
-	// })
+
+	testInFiber('removePeripheralDevice', () => {
+		{
+			const deviceObj = PeripheralDevices.findOne(device?._id)
+			expect(deviceObj).toBeDefined()
+
+			Meteor.call(PeripheralDeviceAPIMethods.removePeripheralDevice, device?._id)
+		}
+
+		{
+			const deviceObj = PeripheralDevices.findOne(device?._id)
+			expect(deviceObj).toBeUndefined()
+		}
+	})
+
+	// test MediaManagerIntegration API
+	describe('Media Manager API', () => {
+		let workFlowId: ProtectedString<any>
+		let workStepIds: ProtectedString<any>[]
+		let deviceId: ProtectedString<any>
+		let device: PeripheralDevice
+		beforeEach(() => {
+			workFlowId = protectString(Random.id())
+			workStepIds = [protectString(Random.id()), protectString(Random.id())]
+			deviceId = protectString(Random.id())
+			env = setupDefaultStudioEnvironment()
+			PeripheralDevices.insert({
+				_id: deviceId,
+				name: 'Mock Media Manager',
+				studioId: env.studio._id,
+				category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '0',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				subType: '_process',
+				token: 'MockToken',
+				type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+			})
+			device = PeripheralDevices.findOne(deviceId)!
+			MediaWorkFlows.insert({
+				_id: workFlowId,
+				_rev: '1',
+				created: 0,
+				deviceId: device._id,
+				priority: 1,
+				source: 'MockSource',
+				studioId: device.studioId!,
+				finished: false,
+				success: false,
+			})
+			MediaWorkFlowSteps.insert({
+				_id: workStepIds[0],
+				_rev: '1',
+				criticalStep: false,
+				action: MediaManagerAPI.WorkStepAction.COPY,
+				deviceId: device._id,
+				priority: 2,
+				status: MediaManagerAPI.WorkStepStatus.IDLE,
+				studioId: device.studioId!,
+				workFlowId: workFlowId,
+			})
+			MediaWorkFlowSteps.insert({
+				_id: workStepIds[1],
+				_rev: '1',
+				criticalStep: false,
+				action: MediaManagerAPI.WorkStepAction.GENERATE_METADATA,
+				deviceId: device._id,
+				priority: 1,
+				status: MediaManagerAPI.WorkStepStatus.IDLE,
+				studioId: device.studioId!,
+				workFlowId: workFlowId,
+			})
+		})
+		testInFiber('getMediaWorkFlowRevisions', () => {
+			const workFlows = MediaWorkFlows.find({
+				studioId: device.studioId,
+			})
+				.fetch()
+				.map((wf) => ({
+					_id: wf._id,
+					_rev: wf._rev,
+				}))
+			expect(workFlows.length).toBeGreaterThan(0)
+			const res = Meteor.call(PeripheralDeviceAPIMethods.getMediaWorkFlowRevisions, device._id, device.token)
+			expect(res).toHaveLength(workFlows.length)
+			expect(res).toMatchObject(workFlows)
+		})
+		testInFiber('getMediaWorkFlowStepRevisions', () => {
+			const workFlowSteps = MediaWorkFlowSteps.find({
+				studioId: device.studioId,
+			})
+				.fetch()
+				.map((wf) => ({
+					_id: wf._id,
+					_rev: wf._rev,
+				}))
+			expect(workFlowSteps.length).toBeGreaterThan(0)
+			const res = Meteor.call(PeripheralDeviceAPIMethods.getMediaWorkFlowStepRevisions, device._id, device.token)
+			expect(res).toHaveLength(workFlowSteps.length)
+			expect(res).toMatchObject(workFlowSteps)
+		})
+		describe('updateMediaWorkFlow', () => {
+			testInFiber('update', () => {
+				const workFlow = MediaWorkFlows.findOne(workFlowId)
+
+				expect(workFlow).toBeTruthy()
+				let newWorkFlow = Object.assign({}, workFlow)
+				newWorkFlow._rev = '2'
+				newWorkFlow.comment = 'New comment'
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaWorkFlow,
+					device._id,
+					device.token,
+					newWorkFlow._id,
+					newWorkFlow
+				)
+
+				const updatedWorkFlow = MediaWorkFlows.findOne(workFlowId)
+				expect(updatedWorkFlow).toMatchObject(newWorkFlow)
+			})
+			testInFiber('remove', () => {
+				const workFlow = MediaWorkFlows.findOne(workFlowId)
+
+				expect(workFlow).toBeTruthy()
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaWorkFlow,
+					device._id,
+					device.token,
+					workFlow?._id,
+					null
+				)
+
+				const updatedWorkFlow = MediaWorkFlows.findOne(workFlowId)
+				expect(updatedWorkFlow).toBeFalsy()
+			})
+		})
+		describe('updateMediaWorkFlowStep', () => {
+			testInFiber('update', () => {
+				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0])
+
+				expect(workStep).toBeTruthy()
+				let newWorkStep = Object.assign({}, workStep)
+				newWorkStep._rev = '2'
+				newWorkStep.status = MediaManagerAPI.WorkStepStatus.WORKING
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaWorkFlowStep,
+					device._id,
+					device.token,
+					newWorkStep._id,
+					newWorkStep
+				)
+
+				const updatedWorkFlow = MediaWorkFlowSteps.findOne(workStepIds[0])
+				expect(updatedWorkFlow).toMatchObject(newWorkStep)
+			})
+			testInFiber('remove', () => {
+				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0])
+
+				expect(workStep).toBeTruthy()
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaWorkFlowStep,
+					device._id,
+					device.token,
+					workStep?._id,
+					null
+				)
+
+				const updatedWorkFlow = MediaWorkFlowSteps.findOne(workStepIds[0])
+				expect(updatedWorkFlow).toBeFalsy()
+			})
+		})
+	})
+
+	// test Media Scanner API
+	describe('Media Scanner API', () => {
+		let deviceId: ProtectedString<any>
+		const MOCK_COLLECTION = 'MockCollection'
+		const MOCK_MEDIA_ID = 'SOME_FILE'.toUpperCase()
+		const MOCK_OBJID = Random.id()
+		beforeEach(() => {
+			deviceId = protectString(Random.id())
+			env = setupDefaultStudioEnvironment()
+			PeripheralDevices.insert({
+				_id: deviceId,
+				name: 'Mock Media Manager',
+				studioId: env.studio._id,
+				category: PeripheralDeviceAPI.DeviceCategory.MEDIA_MANAGER,
+				configManifest: {
+					deviceConfig: [],
+				},
+				connected: true,
+				connectionId: '0',
+				created: 0,
+				lastConnected: 0,
+				lastSeen: 0,
+				status: {
+					statusCode: PeripheralDeviceAPI.StatusCode.GOOD,
+				},
+				subType: '_process',
+				token: 'MockToken',
+				type: PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+			})
+			device = PeripheralDevices.findOne(deviceId)!
+
+			MediaObjects.remove({
+				collectionId: MOCK_COLLECTION,
+			})
+			MediaObjects.insert({
+				_id: protectString(MOCK_COLLECTION + '_' + MOCK_OBJID),
+				_rev: '1',
+				_attachments: {},
+				cinf: '',
+				collectionId: MOCK_COLLECTION,
+				mediaId: MOCK_MEDIA_ID,
+				mediaPath: '',
+				mediaSize: 10,
+				mediaTime: 0,
+				objId: MOCK_OBJID,
+				studioId: device.studioId!,
+				thumbSize: 0,
+				thumbTime: 0,
+				tinf: '',
+			})
+		})
+		testInFiber('getMediaObjectRevisions', () => {
+			const mobjects = MediaObjects.find({
+				studioId: device.studioId,
+			})
+				.fetch()
+				.map((mo) => ({
+					_id: mo._id,
+					_rev: mo._rev,
+				}))
+			expect(mobjects.length).toBeGreaterThan(0)
+
+			const revs = Meteor.call(
+				PeripheralDeviceAPIMethods.getMediaObjectRevisions,
+				device._id,
+				device.token,
+				MOCK_COLLECTION
+			)
+
+			expect(revs.length).toBe(mobjects.length)
+			expect(mobjects).toMatchObject(mobjects)
+		})
+		describe('updateMediaObject', () => {
+			testInFiber('update', () => {
+				const mo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(mo).toBeTruthy()
+
+				const newMo = Object.assign({}, mo)
+				newMo._rev = '2'
+				newMo.cinf = 'MOCK CINF'
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaObject,
+					device._id,
+					device.token,
+					MOCK_COLLECTION,
+					mo?.objId,
+					newMo
+				)
+
+				const updateMo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(updateMo).toMatchObject(newMo)
+			})
+			testInFiber('remove', () => {
+				const mo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(mo).toBeTruthy()
+
+				Meteor.call(
+					PeripheralDeviceAPIMethods.updateMediaObject,
+					device._id,
+					device.token,
+					MOCK_COLLECTION,
+					mo?.objId,
+					null
+				)
+
+				const updateMo = MediaObjects.findOne({
+					collectionId: MOCK_COLLECTION,
+					studioId: device.studioId!,
+				})
+				expect(updateMo).toBeFalsy()
+			})
+		})
+	})
 })
 
 // Note: The data below is copied straight from the test data in mos-connection

@@ -102,9 +102,6 @@ export namespace BucketsAPI {
 	}
 
 	export function modifyBucketAdLib(context: MethodContext, id: PieceId, adlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		check(id, String)
-		check(adlib, Object)
-
 		if (!BucketSecurity.allowWriteAccessPiece({ _id: id }, context))
 			throw new Meteor.Error(403, `Not allowed to edit bucket adlib: ${id}`)
 
