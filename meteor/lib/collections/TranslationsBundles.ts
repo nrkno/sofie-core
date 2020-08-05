@@ -13,5 +13,5 @@ export interface TranslationsBundle extends BlueprintTranslationsBundle {
 
 export const TranslationsBundles: TransformedCollection<TranslationsBundle, TranslationsBundle> = createMongoCollection<
 	TranslationsBundle
->('translationBundles')
-registerCollection('TranslationBundles', TranslationsBundles)
+>('translationsBundles')
+registerCollection('TranslationsBundles', TranslationsBundles)
