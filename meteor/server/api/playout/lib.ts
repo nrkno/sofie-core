@@ -83,7 +83,9 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 
 	const dirtyParts = cache.Parts.findFetch({ rundownId: rundown._id, dirty: true })
 
-	refreshParts(cache, dirtyParts)
+	const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}" not found in resetRundown`)
+	refreshParts(cache, playlist, dirtyParts)
 
 	// Reset all pieces that were modified for holds
 	cache.Pieces.update(
@@ -240,7 +242,7 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		},
 		dirty: true,
 	})
-	refreshParts(cache, dirtyParts)
+	refreshParts(cache, rundownPlaylist, dirtyParts)
 
 	// Reset all pieces that were modified for holds
 	cache.Pieces.update(
@@ -373,22 +375,30 @@ export function getPreviousPart(cache: CacheForRundownPlaylist, partToCheck: Par
 	}
 	return previousPart
 }
-export function refreshParts(cache: CacheForRundownPlaylist, parts: Part[]) {
-	const ps: Promise<any>[] = []
-	parts.forEach((part) => {
-		const rundown = cache.Rundowns.findOne(part.rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found in refreshParts`)
-		ps.push(
-			refreshPart(cache, rundown, part).then(() => {
-				cache.Parts.update(part._id, {
-					$unset: {
-						dirty: 1,
-					},
-				})
-			})
-		)
-	})
-	waitForPromiseAll(ps)
+export function refreshParts(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, parts: Part[]) {
+	if (parts.length > 0) {
+		const studio = cache.Studios.findOne(playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio ${playlist.studioId} was not found`)
+
+		const segmentIds = _.uniq(parts.map((p) => p.segmentId))
+		const segments = cache.Segments.findFetch({ _id: { $in: segmentIds } })
+		const groupedSegments = _.groupBy(segments, (s) => s.rundownId)
+
+		const ps = _.map(groupedSegments, async (segments) => {
+			const rundownId = segments[0].rundownId
+			const rundown = cache.Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found in refreshParts`)
+
+			const pIngestSegments = segments.map((segment) =>
+				makePromise(() =>
+					loadCachedIngestSegment(rundown._id, rundown.externalId, segment._id, segment.externalId)
+				)
+			)
+			const ingestSegments = await Promise.all(pIngestSegments)
+			updateSegmentsFromIngestData(cache, studio, playlist, rundown, ingestSegments)
+		})
+		waitForPromiseAll(ps)
+	}
 }
 export async function refreshPart(cache: CacheForRundownPlaylist, rundown: Rundown, part: Part) {
 	// TODO:
