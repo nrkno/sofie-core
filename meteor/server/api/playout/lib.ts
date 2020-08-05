@@ -25,6 +25,7 @@ import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutIt
 import { saveIntoCache } from '../../DatabaseCache'
 import { afterRemoveParts } from '../rundown'
 import { writeFileSync } from 'fs'
+import { AdLibActions } from '../../../lib/collections/AdLibActions'
 
 /**
  * Reset the rundown:
@@ -793,6 +794,7 @@ export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: 
 
 	// These are not present in the cache because they do not directly affect output.
 	// TODO - should this be a cache.defer??
+	AdLibActions.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
 	AdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
 	RundownBaselineAdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
 	IngestDataCache.remove({ rundownId: rundown._id })

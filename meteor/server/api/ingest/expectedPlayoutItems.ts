@@ -1,12 +1,11 @@
-import { PieceGeneric, Piece, PieceId } from '../../../lib/collections/Pieces'
+import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { DBRundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
+import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { syncFunctionIgnore } from '../../codeControl'
 import { logger } from '../../logging'
-import { Parts, PartId } from '../../../lib/collections/Parts'
+import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { saveIntoDb, protectString, check } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
@@ -15,10 +14,10 @@ interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric
 	partId?: PartId
 	pieceId: PieceId
 }
-export function extractExpectedPlayoutItems(
-	rundown: DBRundown,
+function extractExpectedPlayoutItems(
+	part: DBPart,
 	pieces: Array<Piece | AdLibPiece>
-): ExpectedPlayoutItem[] {
+): ExpectedPlayoutItemGenericWithPiece[] {
 	let expectedPlayoutItemsGeneric: ExpectedPlayoutItemGenericWithPiece[] = []
 
 	_.each(pieces, (piece) => {
@@ -26,17 +25,23 @@ export function extractExpectedPlayoutItems(
 			_.each(piece.expectedPlayoutItems, (pieceItem) => {
 				expectedPlayoutItemsGeneric.push({
 					pieceId: piece._id,
-					partId: piece.partId,
+					partId: part._id,
 					...pieceItem,
 				})
 			})
 		}
 	})
 
-	let i: number = 0
-	return _.map<ExpectedPlayoutItemGenericWithPiece, ExpectedPlayoutItem>(expectedPlayoutItemsGeneric, (item) => {
+	return expectedPlayoutItemsGeneric
+}
+
+function wrapExpectedPlayoutItems(
+	rundown: DBRundown,
+	items: ExpectedPlayoutItemGenericWithPiece[]
+): ExpectedPlayoutItem[] {
+	return items.map((item, i) => {
 		return {
-			_id: protectString(item.pieceId + '_' + i++),
+			_id: protectString(item.pieceId + '_' + i),
 			studioId: rundown.studioId,
 			rundownId: rundown._id,
 			...item,
@@ -44,13 +49,7 @@ export function extractExpectedPlayoutItems(
 	})
 }
 
-export const updateExpectedPlayoutItemsOnRundown: (
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId
-) => void = syncFunctionIgnore(function updateExpectedPlayoutItemsOnRundown(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId
-) {
+export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 	check(rundownId, String)
 
 	const rundown = cache.Rundowns.findOne(rundownId)
@@ -64,21 +63,15 @@ export const updateExpectedPlayoutItemsOnRundown: (
 		return
 	}
 
-	const allPiecesInRundown: Piece[] = []
-	_.each(cache.Parts.findFetch({ rundownId: rundown._id }), (part) => {
-		_.each(getAllPiecesFromCache(cache, part), (piece) => allPiecesInRundown.push(piece))
-	})
+	const intermediaryItems: ExpectedPlayoutItemGenericWithPiece[] = []
 
-	const adlibPieces: AdLibPiece[] = []
-	_.each(cache.Parts.findFetch({ rundownId: rundown._id }), (part) => {
-		_.each(getAllAdLibPiecesFromCache(cache, part), (adlibPiece) => adlibPieces.push(adlibPiece))
-	})
+	for (const part of cache.Parts.findFetch({ rundownId: rundown._id })) {
+		intermediaryItems.push(...extractExpectedPlayoutItems(part, getAllPiecesFromCache(cache, part)))
+		intermediaryItems.push(...extractExpectedPlayoutItems(part, getAllAdLibPiecesFromCache(cache, part)))
+	}
 
 	cache.defer(() => {
-		const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
-			...allPiecesInRundown,
-			...adlibPieces,
-		])
+		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
 
 		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
 			ExpectedPlayoutItems,
@@ -88,17 +81,13 @@ export const updateExpectedPlayoutItemsOnRundown: (
 			expectedPlayoutItems
 		)
 	})
-})
+}
 
-export const updateExpectedPlayoutItemsOnPart: (
+export function updateExpectedPlayoutItemsOnPart(
 	cache: CacheForRundownPlaylist,
 	rundownId: RundownId,
 	partId: PartId
-) => void = syncFunctionIgnore(function updateExpectedPlayoutItemsOnPart(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	partId: PartId
-) {
+): void {
 	check(rundownId, String)
 	check(partId, String)
 
@@ -126,10 +115,11 @@ export const updateExpectedPlayoutItemsOnPart: (
 	}
 
 	cache.defer(() => {
-		const expectedPlayoutItems: ExpectedPlayoutItem[] = extractExpectedPlayoutItems(rundown, [
+		const intermediaryItems = extractExpectedPlayoutItems(part, [
 			...getAllPiecesFromCache(cache, part),
 			...part.getAllAdLibPieces(),
 		])
+		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
 
 		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
 			ExpectedPlayoutItems,
@@ -140,4 +130,4 @@ export const updateExpectedPlayoutItemsOnPart: (
 			expectedPlayoutItems
 		)
 	})
-})
+}

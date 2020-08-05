@@ -104,8 +104,7 @@ import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
 import { syncFunction } from '../../codeControl'
 import { UpdateNext } from './updateNext'
-import { extractExpectedPlayoutItems, updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
+import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
 import {
 	RundownPlaylists,
 	DBRundownPlaylist,
