@@ -52,6 +52,11 @@ export namespace PeripheralDeviceContentWriteAccess {
 			if (!m) throw new Meteor.Error(404, `MediaWorkFlow "${workFlowId}" not found!`)
 			existingWorkFlow = m
 		}
+		if (!Settings.enableUserAccounts) {
+			// Note: This is a temporary hack to keep backwards compatibility:
+			const device = PeripheralDevices.findOne(existingWorkFlow.deviceId)
+			if (device) cred0.token = device.token
+		}
 		return { ...anyContent(cred0, existingWorkFlow.deviceId), mediaWorkFlow: existingWorkFlow }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
