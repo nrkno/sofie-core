@@ -419,8 +419,6 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 	check(deviceId, String)
 	check(fileName, String)
 
-	// console.log('Upload of file', fileName, deviceId)
-
 	let content = ''
 	try {
 		const peripheralDevice = PeripheralDevices.findOne(deviceId) // TODO: a better security model is needed here. Token is a no-go, but something else to verify the user?

@@ -55,7 +55,6 @@ const customFormat = Winston.format.printf(({ timestamp, level, message, meta })
 })
 
 if (logToFile || logPath !== '') {
-	// console.log(Meteor)
 	if (logPath === '') {
 		let time = new Date()
 		let startDate =

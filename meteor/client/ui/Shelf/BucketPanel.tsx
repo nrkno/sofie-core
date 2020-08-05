@@ -349,7 +349,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
-					// console.log(sourceLayer)
 					const { t } = this.props
 					if (this.props.playlist._id && this.props.playlist.currentPartInstanceId) {
 						const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -579,9 +578,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 											{this.state.bucketName}
 										</h4>
 									)}
-									{/* 
+									{/*
 						<FontAwesomeIcon icon={faBars} />&nbsp;
-						
+
 						{ filter.enableSearch &&
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />

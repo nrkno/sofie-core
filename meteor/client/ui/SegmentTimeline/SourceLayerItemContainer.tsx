@@ -149,7 +149,6 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 			this.updateMediaObjectSubscription()
 		})
 		if (this.shouldDataTrackerUpdate(prevProps)) {
-			// console.log('Invalidating computation!', this.statusComp.stopped, this.statusComp.invalidated)
 			if (this.statusComp) this.statusComp.invalidate()
 		}
 	}

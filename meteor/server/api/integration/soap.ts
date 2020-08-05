@@ -28,12 +28,8 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 
 	let url = msg.receiver.url
 
-	// console.log('url', url)
-
 	let soapClient: soap.Client = await new Promise((resolve: (soapClient: soap.Client) => any, reject) => {
 		soap.createClient(url, (err, client: soap.Client) => {
-			// console.log('callback', err)
-			// console.log('keys', _.keys(client))
 			if (err) reject(err)
 			else resolve(client)
 		})
@@ -67,8 +63,6 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 		if (fcn) {
 			let args = _.omit(msg.message, ['fcn'])
 
-			// console.log('SOAP', msg.message.fcn, args)
-
 			fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
 				if (err) {
 					logger.debug('Sent SOAP message', args)
@@ -85,20 +79,16 @@ export async function sendSOAPMessage(msg: ExternalMessageQueueObjSOAP0 & Extern
 }
 async function resolveSOAPFcnData(soapClient: soap.Client, valFcn: ExternalMessageQueueObjSOAPMessageAttrFcn) {
 	return new Promise((resolve, reject) => {
-		// console.log('resolveSOAPFcnData')
-
 		if (valFcn._fcn.soapFetchFrom) {
 			let fetchFrom = valFcn._fcn.soapFetchFrom
 			let fcn = soapClient[fetchFrom.fcn] as soap.ISoapMethod | undefined
 			if (fcn) {
 				let args = fetchFrom.attrs
-				// console.log('SOAP', fetchFrom.fcn, args)
 
 				fcn(args, (err: any, result: any, raw: any, soapHeader: any) => {
 					if (err) {
 						reject(err)
 					} else {
-						// console.log('reply', result)
 						let resultValue = result[fetchFrom.fcn + 'Result']
 						resolve(resultValue)
 					}

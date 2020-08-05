@@ -106,7 +106,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											'BlueprintSettings'
 										)
 									)
-									// console.log('Blueprint restore success')
 								})
 								.catch((err) => {
 									if (err && err.toString().endsWith('[422]')) {
@@ -146,7 +145,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 																	'BlueprintSettings'
 																)
 															)
-															// console.log('Blueprint restore success')
 														})
 														.catch((err: string) => {
 															// console.error('Blueprint restore failure: ', err)

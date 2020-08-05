@@ -29,8 +29,3 @@ export function rejectFields(fieldNames: string[], rejectFields: string[]) {
 	})
 	return allow
 }
-
-// console.log(allowOnlyFields(['_id', 'name'], ['name', 'modified']) === false, '_id not allowed')
-// console.log(allowOnlyFields(['name'], ['name', 'modified']) === true, 'should be ok')
-// console.log(rejectFields(['_id', 'name'], ['_id']) === false, '_id not allowed')
-// console.log(rejectFields(['name'], ['_id']) === true, 'should be ok')

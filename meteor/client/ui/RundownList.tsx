@@ -217,9 +217,6 @@ interface IRundownsListState {
 }
 
 export const RundownList = translateWithTracker(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
 	const studios = Studios.find().fetch()
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
@@ -534,7 +531,6 @@ export const RundownList = translateWithTracker(() => {
 												{t('Status Messages:')}
 												<ul>
 													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
-														// console.log(message)
 														return <li key={i}>{message}</li>
 													})}
 												</ul>

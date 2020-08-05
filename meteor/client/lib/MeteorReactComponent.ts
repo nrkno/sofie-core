@@ -51,7 +51,6 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 	subscriptionsReady(): boolean {
 		return !_.find(this._subscriptions, (sub, key) => {
 			if (!sub.ready()) {
-				// console.log('sub not ready: ' + key)
 				return true
 			}
 		})

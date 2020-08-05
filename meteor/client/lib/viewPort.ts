@@ -19,7 +19,6 @@ export function maintainFocusOnPartInstance(
 ) {
 	let startTime = Date.now()
 	const focus = () => {
-		// console.log("focus");
 		if (Date.now() - startTime < timeWindow) {
 			_dontClearInterval = true
 			scrollToPartInstance(partInstanceId, forceScroll, noAnimation)
@@ -43,7 +42,6 @@ export function isMaintainingFocus(): boolean {
 
 function quitFocusOnPart() {
 	if (!_dontClearInterval && focusInterval) {
-		// console.log("quitFocusOnPart")
 		clearInterval(focusInterval)
 		focusInterval = undefined
 	}

@@ -69,7 +69,6 @@ describe('playout: updateSourceLayerInfinitesAfterLine', function () {
 			actualInfinites[key] = _.map(items, item => item.partId).sort()
 		})
 
-		// console.log(JSON.stringify(actualInfinites, undefined, 3))
 
 		const expectedInfinites = {
 			'4QCyxcifIpEHXWQW5mHEnja9vYQ_': [

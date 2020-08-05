@@ -593,8 +593,6 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		if (_.isUndefined(value))
 			throw new Meteor.Error(400, `setVariantConfig "${variantId}", "${configId}": value is undefined`)
 
-		// console.log('setVariantConfig', variantId, configId, value)
-
 		const variant = ShowStyleVariants.findOne({
 			_id: this.getProtectedVariantId(variantId),
 			showStyleBaseId: this.showStyleBase._id,

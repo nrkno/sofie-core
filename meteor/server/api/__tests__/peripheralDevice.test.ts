@@ -203,7 +203,6 @@ describe('test peripheralDevice general API methods', () => {
 		const now = getCurrentTime()
 		const response = Meteor.call(PeripheralDeviceAPIMethods.getTimeDiff)
 		expect(response).toBeTruthy()
-		console.dir(response)
 		expect(response.currentTime).toBeGreaterThan(now - 30)
 		expect(response.currentTime).toBeLessThan(now + 30)
 		expect(response.systemRawTime).toBeGreaterThan(0)
@@ -377,7 +376,6 @@ describe('test peripheralDevice general API methods', () => {
 			},
 		}).fetch()
 		expect(timelineObjs.length).toBe(1)
-		console.dir(timelineObjs)
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
 			id: tObj.id,
 			time: getCurrentTime(),
@@ -483,7 +481,6 @@ describe('test peripheralDevice general API methods', () => {
 
 		Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 		let deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
-		// console.log(deviceWithSecretToken)
 		expect(deviceWithSecretToken).toBeTruthy()
 		expect(deviceWithSecretToken.accessTokenUrl).toBe('')
 		expect((deviceWithSecretToken.secretSettings as IngestDeviceSecretSettings).accessToken).toBe(
