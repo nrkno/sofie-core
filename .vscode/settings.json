@@ -1,6 +1,7 @@
 {
 	"typescript.tsdk": "./meteor/node_modules/typescript/lib",
 	"files.eol": "\n",
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.formatOnSave": true,
 	"[json]": {
 		"editor.formatOnSave": false
