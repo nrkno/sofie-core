@@ -28,13 +28,13 @@ import {
 	IDashboardPanelTrackedProps,
 	getUnfinishedPieceInstancesGrouped,
 	getNextPieceInstancesGrouped,
+	isAdLibOnAir,
 } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
@@ -42,6 +42,7 @@ import { ContextMenuTrigger } from 'react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { PartInstances } from '../../../lib/collections/PartInstances'
+import { AdLibPieceUi } from './AdLibPanel'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -209,12 +210,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				showStyleVariantId = rundown.showStyleVariantId
 			}
 		}
-		const { unfinishedPieceInstancesByAdlibId, unfinishedPieceInstancesByTag } = getUnfinishedPieceInstancesGrouped(
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextPieceInstancesByAdlibId, nextPieceInstancesByAdlibTag } = getNextPieceInstancesGrouped(
-			props.playlist.nextPartInstanceId
-		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: BucketAdLibs.find(
 				{
@@ -228,11 +227,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 			).fetch(),
 			studio: props.playlist.getStudio(),
-			unfinishedPieceInstancesByAdlibId,
-			unfinishedPieceInstancesByTag,
+			unfinishedAdLibIds,
+			unfinishedTags,
 			showStyleVariantId,
-			nextPieceInstancesByAdlibId,
-			nextPieceInstancesByAdlibTag,
+			nextAdLibIds,
+			nextTags,
 		})
 	},
 	(data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
@@ -337,14 +336,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 				}
 
-				isAdLibOnAir(adLib: IAdLibListItem) {
-					if (
-						this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)] &&
-						this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)].length > 0
-					) {
-						return true
-					}
-					return false
+				isAdLibOnAir(adLibPiece: AdLibPieceUi) {
+					return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLibPiece)
 				}
 
 				onDragEnter = () => {
@@ -407,7 +400,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						return
 					}
 					if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-						if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+						if (
+							!this.isAdLibOnAir((piece as any) as AdLibPieceUi) ||
+							!(sourceLayer && sourceLayer.clearKeyboardHotkey)
+						) {
 							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
@@ -623,7 +619,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 														outputLayer={this.state.outputLayers[adlib.outputLayerId]}
 														onToggleAdLib={this.onToggleAdLib}
 														playlist={this.props.playlist}
-														isOnAir={this.isAdLibOnAir((adlib as any) as IAdLibListItem)}
+														isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
 														mediaPreviewUrl={
 															this.props.studio
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''

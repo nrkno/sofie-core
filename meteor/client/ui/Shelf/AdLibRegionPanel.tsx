@@ -12,6 +12,8 @@ import {
 	IDashboardPanelTrackedProps,
 	getUnfinishedPieceInstancesGrouped,
 	getNextPieceInstancesGrouped,
+	isAdLibOnAir,
+	isAdLibNext,
 } from './DashboardPanel'
 import ClassNames from 'classnames'
 import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
@@ -21,7 +23,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { unprotectString } from '../../../lib/lib'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import {
@@ -76,23 +78,11 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
-		if (
-			this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)] &&
-			this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)].length > 0
-		) {
-			return true
-		}
-		return false
+		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
-		if (
-			this.props.nextPieceInstancesByAdlibId[unprotectString(adLib._id)] &&
-			this.props.nextPieceInstancesByAdlibId[unprotectString(adLib._id)].length > 0
-		) {
-			return true
-		}
-		return false
+		return isAdLibNext(this.props.nextAdLibIds, this.props.nextTags, adLib)
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
@@ -278,19 +268,16 @@ export const AdLibRegionPanel = translateWithTracker<
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
-		const { unfinishedPieceInstancesByAdlibId, unfinishedPieceInstancesByTag } = getUnfinishedPieceInstancesGrouped(
+		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextPieceInstancesByAdlibId, nextPieceInstancesByAdlibTag } = getNextPieceInstancesGrouped(
+		const { nextAdLibIds, nextTags, nextPieceInstances } = getNextPieceInstancesGrouped(
 			props.playlist.nextPartInstanceId
 		)
 		const thumbnailPiece =
 			props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
 				? _.find(
-						[
-							..._.flatten(_.values(nextPieceInstancesByAdlibId)),
-							..._.flatten(_.values(unfinishedPieceInstancesByAdlibId)),
-						],
+						[..._.flatten(_.values(unfinishedPieceInstances)), ..._.flatten(_.values(nextPieceInstances))],
 						(piece) => {
 							return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
 						}
@@ -307,10 +294,10 @@ export const AdLibRegionPanel = translateWithTracker<
 			: { metadata: null }
 		return Object.assign({}, fetchAndFilter(props), {
 			studio: studio,
-			unfinishedPieceInstancesByAdlibId,
-			unfinishedPieceInstancesByTag,
-			nextPieceInstancesByAdlibId,
-			nextPieceInstancesByAdlibTag,
+			unfinishedAdLibIds,
+			unfinishedTags,
+			nextAdLibIds,
+			nextTags,
 			metadata,
 			thumbnailPiece,
 			layer,

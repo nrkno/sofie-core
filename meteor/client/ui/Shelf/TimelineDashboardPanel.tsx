@@ -25,8 +25,7 @@ import {
 	getUnfinishedPieceInstancesGrouped,
 	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
-import { PieceInstanceId, PieceInstance } from '../../../lib/collections/PieceInstances'
-import { unprotectString, protectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 interface IState {
 	outputLayers: {
 		[key: string]: IOutputLayer
@@ -42,19 +41,17 @@ export const TimelineDashboardPanel = translateWithTracker<
 	IState,
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
 >((props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
-	const { unfinishedPieceInstancesByAdlibId, unfinishedPieceInstancesByTag } = getUnfinishedPieceInstancesGrouped(
+	const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 		props.playlist.currentPartInstanceId
 	)
-	const { nextPieceInstancesByAdlibId, nextPieceInstancesByAdlibTag } = getNextPieceInstancesGrouped(
-		props.playlist.nextPartInstanceId
-	)
+	const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 	return {
 		...fetchAndFilter(props),
 		studio: props.playlist.getStudio(),
-		unfinishedPieceInstancesByAdlibId,
-		unfinishedPieceInstancesByTag,
-		nextPieceInstancesByAdlibId,
-		nextPieceInstancesByAdlibTag,
+		unfinishedAdLibIds,
+		unfinishedTags,
+		nextAdLibIds,
+		nextTags,
 	}
 })(
 	class TimelineDashboardPanel extends DashboardPanelInner {
