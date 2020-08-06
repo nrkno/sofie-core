@@ -183,7 +183,6 @@ Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({
 			studioId: 1,
-			rundownId: 1,
 		})
 	}
 })

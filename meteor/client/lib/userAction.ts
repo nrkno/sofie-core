@@ -237,10 +237,12 @@ export function doUserAction<Result>(
 		})
 		.catch((err) => {
 			clearMethodTimeout()
-			// console.error(err) - this is a result of an error server-side. Will be logged, no reason to print it out to console
 			let doDefault: boolean | void = true
 			if (callback) {
 				doDefault = callback(err)
+			} else {
+				// If no callback has been defined, we should at least trace the error to console
+				console.error(err)
 			}
 			if (doDefault !== false) {
 				NotificationCenter.push(

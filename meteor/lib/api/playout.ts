@@ -7,6 +7,7 @@ import { PartId } from '../collections/Parts'
 import { StudioId } from '../collections/Studios'
 import { ClientAPI } from './client'
 import { ReloadRundownPlaylistResponse } from './userActions'
+import { SegmentId } from '../collections/Segments'
 
 export interface NewPlayoutAPI {
 	rundownPrepareForBroadcast(playlistId: RundownPlaylistId): Promise<void>
@@ -31,6 +32,10 @@ export interface NewPlayoutAPI {
 		playlistId: RundownPlaylistId,
 		partId: PartId,
 		timeOffset?: number | undefined
+	): Promise<ClientAPI.ClientResponse<void>>
+	rundownSetNextSegment(
+		playlistId: RundownPlaylistId,
+		segmentId: SegmentId | null
 	): Promise<ClientAPI.ClientResponse<void>>
 	rundownMoveNext(
 		playlistId: RundownPlaylistId,
@@ -75,6 +80,7 @@ export enum PlayoutAPIMethods {
 
 	'rundownTake' = 'playout.rundownTake',
 	'rundownSetNext' = 'playout.rundownSetNext',
+	'rundownSetNextSegment' = 'playout.rundownSetNextSegment',
 	'rundownMoveNext' = 'playout.rundownMoveNext',
 	'rundownActivateHold' = 'playout.rundownActivateHold',
 	'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
