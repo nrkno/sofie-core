@@ -1,5 +1,5 @@
 {
-	"typescript.tsdk": "node_modules\\typescript\\lib",
+	"typescript.tsdk": "./meteor/node_modules/typescript/lib",
 	"files.eol": "\n",
 	"editor.formatOnSave": true,
 	"[json]": {
