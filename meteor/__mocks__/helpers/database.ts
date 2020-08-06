@@ -154,6 +154,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 			sofieUrl: '',
 		},
 		_rundownVersionHash: 'asdf',
+		routeSets: {},
 	}
 	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
