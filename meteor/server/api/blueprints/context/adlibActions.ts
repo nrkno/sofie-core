@@ -69,6 +69,7 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 	adlibDisableOutTransition: false,
 	adlibTransitionKeepAlive: 0,
 	canCombineQueue: false,
+	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof OmitId<IBlueprintPiece>>

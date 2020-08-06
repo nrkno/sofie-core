@@ -20,13 +20,13 @@ import { Studio } from '../../../lib/collections/Studios'
 import {
 	DashboardPanelInner,
 	dashboardElementPosition,
-	getUnfinishedPieceInstancesReactive,
 	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
 } from './DashboardPanel'
 import { PieceInstanceId, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { unprotectString, protectString } from '../../../lib/lib'
-import { getNextPiecesReactive } from './AdLibRegionPanel'
 interface IState {
 	outputLayers: {
 		[key: string]: IOutputLayer
@@ -41,16 +41,22 @@ export const TimelineDashboardPanel = translateWithTracker<
 	IAdLibPanelProps & IDashboardPanelProps,
 	IState,
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
->(
-	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
-		return {
-			...fetchAndFilter(props),
-			studio: props.playlist.getStudio(),
-			unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
-			nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId),
-		}
+>((props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
+	const { unfinishedPieceInstancesByAdlibId, unfinishedPieceInstancesByTag } = getUnfinishedPieceInstancesGrouped(
+		props.playlist.currentPartInstanceId
+	)
+	const { nextPieceInstancesByAdlibId, nextPieceInstancesByAdlibTag } = getNextPieceInstancesGrouped(
+		props.playlist.nextPartInstanceId
+	)
+	return {
+		...fetchAndFilter(props),
+		studio: props.playlist.getStudio(),
+		unfinishedPieceInstancesByAdlibId,
+		unfinishedPieceInstancesByTag,
+		nextPieceInstancesByAdlibId,
+		nextPieceInstancesByAdlibTag,
 	}
-)(
+})(
 	class TimelineDashboardPanel extends DashboardPanelInner {
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined

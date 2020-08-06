@@ -7,7 +7,12 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
+import {
+	dashboardElementPosition,
+	IDashboardPanelTrackedProps,
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
+} from './DashboardPanel'
 import ClassNames from 'classnames'
 import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -42,13 +47,7 @@ interface IAdLibRegionPanelProps {
 	adlibRank?: number
 }
 
-interface IAdLibRegionPanelTrackedProps {
-	unfinishedPieces: {
-		[key: string]: PieceInstance[]
-	}
-	nextPieces: {
-		[key: string]: PieceInstance[]
-	}
+interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
 	metadata: MediaObject | null
 	thumbnailPiece: PieceInstance
 	layer?: ISourceLayer
@@ -78,8 +77,8 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
 		if (
-			this.props.unfinishedPieces[unprotectString(adLib._id)] &&
-			this.props.unfinishedPieces[unprotectString(adLib._id)].length > 0
+			this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)] &&
+			this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)].length > 0
 		) {
 			return true
 		}
@@ -88,8 +87,8 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 
 	isAdLibNext(adLib: AdLibPieceUi) {
 		if (
-			this.props.nextPieces[unprotectString(adLib._id)] &&
-			this.props.nextPieces[unprotectString(adLib._id)].length > 0
+			this.props.nextPieceInstancesByAdlibId[unprotectString(adLib._id)] &&
+			this.props.nextPieceInstancesByAdlibId[unprotectString(adLib._id)].length > 0
 		) {
 			return true
 		}
@@ -272,34 +271,6 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
-	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
-		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
-			$and: [
-				{
-					piece: {
-						$exists: true,
-					},
-				},
-				{
-					'piece.adLibSourceId': {
-						$exists: true,
-					},
-				},
-			],
-		}).fetch()
-	}
-
-	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
-	_.each(
-		_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId),
-		(grp, id) => (nextPieces[id] = _.map(grp, (instance) => instance))
-	)
-	return nextPieces
-}
-
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
 	IState,
@@ -307,13 +278,23 @@ export const AdLibRegionPanel = translateWithTracker<
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
 		const studio = props.playlist.getStudio()
-		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId)
-		const nextPieces = getNextPiecesReactive(props.playlist.nextPartInstanceId)
+		const { unfinishedPieceInstancesByAdlibId, unfinishedPieceInstancesByTag } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextPieceInstancesByAdlibId, nextPieceInstancesByAdlibTag } = getNextPieceInstancesGrouped(
+			props.playlist.nextPartInstanceId
+		)
 		const thumbnailPiece =
 			props.panel.thumbnailSourceLayerIds && props.panel.thumbnailSourceLayerIds.length
-				? _.find([..._.flatten(_.values(nextPieces)), ..._.flatten(_.values(unfinishedPieces))], (piece) => {
-						return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
-				  })
+				? _.find(
+						[
+							..._.flatten(_.values(nextPieceInstancesByAdlibId)),
+							..._.flatten(_.values(unfinishedPieceInstancesByAdlibId)),
+						],
+						(piece) => {
+							return (props.panel.thumbnailSourceLayerIds || []).indexOf(piece.sourceLayerId) !== -1
+						}
+				  )
 				: undefined
 		const layer =
 			thumbnailPiece && props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.sourceLayerId === layer._id)
@@ -326,8 +307,10 @@ export const AdLibRegionPanel = translateWithTracker<
 			: { metadata: null }
 		return Object.assign({}, fetchAndFilter(props), {
 			studio: studio,
-			unfinishedPieces,
-			nextPieces,
+			unfinishedPieceInstancesByAdlibId,
+			unfinishedPieceInstancesByTag,
+			nextPieceInstancesByAdlibId,
+			nextPieceInstancesByAdlibTag,
 			metadata,
 			thumbnailPiece,
 			layer,

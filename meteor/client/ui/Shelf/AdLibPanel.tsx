@@ -45,7 +45,7 @@ import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelp
 import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibActions, AdLibActionCommon, AdLibAction } from '../../../lib/collections/AdLibActions'
+import { AdLibActions, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 import { RegisteredHotkeys, registerHotkey, HotkeyAssignmentType } from '../../lib/hotkeyRegistry'
 import { ShelfTabs } from './Shelf'
@@ -466,6 +466,37 @@ export interface IAdLibPanelTrackedProps {
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
+function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction): AdLibPieceUi {
+	let sourceLayerId = ''
+	let outputLayerId = ''
+	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
+	const isContent = RundownUtils.isAdlibActionContent(action.display)
+	if (isContent) {
+		sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
+		outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
+		content = (action.display as IBlueprintActionManifestDisplayContent).content
+	}
+
+	return literal<AdLibPieceUi>({
+		_id: protectString(`function_${action._id}`),
+		name: action.display.label,
+		status: RundownAPI.PieceStatusCode.UNKNOWN,
+		isAction: true,
+		expectedDuration: 0,
+		disabled: false,
+		externalId: unprotectString(action._id),
+		rundownId: action.rundownId,
+		sourceLayerId,
+		outputLayerId,
+		_rank: action.display._rank || 0,
+		content: content,
+		adlibAction: action,
+		tags: action.display.tags,
+		onAirTags: action.display.onAirTags,
+		setNextTags: action.display.setNextTags,
+	})
+}
+
 export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
 	const { t } = props
 
@@ -604,35 +635,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 			)
 				.fetch()
 				.map((action) => {
-					let sourceLayerId = ''
-					let outputLayerId = ''
-					let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
-					const isContent = RundownUtils.isAdlibActionContent(action.display)
-					if (isContent) {
-						sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-						outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-						content = (action.display as IBlueprintActionManifestDisplayContent).content
-					}
-
-					return [
-						action.partId,
-						literal<AdLibPieceUi>({
-							_id: protectString(`function_${action._id}`),
-							name: action.display.label,
-							status: RundownAPI.PieceStatusCode.UNKNOWN,
-							isAction: true,
-							expectedDuration: 0,
-							disabled: false,
-							externalId: unprotectString(action._id),
-							rundownId: action.rundownId,
-							sourceLayerId,
-							outputLayerId,
-							_rank: action.display._rank || 0,
-							content: content,
-							adlibAction: action,
-							tags: action.display.tags,
-						}),
-					]
+					return [action.partId, actionToAdLibPieceUi(action)]
 				}),
 		'adLibActions',
 		rundownIds,
@@ -753,35 +756,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 								}
 							)
 								.fetch()
-								.map((action) => {
-									let sourceLayerId = ''
-									let outputLayerId = ''
-									let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
-									const isContent = RundownUtils.isAdlibActionContent(action.display)
-									if (isContent) {
-										sourceLayerId = (action.display as IBlueprintActionManifestDisplayContent).sourceLayerId
-										outputLayerId = (action.display as IBlueprintActionManifestDisplayContent).outputLayerId
-										content = (action.display as IBlueprintActionManifestDisplayContent).content
-									}
-
-									return literal<AdLibPieceUi>({
-										_id: protectString(`function_${action._id}`),
-										name: action.display.label,
-										status: RundownAPI.PieceStatusCode.UNKNOWN,
-										isAction: true,
-										isGlobal: true,
-										expectedDuration: 0,
-										disabled: false,
-										externalId: unprotectString(action._id),
-										rundownId: action.rundownId,
-										sourceLayerId,
-										outputLayerId,
-										_rank: action.display._rank || 0,
-										content: content,
-										adlibAction: action,
-										tags: action.display.tags,
-									})
-								}),
+								.map((action) => actionToAdLibPieceUi(action)),
 						'globalAdLibActions',
 						rundownIds,
 						partIds
