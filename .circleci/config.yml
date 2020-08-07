@@ -170,7 +170,7 @@ workflows:
       - publish-tag:
           requires:
             # - tests
-            - validate-prod-dependencies
+            # - validate-prod-dependencies
             - build
           filters:
             tags:
