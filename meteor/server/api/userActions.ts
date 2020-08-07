@@ -606,6 +606,8 @@ export function mediaAbortAllWorkflows() {
 	return ClientAPI.responseSuccess(MediaManagerAPI.abortAllWorkflows())
 }
 export function bucketsRemoveBucket(id: BucketId) {
+	check(id, String)
+
 	return ClientAPI.responseSuccess(BucketsAPI.removeBucket(id))
 }
 export function bucketsModifyBucket(id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {

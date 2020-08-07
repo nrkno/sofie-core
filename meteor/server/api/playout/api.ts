@@ -11,6 +11,7 @@ import { PieceId } from '../../../lib/collections/Pieces'
 import { StudioId } from '../../../lib/collections/Studios'
 import { PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { ClientAPI } from '../../../lib/api/client'
+import { SegmentId } from '../../../lib/collections/Segments'
 
 class ServerPlayoutAPIClass implements NewPlayoutAPI {
 	rundownPrepareForBroadcast(playlistId: RundownPlaylistId) {
@@ -56,6 +57,9 @@ class ServerPlayoutAPIClass implements NewPlayoutAPI {
 	}
 	rundownSetNext(playlistId: RundownPlaylistId, partId: PartId, timeOffset?: number | undefined) {
 		return makePromise(() => ServerPlayoutAPI.setNextPart(playlistId, partId, true, timeOffset))
+	}
+	rundownSetNextSegment(playlistId: RundownPlaylistId, segmentId: SegmentId | null) {
+		return makePromise(() => ServerPlayoutAPI.setNextSegment(playlistId, segmentId))
 	}
 	rundownMoveNext(playlistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
 		return makePromise(() => ServerPlayoutAPI.moveNextPart(playlistId, horisontalDelta, verticalDelta, true))

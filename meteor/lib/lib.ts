@@ -1416,6 +1416,7 @@ export function unprotectString(protectedStr: ProtectedString<any> | undefined |
 export function unprotectStringArray(protectedStrs: Array<ProtectedString<any>>): string[] {
 	return (protectedStrs as any) as string[]
 }
+/** Used on protectedStrings instead of _.isString or typeof x === 'string' */
 export function isProtectedString(str: any): str is ProtectedString<any> {
 	return typeof str === 'string'
 }

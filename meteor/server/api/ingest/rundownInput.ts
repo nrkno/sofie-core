@@ -866,10 +866,10 @@ function updateRundownFromIngestData(
 				logger.debug(adLibPiece)
 			},
 			afterUpdate(adLibPiece) {
-				logger.debug('updated piece ' + adLibPiece._id)
+				logger.debug('updated adLibPiece ' + adLibPiece._id)
 			},
 			afterRemove(adLibPiece) {
-				logger.debug('deleted piece ' + adLibPiece._id)
+				logger.debug('deleted adLibPiece ' + adLibPiece._id)
 			},
 		}),
 		savePreparedChangesIntoCache<Part, DBPart>(prepareSaveParts, cache.Parts, {

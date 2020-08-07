@@ -27,6 +27,7 @@ namespace PlayoutAPI {
 
 		'rundownTake' = 'playout.rundownTake',
 		'rundownSetNext' = 'playout.rundownSetNext',
+		'rundownSetNextSegment' = 'playout.rundownSetNextSegment',
 		'rundownMoveNext' = 'playout.rundownMoveNext',
 		'rundownActivateHold' = 'playout.rundownActivateHold',
 		'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
@@ -74,6 +75,7 @@ describe('Playout API', () => {
 		expect(getPlaylist1()).toBeTruthy()
 
 		const parts = getRundown0().getParts()
+		const segments = getRundown0().getSegments()
 
 		expect(getPlaylist0()).toMatchObject({
 			active: false,
@@ -112,6 +114,53 @@ describe('Playout API', () => {
 		}
 
 		{
+			// Set the first segment as next
+			Meteor.call(PlayoutAPI.methods.rundownSetNextSegment, playlistId0, segments[0]._id)
+			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			expect(getPlaylist0()).toMatchObject({
+				nextSegmentId: segments[0]._id,
+			})
+		}
+
+		{
+			// Take the second Part:
+			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
+			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			expect(instances).toHaveLength(3)
+			expect(instances[1].part._id).toEqual(parts[1]._id)
+			expect(instances[2].part._id).toEqual(parts[0]._id) // next part should loop around to first part
+			expect(getPlaylist0()).toMatchObject({
+				currentPartInstanceId: instances[1]._id,
+				nextPartInstanceId: instances[2]._id,
+			})
+		}
+
+		{
+			// Reset rundown:
+			Meteor.call(PlayoutAPI.methods.rundownResetRundown, playlistId0)
+			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			expect(instances).toHaveLength(1)
+			expect(instances[0].part._id).toEqual(parts[0]._id)
+			expect(getPlaylist0()).toMatchObject({
+				currentPartInstanceId: null,
+				nextPartInstanceId: instances[0]._id,
+			})
+		}
+
+		{
+			// Take the first Part:
+			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
+			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
+			expect(instances).toHaveLength(2)
+			expect(instances[0].part._id).toEqual(parts[0]._id)
+			expect(instances[1].part._id).toEqual(parts[1]._id)
+			expect(getPlaylist0()).toMatchObject({
+				currentPartInstanceId: instances[0]._id,
+				nextPartInstanceId: instances[1]._id,
+			})
+		}
+
+		{
 			// Take the second Part:
 			Meteor.call(PlayoutAPI.methods.rundownTake, playlistId0)
 			const instances = PartInstances.find({ rundownId: rundownId0 }).fetch()
@@ -120,9 +169,10 @@ describe('Playout API', () => {
 			expect(instances[2].part._id).toEqual(parts[2]._id)
 			expect(getPlaylist0()).toMatchObject({
 				currentPartInstanceId: instances[1]._id,
-				nextPartInstanceId: instances[2]._id,
+				nextPartInstanceId: instances[2]._id, // next part should loop around to first part
 			})
 		}
+
 		{
 			// Reset rundown:
 			Meteor.call(PlayoutAPI.methods.rundownResetRundown, playlistId0)

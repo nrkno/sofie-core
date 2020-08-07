@@ -30,6 +30,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 
 	private _initialized: boolean = false
 	private _initializer?: MongoQuery<DBInterface> | (() => Promise<void>) = undefined
+	private _initializing: Promise<any> | undefined
 
 	constructor(private _collection: TransformedCollection<Class, DBInterface>) {
 		//
@@ -53,14 +54,20 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 	}
 
 	private _initialize() {
+		if (this._initializing) {
+			// Only allow one fiber to run this at a time
+			waitForPromise(this._initializing)
+		}
+
 		if (!this._initialized) {
 			if (this._initializer !== undefined) {
-				const t = Date.now()
 				if (typeof this._initializer === 'function') {
-					waitForPromise(this._initializer())
+					this._initializing = this._initializer()
 				} else {
-					const count = waitForPromise(this.fillWithDataFromDatabase(this._initializer))
+					this._initializing = this.fillWithDataFromDatabase(this._initializer)
 				}
+				waitForPromise(this._initializing)
+				this._initializing = undefined
 			}
 			this._initialized = true
 		}

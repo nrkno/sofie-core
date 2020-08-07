@@ -31,6 +31,10 @@ export interface ServiceMessage {
 	criticality: Criticality
 	message: string
 	sender?: string
+	timestamp: number
+}
+
+export interface ExternalServiceMessage extends Omit<ServiceMessage, 'timestamp'> {
 	timestamp: Date
 }
 
