@@ -169,7 +169,7 @@ workflows:
               only: /.*/
       - publish-tag:
           requires:
-            - tests
+            # - tests
             - validate-prod-dependencies
             - build
           filters:
