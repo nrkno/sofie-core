@@ -500,20 +500,17 @@ export const RundownList = translateWithTracker(() => {
 											<tr className="hl">
 												<th colSpan={9} className="pvn phn">
 													<h2 className="mtm mbs mhn">
-														{
-															(t('Unsynced from {{nrcsNames}}'),
-															{
-																nrcsNames:
-																	languageOr(
-																		t,
-																		_.flatten(
-																			unsyncedRundownPlaylists.map((p) =>
-																				p.unsyncedRundowns.map((r) => r.externalNRCSName)
-																			)
+														{t('Unsynced from {{nrcsNames}}', {
+															nrcsNames:
+																languageOr(
+																	t,
+																	_.flatten(
+																		unsyncedRundownPlaylists.map((p) =>
+																			p.unsyncedRundowns.map((r) => r.externalNRCSName)
 																		)
-																	) || 'NRCS',
-															})
-														}
+																	)
+																) || 'NRCS',
+														})}
 													</h2>
 												</th>
 											</tr>
