@@ -697,7 +697,7 @@ describe('Test blueprint api context', () => {
 				])
 
 				expect(context.nextPartState).toEqual(ActionPartChange.NONE)
-				expect(context.currentPartState).toEqual(ActionPartChange.MARK_DIRTY)
+				expect(context.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 			})
 		})
 

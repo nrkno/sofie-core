@@ -395,7 +395,6 @@ describe('Test blueprint post-process', () => {
 			const tmpObj = literal<AdLibPiece>({
 				_id: protectString(''),
 				_rank: 0,
-				disabled: false,
 				name: '',
 				externalId: '',
 				sourceLayerId: '',

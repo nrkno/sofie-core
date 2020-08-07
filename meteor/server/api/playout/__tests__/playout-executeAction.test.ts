@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
 import {
@@ -9,20 +8,18 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import { ServerPlayoutAPI } from '../playout'
 import { ActionExecutionContext, ActionPartChange } from '../../blueprints/context'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { Rundown, Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
-import { protectString, getCurrentTime, literal } from '../../../../lib/lib'
+import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Blueprints, BlueprintId } from '../../../../lib/collections/Blueprints'
 import { BLUEPRINT_CACHE_CONTROL } from '../../blueprints/cache'
 import { ShowStyleBlueprintManifest, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 
 jest.mock('../../playout/infinites')
-import { updateSourceLayerInfinitesAfterPart } from '../../playout/infinites'
-type TupdateSourceLayerInfinitesAfterPart = jest.MockedFunction<typeof updateSourceLayerInfinitesAfterPart>
-const updateSourceLayerInfinitesAfterPartMock = updateSourceLayerInfinitesAfterPart as TupdateSourceLayerInfinitesAfterPart
+import { syncPlayheadInfinitesForNextPartInstance } from '../../playout/infinites'
+type TsyncPlayheadInfinitesForNextPartInstance = jest.MockedFunction<typeof syncPlayheadInfinitesForNextPartInstance>
+const syncPlayheadInfinitesForNextPartInstanceMock = syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
 jest.mock('../../playout/timeline')
 import { updateTimeline } from '../../playout/timeline'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
@@ -54,7 +51,7 @@ describe('Playout API', () => {
 
 			blueprintId = showStyle.blueprintId
 
-			updateSourceLayerInfinitesAfterPartMock.mockClear()
+			syncPlayheadInfinitesForNextPartInstanceMock.mockClear()
 			updateTimelineMock.mockClear()
 		})
 
@@ -102,7 +99,7 @@ describe('Playout API', () => {
 				'action execution threw'
 			)
 
-			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(0)
+			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
 		})
 
@@ -110,7 +107,6 @@ describe('Playout API', () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
-			const STATE_DIRTY = ActionPartChange.MARK_DIRTY
 
 			Blueprints.update(blueprintId, {
 				$set: {
@@ -120,7 +116,6 @@ describe('Playout API', () => {
 							BLUEPRINT_TYPE,
 							STATE_NONE,
 							STATE_SAFE,
-							STATE_DIRTY,
 						},
 						function(): any {
 							return {
@@ -142,173 +137,14 @@ describe('Playout API', () => {
 			const userData = { blobby: true }
 			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
 
-			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(0)
+			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
-
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).fetch()).toHaveLength(0)
-		})
-
-		testInFiber('dirty next part', () => {
-			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
-			const STATE_NONE = ActionPartChange.NONE
-			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
-			const STATE_DIRTY = ActionPartChange.MARK_DIRTY
-
-			Blueprints.update(blueprintId, {
-				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>(
-						{
-							// Constants to into code:
-							BLUEPRINT_TYPE,
-							STATE_NONE,
-							STATE_SAFE,
-							STATE_DIRTY,
-						},
-						function(): any {
-							return {
-								blueprintType: BLUEPRINT_TYPE,
-								executeAction: (context0) => {
-									const context = context0 as ActionExecutionContext
-									if (context.nextPartState !== STATE_NONE)
-										throw new Error('nextPartState started wrong')
-									if (context.currentPartState !== STATE_NONE)
-										throw new Error('nextPartState started wrong')
-
-									context.nextPartState = STATE_DIRTY
-								},
-							}
-						}
-					),
-				},
-			})
-
-			const actionId = 'some-action'
-			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
-
-			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
-			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-
-			// Check nextpart is flagged
-			const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-			expect(playlist).toBeTruthy()
-			expect(playlist.nextPartInstanceId).toBeTruthy()
-
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).map((p) => p._id)).toEqual([
-				playlist.nextPartInstanceId,
-			])
-		})
-
-		testInFiber('dirty next part - is dynamicallyInserted', () => {
-			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
-			const STATE_NONE = ActionPartChange.NONE
-			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
-			const STATE_DIRTY = ActionPartChange.MARK_DIRTY
-
-			const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-			expect(playlist).toBeTruthy()
-			expect(playlist.nextPartInstanceId).toBeTruthy()
-			PartInstances.update(playlist.nextPartInstanceId!, {
-				$set: {
-					'part.dynamicallyInsertedAfterPartId': true,
-				},
-			})
-
-			Blueprints.update(blueprintId, {
-				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>(
-						{
-							// Constants to into code:
-							BLUEPRINT_TYPE,
-							STATE_NONE,
-							STATE_SAFE,
-							STATE_DIRTY,
-						},
-						function(): any {
-							return {
-								blueprintType: BLUEPRINT_TYPE,
-								executeAction: (context0) => {
-									const context = context0 as ActionExecutionContext
-									if (context.nextPartState !== STATE_NONE)
-										throw new Error('nextPartState started wrong')
-									if (context.currentPartState !== STATE_NONE)
-										throw new Error('nextPartState started wrong')
-
-									context.nextPartState = STATE_DIRTY
-								},
-							}
-						}
-					),
-				},
-			})
-
-			const actionId = 'some-action'
-			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
-
-			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
-			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-
-			// Check nextpart is flagged
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).fetch()).toHaveLength(0)
-		})
-
-		testInFiber('dirty current part', () => {
-			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
-			const STATE_NONE = ActionPartChange.NONE
-			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
-			const STATE_DIRTY = ActionPartChange.MARK_DIRTY
-
-			Blueprints.update(blueprintId, {
-				$set: {
-					code: packageBlueprint<ShowStyleBlueprintManifest>(
-						{
-							// Constants to into code:
-							BLUEPRINT_TYPE,
-							STATE_NONE,
-							STATE_SAFE,
-							STATE_DIRTY,
-						},
-						function(): any {
-							return {
-								blueprintType: BLUEPRINT_TYPE,
-								executeAction: (context0) => {
-									const context = context0 as ActionExecutionContext
-									if (context.nextPartState !== STATE_NONE)
-										throw new Error('nextPartState started wrong')
-									if (context.currentPartState !== STATE_NONE)
-										throw new Error('nextPartState started wrong')
-
-									context.currentPartState = STATE_DIRTY
-								},
-							}
-						}
-					),
-				},
-			})
-
-			const actionId = 'some-action'
-			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
-
-			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
-			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-
-			// Check nextpart is flagged
-			const playlist = RundownPlaylists.findOne(playlistId) as RundownPlaylist
-			expect(playlist).toBeTruthy()
-			expect(playlist.currentPartInstanceId).toBeTruthy()
-
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).map((p) => p._id)).toEqual([
-				playlist.currentPartInstanceId,
-			])
 		})
 
 		testInFiber('safe next part', () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
-			const STATE_DIRTY = ActionPartChange.MARK_DIRTY
 
 			Blueprints.update(blueprintId, {
 				$set: {
@@ -318,7 +154,6 @@ describe('Playout API', () => {
 							BLUEPRINT_TYPE,
 							STATE_NONE,
 							STATE_SAFE,
-							STATE_DIRTY,
 						},
 						function(): any {
 							return {
@@ -342,17 +177,14 @@ describe('Playout API', () => {
 			const userData = { blobby: true }
 			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
 
-			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
+			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).fetch()).toHaveLength(0)
 		})
 
 		testInFiber('safe current part', () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
-			const STATE_DIRTY = ActionPartChange.MARK_DIRTY
 
 			Blueprints.update(blueprintId, {
 				$set: {
@@ -362,7 +194,6 @@ describe('Playout API', () => {
 							BLUEPRINT_TYPE,
 							STATE_NONE,
 							STATE_SAFE,
-							STATE_DIRTY,
 						},
 						function(): any {
 							return {
@@ -386,10 +217,8 @@ describe('Playout API', () => {
 			const userData = { blobby: true }
 			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
 
-			expect(updateSourceLayerInfinitesAfterPartMock).toHaveBeenCalledTimes(1)
+			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
-
-			expect(PartInstances.find({ rundownId, 'part.dirty': true }).fetch()).toHaveLength(0)
 		})
 	})
 })

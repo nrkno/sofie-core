@@ -32,6 +32,7 @@ import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 
 const DEBUG = false
 
@@ -107,9 +108,12 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Mock',
 			sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 			outputLayerId: env.showStyleBase.outputLayers[0]._id,
-			partId: protectString('part000'),
-			rundownId: rundownID,
+			startPartId: protectString('part000'),
+			startSegmentId: segmentID,
+			startRundownId: rundownID,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			lifespan: PieceLifespan.WithinPart,
+			invalid: false,
 		})
 		Parts.insert({
 			_id: protectString('part001'),
@@ -273,7 +277,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(playlist).toBeTruthy()
 		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
 		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			partInstanceId: currentPartInstance?._id!,
 			time: getCurrentTime(),
 		}
@@ -293,7 +297,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(playlist).toBeTruthy()
 		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
 		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			partInstanceId: currentPartInstance?._id!,
 			time: getCurrentTime(),
 		}
@@ -317,7 +321,7 @@ describe('test peripheralDevice general API methods', () => {
 			partInstanceId: currentPartInstance?._id!,
 		}).fetch()
 		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
 		}
@@ -346,7 +350,7 @@ describe('test peripheralDevice general API methods', () => {
 			partInstanceId: currentPartInstance?._id!,
 		}).fetch()
 		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
 		}

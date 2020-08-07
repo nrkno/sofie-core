@@ -464,14 +464,14 @@ describe('Playout API', () => {
 
 				// simulate TSR starting part playback
 				const currentPartInstanceId = currentPartInstance?._id || protectString('')
-				ServerPlayoutAPI.onPartPlaybackStarted(rundownId0, currentPartInstanceId, now)
+				ServerPlayoutAPI.onPartPlaybackStarted(playlistId0, currentPartInstanceId, now)
 
 				// simulate TSR starting each piece
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceId)
 				expect(pieceInstances).toHaveLength(2)
 				pieceInstances.forEach((pieceInstance) =>
 					ServerPlayoutAPI.onPiecePlaybackStarted(
-						rundownId0,
+						playlistId0,
 						pieceInstance._id,
 						false,
 						(_.isNumber(pieceInstance.piece.enable.start) ? now + pieceInstance.piece.enable.start : now) +
@@ -567,13 +567,13 @@ describe('Playout API', () => {
 				const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
 				now += currentPartInstanceBeforeTake?.part.expectedDuration!
-				ServerPlayoutAPI.onPartPlaybackStarted(rundownId0, nextPartInstanceBeforeTakeId!, now)
-				ServerPlayoutAPI.onPartPlaybackStopped(rundownId0, currentPartInstanceBeforeTakeId!, now)
+				ServerPlayoutAPI.onPartPlaybackStarted(playlistId0, nextPartInstanceBeforeTakeId!, now)
+				ServerPlayoutAPI.onPartPlaybackStopped(playlistId0, currentPartInstanceBeforeTakeId!, now)
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceBeforeTakeId!)
 				expect(pieceInstances).toHaveLength(2)
 				pieceInstances.forEach((pieceInstance) =>
 					ServerPlayoutAPI.onPiecePlaybackStopped(
-						rundownId0,
+						playlistId0,
 						pieceInstance._id,
 						false,
 						(_.isNumber(pieceInstance.piece.enable.start) ? now + pieceInstance.piece.enable.start : now) +

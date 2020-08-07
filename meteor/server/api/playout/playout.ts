@@ -1064,42 +1064,6 @@ export namespace ServerPlayoutAPI {
 			// If any action cannot be done due to timings, that needs to be rejected by the context
 			func(context, cache, rundown, currentPartInstance)
 
-			// Mark the parts as dirty if needed, so that they get a reimport on reset to undo any changes
-			// TODO-INFINITE - rethink how to handle dirty
-			// if (context.currentPartState === ActionPartChange.MARK_DIRTY) {
-			// 	cache.PartInstances.update(currentPartInstance._id, {
-			// 		$set: {
-			// 			'part.dirty': true,
-			// 		},
-			// 	})
-			// 	// TODO-PartInstance - pending new data flow
-			// 	cache.Parts.update(currentPartInstance.part._id, {
-			// 		$set: {
-			// 			dirty: true,
-			// 		},
-			// 	})
-			// }
-			// if (context.nextPartState === ActionPartChange.MARK_DIRTY) {
-			// 	if (!playlist.nextPartInstanceId)
-			// 		throw new Meteor.Error(500, `Cannot mark non-existant partInstance as dirty`)
-			// 	const nextPartInstance = cache.PartInstances.findOne(playlist.nextPartInstanceId)
-			// 	if (!nextPartInstance) throw new Meteor.Error(500, `Cannot mark non-existant partInstance as dirty`)
-
-			// 	if (!nextPartInstance.part.dynamicallyInserted) {
-			// 		cache.PartInstances.update(nextPartInstance._id, {
-			// 			$set: {
-			// 				'part.dirty': true,
-			// 			},
-			// 		})
-			// 		// TODO-PartInstance - pending new data flow
-			// 		cache.Parts.update(nextPartInstance.part._id, {
-			// 			$set: {
-			// 				dirty: true,
-			// 			},
-			// 		})
-			// 	}
-			// }
-
 			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
 				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
 
