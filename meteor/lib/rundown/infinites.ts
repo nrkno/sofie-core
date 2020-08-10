@@ -5,7 +5,7 @@ import { DBPart, PartId, Part } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { assertNever, max, flatten } from '../lib'
+import { assertNever, max, flatten, literal } from '../lib'
 import { Mongo } from 'meteor/mongo'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
@@ -380,4 +380,156 @@ export function getPieceInstancesForPart(
 	}
 
 	return result
+}
+
+export interface PieceInstanceWithTimings extends PieceInstance {
+	// resolvedStart: number | 'now' // TODO - document that this is the value to use, not a bounds (and is identical to piece.enable.start)
+	resolvedEndCap?: number | 'now' // TODO - document that this is value is a bounds, not the value to use
+	priority: number
+}
+
+/**
+ * Process the infinite pieces to determine the start time and a maximum end time for each.
+ * Any pieces which have no chance of being shown (duplicate start times) are pruned
+ * The stacking order of infinites is considered, to define the stop times
+ */
+export function processAndPrunePieceInstanceTimings(
+	// partInstance: PartInstance,
+	pieces: PieceInstance[],
+	nowInPart: number
+): PieceInstanceWithTimings[] {
+	// TODO-INFINITE - use this for both the ui and backend
+	// TODO It has not been tested yet, but I think the logic is reasonable
+
+	const result: PieceInstanceWithTimings[] = []
+
+	// TODO-INFINITE exclusiveGroup
+
+	let activePieces: PieceInstanceOnInfiniteLayers = {}
+	const updateWithNewPieces = (
+		newPieces: PieceInstanceOnInfiniteLayers,
+		key: keyof PieceInstanceOnInfiniteLayers,
+		start: number | 'now'
+	): void => {
+		const newPiece = newPieces[key]
+		if (newPiece) {
+			const activePiece = activePieces[key]
+			if (activePiece) {
+				activePiece.resolvedEndCap = start
+			}
+			activePieces[key] = newPiece
+			result.push(newPiece)
+
+			if (activePieces.other) {
+				if (key === 'onSegmentEnd' || (key === 'onRundownEnd' && !activePieces.onSegmentEnd)) {
+					// These modes should stop the 'other' when they start if not hidden behind a high priority onEnd
+					activePieces.other.resolvedEndCap = start
+					activePieces.other = undefined
+				}
+			}
+		}
+	}
+
+	const groupedPieces = _.groupBy(pieces, (p) => p.piece.sourceLayerId)
+	for (const [slId, pieces] of Object.entries(groupedPieces)) {
+		// Group and sort the pieces so that we can step through each point in time
+		const piecesByStart: Array<[number | 'now', PieceInstance[]]> = _.sortBy(
+			Object.entries(_.groupBy(pieces, (p) => p.piece.enable.start)).map(([k, v]) =>
+				literal<[number | 'now', PieceInstance[]]>([k === 'now' ? 'now' : Number(k), v])
+			),
+			([k]) => (k === 'now' ? nowInPart : k)
+		)
+
+		const isClear = (piece?: PieceInstance): boolean => !!(piece?.dynamicallyInserted && piece?.piece.virtual)
+
+		// Step through time
+		activePieces = {}
+		for (const [start, pieces] of piecesByStart) {
+			const newPieces = findPieceInstancesOnInfiniteLayers(pieces)
+
+			// Handle any clears
+			if (isClear(newPieces.onSegmentEnd) && activePieces.onSegmentEnd) {
+				activePieces.onSegmentEnd.resolvedEndCap = start
+				activePieces.onSegmentEnd = newPieces.onSegmentEnd = undefined
+			}
+			if (isClear(newPieces.onRundownEnd) && activePieces.onRundownEnd) {
+				activePieces.onRundownEnd.resolvedEndCap = start
+				activePieces.onRundownEnd = newPieces.onRundownEnd = undefined
+			}
+
+			// Apply the updates
+			// Note: order is important, the higher layers must be done first
+			updateWithNewPieces(newPieces, 'other', start)
+			updateWithNewPieces(newPieces, 'onSegmentEnd', start)
+			updateWithNewPieces(newPieces, 'onRundownEnd', start)
+		}
+	}
+
+	return result
+}
+
+interface PieceInstanceOnInfiniteLayers {
+	onRundownEnd?: PieceInstanceWithTimings
+	onSegmentEnd?: PieceInstanceWithTimings
+	other?: PieceInstanceWithTimings
+}
+function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInstanceOnInfiniteLayers {
+	if (pieces.length === 0) {
+		return {}
+	}
+
+	const res: PieceInstanceOnInfiniteLayers = {}
+
+	const isCandidateBetter = (best: PieceInstance, candidate: PieceInstance): boolean => {
+		if (best.infinite?.fromPrevious && !candidate.infinite?.fromPrevious) {
+			// Prefer the candidate as it is not from previous
+			return false
+		}
+		if (!best.infinite?.fromPrevious && candidate.infinite?.fromPrevious) {
+			// Prefer the best as it is not from previous
+			return true
+		}
+
+		// Fallback to id, as we dont have any other criteria and this will be stable.
+		// Note: we shouldnt even get here, as it shouldnt be possible for multiple to start at the same time, but it is possible
+		return best.piece._id < candidate.piece._id
+	}
+
+	for (const piece of pieces) {
+		switch (piece.piece.lifespan) {
+			case PieceLifespan.OutOnRundownEnd:
+				if (!res.onRundownEnd || isCandidateBetter(res.onRundownEnd, piece)) {
+					res.onRundownEnd = {
+						...piece,
+						priority: 1,
+						// resolvedStart: piece.piece.enable.start,
+					}
+				}
+				break
+			case PieceLifespan.OutOnSegmentEnd:
+				if (!res.onSegmentEnd || isCandidateBetter(res.onSegmentEnd, piece)) {
+					res.onSegmentEnd = {
+						...piece,
+						priority: 2,
+						// resolvedStart: piece.piece.enable.start,
+					}
+				}
+				break
+			case PieceLifespan.OutOnRundownChange:
+			case PieceLifespan.OutOnSegmentChange:
+			case PieceLifespan.WithinPart:
+				if (!res.other || isCandidateBetter(res.other, piece)) {
+					res.other = {
+						...piece,
+						priority: 5,
+						// resolvedStart: piece.piece.enable.start,
+					}
+				}
+				break
+			default:
+				assertNever(piece.piece.lifespan)
+		}
+	}
+
+	return res
 }

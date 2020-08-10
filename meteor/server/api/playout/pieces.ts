@@ -41,7 +41,8 @@ import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from './infinites'
+import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -107,92 +108,6 @@ export function createPieceGroupFirstObject(
 		inGroup: pieceGroup.id,
 	})
 	return firstObject
-}
-export function createPieceGroupAndCap(
-	pieceInstance: Pick<
-		DeepReadonly<PieceInstanceWithTimings>,
-		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority'
-	>,
-	partGroup?: TimelineObjRundown,
-	pieceEnable?: TSR.Timeline.TimelineEnable
-): {
-	pieceGroup: TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj
-	capObjs: TimelineObjRundown[]
-} {
-	const pieceGroup = literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
-		id: getPieceGroupId(unprotectString(pieceInstance.piece._id)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
-		content: {
-			deviceType: TSR.DeviceType.ABSTRACT,
-			type: TimelineContentTypeOther.GROUP,
-		},
-		children: [],
-		inGroup: partGroup && partGroup.id,
-		isGroup: true,
-		pieceInstanceId: unprotectString(pieceInstance._id),
-		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
-		objectType: TimelineObjType.RUNDOWN,
-		enable: clone<TimelineObjRundown['enable']>(pieceEnable ?? pieceInstance.piece.enable),
-		layer: pieceInstance.piece.sourceLayerId,
-		priority: pieceInstance.priority,
-		metaData: {
-			pieceId: pieceInstance._id,
-		},
-	})
-
-	const capObjs: TimelineObjRundown[] = []
-
-	let nowObj: TimelineObjRundown | undefined
-	if (pieceInstance.resolvedEndCap === 'now') {
-		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
-		nowObj = literal<TimelineObjRundown>({
-			_id: protectString(''), // set later
-			studioId: protectString(''), // set later
-			objectType: TimelineObjType.RUNDOWN,
-			id: `${pieceGroup.id}_cap_now`,
-			enable: {
-				start: 'now',
-			},
-			layer: '',
-			content: {
-				deviceType: TSR.DeviceType.ABSTRACT,
-			},
-		})
-		capObjs.push(nowObj)
-	}
-
-	if (pieceGroup.enable.duration !== undefined) {
-		// TODO-INFINITES some cases here could be flattened out if there are no 'now' in use
-		if (pieceInstance.resolvedEndCap !== undefined) {
-			const pieceGroupId = getPieceGroupId(unprotectString(pieceInstance.piece._id))
-
-			const pieceEndCapGroup = literal<TimelineObjGroupRundown>({
-				_id: protectString(''), // set later
-				studioId: protectString(''), // set later
-				objectType: TimelineObjType.RUNDOWN,
-				id: `${pieceGroupId}_cap`,
-				enable: {
-					start: 0,
-					end: nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap,
-				},
-				layer: '',
-				children: [],
-				content: {
-					deviceType: TSR.DeviceType.ABSTRACT,
-					type: TimelineContentTypeOther.GROUP,
-				},
-				isGroup: true,
-				inGroup: partGroup && partGroup.id,
-			})
-			capObjs.push(pieceEndCapGroup)
-			pieceGroup.inGroup = pieceEndCapGroup.id
-		}
-	} else {
-		pieceGroup.enable.end = nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap
-	}
-
-	return { pieceGroup, capObjs }
 }
 
 function resolvePieceTimeline(
@@ -276,7 +191,7 @@ function resolvePieceTimeline(
 		resolvedPiece.resolvedStart = Math.max(0, resolvedPiece.resolvedStart - 1)
 		resolvedPiece.resolvedDuration = resolvedPiece.resolvedDuration
 			? Math.max(0, resolvedPiece.resolvedDuration)
-			: undefined // TODO does this behave the same?
+			: undefined
 	})
 
 	return resolvedPieces

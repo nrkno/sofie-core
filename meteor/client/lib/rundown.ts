@@ -9,6 +9,7 @@ import {
 	PieceLifespan,
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
+	TimelineObjectCoreExt,
 } from 'tv-automation-sofie-blueprints-integration'
 import {
 	SegmentExtended,
@@ -21,12 +22,14 @@ import {
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, unprotectObject } from '../../lib/lib'
+import { literal, normalizeArray, unprotectObject, unprotectString } from '../../lib/lib'
 import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PieceInstancePiece } from '../../lib/collections/PieceInstances'
 import { DBPart, PartId } from '../../lib/collections/Parts'
+import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
+import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
 
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {
@@ -310,10 +313,6 @@ export namespace RundownUtils {
 				'_id'
 			)
 
-			// the SuperTimeline has an issue with resolving pieces that start at the 0 absolute time point
-			// we therefore need a constant offset that we can offset everything to make sure it's not at 0 point.
-			const TIMELINE_TEMP_OFFSET = 1
-
 			// create a lookup map to match original pieces to their resolved counterparts
 			let piecesLookup = new Map<PieceId, PieceExtended>()
 			// a buffer to store durations for the displayDuration groups
@@ -332,19 +331,7 @@ export namespace RundownUtils {
 				let partE = literal<PartExtended>({
 					partId: part._id,
 					instance: partInstance,
-					pieces: getPieceInstancesForPartInstance(
-						partInstance,
-						new Set(partIds.slice(0, itIndex)),
-						segmentsBeforeThisInRundownSet,
-						orderedAllPartIds,
-						false
-					).map((piece) =>
-						literal<PieceExtended>({
-							instance: piece,
-							renderedDuration: 0,
-							renderedInPoint: 0,
-						})
-					),
+					pieces: [],
 					renderedDuration: 0,
 					startsAt: 0,
 					willProbablyAutoNext: !!(
@@ -372,44 +359,49 @@ export namespace RundownUtils {
 					hasAlreadyPlayed = true
 				}
 
-				// insert items into the timeline for resolution
-				partE.pieces.forEach((piece) => {
-					const rawInnerPiece: PieceInstancePiece = piece.instance.piece
-					partTimeline.push({
-						id: getPieceGroupId(unprotectObject(rawInnerPiece)),
-						enable: {
-							...rawInnerPiece.enable,
-							start:
-								(typeof rawInnerPiece.enable.start === 'number' ? rawInnerPiece.enable.start : 0) +
-								TIMELINE_TEMP_OFFSET,
-						},
-						layer: rawInnerPiece.outputLayerId,
-						content: {
-							id: rawInnerPiece._id,
-						},
-					})
-					// find the target output layer
-					let outputLayer = outputLayers[piece.instance.piece.outputLayerId] as
-						| IOutputLayerExtended
-						| undefined
-					piece.outputLayer = outputLayer
+				const rawPieceInstances = getPieceInstancesForPartInstance(
+					partInstance,
+					new Set(partIds.slice(0, itIndex)),
+					segmentsBeforeThisInRundownSet,
+					orderedAllPartIds,
+					false
+				)
+				const nowInPart = 0 // TODO
+				const preprocessedPieces = processAndPrunePieceInstanceTimings(rawPieceInstances, nowInPart)
 
-					if (!piece.instance.piece.virtual && outputLayer) {
+				// insert items into the timeline for resolution
+				partE.pieces = preprocessedPieces.map((piece) => {
+					const resPiece: PieceExtended = {
+						instance: piece,
+						renderedDuration: 0,
+						renderedInPoint: 0,
+					}
+
+					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
+					pieceGroup.metaData = { id: piece.piece._id }
+					partTimeline.push(pieceGroup)
+					partTimeline.push(...capObjs)
+
+					// find the target output layer
+					let outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
+					resPiece.outputLayer = outputLayer
+
+					if (!piece.piece.virtual && outputLayer) {
 						// mark the output layer as used within this segment
 						if (
-							sourceLayers[piece.instance.piece.sourceLayerId] &&
-							!sourceLayers[piece.instance.piece.sourceLayerId].isHidden
+							sourceLayers[piece.piece.sourceLayerId] &&
+							!sourceLayers[piece.piece.sourceLayerId].isHidden
 						) {
 							outputLayer.used = true
 						}
 						// attach the sourceLayer to the output, if it hasn't been already
 						// find matching layer in the output
 						let sourceLayer = outputLayer.sourceLayers.find((el) => {
-							return el._id === piece.instance.piece.sourceLayerId
+							return el._id === piece.piece.sourceLayerId
 						})
 						// if the source has not yet been used on this output
 						if (!sourceLayer) {
-							sourceLayer = sourceLayers[piece.instance.piece.sourceLayerId]
+							sourceLayer = sourceLayers[piece.piece.sourceLayerId]
 							if (sourceLayer) {
 								sourceLayer = { ...sourceLayer }
 								let part = sourceLayer
@@ -419,45 +411,52 @@ export namespace RundownUtils {
 						}
 
 						if (sourceLayer) {
-							piece.sourceLayer = sourceLayer
+							resPiece.sourceLayer = sourceLayer
 							// attach the piece to the sourceLayer in this segment
-							piece.sourceLayer.pieces.push(piece)
+							resPiece.sourceLayer.pieces.push(resPiece)
 
 							// mark the special Remote and Guest flags, these are dependant on the sourceLayer configuration
 							// check if the segment should be in a special state for segments with remote input
-							if (piece.sourceLayer.isRemoteInput) {
+							if (resPiece.sourceLayer.isRemoteInput) {
 								hasRemoteItems = true
 							}
-							if (piece.sourceLayer.isGuestInput) {
+							if (resPiece.sourceLayer.isGuestInput) {
 								hasGuestItems = true
 							}
 						}
 					}
 
 					// add the piece to the map to make future searches quicker
-					piecesLookup.set(piece.instance.piece._id, piece)
-					const continues =
-						piece.instance.piece.continuesRefId && piecesLookup.get(piece.instance.piece.continuesRefId)
-					if (piece.instance.piece.continuesRefId && continues) {
-						continues.continuedByRef = piece
-						piece.continuesRef = continues
+					piecesLookup.set(piece.piece._id, resPiece)
+					const continues = piece.piece.continuesRefId && piecesLookup.get(piece.piece.continuesRefId)
+					if (piece.piece.continuesRefId && continues) {
+						continues.continuedByRef = resPiece
+						resPiece.continuesRef = continues
 					}
+
+					return resPiece
 				})
 
 				// Use the SuperTimeline library to resolve all the items within the Part
+				partTimeline.forEach((obj) => {
+					if (obj.enable.start === 'now') {
+						obj.enable.start = nowInPart
+					}
+				})
 				let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
 				for (let obj of Object.values(tlResolved.objects)) {
-					if (obj.resolved.resolved) {
+					const obj0 = (obj as unknown) as TimelineObjectCoreExt
+					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
-						let piece = piecesLookup.get(obj.content.id)
+						const piece = piecesLookup.get(obj0.metaData.id)
 						const instance = obj.resolved.instances[0]
 						if (piece && instance) {
 							piece.renderedDuration = instance.end ? instance.end - instance.start : null
 
 							// if there is no renderedInPoint, use 0 as the starting time for the item
-							piece.renderedInPoint = instance.start ? instance.start - TIMELINE_TEMP_OFFSET : 0
+							piece.renderedInPoint = instance.start ? instance.start : 0
 
 							// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
 							if (

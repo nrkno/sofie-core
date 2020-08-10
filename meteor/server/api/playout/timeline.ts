@@ -51,7 +51,7 @@ import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { generateRecordingTimelineObjs } from '../testTools'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
-import { createPieceGroupAndCap, createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
+import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -59,7 +59,8 @@ import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 import { writeFileSync } from 'fs'
-import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from './infinites'
+import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
+import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
