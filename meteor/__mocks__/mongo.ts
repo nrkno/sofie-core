@@ -8,7 +8,7 @@ import {
 	protectString,
 	mongoModify,
 	mongoFindOptions,
-	waitTime,
+	waitTime as orgWaitTime,
 } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
@@ -16,6 +16,10 @@ import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 const clone = require('fast-clone')
+function waitTime(duration) {
+	if (!duration) return
+	else orgWaitTime(duration)
+}
 
 export namespace MongoMock {
 	interface ObserverEntry<T extends CollectionObject> {
