@@ -8,4 +8,5 @@ export async function expectToExecuteQuickerThan(fcn: () => void | Promise<void>
 		throw new Error(`Expected function execution to take less than ${maxDuration} ms (it took ${duration} ms )`)
 	}
 	expect(duration).toBeLessThan(maxDuration)
+	console.log(`Execute ${fcn.name || 'function'}: ${duration} ms`)
 }
