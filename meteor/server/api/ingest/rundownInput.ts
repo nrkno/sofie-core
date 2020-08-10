@@ -541,7 +541,10 @@ function updateRundownFromIngestData(
 				if (!dbRundownData.notes) dbRundownData.notes = []
 				dbRundownData.notes.push({
 					type: NoteType.WARNING,
-					message: `The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.`,
+					message: {
+						key:
+							'The Rundown was attempted to be moved out of the Playlist when it was on Air. Move it back and try again later.',
+					},
 					origin: {
 						name: 'Data update',
 					},

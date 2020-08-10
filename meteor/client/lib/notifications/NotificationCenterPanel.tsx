@@ -10,6 +10,7 @@ import { sofieWarningIcon as WarningIcon } from './warningIcon'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from 'react-contextmenu'
 import * as _ from 'underscore'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { translateMessage, isTranslatableMessage } from '../../../lib/api/TranslatableMessage'
 
 interface IPopUpProps {
 	item: Notification
@@ -43,6 +44,8 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 		const defaultAction: NotificationAction | undefined =
 			defaultActions.length === 1 && allActions.length === 1 ? defaultActions[0] : undefined
 
+		const message = isTranslatableMessage(item.message) ? translateMessage(item.message) : item.message
+
 		return (
 			<div
 				className={ClassNames('notification-pop-up', {
@@ -62,7 +65,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 					<WarningIcon />
 				</div>
 				<div className="notification-pop-up__contents">
-					{item.message}
+					{message}
 					{!defaultAction && allActions.length ? (
 						<div className="notification-pop-up__actions">
 							{_.map(allActions, (action: NotificationAction, i: number) => {
@@ -210,15 +213,19 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 					.sort((a, b) => Notification.compare(a, b))
 			}
 
-			const displayList = notifications.map((item) => (
-				<NotificationPopUp
-					key={item.created + (item.message || 'undefined').toString() + (item.id || '')}
-					item={item}
-					onDismiss={() => this.dismissNotification(item)}
-					showDismiss={!item.persistent || !this.props.showSnoozed}
-					isHighlighted={item.source === highlightedSource && item.status === highlightedLevel}
-				/>
-			))
+			const displayList = notifications.map((item) => {
+				const message = isTranslatableMessage(item.message) ? translateMessage(item.message) : item.message
+
+				return (
+					<NotificationPopUp
+						key={item.created + (message || 'undefined').toString() + (item.id || '')}
+						item={item}
+						onDismiss={() => this.dismissNotification(item)}
+						showDismiss={!item.persistent || !this.props.showSnoozed}
+						isHighlighted={item.source === highlightedSource && item.status === highlightedLevel}
+					/>
+				)
+			})
 
 			return (
 				(this.props.showEmptyListLabel || displayList.length > 0) && (

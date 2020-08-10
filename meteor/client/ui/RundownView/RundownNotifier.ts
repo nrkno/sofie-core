@@ -26,7 +26,7 @@ import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
-import { i18nTranslator } from '../i18n'
+import { i18nTranslator as t } from '../i18n'
 import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
 import { Pieces, PieceId } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
@@ -158,7 +158,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveRundownStatus(playlistId: RundownPlaylistId) {
-		const t = i18nTranslator
 		let oldNoteIds: Array<string> = []
 
 		const rRundowns = reactiveData.getRRundowns(playlistId, {
@@ -271,8 +270,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePeripheralDeviceStatus(studioId: StudioId | undefined) {
-		const t = i18nTranslator
-
 		let oldDevItemIds: PeripheralDeviceId[] = []
 		let reactivePeripheralDevices: ReactiveVar<PeripheralDevice[]> | undefined
 		if (studioId) {
@@ -381,7 +378,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactivePartNotes(playlistId: RundownPlaylistId) {
-		const t = i18nTranslator
 		let allNotesPollInterval: number
 		let allNotesPollLock: boolean = false
 		const NOTES_POLL_INTERVAL = BACKEND_POLL_INTERVAL
@@ -474,8 +470,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveMediaStatus(playlistId: RundownPlaylistId, showStyleBase: ShowStyleBase, studio: Studio) {
-		const t = i18nTranslator
-
 		let mediaObjectsPollInterval: number
 		let mediaObjectsPollLock: boolean = false
 		const MEDIAOBJECTS_POLL_INTERVAL = BACKEND_POLL_INTERVAL
@@ -649,7 +643,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private reactiveQueueStatus(studioId: StudioId, playlistId: RundownPlaylistId) {
-		const t = i18nTranslator
 		let reactiveUnsentMessageCount: ReactiveVar<number>
 		meteorSubscribe(PubSub.externalMessageQueue, { studioId: studioId, playlistId })
 		reactiveUnsentMessageCount = reactiveData.getUnsentExternalMessageCount(studioId, playlistId)
@@ -675,8 +668,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private updateVersionAndConfigStatus(playlistId: RundownPlaylistId) {
-		const t = i18nTranslator
-
 		// Doing the check server side, to avoid needing to subscribe to the blueprint and showStyleVariant
 		MeteorCall.rundown
 			.rundownPlaylistNeedsResync(playlistId)
@@ -875,8 +866,6 @@ class RundownViewNotifier extends WithManagedTracker {
 	}
 
 	private makeDeviceMessage(device: PeripheralDevice): string {
-		const t = i18nTranslator
-
 		if (!device.connected) {
 			return t('Device {{deviceName}} is disconnected', { deviceName: device.name })
 		}

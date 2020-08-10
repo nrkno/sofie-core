@@ -7,6 +7,7 @@ import { EventEmitter } from 'events'
 import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
 import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { ITranslatableMessage } from '../../../lib/api/TranslatableMessage'
 
 /**
  * Priority level for Notifications.
@@ -305,7 +306,7 @@ export const NotificationCenter = new NotificationCenter0()
 export class Notification extends EventEmitter {
 	id: string | undefined
 	status: NoticeLevel
-	message: string | React.ReactElement<HTMLElement> | null
+	message: string | React.ReactElement<HTMLElement> | ITranslatableMessage | null
 	source: NotificationsSource
 	persistent?: boolean
 	timeout?: number
@@ -317,7 +318,7 @@ export class Notification extends EventEmitter {
 	constructor(
 		id: string | ProtectedString<any> | undefined,
 		status: NoticeLevel,
-		message: string | React.ReactElement<HTMLElement> | null,
+		message: string | React.ReactElement<HTMLElement> | ITranslatableMessage | null,
 		source: NotificationsSource,
 		created?: Time,
 		persistent?: boolean,

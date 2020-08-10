@@ -38,7 +38,6 @@ const i18nOptions = {
 
 class I18nContainer extends WithManagedTracker {
 	i18nInstance: typeof i18n
-	i18nTranslator: TFunction
 
 	constructor() {
 		super()
@@ -50,13 +49,14 @@ class I18nContainer extends WithManagedTracker {
 
 		this.i18nInstance.init(i18nOptions, (err: Error, t: TFunction) => {
 			if (err) {
-				console.error('Error initializing i18Next', err)
+				console.error('Error initializing i18Next:', err)
 			} else {
 				this.i18nTranslator = t
+				console.debug('i18nTranslator init complete')
 			}
 		})
 
-		this.subscribe(PubSub.translationsBundles, null)
+		this.subscribe(PubSub.translationsBundles, {})
 		this.autorun(() => {
 			console.debug('ManagedTracker autorun...')
 			const bundles = TranslationsBundles.find().fetch()
@@ -73,10 +73,45 @@ class I18nContainer extends WithManagedTracker {
 			}
 		})
 	}
+	// return key until real translator comes online
+	i18nTranslator(key, ...args) {
+		console.debug('i18nTranslator placeholder called', { key, args })
+
+		if (!args[0]) {
+			return key
+		}
+
+		if (typeof args[0] === 'string') {
+			return key || args[0]
+		}
+
+		if (args[0].defaultValue) {
+			return args[0].defaultValue
+		}
+
+		if (typeof key !== 'string') {
+			return key
+		}
+
+		const options = args[0]
+		if (options?.replace) {
+			Object.assign(options, { ...options.replace })
+		}
+
+		const interpolated = String(key)
+		for (const placeholder of key.match(/[^{\}]+(?=})/g) || []) {
+			const value = options[placeholder] || placeholder
+			interpolated.replace(`{{${placeholder}}}`, value)
+		}
+
+		return interpolated
+	}
 }
 
 const container = new I18nContainer()
-const { i18nTranslator } = container
+const i18nTranslator: TFunction = (...args) => {
+	return container.i18nTranslator(args)
+}
 
 export { i18nTranslator }
 

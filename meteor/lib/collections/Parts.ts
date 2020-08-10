@@ -189,19 +189,23 @@ export class Part implements DBPart {
 		return this.getAdLibPieces()
 	}
 	getInvalidReasonNotes(): Array<PartNote> {
-		return this.invalidReason
-			? [
-					{
-						type: NoteType.WARNING,
-						message:
-							this.invalidReason.title +
-							(this.invalidReason.description ? ': ' + this.invalidReason.description : ''),
-						origin: {
-							name: this.title,
-						},
-					},
-			  ]
-			: []
+		const notes: PartNote[] = []
+
+		if (this.invalidReason) {
+			notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: `${this.invalidReason.title}${
+						this.invalidReason.description ? `: ${+this.invalidReason.description}` : ''
+					}`,
+				},
+				origin: {
+					name: this.title,
+				},
+			})
+		}
+
+		return notes
 	}
 	getMinimumReactiveNotes(studio: Studio, showStyleBase: ShowStyleBase): Array<PartNote> {
 		let notes: Array<PartNote> = []
@@ -225,7 +229,9 @@ export class Part implements DBPart {
 							name: 'Media Check',
 							pieceId: piece._id,
 						},
-						message: st.message || '',
+						message: {
+							key: st.message || '',
+						},
 					})
 				}
 			}

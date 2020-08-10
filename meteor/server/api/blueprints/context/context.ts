@@ -134,7 +134,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		if (this._handleNotesExternally) {
 			this.savedNotes.push({
 				type: type,
-				message: message,
+				message: { key: message },
 				trackingId: trackingId,
 			})
 		} else {
