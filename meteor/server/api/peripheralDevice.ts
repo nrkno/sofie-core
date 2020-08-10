@@ -783,6 +783,11 @@ class ServerPeripheralDeviceAPIClass implements NewPeripheralDeviceAPI {
 			MediaScannerIntegration.updateMediaObject(deviceId, deviceToken, collectionId, id, doc)
 		)
 	}
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
+		return makePromise(() =>
+			MediaScannerIntegration.clearMediaObjectCollection(deviceId, deviceToken, collectionId)
+		)
+	}
 	// ------- Media Manager --------------
 	getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowRevisions(deviceId, deviceToken))
