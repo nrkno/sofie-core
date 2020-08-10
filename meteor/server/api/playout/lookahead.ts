@@ -6,12 +6,7 @@ import {
 	OnGenerateTimelineObj,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
-import {
-	TimelineObjGeneric,
-	TimelineObjRundown,
-	fixTimelineId,
-	TimelineObjType,
-} from '../../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { literal, clone, unprotectString, protectString, asyncCollectionFindFetch } from '../../../lib/lib'
@@ -391,7 +386,6 @@ function findObjectsForPart(
 
 		for (const obj of piece.content?.timelineObjects ?? []) {
 			if (obj) {
-				fixTimelineId(obj)
 				allObjs.push(
 					literal<TimelineObjRundown & OnGenerateTimelineObj>({
 						...obj,

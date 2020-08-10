@@ -1,6 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Resolver } from 'superfly-timeline'
 import * as _ from 'underscore'
+import { DeepReadonly } from 'utility-types'
 import { Piece } from '../../../lib/collections/Pieces'
 import {
 	literal,
@@ -11,6 +12,7 @@ import {
 	protectString,
 	unprotectString,
 	omit,
+	flatten,
 } from '../../../lib/lib'
 import {
 	TimelineContentTypeOther,
@@ -19,6 +21,7 @@ import {
 	TimelineObjType,
 	TimelineObjRundown,
 	TimelineObjGeneric,
+	TimelineObjGroupRundown,
 } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
 import {
@@ -38,6 +41,7 @@ import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from './infinites'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -75,7 +79,7 @@ export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[
 
 export function createPieceGroupFirstObject(
 	playlistId: RundownPlaylistId,
-	pieceInstance: PieceInstance,
+	pieceInstance: DeepReadonly<PieceInstance>,
 	pieceGroup: TimelineObjRundown,
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObj {
@@ -104,12 +108,18 @@ export function createPieceGroupFirstObject(
 	})
 	return firstObject
 }
-export function createPieceGroup(
-	pieceInstance: Pick<PieceInstance, '_id' | 'rundownId' | 'piece' | 'infinite'>,
+export function createPieceGroupAndCap(
+	pieceInstance: Pick<
+		DeepReadonly<PieceInstanceWithTimings>,
+		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority'
+	>,
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
-): TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj {
-	return literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
+): {
+	pieceGroup: TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj
+	capObjs: TimelineObjRundown[]
+} {
+	const pieceGroup = literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
 		id: getPieceGroupId(unprotectString(pieceInstance.piece._id)),
 		_id: protectString(''), // set later
 		studioId: protectString(''), // set later
@@ -123,13 +133,66 @@ export function createPieceGroup(
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
-		enable: pieceEnable ?? pieceInstance.piece.enable,
+		enable: clone<TimelineObjRundown['enable']>(pieceEnable ?? pieceInstance.piece.enable),
 		layer: pieceInstance.piece.sourceLayerId,
+		priority: pieceInstance.priority,
 		metaData: {
 			pieceId: pieceInstance._id,
 		},
-		// TODO-INSTANCES we might want to set a priority, BUT should a later starter always take priority?
 	})
+
+	const capObjs: TimelineObjRundown[] = []
+
+	let nowObj: TimelineObjRundown | undefined
+	if (pieceInstance.resolvedEndCap === 'now') {
+		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
+		nowObj = literal<TimelineObjRundown>({
+			_id: protectString(''), // set later
+			studioId: protectString(''), // set later
+			objectType: TimelineObjType.RUNDOWN,
+			id: `${pieceGroup.id}_cap_now`,
+			enable: {
+				start: 'now',
+			},
+			layer: '',
+			content: {
+				deviceType: TSR.DeviceType.ABSTRACT,
+			},
+		})
+		capObjs.push(nowObj)
+	}
+
+	if (pieceGroup.enable.duration !== undefined) {
+		// TODO-INFINITES some cases here could be flattened out if there are no 'now' in use
+		if (pieceInstance.resolvedEndCap !== undefined) {
+			const pieceGroupId = getPieceGroupId(unprotectString(pieceInstance.piece._id))
+
+			const pieceEndCapGroup = literal<TimelineObjGroupRundown>({
+				_id: protectString(''), // set later
+				studioId: protectString(''), // set later
+				objectType: TimelineObjType.RUNDOWN,
+				id: `${pieceGroupId}_cap`,
+				enable: {
+					start: 0,
+					end: nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap,
+				},
+				layer: '',
+				children: [],
+				content: {
+					deviceType: TSR.DeviceType.ABSTRACT,
+					type: TimelineContentTypeOther.GROUP,
+				},
+				isGroup: true,
+				inGroup: partGroup && partGroup.id,
+			})
+			capObjs.push(pieceEndCapGroup)
+			pieceGroup.inGroup = pieceEndCapGroup.id
+		}
+	} else {
+		pieceGroup.enable.end = nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap
+	}
+
+	return { pieceGroup, capObjs }
 }
 
 function resolvePieceTimeline(
@@ -224,11 +287,22 @@ export function getResolvedPieces(cache: CacheForRundownPlaylist, partInstance: 
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
-	const objs = pieceInstances.map((piece) => clone(createPieceGroup(piece)))
+	const now = getCurrentTime()
+	const partStarted = partInstance.part.getLastStartedPlayback()
+	const nowInPart = now - (partStarted ?? 0)
+
+	const preprocessedPieces = processAndPrunePieceInstanceTimings(pieceInstances, nowInPart)
+
+	const objs = flatten(
+		preprocessedPieces.map((piece) => {
+			const r = createPieceGroupAndCap(piece)
+			return [r.pieceGroup, ...r.capObjs]
+		})
+	)
 	objs.forEach((o) => {
-		if (o.enable.start === 'now' && partInstance.part.getLastStartedPlayback()) {
+		if (o.enable.start === 'now' && partStarted) {
 			// Emulate playout starting now. TODO - ensure didnt break other uses
-			o.enable.start = getCurrentTime() - (partInstance.part.getLastStartedPlayback() || 0)
+			o.enable.start = nowInPart
 		} else if (o.enable.start === 0 || o.enable.start === 'now') {
 			o.enable.start = 1
 		}
@@ -241,19 +315,20 @@ export function getResolvedPieces(cache: CacheForRundownPlaylist, partInstance: 
 		`PartInstance #${partInstance._id}`
 	)
 
-	// crop infinite pieces
-	resolvedPieces.forEach((pieceInstance, index, source) => {
-		if (pieceInstance.infinite) {
-			for (let i = index + 1; i < source.length; i++) {
-				const sourcePieceInstance = source[i]
-				if (pieceInstance.piece.sourceLayerId === sourcePieceInstance.piece.sourceLayerId) {
-					// TODO - verify this (it is different to the getResolvedPiecesFromFullTimeline...)
-					pieceInstance.resolvedDuration = sourcePieceInstance.resolvedStart - pieceInstance.resolvedStart
-					return
-				}
-			}
-		}
-	})
+	// // crop infinite pieces
+	// // TODO-INFINITES - is this needed?
+	// resolvedPieces.forEach((pieceInstance, index, source) => {
+	// 	if (pieceInstance.infinite) {
+	// 		for (let i = index + 1; i < source.length; i++) {
+	// 			const sourcePieceInstance = source[i]
+	// 			if (pieceInstance.piece.sourceLayerId === sourcePieceInstance.piece.sourceLayerId) {
+	// 				// TODO - verify this (it is different to the getResolvedPiecesFromFullTimeline...)
+	// 				pieceInstance.resolvedDuration = sourcePieceInstance.resolvedStart - pieceInstance.resolvedStart
+	// 				return
+	// 			}
+	// 		}
+	// 	}
+	// })
 
 	return resolvedPieces
 }
@@ -303,25 +378,26 @@ export function getResolvedPiecesFromFullTimeline(
 	const pieceInstanceMap = normalizeArray(pieceInstances, '_id')
 	const resolvedPieces = resolvePieceTimeline(transformedObjs, now, pieceInstanceMap, 'timeline')
 
-	// crop infinite pieces
-	resolvedPieces.forEach((instance, index, source) => {
-		if (instance.infinite) {
-			// && piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
-			for (let i = index + 1; i < source.length; i++) {
-				const sourceInstance = source[i]
-				if (instance.piece.sourceLayerId === sourceInstance.piece.sourceLayerId) {
-					// TODO - verify this, the min is necessary and correct though (and it is different to getResolvedPieces)
-					const infDuration = sourceInstance.resolvedStart - instance.resolvedStart
-					if (instance.resolvedDuration) {
-						instance.resolvedDuration = Math.min(instance.resolvedDuration, infDuration)
-					} else {
-						instance.resolvedDuration = infDuration
-					}
-					return
-				}
-			}
-		}
-	})
+	// // crop infinite pieces
+	// // TODO-INFINITES - is this needed?
+	// resolvedPieces.forEach((instance, index, source) => {
+	// 	if (instance.infinite) {
+	// 		// && piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
+	// 		for (let i = index + 1; i < source.length; i++) {
+	// 			const sourceInstance = source[i]
+	// 			if (instance.piece.sourceLayerId === sourceInstance.piece.sourceLayerId) {
+	// 				// TODO - verify this, the min is necessary and correct though (and it is different to getResolvedPieces)
+	// 				const infDuration = sourceInstance.resolvedStart - instance.resolvedStart
+	// 				if (instance.resolvedDuration) {
+	// 					instance.resolvedDuration = Math.min(instance.resolvedDuration, infDuration)
+	// 				} else {
+	// 					instance.resolvedDuration = infDuration
+	// 				}
+	// 				return
+	// 			}
+	// 		}
+	// 	}
+	// })
 
 	return {
 		pieces: resolvedPieces,

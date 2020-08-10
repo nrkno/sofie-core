@@ -133,16 +133,6 @@ export function setTimelineId<T extends TimelineObjGeneric>(objs: Array<T>): Arr
 		return obj
 	})
 }
-export function fixTimelineId(obj: TimelineObjectCoreExt) {
-	// Temporary workaround, to handle old _id:s in the db. We might want to add a warning in this, and later remove it.
-
-	const o: any = obj
-	if (o._id && !o.id) {
-		logger.warn(`Fixed id of timelineObject with _id ${o._id}`)
-		o.id = o._id
-		delete o._id
-	}
-}
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
 export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric> = createMongoCollection<

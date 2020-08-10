@@ -16,9 +16,10 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as crypto from 'crypto'
+import { DeepReadonly } from 'utility-types'
 const cloneOrg = require('fast-clone')
 
-export function clone<T>(o: T): T {
+export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return cloneOrg(o)
 }

@@ -20,7 +20,7 @@ import {
 export const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
 
 export interface PieceInstanceWithTimings extends PieceInstance {
-	resolvedStart: number | 'now' // TODO - document that this is the value to use, not a bounds (and is identical to piece.enable.start)
+	// resolvedStart: number | 'now' // TODO - document that this is the value to use, not a bounds (and is identical to piece.enable.start)
 	resolvedEndCap?: number | 'now' // TODO - document that this is value is a bounds, not the value to use
 	priority: number
 }
@@ -139,7 +139,7 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.onRundownEnd = {
 						...piece,
 						priority: 1,
-						resolvedStart: piece.piece.enable.start,
+						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break
@@ -148,7 +148,7 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.onSegmentEnd = {
 						...piece,
 						priority: 2,
-						resolvedStart: piece.piece.enable.start,
+						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break
@@ -159,7 +159,7 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.other = {
 						...piece,
 						priority: 5,
-						resolvedStart: piece.piece.enable.start,
+						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break
