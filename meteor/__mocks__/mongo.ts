@@ -8,6 +8,7 @@ import {
 	protectString,
 	mongoModify,
 	mongoFindOptions,
+	waitTime,
 } from '../lib/lib'
 import { RandomMock } from './random'
 import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
@@ -73,6 +74,7 @@ export namespace MongoMock {
 					return docs
 				},
 				fetch: () => {
+					waitTime(dbWaitTimeRead)
 					const transform = this._transform ? this._transform : (doc) => doc
 					return _.map(docs, (doc) => {
 						return transform(clone(doc))
@@ -115,10 +117,12 @@ export namespace MongoMock {
 			}
 		}
 		findOne(query, options?: Omit<FindOptions<T>, 'limit'>) {
+			waitTime(dbWaitTimeRead)
 			return this.find(query, options).fetch()[0]
 		}
 		update(query: any, modifier, options?: UpdateOptions, cb?: Function) {
 			try {
+				waitTime(dbWaitTimeWrite)
 				const unimplementedUsedOptions = _.without(_.keys(options), 'multi')
 				if (unimplementedUsedOptions.length > 0) {
 					throw new Error(`update being performed using unimplemented options: ${unimplementedUsedOptions}`)
@@ -155,6 +159,7 @@ export namespace MongoMock {
 		}
 		insert(doc: T, cb?: Function) {
 			try {
+				waitTime(dbWaitTimeWrite)
 				const d = _.clone(doc)
 				if (!d._id) d._id = protectString(RandomMock.id())
 
@@ -200,6 +205,7 @@ export namespace MongoMock {
 		}
 		remove(query: any, cb?: Function) {
 			try {
+				waitTime(dbWaitTimeWrite)
 				const docs = this.find(query)._fetchRaw()
 
 				_.each(docs, (doc) => {
@@ -246,6 +252,12 @@ export namespace MongoMock {
 		} else {
 			mockCollections[collectionName] = data
 		}
+	}
+	let dbWaitTimeRead: number = 0
+	let dbWaitTimeWrite: number = 0
+	export function mockSetRealisticResponseTimes() {
+		dbWaitTimeRead = 5 // ms
+		dbWaitTimeWrite = 5 // ms
 	}
 }
 export function setup() {

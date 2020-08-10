@@ -23,27 +23,6 @@ const commonConfig = {
 	},
 	globalSetup: './__mocks__/global-setup.js',
 	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
-	coverageThreshold: {
-		global: {
-			branches: 0,
-			functions: 0,
-			lines: 0,
-			statements: 0,
-		},
-	},
-	coverageDirectory: './.coverage/',
-	collectCoverageFrom: [
-		'server/**/*.{js,ts}',
-		'lib/**/*.{js,ts}',
-		'client/**/*.{js,ts}',
-		'!**/*.{tsx}',
-		'!**/client/main.js',
-		'!.meteor/**/*.*',
-		'!**/__tests__/**',
-		'!**/__tests-performance__/**',
-		'!**/__mocks__/**',
-		'!**/node_modules/**',
-	],
 	collectCoverage: false,
 	watchPathIgnorePatterns: ['/.meteor/'],
 }
@@ -51,20 +30,10 @@ const commonConfig = {
 module.exports = {
 	projects: [
 		Object.assign({}, commonConfig, {
-			displayName: 'client',
-			testMatch: [
-				'<rootDir>/client/__tests__/**/*.(spec|test).(ts|js)',
-				'<rootDir>/client/**/__tests__/**/*.(spec|test).(ts|js)',
-				'!.meteor/*.*',
-			],
-			testEnvironment: 'jsdom',
-			setupFilesAfterEnv: [...commonConfig.setupFilesAfterEnv, '<rootDir>/client/__tests__/jest-setup.js'],
-		}),
-		Object.assign({}, commonConfig, {
 			displayName: 'lib',
 			testMatch: [
-				'<rootDir>/lib/__tests__/**/*.(spec|test).(ts|js)',
-				'<rootDir>/lib/**/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/lib/__tests-performance__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/lib/**/__tests-performance__/**/*.(spec|test).(ts|js)',
 				'!.meteor/*.*',
 			],
 			testEnvironment: 'node',
@@ -72,8 +41,8 @@ module.exports = {
 		Object.assign({}, commonConfig, {
 			displayName: 'server',
 			testMatch: [
-				'<rootDir>/server/__tests__/**/*.(spec|test).(ts|js)',
-				'<rootDir>/server/**/__tests__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/server/__tests-performance__/**/*.(spec|test).(ts|js)',
+				'<rootDir>/server/**/__tests-performance__/**/*.(spec|test).(ts|js)',
 				'!.meteor/*.*',
 			],
 			testEnvironment: 'node',

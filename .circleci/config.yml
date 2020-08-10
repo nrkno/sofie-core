@@ -45,6 +45,15 @@ jobs:
           name: Run tests and send coverage
           command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run ci
           no_output_timeout: 60m
+  performance-tests:
+    docker:
+      - image: sofietv/tv-automation-meteor-base:1.10.2
+    steps:
+      - checkout
+      - run:
+          name: Run performance tests
+          command: cd meteor && meteor npm install && meteor npm run prepareForTest && meteor npm run unit:performance
+          no_output_timeout: 60m
   lint:
     docker:
       - image: sofietv/tv-automation-meteor-base:1.10.2
@@ -166,6 +175,12 @@ workflows:
             branches:
               only: /.*/
       - tests:
+          filters:
+            tags:
+              only: /v.*/
+            branches:
+              only: /.*/
+      - performance-tests:
           filters:
             tags:
               only: /v.*/
