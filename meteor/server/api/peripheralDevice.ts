@@ -446,7 +446,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 					if (totalLatency < MAX_REALISTIC_LATENCY) {
 						if (!peripheralDevice.latencies) peripheralDevice.latencies = []
-						peripheralDevice.latencies.push(totalLatency)
+						peripheralDevice.latencies.unshift(totalLatency)
 
 						if (peripheralDevice.latencies.length > LATENCIES_MAX_LENGTH) {
 							peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
