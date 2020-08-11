@@ -24,7 +24,6 @@ import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { saveIntoCache } from '../../DatabaseCache'
 import { afterRemoveParts } from '../rundown'
-import { writeFileSync } from 'fs'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 
 /**

@@ -253,18 +253,6 @@ export function getPieceInstancesForPart(
 	nextPartIsAfterCurrentPart: boolean,
 	isTemporary: boolean
 ): PieceInstance[] {
-	//    // IN the GUI
-	//    /*
-	//     if (I want to view the Part as-played) {
-	//        display latest PartInstance
-	//     } else {
-	//         Display "how it's going to look like, when it'll be played next time (by only doing TAKE:S) "
-	//     }
-	//    */
-
-	// TODO - this is also generated above..
-
-	// const partMap = normalizeArray(orderedParts, '_id')
 	const doesPieceAStartBeforePieceB = (pieceA: PieceInstancePiece, pieceB: PieceInstancePiece): boolean => {
 		if (pieceA.startPartId === pieceB.startPartId) {
 			return pieceA.enable.start < pieceB.enable.start

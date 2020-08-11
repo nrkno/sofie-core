@@ -58,7 +58,6 @@ import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInsta
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
-import { writeFileSync } from 'fs'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 
@@ -98,9 +97,6 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	]
 
 	processTimelineObjects(studio, timelineObjs)
-
-	// logger.info(`timelineObjs: ${JSON.stringify(timelineObjs, undefined, 4)}`)
-	writeFileSync('tmp.json', JSON.stringify(timelineObjs, undefined, 4))
 
 	if (forceNowToTime) {
 		// used when autoNexting
