@@ -141,7 +141,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 			let worstLatency = Math.max(...devices.map((device) => getExpectedLatency(device).safe))
 
 			/** Add a little more latency, to account for network latency variability */
-			const ADD_SAFE_LATENCY = 30
+			const ADD_SAFE_LATENCY = 30 // todo: should be a configurable studio property
 			theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
 		}
 	}

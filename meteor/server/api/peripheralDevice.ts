@@ -449,6 +449,7 @@ export namespace ServerPeripheralDeviceAPI {
 						peripheralDevice.latencies.unshift(totalLatency)
 
 						if (peripheralDevice.latencies.length > LATENCIES_MAX_LENGTH) {
+							// Trim anything after LATENCIES_MAX_LENGTH
 							peripheralDevice.latencies.splice(LATENCIES_MAX_LENGTH, 999)
 						}
 						PeripheralDevices.update(peripheralDevice._id, {
