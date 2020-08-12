@@ -110,16 +110,16 @@ export class NotesContext extends CommonContext implements INotesContext {
 		this._handleNotesExternally = handleNotesExternally
 	}
 	/** Throw Error and display message to the user in the GUI */
-	error(message: string, trackingId?: string) {
+	error(message: string, params?: { [key: string]: any }, trackingId?: string) {
 		check(message, String)
 		logger.error('Error from blueprint: ' + message)
-		this._pushNote(NoteType.ERROR, message, trackingId)
+		this._pushNote(NoteType.ERROR, message, params, trackingId)
 		throw new Meteor.Error(500, message)
 	}
 	/** Save note, which will be displayed to the user in the GUI */
-	warning(message: string, trackingId?: string) {
+	warning(message: string, params?: { [key: string]: any }, trackingId?: string) {
 		check(message, String)
-		this._pushNote(NoteType.WARNING, message, trackingId)
+		this._pushNote(NoteType.WARNING, message, params, trackingId)
 	}
 	getNotes(): RawNote[] {
 		return this.savedNotes
@@ -130,11 +130,12 @@ export class NotesContext extends CommonContext implements INotesContext {
 	set handleNotesExternally(value: boolean) {
 		this._handleNotesExternally = value
 	}
-	protected _pushNote(type: NoteType, message: string, trackingId: string | undefined) {
+	protected _pushNote(type: NoteType, message: string, args?: { [key: string]: any }, trackingId?: string) {
 		if (this._handleNotesExternally) {
+			// TODO: get blueprintId for context to use as namespace for the message
 			this.savedNotes.push({
 				type: type,
-				message: { key: message },
+				message: { key: message, args },
 				trackingId: trackingId,
 			})
 		} else {
@@ -250,11 +251,11 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 
 	/** NotesContext */
-	error(message: string, trackingId?: string) {
-		this.notesContext.error(message, trackingId)
+	error(message: string, params?: { [key: string]: any }, trackingId?: string) {
+		this.notesContext.error(message, params, trackingId)
 	}
-	warning(message: string, trackingId?: string) {
-		this.notesContext.warning(message, trackingId)
+	warning(message: string, params?: { [key: string]: any }, trackingId?: string) {
+		this.notesContext.warning(message, params, trackingId)
 	}
 	getHashId(str: string, isNotUnique?: boolean) {
 		return this.notesContext.getHashId(str, isNotUnique)
