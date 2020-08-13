@@ -80,7 +80,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			const piece = (this.props.adLibListItem as any) as AdLibPieceUi
 			let objId: string | undefined = undefined
 
-			if (piece.content) {
+			if (piece.content && piece.content.fileName) {
 				switch (this.props.layer.type) {
 					case SourceLayerType.VT:
 						objId = (piece.content as VTContent).fileName.toUpperCase()
