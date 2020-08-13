@@ -1225,6 +1225,29 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								<span className="mdfx"></span>
 							</div>
 						</label>
+						<div className="mod mtn mbm mhn">
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.forceSettingNowTime"
+									obj={this.props.studio}
+									type="checkbox"
+									collection={Studios}></EditAttribute>
+								{t('Force the Multi-gateway-mode')}
+							</label>
+						</div>
+						<div className="mod mtn mbm mhn">
+							{t('Multi-gateway-mode delay time')}
+							<label className="field">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="settings.nowSafeLatency"
+									obj={this.props.studio}
+									type="int"
+									collection={Studios}
+									className="mdinput"></EditAttribute>
+							</label>
+						</div>
 					</div>
 					<div className="row">
 						<div className="col c12 r1-c12">

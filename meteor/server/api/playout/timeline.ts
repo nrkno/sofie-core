@@ -130,18 +130,21 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		// used when autoNexting
 		theNowTime = forceNowToTime
 	} else {
-		const devices = cache.PeripheralDevices.findFetch({
+		const playoutDevices = cache.PeripheralDevices.findFetch({
 			studio: studioId,
 			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 		})
+		const studio = cache.Studios.findOne(studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found in cache`)
 		// if (devices.length > 1) {
-		if (devices.length >= 1) {
-			// if we have several playout devices, we can't use the Now feature
-
-			let worstLatency = Math.max(...devices.map((device) => getExpectedLatency(device).safe))
+		if (
+			playoutDevices.length >= 1 || // if we have several playout devices, we can't use the Now feature
+			studio.settings.forceSettingNowTime
+		) {
+			let worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
 
 			/** Add a little more latency, to account for network latency variability */
-			const ADD_SAFE_LATENCY = 30 // todo: should be a configurable studio property
+			const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30
 			theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
 		}
 	}
