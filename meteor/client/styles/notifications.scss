@@ -334,7 +334,8 @@
 		top: ‭3.6875‬rem;
 		left: 0;
 		bottom: 0;
-		overflow: none auto;
+		overflow-x: hidden;
+		overflow-y: auto;
 		width: calc(#{$notification-center-width} + 10px);
 		pointer-events: auto;
 
