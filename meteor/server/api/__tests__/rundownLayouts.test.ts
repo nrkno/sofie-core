@@ -63,6 +63,10 @@ describe('Rundown Layouts', () => {
 				filters: [],
 				showStyleBaseId: env.showStyleBaseId,
 				type: RundownLayoutType.RUNDOWN_LAYOUT,
+				exposeAsShelf: false,
+				exposeAsStandalone: false,
+				icon: '',
+				iconColor: '',
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
