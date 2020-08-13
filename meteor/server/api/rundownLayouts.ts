@@ -22,7 +22,9 @@ export function createRundownLayout(
 	type: RundownLayoutType,
 	showStyleBaseId: ShowStyleBaseId,
 	blueprintId: BlueprintId | undefined,
-	userId?: string | undefined
+	userId?: string | undefined,
+	exposeAsStandalone?: boolean,
+	exposeAsShelf?: boolean
 ) {
 	const id: RundownLayoutId = getRandomId()
 	RundownLayouts.insert(
@@ -34,6 +36,10 @@ export function createRundownLayout(
 			filters: [],
 			type,
 			userId,
+			exposeAsStandalone: !!exposeAsStandalone,
+			exposeAsShelf: !!exposeAsShelf,
+			icon: '',
+			iconColor: '#ffffff',
 		})
 	)
 	return id
@@ -48,13 +54,14 @@ PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', (params, req: Incoming
 
 	const showStyleBaseId: ShowStyleBaseId = protectString(params.showStyleBaseId)
 
+	check(showStyleBaseId, String)
+
 	const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
-	if (!showStyleBase) {
-		throw new Error(`ShowStylebase "${showStyleBaseId}" not found`)
-	}
 
 	let content = ''
 	try {
+		if (!showStyleBase) throw new Meteor.Error(404, `ShowStylebase "${showStyleBaseId}" not found`)
+
 		const body = req.body
 		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
 

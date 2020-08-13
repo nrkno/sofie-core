@@ -44,8 +44,10 @@ registerCollection('AsRunLog', AsRunLog)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		AsRunLog._ensureIndex({
-			studioId: 1,
 			rundownId: 1,
+		})
+		AsRunLog._ensureIndex({
+			timestamp: 1,
 		})
 	}
 })

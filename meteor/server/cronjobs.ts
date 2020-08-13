@@ -77,7 +77,7 @@ Meteor.startup(() => {
 
 			// Remove old entries in Snapshots:
 			const oldSnapshotsCount: number = Snapshots.find({
-				timestamp: { $lt: cleanLimitTime },
+				created: { $lt: cleanLimitTime },
 			}).count()
 			if (oldSnapshotsCount > 0) {
 				logger.info(`Cronjob: Will remove ${oldSnapshotsCount} entries from Snapshots`)
@@ -104,7 +104,7 @@ Meteor.startup(() => {
 
 						ps.push(
 							new Promise((resolve, reject) => {
-								PeripheralDeviceAPI.executeFunction(
+								PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 									subDevice._id,
 									(err) => {
 										if (err) {
@@ -127,6 +127,7 @@ Meteor.startup(() => {
 											resolve()
 										}
 									},
+									10000,
 									'restartCasparCG'
 								)
 							})

@@ -476,11 +476,7 @@ export namespace PeripheralDeviceAPI {
 				} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) {
 					// timeout
 					cb(
-						'Timeout when executing the function "' +
-							cmd.functionName +
-							'" on device "' +
-							cmd.deviceId +
-							'" ',
+						`Timeout after ${timeoutTime} ms when executing the function "${cmd.functionName}" on device "${cmd.deviceId}"`,
 						null
 					)
 					if (observer) observer.stop()

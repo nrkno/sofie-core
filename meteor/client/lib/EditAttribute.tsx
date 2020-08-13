@@ -7,6 +7,9 @@ import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import ClassNames from 'classnames'
+import { ColorPickerEvent, ColorPicker } from './colorPicker'
+import { IconPicker, IconPickerEvent } from './iconPicker'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -20,6 +23,9 @@ export type EditAttributeType =
 	| 'dropdown'
 	| 'switch'
 	| 'multiselect'
+	| 'json'
+	| 'colorpicker'
+	| 'iconpicker'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 		if (this.props.type === 'text') {
@@ -38,6 +44,12 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeDropdown {...this.props} />
 		} else if (this.props.type === 'multiselect') {
 			return <EditAttributeMultiSelect {...this.props} />
+		} else if (this.props.type === 'json') {
+			return <EditAttributeJson {...this.props} />
+		} else if (this.props.type === 'colorpicker') {
+			return <EditAttributeColorPicker {...this.props} />
+		} else if (this.props.type === 'iconpicker') {
+			return <EditAttributeIconPicker {...this.props} />
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -54,6 +66,7 @@ interface IEditAttributeBaseProps {
 	optionsAreNumbers?: boolean
 	className?: string
 	modifiedClassName?: string
+	invalidClassName?: string
 	updateFunction?: (edit: EditAttributeBase, newValue: any) => void
 	overrideDisplayValue?: any
 	label?: string
@@ -252,6 +265,12 @@ const EditAttributeMultilineText = wrapEditAttribute(
 				this.handleDiscard()
 			}
 		}
+		handleEnterKey(event) {
+			let e = event as KeyboardEvent
+			if (e.key === 'Enter') {
+				e.stopPropagation()
+			}
+		}
 		render() {
 			return (
 				<textarea
@@ -268,6 +287,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 					onChange={this.handleChange}
 					onBlur={this.handleBlur}
 					onKeyUp={this.handleEscape}
+					onKeyPress={this.handleEnterKey}
 				/>
 			)
 		}
@@ -621,6 +641,126 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 					value={this.getAttribute()}
 					placeholder={this.props.label}
 					onChange={this.handleChange}></MultiSelect>
+			)
+		}
+	}
+)
+
+const EditAttributeJson = wrapEditAttribute(
+	class EditAttributeJson extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+			this.handleBlur = this.handleBlur.bind(this)
+			this.handleEscape = this.handleEscape.bind(this)
+		}
+		isJson(str: string) {
+			try {
+				JSON.parse(str)
+			} catch (err) {
+				return false
+			}
+			return true
+		}
+		handleChange(event) {
+			let v = event.target.value
+			if (this.isJson(v)) {
+				this.handleEdit(v)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+			}
+		}
+		handleBlur(event) {
+			let v = event.target.value
+			if (v === '') {
+				v = '{}'
+			}
+			if (this.isJson(v)) {
+				this.handleUpdate(v)
+				this.setState({
+					valueError: false,
+				})
+			} else {
+				this.handleUpdateButDontSave(v, true)
+				this.setState({
+					valueError: true,
+				})
+			}
+		}
+		handleEscape(event) {
+			let e = event as KeyboardEvent
+			if (e.key === 'Escape') {
+				this.handleDiscard()
+			}
+		}
+		render() {
+			return (
+				<input
+					type="text"
+					className={ClassNames(
+						'form-control',
+						this.props.className,
+						this.state.valueError && this.props.invalidClassName
+							? this.props.invalidClassName
+							: this.state.editing
+							? this.props.modifiedClassName || ''
+							: ''
+					)}
+					placeholder={this.props.label}
+					value={this.getEditAttribute() || ''}
+					onChange={this.handleChange}
+					onBlur={this.handleBlur}
+					onKeyUp={this.handleEscape}
+				/>
+			)
+		}
+	}
+)
+
+const EditAttributeColorPicker = wrapEditAttribute(
+	class EditAttributeColorPicker extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+		}
+		handleChange(event: ColorPickerEvent) {
+			this.handleUpdate(event.selectedValue)
+		}
+		render() {
+			return (
+				<ColorPicker
+					className={this.props.className}
+					availableOptions={this.props.options}
+					value={this.getAttribute()}
+					placeholder={this.props.label}
+					onChange={this.handleChange}></ColorPicker>
+			)
+		}
+	}
+)
+const EditAttributeIconPicker = wrapEditAttribute(
+	class extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+		}
+		handleChange(event: IconPickerEvent) {
+			this.handleUpdate(event.selectedValue)
+		}
+		render() {
+			return (
+				<IconPicker
+					className={this.props.className}
+					availableOptions={this.props.options}
+					value={this.getAttribute()}
+					placeholder={this.props.label}
+					onChange={this.handleChange}></IconPicker>
 			)
 		}
 	}

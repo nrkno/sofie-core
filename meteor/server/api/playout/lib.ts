@@ -82,7 +82,9 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 
 	const dirtyParts = cache.Parts.findFetch({ rundownId: rundown._id, dirty: true })
 
-	refreshParts(cache, dirtyParts)
+	const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}" not found in resetRundown`)
+	refreshParts(cache, playlist, dirtyParts)
 
 	// Reset all pieces that were modified for holds
 	cache.Pieces.update(
@@ -164,6 +166,17 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 	const rundownIDs = rundowns.map((i) => i._id)
 	// const rundownLookup = _.object(rundowns.map(i => [ i._id, i ])) as { [key: string]: Rundown }
 
+	const partInstancesToRemove = cache.PartInstances.findFetch({
+		rundownId: { $in: rundownIDs },
+		rehearsal: true,
+	})
+	cache.PartInstances.remove({
+		_id: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+	cache.PieceInstances.remove({
+		partInstanceId: { $in: partInstancesToRemove.map((pi) => pi._id) },
+	})
+
 	cache.PartInstances.update(
 		{
 			rundownId: {
@@ -228,7 +241,7 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		},
 		dirty: true,
 	})
-	refreshParts(cache, dirtyParts)
+	refreshParts(cache, rundownPlaylist, dirtyParts)
 
 	// Reset all pieces that were modified for holds
 	cache.Pieces.update(
@@ -361,22 +374,30 @@ export function getPreviousPart(cache: CacheForRundownPlaylist, partToCheck: Par
 	}
 	return previousPart
 }
-export function refreshParts(cache: CacheForRundownPlaylist, parts: Part[]) {
-	const ps: Promise<any>[] = []
-	parts.forEach((part) => {
-		const rundown = cache.Rundowns.findOne(part.rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found in refreshParts`)
-		ps.push(
-			refreshPart(cache, rundown, part).then(() => {
-				cache.Parts.update(part._id, {
-					$unset: {
-						dirty: 1,
-					},
-				})
-			})
-		)
-	})
-	waitForPromiseAll(ps)
+export function refreshParts(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, parts: Part[]) {
+	if (parts.length > 0) {
+		const studio = cache.Studios.findOne(playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, `Studio ${playlist.studioId} was not found`)
+
+		const segmentIds = _.uniq(parts.map((p) => p.segmentId))
+		const segments = cache.Segments.findFetch({ _id: { $in: segmentIds } })
+		const groupedSegments = _.groupBy(segments, (s) => s.rundownId)
+
+		const ps = _.map(groupedSegments, async (segments) => {
+			const rundownId = segments[0].rundownId
+			const rundown = cache.Rundowns.findOne(rundownId)
+			if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found in refreshParts`)
+
+			const pIngestSegments = segments.map((segment) =>
+				makePromise(() =>
+					loadCachedIngestSegment(rundown._id, rundown.externalId, segment._id, segment.externalId)
+				)
+			)
+			const ingestSegments = await Promise.all(pIngestSegments)
+			updateSegmentsFromIngestData(cache, studio, playlist, rundown, ingestSegments)
+		})
+		waitForPromiseAll(ps)
+	}
 }
 export async function refreshPart(cache: CacheForRundownPlaylist, rundown: Rundown, part: Part) {
 	// TODO:
@@ -471,15 +492,15 @@ export function setNextPart(
 		if ((newNextPart && newNextPart.invalid) || (newNextPartInstance && newNextPartInstance.part.invalid)) {
 			throw new Meteor.Error(400, 'Part is marked as invalid, cannot set as next.')
 		}
-		if (newNextPart && rundownIds.indexOf(newNextPart.rundownId)) {
+		if (newNextPart && !rundownIds.includes(newNextPart.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`Part "${newNextPart._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`Part "${newNextPart._id}" of rundown "${newNextPart.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
-		} else if (newNextPartInstance && rundownIds.indexOf(newNextPartInstance.rundownId)) {
+		} else if (newNextPartInstance && !rundownIds.includes(newNextPartInstance.rundownId)) {
 			throw new Meteor.Error(
 				409,
-				`PartInstance "${newNextPartInstance._id}" not part of RundownPlaylist "${rundownPlaylist._id}"`
+				`PartInstance "${newNextPartInstance._id}" of rundown "${newNextPartInstance.rundownId}" not part of RundownPlaylist "${rundownPlaylist._id}"`
 			)
 		}
 
@@ -522,6 +543,7 @@ export function setNextPart(
 				segmentId: nextPart.segmentId,
 				part: nextPart,
 				isScratch: true,
+				rehearsal: !!rundownPlaylist.rehearsal,
 			})
 			/*
 			RundownPlaylists.findOne().nextPartInstanceId
@@ -1033,4 +1055,28 @@ export function getRundownsSegmentsAndPartsFromCache(
 		segments: segments,
 		parts: parts,
 	}
+}
+
+export function getPartBeforeSegmentFromCache(
+	cache: CacheForRundownPlaylist,
+	rundownId: RundownId,
+	dbSegment: DBSegment
+): Part | undefined {
+	const prevSegment = cache.Segments.findOne(
+		{
+			rundownId: rundownId,
+			_rank: { $lt: dbSegment._rank },
+		},
+		{ sort: { _rank: -1 } }
+	)
+	if (prevSegment) {
+		return cache.Parts.findOne(
+			{
+				rundownId: rundownId,
+				segmentId: prevSegment._id,
+			},
+			{ sort: { _rank: -1 } }
+		)
+	}
+	return undefined
 }

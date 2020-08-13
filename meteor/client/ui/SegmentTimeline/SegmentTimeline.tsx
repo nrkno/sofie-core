@@ -38,7 +38,6 @@ import { getAllowSpeaking } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { MAGIC_TIME_SCALE_FACTOR, RundownViewEvents, IContextMenuContext } from '../RundownView'
-import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
 import { literal, unprotectString } from '../../../lib/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
@@ -146,7 +145,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 				const duration = Math.max(
 					item.instance.part.duration || item.renderedDuration || 0,
 					(durations.partDisplayDurations && durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
-						DEFAULT_DISPLAY_DURATION
+						Settings.defaultDisplayDuration
 				)
 				total += duration
 			})

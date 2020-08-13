@@ -483,10 +483,14 @@ export const SourceLayerItem = withTranslation()(
 
 		componentDidUpdate(prevProps: ISourceLayerItemProps) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
-				this.setState({
-					scrollLeftOffset: this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft),
-					cursorTimePosition: this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft),
-				})
+				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
+				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
+				if (this.state.scrollLeftOffset !== scrollLeftOffset && this.state.cursorTimePosition !== cursorTimePosition) {
+					this.setState({
+						scrollLeftOffset,
+						cursorTimePosition,
+					})
+				}
 			}
 
 			if (this.props.isLiveLine && this.state.itemElement && !this._resizeObserver) {

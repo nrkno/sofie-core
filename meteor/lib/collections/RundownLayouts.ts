@@ -137,6 +137,10 @@ export interface RundownLayoutBase {
 	name: string
 	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
+	exposeAsStandalone: boolean
+	exposeAsShelf: boolean
+	icon: string
+	iconColor: string
 }
 
 export interface RundownLayout extends RundownLayoutBase {

@@ -166,6 +166,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			fields: {
 				_id: 1,
 				unsynced: 1,
+				notes: 1,
 			},
 		})
 		this.autorun(() => {
