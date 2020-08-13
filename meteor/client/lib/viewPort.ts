@@ -90,8 +90,21 @@ export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnim
 	return Promise.reject('Could not find part')
 }
 
-export const HEADER_HEIGHT = 150 // TV2 has: 54
-export const HEADER_MARGIN = 15
+const FALLBACK_HEADER_HEIGHT = 150
+let HEADER_HEIGHT: number | undefined = undefined
+export const HEADER_MARGIN = 25
+
+export function getHeaderHeight(): number {
+	if (HEADER_HEIGHT === undefined) {
+		const root = document.querySelector('#render-target > .container-fluid > .rundown-view > .header')
+		if (!root) {
+			return FALLBACK_HEADER_HEIGHT
+		}
+		const { height } = root.getBoundingClientRect()
+		HEADER_HEIGHT = height
+	}
+	return HEADER_HEIGHT
+}
 
 export function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
@@ -114,7 +127,7 @@ export function scrollToSegment(
 	if (
 		forceScroll ||
 		bottom > window.scrollY + window.innerHeight ||
-		top < window.scrollY + HEADER_HEIGHT + HEADER_MARGIN
+		top < window.scrollY + getHeaderHeight() + HEADER_MARGIN
 	) {
 		return scrollToPosition(top, noAnimation).then(() => true)
 	}
@@ -126,7 +139,7 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 	if (noAnimation) {
 		return new Promise((resolve, reject) => {
 			window.scroll({
-				top: Math.max(0, scrollPosition - HEADER_HEIGHT - HEADER_MARGIN),
+				top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
 				left: 0,
 			})
 			resolve()
@@ -136,7 +149,7 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 			window.requestIdleCallback(
 				() => {
 					window.scroll({
-						top: Math.max(0, scrollPosition - HEADER_HEIGHT - HEADER_MARGIN),
+						top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
 						left: 0,
 						behavior: 'smooth',
 					})
