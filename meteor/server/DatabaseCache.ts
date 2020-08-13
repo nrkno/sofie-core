@@ -18,6 +18,9 @@ import {
 	waitForPromiseAll,
 	waitForPromise,
 	asyncCollectionUpsert,
+	asyncCollectionBulkRemoveById,
+	asyncCollectionBulkUpsert,
+	asyncCollectionBulkUpdate,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
@@ -242,26 +245,64 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		}
 		const ps: Promise<any>[] = []
 		const removedDocs: ProtectedString<any>[] = []
+		const insertedDocs: Array<Class> = []
+		const updatedDocs: Array<Class> = []
 		_.each(this.documents, (doc, id) => {
 			const _id = protectString(id)
 			if (doc.removed) {
-				ps.push(asyncCollectionRemove(this._collection, _id))
+				// ps.push(asyncCollectionRemove(this._collection, _id))
 				changes.remove++
 				removedDocs.push(_id)
 			} else if (doc.inserted) {
-				ps.push(asyncCollectionUpsert(this._collection, doc.document._id, doc.document))
+				insertedDocs.push(doc.document)
+				// ps.push(asyncCollectionUpsert(this._collection, doc.document._id, doc.document))
 				changes.insert++
 			} else if (doc.updated) {
-				ps.push(asyncCollectionUpdate(this._collection, _id, doc.document))
+				// ps.push(asyncCollectionUpdate(this._collection, _id, doc.document))
+				updatedDocs.push(doc.document)
 				changes.update++
 			}
 			delete doc.inserted
 			delete doc.updated
 			// Note: we don't delete doc.removed, because that breaks this._collection[x].document
 		})
+		if (removedDocs.length) {
+			ps.push(asyncCollectionBulkRemoveById(this._collection, removedDocs))
+		}
 		_.each(removedDocs, (_id) => {
 			delete this._collection[unprotectString(_id)]
 		})
+		if (insertedDocs.length) {
+			ps.push(
+				asyncCollectionBulkUpsert(
+					this._collection,
+					insertedDocs.map((doc) => {
+						return {
+							selector: {
+								_id: doc._id,
+							},
+							modifier: doc,
+						}
+					})
+				)
+			)
+		}
+		if (updatedDocs.length) {
+			ps.push(
+				asyncCollectionBulkUpdate(
+					this._collection,
+					updatedDocs.map((doc) => {
+						return {
+							selector: {
+								_id: doc._id,
+							},
+							modifier: doc,
+						}
+					})
+				)
+			)
+		}
+		/*ps.push()*/
 		await Promise.all(ps)
 
 		return changes
