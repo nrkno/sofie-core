@@ -21,15 +21,16 @@ import * as On_Air_MouseOut from './On_Air_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
 import * as On_Air_MouseOver from './On_Air_MouseOver.json'
 import { SupportPopUpToggle } from '../SupportPopUp'
+import { NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IProps {
 	isFollowingOnAir: boolean
 	onFollowOnAir?: () => void
 	onRewindSegments?: () => void
-	isNotificationCenterOpen: boolean
+	isNotificationCenterOpen: NoticeLevel | undefined
 	isSupportPanelOpen: boolean
 	isStudioMode: boolean
-	onToggleNotifications?: (e: React.MouseEvent<HTMLButtonElement>) => void
+	onToggleNotifications?: (e: React.MouseEvent<HTMLButtonElement>, filter: NoticeLevel) => void
 	onToggleSupportPanel?: (e: React.MouseEvent<HTMLButtonElement>) => void
 	onTake?: (e: React.MouseEvent<HTMLButtonElement>) => void
 }
@@ -141,8 +142,29 @@ export class RundownFullscreenControls extends React.Component<IProps, IState> {
 					enter={{ animation: 'fadeIn', easing: 'ease-out', duration: 250 }}
 					leave={{ animation: 'fadeOut', easing: 'ease-in', duration: 500 }}>
 					<NotificationCenterPanelToggle
-						onClick={this.props.onToggleNotifications}
-						isOpen={this.props.isNotificationCenterOpen}
+						onClick={(e) =>
+							this.props.onToggleNotifications && this.props.onToggleNotifications(e, NoticeLevel.CRITICAL)
+						}
+						isOpen={this.props.isNotificationCenterOpen === NoticeLevel.CRITICAL}
+						filter={NoticeLevel.CRITICAL}
+						className="type-critical"
+					/>
+					<NotificationCenterPanelToggle
+						onClick={(e) =>
+							this.props.onToggleNotifications && this.props.onToggleNotifications(e, NoticeLevel.WARNING)
+						}
+						isOpen={this.props.isNotificationCenterOpen === NoticeLevel.WARNING}
+						filter={NoticeLevel.WARNING}
+						className="type-warning"
+					/>
+					<NotificationCenterPanelToggle
+						onClick={(e) =>
+							this.props.onToggleNotifications &&
+							this.props.onToggleNotifications(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)
+						}
+						isOpen={this.props.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
+						filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
+						className="type-notification"
 					/>
 					<button
 						className="status-bar__controls__button"

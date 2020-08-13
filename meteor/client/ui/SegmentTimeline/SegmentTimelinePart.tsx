@@ -21,7 +21,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { IContextMenuContext } from '../RundownView'
+import { IContextMenuContext, RundownViewEvents } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
@@ -347,6 +347,7 @@ interface IState {
 	liveDuration: number
 
 	isInsideViewport: boolean
+	highlight: boolean
 }
 
 const LIVE_LINE_TIME_PADDING = 150
@@ -399,6 +400,7 @@ export const SegmentTimelinePart = withTranslation()(
 					isNext,
 					isDurationSettling: false,
 					isInsideViewport: false,
+					highlight: false,
 					liveDuration: isLive
 						? Math.max(
 								(startedPlayback &&
@@ -486,6 +488,33 @@ export const SegmentTimelinePart = withTranslation()(
 				} else {
 					return 0
 				}
+			}
+
+			private highlightTimeout: NodeJS.Timer
+
+			private onHighlight = (e: any) => {
+				if (e.detail && e.detail.partId === this.props.part.partId && !e.detail.pieceId) {
+					this.setState({
+						highlight: true,
+					})
+					clearTimeout(this.highlightTimeout)
+					this.highlightTimeout = setTimeout(() => {
+						this.setState({
+							highlight: false,
+						})
+					}, 5000)
+				}
+			}
+
+			componentDidMount() {
+				super.componentDidMount && super.componentDidMount()
+				window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+			}
+
+			componentWillUnmount() {
+				super.componentWillUnmount && super.componentWillUnmount()
+				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+				clearTimeout(this.highlightTimeout)
 			}
 
 			queueDelayedUpdate() {
@@ -681,6 +710,7 @@ export const SegmentTimelinePart = withTranslation()(
 								invalid: innerPart.invalid && !innerPart.gap,
 								floated: innerPart.floated,
 								gap: innerPart.gap,
+								'invert-flash': this.state.highlight,
 
 								'duration-settling': this.state.isDurationSettling,
 							})}

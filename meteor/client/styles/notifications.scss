@@ -35,6 +35,22 @@
 			margin-bottom: 0.9375rem;
 		}
 
+		@keyframes notification-dismiss {
+			0% {
+				transform: translate3d(0, 0, 0) scale(1);
+				opacity: 1;
+			}
+			100% {
+				transform: translate3d(200%, 0, 0) scale(0);
+				opacity: 0;
+			}
+		}
+
+		&.notification-pop-up--dismiss {
+			opacity: 0;
+			transition: opacity 0.5s ease-in, transform 0.5s ease-in;
+		}
+
 		> .notification-pop-up__header {
 			display: block;
 			flex: 0;
@@ -43,7 +59,13 @@
 			color: $color-status-minor-warning-text;
 
 			text-align: center;
-			padding-top: 0.625rem;
+			padding-top: 0.5rem;
+
+			> svg {
+				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+				width: 1.7em;
+				height: 1.7em;
+			}
 		}
 
 		&.warning {
@@ -79,18 +101,50 @@
 			padding: 0.625rem 0.9375rem;
 			cursor: default;
 
-			> .notification-pop-up__actions {
-				text-align: right;
-				margin-top: 0.5em;
+			> h5 {
+				color: inherit;
+				margin: 0 0 0.5em;
+				font-weight: 400 !important;
 			}
-		}
 
-		&.has-default-action {
-			> .notification-pop-up__contents {
-				cursor: pointer;
+			> .notification-pop-up__actions {
+				display: grid;
+				grid-template-columns: auto auto;
+				grid-template-areas: 'left right';
+				margin-top: 0.5em;
 
-				&:hover {
-					text-decoration: underline;
+				.notification-pop-up__actions--button {
+					font-weight: 500;
+					letter-spacing: 0.2px;
+					line-height: 1.43em;
+					padding-left: 10px;
+					padding-right: 10px;
+
+					> svg {
+						margin-top: -0.1em;
+						vertical-align: middle;
+						margin-right: -0.4em;
+						width: 1em;
+						height: 1em;
+					}
+
+					.label {
+						margin-left: 10px;
+						line-height: inherit;
+					}
+				}
+
+				.btn-default {
+					background: #d7dade;
+				}
+
+				> .notification-pop-up__actions--default {
+					grid-area: left;
+				}
+
+				> .notification-pop-up__actions--other {
+					text-align: right;
+					grid-area: right;
 				}
 			}
 		}
@@ -107,6 +161,30 @@
 				margin: 0;
 				padding: 0;
 				font-size: 0.7rem;
+
+				> svg {
+					fill: #525252;
+					width: 2.25em;
+					height: 2.25em;
+					vertical-align: top;
+					margin-top: -0.4em;
+				}
+
+				&.notification-pop-up__dismiss__button--close {
+					> svg {
+						fill: #525252;
+						width: 1.5em;
+						height: 1.5em;
+						vertical-align: top;
+						margin-top: 0;
+					}
+				}
+
+				&:hover {
+					> svg {
+						fill: #727272;
+					}
+				}
 			}
 		}
 	}
@@ -119,28 +197,53 @@
 	z-index: 310;
 	text-align: left;
 	cursor: pointer;
+	overflow: hidden;
 
-	> svg {
-		position: absolute;
-		width: #{$fullscreen-controls__button--radius / 2};
-		height: #{$fullscreen-controls__button--radius / 2};
-		top: 50%;
-		right: 0;
-		transform: translate(-50%, -53%);
-		transition: 0.5s all ease-in-out;
-
-		> path {
-			stroke: rgb(255, 255, 255);
-			transition: 0.5s all linear;
+	.notifications__toggle-button__icon {
+		> svg {
+			position: absolute;
+			width: #{$fullscreen-controls__button--radius / 1.75};
+			height: #{$fullscreen-controls__button--radius / 1.75};
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			transition: 0.5s all ease-in-out;
 		}
 	}
 
 	&.has-items {
-		> svg {
-			transform: translate(-80%, -53%);
+		.notifications__toggle-button__icon:not(.notifications__toggle-button__icon--collapse) {
+			> svg {
+				transform: translate(-60%, -50%);
+				filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+			}
+		}
+	}
 
-			> path {
-				stroke: rgb(255, 255, 0);
+	&:not(.has-items) {
+		.notifications__toggle-button__icon:not(.notifications__toggle-button__icon--collapse) {
+			> svg {
+				> path {
+					fill: #fff;
+					opacity: 0.3;
+				}
+			}
+		}
+	}
+
+	.notifications__toggle-button__icon.notifications__toggle-button__icon--collapse {
+		> svg {
+			fill: #525252;
+			width: 1.5em;
+			height: 1.5em;
+			transform: translate(-34%, -50%);
+		}
+	}
+
+	&:not(.status-bar__controls__button--open) {
+		.notifications__toggle-button__icon.notifications__toggle-button__icon--collapse {
+			> svg {
+				fill: #fff;
 			}
 		}
 	}
@@ -149,16 +252,20 @@
 		display: block;
 		position: absolute;
 
-		right: 6%;
-		top: 50%;
-		transform: translate(0, -50%);
-		width: #{$fullscreen-controls__button--radius / 2.86};
+		top: 0;
+		left: 75%;
+		transform: translate(-50%, -100%);
 		text-align: center;
-		font-size: 0.8em;
+		font-size: 0.7em;
 		font-weight: 500;
 
 		opacity: 0;
 		transition: 0.2s opacity ease-in 0s;
+
+		color: #fff;
+		background: #000;
+		border-radius: 0.8em;
+		padding: 0 4px;
 	}
 
 	&.has-items {
@@ -167,14 +274,31 @@
 			transition: 0.2s opacity ease-out 0.4s;
 		}
 	}
+
+	&.type-critical {
+		.notifications__toggle-button__count {
+			background: #000;
+		}
+	}
+
+	&.type-warning {
+		.notifications__toggle-button__count {
+			background: #ffff00;
+			color: #000;
+		}
+	}
+
+	&.type-notification {
+		.notifications__toggle-button__count {
+			background: #00c9e4;
+		}
+	}
 }
 
-.running-order {
+.rundown-view {
 	.notifications__toggle-button.status-bar__controls__button--open {
-		> svg {
-			> path {
-				stroke: #fff;
-			}
+		&::after {
+			opacity: 0;
 		}
 	}
 }
@@ -210,7 +334,7 @@
 		top: ‭3.6875‬rem;
 		left: 0;
 		bottom: 0;
-		overflow: auto;
+		overflow: none auto;
 		width: calc(#{$notification-center-width} + 10px);
 		pointer-events: auto;
 
@@ -231,7 +355,7 @@
 		}
 		&::-webkit-scrollbar-thumb {
 			background: #666666;
-			border: 3px solid #fff;
+			border: 3px solid #acacad;
 			border-radius: 50px;
 		}
 		&::-webkit-scrollbar-thumb:hover {
@@ -242,14 +366,14 @@
 		}
 		&::-webkit-scrollbar-track {
 			background: #cccccc;
-			border: 3px solid #fff;
+			border: 3px solid #acacad;
 			border-radius: 50px;
 		}
 		&::-webkit-scrollbar-track:hover {
-			background: #ffffff;
+			background: #acacad;
 		}
 		&::-webkit-scrollbar-track:active {
-			background: #ffffff;
+			background: #acacad;
 		}
 		&::-webkit-scrollbar-corner {
 			background: transparent;
@@ -258,7 +382,7 @@
 }
 
 .rundown-view .notification-center-panel {
-	background: #eee;
+	background: #acacad;
 	color: #000;
 	top: 4rem;
 
@@ -280,17 +404,23 @@
 			@keyframes highlight {
 				0% {
 					background-color: rgb(206, 240, 255);
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--translucent);
 				}
-				100% {
+				50% {
+					background-color: rgb(206, 240, 255);
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--translucent);
+				}
+				51% {
 					background-color: #fff;
+					box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3), 0 1px 14px var(--ui-button-primary--transparent);
 				}
 			}
 
 			&.is-highlighted {
 				animation-name: highlight;
-				animation-duration: 2s;
-				animation-delay: 1.5s;
-				animation-iteration-count: 1;
+				animation-duration: 1s;
+				animation-delay: 0.5s;
+				animation-iteration-count: 5;
 				animation-fill-mode: both;
 				animation-direction: normal;
 			}
