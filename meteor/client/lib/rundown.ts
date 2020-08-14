@@ -366,8 +366,12 @@ export namespace RundownUtils {
 					orderedAllPartIds,
 					false
 				)
-				const nowInPart = 0 // TODO
-				const preprocessedPieces = processAndPrunePieceInstanceTimings(rawPieceInstances, nowInPart)
+				const nowInPart = 0 // TODO-INFINITE
+				const preprocessedPieces = processAndPrunePieceInstanceTimings(
+					showStyleBase,
+					rawPieceInstances,
+					nowInPart
+				)
 
 				// insert items into the timeline for resolution
 				partE.pieces = preprocessedPieces.map((piece) => {

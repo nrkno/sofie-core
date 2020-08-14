@@ -648,7 +648,7 @@ function updateRundownFromIngestData(
 	const adlibPieces: AdLibPiece[] = []
 	const adlibActions: AdLibAction[] = []
 
-	const { blueprint, blueprintId } = getBlueprintOfRundown(dbRundown)
+	const { blueprint, blueprintId } = getBlueprintOfRundown(showStyle.base, dbRundown)
 
 	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
@@ -1138,7 +1138,7 @@ function updateSegmentFromIngestData(
 	ingestSegment: IngestSegment
 ): SegmentId | null {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-	const { blueprint, blueprintId } = getBlueprintOfRundown(rundown)
+	const { blueprint, blueprintId } = getBlueprintOfRundown(undefined, rundown)
 
 	const existingSegment = cache.Segments.findOne({
 		_id: segmentId,

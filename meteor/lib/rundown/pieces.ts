@@ -48,6 +48,7 @@ export function createPieceGroupAndCap(
 
 	let nowObj: TimelineObjRundown | undefined
 	if (pieceInstance.resolvedEndCap === 'now') {
+		// TODO-INFINITE - there could already be a piece with a cap of 'now' that we could use as our end time
 		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
 		nowObj = literal<TimelineObjRundown>({
 			_id: protectString(''), // set later

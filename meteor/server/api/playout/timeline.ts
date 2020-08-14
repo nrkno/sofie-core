@@ -39,13 +39,15 @@ import {
 	unprotectObject,
 	normalizeArrayFunc,
 	clone,
+	makePromise,
+	asyncCollectionFindOne,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprints, getBlueprintOfRundownAsync } from '../blueprints/cache'
+import { loadStudioBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { StudioContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { generateRecordingTimelineObjs } from '../testTools'
@@ -60,6 +62,7 @@ import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -213,17 +216,27 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 
 		if (playlist && activeRundown) {
 			// Fetch showstyle blueprint:
-			const pshowStyleBlueprint = getBlueprintOfRundownAsync(activeRundown)
+			const activeRundown0 = activeRundown
+			const pShowStyle = asyncCollectionFindOne(ShowStyleBases, activeRundown.showStyleBaseId)
+			const pshowStyleBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, activeRundown0))
 
 			// Fetch baseline
-			let baselineItems = cache.RundownBaselineObjs.findFetch({
+			const baselineItems = cache.RundownBaselineObjs.findFetch({
 				rundownId: activeRundown._id,
 			})
 
 			// next (on pvw (or on pgm if first))
 			const pLookaheadObjs = getLookeaheadObjects(cache, studio, playlist)
 
-			timelineObjs = timelineObjs.concat(buildTimelineObjsForRundown(cache, baselineItems, playlist))
+			const showStyle = waitForPromise(pShowStyle)
+			if (!showStyle) {
+				throw new Meteor.Error(
+					404,
+					`ShowStyleBase "${activeRundown.showStyleBaseId}" not found! (referenced by Rundown "${activeRundown._id}")`
+				)
+			}
+
+			timelineObjs = timelineObjs.concat(buildTimelineObjsForRundown(cache, showStyle, baselineItems, playlist))
 
 			timelineObjs = timelineObjs.concat(waitForPromise(pLookaheadObjs))
 
@@ -400,6 +413,7 @@ function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Tim
 
 function buildTimelineObjsForRundown(
 	cache: CacheForRundownPlaylist,
+	showStyle: ShowStyleBase,
 	baselineItems: RundownBaselineObj[],
 	activePlaylist: RundownPlaylist
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
@@ -458,7 +472,7 @@ function buildTimelineObjsForRundown(
 		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
 		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: currentPartInstance._id })
 		const [currentInfinitePieces, currentNormalItems] = _.partition(
-			processAndPrunePieceInstanceTimings(currentPieces, nowInPart),
+			processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart),
 			(l) => !!l.infinite && l.piece.lifespan !== PieceLifespan.WithinPart
 		)
 		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
@@ -491,6 +505,7 @@ function buildTimelineObjsForRundown(
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
 				const previousContinuedPieces = processAndPrunePieceInstanceTimings(
+					showStyle,
 					cache.PieceInstances.findFetch({
 						partInstanceId: previousPartInstance._id,
 					}),
@@ -672,6 +687,7 @@ function buildTimelineObjsForRundown(
 			}
 
 			const nextPieceInstances = processAndPrunePieceInstanceTimings(
+				showStyle,
 				cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id }),
 				0
 			).filter((i) => !i.infinite || currentInfinitePieceIds.indexOf(i.infinite.infinitePieceId) === -1)

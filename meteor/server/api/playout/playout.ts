@@ -75,6 +75,7 @@ import {
 import { takeNextPartInner, afterTake } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { Settings } from '../../../lib/Settings'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -1005,7 +1006,7 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 
 		return executeActionInner(rundownPlaylistId, (context, cache, rundown) => {
-			const blueprint = getBlueprintOfRundown(rundown) // todo: database again
+			const blueprint = getBlueprintOfRundown(undefined, rundown) // todo: database again
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
 			}
@@ -1106,8 +1107,12 @@ export namespace ServerPlayoutAPI {
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Meteor.Error(501, `Rundown "${partInstance.rundownId}" not found!`)
 
+			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+			if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found!`)
+
 			ServerPlayoutAdLibAPI.innerStopPieces(
 				cache,
+				showStyleBase,
 				partInstance,
 				(pieceInstance) => sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1,
 				undefined

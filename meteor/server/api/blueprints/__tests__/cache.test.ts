@@ -401,7 +401,7 @@ describe('Test blueprint cache', () => {
 			expect(rundown.showStyleBaseId).toBeFalsy()
 
 			try {
-				getBlueprintOfRundown(rundown, true)
+				getBlueprintOfRundown(undefined, rundown, true)
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(`[400] Rundown "${rundown._id}" is missing showStyleBaseId!`)
@@ -412,7 +412,7 @@ describe('Test blueprint cache', () => {
 			rundown.showStyleBaseId = protectString('fake0')
 
 			try {
-				getBlueprintOfRundown(rundown, true)
+				getBlueprintOfRundown(undefined, rundown, true)
 				expect(true).toBe(false) // Please throw and don't get here
 			} catch (e) {
 				expect(e.message).toBe(
@@ -427,7 +427,17 @@ describe('Test blueprint cache', () => {
 			const rundown = getRundown()
 			rundown.showStyleBaseId = showStyle._id
 
-			const blueprint = getBlueprintOfRundown(rundown, true)
+			const blueprint = getBlueprintOfRundown(undefined, rundown, true)
+			expect(blueprint).toBeTruthy()
+		})
+		testInFiber('Wrong showStyleBase', () => {
+			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
+			expect(showStyle).toBeTruthy()
+
+			const rundown = getRundown()
+			rundown.showStyleBaseId = protectString(showStyle._id + '1')
+
+			const blueprint = getBlueprintOfRundown(showStyle, rundown, true)
 			expect(blueprint).toBeTruthy()
 		})
 		testInFiber('Test caching', () => {
@@ -440,13 +450,39 @@ describe('Test blueprint cache', () => {
 				const rundown = getRundown()
 				rundown.showStyleBaseId = showStyle._id
 
-				const blueprint1 = getBlueprintOfRundown(rundown)
+				const blueprint1 = getBlueprintOfRundown(undefined, rundown)
 				expect(blueprint1).toBeTruthy()
 
 				jest.runTimersToTime(500)
 
 				rundown.showStyleBaseId = protectString('abc') // Not real
-				const blueprint2 = getBlueprintOfRundown(rundown)
+				const blueprint2 = getBlueprintOfRundown(undefined, rundown)
+				expect(blueprint2).toBeTruthy()
+
+				// Should still be the same, as within cache window
+				expect(blueprint2.blueprintId).toEqual(blueprint1.blueprintId)
+			} finally {
+				// Restore timers after run
+				jest.useRealTimers()
+			}
+		})
+		testInFiber('Test caching with fed showStyle', () => {
+			jest.useFakeTimers()
+
+			try {
+				const showStyle = ShowStyleBases.findOne() as ShowStyleBase
+				expect(showStyle).toBeTruthy()
+
+				const rundown = getRundown()
+				rundown.showStyleBaseId = showStyle._id
+
+				const blueprint1 = getBlueprintOfRundown(showStyle, rundown)
+				expect(blueprint1).toBeTruthy()
+
+				jest.runTimersToTime(500)
+
+				rundown.showStyleBaseId = protectString('abc') // Not real
+				const blueprint2 = getBlueprintOfRundown(showStyle, rundown)
 				expect(blueprint2).toBeTruthy()
 
 				// Should still be the same, as within cache window

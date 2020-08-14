@@ -43,6 +43,7 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -197,7 +198,11 @@ function resolvePieceTimeline(
 	return resolvedPieces
 }
 
-export function getResolvedPieces(cache: CacheForRundownPlaylist, partInstance: PartInstance): ResolvedPieceInstance[] {
+export function getResolvedPieces(
+	cache: CacheForRundownPlaylist,
+	showStyleBase: ShowStyleBase,
+	partInstance: PartInstance
+): ResolvedPieceInstance[] {
 	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
@@ -206,7 +211,7 @@ export function getResolvedPieces(cache: CacheForRundownPlaylist, partInstance: 
 	const partStarted = partInstance.part.getLastStartedPlayback()
 	const nowInPart = now - (partStarted ?? 0)
 
-	const preprocessedPieces = processAndPrunePieceInstanceTimings(pieceInstances, nowInPart)
+	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
 
 	const objs = flatten(
 		preprocessedPieces.map((piece) => {

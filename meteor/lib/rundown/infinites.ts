@@ -7,6 +7,8 @@ import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { assertNever, max, flatten, literal } from '../lib'
 import { Mongo } from 'meteor/mongo'
+import { Studio } from '../collections/Studios'
+import { ShowStyleBase } from '../collections/ShowStyleBases'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }
@@ -59,11 +61,6 @@ export function getPlayheadTrackingInfinitesForPart(
 	nextPartIsAfterCurrentPart: boolean,
 	isTemporary: boolean
 ): PieceInstance[] {
-	// const playingPartIndex = playingPartInstance
-	// 	? orderedParts.findIndex((p) => p._id === playingPartInstance.part._id)
-	// 	: undefined // TODO-INFINITES this will want refining once we define the selectNext behaviour
-	// const newPartIndex = orderedParts.findIndex((p) => p._id === part._id)
-
 	const canContinueAdlibOnEnds = nextPartIsAfterCurrentPart
 	interface InfinitePieceSet {
 		[PieceLifespan.OutOnRundownEnd]?: PieceInstance
@@ -382,16 +379,11 @@ export interface PieceInstanceWithTimings extends PieceInstance {
  * The stacking order of infinites is considered, to define the stop times
  */
 export function processAndPrunePieceInstanceTimings(
-	// partInstance: PartInstance,
+	showStyle: ShowStyleBase,
 	pieces: PieceInstance[],
 	nowInPart: number
 ): PieceInstanceWithTimings[] {
-	// TODO-INFINITE - use this for both the ui and backend
-	// TODO It has not been tested yet, but I think the logic is reasonable
-
 	const result: PieceInstanceWithTimings[] = []
-
-	// TODO-INFINITE exclusiveGroup
 
 	let activePieces: PieceInstanceOnInfiniteLayers = {}
 	const updateWithNewPieces = (
@@ -418,8 +410,19 @@ export function processAndPrunePieceInstanceTimings(
 		}
 	}
 
-	const groupedPieces = _.groupBy(pieces, (p) => p.piece.sourceLayerId)
-	for (const [slId, pieces] of Object.entries(groupedPieces)) {
+	// We want to group by exclusive groups, to let them be resolved
+	const exclusiveGroupMap = new Map<string, string>()
+	for (const layer of showStyle.sourceLayers) {
+		if (layer.exclusiveGroup) {
+			exclusiveGroupMap.set(layer._id, layer.exclusiveGroup)
+		}
+	}
+
+	const groupedPieces = _.groupBy(
+		pieces,
+		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
+	)
+	for (const pieces of Object.values(groupedPieces)) {
 		// Group and sort the pieces so that we can step through each point in time
 		const piecesByStart: Array<[number | 'now', PieceInstance[]]> = _.sortBy(
 			Object.entries(_.groupBy(pieces, (p) => p.piece.enable.start)).map(([k, v]) =>

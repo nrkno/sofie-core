@@ -36,6 +36,7 @@ import { MongoQuery } from '../../../lib/typings/meteor'
 import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { Random } from 'meteor/random'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -105,7 +106,7 @@ export namespace ServerPlayoutAdLibAPI {
 					pieceInstanceToCopy.piece.startedPlayback &&
 					pieceInstanceToCopy.piece.startedPlayback <= getCurrentTime()
 				) {
-					const resolvedPieces = getResolvedPieces(cache, partInstance)
+					const resolvedPieces = getResolvedPieces(cache, showStyleBase, partInstance)
 					const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
 					if (
@@ -428,6 +429,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 	export function innerStopPieces(
 		cache: CacheForRundownPlaylist,
+		showStyleBase: ShowStyleBase,
 		currentPartInstance: PartInstance,
 		filter: (pieceInstance: PieceInstance) => boolean,
 		timeOffset: number | undefined
@@ -439,7 +441,7 @@ export namespace ServerPlayoutAdLibAPI {
 			throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 		}
 
-		const resolvedPieces = getResolvedPieces(cache, currentPartInstance)
+		const resolvedPieces = getResolvedPieces(cache, showStyleBase, currentPartInstance)
 		const stopAt = getCurrentTime() + (timeOffset || 0)
 		const definitelyEnded = stopAt + DEFINITELY_ENDED_FUTURE_DURATION
 		const relativeStopAt = stopAt - lastStartedPlayback
@@ -455,7 +457,7 @@ export namespace ServerPlayoutAdLibAPI {
 						logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 						const up: Partial<PieceInstance> = {
 							userDuration: {
-								end: stopAt,
+								end: relativeStopAt,
 							},
 							definitelyEnded,
 						}

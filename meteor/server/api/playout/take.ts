@@ -10,6 +10,7 @@ import {
 	clone,
 	getRandomId,
 	omit,
+	asyncCollectionFindOne,
 } from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
@@ -35,6 +36,7 @@ import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { StudioId } from '../../../lib/collections/Studios'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
 	let now = getCurrentTime()
@@ -66,7 +68,8 @@ export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientA
 				`Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`
 			)
 
-		let pBlueprint = makePromise(() => getBlueprintOfRundown(currentRundown))
+		let pShowStyle = asyncCollectionFindOne(ShowStyleBases, currentRundown.showStyleBaseId)
+		let pBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, currentRundown))
 
 		const currentPart = currentPartInstance
 		if (currentPart) {
@@ -132,17 +135,20 @@ export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientA
 		let previousPartEndState: PartEndState | undefined = undefined
 		if (blueprint.getEndStateForPart && previousPartInstance) {
 			const time = getCurrentTime()
-			const resolvedPieces = getResolvedPieces(cache, previousPartInstance)
+			const showStyle = waitForPromise(pShowStyle)
+			if (showStyle) {
+				const resolvedPieces = getResolvedPieces(cache, showStyle, previousPartInstance)
 
-			const context = new RundownContext(takeRundown, undefined)
-			previousPartEndState = blueprint.getEndStateForPart(
-				context,
-				playlist.previousPersistentState,
-				previousPartInstance.previousPartEndState,
-				unprotectObjectArray(resolvedPieces),
-				time
-			)
-			logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+				const context = new RundownContext(takeRundown, undefined)
+				previousPartEndState = blueprint.getEndStateForPart(
+					context,
+					playlist.previousPersistentState,
+					previousPartInstance.previousPartEndState,
+					unprotectObjectArray(resolvedPieces),
+					time
+				)
+				logger.info(`Calculated end state in ${getCurrentTime() - time}ms`)
+			}
 		}
 		const m: Partial<RundownPlaylist> = {
 			previousPartInstanceId: playlist.currentPartInstanceId,

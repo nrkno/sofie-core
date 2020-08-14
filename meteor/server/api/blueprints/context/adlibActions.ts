@@ -159,7 +159,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(this.cache, partInstance)
+		const resolvedInstances = getResolvedPieces(this.cache, this.getShowStyleBase(), partInstance)
 		return resolvedInstances.map((piece) => clone(unprotectObject(piece)))
 	}
 
@@ -399,7 +399,13 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
 
-		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(this.cache, partInstance, filter, timeOffset)
+		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(
+			this.cache,
+			this.getShowStyleBase(),
+			partInstance,
+			filter,
+			timeOffset
+		)
 
 		if (stoppedIds.length > 0) {
 			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)

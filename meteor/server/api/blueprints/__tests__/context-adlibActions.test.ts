@@ -45,7 +45,7 @@ import {
 	ActionPartChange,
 } from '../context'
 import { ConfigRef } from '../config'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBases, ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
@@ -266,8 +266,9 @@ describe('Test blueprint api context', () => {
 
 				let mockCalledIds: PartInstanceId[] = []
 				getResolvedPiecesMock.mockImplementation(
-					(cache2: CacheForRundownPlaylist, partInstance: PartInstance) => {
+					(cache2: CacheForRundownPlaylist, showStyleBase: ShowStyleBase, partInstance: PartInstance) => {
 						expect(cache2).toBe(cache)
+						expect(showStyleBase).toBeTruthy()
 						mockCalledIds.push(partInstance._id)
 						return (['abc'] as any) as ResolvedPieceInstance[]
 					}
@@ -858,8 +859,9 @@ describe('Test blueprint api context', () => {
 
 				innerStopPiecesMock.mockClear()
 				let filter: (piece: PieceInstance) => boolean = null as any
-				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
+				innerStopPiecesMock.mockImplementationOnce((cache2, showStyleBase, partInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
+					expect(showStyleBase).toBeTruthy()
 					expect(partInstance).toBe(currentPartInstance)
 					expect(offset).toEqual(34)
 					filter = filter2
@@ -910,8 +912,9 @@ describe('Test blueprint api context', () => {
 
 				innerStopPiecesMock.mockClear()
 				let filter: (piece: PieceInstance) => boolean = null as any
-				innerStopPiecesMock.mockImplementationOnce((cache2, partInstance, filter2, offset) => {
+				innerStopPiecesMock.mockImplementationOnce((cache2, showStyleBase, partInstance, filter2, offset) => {
 					expect(cache2).toBe(cache)
+					expect(showStyleBase).toBeTruthy()
 					expect(partInstance).toBe(currentPartInstance)
 					expect(offset).toEqual(34)
 					filter = filter2
