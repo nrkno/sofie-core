@@ -17,9 +17,24 @@ import { BLUEPRINT_CACHE_CONTROL } from '../../blueprints/cache'
 import { ShowStyleBlueprintManifest, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 
 jest.mock('../../playout/infinites')
-import { syncPlayheadInfinitesForNextPartInstance } from '../../playout/infinites'
+import {
+	syncPlayheadInfinitesForNextPartInstance,
+	getPieceInstancesForPart,
+	fetchPiecesThatMayBeActiveForPart,
+} from '../../playout/infinites'
 type TsyncPlayheadInfinitesForNextPartInstance = jest.MockedFunction<typeof syncPlayheadInfinitesForNextPartInstance>
 const syncPlayheadInfinitesForNextPartInstanceMock = syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
+type TgetPieceInstancesForPart = jest.MockedFunction<typeof getPieceInstancesForPart>
+type TfetchPiecesThatMayBeActiveForPart = jest.MockedFunction<typeof fetchPiecesThatMayBeActiveForPart>
+const {
+	getPieceInstancesForPart: getPieceInstancesForPartOrig,
+	fetchPiecesThatMayBeActiveForPart: fetchPiecesThatMayBeActiveForPartOrig,
+} = jest.requireActual('../../playout/infinites')
+;(getPieceInstancesForPart as TgetPieceInstancesForPart).mockImplementation(getPieceInstancesForPartOrig)
+;(fetchPiecesThatMayBeActiveForPart as TfetchPiecesThatMayBeActiveForPart).mockImplementation(
+	fetchPiecesThatMayBeActiveForPartOrig
+)
+
 jest.mock('../../playout/timeline')
 import { updateTimeline } from '../../playout/timeline'
 import { MethodContext } from '../../../../lib/api/methods'

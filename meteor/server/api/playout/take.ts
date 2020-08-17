@@ -21,6 +21,7 @@ import {
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
+	checkAccessAndGetPlaylist,
 } from './lib'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -40,7 +41,6 @@ import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
-import { checkAccessAndGetPlaylist } from './playout'
 
 export function takeNextPartInner(
 	context: MethodContext,

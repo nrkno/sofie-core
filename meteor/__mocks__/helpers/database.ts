@@ -610,8 +610,8 @@ export function setupDefaultRundown(
 		_id: protectString(rundownId + '_piece010'),
 		externalId: 'MOCK_PIECE_010',
 		startRundownId: rundown._id,
-		startSegmentId: part00.segmentId,
-		startPartId: part00._id,
+		startSegmentId: part01.segmentId,
+		startPartId: part01._id,
 		name: 'Piece 010',
 		status: RundownAPI.PieceStatusCode.OK,
 		enable: {

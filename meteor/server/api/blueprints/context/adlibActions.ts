@@ -343,6 +343,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				notes: [],
 				invalid: false,
 				invalidReason: undefined,
+				floated: false,
 			}),
 		})
 

@@ -12,7 +12,7 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -25,6 +25,8 @@ import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutIt
 import { saveIntoCache } from '../../DatabaseCache'
 import { afterRemoveParts } from '../rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
+import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
+import { MethodContext } from '../../../lib/api/methods'
 
 /**
  * Reset the rundown:
@@ -898,3 +900,10 @@ export function getRundownsSegmentsAndPartsFromCache(
 // 	}
 // 	return undefined
 // }
+
+export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
+	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
+	const playlist = access.playlist
+	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
+	return playlist
+}

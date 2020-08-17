@@ -123,7 +123,7 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 	const studioId = rundown.studioId
 
 	const pieces = cache.Pieces.findFetch({
-		rundownId: rundown._id,
+		startRundownId: rundown._id,
 	})
 
 	cache.defer(() => {

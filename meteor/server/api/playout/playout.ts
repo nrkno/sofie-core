@@ -47,6 +47,7 @@ import {
 	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 	getAllPieceInstancesFromCache,
+	checkAccessAndGetPlaylist,
 } from './lib'
 import {
 	prepareStudioForBroadcast,
@@ -1280,12 +1281,6 @@ export namespace ServerPlayoutAPI {
 
 		return false
 	}
-}
-export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
-	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
-	const playlist = access.playlist
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
-	return playlist
 }
 
 function setRundownStartedPlayback(

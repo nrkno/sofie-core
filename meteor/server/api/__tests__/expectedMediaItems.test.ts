@@ -1,7 +1,5 @@
-import { Random } from 'meteor/random'
 import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { literal, protectString, getRandomId, waitForPromise } from '../../../lib/lib'
-import { setLoggerLevel } from '../logger'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
 import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
@@ -14,10 +12,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import {
-	wrapWithCacheForRundownPlaylistFromRundown,
-	initCacheForRundownPlaylistFromRundown,
-} from '../../DatabaseCaches'
+import { initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
 import { removeRundownFromCache } from '../playout/lib'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
@@ -257,7 +252,7 @@ describe('Expected Media Items', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
 			expect(Rundowns.findOne(rdId1)).toBeTruthy()
 			expect(Parts.findOne(protectString(rdId1 + '_' + mockPart0))).toBeTruthy()
-			expect(Pieces.find({ partId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
+			expect(Pieces.find({ startPartId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
 
 			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
 			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))

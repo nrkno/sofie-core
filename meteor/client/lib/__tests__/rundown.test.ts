@@ -6,9 +6,6 @@ import {
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
-import * as _ from 'underscore'
-import { literal } from '../../../lib/lib'
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment

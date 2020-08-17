@@ -438,8 +438,9 @@ describe('Test blueprint cache', () => {
 			const rundown = getRundown()
 			rundown.showStyleBaseId = protectString(showStyle._id + '1')
 
-			const blueprint = getBlueprintOfRundown(showStyle, rundown, true)
-			expect(blueprint).toBeTruthy()
+			expect(() => getBlueprintOfRundown(showStyle, rundown, true)).toThrowError(
+				`ShowStyleBase "${rundown.showStyleBaseId}" not found!`
+			)
 		})
 		testInFiber('Test caching', () => {
 			jest.useFakeTimers()

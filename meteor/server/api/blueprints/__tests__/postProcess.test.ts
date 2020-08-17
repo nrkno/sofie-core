@@ -524,8 +524,8 @@ describe('Test blueprint post-process', () => {
 			])
 
 			// mock getHash, to track the returned ids
-			const mockedIds = ['mocked1', 'mocked2']
-			const expectedIds = mockedIds
+			const mockedIds = ['mocked1', 'mocked2', 'mcoked3', 'mocked4']
+			const expectedIds = [...mockedIds]
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
 			const res = postProcessPieces(
@@ -556,9 +556,11 @@ describe('Test blueprint post-process', () => {
 			ensureAllKeysDefined(tmpObj, res)
 
 			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(2)
+			expect(context.getHashId).toHaveBeenCalledTimes(4)
 			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_part8_piece_0')
 			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_1')
+			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_part8_piece_2')
+			expect(context.getHashId).toHaveBeenNthCalledWith(4, 'blueprint9_part8_piece_3')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
