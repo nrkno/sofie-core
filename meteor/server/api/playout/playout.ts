@@ -1,6 +1,6 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
@@ -23,6 +23,7 @@ import {
 	protectString,
 	isStringOrProtectedString,
 	getRandomId,
+	check,
 } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -48,6 +49,8 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { PartEventContext, RundownContext } from '../blueprints/context'
+import { NotesContext } from '../blueprints/context/context'
+import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
 import {
@@ -56,7 +59,7 @@ import {
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	refreshPart,
-	getPartBeforeSegment,
+	getPartBeforeSegmentFromCache,
 	selectNextPart,
 	isTooCloseToAutonext,
 	getSegmentsAndPartsFromCache,
@@ -85,7 +88,7 @@ import {
 } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudio } from './studio'
-import { updateSourceLayerInfinitesAfterPart, cropInfinitesOnLayer, stopInfinitesRunningOnLayer } from './infinites'
+import { updateSourceLayerInfinitesAfterPart } from './infinites'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
@@ -1370,6 +1373,117 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(rundownPlaylistId, sourceLayerId)
 	}
+	export function executeAction(rundownPlaylistId: RundownPlaylistId, actionId: string, userData: any) {
+		check(rundownPlaylistId, String)
+		check(actionId, String)
+		check(userData, Match.Any)
+
+		return executeActionInner(rundownPlaylistId, (context, cache, rundown) => {
+			const blueprint = getBlueprintOfRundown(rundown) // todo: database again
+			if (!blueprint.blueprint.executeAction) {
+				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
+			}
+
+			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
+
+			blueprint.blueprint.executeAction(context, actionId, userData)
+		})
+	}
+
+	export function executeActionInner(
+		rundownPlaylistId: RundownPlaylistId,
+		func: (
+			context: ActionExecutionContext,
+			cache: CacheForRundownPlaylist,
+			rundown: Rundown,
+			currentPartInstance: PartInstance
+		) => void
+	) {
+		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+			if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+			if (!tmpPlaylist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
+			if (!tmpPlaylist.currentPartInstanceId)
+				throw new Meteor.Error(400, `A part needs to be active to execute an action`)
+
+			const cache = waitForPromise(initCacheForRundownPlaylist(tmpPlaylist))
+			const playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
+			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
+
+			const studio = cache.Studios.findOne(playlist.studioId)
+			if (!studio) throw new Meteor.Error(501, `Current Studio "${playlist.studioId}" could not be found`)
+
+			const currentPartInstance = playlist.currentPartInstanceId
+				? cache.PartInstances.findOne(playlist.currentPartInstanceId)
+				: undefined
+			if (!currentPartInstance)
+				throw new Meteor.Error(
+					501,
+					`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`
+				)
+
+			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+			if (!rundown)
+				throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
+
+			const notesContext = new NotesContext(
+				`${rundown.name}(${playlist.name})`,
+				`playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+					currentPartInstance._id
+				},execution=${getRandomId()}`,
+				false
+			)
+			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+
+			// If any action cannot be done due to timings, that needs to be rejected by the context
+			func(context, cache, rundown, currentPartInstance)
+
+			// Mark the parts as dirty if needed, so that they get a reimport on reset to undo any changes
+			if (context.currentPartState === ActionPartChange.MARK_DIRTY) {
+				cache.PartInstances.update(currentPartInstance._id, {
+					$set: {
+						'part.dirty': true,
+					},
+				})
+				// TODO-PartInstance - pending new data flow
+				cache.Parts.update(currentPartInstance.part._id, {
+					$set: {
+						dirty: true,
+					},
+				})
+			}
+			if (context.nextPartState === ActionPartChange.MARK_DIRTY) {
+				if (!playlist.nextPartInstanceId)
+					throw new Meteor.Error(500, `Cannot mark non-existant partInstance as dirty`)
+				const nextPartInstance = cache.PartInstances.findOne(playlist.nextPartInstanceId)
+				if (!nextPartInstance) throw new Meteor.Error(500, `Cannot mark non-existant partInstance as dirty`)
+
+				if (!nextPartInstance.part.dynamicallyInserted) {
+					cache.PartInstances.update(nextPartInstance._id, {
+						$set: {
+							'part.dirty': true,
+						},
+					})
+					// TODO-PartInstance - pending new data flow
+					cache.Parts.update(nextPartInstance.part._id, {
+						$set: {
+							dirty: true,
+						},
+					})
+				}
+			}
+
+			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
+				updateSourceLayerInfinitesAfterPart(cache, rundown, currentPartInstance.part)
+			}
+
+			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
+				updateTimeline(cache, playlist.studioId)
+			}
+
+			waitForPromise(cache.saveAllToDatabase())
+		})
+	}
 	export function sourceLayerOnPartStop(
 		rundownPlaylistId: RundownPlaylistId,
 		partInstanceId: PartInstanceId,
@@ -1380,6 +1494,8 @@ export namespace ServerPlayoutAPI {
 		check(sourceLayerIds, Match.OneOf(String, Array))
 
 		if (_.isString(sourceLayerIds)) sourceLayerIds = [sourceLayerIds]
+
+		if (sourceLayerIds.length === 0) return
 
 		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			let playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -1401,61 +1517,12 @@ export namespace ServerPlayoutAPI {
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)
 			if (!rundown) throw new Meteor.Error(501, `Rundown "${partInstance.rundownId}" not found!`)
 
-			const now = getCurrentTime()
-			const relativeNow = now - lastStartedPlayback
-			const orderedPieces = getResolvedPieces(cache, partInstance)
-
-			orderedPieces.forEach((pieceInstance) => {
-				if (sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1) {
-					if (!pieceInstance.piece.userDuration) {
-						let newExpectedDuration: number | undefined = undefined
-
-						if (
-							pieceInstance.piece.infiniteId &&
-							pieceInstance.piece.infiniteId !== pieceInstance.piece._id
-						) {
-							newExpectedDuration = now - lastStartedPlayback
-						} else if (
-							pieceInstance.piece.startedPlayback && // currently playing
-							(pieceInstance.resolvedStart || 0) < relativeNow && // is relative, and has started
-							!pieceInstance.piece.stoppedPlayback // and not yet stopped
-						) {
-							newExpectedDuration = now - pieceInstance.piece.startedPlayback
-						}
-
-						if (newExpectedDuration !== undefined) {
-							console.log(`Cropping PieceInstance "${pieceInstance._id}" to ${newExpectedDuration}`)
-
-							cache.PieceInstances.update(
-								{
-									_id: pieceInstance._id,
-								},
-								{
-									$set: {
-										'piece.userDuration': {
-											duration: newExpectedDuration,
-										},
-									},
-								}
-							)
-
-							// TODO-PartInstance - pending new data flow
-							cache.Pieces.update(
-								{
-									_id: pieceInstance.piece._id,
-								},
-								{
-									$set: {
-										userDuration: {
-											duration: newExpectedDuration,
-										},
-									},
-								}
-							)
-						}
-					}
-				}
-			})
+			ServerPlayoutAdLibAPI.innerStopPieces(
+				cache,
+				partInstance,
+				(pieceInstance) => sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1,
+				undefined
+			)
 
 			updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
 
@@ -1767,68 +1834,69 @@ function setRundownStartedPlayback(
 
 interface UpdateTimelineFromIngestDataTimeout {
 	timeout?: number
+	playlistId: RundownPlaylistId
 	changedSegments: SegmentId[]
 }
-let updateTimelineFromIngestDataTimeouts: {
-	[rundownId: string]: UpdateTimelineFromIngestDataTimeout
-} = {}
+const updateTimelineFromIngestDataTimeouts = new Map<RundownId, UpdateTimelineFromIngestDataTimeout>()
 export function triggerUpdateTimelineAfterIngestData(
-	cache: CacheForRundownPlaylist,
 	rundownId: RundownId,
+	playlistId: RundownPlaylistId,
 	changedSegmentIds: SegmentId[]
 ) {
 	// Lock behind a timeout, so it doesnt get executed loads when importing a rundown or there are large changes
-	let data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts[unprotectString(rundownId)]
-	if (data) {
-		if (data.timeout) Meteor.clearTimeout(data.timeout)
-		data.changedSegments = data.changedSegments.concat(changedSegmentIds)
-	} else {
-		data = {
-			changedSegments: changedSegmentIds,
-		}
+	const data: UpdateTimelineFromIngestDataTimeout = updateTimelineFromIngestDataTimeouts.get(rundownId) ?? {
+		changedSegments: [],
+		playlistId,
 	}
 
+	if (data.timeout) Meteor.clearTimeout(data.timeout)
+	data.changedSegments = data.changedSegments.concat(changedSegmentIds)
+	data.playlistId = playlistId
+
 	data.timeout = Meteor.setTimeout(() => {
-		delete updateTimelineFromIngestDataTimeouts[unprotectString(rundownId)]
+		if (updateTimelineFromIngestDataTimeouts.delete(rundownId)) {
+			return rundownPlaylistSyncFunction(data.playlistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+				const playlist = RundownPlaylists.findOne(data.playlistId)
+				if (!playlist) {
+					throw new Meteor.Error(404, `RundownPlaylist "${data.playlistId}" not found!`)
+				}
 
-		// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
-		let prevPart: Part | undefined
-		if (data.changedSegments) {
-			const firstSegment = cache.Segments.findOne({
-				rundownId: rundownId,
-				_id: { $in: data.changedSegments },
-			})
-			if (firstSegment) {
-				prevPart = getPartBeforeSegment(rundownId, firstSegment)
-			}
-		}
+				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-		const rundown = cache.Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		const playlist = getRundownPlaylistFromCache(cache, rundown)
-		if (!playlist)
-			throw new Meteor.Error(501, `Rundown "${rundownId}" not a part of a playlist: "${rundown.playlistId}"`)
+				// infinite items only need to be recalculated for those after where the edit was made (including the edited line)
+				let prevPart: Part | undefined
+				if (data.changedSegments) {
+					const firstSegment = cache.Segments.findOne({
+						rundownId: rundownId,
+						_id: { $in: data.changedSegments },
+					})
+					if (firstSegment) {
+						prevPart = getPartBeforeSegmentFromCache(cache, rundownId, firstSegment)
+					}
+				}
 
-		// TODO - test the input data for this
-		updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart, true)
+				const rundown = cache.Rundowns.findOne(rundownId)
+				if (!rundown) {
+					throw new Meteor.Error(
+						404,
+						`Rundown "${rundownId}" not found in RundownPlaylist "${data.playlistId}"!`
+					)
+				}
 
-		return rundownPlaylistSyncFunction(playlist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-			if (playlist.active && playlist.currentPartInstanceId) {
-				const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-				if (
-					currentPartInstance &&
-					(currentPartInstance.rundownId === rundown._id ||
-						(currentPartInstance.part.autoNext &&
-							nextPartInstance &&
-							nextPartInstance.rundownId === rundownId))
-				) {
+				// TODO - test the input data for this
+				updateSourceLayerInfinitesAfterPart(cache, rundown, prevPart, true)
+
+				if (playlist.active && playlist.currentPartInstanceId) {
+					// If the playlist is active, then updateTimeline as lookahead could have been affected
 					updateTimeline(cache, rundown.studioId)
 				}
-			}
-		})
+
+				waitForPromise(cache.saveAllToDatabase())
+			})
+		}
 	}, 1000)
 
-	updateTimelineFromIngestDataTimeouts[unprotectString(rundownId)] = data
+	updateTimelineFromIngestDataTimeouts.set(rundownId, data)
 }
 
 function getRundown(rundownId: RundownId): Rundown {

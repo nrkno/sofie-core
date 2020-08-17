@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'

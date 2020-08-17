@@ -66,6 +66,24 @@ export enum LAYER_IDS {
 	OUTPUT_PGM = 'pgm',
 }
 
+function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VERSION: string } {
+	const INTEGRATION_VERSION = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
+		.version
+
+	let TSR_VERSION = ''
+	try {
+		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
+	} catch (e) {
+		TSR_VERSION = require('../../node_modules/tv-automation-sofie-blueprints-integration/node_modules/timeline-state-resolver-types/package.json')
+			.version
+	}
+
+	return {
+		INTEGRATION_VERSION,
+		TSR_VERSION,
+	}
+}
+
 let dbI: number = 0
 export function setupMockPeripheralDevice(
 	category: PeripheralDeviceAPI.DeviceCategory,
@@ -209,24 +227,26 @@ export function setupMockShowStyleVariant(
 }
 
 export function packageBlueprint<T extends BlueprintManifestBase>(
-	constants: { [constant: string]: string },
+	constants: { [constant: string]: string | number },
 	blueprintFcn: () => T
 ): string {
 	let code = blueprintFcn.toString()
 	_.each(constants, (newConstant, constant) => {
-		newConstant = newConstant.replace(/^\^/, '') || '0.0.0' // fix the version, the same way the bleprint does it
+		if (_.isString(newConstant)) {
+			newConstant = newConstant.replace(/^\^/, '') || '0.0.0' // fix the version, the same way the bleprint does it
+			newConstant = `'${newConstant}'`
+		} else {
+			newConstant = `${newConstant}`
+		}
 
-		code = code.replace(new RegExp(constant, 'g'), _.isString(newConstant) ? `'${newConstant}'` : newConstant)
+		code = code.replace(new RegExp(constant, 'g'), newConstant)
 	})
-	return `{default: (${code})()}`
+	return `({default: (${code})()})`
 }
 export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blueprint {
-	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
-	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
+	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
-	const INTEGRATION_VERSION: string = IntegrationInfo.version
-	const TSR_VERSION: string = TSRInfo.version
 	const CORE_VERSION: string = CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_ID: string = unprotectString(showStyleBaseId)
 
@@ -269,12 +289,9 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 	return uploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariantId): Blueprint {
-	const TSRInfo = require('../../node_modules/timeline-state-resolver-types/package.json')
-	const IntegrationInfo = require('../../node_modules/tv-automation-sofie-blueprints-integration/package.json')
+	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
-	const INTEGRATION_VERSION: string = IntegrationInfo.version
-	const TSR_VERSION: string = TSRInfo.version
 	const CORE_VERSION: string = CURRENT_SYSTEM_VERSION
 	const SHOW_STYLE_VARIANT_ID: string = unprotectString(showStyleVariantId)
 

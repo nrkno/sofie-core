@@ -1,6 +1,6 @@
 import * as React from 'react'
-import * as CoreIcon from '@nrk/core-icons/jsx'
-import * as ClassNames from 'classnames'
+import CoreIcon from '@nrk/core-icons/jsx'
+import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import * as Velocity from 'velocity-animate'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
@@ -90,7 +90,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 								e.stopPropagation()
 								if (typeof this.props.onDismiss === 'function') this.props.onDismiss(e)
 							}}>
-							<CoreIcon id="nrk-close" />
+							<CoreIcon.NrkClose />
 						</button>
 						{/* </div> */}
 					</ContextMenuTrigger>

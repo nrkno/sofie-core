@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 
 import { statusCodeToString } from './Status/SystemStatus'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
@@ -13,7 +13,7 @@ interface IState {
 	systemStatus?: number
 }
 interface IProps {}
-export default translate()(
+export default withTranslation()(
 	class Dashboard extends React.Component<Translated<IProps>, IState> {
 		constructor(props) {
 			super(props)

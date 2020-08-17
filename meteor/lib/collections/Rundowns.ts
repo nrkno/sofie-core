@@ -11,13 +11,13 @@ import {
 } from '../lib'
 import { Segments, DBSegment, Segment } from './Segments'
 import { Parts, Part, DBPart } from './Parts'
-import { FindOptions, MongoSelector, TransformedCollection } from '../typings/meteor'
+import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { Studios, Studio, StudioId } from './Studios'
 import { Pieces } from './Pieces'
 import { Meteor } from 'meteor/meteor'
 import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { RundownBaselineObjs } from './RundownBaselineObjs'
-import { RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
 import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
@@ -27,9 +27,11 @@ import { ExpectedMediaItems } from './ExpectedMediaItems'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
 import { createMongoCollection } from './lib'
 import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
-import { PartInstances, PartInstance } from './PartInstances'
+import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
 import { PieceInstances, PieceInstance } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
+import { AdLibActions } from './AdLibActions'
+import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -67,7 +69,6 @@ export interface DBRundown
 	importVersions: RundownImportVersions
 
 	status?: string
-	airStatus?: string
 	// There should be something like a Owner user here somewhere?
 
 	/** Actual time of playback starting */
@@ -158,7 +159,7 @@ export class Rundown implements DBRundown {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
-	getSegments(selector?: MongoSelector<DBSegment>, options?: FindOptions): Segment[] {
+	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		selector = selector || {}
 		options = options || {}
 		return Segments.find(
@@ -176,7 +177,7 @@ export class Rundown implements DBRundown {
 			)
 		).fetch()
 	}
-	getParts(selector?: MongoSelector<Part>, options?: FindOptions, segmentsInOrder?: Segment[]): Part[] {
+	getParts(selector?: MongoQuery<Part>, options?: FindOptions<DBPart>, segmentsInOrder?: Segment[]): Part[] {
 		selector = selector || {}
 		options = options || {}
 
@@ -225,7 +226,7 @@ export class Rundown implements DBRundown {
 			parts: RundownPlaylist._sortPartsInner(await pParts, segments),
 		}
 	}
-	getGlobalAdLibPieces(selector?: MongoSelector<AdLibPiece>, options?: FindOptions) {
+	getGlobalAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<RundownBaselineAdLibItem>) {
 		selector = selector || {}
 		options = options || {}
 		return RundownBaselineAdLibPieces.find(
@@ -243,7 +244,7 @@ export class Rundown implements DBRundown {
 			)
 		).fetch()
 	}
-	getAllPartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
 		selector = selector || {}
 		options = options || {}
 		return PartInstances.find(
@@ -261,7 +262,7 @@ export class Rundown implements DBRundown {
 			)
 		).fetch()
 	}
-	getActivePartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<DBPartInstance>) {
 		const newSelector = {
 			...selector,
 			reset: { $ne: true },
@@ -287,8 +288,10 @@ export class Rundown implements DBRundown {
 		Pieces.remove({ rundownId: this._id })
 		PieceInstances.remove({ rundownId: this._id })
 		AdLibPieces.remove({ rundownId: this._id })
+		AdLibActions.remove({ rundownId: this._id })
 		RundownBaselineObjs.remove({ rundownId: this._id })
 		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
+		RundownBaselineAdLibActions.remove({ rundownId: this._id })
 		IngestDataCache.remove({ rundownId: this._id })
 		ExpectedMediaItems.remove({ rundownId: this._id })
 		ExpectedPlayoutItems.remove({ rundownId: this._id })

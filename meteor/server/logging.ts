@@ -1,10 +1,11 @@
 import * as Winston from 'winston'
 import * as fs from 'fs'
 import { getAbsolutePath } from './lib'
+import { Meteor } from 'meteor/meteor'
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
-interface LoggerInstanceFixed extends Winston.LoggerInstance {
+interface LoggerInstanceFixed extends Winston.Logger {
 	error: LeveledLogMethodFixed
 	warn: LeveledLogMethodFixed
 	help: LeveledLogMethodFixed
@@ -27,8 +28,6 @@ interface LeveledLogMethodFixed {
 	(msg: any, meta: any, callback: Winston.LogCallback): LoggerInstanceFixed
 	(msg: any, ...meta: any[]): LoggerInstanceFixed
 }
-let logger: LoggerInstanceFixed = new Winston.Logger({})
-
 let leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
 	if (num.length < length) {
@@ -42,6 +41,9 @@ if (process.env.LOG_TO_FILE) logToFile = true
 
 let logPath = process.env.LOG_FILE || ''
 
+let logger: LoggerInstanceFixed
+let transports
+
 function safeStringify(o: any): string {
 	try {
 		return JSON.stringify(o) // make single line
@@ -49,6 +51,10 @@ function safeStringify(o: any): string {
 		return 'ERROR in safeStringify: ' + (e || 'N/A').toString()
 	}
 }
+const customFormat = Winston.format.printf(({ timestamp, level, message, meta }) => {
+	return `${timestamp} [${level}] ${message} ${meta ? safeStringify(meta) : ''}` // kz: TODO make this format correct
+})
+
 if (logToFile || logPath !== '') {
 	// console.log(Meteor)
 	if (logPath === '') {
@@ -73,26 +79,40 @@ if (logToFile || logPath !== '') {
 			fs.mkdirSync(logDirectory)
 		}
 	}
-
-	logger.add(Winston.transports.Console, {
-		level: 'verbose',
-		handleExceptions: true,
-		json: false,
-	})
-	logger.add(Winston.transports.File, {
-		level: 'silly',
-		handleExceptions: true,
-		json: true,
-		filename: logPath,
+	transports = {
+		console: new Winston.transports.Console({
+			level: 'verbose',
+			handleExceptions: true,
+		}),
+		file: new Winston.transports.File({
+			level: 'silly',
+			handleExceptions: true,
+			filename: logPath,
+		}),
+	}
+	logger = Winston.createLogger({
+		format: Winston.format.json(),
+		transports: [transports.console, transports.file],
 	})
 	console.log('Logging to ' + logPath)
 } else {
-	logger.add(Winston.transports.Console, {
-		level: 'silly',
-		handleExceptions: true,
-		json: true,
-		stringify: (obj: any) => safeStringify(obj),
-	})
+	transports = {
+		console: new Winston.transports.Console({
+			level: 'silly',
+			handleExceptions: true,
+		}),
+	}
+	if (Meteor.isProduction) {
+		logger = Winston.createLogger({
+			format: Winston.format.json(),
+			transports: [transports.console],
+		})
+	} else {
+		logger = Winston.createLogger({
+			format: Winston.format.combine(Winston.format.timestamp(), customFormat),
+			transports: [transports.console],
+		})
+	}
 }
 
-export { logger }
+export { logger, transports }

@@ -15,20 +15,20 @@ import {
 	NotifierHandle,
 } from '../lib/notifications/notifications'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
-import { TranslationFunction, translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
 import { PubSub } from '../../lib/api/pubsub'
 import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
-import { notDeepEqual } from 'assert'
+import * as i18next from 'i18next'
 import { documentTitle } from '../lib/documentTitle'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
-	private _translator: TranslationFunction
+	private _translator: i18next.TFunction
 	private _serviceMessageRegistry: { [index: string]: ServiceMessage }
 
-	constructor(t: TranslationFunction) {
+	constructor(t: i18next.TFunction) {
 		super()
 
 		this.subscribe(PubSub.coreSystem, null)
@@ -244,7 +244,7 @@ interface IState {
 	dismissed: boolean
 }
 
-export const ConnectionStatusNotification = translate()(
+export const ConnectionStatusNotification = withTranslation()(
 	class ConnectionStatusNotification extends React.Component<Translated<IProps>, IState> {
 		private notifier: ConnectionStatusNotifier
 

@@ -7,16 +7,7 @@ import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
-/*
- * **************************************************************************************
- *
- *  These migrations are destined for the next release
- *
- * (This file is to be renamed to the correct version number when doing the release)
- *
- * **************************************************************************************
- */
-// x.x.x (Release X)
+// 1.7.0 (Release 19)
 addMigrationSteps('1.7.0', [
 	{
 		// migrate from Rundowns to RundownPlaylists

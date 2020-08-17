@@ -1,27 +1,18 @@
 import * as React from 'react'
-import { DashboardLayout, DashboardLayoutFilter, RundownLayout } from '../../../lib/collections/RundownLayouts'
+import { RundownLayout } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { TimelineDashboardPanel } from './TimelineDashboardPanel'
-import { DashboardPanel } from './DashboardPanel'
 import { ExternalFramePanel } from './ExternalFramePanel'
-import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { OverflowingContainer } from './OverflowingContainer'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { ShelfTabs, DEFAULT_TAB as SHELF_DEFAULT_TAB } from './Shelf'
 import { AdLibPanel, AdLibPieceUi } from './AdLibPanel'
 import { GlobalAdLibPanel } from './GlobalAdLibPanel'
 import { HotkeyHelpPanel } from './HotkeyHelpPanel'
-import { translate } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import {
-	IBlueprintPieceGeneric,
-	IBlueprintPieceDB,
-	IBlueprintAdLibPieceDB,
-} from 'tv-automation-sofie-blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { withTranslation } from 'react-i18next'
 
 export interface IShelfRundownLayoutProps {
 	rundownLayout: RundownLayout | undefined
@@ -40,7 +31,9 @@ export interface IShelfRundownLayoutProps {
 	}>
 }
 
-export const ShelfRundownLayout = translate()(function ShelfRundownLayout(props: Translated<IShelfRundownLayoutProps>) {
+export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
+	props: Translated<IShelfRundownLayoutProps>
+) {
 	const { t, rundownLayout, onSwitchTab } = props
 	return (
 		<React.Fragment>
@@ -132,7 +125,7 @@ export const ShelfRundownLayout = translate()(function ShelfRundownLayout(props:
 				<HotkeyHelpPanel
 					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
 					showStyleBase={props.showStyleBase}
-					hotkeys={[]}></HotkeyHelpPanel>
+					hotkeys={props.hotkeys}></HotkeyHelpPanel>
 			</div>
 		</React.Fragment>
 	)

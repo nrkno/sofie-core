@@ -1,9 +1,9 @@
 import * as _ from 'underscore'
-import { check, Match } from 'meteor/check'
+import { Match } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { getCurrentTime, getHash, Omit, makePromise } from '../../lib/lib'
+import { getCurrentTime, getHash, Omit, makePromise, check } from '../../lib/lib'
 import { Parts, Part, PartId } from '../../lib/collections/Parts'
 import { logger } from '../logging'
 import { ServerPlayoutAPI } from './playout/playout'
@@ -11,7 +11,7 @@ import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
-import { SourceLayerType, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, IngestPart, IngestAdlib, ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods } from '../methods'
 import { ServerRundownAPI } from './rundown'
@@ -382,6 +382,20 @@ export function pieceSetInOutPoints(
 	) // MOS data is in seconds
 		.then(() => ClientAPI.responseSuccess(undefined))
 		.catch((error) => ClientAPI.responseError(error))
+}
+export function executeAction(rundownPlaylistId: RundownPlaylistId, actionId: string, userData: any) {
+	check(rundownPlaylistId, String)
+	check(actionId, String)
+	check(userData, Match.Any)
+
+	const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+	if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
+	if (!playlist.active)
+		return ClientAPI.responseError(`The Rundown isn't active, please activate it before executing an action!`)
+	if (!playlist.currentPartInstanceId)
+		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
+
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.executeAction(rundownPlaylistId, actionId, userData))
 }
 export function segmentAdLibPieceStart(
 	rundownPlaylistId: RundownPlaylistId,
@@ -760,6 +774,14 @@ class ServerUserActionAPI implements NewUserActionAPI {
 		duration: number
 	) {
 		return pieceSetInOutPoints(rundownPlaylistId, partId, pieceId, inPoint, duration)
+	}
+	executeAction(
+		_userEvent: string,
+		rundownPlaylistId: RundownPlaylistId,
+		actionId: string,
+		userData: ActionUserData
+	) {
+		return makePromise(() => executeAction(rundownPlaylistId, actionId, userData))
 	}
 	segmentAdLibPieceStart(
 		_userEvent: string,

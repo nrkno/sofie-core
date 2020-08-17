@@ -1,7 +1,7 @@
 import { Tracker } from 'meteor/tracker'
 import { ReactiveDataHelper } from './reactiveDataHelper'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
+import { Rundowns, RundownId, Rundown, DBRundown } from '../../../lib/collections/Rundowns'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
@@ -31,7 +31,7 @@ export namespace reactiveData {
 
 	export function getRRundowns(
 		playlistId: RundownPlaylistId | undefined,
-		options?: FindOptions
+		options?: FindOptions<DBRundown>
 	): ReactiveVar<Rundown[]> {
 		const rVar = new ReactiveVar<Rundown[]>([])
 
@@ -91,7 +91,7 @@ export namespace reactiveData {
 
 	// export function getRPieces (rundownIds: RundownId[]): ReactiveVar<Piece[]>
 	// export function getRPieces (rundownId: RundownId): ReactiveVar<Piece[]>
-	export function getRPieces(playlistId: RundownPlaylistId, options?: FindOptions): ReactiveVar<Piece[]> {
+	export function getRPieces(playlistId: RundownPlaylistId, options?: FindOptions<Piece>): ReactiveVar<Piece[]> {
 		const rVar = new ReactiveVar<Piece[]>([])
 
 		const rRundowns = getRRundowns(playlistId)
@@ -127,7 +127,10 @@ export namespace reactiveData {
 	// 	return rVar
 	// }
 
-	export function getRPeripheralDevices(studioId: StudioId, options?: FindOptions): ReactiveVar<PeripheralDevice[]> {
+	export function getRPeripheralDevices(
+		studioId: StudioId,
+		options?: FindOptions<PeripheralDevice>
+	): ReactiveVar<PeripheralDevice[]> {
 		const rVar = new ReactiveVar<PeripheralDevice[]>([])
 
 		Tracker.autorun(() => {

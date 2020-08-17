@@ -100,20 +100,21 @@ export function objectToXML(obj: object, rootName: string): Document {
 
 function addNodes(obj: object, rootNode: Node): void {
 	const doc = rootNode.ownerDocument
+	if (doc) {
+		for (const name of Object.keys(obj)) {
+			const value = obj[name]
 
-	for (const name of Object.keys(obj)) {
-		const value = obj[name]
-
-		if (typeof value === 'object' && name === '_attributes') {
-			for (const attrName of Object.keys(value)) {
-				rootNode.appendChild(createAttribute(attrName, value[attrName], doc))
+			if (typeof value === 'object' && name === '_attributes') {
+				for (const attrName of Object.keys(value)) {
+					rootNode.appendChild(createAttribute(attrName, value[attrName], doc))
+				}
+			} else if (isArray(value)) {
+				value.forEach((element) => {
+					rootNode.appendChild(createNode(name, element, doc))
+				})
+			} else if (value !== undefined) {
+				rootNode.appendChild(createNode(name, value, doc))
 			}
-		} else if (isArray(value)) {
-			value.forEach((element) => {
-				rootNode.appendChild(createNode(name, element, doc))
-			})
-		} else if (value !== undefined) {
-			rootNode.appendChild(createNode(name, value, doc))
 		}
 	}
 }

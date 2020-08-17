@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Redirect } from 'react-router'
 import { withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
-import { translate } from 'react-i18next'
+import { withTranslation } from 'react-i18next'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Studios } from '../../lib/collections/Studios'
@@ -82,7 +82,7 @@ function wrapSettingsNavigation(newClass) {
 }
 
 const Blueprint = wrapSettingsNavigation(
-	translate()(
+	withTranslation()(
 		class Blueprint extends SettingsNavigationBase {
 			constructor(props) {
 				super(props)
@@ -136,7 +136,7 @@ const Blueprint = wrapSettingsNavigation(
 )
 
 const ShowStyle = wrapSettingsNavigation(
-	translate()(
+	withTranslation()(
 		class ShowStyle extends SettingsNavigationBase {
 			constructor(props) {
 				super(props)
@@ -162,7 +162,7 @@ const ShowStyle = wrapSettingsNavigation(
 )
 
 const NewShowStyle = wrapSettingsNavigation(
-	translate()(
+	withTranslation()(
 		class NewShowStyle extends SettingsNavigationBase {
 			constructor(props) {
 				super(props)

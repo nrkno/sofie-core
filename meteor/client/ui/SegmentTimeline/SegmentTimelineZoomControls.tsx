@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as ClassNames from 'classnames'
+import ClassNames from 'classnames'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { onElementResize, offElementResize } from '../../lib/resizeObserver'
@@ -83,8 +83,8 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 
 	onElementResize = (entries: ResizeObserverEntry[]) => {
 		let width: number
-		if (entries && entries[0] && entries[0].contentBoxSize) {
-			width = entries[0].contentBoxSize!.width
+		if (entries && entries[0] && entries[0].contentRect) {
+			width = entries[0].contentRect!.width
 		} else {
 			width = getElementWidth(this.parentElement)
 		}
@@ -112,7 +112,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		} else {
 			percent = Math.max(0, Math.min(1, (e.clientX - this.offsetX - this.clickOffsetX) / this.state.width))
 		}
-		// console.log(percent)
+
 		if (this.props.onScroll) {
 			this.props.onScroll(percent * this.props.segmentDuration, e)
 		}
@@ -181,7 +181,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		let begin = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
 		let end = (this.props.scrollLeft + this.props.scrollWidth) / this.props.segmentDuration
 		let newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
-		// console.log(this.props.scrollWidth, newScale)
+
 		if (this.props.onZoomChange) {
 			this.props.onScroll(begin * this.props.segmentDuration, e)
 			this.props.onZoomChange(newScale, e)
@@ -197,7 +197,6 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	}
 
 	zoomAreaLeftBeginMove(e: Event & any) {
-		// console.log('Left handle')
 		e.preventDefault()
 		e.stopPropagation()
 
@@ -232,7 +231,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 		let end = Math.max(0, Math.min(1, (e.clientX - this.offsetX) / this.state.width))
 		let begin = this.props.scrollLeft / this.props.segmentDuration
 		let newScale = (this.props.scrollWidth / ((end - begin) * this.props.segmentDuration)) * this.props.timeScale
-		// console.log(this.props.scrollWidth, newScale)
+
 		if (this.props.onZoomChange) {
 			this.props.onZoomChange(newScale, e)
 		}

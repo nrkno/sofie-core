@@ -1,19 +1,18 @@
 import * as React from 'react'
 import DefaultItemRenderer from './DefaultItemRenderer'
-import { NoraItemRenderer, isNoraItem } from './NoraItemRenderer'
+import NoraItemRenderer, { isNoraItem } from './NoraItemRenderer'
+import ActionItemRenderer, { isActionItem } from './ActionItemRenderer'
 
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
+import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 
-export default function renderItem(piece: AdLibPieceUi | PieceUi): JSX.Element {
+export default function renderItem(piece: AdLibPieceUi | PieceUi, showStyleBase: ShowStyleBase): JSX.Element {
 	if (isNoraItem(piece)) {
-		return React.createElement(NoraItemRenderer, { piece })
+		return React.createElement(NoraItemRenderer, { piece, showStyleBase })
+	} else if (isActionItem(piece)) {
+		return React.createElement(ActionItemRenderer, { piece, showStyleBase })
 	}
 
-	if (Object.prototype.hasOwnProperty.call(piece, 'instance')) {
-		const pieceUi = piece as PieceUi
-		return React.createElement(DefaultItemRenderer, { piece: pieceUi.instance.piece })
-	} else {
-		return React.createElement(DefaultItemRenderer, { piece: piece as AdLibPieceUi })
-	}
+	return React.createElement(DefaultItemRenderer, { piece, showStyleBase })
 }

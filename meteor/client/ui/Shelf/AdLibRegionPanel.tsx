@@ -5,13 +5,10 @@ import {
 	RundownLayoutAdLibRegion,
 	DashboardLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
-	RundownLayoutElementType,
-	PieceDisplayStyle,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import * as classNames from 'classnames'
+import ClassNames from 'classnames'
 import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -19,9 +16,8 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { unprotectString } from '../../../lib/lib'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PieceId } from '../../../lib/collections/Pieces'
 
 interface IState {}
 
@@ -166,14 +162,14 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 					}
 				)}>
 				<div
-					className={classNames('adlib-region-panel__image-container', {
+					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibOnAir(piece),
 					})}>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
 						{
 							<span
-								className={classNames('adlib-region-panel__label', {
+								className={ClassNames('adlib-region-panel__label', {
 									'adlib-region-panel__label--large': this.props.panel.labelBelowPanel,
 								})}>
 								{this.props.panel.name}

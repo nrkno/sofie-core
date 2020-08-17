@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection, MongoSelector, FindOptions } from '../typings/meteor'
+import { TransformedCollection, MongoQuery, FindOptions } from '../typings/meteor'
 import * as _ from 'underscore'
 import {
 	Time,
@@ -138,7 +138,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		})
 	}
 	/** Returns all Rundowns in the RundownPlaylist */
-	getRundowns(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Rundown[] {
+	getRundowns(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): Rundown[] {
 		return Rundowns.find(
 			_.extend(
 				{
@@ -158,7 +158,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		).fetch()
 	}
 	/** Returns an array with the id:s of all Rundowns in the RundownPlaylist */
-	getRundownIDs(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): RundownId[] {
+	getRundownIDs(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): RundownId[] {
 		return this.getRundowns(
 			selector,
 			_.extend(
@@ -176,7 +176,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			)
 		).map((i) => i._id)
 	}
-	getRundownsMap(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): { [key: string]: Rundown } {
+	getRundownsMap(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
 	}
 	touch() {
@@ -203,8 +203,44 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			return studio
 		} else throw new Meteor.Error(404, 'Studio "' + this.studioId + '" not found!')
 	}
+	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
+	getRundownsAndSegments(
+		selector?: MongoQuery<DBSegment>,
+		options?: FindOptions<DBSegment>
+	): Array<{
+		rundown: Rundown
+		segments: Segment[]
+	}> {
+		const rundowns = this.getRundowns(undefined, {
+			fields: {
+				name: 1,
+				_rank: 1,
+				playlistId: 1,
+			},
+		})
+		const segments = Segments.find(
+			_.extend(
+				{
+					rundownId: {
+						$in: rundowns.map((i) => i._id),
+					},
+				},
+				selector
+			),
+			_.extend(
+				{
+					sort: {
+						rundownId: 1,
+						_rank: 1,
+					},
+				},
+				options
+			)
+		).fetch()
+		return RundownPlaylist._matchSegmentsAndRundowns(segments, rundowns)
+	}
 	/** Returns all segments in their correct order for this RundownPlaylist */
-	getSegments(selector?: MongoSelector<DBRundownPlaylist>, options?: FindOptions): Segment[] {
+	getSegments(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBSegment>): Segment[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_rank: 1,
@@ -236,7 +272,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		const { parts } = this.getSegmentsAndPartsSync()
 		return parts
 	}
-	getUnorderedParts(selector?: MongoSelector<DBPart>, options?: FindOptions): Part[] {
+	getUnorderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
 				_id: 1,
@@ -382,7 +418,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			previousPartInstance: instances.find((inst) => inst._id === this.previousPartInstanceId),
 		}
 	}
-	getAllPartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getAllPartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
 		const rundownIds = this.getRundownIDs()
 
 		selector = selector || {}
@@ -402,18 +438,17 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			)
 		).fetch()
 	}
-	getActivePartInstances(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstances(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
 		const newSelector = {
 			...selector,
 			reset: { $ne: true },
 		}
 		return this.getAllPartInstances(newSelector, options)
 	}
-	getActivePartInstancesMap(selector?: MongoSelector<PartInstance>, options?: FindOptions) {
+	getActivePartInstancesMap(selector?: MongoQuery<PartInstance>, options?: FindOptions<PartInstance>) {
 		const instances = this.getActivePartInstances(selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
-
 	static _sortSegments(segments: Segment[], rundowns: DBRundown[]) {
 		const rundownsMap = normalizeArray(rundowns, '_id')
 		return segments.sort((a, b) => {
@@ -425,6 +460,25 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				return rdA._rank - rdB._rank
 			}
 		})
+	}
+	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(segments: E[], rundowns: T[]) {
+		const rundownsMap = new Map<
+			RundownId,
+			{
+				rundown: T
+				segments: E[]
+			}
+		>()
+		rundowns.forEach((rundown) => {
+			rundownsMap.set(rundown._id, {
+				rundown,
+				segments: [],
+			})
+		})
+		segments.forEach((segment) => {
+			rundownsMap.get(segment.rundownId)?.segments.push(segment)
+		})
+		return Array.from(rundownsMap.values())
 	}
 	static _sortParts(parts: Part[], rundowns: DBRundown[], segments: Segment[]) {
 		return RundownPlaylist._sortPartsInner(parts, RundownPlaylist._sortSegments(segments, rundowns))

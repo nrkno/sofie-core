@@ -1,9 +1,17 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from 'meteor/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
+import {
+	literal,
+	getCurrentTime,
+	Time,
+	getRandomId,
+	makePromise,
+	isPromise,
+	waitForPromise,
+	check,
+} from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
@@ -23,7 +31,7 @@ export namespace ServerClientAPI {
 		check(timestamp, Number)
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
-				methodContext.connection.clientAddress
+				methodContext.connection ? methodContext.connection.clientAddress : ''
 			}"\n  at ${new Date(timestamp).toISOString()}:\n${JSON.stringify(errorObject)}`
 		)
 	}
@@ -44,8 +52,8 @@ export namespace ServerClientAPI {
 		UserActionsLog.insert(
 			literal<UserActionsLogItem>({
 				_id: actionId,
-				clientAddress: methodContext.connection.clientAddress,
-				userId: methodContext.userId,
+				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
+				userId: methodContext.userId || undefined,
 				context: context,
 				method: methodName,
 				args: JSON.stringify(args),
@@ -116,8 +124,8 @@ export namespace ServerClientAPI {
 			UserActionsLog.insert(
 				literal<UserActionsLogItem>({
 					_id: actionId,
-					clientAddress: methodContext.connection.clientAddress,
-					userId: methodContext.userId,
+					clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
+					userId: methodContext.userId || undefined,
 					context: context,
 					method: `${deviceId}: ${functionName}`,
 					args: JSON.stringify(args),
