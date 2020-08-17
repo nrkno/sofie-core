@@ -100,7 +100,7 @@ describe('User Actions - Buckets', () => {
 					'FAKE_ID',
 					null
 				) as ClientAPI.ClientResponseSuccess<Bucket>
-			}).toThrowError(/studio not found/gi)
+			}).toThrowError(/studio .* not found/gi)
 		}
 
 		{

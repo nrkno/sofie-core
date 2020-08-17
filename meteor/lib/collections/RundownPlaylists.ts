@@ -27,6 +27,7 @@ import { PieceInstance, PieceInstances } from './PieceInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
+import { OrganizationId } from './Organization'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
@@ -35,6 +36,8 @@ export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
 	externalId: string
+	/** ID of the organization that owns the playlist */
+	organizationId?: OrganizationId | null
 	/** Studio that this playlist is assigned to */
 	studioId: StudioId
 	/** The source of the playlist */
@@ -89,6 +92,7 @@ export interface DBRundownPlaylist {
 export class RundownPlaylist implements DBRundownPlaylist {
 	public _id: RundownPlaylistId
 	public externalId: string
+	public organizationId: OrganizationId
 	public studioId: StudioId
 	public peripheralDeviceId: PeripheralDeviceId
 	public restoredFromSnapshotId?: RundownPlaylistId
@@ -531,12 +535,23 @@ export class RundownPlaylist implements DBRundownPlaylist {
 export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part[]): Array<TrackedNote> {
 	let notes: Array<TrackedNote> = []
 
-	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number } }>(
+	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number; name: string } }>(
 		segments.map((segment) => [
 			segment._id,
 			{
 				rank: segment._rank,
-				notes: segment.notes,
+				notes: segment.notes
+					? segment.notes.map((note) => ({
+							...note,
+							origin: {
+								...note.origin,
+								segmentId: segment._id,
+								rundownId: segment.rundownId,
+								name: note.origin.name || segment.name,
+							},
+					  }))
+					: undefined,
+				name: segment.name,
 			},
 		])
 	)
@@ -554,6 +569,8 @@ export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part
 							segmentId: part.segmentId,
 							partId: part._id,
 							rundownId: part.rundownId,
+							segmentName: segNotes.name,
+							name: n.origin.name || part.title,
 						},
 					}))
 				)

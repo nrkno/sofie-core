@@ -7,6 +7,7 @@ import { EventEmitter } from 'events'
 import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
 import { HTMLAttributes } from 'react'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { RundownAPI } from '../../../lib/api/rundown'
 
 /**
  * Priority level for Notifications.
@@ -16,13 +17,13 @@ import { SegmentId } from '../../../lib/collections/Segments'
  */
 export enum NoticeLevel {
 	/** Highest priority notification. Subject matter will affect operations. */
-	CRITICAL = 1,
+	CRITICAL = 0b0001, // 1
 	/** High priority notification. Operations will not be affected, but non-critical functions may be affected or the result may be undesirable. */
-	WARNING = 2,
+	WARNING = 0b0010, // 2
 	/** Confirmation of a successful operation and general informations. */
-	NOTIFICATION = 3,
+	NOTIFICATION = 0b0100, // 3
 	/** Tips to the user */
-	TIP = 4,
+	TIP = 0b1000, // 4
 }
 
 /**
@@ -117,7 +118,7 @@ type NotificationsSource = SegmentId | string | undefined
  */
 class NotificationCenter0 {
 	/** Default notification timeout for non-persistent notifications */
-	private NOTIFICATION_TIMEOUT = 5000
+	private readonly NOTIFICATION_TIMEOUT = 5000
 	/** The highlighted source of notifications */
 	private highlightedSource: ReactiveVar<NotificationsSource>
 	/** The highlighted level of highlighted level */
@@ -125,9 +126,33 @@ class NotificationCenter0 {
 
 	private _isOpen: boolean = false
 
+	/** In concentration mode, non-Critical notifications will be snoozed automatically */
+	private _isConcentrationMode: boolean = false
+
 	constructor() {
 		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
 		this.highlightedLevel = new ReactiveVar<NoticeLevel>(NoticeLevel.TIP)
+	}
+
+	get isConcentrationMode(): boolean {
+		return this._isConcentrationMode
+	}
+
+	set isConcentrationMode(value: boolean) {
+		this._isConcentrationMode = value
+
+		if (value)
+			NotificationCenter.snoozeAll(
+				{
+					status: NoticeLevel.TIP,
+				},
+				{
+					status: NoticeLevel.NOTIFICATION,
+				},
+				{
+					status: NoticeLevel.WARNING,
+				}
+			)
 	}
 
 	get isOpen(): boolean {
@@ -173,6 +198,11 @@ class NotificationCenter0 {
 		if (!notice.snoozed && this._isOpen) {
 			notice.snooze()
 		}
+		if (!notice.snoozed && this._isConcentrationMode) {
+			if (notice.status !== NoticeLevel.CRITICAL && notice.timeout === undefined && notice.persistent === true) {
+				notice.snooze()
+			}
+		}
 
 		return {
 			id,
@@ -198,6 +228,8 @@ class NotificationCenter0 {
 		}
 	}
 
+	private willSnooze: { [k: string]: boolean } = {}
+
 	/**
 	 * Get a reactive array of notificaitons in the Notification Center
 	 *
@@ -209,8 +241,19 @@ class NotificationCenter0 {
 
 		return _.flatten(
 			Object.values(notifiers)
-				.map((item) => {
-					;(item.result || []).forEach((i) => this._isOpen && !i.snoozed && i.snooze())
+				.map((item, key) => {
+					item.result.forEach((i, itemKey) => {
+						if (this._isOpen && !i.snoozed) i.snooze()
+						if (
+							this._isConcentrationMode &&
+							!i.snoozed &&
+							i.status !== NoticeLevel.CRITICAL &&
+							i.timeout === undefined &&
+							i.persistent === true
+						) {
+							i.snooze()
+						}
+					})
 					return item.result
 				})
 				.concat(Object.values(notifications))
@@ -223,14 +266,27 @@ class NotificationCenter0 {
 	 * @returns {number}
 	 * @memberof NotificationCenter0
 	 */
-	count(): number {
+	count(filter?: NoticeLevel): number {
 		notificationsDep.depend()
 
-		return (
-			Object.values(notifiers)
-				.map((item) => (item.result || []).length)
-				.reduce((a, b) => a + b, 0) + Object.values(notifications).length
-		)
+		// return (
+		// 	Object.values(notifiers)
+		// 		.map((item) => (item.result || []).length)
+		// 		.reduce((a, b) => a + b, 0) + Object.values(notifications).length
+		// )
+		if (filter === undefined) {
+			return (
+				Object.values(notifiers).reduce<number>((a, b) => a + (b.result || []).length, 0) +
+				Object.values(notifications).length
+			)
+		} else {
+			return (
+				Object.values(notifiers).reduce<number>(
+					(a, b) => a + (b.result || []).filter((item) => (item.status & filter) !== 0).length,
+					0
+				) + Object.values(notifications).filter((item) => (item.status & filter) !== 0).length
+			)
+		}
 	}
 
 	/**
@@ -238,8 +294,18 @@ class NotificationCenter0 {
 	 *
 	 * @memberof NotificationCenter0
 	 */
-	snoozeAll() {
-		const n = this.getNotifications()
+	snoozeAll(...filters: Partial<Notification>[]) {
+		let n = this.getNotifications()
+		if (filters && filters.length) {
+			const matchers = filters.map((filter) => _.matches(filter))
+			n = n.filter((value, index, array) =>
+				_.reduce(
+					matchers.map((m) => m(value)),
+					(value, memo) => value || memo,
+					false
+				)
+			)
+		}
 		n.forEach((item) => item.snooze())
 	}
 
@@ -407,6 +473,33 @@ export class Notification extends EventEmitter {
 	}
 }
 
-window['testNotification'] = function() {
-	NotificationCenter.push(new Notification(undefined, NoticeLevel.TIP, 'Notification test', protectString('test')))
+export function getNoticeLevelForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoticeLevel | null {
+	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
+		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+			? NoticeLevel.CRITICAL
+			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
+			  NoticeLevel.WARNING
+		: null
 }
+
+window['testNotification'] = function(
+	delay: number,
+	level: NoticeLevel = NoticeLevel.CRITICAL,
+	fakePersistent: boolean = false
+) {
+	NotificationCenter.push(
+		new Notification(
+			undefined,
+			level,
+			'Notification test',
+			protectString('test'),
+			undefined,
+			fakePersistent,
+			undefined,
+			100000,
+			delay || 10000
+		)
+	)
+}
+window['notificationCenter'] = NotificationCenter

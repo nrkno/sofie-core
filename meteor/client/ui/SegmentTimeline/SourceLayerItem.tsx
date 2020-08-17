@@ -22,6 +22,7 @@ import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundowns } from '../../../lib/collections/Rundowns'
+import { RundownViewEvents } from '../RundownView'
 
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 
@@ -60,6 +61,7 @@ interface ISourceLayerItemState {
 	itemElement: HTMLDivElement | null
 	leftAnchoredWidth: number
 	rightAnchoredWidth: number
+	highlight: boolean
 }
 export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
@@ -83,6 +85,7 @@ export const SourceLayerItem = withTranslation()(
 				itemElement: null,
 				leftAnchoredWidth: 0,
 				rightAnchoredWidth: 0,
+				highlight: false,
 			}
 		}
 
@@ -441,10 +444,38 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
+		private highlightTimeout: NodeJS.Timer
+
+		private onHighlight = (e: any) => {
+			if (
+				e.detail &&
+				e.detail.partId === this.props.part.partId &&
+				e.detail.pieceId === this.props.piece.instance.piece._id
+			) {
+				this.setState({
+					highlight: true,
+				})
+				clearTimeout(this.highlightTimeout)
+				this.highlightTimeout = setTimeout(() => {
+					this.setState({
+						highlight: false,
+					})
+				}, 5000)
+			}
+		}
+
 		componentDidMount() {
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
 			}
+			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+		}
+
+		componentWillUnmount() {
+			super.componentWillUnmount && super.componentWillUnmount()
+			window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+			this.unmountResizeObserver()
+			clearTimeout(this.highlightTimeout)
 		}
 
 		componentDidUpdate(prevProps: ISourceLayerItemProps) {
@@ -726,6 +757,8 @@ export const SourceLayerItem = withTranslation()(
 							'source-broken': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 							'unknown-state': innerPiece.status === RundownAPI.PieceStatusCode.UNKNOWN,
 							disabled: piece.instance.disabled,
+
+							'invert-flash': this.state.highlight,
 						})}
 						data-obj-id={piece.instance._id}
 						ref={this.setRef}

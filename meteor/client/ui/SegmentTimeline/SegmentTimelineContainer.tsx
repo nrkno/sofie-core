@@ -22,11 +22,12 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
-import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/viewPort'
+import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
+import { RundownId } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -62,6 +63,7 @@ export interface PieceUi extends PieceExtended {
 }
 interface IProps {
 	id: string
+	rundownId: RundownId
 	segmentId: SegmentId
 	segmentsIdsBefore: Set<SegmentId>
 	orderedAllPartIds: PartId[]
@@ -202,11 +204,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				) ||
 					data.parts.find(
 						(i) =>
-							i.instance._id === props.playlist.currentPartInstanceId ||
-							i.instance._id === nextProps.playlist.currentPartInstanceId
-					) ||
-					data.parts.find(
-						(i) =>
 							i.instance._id === props.playlist.nextPartInstanceId ||
 							i.instance._id === nextProps.playlist.nextPartInstanceId
 					))) ||
@@ -278,12 +275,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		componentDidMount() {
 			this.subscribe(PubSub.segments, {
+				rundownId: this.props.rundownId,
 				_id: this.props.segmentId,
 			})
 			this.subscribe(PubSub.parts, {
+				rundownId: this.props.rundownId,
 				segmentId: this.props.segmentId,
 			})
 			this.subscribe(PubSub.partInstances, {
+				rundownId: this.props.rundownId,
 				segmentId: this.props.segmentId,
 				reset: {
 					$ne: true,
@@ -298,11 +298,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}).map((instance) => instance._id)
 
 				this.subscribe(PubSub.pieces, {
+					rundownId: this.props.rundownId,
 					startPartId: {
 						$in: partIds,
 					},
 				})
 				this.subscribe(PubSub.pieceInstances, {
+					rundownId: this.props.rundownId,
 					partInstanceId: {
 						$in: partInstanceIds,
 					},
@@ -379,7 +381,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
 					// What is this supposed to do?
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
-						MeteorCall.userAction.resyncSegment('', this.props.segmentui!._id)
+						MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
 					)
 				}
 
@@ -608,7 +610,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 				// is viewport. This seems like an implementation bug and IntersectionObserver is
 				// an Experimental Feature in Chrome, so this might change in the future.
-				rootMargin: `-${HEADER_HEIGHT * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
+				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
 			this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)

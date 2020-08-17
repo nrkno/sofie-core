@@ -1,16 +1,19 @@
-import { TransformedCollection } from '../typings/meteor'
+import { TransformedCollection, UserId } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { RundownPlaylistId } from './RundownPlaylists'
 import { SnapshotId } from './Snapshots'
+import { OrganizationId } from './Organization'
+
 /** A string, identifying a Evaluation */
 export type EvaluationId = ProtectedString<'EvaluationId'>
 
 export interface Evaluation extends EvaluationBase {
 	_id: EvaluationId
-	userId: string
+	organizationId: OrganizationId | null
+	userId: UserId | null
 	timestamp: Time
 }
 export interface EvaluationBase {
@@ -30,6 +33,7 @@ registerCollection('Evaluations', Evaluations)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Evaluations._ensureIndex({
+			organizationId: 1,
 			timestamp: 1,
 		})
 	}

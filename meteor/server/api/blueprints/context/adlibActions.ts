@@ -8,6 +8,7 @@ import {
 	getCurrentTime,
 	unprotectStringArray,
 	getRandomId,
+	protectStringArray,
 } from '../../../../lib/lib'
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -21,6 +22,8 @@ import {
 	IBlueprintResolvedPieceInstance,
 	PieceLifespan,
 	OmitId,
+	IBlueprintMutatablePart,
+	PartHoldMode,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Rundown } from '../../../../lib/collections/Rundowns'
@@ -30,7 +33,7 @@ import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartIn
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext } from './context'
+import { NotesContext, ShowStyleContext, EventContext } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
@@ -64,6 +67,30 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 }
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
+
+const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
+	title: '',
+	metaData: {},
+	autoNext: false,
+	autoNextOverlap: 0,
+	prerollDuration: 0,
+	transitionPrerollDuration: null,
+	transitionKeepaliveDuration: null,
+	transitionDuration: null,
+	disableOutTransition: false,
+	expectedDuration: 0,
+	holdMode: PartHoldMode.NONE,
+	shouldNotifyCurrentPlayingPart: false,
+	classes: [],
+	classesForNext: [],
+	displayDurationGroup: '',
+	displayDuration: 0,
+	identifier: '',
+}
+// Compile a list of the keys which are allowed to be set
+const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSample) as Array<
+	keyof IBlueprintMutatablePart
+>
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
@@ -103,28 +130,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				throw new Error(`Unknown part "${part}"`)
 		}
 	}
-
-	// getNextShowStyleConfig (): {[key: string]: ConfigItemValue} {
-	// 	const partInstanceId = this.rundownPlaylist.nextPartInstanceId
-	// 	if (!partInstanceId) {
-	// 		throw new Error('Cannot get ShowStyle config when there is no next part')
-	// 	}
-
-	// 	const partInstance = this.cache.PartInstances.findOne(partInstanceId)
-	// 	const rundown = partInstance ? this.cache.Rundowns.findOne(partInstance.rundownId) : undefined
-	// 	if (!rundown) {
-	// 		throw new Error(`Failed to fetch rundown for PartInstance "${partInstanceId}"`)
-	// 	}
-
-	// 	const showStyleCompound = getShowStyleCompound(rundown.showStyleVariantId)
-	// 	if (!showStyleCompound) throw new Error(`Failed to compile showStyleCompound for "${rundown.showStyleVariantId}"`)
-
-	// 	const res: {[key: string]: ConfigItemValue} = {}
-	// 	_.each(showStyleCompound.config, (c) => {
-	// 		res[c._id] = c.value
-	// 	})
-	// 	return res
-	// }
 
 	getCurrentTime(): number {
 		return getCurrentTime()
@@ -369,6 +374,50 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return clone(unprotectObject(newPartInstance))
 	}
+	updatePartInstance(part: 'current' | 'next', props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
+		// filter the submission to the allowed ones
+		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(props, IBlueprintMutatablePartSampleKeys)
+		if (Object.keys(trimmedProps).length === 0) {
+			throw new Error('Some valid properties must be defined')
+		}
+
+		const partInstanceId = this._getPartInstanceId(part)
+		if (!partInstanceId) {
+			throw new Error('PartInstance could not be found')
+		}
+
+		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
+		if (!partInstance) {
+			throw new Error('PartInstance could not be found')
+		}
+
+		const update = {
+			$set: {},
+			$unset: {},
+		}
+
+		for (const [k, val] of Object.entries(trimmedProps)) {
+			if (val === undefined) {
+				update.$unset[`part.${k}`] = val
+			} else {
+				update.$set[`part.${k}`] = val
+			}
+		}
+
+		this.cache.PartInstances.update(partInstance._id, update)
+
+		this.nextPartState = Math.max(
+			this.nextPartState,
+			part === 'next' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
+		)
+		this.currentPartState = Math.max(
+			this.currentPartState,
+			part === 'current' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
+		)
+
+		return clone(unprotectObject(this.cache.PartInstances.findOne(partInstance._id)!))
+	}
+
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
 		if (sourceLayerIds.length == 0) {
 			return []
@@ -388,6 +437,26 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			(pieceInstance) => pieceInstanceIds.indexOf(unprotectString(pieceInstance._id)) !== -1,
 			timeOffset
 		)
+	}
+	removePieceInstances(_part: 'next', pieceInstanceIds: string[]): string[] {
+		const partInstanceId = this.rundownPlaylist.nextPartInstanceId // this._getPartInstanceId(part)
+		if (!partInstanceId) {
+			throw new Error('Cannot remove pieceInstances when no selected partInstance')
+		}
+
+		const pieceInstances = this.cache.PieceInstances.findFetch({
+			partInstanceId: partInstanceId,
+			_id: { $in: protectStringArray(pieceInstanceIds) },
+		})
+
+		this.cache.PieceInstances.remove({
+			partInstanceId: partInstanceId,
+			_id: { $in: pieceInstances.map((p) => p._id) },
+		})
+
+		this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
+
+		return unprotectStringArray(pieceInstances.map((p) => p._id))
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {

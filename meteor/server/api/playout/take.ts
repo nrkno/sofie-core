@@ -37,18 +37,24 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { StudioId } from '../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { reportPartHasStarted } from '../asRunLog'
+import { MethodContext } from '../../../lib/api/methods'
+import { checkAccessAndGetPlaylist } from './playout'
 
-export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
+export function takeNextPartInner(
+	context: MethodContext,
+	rundownPlaylistId: RundownPlaylistId
+): ClientAPI.ClientResponse<void> {
 	let now = getCurrentTime()
 
 	return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-		let playlist = RundownPlaylists.findOne(rundownPlaylistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${rundownPlaylistId}" not found!`)
-		if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
-		if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
-		const cache = waitForPromise(initCacheForRundownPlaylist(playlist, undefined, true))
+		const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+		if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
+		if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
+		const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist, undefined, true))
 
-		playlist = cache.RundownPlaylists.findOne(playlist._id)
+		let playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 		if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
 		let timeOffset: number | null = playlist.nextTimeOffset || null
@@ -247,6 +253,23 @@ export function takeNextPartInner(rundownPlaylistId: RundownPlaylistId): ClientA
 						'timings.takeDone': takeDoneTime,
 					},
 				})
+
+				// Simulate playout, if no gateway
+				if (takePartInstance) {
+					const playoutDevices = cache.PeripheralDevices.findFetch({
+						studioId: takeRundown.studioId,
+						type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+					})
+					if (playoutDevices.length === 0) {
+						logger.info(
+							`No Playout gateway attached to studio, reporting PartInstance "${
+								takePartInstance._id
+							}" to have started playback on timestamp ${new Date(takeDoneTime).toISOString()}`
+						)
+						reportPartHasStarted(cache, takePartInstance, takeDoneTime)
+					}
+				}
+
 				// let bp = getBlueprintOfRundown(rundown)
 				if (firstTake) {
 					if (blueprint.onRundownFirstTake) {

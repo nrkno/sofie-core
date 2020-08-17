@@ -2,7 +2,8 @@ import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
-import { Match } from 'meteor/check'
+import * as bodyParser from 'body-parser'
+import { check, Match } from '../../lib/check'
 import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
 import {
 	Snapshots,
@@ -35,7 +36,6 @@ import {
 	makePromise,
 	ProtectedString,
 	protectStringArray,
-	check,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
@@ -52,19 +52,31 @@ import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databas
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownPlaylists, DBRundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import {
+	RundownPlaylists,
+	DBRundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylist,
+} from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { substituteObjectIds } from './playout/lib'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
+import { OrganizationId, Organization } from '../../lib/collections/Organization'
+import { Settings } from '../../lib/Settings'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { resolveCredentials, Credentials, isResolvedCredentials } from '../security/lib/credentials'
+import { OrganizationContentWriteAccess } from '../security/organization'
+import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
+import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
 
@@ -141,7 +153,10 @@ type AnySnapshot = RundownPlaylistSnapshot | SystemSnapshot | DebugSnapshot | De
  * Create a snapshot of all items related to a RundownPlaylist
  * @param playlistId
  */
-function createRundownPlaylistSnapshot(playlistId: RundownPlaylistId): RundownPlaylistSnapshot {
+function createRundownPlaylistSnapshot(
+	playlistId: RundownPlaylistId,
+	organizationId: OrganizationId | null
+): RundownPlaylistSnapshot {
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${playlistId}"`)
 
@@ -191,6 +206,7 @@ function createRundownPlaylistSnapshot(playlistId: RundownPlaylistId): RundownPl
 		playlistId,
 		snapshot: {
 			_id: snapshotId,
+			organizationId: organizationId,
 			created: getCurrentTime(),
 			type: SnapshotType.RUNDOWNPLAYLIST,
 			playlistId,
@@ -222,40 +238,49 @@ function createRundownPlaylistSnapshot(playlistId: RundownPlaylistId): RundownPl
  * If studioId is provided, only return items related to that studio
  * @param studioId (Optional) Only generate for a certain studio
  */
-function createSystemSnapshot(studioId: StudioId | null): SystemSnapshot {
+function createSystemSnapshot(studioId: StudioId | null, organizationId: OrganizationId | null): SystemSnapshot {
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
 	const coreSystem = getCoreSystem()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
-	const studios = Studios.find(studioId ? { _id: studioId } : {}).fetch()
 
+	if (Settings.enableUserAccounts && !organizationId)
+		throw new Meteor.Error(500, 'Not able to create a systemSnaphost without organizationId')
+
+	let queryStudio: MongoQuery<Studio> = {}
 	let queryShowStyleBases: MongoQuery<ShowStyleBase> = {}
 	let queryShowStyleVariants: MongoQuery<ShowStyleVariant> = {}
 	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}
 	let queryDevices: MongoQuery<PeripheralDevice> = {}
 	let queryBlueprints: MongoQuery<Blueprint> = {}
 
+	if (studioId) queryStudio = { _id: studioId }
+	else if (organizationId) queryStudio = { organizationId: organizationId }
+	const studios = Studios.find(queryStudio).fetch()
+
 	if (studioId) {
-		let showStyleBaseIds: ShowStyleBaseId[] = []
+		let ids: ShowStyleBaseId[] = []
 		_.each(studios, (studio) => {
-			showStyleBaseIds = showStyleBaseIds.concat(studio.supportedShowStyleBase)
+			ids = ids.concat(studio.supportedShowStyleBase)
 		})
-		queryShowStyleBases._id = protectString('')
 		queryShowStyleBases = {
-			_id: { $in: showStyleBaseIds },
+			_id: { $in: ids },
 		}
-		queryShowStyleVariants = {
-			showStyleBaseId: { $in: showStyleBaseIds },
-		}
-		queryRundownLayouts = {
-			showStyleBaseId: { $in: showStyleBaseIds },
-		}
-		queryDevices = { studioId: studioId }
+	} else if (organizationId) {
+		queryShowStyleBases = { organizationId: organizationId }
 	}
 	const showStyleBases = ShowStyleBases.find(queryShowStyleBases).fetch()
+
+	const showStyleBaseIds = _.map(showStyleBases, (s) => s._id)
+
+	queryShowStyleVariants = { showStyleBaseId: { $in: showStyleBaseIds } }
+	queryRundownLayouts = { showStyleBaseId: { $in: showStyleBaseIds } }
 	const showStyleVariants = ShowStyleVariants.find(queryShowStyleVariants).fetch()
 	const rundownLayouts = RundownLayouts.find(queryRundownLayouts).fetch()
+
+	if (studioId) queryDevices = { studioId: studioId }
+	else if (organizationId) queryDevices = { organizationId: organizationId }
 	const devices = PeripheralDevices.find(queryDevices).fetch()
 
 	if (studioId) {
@@ -265,6 +290,10 @@ function createSystemSnapshot(studioId: StudioId | null): SystemSnapshot {
 		})
 		queryBlueprints = {
 			_id: { $in: blueprintIds },
+		}
+	} else if (organizationId) {
+		queryBlueprints = {
+			organizationId: organizationId,
 		}
 	}
 	const blueprints = Blueprints.find(queryBlueprints).fetch()
@@ -279,6 +308,7 @@ function createSystemSnapshot(studioId: StudioId | null): SystemSnapshot {
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,
+			organizationId: organizationId,
 			type: SnapshotType.SYSTEM,
 			created: getCurrentTime(),
 			name: `System` + (studioId ? `_${studioId}` : '') + `_${formatDateTime(getCurrentTime())}`,
@@ -299,14 +329,14 @@ function createSystemSnapshot(studioId: StudioId | null): SystemSnapshot {
  * Create a snapshot of active rundowns related to a studio and all related data, for debug purposes
  * @param studioId
  */
-function createDebugSnapshot(studioId: StudioId): DebugSnapshot {
+function createDebugSnapshot(studioId: StudioId, organizationId: OrganizationId | null): DebugSnapshot {
 	let snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating Debug snapshot "${snapshotId}" for studio "${studioId}"`)
 
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} not found`)
 
-	let systemSnapshot = createSystemSnapshot(studioId)
+	let systemSnapshot = createSystemSnapshot(studioId, organizationId)
 
 	let activePlaylists = RundownPlaylists.find({
 		studioId: studio._id,
@@ -314,7 +344,7 @@ function createDebugSnapshot(studioId: StudioId): DebugSnapshot {
 	}).fetch()
 
 	let activePlaylistSnapshots = _.map(activePlaylists, (playlist) => {
-		return createRundownPlaylistSnapshot(playlist._id)
+		return createRundownPlaylistSnapshot(playlist._id, organizationId)
 	})
 
 	let timeline = Timeline.find().fetch()
@@ -347,6 +377,7 @@ function createDebugSnapshot(studioId: StudioId): DebugSnapshot {
 		studioId: studioId,
 		snapshot: {
 			_id: snapshotId,
+			organizationId: organizationId,
 			type: SnapshotType.DEBUG,
 			created: getCurrentTime(),
 			name: `Debug_${studioId}_${formatDateTime(getCurrentTime())}`,
@@ -383,7 +414,11 @@ function handleResponse(response: ServerResponse, snapshotFcn: () => { snapshot:
 		}
 	}
 }
-function storeSnaphot(snapshot: { snapshot: SnapshotBase }, comment: string): SnapshotId {
+function storeSnaphot(
+	snapshot: { snapshot: SnapshotBase },
+	organizationId: OrganizationId | null,
+	comment: string
+): SnapshotId {
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
@@ -399,6 +434,7 @@ function storeSnaphot(snapshot: { snapshot: SnapshotBase }, comment: string): Sn
 
 	let id = Snapshots.insert({
 		_id: protectString(fileName),
+		organizationId: organizationId,
 		fileName: fileName,
 		type: snapshot.snapshot.type,
 		created: snapshot.snapshot.created,
@@ -410,9 +446,27 @@ function storeSnaphot(snapshot: { snapshot: SnapshotBase }, comment: string): Sn
 
 	return id
 }
-function retreiveSnapshot(snapshotId: SnapshotId): AnySnapshot {
+function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): AnySnapshot {
 	let snapshot = Snapshots.findOne(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
+
+	if (Settings.enableUserAccounts) {
+		if (snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
+			if (!snapshot.studioId)
+				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but hase no studioId`)
+			StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
+		} else if (snapshot.type === SnapshotType.RUNDOWN) {
+			if (!snapshot.studioId)
+				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but hase no studioId`)
+			StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
+		} else if (snapshot.type === SnapshotType.SYSTEM) {
+			if (!snapshot.organizationId)
+				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but has no organizationId`)
+			OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
+		} else {
+			SystemWriteAccess.coreSystem(cred0)
+		}
+	}
 
 	let system = getCoreSystem()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
@@ -482,7 +536,11 @@ function restoreFromDeprecatedRundownSnapshot(snapshot0: DeprecatedRundownSnapsh
 
 	return restoreFromRundownPlaylistSnapshot(snapshot)
 }
-function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
+export function restoreFromRundownPlaylistSnapshot(
+	snapshot: RundownPlaylistSnapshot,
+	studioId?: StudioId,
+	showStyleId?: ShowStyleBaseId
+) {
 	logger.info(`Restoring from rundown snapshot "${snapshot.snapshot.name}"`)
 	const oldPlaylistId = snapshot.playlistId
 
@@ -522,12 +580,15 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 
 	// const unsynced = dbRundowns.reduce((p, v) => (p || v.unsynced), false)
 	// if (unsynced) throw new Meteor.Error(500, `Not allowed to restore into synced Rundown!`)
-
-	const studios = Studios.find().fetch()
-	const snapshotStudioExists = studios.find((studio) => studio._id === snapshot.playlist.studioId)
-	if (studios.length >= 1 && !snapshotStudioExists) {
-		// TODO Choose better than just the fist
-		snapshot.playlist.studioId = studios[0]._id
+	if (!studioId) {
+		const studios = Studios.find().fetch()
+		const snapshotStudioExists = studios.find((studio) => studio._id === snapshot.playlist.studioId)
+		if (studios.length >= 1 && !snapshotStudioExists) {
+			// TODO Choose better than just the fist
+			snapshot.playlist.studioId = studios[0]._id
+		}
+	} else {
+		snapshot.playlist.studioId = studioId
 	}
 
 	const playlistId = (snapshot.playlist._id = getRandomId())
@@ -553,10 +614,14 @@ function restoreFromRundownPlaylistSnapshot(snapshot: RundownPlaylistSnapshot) {
 		const snapshotShowStyleVariantExists = showStyleVariants.find(
 			(variant) => variant._id === rd.showStyleVariantId && variant.showStyleBaseId === rd.showStyleBaseId
 		)
-		if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
-			// TODO Choose better than just the fist
-			rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
-			rd.showStyleVariantId = showStyleVariants[0]._id
+		if (!showStyleId) {
+			if (showStyleVariants.length >= 1 && !snapshotShowStyleVariantExists) {
+				// TODO Choose better than just the fist
+				rd.showStyleBaseId = showStyleVariants[0].showStyleBaseId
+				rd.showStyleVariantId = showStyleVariants[0]._id
+			}
+		} else {
+			rd.showStyleBaseId = showStyleId
 		}
 	})
 
@@ -720,34 +785,59 @@ function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 		`Restore done (added ${changes.added}, updated ${changes.updated}, removed ${changes.removed} documents)`
 	)
 }
-
-export function storeSystemSnapshot(studioId: StudioId | null, reason: string) {
+/** Take and store a system snapshot */
+export function storeSystemSnapshot(context: MethodContext, studioId: StudioId | null, reason: string) {
 	if (!_.isNull(studioId)) check(studioId, String)
-	let s = createSystemSnapshot(studioId)
-	return storeSnaphot(s, reason)
+	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
+		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
+	return internalStoreSystemSnapshot(organizationId, studioId, reason)
 }
-export function storeRundownPlaylistSnapshot(playlistId: RundownPlaylistId, reason: string) {
+/** Take and store a system snapshot. For internal use only, performs no access control. */
+export function internalStoreSystemSnapshot(
+	organizationId: OrganizationId | null,
+	studioId: StudioId | null,
+	reason: string
+) {
+	if (!_.isNull(studioId)) check(studioId, String)
+
+	let s = createSystemSnapshot(studioId, organizationId)
+	return storeSnaphot(s, organizationId, reason)
+}
+export function storeRundownPlaylistSnapshot(context: MethodContext, playlistId: RundownPlaylistId, reason: string) {
 	check(playlistId, String)
-	let s = createRundownPlaylistSnapshot(playlistId)
-	return storeSnaphot(s, reason)
+	const { organizationId } = OrganizationContentWriteAccess.snapshot(context)
+	let s = createRundownPlaylistSnapshot(playlistId, organizationId)
+	return storeSnaphot(s, organizationId, reason)
 }
-export function storeDebugSnapshot(studioId: StudioId, reason: string) {
+export function storeDebugSnapshot(context: MethodContext, studioId: StudioId, reason: string) {
 	check(studioId, String)
-	let s = createDebugSnapshot(studioId)
-	return storeSnaphot(s, reason)
+	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
+		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
+	let s = createDebugSnapshot(studioId, organizationId)
+	return storeSnaphot(s, organizationId, reason)
 }
-export function restoreSnapshot(snapshotId: SnapshotId) {
+export function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId) {
 	check(snapshotId, String)
-	let snapshot = retreiveSnapshot(snapshotId)
+	const { cred } = OrganizationContentWriteAccess.snapshot(context)
+	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
+		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
+	let snapshot = retreiveSnapshot(snapshotId, context)
 	return restoreFromSnapshot(snapshot)
 }
-export function removeSnapshot(snapshotId: SnapshotId) {
+export function removeSnapshot(context: MethodContext, snapshotId: SnapshotId) {
 	check(snapshotId, String)
-
+	const { snapshot, cred } = OrganizationContentWriteAccess.snapshot(context, snapshotId)
+	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
+		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
+	}
 	logger.info(`Removing snapshot ${snapshotId}`)
 
-	let snapshot = Snapshots.findOne(snapshotId)
-	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
+	if (!snapshot) throw new Meteor.Error(404, `Snapshot "${snapshotId}" not found!`)
 
 	if (snapshot.fileName) {
 		// remove from disk
@@ -768,25 +858,45 @@ export function removeSnapshot(snapshotId: SnapshotId) {
 	}
 	Snapshots.remove(snapshot._id)
 }
+if (!Settings.enableUserAccounts) {
+	// For backwards compatibility:
 
-PickerGET.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
-	return handleResponse(response, () => {
-		check(params.studioId, Match.Optional(String))
-		return createSystemSnapshot(protectString(params.studioId))
+	PickerGET.route('/snapshot/system/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, () => {
+			check(params.studioId, Match.Optional(String))
+
+			const cred0: Credentials = { userId: null, token: params.token }
+			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+
+			return createSystemSnapshot(protectString(params.studioId), organizationId)
+		})
 	})
-})
-PickerGET.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
-	return handleResponse(response, () => {
-		check(params.playlistId, String)
-		return createRundownPlaylistSnapshot(protectString(params.playlistId))
+	PickerGET.route('/snapshot/rundown/:playlistId', (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, () => {
+			check(params.playlistId, String)
+
+			const cred0: Credentials = { userId: null, token: params.token }
+			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
+			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
+			StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
+
+			return createRundownPlaylistSnapshot(playlist._id, organizationId)
+		})
 	})
-})
-PickerGET.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
-	return handleResponse(response, () => {
-		check(params.studioId, String)
-		return createDebugSnapshot(protectString(params.studioId))
+	PickerGET.route('/snapshot/debug/:studioId', (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, () => {
+			check(params.studioId, String)
+
+			const cred0: Credentials = { userId: null, token: params.token }
+			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+
+			return createDebugSnapshot(protectString(params.studioId), organizationId)
+		})
 	})
-})
+}
 PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: ServerResponse) => {
 	let content = 'ok'
 	try {
@@ -813,29 +923,40 @@ PickerPOST.route('/snapshot/restore', (params, req: IncomingMessage, response: S
 		}
 	}
 })
+if (!Settings.enableUserAccounts) {
+	// For backwards compatibility:
+
+	// Retrieve snapshot:
+	PickerGET.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
+		return handleResponse(response, () => {
+			check(params.snapshotId, String)
+			return retreiveSnapshot(protectString(params.snapshotId), { userId: null })
+		})
+	})
+}
 // Retrieve snapshot:
-PickerGET.route('/snapshot/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
+PickerGET.route('/snapshot/:token/retrieve/:snapshotId', (params, req: IncomingMessage, response: ServerResponse) => {
 	return handleResponse(response, () => {
 		check(params.snapshotId, String)
-		return retreiveSnapshot(protectString(params.snapshotId))
+		return retreiveSnapshot(protectString(params.snapshotId), { userId: null, token: params.token })
 	})
 })
 
-class ServerSnapshotAPI implements NewSnapshotAPI {
+class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 	storeSystemSnapshot(studioId: StudioId | null, reason: string) {
-		return makePromise(() => storeSystemSnapshot(studioId, reason))
+		return makePromise(() => storeSystemSnapshot(this, studioId, reason))
 	}
 	storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
-		return makePromise(() => storeRundownPlaylistSnapshot(playlistId, reason))
+		return makePromise(() => storeRundownPlaylistSnapshot(this, playlistId, reason))
 	}
 	storeDebugSnapshot(studioId: StudioId, reason: string) {
-		return makePromise(() => storeDebugSnapshot(studioId, reason))
+		return makePromise(() => storeDebugSnapshot(this, studioId, reason))
 	}
 	restoreSnapshot(snapshotId: SnapshotId) {
-		return makePromise(() => restoreSnapshot(snapshotId))
+		return makePromise(() => restoreSnapshot(this, snapshotId))
 	}
 	removeSnapshot(snapshotId: SnapshotId) {
-		return makePromise(() => removeSnapshot(snapshotId))
+		return makePromise(() => removeSnapshot(this, snapshotId))
 	}
 }
 registerClassToMeteorMethods(SnapshotAPIMethods, ServerSnapshotAPI, false)

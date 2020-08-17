@@ -171,7 +171,7 @@ describe('Test blueprint post-process', () => {
 
 			try {
 				postProcessStudioBaselineObjects(studio, _.clone(rawObjects))
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[400] Error in blueprint "${studio.blueprintId}": ids of timelineObjs must be unique! ("testObj")`
@@ -313,7 +313,7 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = 'some-blueprints'
 			try {
 				postProcessRundownBaselineItems(context, protectString(blueprintId), _.clone(rawObjects))
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`

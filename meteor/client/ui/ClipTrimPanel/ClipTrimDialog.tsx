@@ -13,9 +13,11 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
+	rundownId: RundownId
 	studio: Studio
 	selectedPiece: PieceInstancePiece
 
@@ -150,6 +152,7 @@ export const ClipTrimDialog = withTranslation()(
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}
+						rundownId={this.props.rundownId}
 						pieceId={this.props.selectedPiece._id}
 						partId={this.props.selectedPiece.startPartId}
 						inPoint={this.state.inPoint}

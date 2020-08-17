@@ -44,7 +44,7 @@ import {
 import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import { uploadBlueprint } from '../../server/api/blueprints/api'
+import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
 import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { DBSegment, Segments } from '../../lib/collections/Segments'
@@ -99,6 +99,7 @@ export function setupMockPeripheralDevice(
 	const defaultDevice: PeripheralDevice = {
 		_id: protectString('mockDevice' + dbI++),
 		name: 'mockDevice',
+		organizationId: null,
 		studioId: studio ? studio._id : undefined,
 
 		category: category,
@@ -150,6 +151,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 	const defaultStudio: DBStudio = {
 		_id: protectString('mockStudio' + dbI++),
 		name: 'mockStudio',
+		organizationId: null,
 		// blueprintId?: BlueprintId
 		mappings: {},
 		supportedShowStyleBase: [],
@@ -171,6 +173,7 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 	const defaultShowStyleBase: DBShowStyleBase = {
 		_id: protectString('mockShowStyleBase' + dbI++),
 		name: 'mockShowStyleBase',
+		organizationId: null,
 		outputLayers: [
 			literal<IOutputLayer>({
 				_id: LAYER_IDS.OUTPUT_PGM,
@@ -292,7 +295,7 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariantId): Blueprint {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
@@ -397,7 +400,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return uploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: ShowStyleBaseId
@@ -458,6 +461,7 @@ export function setupDefaultRundownPlaylist(
 
 		externalId: 'MOCK_RUNDOWNPLAYLIST',
 		peripheralDeviceId: env.ingestDevice._id,
+		organizationId: null,
 		studioId: env.studio._id,
 
 		name: 'Default RundownPlaylist',
@@ -491,6 +495,7 @@ export function setupDefaultRundown(
 ): RundownId {
 	const rundown: DBRundown = {
 		peripheralDeviceId: env.ingestDevice._id,
+		organizationId: null,
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
@@ -708,6 +713,8 @@ export function setupRundownWithAutoplayPart0(
 		studioId: env.studio._id,
 		showStyleBaseId: env.showStyleBase._id,
 		showStyleVariantId: env.showStyleVariant._id,
+
+		organizationId: null,
 
 		playlistId: playlistId,
 		_rank: 0,

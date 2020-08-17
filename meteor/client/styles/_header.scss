@@ -3,7 +3,6 @@
 		> a {
 			color: #fff;
 			margin-left: 1em;
-
 			> .icon {
 				margin: -4px 0 -2px;
 			}
@@ -11,6 +10,11 @@
 	}
 
 	.badge {
+		color: #fff;
+		text-decoration: none;
+		&:visited {
+			color: #fff;
+		}
 		.sofie-logo {
 			background: url('/images/sofie-logo.svg') center center no-repeat;
 			background-size: contain;
