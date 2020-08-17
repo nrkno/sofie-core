@@ -199,6 +199,7 @@ export interface DashboardLayoutActionButton {
 	width: number
 	height: number
 	label: string
+	labelToggled: string // different label for when the button is toggled on
 }
 
 export interface DashboardLayout extends RundownLayoutBase {
