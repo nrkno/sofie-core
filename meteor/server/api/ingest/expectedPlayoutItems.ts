@@ -1,3 +1,4 @@
+import { check } from '../../../lib/check'
 import { PieceGeneric, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
@@ -7,7 +8,7 @@ import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../../codeControl'
 import { logger } from '../../logging'
 import { Parts, PartId } from '../../../lib/collections/Parts'
-import { saveIntoDb, protectString, check } from '../../../lib/lib'
+import { saveIntoDb, protectString } from '../../../lib/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { getAllPiecesFromCache, getAllAdLibPiecesFromCache } from '../playout/lib'
 

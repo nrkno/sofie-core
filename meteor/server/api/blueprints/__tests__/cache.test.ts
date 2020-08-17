@@ -49,7 +49,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint "${core.blueprintId}" not found! (referenced by CoreSystem)`)
 			}
@@ -64,7 +64,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
 			}
@@ -79,7 +79,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
 			}
@@ -107,7 +107,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadSystemBlueprints(core)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
 			}
@@ -158,7 +158,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[404] Blueprint "${studio.blueprintId}" not found! (referenced by Studio \"${studio._id}\")`
@@ -175,7 +175,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
@@ -192,7 +192,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
@@ -218,7 +218,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadStudioBlueprints(studio)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
@@ -267,7 +267,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[500] ShowStyleBase "${showStyle._id}" has no defined blueprint!`)
 			}
@@ -281,7 +281,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[404] Blueprint "${showStyle.blueprintId}" not found! (referenced by ShowStyleBase \"${showStyle._id}\")`
@@ -298,7 +298,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
@@ -315,7 +315,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
@@ -341,7 +341,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				loadShowStyleBlueprints(showStyle)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
@@ -393,6 +393,7 @@ describe('Test blueprint cache', () => {
 					modified: 0,
 					importVersions: {} as any,
 					name: 'test',
+					organizationId: protectString(''),
 				})
 			)
 		}
@@ -402,7 +403,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				getBlueprintOfRundown(rundown, true)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[400] Rundown "${rundown._id}" is missing showStyleBaseId!`)
 			}
@@ -413,7 +414,7 @@ describe('Test blueprint cache', () => {
 
 			try {
 				getBlueprintOfRundown(rundown, true)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[404] ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`

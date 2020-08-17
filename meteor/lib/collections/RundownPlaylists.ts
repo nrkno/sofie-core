@@ -27,6 +27,7 @@ import { PieceInstance, PieceInstances } from './PieceInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
+import { OrganizationId } from './Organization'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
@@ -35,6 +36,8 @@ export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
 	externalId: string
+	/** ID of the organization that owns the playlist */
+	organizationId?: OrganizationId | null
 	/** Studio that this playlist is assigned to */
 	studioId: StudioId
 	/** The source of the playlist */
@@ -108,6 +111,7 @@ export interface RundownPlaylistPlayoutData {
 export class RundownPlaylist implements DBRundownPlaylist {
 	public _id: RundownPlaylistId
 	public externalId: string
+	public organizationId: OrganizationId
 	public studioId: StudioId
 	public peripheralDeviceId: PeripheralDeviceId
 	public restoredFromSnapshotId?: RundownPlaylistId

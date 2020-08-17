@@ -149,6 +149,7 @@ export const ClipTrimDialog = withTranslation()(
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}
+						rundownId={this.props.selectedPiece.rundownId}
 						pieceId={this.props.selectedPiece._id}
 						partId={this.props.selectedPiece.partId}
 						inPoint={this.state.inPoint}

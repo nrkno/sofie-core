@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { check } from '../../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
@@ -20,7 +21,6 @@ import {
 	asyncCollectionFindOne,
 	waitForPromiseAll,
 	asyncCollectionRemove,
-	normalizeArray,
 	normalizeArrayFunc,
 	asyncCollectionInsert,
 	asyncCollectionFindFetch,
@@ -29,11 +29,10 @@ import {
 	protectString,
 	omit,
 	ProtectedString,
-	check,
 	Omit,
 	PreparedChangesChangesDoc,
 } from '../../../lib/lib'
-import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
+import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import {
 	IngestRundown,
 	IngestSegment,
@@ -95,6 +94,7 @@ import {
 	canBeUpdated,
 	getRundownPlaylist,
 	getSegment,
+	checkAccessAndGetPeripheralDevice,
 	extendIngestRundownCore,
 	modifyPlaylistExternalId,
 } from './lib'
@@ -128,6 +128,7 @@ import {
 	PieceInstance,
 	PieceInstanceId,
 } from '../../../lib/collections/PieceInstances'
+import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
@@ -167,91 +168,91 @@ interface SegmentChanges {
 
 export namespace RundownInput {
 	// Get info on the current rundowns from this device:
-	export function dataRundownList(self: any, deviceId: PeripheralDeviceId, deviceToken: string) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+	export function dataRundownList(context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownList')
 		return listIngestRundowns(peripheralDevice)
 	}
 	export function dataRundownGet(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownGet', rundownExternalId)
 		check(rundownExternalId, String)
 		return getIngestRundown(peripheralDevice, rundownExternalId)
 	}
 	// Delete, Create & Update Rundown (and it's contents):
 	export function dataRundownDelete(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownDelete', rundownExternalId)
 		check(rundownExternalId, String)
 		handleRemovedRundown(peripheralDevice, rundownExternalId)
 	}
 	export function dataRundownCreate(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		ingestRundown: IngestRundown
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownCreate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownCreate')
 	}
 	export function dataRundownUpdate(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		ingestRundown: IngestRundown
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
 		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownUpdate')
 	}
 	// Delete, Create & Update Segment (and it's contents):
 	export function dataSegmentDelete(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
 		segmentExternalId: string
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataSegmentDelete', rundownExternalId, segmentExternalId)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
 		handleRemovedSegment(peripheralDevice, rundownExternalId, segmentExternalId)
 	}
 	export function dataSegmentCreate(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
 		ingestSegment: IngestSegment
 	) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataSegmentCreate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
 		handleUpdatedSegment(peripheralDevice, rundownExternalId, ingestSegment)
 	}
 	export function dataSegmentUpdate(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
 		ingestSegment: IngestSegment
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataSegmentUpdate', rundownExternalId, ingestSegment)
 		check(rundownExternalId, String)
 		check(ingestSegment, Object)
@@ -259,14 +260,14 @@ export namespace RundownInput {
 	}
 	// Delete, Create & Update Part:
 	export function dataPartDelete(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
 		segmentExternalId: string,
 		partExternalId: string
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataPartDelete', rundownExternalId, segmentExternalId, partExternalId)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
@@ -274,14 +275,14 @@ export namespace RundownInput {
 		handleRemovedPart(peripheralDevice, rundownExternalId, segmentExternalId, partExternalId)
 	}
 	export function dataPartCreate(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
 		segmentExternalId: string,
 		ingestPart: IngestPart
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataPartCreate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
@@ -289,14 +290,14 @@ export namespace RundownInput {
 		handleUpdatedPart(peripheralDevice, rundownExternalId, segmentExternalId, ingestPart)
 	}
 	export function dataPartUpdate(
-		self: any,
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		rundownExternalId: string,
 		segmentExternalId: string,
 		ingestPart: IngestPart
 	) {
-		const peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, deviceToken, self)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataPartUpdate', rundownExternalId, segmentExternalId, ingestPart)
 		check(rundownExternalId, String)
 		check(segmentExternalId, String)
@@ -489,6 +490,7 @@ function updateRundownFromIngestData(
 				notes: rundownNotes,
 				_id: rundownId,
 				externalId: ingestRundown.externalId,
+				organizationId: studio.organizationId,
 				studioId: studio._id,
 				showStyleVariantId: showStyle.variant._id,
 				showStyleBaseId: showStyle.base._id,

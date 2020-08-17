@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { withTranslation } from 'react-i18next'
+import { WithTranslation, withTranslation } from 'react-i18next'
 import { unprotectString } from '../../lib/lib'
 import { doModalDialog } from '../lib/ModalDialog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { Route, NavLink, Switch, Redirect } from 'react-router-dom'
+import { Route, NavLink, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 
 import { Studio, Studios } from '../../lib/collections/Studios'
 import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
@@ -17,6 +17,7 @@ import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import SnapshotsView from './Settings/SnapshotsView'
 import BlueprintSettings from './Settings/BlueprintSettings'
 import SystemMessages from './Settings/SystemMessages'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 
 import { faPlus, faTrash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -26,6 +27,9 @@ import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBa
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { MeteorCall } from '../../lib/api/methods'
+import { getUser, User } from '../../lib/collections/Users'
+import { Settings as MeteorSettings } from '../../lib/Settings'
+import { getAllowConfigure } from '../lib/localStorage'
 
 class WelcomeToSettings extends React.Component {
 	render() {
@@ -34,6 +38,7 @@ class WelcomeToSettings extends React.Component {
 }
 
 interface ISettingsMenuProps {
+	superAdmin?: boolean
 	match?: any
 }
 interface ISettingsMenuState {}
@@ -43,27 +48,31 @@ interface ISettingsMenuTrackedProps {
 	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
 }
-const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps>(() => {
-	meteorSubscribe(PubSub.studios, {})
-	meteorSubscribe(PubSub.showStyleBases, {})
-	meteorSubscribe(PubSub.showStyleVariants, {})
-	meteorSubscribe(PubSub.blueprints, {})
-	meteorSubscribe(PubSub.peripheralDevices, {})
+const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps>(
+	(props: ISettingsMenuProps) => {
+		// TODO: add organizationId:
 
-	return {
-		studios: Studios.find({}).fetch(),
-		showStyleBases: ShowStyleBases.find({}).fetch(),
-		peripheralDevices: PeripheralDevices.find(
-			{},
-			{
-				sort: {
-					lastConnected: -1,
-				},
-			}
-		).fetch(),
-		blueprints: Blueprints.find({}).fetch(),
+		meteorSubscribe(PubSub.studios, {})
+		meteorSubscribe(PubSub.showStyleBases, {})
+		meteorSubscribe(PubSub.showStyleVariants, {})
+		meteorSubscribe(PubSub.blueprints, {})
+		meteorSubscribe(PubSub.peripheralDevices, {})
+
+		return {
+			studios: Studios.find({}).fetch(),
+			showStyleBases: ShowStyleBases.find({}).fetch(),
+			peripheralDevices: PeripheralDevices.find(
+				{},
+				{
+					sort: {
+						lastConnected: -1,
+					},
+				}
+			).fetch(),
+			blueprints: Blueprints.find({}).fetch(),
+		}
 	}
-})(
+)(
 	class SettingsMenu extends MeteorReactComponent<
 		Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>,
 		ISettingsMenuState
@@ -155,7 +164,9 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 			MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
 		}
 		onAddBlueprint() {
-			MeteorCall.blueprint.insertBlueprint().catch(console.error)
+			MeteorCall.blueprint.insertBlueprint().catch((error) => {
+				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, error.reason, 'Create New Blueprint'))
+			})
 		}
 
 		onDeleteStudio(studio: Studio) {
@@ -240,7 +251,6 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 		}
 		render() {
 			const { t } = this.props
-
 			return (
 				<div className="tight-xs htight-xs text-s">
 					<h2 className="mhs">
@@ -319,47 +329,51 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 							<hr className="vsubtle man" key={showStyleBase._id + '-hr'} />,
 						]
 					})}
-					<h2 className="mhs">
-						<button className="action-btn right" onClick={() => this.onAddBlueprint()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-						{t('Blueprints')}
-					</h2>
-					<hr className="vsubtle man" />
-					{this.props.blueprints.map((blueprint) => {
-						return (
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								key={unprotectString(blueprint._id)}
-								to={'/settings/blueprint/' + blueprint._id}>
-								<div className="selectable clickable">
-									<button
-										className="action-btn right"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onDeleteBlueprint(blueprint)
-										}}>
-										<FontAwesomeIcon icon={faTrash} />
-									</button>
-									{this.blueprintHasError(blueprint) ? (
-										<button className="action-btn right error-notice">
-											<FontAwesomeIcon icon={faExclamationTriangle} />
-										</button>
-									) : null}
-									<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
-									<p>
-										{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
-									</p>
-									<p>
-										{t('Version')} {blueprint.blueprintVersion}
-									</p>
-								</div>
-								<hr className="vsubtle man" />
-							</NavLink>
-						)
-					})}
+					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
+						<React.Fragment>
+							<h2 className="mhs">
+								<button className="action-btn right" onClick={() => this.onAddBlueprint()}>
+									<FontAwesomeIcon icon={faPlus} />
+								</button>
+								{t('Blueprints')}
+							</h2>
+							<hr className="vsubtle man" />
+							{this.props.blueprints.map((blueprint) => {
+								return (
+									<NavLink
+										activeClassName="selectable-selected"
+										className="settings-menu__settings-menu-item selectable clickable"
+										key={unprotectString(blueprint._id)}
+										to={'/settings/blueprint/' + blueprint._id}>
+										<div className="selectable clickable">
+											<button
+												className="action-btn right"
+												onClick={(e) => {
+													e.preventDefault()
+													e.stopPropagation()
+													this.onDeleteBlueprint(blueprint)
+												}}>
+												<FontAwesomeIcon icon={faTrash} />
+											</button>
+											{this.blueprintHasError(blueprint) ? (
+												<button className="action-btn right error-notice">
+													<FontAwesomeIcon icon={faExclamationTriangle} />
+												</button>
+											) : null}
+											<h3>{blueprint.name || t('Unnamed blueprint')}</h3>
+											<p>
+												{t('Type')} {(blueprint.blueprintType || '').toUpperCase()}
+											</p>
+											<p>
+												{t('Version')} {blueprint.blueprintVersion}
+											</p>
+										</div>
+										<hr className="vsubtle man" />
+									</NavLink>
+								)
+							})}
+						</React.Fragment>
+					)}
 					<h2 className="mhs">{t('Devices')}</h2>
 					<hr className="vsubtle man" />
 					{this.props.peripheralDevices
@@ -398,76 +412,90 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 						})}
 					<h2 className="mhs">{t('Tools')}</h2>
 					<hr className="vsubtle man" />
-					<NavLink
-						activeClassName="selectable-selected"
-						className="settings-menu__settings-menu-item selectable clickable"
-						to="/settings/tools/messages">
-						<h3>{t('System Messages')}</h3>
-					</NavLink>
-					<NavLink
-						activeClassName="selectable-selected"
-						className="settings-menu__settings-menu-item selectable clickable"
-						to="/settings/tools/migration">
-						<h3>{t('Upgrade Database')}</h3>
-					</NavLink>
-					<NavLink
-						activeClassName="selectable-selected"
-						className="settings-menu__settings-menu-item selectable clickable"
-						to="/settings/tools/snapshots">
-						<h3>{t('Manage Snapshots')}</h3>
-					</NavLink>
+					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
+						<React.Fragment>
+							<NavLink
+								activeClassName="selectable-selected"
+								className="settings-menu__settings-menu-item selectable clickable"
+								to="/settings/tools/messages">
+								<h3>{t('System Messages')}</h3>
+							</NavLink>
+							<NavLink
+								activeClassName="selectable-selected"
+								className="settings-menu__settings-menu-item selectable clickable"
+								to="/settings/tools/migration">
+								<h3>{t('Upgrade Database')}</h3>
+							</NavLink>
+							<NavLink
+								activeClassName="selectable-selected"
+								className="settings-menu__settings-menu-item selectable clickable"
+								to="/settings/tools/snapshots">
+								<h3>{t('Manage Snapshots')}</h3>
+							</NavLink>
+						</React.Fragment>
+					)}
 				</div>
 			)
 		}
 	}
 )
-interface ISettingsProps {
-	match?: any
-}
-class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
-	componentDidMount() {
-		// Subscribe to data:
-		this.subscribe(PubSub.peripheralDevices, {})
-		this.subscribe(PubSub.studios, {})
-		this.subscribe(PubSub.showStyleBases, {})
-		this.subscribe(PubSub.showStyleVariants, {})
-		this.subscribe(PubSub.blueprints, {})
-	}
-	render() {
-		const { t } = this.props
+interface ISettingsProps extends WithTranslation, RouteComponentProps {}
+export const Settings = withTranslation()(
+	class Settings extends MeteorReactComponent<Translated<ISettingsProps>> {
+		private user: User | null
+		constructor(props: ISettingsProps & WithTranslation) {
+			super(props)
+			this.user = getUser()
+		}
 
-		return (
-			<div className="mtl gutter has-statusbar">
-				<header className="mvs">
-					<h1>{t('System Settings')}</h1>
-				</header>
-				<div className="mod mvl mhs">
-					<div className="row">
-						<div className="col c12 rm-c3 settings-menu">
-							<ErrorBoundary>
-								<SettingsMenu match={this.props.match} />
-							</ErrorBoundary>
-						</div>
-						<div className="col c12 rm-c9 settings-dialog">
-							<ErrorBoundary>
-								<Switch>
-									<Route path="/settings" exact component={WelcomeToSettings} />
-									<Route path="/settings/studio/:studioId" component={StudioSettings} />
-									<Route path="/settings/showStyleBase/:showStyleBaseId" component={ShowStyleSettings} />
-									<Route path="/settings/peripheralDevice/:deviceId" component={DeviceSettings} />
-									<Route path="/settings/blueprint/:blueprintId" component={BlueprintSettings} />
-									<Route path="/settings/tools/snapshots" component={SnapshotsView} />
-									<Route path="/settings/tools/migration" component={MigrationView} />
-									<Route path="/settings/tools/messages" component={SystemMessages} />
-									<Redirect to="/settings" />
-								</Switch>
-							</ErrorBoundary>
+		componentDidMount() {
+			// Subscribe to data:
+			this.subscribe(PubSub.peripheralDevices, {})
+			this.subscribe(PubSub.studios, {})
+			this.subscribe(PubSub.showStyleBases, {})
+			this.subscribe(PubSub.showStyleVariants, {})
+			this.subscribe(PubSub.blueprints, {})
+			if (MeteorSettings.enableUserAccounts && this.user) {
+				const access = getAllowConfigure()
+				if (!access) this.props.history.push('/')
+			}
+		}
+		render() {
+			const { t } = this.props
+			return (
+				<div className="mtl gutter has-statusbar">
+					<header className="mvs">
+						<h1>{t('System Settings')}</h1>
+					</header>
+					<div className="mod mvl mhs">
+						<div className="row">
+							<div className="col c12 rm-c3 settings-menu">
+								<ErrorBoundary>
+									<SettingsMenu match={this.props.match} superAdmin={this.user ? this.user.superAdmin : false} />
+								</ErrorBoundary>
+							</div>
+							<div className="col c12 rm-c9 settings-dialog">
+								<ErrorBoundary>
+									<Switch>
+										<Route path="/settings" exact component={WelcomeToSettings} />
+										<Route path="/settings/studio/:studioId" component={StudioSettings} />
+										<Route path="/settings/showStyleBase/:showStyleBaseId" component={ShowStyleSettings} />
+										<Route path="/settings/peripheralDevice/:deviceId" component={DeviceSettings} />
+										<Route
+											path="/settings/blueprint/:blueprintId"
+											component={(props) => <BlueprintSettings {...props} userId={this.user && this.user._id} />}
+										/>
+										<Route path="/settings/tools/snapshots" component={SnapshotsView} />
+										<Route path="/settings/tools/migration" component={MigrationView} />
+										<Route path="/settings/tools/messages" component={SystemMessages} />
+										<Redirect to="/settings" />
+									</Switch>
+								</ErrorBoundary>
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
-		)
+			)
+		}
 	}
-}
-
-export default withTranslation()(Settings)
+)

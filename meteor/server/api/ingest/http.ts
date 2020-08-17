@@ -3,9 +3,10 @@ import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
 import { updateRundownAndSaveCache } from './rundownInput'
 import { Studios, StudioId } from '../../../lib/collections/Studios'
+import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { getRundownId } from './lib'
-import { protectString, check } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { PickerPOST } from '../http'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {

@@ -43,7 +43,7 @@ export namespace MongoMock {
 
 		private _transform?: (o: T) => T
 
-		constructor(name: string, options: any) {
+		constructor(name: string, options?: any) {
 			this._options = options || {}
 			this._name = name
 			this._transform = this._options.transform
@@ -253,3 +253,5 @@ export function setup() {
 		Mongo: MongoMock,
 	}
 }
+
+MeteorMock.mockSetUsersCollection(new MongoMock.Collection('Meteor.users'))

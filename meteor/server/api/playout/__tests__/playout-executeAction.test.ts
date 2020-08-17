@@ -25,8 +25,23 @@ type TupdateSourceLayerInfinitesAfterPart = jest.MockedFunction<typeof updateSou
 const updateSourceLayerInfinitesAfterPartMock = updateSourceLayerInfinitesAfterPart as TupdateSourceLayerInfinitesAfterPart
 jest.mock('../../playout/timeline')
 import { updateTimeline } from '../../playout/timeline'
+import { MethodContext } from '../../../../lib/api/methods'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
+
+const DEFAULT_CONTEXT: MethodContext = {
+	userId: null,
+	isSimulation: false,
+	connection: {
+		id: 'mockConnectionId',
+		close: () => {},
+		onClose: () => {},
+		clientAddress: '127.0.0.1',
+		httpHeaders: {},
+	},
+	setUserId: () => {},
+	unblock: () => {},
+}
 
 describe('Playout API', () => {
 	describe('executeAction', () => {
@@ -44,8 +59,8 @@ describe('Playout API', () => {
 			playlistId = playlistId0
 			rundownId = rundownId0
 
-			ServerPlayoutAPI.activateRundownPlaylist(playlistId, true)
-			ServerPlayoutAPI.takeNextPart(playlistId)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId, true)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId)
 
 			const rundown = Rundowns.findOne(rundownId) as Rundown
 			expect(rundown).toBeTruthy()

@@ -3,7 +3,7 @@
 exports[`Timeline Basic rundown 1`] = `
 Array [
   Object {
-    "_id": "mockStudio10_playlist_randomId11002_status",
+    "_id": "mockStudio11_playlist_randomId11002_status",
     "classes": Array [
       "rundown_active",
     ],
@@ -16,10 +16,10 @@ Array [
     "id": "playlist_randomId11002_status",
     "layer": "rundown_status",
     "objectType": "rundown",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
   Object {
-    "_id": "mockStudio10_statObj",
+    "_id": "mockStudio11_statObj",
     "content": Object {
       "deviceType": 0,
       "objCount": 3,
@@ -31,10 +31,10 @@ Array [
     "id": "statObj",
     "layer": "__stat",
     "objectType": "stat",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
   Object {
-    "_id": "mockStudio10_part_group_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio11_part_group_randomId11002_part0_0_randomId11006",
     "children": Array [],
     "content": Object {
       "deviceType": 0,
@@ -43,21 +43,21 @@ Array [
     "enable": Object {
       "start": "now",
     },
-    "id": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_randomId11002_part0_0_randomId11006",
     "isGroup": true,
     "isPartGroup": true,
     "layer": "",
     "objectType": "rundown",
     "priority": 5,
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
   Object {
-    "_id": "mockStudio10_part_group_firstobject_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio11_part_group_firstobject_randomId11002_part0_0_randomId11006",
     "classes": Array [],
     "content": Object {
       "callBack": "partPlaybackStarted",
       "callBackData": Object {
-        "partInstanceId": "randomId11002_part0_0_randomId11004",
+        "partInstanceId": "randomId11002_part0_0_randomId11006",
         "rundownId": "randomId11002",
       },
       "callBackStopped": "partPlaybackStopped",
@@ -67,11 +67,11 @@ Array [
     "enable": Object {
       "start": 0,
     },
-    "id": "part_group_firstobject_randomId11002_part0_0_randomId11004",
-    "inGroup": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_firstobject_randomId11002_part0_0_randomId11006",
+    "inGroup": "part_group_randomId11002_part0_0_randomId11006",
     "layer": "group_first_object",
     "objectType": "rundown",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
 ]
 `;
@@ -79,7 +79,7 @@ Array [
 exports[`Timeline Basic rundown 2`] = `
 Array [
   Object {
-    "_id": "mockStudio10_playlist_randomId11002_status",
+    "_id": "mockStudio11_playlist_randomId11002_status",
     "classes": Array [
       "rundown_active",
     ],
@@ -92,10 +92,10 @@ Array [
     "id": "playlist_randomId11002_status",
     "layer": "rundown_status",
     "objectType": "rundown",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
   Object {
-    "_id": "mockStudio10_statObj",
+    "_id": "mockStudio11_statObj",
     "content": Object {
       "deviceType": 0,
       "objCount": 3,
@@ -107,10 +107,10 @@ Array [
     "id": "statObj",
     "layer": "__stat",
     "objectType": "stat",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
   Object {
-    "_id": "mockStudio10_part_group_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio11_part_group_randomId11002_part0_0_randomId11006",
     "children": Array [],
     "content": Object {
       "deviceType": 0,
@@ -120,21 +120,21 @@ Array [
       "setFromNow": true,
       "start": 100000,
     },
-    "id": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_randomId11002_part0_0_randomId11006",
     "isGroup": true,
     "isPartGroup": true,
     "layer": "",
     "objectType": "rundown",
     "priority": 5,
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
   Object {
-    "_id": "mockStudio10_part_group_firstobject_randomId11002_part0_0_randomId11004",
+    "_id": "mockStudio11_part_group_firstobject_randomId11002_part0_0_randomId11006",
     "classes": Array [],
     "content": Object {
       "callBack": "partPlaybackStarted",
       "callBackData": Object {
-        "partInstanceId": "randomId11002_part0_0_randomId11004",
+        "partInstanceId": "randomId11002_part0_0_randomId11006",
         "rundownId": "randomId11002",
       },
       "callBackStopped": "partPlaybackStopped",
@@ -144,11 +144,11 @@ Array [
     "enable": Object {
       "start": 0,
     },
-    "id": "part_group_firstobject_randomId11002_part0_0_randomId11004",
-    "inGroup": "part_group_randomId11002_part0_0_randomId11004",
+    "id": "part_group_firstobject_randomId11002_part0_0_randomId11006",
+    "inGroup": "part_group_randomId11002_part0_0_randomId11006",
     "layer": "group_first_object",
     "objectType": "rundown",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
 ]
 `;
@@ -156,7 +156,7 @@ Array [
 exports[`Timeline Basic rundown 3`] = `
 Array [
   Object {
-    "_id": "mockStudio10_statObj",
+    "_id": "mockStudio11_statObj",
     "content": Object {
       "deviceType": 0,
       "objCount": 1,
@@ -168,10 +168,10 @@ Array [
     "id": "statObj",
     "layer": "__stat",
     "objectType": "stat",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
   Object {
-    "_id": "mockStudio10_baseline_version",
+    "_id": "mockStudio11_baseline_version",
     "content": Object {
       "deviceType": 0,
     },
@@ -182,14 +182,14 @@ Array [
     "layer": "baseline_version",
     "metaData": Object {
       "versions": Object {
-        "blueprintId": "mockBlueprint6",
+        "blueprintId": "mockBlueprint7",
         "blueprintVersion": "0.0.0",
         "core": "0.0.0-test",
         "studio": "asdf",
       },
     },
     "objectType": "rundown",
-    "studioId": "mockStudio10",
+    "studioId": "mockStudio11",
   },
 ]
 `;

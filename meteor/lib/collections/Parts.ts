@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
 import { Rundowns, Rundown, RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
-import { AdLibPieces } from './AdLibPieces'
+import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { Segments, SegmentId } from './Segments'
 import {
 	applyClassToDocument,

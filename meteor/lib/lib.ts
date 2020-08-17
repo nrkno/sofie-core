@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { check as MeteorCheck, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	TransformedCollection,
@@ -47,10 +46,6 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 			else resolve(res)
 		})
 	})
-}
-export function check(value: any, pattern: Match.Pattern) {
-	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
-	MeteorCheck(value, pattern)
 }
 
 export type Time = number
@@ -705,7 +700,7 @@ const cacheResultCache: {
 /** Cache the result of function for a limited time */
 export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000) {
 	if (Math.random() < 0.01) {
-		Meteor.setTimeout(cleanCacheResult, 10000)
+		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
 	const cache = cacheResultCache[name]
 	if (!cache || cache.ttl < Date.now()) {
@@ -719,9 +714,12 @@ export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1
 		return cache.value
 	}
 }
-function cleanCacheResult() {
+export function clearCacheResult(name: string) {
+	delete cacheResultCache[name]
+}
+function cleanOldCacheResult() {
 	_.each(cacheResultCache, (cache, name) => {
-		if (cache.ttl < Date.now()) delete cacheResultCache[name]
+		if (cache.ttl < Date.now()) clearCacheResult(name)
 	})
 }
 

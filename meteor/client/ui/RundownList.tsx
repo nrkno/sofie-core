@@ -31,6 +31,7 @@ import { SplitDropdown } from '../lib/SplitDropdown'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../lib/UIStateStorage'
 import ClassNames from 'classnames'
+import { getUser, User } from '../../lib/collections/Users'
 
 const PackageInfo = require('../../package.json')
 
@@ -371,7 +372,6 @@ export const RundownList = translateWithTracker(() => {
 })(
 	class RundownList extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
 		// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-
 		constructor(props) {
 			super(props)
 
@@ -420,7 +420,6 @@ export const RundownList = translateWithTracker(() => {
 						.fetch()
 						.map((i) => i._id)
 				)
-
 				this.subscribe(PubSub.showStyleBases, {
 					_id: { $in: showStyleBaseIds },
 				})
