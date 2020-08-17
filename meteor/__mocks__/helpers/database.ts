@@ -59,6 +59,8 @@ import {
 } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { restartRandomId } from '../random'
+import { MongoMock } from '../mongo'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -122,6 +124,10 @@ export function setupMockPeripheralDevice(
 	return device
 }
 export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
+	// Reset everything mongo, to keep the ids predictable
+	restartRandomId()
+	MongoMock.deleteAllData()
+
 	doc = doc || {}
 
 	const defaultCore: ICoreSystem = {
@@ -541,8 +547,9 @@ export function setupDefaultRundown(
 	const piece000: Piece = {
 		_id: protectString(rundownId + '_piece000'),
 		externalId: 'MOCK_PIECE_000',
-		rundownId: rundown._id,
-		partId: part00._id,
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
 		name: 'Piece 000',
 		status: RundownAPI.PieceStatusCode.OK,
 		enable: {
@@ -550,14 +557,17 @@ export function setupDefaultRundown(
 		},
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
 	}
 	Pieces.insert(piece000)
 
 	const piece001: Piece = {
 		_id: protectString(rundownId + '_piece001'),
 		externalId: 'MOCK_PIECE_001',
-		rundownId: rundown._id,
-		partId: part00._id,
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
 		name: 'Piece 001',
 		status: RundownAPI.PieceStatusCode.OK,
 		enable: {
@@ -565,6 +575,8 @@ export function setupDefaultRundown(
 		},
 		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
 	}
 	Pieces.insert(piece001)
 
@@ -572,10 +584,9 @@ export function setupDefaultRundown(
 		_id: protectString(rundownId + '_adLib000'),
 		_rank: 0,
 		expectedDuration: 1000,
-		infiniteMode: PieceLifespan.Normal,
+		lifespan: PieceLifespan.WithinPart,
 		externalId: 'MOCK_ADLIB_000',
 		partId: part00._id,
-		disabled: false,
 		rundownId: segment0.rundownId,
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
@@ -598,8 +609,9 @@ export function setupDefaultRundown(
 	const piece010: Piece = {
 		_id: protectString(rundownId + '_piece010'),
 		externalId: 'MOCK_PIECE_010',
-		rundownId: rundown._id,
-		partId: part00._id,
+		startRundownId: rundown._id,
+		startSegmentId: part01.segmentId,
+		startPartId: part01._id,
 		name: 'Piece 010',
 		status: RundownAPI.PieceStatusCode.OK,
 		enable: {
@@ -607,6 +619,8 @@ export function setupDefaultRundown(
 		},
 		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
 	}
 	Pieces.insert(piece010)
 
@@ -664,8 +678,7 @@ export function setupDefaultRundown(
 		_id: protectString(rundownId + '_globalAdLib0'),
 		_rank: 0,
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
-		disabled: false,
-		infiniteMode: PieceLifespan.Infinite,
+		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
@@ -677,8 +690,7 @@ export function setupDefaultRundown(
 		_id: protectString(rundownId + '_globalAdLib1'),
 		_rank: 0,
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
-		disabled: false,
-		infiniteMode: PieceLifespan.Infinite,
+		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
@@ -752,10 +764,13 @@ export function setupRundownWithAutoplayPart0(
 	const piece000: Piece = {
 		_id: protectString(rundownId + '_piece000'),
 		externalId: 'MOCK_PIECE_000',
-		rundownId: rundown._id,
-		partId: part00._id,
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
 		name: 'Piece 000',
 		status: RundownAPI.PieceStatusCode.OK,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
 		enable: {
 			start: 0,
 		},
@@ -767,10 +782,13 @@ export function setupRundownWithAutoplayPart0(
 	const piece001: Piece = {
 		_id: protectString(rundownId + '_piece001'),
 		externalId: 'MOCK_PIECE_001',
-		rundownId: rundown._id,
-		partId: part00._id,
+		startRundownId: rundown._id,
+		startSegmentId: part00.segmentId,
+		startPartId: part00._id,
 		name: 'Piece 001',
 		status: RundownAPI.PieceStatusCode.OK,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
 		enable: {
 			start: 0,
 		},
@@ -783,10 +801,9 @@ export function setupRundownWithAutoplayPart0(
 		_id: protectString(rundownId + '_adLib000'),
 		_rank: 0,
 		expectedDuration: 1000,
-		infiniteMode: PieceLifespan.Normal,
+		lifespan: PieceLifespan.WithinPart,
 		externalId: 'MOCK_ADLIB_000',
 		partId: part00._id,
-		disabled: false,
 		rundownId: segment0.rundownId,
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
@@ -809,10 +826,13 @@ export function setupRundownWithAutoplayPart0(
 	const piece010: Piece = {
 		_id: protectString(rundownId + '_piece010'),
 		externalId: 'MOCK_PIECE_010',
-		rundownId: rundown._id,
-		partId: part01._id,
+		startRundownId: rundown._id,
+		startSegmentId: part01.segmentId,
+		startPartId: part01._id,
 		name: 'Piece 010',
 		status: RundownAPI.PieceStatusCode.OK,
+		lifespan: PieceLifespan.WithinPart,
+		invalid: false,
 		enable: {
 			start: 0,
 		},
@@ -875,8 +895,7 @@ export function setupRundownWithAutoplayPart0(
 		_id: protectString(rundownId + '_globalAdLib0'),
 		_rank: 0,
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
-		disabled: false,
-		infiniteMode: PieceLifespan.Infinite,
+		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
@@ -888,8 +907,7 @@ export function setupRundownWithAutoplayPart0(
 		_id: protectString(rundownId + '_globalAdLib1'),
 		_rank: 0,
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
-		disabled: false,
-		infiniteMode: PieceLifespan.Infinite,
+		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',

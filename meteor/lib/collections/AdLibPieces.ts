@@ -13,7 +13,7 @@ export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 
 	// trigger: undefined
-	disabled: false
+	// disabled: false
 
 	/** Rundown this AdLib belongs to */
 	rundownId: RundownId

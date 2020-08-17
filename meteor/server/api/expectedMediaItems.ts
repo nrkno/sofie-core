@@ -2,12 +2,11 @@ import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ExpectedMediaItems, ExpectedMediaItem, ExpectedMediaItemId } from '../../lib/collections/ExpectedMediaItems'
 import { RundownId } from '../../lib/collections/Rundowns'
-import { PieceGeneric, PieceId, RundownPieceGeneric } from '../../lib/collections/Pieces'
-import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
+import { PieceGeneric, PieceId } from '../../lib/collections/Pieces'
+import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { syncFunctionIgnore } from '../codeControl'
 import { saveIntoDb, getCurrentTime, getHash, protectString } from '../../lib/lib'
 import { PartId } from '../../lib/collections/Parts'
-import { Random } from 'meteor/random'
 import { logger } from '../logging'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../lib/collections/Studios'
@@ -24,17 +23,17 @@ export enum PieceType {
 function generateExpectedMediaItems(
 	rundownId: RundownId,
 	studioId: StudioId,
-	piece: RundownPieceGeneric | AdLibPiece,
+	partId: PartId | undefined,
+	piece: PieceGeneric,
 	pieceType: string
 ): ExpectedMediaItem[] {
 	const result: ExpectedMediaItem[] = []
 
-	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds && piece.partId) {
-		const partId = piece.partId
+	if (piece.content && piece.content.fileName && piece.content.path && piece.content.mediaFlowIds) {
 		;(piece.content.mediaFlowIds as string[]).forEach(
 			function(flow) {
 				const id = protectString<ExpectedMediaItemId>(
-					getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + piece.partId)
+					getHash(pieceType + '_' + piece._id + '_' + flow + '_' + rundownId + '_' + partId)
 				)
 				result.push({
 					_id: id,
@@ -108,13 +107,7 @@ export const updateExpectedMediaItemForBucketAdLibPiece: (
 	}
 })
 
-export const updateExpectedMediaItemsOnRundown: (
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId
-) => void = syncFunctionIgnore(function updateExpectedMediaItemsOnRundown(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId
-) {
+export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
 	check(rundownId, String)
 
 	const rundown = cache.Rundowns.findOne(rundownId)
@@ -130,7 +123,7 @@ export const updateExpectedMediaItemsOnRundown: (
 	const studioId = rundown.studioId
 
 	const pieces = cache.Pieces.findFetch({
-		rundownId: rundown._id,
+		startRundownId: rundown._id,
 	})
 
 	cache.defer(() => {
@@ -140,12 +133,12 @@ export const updateExpectedMediaItemsOnRundown: (
 
 		const eMIs: ExpectedMediaItem[] = []
 
-		function iterateOnPieceLike(piece: RundownPieceGeneric | AdLibPiece, pieceType: string) {
-			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
+		function iterateOnPieceLike(piece: PieceGeneric, partId: PartId | undefined, pieceType: string) {
+			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
 		}
 
-		pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
-		adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
+		pieces.forEach((doc) => iterateOnPieceLike(doc, doc.startPartId, PieceType.PIECE))
+		adlibs.forEach((doc) => iterateOnPieceLike(doc, doc.partId, PieceType.ADLIB))
 
 		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
 			ExpectedMediaItems,
@@ -155,17 +148,13 @@ export const updateExpectedMediaItemsOnRundown: (
 			eMIs
 		)
 	})
-})
+}
 
-export const updateExpectedMediaItemsOnPart: (
+export function updateExpectedMediaItemsOnPart(
 	cache: CacheForRundownPlaylist,
 	rundownId: RundownId,
 	partId: PartId
-) => void = syncFunctionIgnore(function updateExpectedMediaItemsOnPart(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	partId: PartId
-) {
+): void {
 	check(rundownId, String)
 	check(partId, String)
 
@@ -194,8 +183,8 @@ export const updateExpectedMediaItemsOnPart: (
 	}
 
 	const pieces = cache.Pieces.findFetch({
-		rundownId: rundown._id,
-		partId: part._id,
+		startRundownId: rundown._id,
+		startPartId: partId,
 	})
 
 	cache.defer(() => {
@@ -203,11 +192,11 @@ export const updateExpectedMediaItemsOnPart: (
 
 		const adlibs = AdLibPieces.find({
 			rundownId: rundown._id,
-			partId: part._id,
+			partId: partId,
 		}).fetch()
 
-		function iterateOnPieceLike(piece: RundownPieceGeneric | AdLibPiece, pieceType: string) {
-			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, piece, pieceType))
+		function iterateOnPieceLike(piece: PieceGeneric, pieceType: string) {
+			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
 		}
 
 		pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
@@ -217,9 +206,9 @@ export const updateExpectedMediaItemsOnPart: (
 			ExpectedMediaItems,
 			{
 				rundownId: rundown._id,
-				partId: part._id,
+				partId: partId,
 			},
 			eMIs
 		)
 	})
-})
+}

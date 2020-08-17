@@ -2,30 +2,24 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { Part, Parts, DBPart, PartId } from '../../lib/collections/Parts'
-import { Pieces, Piece } from '../../lib/collections/Pieces'
+import { Part, DBPart } from '../../lib/collections/Parts'
+import { Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
-	getRank,
 	getCurrentTime,
-	asyncCollectionUpdate,
-	waitForPromiseAll,
 	getHash,
-	literal,
 	waitForPromise,
 	unprotectObjectArray,
 	protectString,
 	unprotectString,
 	makePromise,
-	Omit,
 	waitForPromiseObj,
 	asyncCollectionFindFetch,
 	normalizeArray,
 } from '../../lib/lib'
 import { logger } from '../logging'
-import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
@@ -52,7 +46,6 @@ import {
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PartInstances } from '../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
@@ -63,16 +56,13 @@ import {
 	initCacheForRundownPlaylistFromRundown,
 } from '../DatabaseCaches'
 import { saveIntoCache } from '../DatabaseCache'
-import {
-	removeRundownFromCache,
-	removeRundownPlaylistFromCache,
-	getRundownsSegmentsAndPartsFromCache,
-} from './playout/lib'
-import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
+import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { modifyPlaylistExternalId } from './ingest/lib'
+import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -302,7 +292,7 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
 		}
 	)
 
-	triggerUpdateTimelineAfterIngestData(rundownId, cache.containsDataFromPlaylist, segmentIds)
+	triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
 }
 
 /**
@@ -316,8 +306,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		cache.Parts,
 		{
 			rundownId: rundownId,
-			dynamicallyInserted: true,
-			afterPart: { $in: _.map(removedParts, (p) => p._id) },
+			dynamicallyInsertedAfterPartId: { $in: _.map(removedParts, (p) => p._id) },
 		},
 		[],
 		{
@@ -335,7 +324,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		cache.Pieces,
 		{
 			rundownId: rundownId,
-			partId: { $in: _.map(removedParts, (p) => p._id) },
+			startPartId: { $in: _.map(removedParts, (p) => p._id) },
 		},
 		[],
 		{
@@ -405,101 +394,100 @@ export function afterRemovePieces(
 	})
 }
 /**
- * Update the ranks of all parts.
- * Uses the ranks to determine order within segments, and then updates part ranks based on segment ranks.
+ * Update the ranks of all dynamic parts in the given segments.
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
- * @param rundownId
  */
-export function updatePartRanks(cache: CacheForRundownPlaylist, rundown: Rundown): Array<Part> {
-	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point, or do we not care about their rank?
+export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, segmentIds: SegmentId[]) {
+	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
+	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe
+	// Make sure to rethink the sorting, especially with regards to reset vs non-reset (as reset may have outdated ranks etc)
 
-	const { segments, parts: orgParts } = getRundownsSegmentsAndPartsFromCache(cache, [rundown])
+	const allOrderedParts = getAllOrderedPartsFromCache(cache, playlist)
 
-	logger.debug(`updatePartRanks (${orgParts.length} parts, ${segments.length} segments)`)
+	let updatedParts = 0
+	for (const segmentId of segmentIds) {
+		const parts = allOrderedParts.filter((p) => p.segmentId === segmentId)
+		const [dynamicParts, sortedParts] = _.partition(parts, (p) => !!p.dynamicallyInsertedAfterPartId)
+		logger.debug(
+			`updatePartRanks (${parts.length} parts with ${dynamicParts.length} dynamic in segment "${segmentId}")`
+		)
 
-	const parts: Array<Part> = []
-	const partsToPutAfter: { [partId: string]: Array<Part> } = {}
+		// We have parts that need updating
+		if (dynamicParts.length) {
+			// Build the parts into an sorted array
+			let remainingParts = dynamicParts
+			let hasAddedAnything = true
+			while (hasAddedAnything) {
+				hasAddedAnything = false
 
-	_.each(orgParts, (part) => {
-		const afterPart: string | undefined = unprotectString(part.afterPart)
-		if (afterPart) {
-			if (!partsToPutAfter[afterPart]) partsToPutAfter[afterPart] = []
-			partsToPutAfter[afterPart].push(part)
-		} else {
-			parts.push(part)
-		}
-	})
-
-	// Update _rank and save to database:
-	let updatedPartsCount = 0
-	let newRank = 0
-	let prevSegmentId: SegmentId = protectString('')
-	_.each(parts, (part) => {
-		if (part.segmentId !== prevSegmentId) {
-			newRank = 0
-			prevSegmentId = part.segmentId
-		}
-		if (part._rank !== newRank) {
-			cache.Parts.update(part._id, { $set: { _rank: newRank } })
-			updatedPartsCount++
-			// Update in place, for the upcoming algorithm
-			part._rank = newRank
-		}
-		newRank++
-	})
-	logger.debug(`updatePartRanks: ${updatedPartsCount} parts updated`)
-
-	// Insert the parts that are to be put after other parts:
-	let hasAddedAnything = true
-	while (hasAddedAnything) {
-		hasAddedAnything = false
-
-		_.each(partsToPutAfter, (dynamicParts, insertAfterPartId0) => {
-			const insertAfterPartId: PartId = protectString(insertAfterPartId0)
-
-			let partBefore: Part | null = null
-			let partAfter: Part | null = null
-			let insertI = -1
-			_.each(parts, (part, i) => {
-				if (part._id === insertAfterPartId) {
-					partBefore = part
-
-					insertI = i + 1
-				} else if (partBefore && part.segmentId === partBefore.segmentId && !partAfter) {
-					partAfter = part
-				}
-			})
-
-			if (partBefore) {
-				if (insertI !== -1) {
-					_.each(dynamicParts, (dynamicPart, i) => {
-						const newRank = getRank(partBefore, partAfter, i, dynamicParts.length)
-
-						if (dynamicPart._rank !== newRank) {
-							dynamicPart._rank = newRank
-							cache.Parts.update(dynamicPart._id, { $set: { _rank: dynamicPart._rank } })
-							cache.PartInstances.update(
-								{
-									'part._id': dynamicPart._id,
-									reset: { $ne: true },
-								},
-								{ $set: { 'part._rank': dynamicPart._rank } }
-							)
-						}
-
-						parts.splice(insertI, 0, dynamicPart)
-						insertI++
+				const newRemainingParts: Part[] = []
+				_.each(remainingParts, (possiblePart) => {
+					const afterIndex = sortedParts.findIndex(
+						(p) => p._id === possiblePart.dynamicallyInsertedAfterPartId
+					)
+					if (afterIndex !== -1) {
+						// We found the one before
+						sortedParts.splice(afterIndex + 1, 0, possiblePart)
 						hasAddedAnything = true
-					})
-				}
-				delete partsToPutAfter[insertAfterPartId0]
-			} else {
-				// TODO - part is invalid and should be deleted/warned about
+					} else {
+						newRemainingParts.push(possiblePart)
+					}
+				})
+				remainingParts = newRemainingParts
 			}
-		})
-	}
 
-	return parts
+			if (remainingParts.length) {
+				// TODO - remainingParts are invalid and should be deleted/warned about
+			}
+
+			// Now go through and update their ranks
+			for (let i = 0; i < sortedParts.length - 1; ) {
+				// Find the range to process this iteration
+				const beforePartIndex = i
+				const afterPartIndex = sortedParts.findIndex((p, o) => o > i && !p.dynamicallyInsertedAfterPartId)
+
+				if (afterPartIndex === beforePartIndex + 1) {
+					// no dynamic parts in between
+					i++
+					continue
+				} else if (afterPartIndex === -1) {
+					// We will reach the end, so make sure we stop
+					i = sortedParts.length
+				} else {
+					// next iteration should look from the next fixed point
+					i = afterPartIndex
+				}
+
+				const firstDynamicIndex = beforePartIndex + 1
+				const lastDynamicIndex = afterPartIndex === -1 ? sortedParts.length - 1 : afterPartIndex - 1
+
+				// Calculate the rank change per part
+				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
+				const basePartRank = sortedParts[beforePartIndex]._rank
+				const afterPartRank = afterPartIndex === -1 ? basePartRank + 1 : sortedParts[afterPartIndex]._rank
+				const delta = (afterPartRank - basePartRank) / (dynamicPartCount + 1)
+
+				let prevRank = basePartRank
+				for (let o = firstDynamicIndex; o <= lastDynamicIndex; o++) {
+					const newRank = (prevRank = prevRank + delta)
+
+					const dynamicPart = sortedParts[o]
+					if (dynamicPart._rank !== newRank) {
+						cache.Parts.update(dynamicPart._id, { $set: { _rank: newRank } })
+						cache.PartInstances.update(
+							{
+								'part._id': dynamicPart._id,
+								reset: { $ne: true },
+							},
+							{ $set: { 'part._rank': newRank } }
+						)
+						updatedParts++
+					}
+				}
+			}
+		}
+	}
+	logger.debug(`updatePartRanks: ${updatedParts} parts updated`)
 }
 
 export namespace ServerRundownAPI {

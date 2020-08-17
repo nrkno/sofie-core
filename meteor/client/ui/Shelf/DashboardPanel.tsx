@@ -149,13 +149,12 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				tSLayers[sourceLayer._id] = sourceLayer
 			})
 
-			return _.extend(state, {
+			return {
 				outputLayers: tOLayers,
 				sourceLayers: tSLayers,
-			})
-		} else {
-			return state
+			}
 		}
+		return null
 	}
 
 	componentDidMount() {
@@ -201,6 +200,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					_id: rundowns[0].showStyleBaseId,
 				})
 				this.subscribe(PubSub.pieces, {
+					// TODO-INFINITES this needs to be pieceInstances now
 					rundownId: {
 						$in: rundownIds,
 					},
@@ -647,46 +647,39 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 					],
 				},
 				{
-					'piece.definitelyEnded': {
+					definitelyEnded: {
 						$exists: false,
 					},
 				},
 			],
-			'piece.playoutDuration': {
-				$exists: false,
-			},
-			'piece.adLibSourceId': {
+			adLibSourceId: {
 				$exists: true,
 			},
-			$or: [
-				{
-					'piece.userDuration': {
-						$exists: false,
-					},
-				},
-				{
-					'piece.userDuration.duration': {
-						$exists: false,
-					},
-				},
-			],
+			// $or: [
+			// 	{
+			// 		'userDuration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// 	{
+			// 		'userDuration.duration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// ],
 		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let duration: number | undefined = piece.playoutDuration
-				? piece.playoutDuration
-				: piece.userDuration && typeof piece.userDuration.duration === 'number'
-				? piece.userDuration.duration
-				: piece.userDuration && typeof piece.userDuration.end === 'string'
-				? 0 // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
-				: typeof piece.enable.duration === 'number'
-				? piece.enable.duration
-				: undefined
+			let end: number | undefined =
+				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
+					? pieceInstance.userDuration.end
+					: typeof piece.enable.duration === 'number'
+					? piece.enable.duration + piece.startedPlayback!
+					: undefined
 
-			if (duration !== undefined) {
-				const end = piece.startedPlayback! + duration
+			if (end !== undefined) {
 				if (end > now) {
 					nearestEnd = nearestEnd > end ? end : nearestEnd
 					return true
@@ -703,7 +696,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	// Convert to array of ids as that is all that is needed
 	const unfinishedPieceInstances: { [adlibId: string]: PieceInstance[] } = {}
 	_.each(
-		_.groupBy(prospectivePieces, (piece) => piece.piece.adLibSourceId),
+		_.groupBy(prospectivePieces, (piece) => piece.adLibSourceId),
 		(grp, id) => (unfinishedPieceInstances[id] = _.map(grp, (instance) => instance))
 	)
 

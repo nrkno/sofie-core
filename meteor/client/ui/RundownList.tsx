@@ -342,7 +342,7 @@ export const RundownList = translateWithTracker(() => {
 				playlist.rundownStatus = rundownsInPlaylist.map((rundown) => rundown.status).join(', ')
 				playlist.unsyncedRundowns = rundownsInPlaylist.filter((rundown) => rundown.unsynced)
 
-				const studio = _.find(studios, (s) => s._id === playlist.studioId)
+				const studio = studios.find((s) => s._id === playlist.studioId)
 
 				playlist.studioName = (studio && studio.name) || ''
 				playlist.showStyles = _.compact(
@@ -351,8 +351,8 @@ export const RundownList = translateWithTracker(() => {
 						false,
 						(ids) => ids[0] + '_' + ids[1]
 					).map((combo) => {
-						const showStyleBase = _.find(showStyleBases, (style) => style._id === combo[0])
-						const showStyleVariant = _.find(showStyleVariants, (variant) => variant._id === combo[1])
+						const showStyleBase = showStyleBases.find((style) => style._id === combo[0])
+						const showStyleVariant = showStyleVariants.find((variant) => variant._id === combo[1])
 
 						if (showStyleBase) {
 							return {
@@ -413,8 +413,16 @@ export const RundownList = translateWithTracker(() => {
 			this.subscribe(PubSub.rundownLayouts, {})
 
 			this.autorun(() => {
-				const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), (rundown) => rundown.showStyleBaseId))
-				const showStyleVariantIds = _.uniq(_.map(Rundowns.find().fetch(), (rundown) => rundown.showStyleVariantId))
+				const showStyleBaseIds = _.uniq(
+					Rundowns.find()
+						.fetch()
+						.map((rundown) => rundown.showStyleBaseId)
+				)
+				const showStyleVariantIds = _.uniq(
+					Rundowns.find()
+						.fetch()
+						.map((rundown) => rundown.showStyleVariantId)
+				)
 				const playlistIds = _.uniq(
 					RundownPlaylists.find()
 						.fetch()
@@ -643,7 +651,7 @@ export const RundownList = translateWithTracker(() => {
 											<div>
 												{t('Status Messages:')}
 												<ul>
-													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
+													{this.state.systemStatus._internal.messages.map((message, i) => {
 														// console.log(message)
 														return <li key={i}>{message}</li>
 													})}

@@ -195,6 +195,7 @@ export namespace ServerPeripheralDeviceAPI {
 				studioId: studioId,
 				active: true,
 			})
+			// TODO-INFINITE - This cache usage NEEDS to be inside a rundownPlaylistSyncFunction. otherwise the cache.saveAllToDatabase() could fight with another
 			const cache = activePlaylist
 				? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
 				: waitForPromise(initCacheForNoRundownPlaylist(studioId))
@@ -250,10 +251,10 @@ export namespace ServerPeripheralDeviceAPI {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStarted(context, r.rundownId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(context, r.rundownPlaylistId, r.partInstanceId, r.time)
 	}
 	export function partPlaybackStopped(
 		context: MethodContext,
@@ -265,10 +266,10 @@ export namespace ServerPeripheralDeviceAPI {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStopped(context, r.rundownPlaylistId, r.partInstanceId, r.time)
 	}
 	export function piecePlaybackStarted(
 		context: MethodContext,
@@ -280,13 +281,13 @@ export namespace ServerPeripheralDeviceAPI {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
 		ServerPlayoutAPI.onPiecePlaybackStarted(
 			context,
-			r.rundownId,
+			r.rundownPlaylistId,
 			r.pieceInstanceId,
 			!!r.dynamicallyInserted,
 			r.time
@@ -302,13 +303,13 @@ export namespace ServerPeripheralDeviceAPI {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(r.time, Number)
-		check(r.rundownId, String)
+		check(r.rundownPlaylistId, String)
 		check(r.pieceInstanceId, String)
 		check(r.dynamicallyInserted, Match.Optional(Boolean))
 
 		ServerPlayoutAPI.onPiecePlaybackStopped(
 			context,
-			r.rundownId,
+			r.rundownPlaylistId,
 			r.pieceInstanceId,
 			!!r.dynamicallyInserted,
 			r.time

@@ -125,7 +125,7 @@ export const SourceLayerItem = withTranslation()(
 						this.state.rightAnchoredWidth > 0 &&
 						this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth
 
-					const nextIsTouching = !!(piece.cropped || (innerPiece.enable.end && _.isString(innerPiece.enable.end)))
+					const nextIsTouching = !!piece.cropped
 
 					if (this.props.followLiveLine && this.props.isLiveLine) {
 						const liveLineHistoryWithMargin = this.props.liveLineHistorySize - 10
@@ -280,7 +280,7 @@ export const SourceLayerItem = withTranslation()(
 
 					const inPoint = piece.renderedInPoint || 0
 					const duration =
-						innerPiece.infiniteMode || piece.renderedDuration === 0
+						innerPiece.lifespan !== PieceLifespan.WithinPart || piece.renderedDuration === 0
 							? this.props.partDuration - inPoint
 							: Math.min(piece.renderedDuration || 0, this.props.partDuration - inPoint)
 					const outPoint = inPoint + duration
@@ -323,22 +323,19 @@ export const SourceLayerItem = withTranslation()(
 			const expectedDurationNumber =
 				typeof innerPiece.enable.duration === 'number' ? innerPiece.enable.duration || 0 : 0
 			const userDurationNumber =
-				innerPiece.userDuration && typeof innerPiece.userDuration.duration === 'number'
-					? innerPiece.userDuration.duration || 0
+				piece.instance.userDuration && typeof piece.instance.userDuration.end === 'number' && innerPiece.startedPlayback
+					? piece.instance.userDuration.end - innerPiece.startedPlayback
 					: 0
 			let itemDuration = Math.min(
-				innerPiece.playoutDuration || userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0,
+				userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0,
 				this.props.partDuration - (piece.renderedInPoint || 0)
 			)
 
 			if (
-				((innerPiece.infiniteMode !== undefined && innerPiece.infiniteMode !== PieceLifespan.Normal) ||
-					(innerPiece.enable.start !== undefined &&
-						innerPiece.enable.end === undefined &&
-						innerPiece.enable.duration === undefined)) &&
+				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
+					(innerPiece.enable.start !== undefined && innerPiece.enable.duration === undefined)) &&
 				!piece.cropped &&
-				!innerPiece.playoutDuration &&
-				!innerPiece.userDuration
+				!piece.instance.userDuration
 			) {
 				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 				// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
@@ -751,20 +748,15 @@ export const SourceLayerItem = withTranslation()(
 								this.state.rightAnchoredWidth > 0 &&
 								this.state.leftAnchoredWidth + this.state.rightAnchoredWidth > this.state.elementWidth,
 
-							infinite: (innerPiece.playoutDuration === undefined &&
-								innerPiece.userDuration === undefined &&
-								innerPiece.infiniteMode) as boolean, // 0 is a special value
-							'next-is-touching': !!(
-								this.props.piece.cropped ||
-								(innerPiece.enable.end && _.isString(innerPiece.enable.end))
-							),
+							infinite: piece.instance.userDuration === undefined && innerPiece.lifespan !== PieceLifespan.WithinPart, // 0 is a special value
+							'next-is-touching': this.props.piece.cropped,
 
 							'source-missing':
 								innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
 								innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_NOT_SET,
 							'source-broken': innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
 							'unknown-state': innerPiece.status === RundownAPI.PieceStatusCode.UNKNOWN,
-							disabled: innerPiece.disabled,
+							disabled: piece.instance.disabled,
 
 							'invert-flash': this.state.highlight,
 						})}

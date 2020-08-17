@@ -28,7 +28,10 @@ import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
-	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
+	part: ProtectedStringProperties<
+		IBlueprintPartInstance['part'],
+		'_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'
+	>
 }
 export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
@@ -37,12 +40,6 @@ export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPar
 export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
-
-	/**
-	 * Whether this PartInstance is a scratch instance - the copy of the Part for the instance
-	 * is still being made and the piece instances are being created.
-	 */
-	readonly isScratch?: true
 
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	reset?: boolean
@@ -57,6 +54,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	rehearsal: boolean
 
 	part: DBPart
+
+	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	previousPartEndState?: PartEndState
 }
 
 export class PartInstance implements DBPartInstance {
@@ -64,10 +64,12 @@ export class PartInstance implements DBPartInstance {
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
 
-	// From DBPartInstance:
-	public readonly isScratch?: true
+	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
 	public takeCount: number
+	public previousPartEndState?: PartEndState
+
+	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	public isTaken?: boolean
 	public rehearsal: boolean
 

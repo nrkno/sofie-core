@@ -89,25 +89,6 @@ export interface DBRundownPlaylist {
 	previousPersistentState?: TimelinePersistentState
 }
 
-export interface RundownPlaylistPlayoutData {
-	rundownPlaylist: RundownPlaylist
-	/** Ordered array of the Rundowns in a Playlist */
-	rundowns: Rundown[]
-	rundownsMap: { [key: string]: Rundown }
-	/** Ordered array of the Segments in a Playlist */
-	segments: Segment[]
-	segmentsMap: { [key: string]: Segment }
-	/** Ordered array of the Parts in a Playlist */
-	parts: Part[]
-	partsMap: { [key: string]: Part }
-	pieces: Piece[]
-
-	currentPartInstance: PartInstance | undefined
-	nextPartInstance: PartInstance | undefined
-	previousPartInstance: PartInstance | undefined
-	selectedInstancePieces: Array<PieceInstance>
-}
-
 export class RundownPlaylist implements DBRundownPlaylist {
 	public _id: RundownPlaylistId
 	public externalId: string
@@ -127,7 +108,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public active?: boolean
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
-	public nextSegmentId: SegmentId
+	public nextSegmentId?: SegmentId
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null
@@ -137,9 +118,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPersistentState?: TimelinePersistentState
 
 	constructor(document: DBRundownPlaylist) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	/** Returns all Rundowns in the RundownPlaylist */
 	getRundowns(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): Rundown[] {
@@ -272,8 +253,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		).fetch()
 		return RundownPlaylist._sortSegments(segments, rundowns)
 	}
-	getAllOrderedParts() {
-		const { parts } = this.getSegmentsAndPartsSync()
+	getAllOrderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
+		const { parts } = this.getSegmentsAndPartsSync(undefined, selector, undefined, options)
 		return parts
 	}
 	getUnorderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
@@ -356,7 +337,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	getSegmentsAndPartsSync(
 		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
-		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>
+		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+		segmentsOptions?: FindOptions<DBSegment>,
+		partsOptions?: FindOptions<DBPart>
 	): { segments: Segment[]; parts: Part[] } {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
@@ -372,7 +355,17 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				...segmentsQuery,
 			},
 			{
+				...segmentsOptions,
+				//@ts-ignore
+				fields: segmentsOptions?.fields
+					? {
+							...segmentsOptions?.fields,
+							_rank: 1,
+							rundownId: 1,
+					  }
+					: undefined,
 				sort: {
+					...segmentsOptions?.sort,
 					rundownId: 1,
 					_rank: 1,
 				},
@@ -387,7 +380,18 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				...partsQuery,
 			},
 			{
+				...partsOptions,
+				//@ts-ignore
+				fields: partsOptions?.fields
+					? {
+							...partsOptions?.fields,
+							rundownId: 1,
+							_rank: 1,
+					  }
+					: undefined,
+				//@ts-ignore
 				sort: {
+					...segmentsOptions?.sort,
 					rundownId: 1,
 					_rank: 1,
 				},

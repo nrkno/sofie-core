@@ -119,3 +119,9 @@ export function rundownContentAllowWrite(userId, doc: RundownContent): boolean {
 	if (!access.update) return logNotAllowed('Rundown content', access.reason)
 	return true
 }
+export function pieceContentAllowWrite(userId, doc: { startRundownId: RundownId }): boolean {
+	triggerWriteAccess()
+	const access = allowAccessToRundown({ userId: protectString(userId) }, doc.startRundownId)
+	if (!access.update) return logNotAllowed('Rundown content', access.reason)
+	return true
+}

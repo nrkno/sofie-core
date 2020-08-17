@@ -22,7 +22,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 			ingestRundown = JSON.parse(ingestRundown)
 		}
 
-		ingestMOSRundown(protectString<StudioId>(params.studioId), ingestRundown)
+		importIngestRundown(protectString<StudioId>(params.studioId), ingestRundown)
 
 		response.statusCode = 200
 		response.end(content)
@@ -36,7 +36,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 		}
 	}
 })
-export function ingestMOSRundown(studioId: StudioId, ingestRundown: any) {
+export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
 
@@ -51,4 +51,5 @@ export function ingestMOSRundown(studioId: StudioId, ingestRundown: any) {
 		)
 
 	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, 'http')
+	// handleUpdatedRundown(studio, undefined, ingestRundown, 'http') // TODO-INFINITES
 }

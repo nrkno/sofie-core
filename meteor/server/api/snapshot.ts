@@ -55,7 +55,7 @@ import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-au
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
 import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
-import { ingestMOSRundown } from './ingest/http'
+import { importIngestRundown } from './ingest/http'
 import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import {
@@ -180,7 +180,7 @@ function createRundownPlaylistSnapshot(
 	const segments = playlist.getSegments()
 	const parts = playlist.getAllOrderedParts()
 	const partInstances = playlist.getAllPartInstances()
-	const pieces = Pieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const pieces = Pieces.find({ startRundownId: { $in: rundownIds } }).fetch()
 	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
@@ -490,7 +490,7 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studio = Studios.findOne(Meteor.settings.manualSnapshotIngestStudioId || undefined)
 		if (studio) {
-			ingestMOSRundown(studio._id, snapshot)
+			importIngestRundown(studio._id, snapshot)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)
@@ -742,7 +742,7 @@ export function restoreFromRundownPlaylistSnapshot(
 	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
 	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
 	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
-	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
+	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false)) // TODO-INFINITES - mutate them
 	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(

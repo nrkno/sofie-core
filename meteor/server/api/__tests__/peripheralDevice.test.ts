@@ -33,6 +33,7 @@ import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { MethodContext } from '../../../lib/api/methods'
 
 const DEBUG = false
@@ -126,9 +127,12 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Mock',
 			sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 			outputLayerId: env.showStyleBase.outputLayers[0]._id,
-			partId: protectString('part000'),
-			rundownId: rundownID,
+			startPartId: protectString('part000'),
+			startSegmentId: segmentID,
+			startRundownId: rundownID,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			lifespan: PieceLifespan.WithinPart,
+			invalid: false,
 		})
 		Parts.insert({
 			_id: protectString('part001'),
@@ -222,7 +226,6 @@ describe('test peripheralDevice general API methods', () => {
 		const now = getCurrentTime()
 		const response = Meteor.call(PeripheralDeviceAPIMethods.getTimeDiff)
 		expect(response).toBeTruthy()
-		console.dir(response)
 		expect(response.currentTime).toBeGreaterThan(now - 30)
 		expect(response.currentTime).toBeLessThan(now + 30)
 		expect(response.systemRawTime).toBeGreaterThan(0)
@@ -292,7 +295,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(playlist).toBeTruthy()
 		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
 		let partPlaybackStartedResult: PeripheralDeviceAPI.PartPlaybackStartedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			partInstanceId: currentPartInstance?._id!,
 			time: getCurrentTime(),
 		}
@@ -312,7 +315,7 @@ describe('test peripheralDevice general API methods', () => {
 		expect(playlist).toBeTruthy()
 		const { currentPartInstance } = playlist?.getSelectedPartInstances()!
 		let partPlaybackStoppedResult: PeripheralDeviceAPI.PartPlaybackStoppedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			partInstanceId: currentPartInstance?._id!,
 			time: getCurrentTime(),
 		}
@@ -336,7 +339,7 @@ describe('test peripheralDevice general API methods', () => {
 			partInstanceId: currentPartInstance?._id!,
 		}).fetch()
 		let piecePlaybackStartedResult: PeripheralDeviceAPI.PiecePlaybackStartedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
 		}
@@ -365,7 +368,7 @@ describe('test peripheralDevice general API methods', () => {
 			partInstanceId: currentPartInstance?._id!,
 		}).fetch()
 		let piecePlaybackStoppedResult: PeripheralDeviceAPI.PiecePlaybackStoppedResult = {
-			rundownId: rundownID,
+			rundownPlaylistId: rundownPlaylistID,
 			pieceInstanceId: pieces[0]._id,
 			time: getCurrentTime(),
 		}
@@ -396,7 +399,6 @@ describe('test peripheralDevice general API methods', () => {
 			},
 		}).fetch()
 		expect(timelineObjs.length).toBe(1)
-		console.dir(timelineObjs)
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
 			id: tObj.id,
 			time: getCurrentTime(),

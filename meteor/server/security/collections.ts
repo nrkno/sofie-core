@@ -38,7 +38,7 @@ import { AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { Timeline } from '../../lib/collections/Timeline'
-import { rundownContentAllowWrite } from './rundown'
+import { rundownContentAllowWrite, pieceContentAllowWrite } from './rundown'
 import { SystemReadAccess, SystemWriteAccess } from './system'
 import { Buckets } from '../../lib/collections/Buckets'
 import { studioContentAllowWrite } from './studio'
@@ -391,13 +391,13 @@ PartInstances.allow({
 })
 Pieces.allow({
 	insert(userId, doc): boolean {
-		return rundownContentAllowWrite(userId, doc)
+		return pieceContentAllowWrite(userId, doc)
 	},
 	update(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+		return pieceContentAllowWrite(userId, doc)
 	},
 	remove(userId, doc) {
-		return rundownContentAllowWrite(userId, doc)
+		return pieceContentAllowWrite(userId, doc)
 	},
 })
 PieceInstances.allow({

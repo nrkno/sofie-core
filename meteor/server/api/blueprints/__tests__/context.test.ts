@@ -370,85 +370,77 @@ describe('Test blueprint api context', () => {
 	})
 
 	describe('SegmentContext', () => {
-		test('getRuntimeArguments empty', () => {
-			const defaultSetup = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const notesContext = new NotesContext('', `rundownId=${rundown._id},segmentId=N/A`, true)
-			const context = new SegmentContext(rundown, undefined, {}, notesContext)
-			expect(context.getStudio()).toBeTruthy()
-
-			expect(context.getRuntimeArguments('')).toBeUndefined()
-			expect(context.getRuntimeArguments('part1')).toBeUndefined()
-		})
-
-		test('getRuntimeArguments with data', () => {
-			const defaultSetup = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const notesContext = new NotesContext('', `rundownId=${rundown._id},segmentId=N/A`, true)
-			const context = new SegmentContext(
-				rundown,
-				undefined,
-				{
-					part1: {
-						a: 'b',
-						c: 'd',
-					},
-					part5: {},
-				},
-				notesContext
-			)
-			expect(context.getStudio()).toBeTruthy()
-
-			expect(context.getRuntimeArguments('')).toBeUndefined()
-			expect(context.getRuntimeArguments('part1')).toEqual({
-				a: 'b',
-				c: 'd',
-			})
-			expect(context.getRuntimeArguments('part2')).toBeUndefined()
-			expect(context.getRuntimeArguments('part5')).toEqual({})
-		})
-
-		test('getRuntimeArguments from parts data', () => {
-			const { rundownId } = setupDefaultRundownPlaylist(env)
-			const rundown = Rundowns.findOne(rundownId) as Rundown
-			expect(rundown).toBeTruthy()
-
-			const notesContext = new NotesContext('segment name', `rundownId=${rundownId},segmentId=N/A`, true)
-			const context = new SegmentContext(
-				rundown,
-				undefined,
-				[
-					literal<Partial<DBPart>>({
-						externalId: 'part1',
-						runtimeArguments: {
-							a: 'b',
-							c: 'd',
-						},
-					}) as DBPart,
-					literal<Partial<DBPart>>({
-						externalId: 'part2',
-					}) as DBPart,
-					literal<Partial<DBPart>>({
-						externalId: 'part5',
-						runtimeArguments: {},
-					}) as DBPart,
-				],
-				notesContext
-			)
-			expect(context.getStudio()).toBeTruthy()
-
-			expect(context.getRuntimeArguments('')).toBeUndefined()
-			expect(context.getRuntimeArguments('part1')).toEqual({
-				a: 'b',
-				c: 'd',
-			})
-			expect(context.getRuntimeArguments('part2')).toBeUndefined()
-			expect(context.getRuntimeArguments('part5')).toEqual({})
-		})
+		// test('getRuntimeArguments empty', () => {
+		// 	const defaultSetup = setupDefaultRundownPlaylist(env)
+		// 	const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
+		// 	expect(rundown).toBeTruthy()
+		// 	const notesContext = new NotesContext('', `rundownId=${rundown._id},segmentId=N/A`, true)
+		// 	const context = new SegmentContext(rundown, undefined, {}, notesContext)
+		// 	expect(context.getStudio()).toBeTruthy()
+		// 	expect(context.getRuntimeArguments('')).toBeUndefined()
+		// 	expect(context.getRuntimeArguments('part1')).toBeUndefined()
+		// })
+		// test('getRuntimeArguments with data', () => {
+		// 	const defaultSetup = setupDefaultRundownPlaylist(env)
+		// 	const rundown = Rundowns.findOne(defaultSetup.rundownId) as Rundown
+		// 	expect(rundown).toBeTruthy()
+		// 	const notesContext = new NotesContext('', `rundownId=${rundown._id},segmentId=N/A`, true)
+		// 	const context = new SegmentContext(
+		// 		rundown,
+		// 		undefined,
+		// 		{
+		// 			part1: {
+		// 				a: 'b',
+		// 				c: 'd',
+		// 			},
+		// 			part5: {},
+		// 		},
+		// 		notesContext
+		// 	)
+		// 	expect(context.getStudio()).toBeTruthy()
+		// 	expect(context.getRuntimeArguments('')).toBeUndefined()
+		// 	expect(context.getRuntimeArguments('part1')).toEqual({
+		// 		a: 'b',
+		// 		c: 'd',
+		// 	})
+		// 	expect(context.getRuntimeArguments('part2')).toBeUndefined()
+		// 	expect(context.getRuntimeArguments('part5')).toEqual({})
+		// })
+		// test('getRuntimeArguments from parts data', () => {
+		// 	const { rundownId } = setupDefaultRundownPlaylist(env)
+		// 	const rundown = Rundowns.findOne(rundownId) as Rundown
+		// 	expect(rundown).toBeTruthy()
+		// 	const notesContext = new NotesContext('segment name', `rundownId=${rundownId},segmentId=N/A`, true)
+		// 	const context = new SegmentContext(
+		// 		rundown,
+		// 		undefined,
+		// 		[
+		// 			literal<Partial<DBPart>>({
+		// 				externalId: 'part1',
+		// 				runtimeArguments: {
+		// 					a: 'b',
+		// 					c: 'd',
+		// 				},
+		// 			}) as DBPart,
+		// 			literal<Partial<DBPart>>({
+		// 				externalId: 'part2',
+		// 			}) as DBPart,
+		// 			literal<Partial<DBPart>>({
+		// 				externalId: 'part5',
+		// 				runtimeArguments: {},
+		// 			}) as DBPart,
+		// 		],
+		// 		notesContext
+		// 	)
+		// 	expect(context.getStudio()).toBeTruthy()
+		// 	expect(context.getRuntimeArguments('')).toBeUndefined()
+		// 	expect(context.getRuntimeArguments('part1')).toEqual({
+		// 		a: 'b',
+		// 		c: 'd',
+		// 	})
+		// 	expect(context.getRuntimeArguments('part2')).toBeUndefined()
+		// 	expect(context.getRuntimeArguments('part5')).toEqual({})
+		// })
 	})
 
 	describe('PartEventContext', () => {

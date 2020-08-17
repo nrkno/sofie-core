@@ -133,9 +133,9 @@ export class Rundown implements DBRundown {
 	_: any
 
 	constructor(document: DBRundown) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	getRundownPlaylist(): RundownPlaylist {
 		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')

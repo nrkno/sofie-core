@@ -128,7 +128,9 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 						pieceCopy.instance.piece.content.sourceDuration = contentDuration
 					}
 
-					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
+					overrides.piece = {
+						...pieceCopy,
+					}
 				}
 			} else {
 				console.error(`Piece "${props.piece.instance.piece._id}" has no sourceLayer:`, props.piece)
