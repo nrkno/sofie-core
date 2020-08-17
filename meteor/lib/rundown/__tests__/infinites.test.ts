@@ -1,12 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { PieceInstance, PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
-import { literal, protectString } from '../../../../lib/lib'
+import '../../../__mocks__/_extendJest'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
+import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { literal, protectString } from '../../../lib/lib'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { processAndPrunePieceInstanceTimings } from '../infinites'
-import { Piece } from '../../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 
 describe('Infinites', () => {
 	let env: DefaultEnvironment
@@ -15,10 +15,10 @@ describe('Infinites', () => {
 	})
 
 	function runAndTidyResult(pieceInstances: PieceInstance[], nowInPart: number) {
-		const resolvedInstances = processAndPrunePieceInstanceTimings(pieceInstances, nowInPart)
+		const resolvedInstances = processAndPrunePieceInstanceTimings(env.showStyleBase, pieceInstances, nowInPart)
 		return resolvedInstances.map((p) => ({
 			_id: p._id,
-			start: p.resolvedStart,
+			start: p.piece.enable.start,
 			end: p.resolvedEndCap,
 			priority: p.priority,
 		}))

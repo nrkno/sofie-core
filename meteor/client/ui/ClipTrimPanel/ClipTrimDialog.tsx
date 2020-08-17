@@ -12,11 +12,12 @@ import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
+import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
 	studio: Studio
-	selectedPiece: Piece
+	selectedPiece: PieceInstancePiece
 
 	onClose?: () => void
 }

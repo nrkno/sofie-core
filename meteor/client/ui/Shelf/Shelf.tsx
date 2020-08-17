@@ -346,7 +346,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			shouldBeExpanded = !this.props.isExpanded
 		}
 
-		this.setState(stateChange)
+		this.setState(stateChange as any)
 
 		document.body.style.cursor = ''
 

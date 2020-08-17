@@ -1,16 +1,16 @@
 import * as _ from 'underscore'
-import { clone } from '../../lib/lib'
 import { TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
-import { Part } from '../../lib/collections/Parts'
+import { Part, DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
+const cloneOrg = require('fast-clone')
 
 // About snapshot testing: https://jestjs.io/docs/en/snapshot-testing
 
-type Data = undefined | TimelineObjGeneric | DBRundownPlaylist | DBRundown | DBSegment | Part | Piece | PieceInstance
+type Data = undefined | TimelineObjGeneric | DBRundownPlaylist | DBRundown | DBSegment | DBPart | Piece | PieceInstance
 /**
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data
@@ -39,7 +39,7 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		}
 		return dataArray
 	} else {
-		let o = clone(data)
+		let o = cloneOrg(data)
 		if (!o) return o
 		if (isTimelineObj(o)) {
 			delete o['modified']
