@@ -7,7 +7,6 @@ import {
 	IBlueprintShowStyleBase,
 	IOutputLayer,
 	ISourceLayer,
-	IBlueprintRuntimeArgumentsItem,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
@@ -30,8 +29,6 @@ export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintSho
 
 	hotkeyLegend?: Array<HotkeyDefinition>
 
-	runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
-
 	_rundownVersionHash: string
 }
 
@@ -44,7 +41,6 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public sourceLayers: Array<ISourceLayer>
 	public config: Array<IConfigItem>
 	public hotkeyLegend?: Array<HotkeyDefinition>
-	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleBase) {
