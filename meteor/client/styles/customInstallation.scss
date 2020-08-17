@@ -315,16 +315,13 @@ body.tv2 {
 
 		&.list {
 			&.selected {
-				height: 2.8em;
 				border: 4px solid;
-				border-color: #1fd839;
+				border-color: var(--general-next-color);
 			}
 
 			&.live {
-				&::before {
-					background: rgba(255, 97, 0, 0.79);
-					z-index: 1;
-				}
+				border: 4px solid;
+				border-color: var(--general-live-color);
 			}
 		}
 	}
