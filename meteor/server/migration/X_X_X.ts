@@ -24,34 +24,4 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// 		//
 	// 	}
 	// },
-
-	{
-		id: 'Fix serviceMessages in CoreSystem',
-		canBeRunAutomatically: true,
-		validate: () => {
-			const core = CoreSystem.findOne()
-			if (core) {
-				for (let [key, message] of Object.entries(core.serviceMessages)) {
-					if (typeof message.timestamp === 'string') {
-						return true
-					}
-				}
-				return false
-			}
-			return false
-		},
-		migrate: () => {
-			const core = CoreSystem.findOne()
-			if (core) {
-				for (let [key, message] of Object.entries(core.serviceMessages)) {
-					if (typeof message.timestamp !== 'number') {
-						core.serviceMessages[key] = {
-							...message,
-							timestamp: new Date(message.timestamp).getTime(),
-						}
-					}
-				}
-			}
-		},
-	},
 ])
