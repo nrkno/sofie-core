@@ -53,12 +53,12 @@
 			}
 		}
 
-		&.on-air {
-			border: 3px solid var(--general-live-color);
-		}
-
 		&.next {
 			border: 3px solid var(--general-next-color);
+		}
+		
+		&.on-air {
+			border: 3px solid var(--general-live-color);
 		}
 
 		&.has-preview {
