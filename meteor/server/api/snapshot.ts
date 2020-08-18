@@ -675,6 +675,9 @@ export function restoreFromRundownPlaylistSnapshot(
 	const pieceIdMap: { [key: string]: PieceId } = {}
 	_.each(snapshot.pieces, (piece) => {
 		const oldId = piece._id
+		piece.startRundownId = rundownIdMap[unprotectString(piece.startRundownId)]
+		piece.startPartId = partIdMap[unprotectString(piece.startPartId)]
+		piece.startSegmentId = segmentIdMap[unprotectString(piece.startSegmentId)]
 		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
 	})
 	const pieceInstanceIdMap: { [key: string]: PieceInstanceId } = {}
@@ -682,6 +685,13 @@ export function restoreFromRundownPlaylistSnapshot(
 		const oldId = pieceInstance._id
 		pieceInstanceIdMap[unprotectString(oldId)] = pieceInstance._id = getRandomId()
 		pieceInstance.piece._id = pieceIdMap[unprotectString(pieceInstance.piece._id)] || getRandomId()
+		if (pieceInstance.infinite) {
+			pieceInstance.infinite.infinitePieceId = pieceIdMap[unprotectString(pieceInstance.infinite.infinitePieceId)]
+			if (pieceInstance.infinite.lastPartInstanceId) {
+				pieceInstance.infinite.lastPartInstanceId =
+					partInstanceIdMap[unprotectString(pieceInstance.infinite.lastPartInstanceId)]
+			}
+		}
 	})
 
 	const enableIdMap: { [key: string]: string | undefined } = {}
@@ -697,11 +707,8 @@ export function restoreFromRundownPlaylistSnapshot(
 		T extends {
 			_id: ProtectedString<any>
 			rundownId?: RundownId
-			startRundownId?: RundownId
 			partId?: PartId
-			startPartId?: PartId
 			segmentId?: SegmentId
-			startSegmentId?: SegmentId
 			enable?: TSR.Timeline.TimelineEnable
 			part?: T
 			piece?: T
@@ -711,20 +718,12 @@ export function restoreFromRundownPlaylistSnapshot(
 			if (obj.rundownId) {
 				obj.rundownId = rundownIdMap[unprotectString(obj.rundownId)]
 			}
-			if (obj.startRundownId) {
-				obj.startRundownId = rundownIdMap[unprotectString(obj.startRundownId)]
-			}
+
 			if (obj.partId) {
 				obj.partId = partIdMap[unprotectString(obj.partId)]
 			}
-			if (obj.startPartId) {
-				obj.startPartId = partIdMap[unprotectString(obj.startPartId)]
-			}
 			if (obj.segmentId) {
 				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
-			}
-			if (obj.startSegmentId) {
-				obj.startSegmentId = segmentIdMap[unprotectString(obj.startSegmentId)]
 			}
 
 			if (obj.enable) {
