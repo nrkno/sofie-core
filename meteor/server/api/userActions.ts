@@ -331,20 +331,6 @@ export function unsyncRundown(context: MethodContext, rundownId: RundownId) {
 export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 	return ClientAPI.responseSuccess(ServerPlayoutAPI.disableNextPiece(context, rundownPlaylistId, undo))
 }
-// export function togglePartArgument(
-// 	context: MethodContext,
-// 	rundownPlaylistId: RundownPlaylistId,
-// 	partInstanceId: PartInstanceId,
-// 	property: string,
-// 	value: string
-// ) {
-// 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-// 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
-// 	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-// 		return ClientAPI.responseError(`Part-arguments can't be toggled while Rundown is in Hold mode!`)
-// 	}
-// 	return ServerPlayoutAPI.rundownTogglePartArgument(context, rundownPlaylistId, partInstanceId, property, value)
-// }
 export function pieceTakeNow(
 	context: MethodContext,
 	rundownPlaylistId: RundownPlaylistId,
@@ -842,16 +828,6 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	disableNextPiece(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
 		return makePromise(() => disableNextPiece(this, rundownPlaylistId, undo))
-	}
-	togglePartArgument(
-		_userEvent: string,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		property: string,
-		value: string
-	) {
-		return makePromise(() => noop(this))
-		// return makePromise(() => togglePartArgument(this, rundownPlaylistId, partInstanceId, property, value))
 	}
 	pieceTakeNow(
 		_userEvent: string,

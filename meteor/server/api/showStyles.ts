@@ -25,7 +25,6 @@ export function insertShowStyleBaseInner(organizationId: OrganizationId | null):
 		outputLayers: [],
 		sourceLayers: [],
 		config: [],
-		runtimeArguments: [],
 		_rundownVersionHash: '',
 	}
 	ShowStyleBases.insert(showStyleBase)
