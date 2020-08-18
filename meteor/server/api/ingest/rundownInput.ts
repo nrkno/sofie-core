@@ -456,10 +456,15 @@ function updateRundownFromIngestData(
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base).blueprint
+
+	const usedBlueprints = [unprotectString(studio.blueprintId), showStyleBlueprint.blueprintId].filter(
+		(id): id is string => id !== undefined
+	)
 	const notesContext = new NotesContext(
 		`${showStyle.base.name}-${showStyle.variant.name}`,
 		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
-		true
+		true,
+		usedBlueprints
 	)
 	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id, notesContext)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, extendedIngestRundown)
@@ -611,7 +616,7 @@ function updateRundownFromIngestData(
 	const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
 
 	// Save the baseline
-	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
+	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true, usedBlueprints)
 	const blueprintRundownContext = new RundownContext(dbRundown, rundownNotesContext, studio)
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
@@ -660,7 +665,12 @@ function updateRundownFromIngestData(
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
-		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
+		const notesContext = new NotesContext(
+			ingestSegment.name,
+			`rundownId=${rundownId},segmentId=${segmentId}`,
+			true,
+			usedBlueprints
+		)
 		const context = new SegmentContext(dbRundown, studio, existingParts, notesContext)
 		const res = blueprint.getSegment(context, ingestSegment)
 
@@ -1157,7 +1167,13 @@ function updateSegmentFromIngestData(
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
-	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
+	const usedBlueprints = [blueprintId, studio.blueprintId].map(unprotectString)
+	const notesContext = new NotesContext(
+		ingestSegment.name,
+		`rundownId=${rundown._id},segmentId=${segmentId}`,
+		true,
+		usedBlueprints
+	)
 	const context = new SegmentContext(rundown, studio, existingParts, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 

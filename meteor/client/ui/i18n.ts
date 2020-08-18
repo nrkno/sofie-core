@@ -110,7 +110,14 @@ class I18nContainer extends WithManagedTracker {
 
 const container = new I18nContainer()
 const i18nTranslator: TFunction = (...args) => {
-	return container.i18nTranslator(args)
+	console.debug('i18nTranslator call', args)
+	// if (args[0] === `Device {{deviceName}} is disconnected`) {
+	// 	console.debug(`Got ${args[0]}, aborting`, args)
+	// 	return args[0]
+	// }
+	const result = container.i18nTranslator(args)
+	console.debug(`=> ${result}`)
+	return result
 }
 
 export { i18nTranslator }

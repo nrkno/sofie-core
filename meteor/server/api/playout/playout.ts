@@ -1427,12 +1427,16 @@ export namespace ServerPlayoutAPI {
 			if (!rundown)
 				throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
+			const usedBlueprints = [studio.blueprintId, rundown.getShowStyleBase().blueprintId]
+				.map(unprotectString)
+				.filter((id): id is string => id !== undefined)
 			const notesContext = new NotesContext(
 				`${rundown.name}(${playlist.name})`,
 				`playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
 					currentPartInstance._id
 				},execution=${getRandomId()}`,
-				false
+				false,
+				usedBlueprints
 			)
 			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 

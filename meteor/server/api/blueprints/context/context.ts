@@ -61,7 +61,7 @@ import {
 	unprotectPartInstance,
 	PartInstance,
 } from '../../../../lib/collections/PartInstances'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
+import { Blueprints, BlueprintId } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 
@@ -99,15 +99,25 @@ export class NotesContext extends CommonContext implements INotesContext {
 	private readonly _contextName: string
 	private readonly _contextIdentifier: string
 	private _handleNotesExternally: boolean
+	private _namespaces: Array<string>
 
 	private readonly savedNotes: Array<RawNote> = []
 
-	constructor(contextName: string, contextIdentifier: string, handleNotesExternally: boolean) {
+	constructor(
+		contextName: string,
+		contextIdentifier: string,
+		handleNotesExternally: boolean,
+		blueprints?: Array<string>
+	) {
 		super(contextIdentifier)
 		this._contextName = contextName
 		this._contextIdentifier = contextIdentifier
 		/** If the notes will be handled externally (using .getNotes()), set this to true */
 		this._handleNotesExternally = handleNotesExternally
+
+		if (blueprints) {
+			this._namespaces = blueprints.slice()
+		}
 	}
 	/** Throw Error and display message to the user in the GUI */
 	error(message: string, params?: { [key: string]: any }, trackingId?: string) {
@@ -132,10 +142,9 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 	protected _pushNote(type: NoteType, message: string, args?: { [key: string]: any }, trackingId?: string) {
 		if (this._handleNotesExternally) {
-			// TODO: get blueprintId for context to use as namespace for the message
 			this.savedNotes.push({
 				type: type,
-				message: { key: message, args },
+				message: { key: message, args, namespaces: this._namespaces },
 				trackingId: trackingId,
 			})
 		} else {

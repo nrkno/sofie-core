@@ -229,7 +229,12 @@ export function postProcessAdLibActions(
 
 export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
-	const context = new NotesContext('studio', 'studio', false)
+	const context = new NotesContext(
+		'studio',
+		'studio',
+		false,
+		studio.blueprintId ? [unprotectString(studio.blueprintId)] : undefined
+	)
 	return postProcessTimelineObjects(
 		context,
 		protectString('studio'),

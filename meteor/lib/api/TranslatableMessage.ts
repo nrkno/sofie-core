@@ -9,7 +9,7 @@ export interface ITranslatableMessage {
 	/** arguments for the message template */
 	args?: { [key: string]: any }
 	/** namespace used */
-	namespace?: string
+	namespaces?: Array<string>
 }
 
 /**
@@ -20,9 +20,9 @@ export interface ITranslatableMessage {
  * @returns the translation with arguments applied
  */
 export function translateMessage(translatable: ITranslatableMessage): string {
-	const { key: message, args, namespace } = translatable
+	const { key: message, args, namespaces } = translatable
 
-	return i18nTranslator(message, { ns: namespace, replace: { ...args } })
+	return i18nTranslator(message, { ns: namespaces, replace: { ...args } })
 }
 
 /**
