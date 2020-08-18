@@ -23,11 +23,11 @@ export function verifyWriteAccess() {
 	if (!writeAccessTest) {
 		return 'writeAccessTest not set!'
 	}
+	writeAccessTest = false
 	if (!writeAccess) {
 		return 'triggerWriteAccess() not called'
 	}
 	writeAccess = false
-	writeAccessTest = false
 	return ''
 }
 /** Used in methods that needs no access control */
