@@ -298,7 +298,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				}).map((instance) => instance._id)
 
 				this.subscribe(PubSub.pieces, {
-					rundownId: this.props.rundownId,
+					startRundownId: this.props.rundownId,
 					startPartId: {
 						$in: partIds,
 					},
