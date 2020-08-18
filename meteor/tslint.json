@@ -4,7 +4,7 @@
 	"jsRules": {
 		"no-empty": true
 	},
-	"rulesDirectory": ["tslint-no-focused-test"],
+	"rulesDirectory": ["./tslint-rules"],
 	"rules": {
 		"strict-type-predicates": false,
 		"await-promise": [true, "Bluebird"],
