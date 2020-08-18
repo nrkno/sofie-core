@@ -251,14 +251,13 @@ class SystemAPIClass implements SystemAPI {
 			avg[key] = Math.floor(sum[key] / runCount)
 		})
 		// These numbers are the average performance of known systems
-		// Note: these numbers are preliminary
 		const baseline = {
-			cpuCalculations: 100,
-			cpuStringifying: 116,
-			mongoIndexedRead: 68,
-			mongoRead: 82,
-			mongoWriteBig: 163,
-			mongoWriteSmall: 172,
+			mongoWriteSmall: 178,
+			mongoWriteBig: 186,
+			mongoRead: 120,
+			mongoIndexedRead: 70,
+			cpuStringifying: 110,
+			cpuCalculations: 114,
 		}
 
 		const comparison: any = {}
