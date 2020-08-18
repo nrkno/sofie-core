@@ -646,11 +646,12 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 						},
 					],
 				},
-				{
-					definitelyEnded: {
-						$exists: false,
-					},
-				},
+				// TODO-INFINITES is this ok?
+				// {
+				// 	definitelyEnded: {
+				// 		$exists: false,
+				// 	},
+				// },
 			],
 			adLibSourceId: {
 				$exists: true,

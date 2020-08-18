@@ -63,6 +63,7 @@ import { saveIntoCache } from '../../DatabaseCache'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -504,12 +505,13 @@ function buildTimelineObjsForRundown(
 				previousPartGroup.priority = -1
 
 				// If a Piece is infinite, and continued in the new Part, then we want to add the Piece only there to avoid id collisions
+				const nowInPreviousPart = currentTime - previousPartLastStarted
 				const previousContinuedPieces = processAndPrunePieceInstanceTimings(
 					showStyle,
 					cache.PieceInstances.findFetch({
 						partInstanceId: previousPartInstance._id,
 					}),
-					currentTime - previousPartLastStarted
+					nowInPreviousPart
 				).filter((pi) => !pi.infinite || currentInfinitePieceIds.indexOf(pi.infinite.infinitePieceId) < 0)
 
 				const groupClasses: string[] = ['previous_part']
@@ -521,6 +523,7 @@ function buildTimelineObjsForRundown(
 						previousContinuedPieces,
 						groupClasses,
 						previousPartGroup,
+						nowInPreviousPart,
 						undefined,
 						activePlaylist.holdState
 					)
@@ -645,6 +648,7 @@ function buildTimelineObjsForRundown(
 					[piece],
 					groupClasses,
 					infiniteGroup,
+					nowInPart,
 					undefined,
 					activePlaylist.holdState,
 					isOriginOfInfinite
@@ -668,6 +672,7 @@ function buildTimelineObjsForRundown(
 				currentNormalItems,
 				groupClasses,
 				currentPartGroup,
+				nowInPart,
 				transProps,
 				activePlaylist.holdState
 			)
@@ -708,6 +713,7 @@ function buildTimelineObjsForRundown(
 					nextPieceInstances,
 					groupClasses,
 					nextPartGroup,
+					0,
 					transProps
 				)
 			)
@@ -799,12 +805,37 @@ interface TransformTransitionProps {
 	transitionKeepalive?: number | null
 }
 
+function hasPieceInstanceDefinitelyEnded(
+	pieceInstance: DeepReadonly<PieceInstanceWithTimings>,
+	nowInPart: number
+): boolean {
+	if (nowInPart <= 0) return false
+
+	let relativeEnd: number | undefined
+	if (typeof pieceInstance.resolvedEndCap === 'number') {
+		relativeEnd = pieceInstance.resolvedEndCap
+	}
+	if (pieceInstance.userDuration) {
+		relativeEnd =
+			relativeEnd === undefined
+				? pieceInstance.userDuration.end
+				: Math.min(relativeEnd, pieceInstance.userDuration.end)
+	}
+	if (typeof pieceInstance.piece.enable.start === 'number' && pieceInstance.piece.enable.duration !== undefined) {
+		const candidateEnd = pieceInstance.piece.enable.start + pieceInstance.piece.enable.duration
+		relativeEnd = relativeEnd === undefined ? candidateEnd : Math.min(relativeEnd, candidateEnd)
+	}
+
+	return relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart
+}
+
 function transformPartIntoTimeline(
 	playlistId: RundownPlaylistId,
 	partId: PartId,
 	pieceInstances: DeepReadonly<PieceInstanceWithTimings>[],
 	firstObjClasses: string[],
 	partGroup: TimelineObjRundown,
+	nowInPart: number,
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
@@ -829,7 +860,8 @@ function transformPartIntoTimeline(
 		if (pieceInstance.piece.isTransition && (!allowTransition || isHold)) {
 			continue
 		}
-		const hasDefinitelyEnded = pieceInstance.definitelyEnded && pieceInstance.definitelyEnded < getCurrentTime()
+
+		const hasDefinitelyEnded = hasPieceInstanceDefinitelyEnded(pieceInstance, nowInPart)
 
 		const isInfiniteContinuation = pieceInstance.infinite && pieceInstance.piece.startPartId !== partId
 

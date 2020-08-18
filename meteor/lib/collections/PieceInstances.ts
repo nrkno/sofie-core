@@ -57,7 +57,6 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: {
 		infinitePieceId: PieceId
-		// lifespan: PieceLifespan // In case the original piece gets destroyed/mutated? // TODO - is this wanted?
 		// TODO - more properties?
 		/** When the instance was a copy made from hold */
 		fromHold?: boolean
@@ -75,9 +74,6 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	userDuration?: {
 		end: number
 	}
-
-	/** [timestamp) After this time, the piece has definitely ended and its content can be omitted from the timeline */
-	definitelyEnded?: number
 }
 
 export interface ResolvedPieceInstance extends PieceInstance, Omit<IBlueprintResolvedPieceInstance, '_id' | 'piece'> {
