@@ -593,7 +593,7 @@ const RundownHeader = withTranslation()(
 				e.stopImmediatePropagation()
 				e.stopPropagation()
 			}
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				const method = k.global ? mousetrapHelper.bindGlobal : mousetrapHelper.bind
 				let lastUsed = Date.now()
 				if (k.up) {
@@ -640,7 +640,7 @@ const RundownHeader = withTranslation()(
 		}
 
 		componentWillUnmount() {
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				if (k.up) {
 					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keyup')
 					mousetrapHelper.unbind(k.key, 'RundownHeader', 'keydown')
@@ -1321,6 +1321,7 @@ interface ITrackedProps {
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
+	orderedPartsIds: PartId[]
 	shelfDisplayOptions: {
 		buckets: boolean
 		layout: boolean
@@ -1339,9 +1340,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
 	let studio: Studio | undefined
+	let allParts: PartId[] = []
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = playlist.getRundowns()
+		allParts = playlist
+			.getAllOrderedParts(undefined, {
+				fields: {
+					_rank: 1,
+				},
+			})
+			.map((part) => part._id)
 	}
 
 	const params = queryStringParse(location.search)
@@ -1395,6 +1404,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch()) ||
 			undefined,
 		rundownLayoutId: protectString((params['layout'] as string) || ''),
+		orderedPartsIds: allParts,
 		shelfDisplayOptions: {
 			buckets: displayOptions.includes('buckets'),
 			layout: displayOptions.includes('layout'),
@@ -1463,7 +1473,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				followLiveSegments: true,
 				manualSetAsNext: false,
 				subsReady: false,
-				usedHotkeys: _.clone(this.bindKeys).concat([
+				usedHotkeys: [...this.bindKeys].concat([
 					// Register additional hotkeys or legend entries
 					{
 						key: 'Esc',
@@ -1594,7 +1604,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				e.stopImmediatePropagation()
 				e.stopPropagation()
 			}
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 				if (k.up) {
 					method(
@@ -1727,6 +1737,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					documentTitle.set(null)
 				}
 			}
+			if (Settings.enableUserAccounts && getAllowStudio() !== this.state.studioMode) {
+				this.setState({ studioMode: getAllowStudio() })
+			}
 		}
 
 		refreshHotkeys = () => {
@@ -1758,7 +1771,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.usedArgumentKeys = []
 
 			if (this.props.showStyleBase) {
-				_.each(this.props.showStyleBase.runtimeArguments, (i) => {
+				this.props.showStyleBase.runtimeArguments.forEach((i) => {
 					const combos = i.hotkeys.split(',')
 
 					const handler = (e: KeyboardEvent) => {
@@ -1770,9 +1783,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							)
 						}
 					}
-					_.each(combos, (combo: string) => {
-						mousetrapHelper.bind(combo, handler, 'keyup', HOTKEY_GROUP)
-						mousetrapHelper.bind(combo, noOp, 'keydown', HOTKEY_GROUP)
+					combos.forEach((combo: string) => {
+						mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
+						mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
 						this.usedArgumentKeys.push({
 							up: handler,
 							key: combo,
@@ -1826,7 +1839,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			// window.removeEventListener('scroll', this.onWindowScroll)
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
 
-			_.each(this.bindKeys, (k) => {
+			this.bindKeys.forEach((k) => {
 				if (k.up) {
 					mousetrap.unbind(k.key, 'keyup')
 					mousetrap.unbind(k.key, 'keydown')
@@ -1836,7 +1849,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 
-			_.each(this.usedArgumentKeys, (k) => {
+			this.usedArgumentKeys.forEach((k) => {
 				if (k.up) {
 					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
 					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
@@ -2027,10 +2040,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		onResyncSegment = (segmentId: SegmentId, e: any) => {
+		onResyncSegment = (segment: SegmentUi, e: any) => {
 			const { t } = this.props
 			if (this.state.studioMode && this.props.rundownPlaylistId) {
-				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) => MeteorCall.userAction.resyncSegment(e, segmentId))
+				doUserAction(t, e, UserAction.RESYNC_SEGMENT, (e) =>
+					MeteorCall.userAction.resyncSegment(e, segment.rundownId, segment._id)
+				)
 			}
 		}
 
@@ -2127,6 +2142,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												studio={this.props.studio}
 												showStyleBase={this.props.showStyleBase}
 												followLiveSegments={this.state.followLiveSegments}
+												rundownId={rundownAndSegments.rundown._id}
 												segmentId={segment._id}
 												playlist={this.props.playlist}
 												liveLineHistorySize={this.LIVELINE_HISTORY_SIZE}
@@ -2134,6 +2150,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onTimeScaleChange={this.onTimeScaleChange}
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
+												orderedAllPartIds={this.props.orderedPartsIds}
+												segmentsIdsBefore={
+													new Set([
+														..._.flatten(
+															rundownArray
+																.slice(0, rundownIndex)
+																.map((match) => match.segments.map((segment) => segment._id))
+														),
+														...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
+													])
+												}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
 												}
@@ -2496,6 +2523,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											<ClipTrimDialog
 												studio={this.props.studio}
 												playlistId={this.props.playlist._id}
+												rundownId={this.state.selectedPiece.instance.rundownId}
 												selectedPiece={this.state.selectedPiece.instance.piece}
 												onClose={() => this.setState({ isClipTrimmerOpen: false })}
 											/>
@@ -2622,7 +2650,7 @@ export function handleRundownPlaylistReloadResponse(
 	let hasDoneSomething = false
 
 	let maybeMissingRundownId: RundownId | null = null
-	_.each(result.rundownsResponses, (r) => {
+	result.rundownsResponses.forEach((r) => {
 		if (r.response === TriggerReloadDataResponse.MISSING) {
 			maybeMissingRundownId = r.rundownId
 		}

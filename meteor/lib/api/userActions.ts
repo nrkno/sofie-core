@@ -1,5 +1,6 @@
 import { Omit } from '../lib'
 import { ClientAPI } from '../api/client'
+import { MeteorCall, MethodContext } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartId } from '../collections/Parts'
 import { RundownId } from '../collections/Rundowns'
@@ -19,7 +20,7 @@ import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionId } from '../collections/AdLibActions'
 import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 
-export interface NewUserActionAPI {
+export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	setNext(
 		userEvent: string,
@@ -156,7 +157,11 @@ export interface NewUserActionAPI {
 	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
-	resyncSegment(userEvent: string, segmentId: SegmentId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
+	resyncSegment(
+		userEvent: string,
+		rundownId: RundownId,
+		segmentId: SegmentId
+	): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	recordStop(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
 	recordStart(userEvent: string, studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<void>>
 	recordDelete(userEvent: string, id: RecordedFileId): Promise<ClientAPI.ClientResponse<void>>

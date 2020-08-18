@@ -240,21 +240,23 @@ class NotificationCenter0 {
 		notificationsDep.depend()
 
 		return _.flatten(
-			_.map(notifiers, (item, key) => {
-				item.result.forEach((i, itemKey) => {
-					if (this._isOpen && !i.snoozed) i.snooze()
-					if (
-						this._isConcentrationMode &&
-						!i.snoozed &&
-						i.status !== NoticeLevel.CRITICAL &&
-						i.timeout === undefined &&
-						i.persistent === true
-					) {
-						i.snooze()
-					}
+			Object.values(notifiers)
+				.map((item, key) => {
+					item.result.forEach((i, itemKey) => {
+						if (this._isOpen && !i.snoozed) i.snooze()
+						if (
+							this._isConcentrationMode &&
+							!i.snoozed &&
+							i.status !== NoticeLevel.CRITICAL &&
+							i.timeout === undefined &&
+							i.persistent === true
+						) {
+							i.snooze()
+						}
+					})
+					return item.result
 				})
-				return item.result
-			}).concat(_.map(notifications, (item, key) => item))
+				.concat(Object.values(notifications))
 		)
 	}
 
@@ -267,17 +269,24 @@ class NotificationCenter0 {
 	count(filter?: NoticeLevel): number {
 		notificationsDep.depend()
 
-		return filter === undefined
-			? _.reduce(
-					_.map(notifiers, (item) => item.result.length),
-					(a, b) => a + b,
+		// return (
+		// 	Object.values(notifiers)
+		// 		.map((item) => (item.result || []).length)
+		// 		.reduce((a, b) => a + b, 0) + Object.values(notifications).length
+		// )
+		if (filter === undefined) {
+			return (
+				Object.values(notifiers).reduce<number>((a, b) => a + (b.result || []).length, 0) +
+				Object.values(notifications).length
+			)
+		} else {
+			return (
+				Object.values(notifiers).reduce<number>(
+					(a, b) => a + (b.result || []).filter((item) => (item.status & filter) !== 0).length,
 					0
-			  ) + _.values(notifications).length
-			: _.reduce(
-					_.map(notifiers, (item) => item.result.filter((item) => (item.status & filter) !== 0).length),
-					(a, b) => a + b,
-					0
-			  ) + _.values(notifications).filter((item) => (item.status & filter) !== 0).length
+				) + Object.values(notifications).filter((item) => (item.status & filter) !== 0).length
+			)
+		}
 	}
 
 	/**

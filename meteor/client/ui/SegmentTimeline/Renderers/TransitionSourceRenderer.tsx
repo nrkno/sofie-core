@@ -20,9 +20,10 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	constructor(props) {
 		super(props)
 
-		this.state = _.extend(this.state || {}, {
+		this.state = {
+			...this.state,
 			iconFailed: false,
-		})
+		}
 	}
 
 	updateAnchoredElsWidths = () => {

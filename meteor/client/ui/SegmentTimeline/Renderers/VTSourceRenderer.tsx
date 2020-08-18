@@ -2,8 +2,6 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { RundownUtils } from '../../../lib/rundown'
 
-import { PieceUi } from '../SegmentTimelineContainer'
-
 import { FloatingInspector } from '../../FloatingInspector'
 import { getElementWidth } from '../../../utils/dimensions'
 
@@ -15,11 +13,11 @@ import { Lottie } from '@crello/react-lottie'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { PieceStatusIcon } from '../PieceStatusIcon'
-import { RundownAPI } from '../../../../lib/api/rundown'
 import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { CriticalIconSmall, WarningIconSmall } from '../../../lib/notificationIcons'
+
 interface IProps extends ICustomLayerItemProps {}
 interface IState {
 	scenes?: Array<number>
@@ -58,18 +56,14 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			const innerPiece = this.props.piece.instance.piece
 			const vtContent = innerPiece.content as VTContent | undefined
 
-			const itemDuration =
-				(vtContent ? vtContent.sourceDuration : undefined) ||
-				innerPiece.playoutDuration ||
-				this.props.piece.renderedDuration ||
-				0
+			const itemDuration = (vtContent ? vtContent.sourceDuration : undefined) || this.props.piece.renderedDuration || 0
 			let targetTime = this.props.cursorTimePosition
 			let seek = (vtContent ? vtContent.seek : undefined) || 0
 			if (vtContent && vtContent.loop && this.vPreview.duration > 0) {
 				targetTime =
 					targetTime %
 					((itemDuration > 0 ? Math.min(this.vPreview.duration, itemDuration) : this.vPreview.duration) * 1000)
-			} else if (itemDuration === 0 && innerPiece.infiniteMode) {
+			} else if (itemDuration === 0 && innerPiece.lifespan !== PieceLifespan.WithinPart) {
 				// noop
 			} else {
 				targetTime = Math.min(targetTime, itemDuration)

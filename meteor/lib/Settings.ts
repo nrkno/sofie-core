@@ -28,6 +28,8 @@ export interface ISettings {
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
 	allowGrabbingTimeline: boolean
+	/** If true, enables security measures, access control and user accounts. */
+	enableUserAccounts: boolean
 	/** Allow Segments to become unsynced, rather than the entire rundown */
 	allowUnsyncedSegments: boolean
 	/** Default duration to use to render parts when no duration is provided */
@@ -55,6 +57,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
+	enableUserAccounts: false,
 	allowUnsyncedSegments: false,
 	defaultDisplayDuration: 3000,
 	allowRundownResetOnAir: false,

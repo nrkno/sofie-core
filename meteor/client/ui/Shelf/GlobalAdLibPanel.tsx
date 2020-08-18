@@ -29,6 +29,7 @@ import {
 	ISourceLayer,
 	SomeContent,
 	IBlueprintActionManifestDisplayContent,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -93,13 +94,12 @@ const AdLibListView = withTranslation()(
 					tSLayers[sourceLayer._id] = sourceLayer
 				})
 
-				return _.extend(state, {
+				return {
 					outputLayers: tOLayers,
 					sourceLayers: tSLayers,
-				})
-			} else {
-				return state
+				}
 			}
+			return null
 		}
 
 		renderGlobalAdLibs() {
@@ -128,6 +128,7 @@ const AdLibListView = withTranslation()(
 										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
 										status: RundownAPI.PieceStatusCode.UNKNOWN,
 										layer: layer,
+										lifespan: PieceLifespan.WithinPart,
 										isSticky: true,
 										sourceLayerId: layer._id,
 										externalId: '',
@@ -364,7 +365,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			}
 		).fetch()
 		rundownAdLibs = rundownAdLibItems.map((item) => {
-			const uiAdLib: AdLibPieceUi = _.clone(item)
+			const uiAdLib: AdLibPieceUi = { ...item }
 			uiAdLib.isGlobal = true
 
 			return uiAdLib
@@ -398,7 +399,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 					isAction: true,
 					isGlobal: true,
 					expectedDuration: 0,
-					disabled: false,
+					lifespan: PieceLifespan.WithinPart,
 					externalId: unprotectString(action._id),
 					rundownId: action.rundownId,
 					sourceLayerId,

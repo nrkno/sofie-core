@@ -52,6 +52,7 @@ function createMockRO() {
 		importVersions: {} as any,
 		playlistId: rundownPlaylistId,
 		_rank: 0,
+		organizationId: protectString(''),
 	})
 
 	saveIntoDb(
@@ -309,6 +310,7 @@ describe('Test mos update next part helpers', () => {
 			expect.objectContaining({ _id: rundownPlaylistId }),
 			expect.objectContaining({ _id: 'mock_part4' })
 		)
+
 		// expectNextPartId('mock_part4')
 	})
 	// testInFiber('ensureNextPartIsValid: Missing distant future part', () => {
@@ -445,6 +447,7 @@ describe('Test mos update next part helpers', () => {
 			UpdateNext.afterInsertParts(cache, playlist, ['p4', 'p5'], true)
 		)
 		expect(ensureMock).not.toHaveBeenCalled()
+
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
 			expect.anything(),
 			expect.objectContaining({ _id: rundownPlaylistId }),

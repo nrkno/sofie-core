@@ -1,6 +1,6 @@
 {
   "name": "automation-core",
-  "version": "1.11.0-in-development.0",
+  "version": "1.12.0-in-development",
   "private": true,
   "engines": {
     "node": "12.16"
@@ -96,6 +96,7 @@
     "timecode": "0.0.4",
     "tv-automation-sofie-blueprints-integration": "git+https://github.com/olzzon/tv-automation-sofie-blueprints-integration.git#dist20200806_1",
     "underscore": "^1.10.2",
+    "utility-types": "^3.10.0",
     "velocity-animate": "^1.5.2",
     "velocity-react": "^1.4.3",
     "vm2": "^3.9.2",

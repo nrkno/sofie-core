@@ -23,7 +23,7 @@ enum RundownLayoutsAPIMethods { // Using our own method definition, to catch ext
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment
-	beforeEach(() => {
+	beforeAll(() => {
 		env = setupDefaultStudioEnvironment()
 	})
 	let rundownLayoutId: string

@@ -114,8 +114,7 @@ export const MicSourceRenderer = withTranslation()(
 				prevProps.partDuration !== this.props.partDuration ||
 				prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint ||
 				prevProps.piece.renderedDuration !== this.props.piece.renderedDuration ||
-				prevProps.piece.instance.piece.playoutDuration !== this.props.piece.instance.piece.playoutDuration ||
-				!_.isEqual(prevProps.piece.instance.piece.userDuration, this.props.piece.instance.piece.userDuration) ||
+				!_.isEqual(prevProps.piece.instance.userDuration, this.props.piece.instance.userDuration) ||
 				!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable)
 			) {
 				_forceSizingRecheck = true

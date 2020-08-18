@@ -3,10 +3,15 @@ import * as SuperTimeline from 'superfly-timeline'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from './lib'
-import { DBSegment } from './collections/Segments'
-import { PartId } from './collections/Parts'
+import { DBSegment, SegmentId } from './collections/Segments'
+import { PartId, Part, DBPart } from './collections/Parts'
 import { PartInstance } from './collections/PartInstances'
 import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
+import {
+	getPieceInstancesForPart,
+	buildPiecesStartingInThisPartQuery,
+	buildPastInfinitePiecesForThisPartQuery,
+} from './rundown/infinites'
 import { Settings } from './Settings'
 
 export interface SegmentExtended extends DBSegment {
@@ -65,11 +70,47 @@ export interface PieceExtended {
 	maxLabelWidth?: number
 }
 
-export function getPieceInstancesForPartInstance(partInstance: PartInstance) {
-	if (partInstance.isTemporary || partInstance.isScratch) {
-		return Pieces.find({
-			partId: partInstance.part._id,
-		}).map((p) => wrapPieceToTemporaryInstance(p, partInstance._id))
+export function fetchPiecesThatMayBeActiveForPart(
+	part: DBPart,
+	partsBeforeThisInSegmentSet: Set<PartId>,
+	segmentsBeforeThisInRundownSet: Set<SegmentId>
+): Piece[] {
+	const piecesStartingInPart = Pieces.find(buildPiecesStartingInThisPartQuery(part)).fetch()
+
+	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
+	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
+
+	const infinitePieces = Pieces.find(
+		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown)
+	).fetch()
+
+	return [...piecesStartingInPart, ...infinitePieces]
+}
+
+export function getPieceInstancesForPartInstance(
+	partInstance: PartInstance,
+	partsBeforeThisInSegmentSet: Set<PartId>,
+	segmentsBeforeThisInRundownSet: Set<SegmentId>,
+	orderedAllParts: PartId[],
+	nextPartIsAfterCurrentPart: boolean
+) {
+	if (partInstance.isTemporary) {
+		return getPieceInstancesForPart(
+			undefined,
+			undefined,
+			partInstance.part,
+			partsBeforeThisInSegmentSet,
+			segmentsBeforeThisInRundownSet,
+			fetchPiecesThatMayBeActiveForPart(
+				partInstance.part,
+				partsBeforeThisInSegmentSet,
+				segmentsBeforeThisInRundownSet
+			),
+			orderedAllParts,
+			partInstance._id,
+			nextPartIsAfterCurrentPart,
+			partInstance.isTemporary
+		)
 	} else {
 		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
 	}
@@ -100,52 +141,6 @@ export function offsetTimelineEnableExpression(
 		} else {
 			// Unreachable fallback case
 			return val
-		}
-	}
-}
-
-export function calculatePieceTimelineEnable(piece: Piece, offset?: number): SuperTimeline.TimelineEnable {
-	let duration: SuperTimeline.Expression | undefined
-	let end: SuperTimeline.Expression | undefined
-	if (piece.playoutDuration !== undefined) {
-		duration = piece.playoutDuration
-	} else if (piece.userDuration !== undefined) {
-		duration = piece.userDuration.duration
-		end = piece.userDuration.end
-	} else {
-		duration = piece.enable.duration
-		end = piece.enable.end
-	}
-
-	// If we have an end and not a start, then use that with a duration
-	if ((end !== undefined || piece.enable.end !== undefined) && piece.enable.start === undefined) {
-		return {
-			end: end !== undefined ? end : offsetTimelineEnableExpression(piece.enable.end, offset),
-			duration: duration,
-		}
-		// Otherwise, if we have a start, then use that with either the end or duration
-	} else if (piece.enable.start !== undefined) {
-		let enable = literal<SuperTimeline.TimelineEnable>({})
-
-		if (piece.enable.start === 'now') {
-			enable.start = 'now'
-		} else {
-			enable.start = offsetTimelineEnableExpression(piece.enable.start, offset)
-		}
-
-		if (duration !== undefined) {
-			enable.duration = duration
-		} else if (end !== undefined) {
-			enable.end = end
-		} else if (piece.enable.end !== undefined) {
-			enable.end = offsetTimelineEnableExpression(piece.enable.end, offset)
-		}
-		return enable
-	} else {
-		return {
-			start: 0,
-			duration: duration,
-			end: end,
 		}
 	}
 }

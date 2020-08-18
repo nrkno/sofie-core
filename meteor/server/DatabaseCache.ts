@@ -117,10 +117,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 
 		const existing = doc._id && this.documents[unprotectString(doc._id)]
 		if (existing && !existing.removed) {
-			throw new Meteor.Error(
-				500,
-				`Error in cache insert: _id "${doc._id}" already exists in collection "${this.name}"`
-			)
+			throw new Meteor.Error(500, `Error in cache insert to "${this.name}": _id "${doc._id}" already exists`)
 		}
 		if (!doc._id) doc._id = getRandomId()
 		this.documents[unprotectString(doc._id)] = {

@@ -17,6 +17,7 @@ import {
 	TimelineObjectCoreExt,
 	IBlueprintPieceDB,
 	TSR,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
@@ -170,7 +171,7 @@ describe('Test blueprint post-process', () => {
 
 			try {
 				postProcessStudioBaselineObjects(studio, _.clone(rawObjects))
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[400] Error in blueprint "${studio.blueprintId}": ids of timelineObjs must be unique! ("testObj")`
@@ -312,7 +313,7 @@ describe('Test blueprint post-process', () => {
 			const blueprintId = 'some-blueprints'
 			try {
 				postProcessRundownBaselineItems(context, protectString(blueprintId), _.clone(rawObjects))
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[400] Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
@@ -346,6 +347,7 @@ describe('Test blueprint post-process', () => {
 					externalId: 'eid0',
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
 					_rank: 2,
@@ -354,6 +356,7 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {},
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
 					_rank: 1,
@@ -364,6 +367,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
 					_rank: 9,
@@ -374,6 +378,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [null as any],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 			])
 
@@ -390,13 +395,13 @@ describe('Test blueprint post-process', () => {
 			const tmpObj = literal<AdLibPiece>({
 				_id: protectString(''),
 				_rank: 0,
-				disabled: false,
 				name: '',
 				externalId: '',
 				sourceLayerId: '',
 				outputLayerId: '',
 				rundownId: protectString(''),
 				status: 0,
+				lifespan: PieceLifespan.WithinPart,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
@@ -432,6 +437,7 @@ describe('Test blueprint post-process', () => {
 						}),
 					],
 				},
+				lifespan: PieceLifespan.WithinPart,
 			})
 
 			const res = postProcessAdLibPieces(context, [piece], protectString('blueprint9'))
@@ -453,6 +459,7 @@ describe('Test blueprint post-process', () => {
 				[],
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment5'),
 				protectString('part8')
 			)
 			expect(res).toHaveLength(0)
@@ -466,6 +473,7 @@ describe('Test blueprint post-process', () => {
 				[null as any],
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment5'),
 				protectString('part8')
 			)
 			expect(res).toHaveLength(0)
@@ -475,24 +483,23 @@ describe('Test blueprint post-process', () => {
 
 			const pieces = literal<IBlueprintPiece[]>([
 				{
-					_id: 'id0',
 					name: 'test',
 					externalId: 'eid0',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
+					lifespan: PieceLifespan.OutOnSegmentChange,
 				},
 				{
-					_id: '',
 					name: 'test',
 					externalId: 'eid1',
 					enable: { start: 0 },
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {},
+					lifespan: PieceLifespan.OutOnSegmentEnd,
 				},
 				{
-					_id: '',
 					name: 'test2',
 					externalId: 'eid2',
 					enable: { start: 0 },
@@ -501,9 +508,9 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 				{
-					_id: 'id3',
 					name: 'test2',
 					externalId: 'eid2',
 					enable: { start: 0 },
@@ -512,12 +519,13 @@ describe('Test blueprint post-process', () => {
 					content: {
 						timelineObjects: [null as any],
 					},
+					lifespan: PieceLifespan.WithinPart,
 				},
 			])
 
 			// mock getHash, to track the returned ids
-			const mockedIds = ['mocked1', 'mocked2']
-			const expectedIds = _.compact(_.map(pieces, (obj) => obj._id)).concat(mockedIds)
+			const mockedIds = ['mocked1', 'mocked2', 'mcoked3', 'mocked4']
+			const expectedIds = [...mockedIds]
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
 			const res = postProcessPieces(
@@ -525,6 +533,7 @@ describe('Test blueprint post-process', () => {
 				pieces,
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment5'),
 				protectString('part8')
 			)
 			expect(res).toMatchObject(pieces.map((p) => _.omit(p, '_id')))
@@ -537,16 +546,21 @@ describe('Test blueprint post-process', () => {
 				enable: { start: 0 },
 				sourceLayerId: '',
 				outputLayerId: '',
-				partId: protectString(''),
-				rundownId: protectString(''),
+				startPartId: protectString(''),
+				startSegmentId: protectString(''),
+				startRundownId: protectString(''),
 				status: 0,
+				lifespan: PieceLifespan.WithinPart,
+				invalid: false,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 
 			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(2)
+			expect(context.getHashId).toHaveBeenCalledTimes(4)
 			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_part8_piece_0')
 			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_1')
+			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_part8_piece_2')
+			expect(context.getHashId).toHaveBeenNthCalledWith(4, 'blueprint9_part8_piece_3')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()
@@ -556,7 +570,6 @@ describe('Test blueprint post-process', () => {
 			const context = getContext()
 
 			const piece = literal<IBlueprintPiece>({
-				_id: '',
 				name: 'test2',
 				externalId: 'eid2',
 				enable: { start: 0 },
@@ -574,6 +587,7 @@ describe('Test blueprint post-process', () => {
 						}),
 					],
 				},
+				lifespan: PieceLifespan.OutOnRundownEnd,
 			})
 
 			const res = postProcessPieces(
@@ -581,6 +595,7 @@ describe('Test blueprint post-process', () => {
 				[piece],
 				protectString('blueprint9'),
 				context._rundown._id,
+				protectString('segment8'),
 				protectString('part6')
 			)
 			expect(res).toHaveLength(1)

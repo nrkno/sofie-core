@@ -24,6 +24,7 @@ import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
+import { isInTestWrite } from './security/lib/securityVerify'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -35,10 +36,12 @@ export class Cache {
 	constructor() {
 		if (!Meteor.isProduction) {
 			// When this is set up, we expect saveAllToDatabase() to have been called at the end, otherwise something is wrong
-			const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
-			this._activeTimeout = Meteor.setTimeout(() => {
-				logger.error(futureError)
-			}, 2000)
+			if (!isInTestWrite()) {
+				const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
+				this._activeTimeout = Meteor.setTimeout(() => {
+					logger.error(futureError)
+				}, 2000)
+			}
 		}
 	}
 
@@ -193,10 +196,11 @@ async function fillCacheForRundownPlaylistWithData(
 
 	ps.push(makePromise(() => cache.Segments.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
 	ps.push(makePromise(() => cache.Parts.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
-	ps.push(makePromise(() => cache.Pieces.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately)))
+	ps.push(makePromise(() => cache.Pieces.prepareInit({ startRundownId: { $in: rundownIds } }, false)))
 
 	ps.push(
 		makePromise(() => cache.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, initializeImmediately))
+		// TODO - should this only load the non-reset?
 	)
 
 	ps.push(

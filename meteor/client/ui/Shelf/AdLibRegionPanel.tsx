@@ -261,6 +261,25 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 }
 
+export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
+	let prospectivePieceInstances: PieceInstance[] = []
+	if (nextPartInstanceId) {
+		prospectivePieceInstances = PieceInstances.find({
+			partInstanceId: nextPartInstanceId,
+			adLibSourceId: {
+				$exists: true,
+			},
+		}).fetch()
+	}
+
+	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
+	_.each(
+		_.groupBy(prospectivePieceInstances, (piece) => piece.adLibSourceId),
+		(grp, id) => (nextPieces[id] = _.map(grp, (instance) => instance))
+	)
+	return nextPieces
+}
+
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
 	IState,

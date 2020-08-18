@@ -49,26 +49,26 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		return computation
 	}
 	subscriptionsReady(): boolean {
-		return !_.find(this._subscriptions, (sub, key) => {
+		for (let sub of Object.values(this._subscriptions)) {
 			if (!sub.ready()) {
-				// console.log('sub not ready: ' + key)
-				return true
+				return false
 			}
-		})
+		}
+		return true
 	}
 	subscriptions(): Array<Meteor.SubscriptionHandle> {
-		return _.values(this._subscriptions)
+		return Object.values(this._subscriptions)
 	}
 	protected _cleanUp() {
-		_.each(this._subscriptions, (sub, key) => {
+		for (let sub of Object.values(this._subscriptions)) {
 			// Wait a little bit with unsubscribing, maybe the next view is going to subscribe to the same data as well?
 			// In that case, by unsubscribing directly, we'll get a flicker in the view because of the unloading+loading
 			Meteor.setTimeout(() => {
 				sub.stop()
 			}, 100)
-		})
-		_.each(this._computations, (computation) => {
+		}
+		for (let computation of Object.values(this._computations)) {
 			computation.stop()
-		})
+		}
 	}
 }

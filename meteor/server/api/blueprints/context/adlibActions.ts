@@ -5,10 +5,10 @@ import {
 	unprotectObject,
 	protectString,
 	assertNever,
-	protectStringArray,
 	getCurrentTime,
 	unprotectStringArray,
 	getRandomId,
+	protectStringArray,
 } from '../../../../lib/lib'
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -41,13 +41,10 @@ import { clone } from '../../../../lib/lib'
 
 export enum ActionPartChange {
 	NONE = 0,
-	/** Inserted/updated a piece which can be simply pruned */
 	SAFE_CHANGE = 1,
-	/** Inserted/updated a piece which requires a blueprint call to reset */
-	MARK_DIRTY = 2,
 }
 
-const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
+const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	externalId: '',
 	enable: { start: 0 },
 	virtual: false,
@@ -60,7 +57,7 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 	outputLayerId: '',
 	content: {},
 	transitions: {},
-	infiniteMode: PieceLifespan.Normal,
+	lifespan: PieceLifespan.WithinPart,
 	adlibPreroll: 0,
 	toBeQueued: false,
 	expectedPlayoutItems: [],
@@ -72,7 +69,7 @@ const IBlueprintPieceSample: Required<OmitId<IBlueprintPiece>> = {
 	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
-const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof OmitId<IBlueprintPiece>>
+const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
 
 const IBlueprintMutatablePartSample: Required<IBlueprintMutatablePart> = {
 	title: '',
@@ -172,7 +169,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(this.cache, partInstance)
+		const resolvedInstances = getResolvedPieces(this.cache, this.getShowStyleBase(), partInstance)
 		return resolvedInstances.map((piece) => clone(unprotectObject(piece)))
 	}
 
@@ -223,34 +220,14 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Failed to find rundown of partInstance')
 		}
 
-		// Fill in missing id, and ensure it does not already exist
-		if (!rawPiece._id) rawPiece._id = Random.id()
-		if (this.cache.Pieces.findOne(protectString(rawPiece._id))) {
-			// TODO-PartInstances - this will need rethinking after new dataflow
-			throw new Error(`Piece with id "${rawPiece._id}" already exists`)
-		}
-
-		const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
-		if (part === 'current' && lastStartedPlayback !== undefined) {
-			const time = getCurrentTime()
-			const playheadTime = time - lastStartedPlayback
-
-			if (rawPiece.enable.start !== undefined && _.isNumber(rawPiece.enable.start)) {
-				rawPiece.enable.start += playheadTime
-			}
-
-			if (rawPiece.enable.end !== undefined && _.isNumber(rawPiece.enable.end)) {
-				rawPiece.enable.end += playheadTime
-			}
-		}
-
-		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, [...IBlueprintPieceSampleKeys, '_id'])
+		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
 			this,
 			[trimmedPiece],
 			this.getShowStyleBase().blueprintId,
 			partInstance.rundownId,
+			partInstance.segmentId,
 			partInstance.part._id,
 			part === 'current',
 			true
@@ -286,16 +263,17 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PieceInstance could not be found')
 		}
 
-		const changeLevel = pieceInstance.piece.dynamicallyInserted
-			? ActionPartChange.SAFE_CHANGE
-			: ActionPartChange.MARK_DIRTY
+		if (pieceInstance.infinite?.fromPrevious) {
+			throw new Error('Cannot update an infinite piece that is continued from a previous part')
+		}
+
 		const updatesCurrentPart: ActionPartChange =
 			pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId
-				? changeLevel
+				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
 			pieceInstance.partInstanceId === this.rundownPlaylist.nextPartInstanceId
-				? changeLevel
+				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
 			throw new Error('Can only update piece instances in current or next part instance')
@@ -316,23 +294,16 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			$set: {},
 			$unset: {},
 		}
-		const legacyUpdate = {
-			$set: {},
-			$unset: {},
-		}
 
 		for (const [k, val] of Object.entries(trimmedPiece)) {
 			if (val === undefined) {
 				update.$unset[`piece.${k}`] = val
-				legacyUpdate.$unset[`${k}`] = val
 			} else {
 				update.$set[`piece.${k}`] = val
-				legacyUpdate.$set[`${k}`] = val
 			}
 		}
 
 		this.cache.PieceInstances.update(pieceInstance._id, update)
-		this.cache.Pieces.update(pieceInstance.piece._id, legacyUpdate)
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
@@ -374,8 +345,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				rundownId: currentPartInstance.rundownId,
 				segmentId: currentPartInstance.segmentId,
 				_rank: 99999, // something high, so it will be placed after current part. The rank will be updated later to its correct value
-				dynamicallyInserted: true,
 				notes: [],
+				invalid: false,
+				invalidReason: undefined,
+				floated: false,
 			}),
 		})
 
@@ -388,6 +361,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			rawPieces,
 			this.getShowStyleBase().blueprintId,
 			currentPartInstance.rundownId,
+			newPartInstance.segmentId,
 			newPartInstance.part._id
 		)
 		const newPieceInstances = pieces.map((piece) => wrapPieceToInstance(piece, newPartInstance._id))
@@ -427,31 +401,24 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			$set: {},
 			$unset: {},
 		}
-		const legacyUpdate = {
-			$set: {},
-			$unset: {},
-		}
 
 		for (const [k, val] of Object.entries(trimmedProps)) {
 			if (val === undefined) {
 				update.$unset[`part.${k}`] = val
-				legacyUpdate.$unset[`${k}`] = val
 			} else {
 				update.$set[`part.${k}`] = val
-				legacyUpdate.$set[`${k}`] = val
 			}
 		}
 
 		this.cache.PartInstances.update(partInstance._id, update)
-		this.cache.Parts.update(partInstance.part._id, legacyUpdate)
 
 		this.nextPartState = Math.max(
 			this.nextPartState,
-			part === 'next' ? ActionPartChange.MARK_DIRTY : ActionPartChange.NONE
+			part === 'next' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
 		)
 		this.currentPartState = Math.max(
 			this.currentPartState,
-			part === 'current' ? ActionPartChange.MARK_DIRTY : ActionPartChange.NONE
+			part === 'current' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
 		)
 
 		return clone(unprotectObject(this.cache.PartInstances.findOne(partInstance._id)!))
@@ -493,18 +460,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			_id: { $in: pieceInstances.map((p) => p._id) },
 		})
 
-		// TODO-PartInstances - we wont need to remove the pieces anymore
-		this.cache.Pieces.remove({
-			rundownId: { $in: pieceInstances.map((p) => p.rundownId) },
-			_id: { $in: pieceInstances.map((p) => p.piece._id) },
-		})
-
-		// Track the severity of this change
-		const preprogrammedPieces = pieceInstances.filter((p) => !p.piece.dynamicallyInserted)
-		// TODO-PartInstances - this will always be SAFE_CHANGE
-		const changeLevel = preprogrammedPieces.length > 0 ? ActionPartChange.MARK_DIRTY : ActionPartChange.SAFE_CHANGE
-
-		this.nextPartState = Math.max(this.nextPartState, changeLevel)
+		this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 
 		return unprotectStringArray(pieceInstances.map((p) => p._id))
 	}
@@ -518,7 +474,13 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
 
-		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(this.cache, partInstance, filter, timeOffset)
+		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(
+			this.cache,
+			this.getShowStyleBase(),
+			partInstance,
+			filter,
+			timeOffset
+		)
 
 		if (stoppedIds.length > 0) {
 			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)
