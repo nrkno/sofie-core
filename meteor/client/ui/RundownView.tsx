@@ -1531,6 +1531,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					})
 				}
 			})
+
 			this.autorun(() => {
 				let playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1580,6 +1581,34 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							$in: rundownIDs,
 						},
 					})
+					if (this.props.onlyShelf) {
+						this.subscribe(PubSub.parts, {
+							rundownId: {
+								$in: rundownIDs,
+							},
+						})
+						this.subscribe(PubSub.partInstances, {
+							rundownId: {
+								$in: rundownIDs,
+							},
+							reset: {
+								$ne: true,
+							},
+						})
+						this.subscribe(PubSub.pieces, {
+							rundownId: {
+								$in: rundownIDs,
+							},
+						})
+						this.subscribe(PubSub.pieceInstances, {
+							rundownId: {
+								$in: rundownIDs,
+							},
+							reset: {
+								$ne: true,
+							},
+						})
+					}
 				}
 			})
 			this.autorun(() => {
