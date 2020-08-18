@@ -54,7 +54,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 				startedPlayback: 1,
 				taken: 1,
 				timings: 1,
-				// runtimeArguments: 1,
 				stoppedPlayback: 1,
 			},
 		}
@@ -148,7 +147,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 				duration: 1,
 				startedPlayback: 1,
 				timings: 1,
-				// runtimeArguments: 1,
 				stoppedPlayback: 1,
 				taken: 1,
 			},
@@ -542,8 +540,6 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 				duration: 1,
 				startedPlayback: 1,
 				taken: 1,
-				// runtimeArguments: 1,
-				// dirty: 1,
 				stoppedPlayback: 1,
 			},
 		}

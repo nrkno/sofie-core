@@ -73,13 +73,6 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownPlaylistId: RundownPlaylistId,
 		undo?: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
-	togglePartArgument(
-		userEvent: string,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		property: string,
-		value: string
-	): Promise<ClientAPI.ClientResponse<void>>
 	pieceTakeNow(
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
@@ -212,7 +205,6 @@ export enum UserActionAPIMethods {
 	'unsyncRundown' = 'userAction.unsyncRundown',
 
 	'disableNextPiece' = 'userAction.disableNextPiece',
-	'togglePartArgument' = 'userAction.togglePartArgument',
 	'pieceTakeNow' = 'userAction.pieceTakeNow',
 	'setInOutPoints' = 'userAction.pieceSetInOutPoints',
 	'executeAction' = 'userAction.executeAction',

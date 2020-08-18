@@ -105,6 +105,31 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			)
 		},
 	},
+
+	{
+		id: 'Remove runtimeArguments from ShowStyleBase',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const studio = ShowStyleBases.find().fetch()
+			let result: string | boolean = false
+			studio.forEach((siItem) => {
+				if ((siItem as any).runtimeArguments && (siItem as any).runtimeArguments.length > 0) {
+					result = `Rundown Arguments set in a Studio Installation "${siItem._id}"`
+				}
+			})
+			return result
+		},
+		migrate: () => {
+			ShowStyleBases.update(
+				{},
+				{
+					$unset: {
+						runtimeArguments: 1,
+					},
+				}
+			)
+		},
+	},
 	//
 	//
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
