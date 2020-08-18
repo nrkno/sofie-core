@@ -1578,27 +1578,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						},
 					})
 					if (this.props.onlyShelf) {
-						this.subscribe(PubSub.parts, {
-							rundownId: {
-								$in: rundownIDs,
-							},
-						})
-						this.subscribe(PubSub.partInstances, {
-							rundownId: {
-								$in: rundownIDs,
-							},
-							reset: {
-								$ne: true,
-							},
-						})
-						this.subscribe(PubSub.pieces, {
-							rundownId: {
-								$in: rundownIDs,
-							},
-						})
 						this.subscribe(PubSub.pieceInstances, {
 							rundownId: {
 								$in: rundownIDs,
+							},
+							partInstanceId: {
+								$in: [
+									playlist.currentPartInstanceId,
+									playlist.nextPartInstanceId,
+									playlist.previousPartInstanceId,
+								].filter((p) => p !== null),
 							},
 							reset: {
 								$ne: true,
