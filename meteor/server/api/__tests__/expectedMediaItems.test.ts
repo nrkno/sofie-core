@@ -1,7 +1,5 @@
-import { Random } from 'meteor/random'
 import { Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { literal, protectString, getRandomId, waitForPromise } from '../../../lib/lib'
-import { setLoggerLevel } from '../logger'
 import { setupDefaultStudioEnvironment, LAYER_IDS } from '../../../__mocks__/helpers/database'
 import { DBPart, Parts, PartId } from '../../../lib/collections/Parts'
 import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
@@ -14,10 +12,7 @@ import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import {
-	wrapWithCacheForRundownPlaylistFromRundown,
-	initCacheForRundownPlaylistFromRundown,
-} from '../../DatabaseCaches'
+import { initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
 import { removeRundownFromCache } from '../playout/lib'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
@@ -81,6 +76,7 @@ describe('Expected Media Items', () => {
 				studioId: env.studio._id,
 				playlistId: rplId,
 				_rank: 0,
+				organizationId: protectString(''),
 			})
 		)
 		Segments.insert(
@@ -121,10 +117,13 @@ describe('Expected Media Items', () => {
 				externalId: '',
 				metaData: {},
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
-				partId: protectString(rdId + '_' + mockPart0),
-				rundownId: rdId,
+				startPartId: protectString(rdId + '_' + mockPart0),
+				startSegmentId: protectString(''),
+				startRundownId: rdId,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				lifespan: PieceLifespan.OutOnSegmentChange,
+				invalid: false,
 				content: literal<VTContent>({
 					fileName: mockFileName0,
 					path: mockPath0,
@@ -163,10 +162,13 @@ describe('Expected Media Items', () => {
 				externalId: '',
 				metaData: {},
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
-				partId: protectString(rdId + '_' + mockPart1),
-				rundownId: rdId,
+				startPartId: protectString(rdId + '_' + mockPart1),
+				startSegmentId: protectString(''),
+				startRundownId: rdId,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
+				lifespan: PieceLifespan.OutOnSegmentChange,
+				invalid: false,
 				content: literal<VTContent>({
 					fileName: mockFileName1,
 					path: mockPath1,
@@ -184,10 +186,9 @@ describe('Expected Media Items', () => {
 				name: '',
 				_rank: 0,
 				adlibPreroll: 0,
-				disabled: false,
 				expectedDuration: 0,
 				externalId: '',
-				infiniteMode: PieceLifespan.Normal,
+				lifespan: PieceLifespan.WithinPart,
 				invalid: false,
 				metaData: {},
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
@@ -251,7 +252,7 @@ describe('Expected Media Items', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Part', () => {
 			expect(Rundowns.findOne(rdId1)).toBeTruthy()
 			expect(Parts.findOne(protectString(rdId1 + '_' + mockPart0))).toBeTruthy()
-			expect(Pieces.find({ partId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
+			expect(Pieces.find({ startPartId: protectString(rdId1 + '_' + mockPart0) }).count()).toBe(1)
 
 			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId1))
 			updateExpectedMediaItemsOnPart(cache, rdId1, protectString(rdId1 + '_' + mockPart0))

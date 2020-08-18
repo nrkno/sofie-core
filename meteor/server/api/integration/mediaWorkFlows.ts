@@ -1,8 +1,7 @@
 import * as _ from 'underscore'
-import { Match } from 'meteor/check'
+import { check, Match } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
-import { PeripheralDeviceSecurity } from '../../security/peripheralDevices'
 import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps, MediaWorkFlowStep, MediaWorkFlowStepId } from '../../../lib/collections/MediaWorkFlowSteps'
 import {
@@ -11,15 +10,17 @@ import {
 	MediaWorkFlowStepRevision,
 } from '../../../lib/api/peripheralDevice'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { check } from '../../../lib/lib'
+import { MethodContext } from '../../../lib/api/methods'
+import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 
 export namespace MediaManagerIntegration {
 	export function getMediaWorkFlowStepRevisions(
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
-		token: string
+		deviceToken: string
 	): MediaWorkFlowStepRevision[] {
 		logger.debug('getMediaWorkFlowStepRevisions')
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		if (peripheralDevice.studioId) {
 			return _.map(
@@ -38,9 +39,13 @@ export namespace MediaManagerIntegration {
 		}
 	}
 
-	export function getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, token: string): MediaWorkFlowRevision[] {
+	export function getMediaWorkFlowRevisions(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string
+	): MediaWorkFlowRevision[] {
 		logger.debug('getMediaWorkFlowRevisions')
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		if (peripheralDevice.studioId) {
 			return _.map(
@@ -60,12 +65,13 @@ export namespace MediaManagerIntegration {
 	}
 
 	export function updateMediaWorkFlow(
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
-		token: string,
+		deviceToken: string,
 		workFlowId: MediaWorkFlowId,
 		obj: MediaWorkFlow | null
 	): void {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,
@@ -99,12 +105,13 @@ export namespace MediaManagerIntegration {
 	}
 
 	export function updateMediaWorkFlowStep(
+		context: MethodContext,
 		deviceId: PeripheralDeviceId,
-		token: string,
+		deviceToken: string,
 		stepId: MediaWorkFlowStepId,
 		obj: MediaWorkFlowStep | null
 	): void {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		if (peripheralDevice.type !== PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER)
 			throw new Meteor.Error(
 				400,

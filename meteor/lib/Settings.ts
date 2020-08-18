@@ -27,6 +27,8 @@ export interface ISettings {
 	defaultTimeScale: number
 	// Allow grabbing the entire timeline
 	allowGrabbingTimeline: boolean
+	/** If true, enables security measures, access control and user accounts. */
+	enableUserAccounts: boolean
 	/** Allow Segments to become unsynced, rather than the entire rundown */
 	allowUnsyncedSegments: boolean
 	/** Allow resets while a rundown is on-air */
@@ -48,6 +50,7 @@ const DEFAULT_SETTINGS: ISettings = {
 	disableBlurBorder: false,
 	defaultTimeScale: 1,
 	allowGrabbingTimeline: true,
+	enableUserAccounts: false,
 	allowUnsyncedSegments: false,
 	allowRundownResetOnAir: false,
 	defaultDisplayDuration: 3000,

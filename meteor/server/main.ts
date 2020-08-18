@@ -32,6 +32,8 @@ import './migration/migrations'
 import './mockData/rundownData'
 import './performanceMonitor'
 import './systemStatus/api'
+import './api/user'
+import './api/organizations'
 
 // import all files that calls Meteor.startup:
 import './api/rest/rest'
@@ -39,6 +41,7 @@ import './api/systemTime/systemTime'
 import './Connections'
 import './coreSystem'
 import './cronjobs'
+import './email'
 // import './api/ExternalMessageQueue' // called above
 // import './performanceMonitor' // called above
 

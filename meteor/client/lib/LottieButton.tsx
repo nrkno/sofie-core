@@ -58,12 +58,14 @@ export class LottieButton extends React.Component<IProps, IState> {
 	}
 
 	buildAnimationObjects(props: IProps) {
-		this.overAnimation = _.extend(_.clone(this.base), {
+		this.overAnimation = {
+			...this.base,
 			animationData: props.inAnimation,
-		})
-		this.outAnimation = _.extend(_.clone(this.base), {
+		}
+		this.outAnimation = {
+			...this.base,
 			animationData: props.outAnimation,
-		})
+		}
 	}
 
 	render() {

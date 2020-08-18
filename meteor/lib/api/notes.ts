@@ -16,6 +16,7 @@ export interface TrackedNote extends GenericNote {
 	rank: number
 	origin: {
 		name: string
+		segmentName?: string
 		rundownId?: RundownId
 		segmentId?: SegmentId
 		partId?: PartId

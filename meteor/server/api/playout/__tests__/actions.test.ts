@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
-import { mockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,

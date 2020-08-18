@@ -14,6 +14,11 @@ export function setup() {
 	}
 }
 
+export function restartRandomId() {
+	RandomMock.mockI = 9000
+	RandomMock.mockIds = []
+}
+
 export function resetRandomId() {
 	// move the iterator forward and tie to next 1000
 	// This will help with making the random id more consistend in tests

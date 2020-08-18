@@ -99,7 +99,7 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 
 			// Check item status
 			if (props.piece.sourceLayer) {
-				const { metadata, status, contentDuration } = checkPieceContentStatus(
+				const { metadata, status, contentDuration, message } = checkPieceContentStatus(
 					props.piece.instance.piece,
 					props.piece.sourceLayer,
 					props.playlist.getStudio().settings
@@ -117,6 +117,7 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 							},
 						},
 						contentMetaData: metadata,
+						message,
 					}
 
 					if (
@@ -127,7 +128,9 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 						pieceCopy.instance.piece.content.sourceDuration = contentDuration
 					}
 
-					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
+					overrides.piece = {
+						...pieceCopy,
+					}
 				}
 			} else {
 				console.error(`Piece "${props.piece.instance.piece._id}" has no sourceLayer:`, props.piece)

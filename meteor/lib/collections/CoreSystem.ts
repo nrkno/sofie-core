@@ -1,4 +1,4 @@
-import { TransformedCollection } from '../typings/meteor'
+import { TransformedCollection, FindOptions } from '../typings/meteor'
 import { registerCollection, ProtectedString, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
@@ -93,8 +93,8 @@ registerCollection('CoreSystem', CoreSystem)
 export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)
 }
-export function getCoreSystemCursor() {
-	return CoreSystem.find(SYSTEM_ID)
+export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>) {
+	return CoreSystem.find(SYSTEM_ID, options)
 }
 export function setCoreSystemVersion(versionStr: string): string {
 	let system = getCoreSystem()

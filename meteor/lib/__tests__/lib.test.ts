@@ -20,10 +20,10 @@ import {
 	objectPathGet,
 	objectPathSet,
 	stringifyObjects,
-	rateLimit,
-	rateLimitAndDoItLater,
-	rateLimitIgnore,
-	getRank,
+	// rateLimit,
+	// rateLimitAndDoItLater,
+	// rateLimitIgnore,
+	// getRank,
 	partial,
 	partialExceptId,
 	escapeHtml,
@@ -364,35 +364,35 @@ describe('lib/lib', () => {
 		}
 		expect(stringifyObjects(o)).toEqual(stringifyObjects(o))
 	})
-	testInFiber('rateLimit', () => {
-		const f0 = jest.fn()
-		const f1 = jest.fn()
-		rateLimit('test', f0, f1, 500)
-		rateLimit('test', f0, f1, 500)
-		rateLimit('test', f0, f1, 500)
-		expect(f0).toHaveBeenCalledTimes(1)
-		expect(f1).toHaveBeenCalledTimes(2)
-	})
-	testInFiber('rateLimitAndDoItLater', () => {
-		const f0 = jest.fn()
-		rateLimitAndDoItLater('test', f0, 10)
-		rateLimitAndDoItLater('test', f0, 10)
-		rateLimitAndDoItLater('test', f0, 10)
-		rateLimitAndDoItLater('test', f0, 10)
-		expect(f0).toHaveBeenCalledTimes(1)
-		waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
-		expect(f0).toHaveBeenCalledTimes(4)
-	})
-	testInFiber('rateLimitIgnore', () => {
-		const f0 = jest.fn()
-		rateLimitIgnore('test', f0, 10)
-		rateLimitIgnore('test', f0, 10)
-		rateLimitIgnore('test', f0, 10)
-		rateLimitIgnore('test', f0, 10)
-		expect(f0).toHaveBeenCalledTimes(1)
-		waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
-		expect(f0).toHaveBeenCalledTimes(2)
-	})
+	// testInFiber('rateLimit', () => {
+	// 	const f0 = jest.fn()
+	// 	const f1 = jest.fn()
+	// 	rateLimit('test', f0, f1, 500)
+	// 	rateLimit('test', f0, f1, 500)
+	// 	rateLimit('test', f0, f1, 500)
+	// 	expect(f0).toHaveBeenCalledTimes(1)
+	// 	expect(f1).toHaveBeenCalledTimes(2)
+	// })
+	// testInFiber('rateLimitAndDoItLater', () => {
+	// 	const f0 = jest.fn()
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	expect(f0).toHaveBeenCalledTimes(1)
+	// 	waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
+	// 	expect(f0).toHaveBeenCalledTimes(4)
+	// })
+	// testInFiber('rateLimitIgnore', () => {
+	// 	const f0 = jest.fn()
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	expect(f0).toHaveBeenCalledTimes(1)
+	// 	waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
+	// 	expect(f0).toHaveBeenCalledTimes(2)
+	// })
 	testInFiber('mongowhere', () => {
 		setLoggerLevel('debug')
 
@@ -447,43 +447,43 @@ describe('lib/lib', () => {
 		expect(MyCollection.find({ rank: { $lt: 3 } }).fetch()).toHaveLength(3)
 		expect(MyCollection.find({ rank: { $lte: 3 } }).fetch()).toHaveLength(4)
 	})
-	testInFiber('getRank', () => {
-		const objs: { _rank: number }[] = [
-			{ _rank: 0 },
-			{ _rank: 10 },
-			{ _rank: 20 },
-			{ _rank: 21 },
-			{ _rank: 22 },
-			{ _rank: 23 },
-		]
+	// testInFiber('getRank', () => {
+	// 	const objs: { _rank: number }[] = [
+	// 		{ _rank: 0 },
+	// 		{ _rank: 10 },
+	// 		{ _rank: 20 },
+	// 		{ _rank: 21 },
+	// 		{ _rank: 22 },
+	// 		{ _rank: 23 },
+	// 	]
 
-		// First:
-		expect(getRank(null, objs[0])).toEqual(-0.5)
-		// Insert two:
-		expect(getRank(null, objs[0], 0, 2)).toEqual(-0.6666666666666667)
-		expect(getRank(null, objs[0], 1, 2)).toEqual(-0.33333333333333337)
+	// 	// First:
+	// 	expect(getRank(null, objs[0])).toEqual(-0.5)
+	// 	// Insert two:
+	// 	expect(getRank(null, objs[0], 0, 2)).toEqual(-0.6666666666666667)
+	// 	expect(getRank(null, objs[0], 1, 2)).toEqual(-0.33333333333333337)
 
-		// Center:
-		expect(getRank(objs[1], objs[2])).toEqual(15)
-		// Insert three:
-		expect(getRank(objs[1], objs[2], 0, 3)).toEqual(12.5)
-		expect(getRank(objs[1], objs[2], 1, 3)).toEqual(15)
-		expect(getRank(objs[1], objs[2], 2, 3)).toEqual(17.5)
+	// 	// Center:
+	// 	expect(getRank(objs[1], objs[2])).toEqual(15)
+	// 	// Insert three:
+	// 	expect(getRank(objs[1], objs[2], 0, 3)).toEqual(12.5)
+	// 	expect(getRank(objs[1], objs[2], 1, 3)).toEqual(15)
+	// 	expect(getRank(objs[1], objs[2], 2, 3)).toEqual(17.5)
 
-		// Last:
-		expect(getRank(objs[5], undefined)).toEqual(23.5)
-		// Insert three:
-		expect(getRank(objs[5], undefined, 0, 3)).toEqual(23.25)
-		expect(getRank(objs[5], undefined, 1, 3)).toEqual(23.5)
-		expect(getRank(objs[5], undefined, 2, 3)).toEqual(23.75)
+	// 	// Last:
+	// 	expect(getRank(objs[5], undefined)).toEqual(23.5)
+	// 	// Insert three:
+	// 	expect(getRank(objs[5], undefined, 0, 3)).toEqual(23.25)
+	// 	expect(getRank(objs[5], undefined, 1, 3)).toEqual(23.5)
+	// 	expect(getRank(objs[5], undefined, 2, 3)).toEqual(23.75)
 
-		// Insert in empty list
-		expect(getRank(undefined, undefined)).toEqual(0.5)
+	// 	// Insert in empty list
+	// 	expect(getRank(undefined, undefined)).toEqual(0.5)
 
-		// Insert three:
-		expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
-		expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
-	})
+	// 	// Insert three:
+	// 	expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
+	// 	expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
+	// })
 	testInFiber('partial', () => {
 		const o = {
 			a: 1,

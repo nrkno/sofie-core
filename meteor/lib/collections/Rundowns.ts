@@ -30,6 +30,7 @@ import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
 import { PieceInstances, PieceInstance } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
+import { OrganizationId } from './Organization'
 import { AdLibActions } from './AdLibActions'
 import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
 
@@ -54,6 +55,8 @@ export type RundownId = ProtectedString<'RundownId'>
 export interface DBRundown
 	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
 	_id: RundownId
+	/** ID of the organization that owns the rundown */
+	organizationId: OrganizationId | null
 	/** The id of the Studio this rundown is in */
 	studioId: StudioId
 
@@ -98,6 +101,7 @@ export interface DBRundown
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
 	public externalId: string
+	public organizationId: OrganizationId
 	public name: string
 	public expectedStart?: Time
 	public expectedDuration?: number
@@ -129,9 +133,9 @@ export class Rundown implements DBRundown {
 	_: any
 
 	constructor(document: DBRundown) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	getRundownPlaylist(): RundownPlaylist {
 		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')

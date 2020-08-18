@@ -120,6 +120,7 @@ describe('Basic test of test environment', () => {
 			{
 				_id: protectString('abc'),
 				name: 'abc',
+				organizationId: null,
 				mappings: {},
 				supportedShowStyleBase: [],
 				config: [],
@@ -129,6 +130,7 @@ describe('Basic test of test environment', () => {
 			{
 				_id: protectString('def'),
 				name: 'def',
+				organizationId: null,
 				mappings: {},
 				supportedShowStyleBase: [],
 				config: [],
@@ -170,6 +172,7 @@ describe('Basic test of test environment', () => {
 		Studios.insert({
 			_id: protectString('xyz'),
 			name: 'xyz',
+			organizationId: null,
 			mappings: {},
 			supportedShowStyleBase: [],
 			config: [],
