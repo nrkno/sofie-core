@@ -36,12 +36,11 @@ interface PartAndPieces {
 }
 
 function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): number {
-	const defaultSearchDistance = 10 // TODO-INFINITES - refine (Note: This is a breaking change to before)
+	const defaultSearchDistance = 10
 	const values = mappings.map(([id, m]) => m.lookaheadMaxSearchDistance ?? defaultSearchDistance)
 	return _.max(values)
 }
 
-// TODO-INFINITES this might be useful elsewhere, maybe it should move?
 /**
  * Excludes the previous, current and next part
  */

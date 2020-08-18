@@ -205,7 +205,7 @@ export namespace RundownInput {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownCreate', ingestRundown)
 		check(ingestRundown, Object)
-		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownCreate')
+		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownCreate')
 	}
 	export function dataRundownUpdate(
 		context: MethodContext,
@@ -216,7 +216,7 @@ export namespace RundownInput {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownUpdate', ingestRundown)
 		check(ingestRundown, Object)
-		handleUpdatedRundown(peripheralDevice, ingestRundown, 'dataRundownUpdate')
+		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownUpdate')
 	}
 	// Delete, Create & Update Segment (and it's contents):
 	export function dataSegmentDelete(
@@ -378,11 +378,16 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 }
 /** Handle an updated (or inserted) Rundown */
 export function handleUpdatedRundown(
-	peripheralDevice: PeripheralDevice,
+	studio0: Studio | undefined,
+	peripheralDevice: PeripheralDevice | undefined,
 	ingestRundown: IngestRundown,
 	dataSource: string
 ) {
-	const studio = getStudioFromDevice(peripheralDevice)
+	if (!peripheralDevice && !studio0) {
+		throw new Meteor.Error(500, `A PeripheralDevice or Studio is required to update a rundown`)
+	}
+
+	const studio = studio0 ?? getStudioFromDevice(peripheralDevice as PeripheralDevice)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 	if (peripheralDevice && peripheralDevice.studioId !== studio._id) {
 		throw new Meteor.Error(

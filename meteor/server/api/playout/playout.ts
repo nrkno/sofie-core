@@ -421,20 +421,9 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 
-		let partIndex: number = -1
-		_.find(parts, (part, i) => {
-			if (part._id === currentNextPart._id) {
-				partIndex = i
-				return true
-			}
-		})
-		let segmentIndex: number = -1
-		_.find(segments, (s, i) => {
-			if (s._id === currentNextSegment._id) {
-				segmentIndex = i
-				return true
-			}
-		})
+		let partIndex = parts.findIndex((part) => part._id === currentNextPart._id)
+		let segmentIndex = segments.findIndex((s) => s._id === currentNextSegment._id)
+
 		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
 		if (segmentIndex === -1)
 			throw new Meteor.Error(404, `Segment "${currentNextSegment._id}" not found in segmentsWithParts!`)
@@ -447,13 +436,7 @@ export namespace ServerPlayoutAPI {
 			const part = _.first(partsInSegments[unprotectString(segment._id)])
 			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
 
-			partIndex = -1
-			_.find(parts, (p, i) => {
-				if (p._id === part._id) {
-					partIndex = i
-					return true
-				}
-			})
+			partIndex = parts.findIndex((p) => p._id === part._id)
 			if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
 		}
 		partIndex += horizontalDelta

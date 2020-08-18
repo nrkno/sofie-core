@@ -417,7 +417,8 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.dynamicallyInserted = true
 
 		// TODO-INFINITES set definitelyEnded on any pieceInstances which are stopped by this
-		// TODO-INFINITES stop other pieces in the exclusivityGroup
+
+		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
 		cache.PieceInstances.insert(newPieceInstance)
 	}
@@ -506,7 +507,6 @@ export namespace ServerPlayoutAdLibAPI {
 							},
 						})
 
-						// TODO-INFINITES check this is ok
 						stoppedInstances.push(pieceInstance._id)
 						break
 					}
