@@ -1,4 +1,7 @@
+import { MeteorMock } from './meteor'
 // Include this file in to get access to the extended functions
+
+const nothing = MeteorMock.Error // This is a hack to avoid the import to be automatically formatted away
 
 expect.extend({
 	toBeWithinRange(received, floor, ceiling) {
