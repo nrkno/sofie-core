@@ -530,7 +530,7 @@ export const RundownList = translateWithTracker(() => {
 				))
 			) : (
 				<tr>
-					<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>
+					<td colSpan={10}>{t('There are no rundowns ingested into Sofie.')}</td>
 				</tr>
 			)
 		}

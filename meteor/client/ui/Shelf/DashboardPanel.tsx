@@ -201,7 +201,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				})
 				this.subscribe(PubSub.pieces, {
 					// TODO-INFINITES this needs to be pieceInstances now
-					rundownId: {
+					startRundownId: {
 						$in: rundownIds,
 					},
 					startedPlayback: {
