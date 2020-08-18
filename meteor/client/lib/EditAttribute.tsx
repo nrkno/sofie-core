@@ -6,10 +6,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Mongo } from 'meteor/mongo'
 
 import { MultiSelect, MultiSelectEvent } from './multiSelect'
-import { ColorPickerEvent, ColorPicker } from './colorPicker'
-import { IconPicker, IconPickerEvent } from './iconPicker'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import ClassNames from 'classnames'
+import { ColorPickerEvent, ColorPicker } from './colorPicker'
+import { IconPicker, IconPickerEvent } from './iconPicker'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -23,9 +23,9 @@ export type EditAttributeType =
 	| 'dropdown'
 	| 'switch'
 	| 'multiselect'
+	| 'json'
 	| 'colorpicker'
 	| 'iconpicker'
-	| 'json'
 export class EditAttribute extends React.Component<IEditAttribute> {
 	render() {
 		if (this.props.type === 'text') {
@@ -44,12 +44,12 @@ export class EditAttribute extends React.Component<IEditAttribute> {
 			return <EditAttributeDropdown {...this.props} />
 		} else if (this.props.type === 'multiselect') {
 			return <EditAttributeMultiSelect {...this.props} />
+		} else if (this.props.type === 'json') {
+			return <EditAttributeJson {...this.props} />
 		} else if (this.props.type === 'colorpicker') {
 			return <EditAttributeColorPicker {...this.props} />
 		} else if (this.props.type === 'iconpicker') {
 			return <EditAttributeIconPicker {...this.props} />
-		} else if (this.props.type === 'json') {
-			return <EditAttributeJson {...this.props} />
 		}
 
 		return <div>Unknown edit type {this.props.type}</div>
@@ -653,50 +653,6 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 		}
 	}
 )
-const EditAttributeColorPicker = wrapEditAttribute(
-	class EditAttributeColorPicker extends EditAttributeBase {
-		constructor(props) {
-			super(props)
-
-			this.handleChange = this.handleChange.bind(this)
-		}
-		handleChange(event: ColorPickerEvent) {
-			this.handleUpdate(event.selectedValue)
-		}
-		render() {
-			return (
-				<ColorPicker
-					className={this.props.className}
-					availableOptions={this.props.options}
-					value={this.getAttribute()}
-					placeholder={this.props.label}
-					onChange={this.handleChange}></ColorPicker>
-			)
-		}
-	}
-)
-const EditAttributeIconPicker = wrapEditAttribute(
-	class extends EditAttributeBase {
-		constructor(props) {
-			super(props)
-
-			this.handleChange = this.handleChange.bind(this)
-		}
-		handleChange(event: IconPickerEvent) {
-			this.handleUpdate(event.selectedValue)
-		}
-		render() {
-			return (
-				<IconPicker
-					className={this.props.className}
-					availableOptions={this.props.options}
-					value={this.getAttribute()}
-					placeholder={this.props.label}
-					onChange={this.handleChange}></IconPicker>
-			)
-		}
-	}
-)
 
 const EditAttributeJson = wrapEditAttribute(
 	class EditAttributeJson extends EditAttributeBase {
@@ -768,6 +724,51 @@ const EditAttributeJson = wrapEditAttribute(
 					onBlur={this.handleBlur}
 					onKeyUp={this.handleEscape}
 				/>
+			)
+		}
+	}
+)
+
+const EditAttributeColorPicker = wrapEditAttribute(
+	class EditAttributeColorPicker extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+		}
+		handleChange(event: ColorPickerEvent) {
+			this.handleUpdate(event.selectedValue)
+		}
+		render() {
+			return (
+				<ColorPicker
+					className={this.props.className}
+					availableOptions={this.props.options}
+					value={this.getAttribute()}
+					placeholder={this.props.label}
+					onChange={this.handleChange}></ColorPicker>
+			)
+		}
+	}
+)
+const EditAttributeIconPicker = wrapEditAttribute(
+	class extends EditAttributeBase {
+		constructor(props) {
+			super(props)
+
+			this.handleChange = this.handleChange.bind(this)
+		}
+		handleChange(event: IconPickerEvent) {
+			this.handleUpdate(event.selectedValue)
+		}
+		render() {
+			return (
+				<IconPicker
+					className={this.props.className}
+					availableOptions={this.props.options}
+					value={this.getAttribute()}
+					placeholder={this.props.label}
+					onChange={this.handleChange}></IconPicker>
 			)
 		}
 	}

@@ -477,7 +477,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			timeOffset
 		)
 	}
-	removePieceInstances(_part: 'next', pieceInstanceIds: string[]): void {
+	removePieceInstances(_part: 'next', pieceInstanceIds: string[]): string[] {
 		const partInstanceId = this.rundownPlaylist.nextPartInstanceId // this._getPartInstanceId(part)
 		if (!partInstanceId) {
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
@@ -505,11 +505,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		const changeLevel = preprogrammedPieces.length > 0 ? ActionPartChange.MARK_DIRTY : ActionPartChange.SAFE_CHANGE
 
 		this.nextPartState = Math.max(this.nextPartState, changeLevel)
-	}
-	takeAfterExecuteAction(take: boolean): boolean {
-		this.takeAfterExecute = take
 
-		return this.takeAfterExecute
+		return unprotectStringArray(pieceInstances.map((p) => p._id))
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {

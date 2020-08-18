@@ -951,8 +951,10 @@ describe('Test blueprint api context', () => {
 					expect(beforePieceInstancesCount).not.toEqual(0)
 
 					playlist.nextPartInstanceId = protectString('abc')
-					context.removePieceInstances('next', [])
-					context.removePieceInstances('next', [unprotectString(cache.PieceInstances.findOne()!._id)]) // Try and remove something belonging to a different part
+					expect(context.removePieceInstances('next', [])).toEqual([])
+					expect(
+						context.removePieceInstances('next', [unprotectString(cache.PieceInstances.findOne()!._id)])
+					).toEqual([]) // Try and remove something belonging to a different part
 
 					expect(cache.Pieces.findFetch().length).toEqual(beforePiecesCount)
 					expect(cache.PieceInstances.findFetch().length).toEqual(beforePieceInstancesCount)
@@ -972,7 +974,9 @@ describe('Test blueprint api context', () => {
 					cache.Pieces.insert(targetPieceInstance.piece)
 
 					playlist.nextPartInstanceId = targetPieceInstance.partInstanceId
-					context.removePieceInstances('next', [unprotectString(targetPieceInstance._id)])
+					expect(context.removePieceInstances('next', [unprotectString(targetPieceInstance._id)])).toEqual([
+						unprotectString(targetPieceInstance._id),
+					])
 
 					// Ensure it was all removed
 					expect(cache.PieceInstances.findOne(targetPieceInstance._id)).toBeFalsy()

@@ -30,6 +30,7 @@
 	--ui-button-primary: #1769ff;
 	--ui-button-primary--hover: #0050e3;
 	--ui-button-primary--translucent: #{transparentize(#1769ff, 0.5)};
+	--ui-button-primary--transparent: #{transparentize(#1769ff, 1)};
 
 	--ui-dark-color: #252627;
 	--ui-dark-color-brighter: #5f6164;

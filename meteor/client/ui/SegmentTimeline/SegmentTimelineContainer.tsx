@@ -192,11 +192,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				) ||
 					data.parts.find(
 						(i) =>
-							i.instance._id === props.playlist.currentPartInstanceId ||
-							i.instance._id === nextProps.playlist.currentPartInstanceId
-					) ||
-					data.parts.find(
-						(i) =>
 							i.instance._id === props.playlist.nextPartInstanceId ||
 							i.instance._id === nextProps.playlist.nextPartInstanceId
 					))) ||

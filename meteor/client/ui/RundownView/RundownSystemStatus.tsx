@@ -80,7 +80,6 @@ interface OnLineOffLineList {
 }
 
 interface ITrackedProps {
-	notes: Array<TrackedNote>
 	mosStatus: PeripheralDeviceAPI.StatusCode
 	mosLastUpdate: Time
 	mosDevices: OnLineOffLineList
@@ -159,11 +158,7 @@ export const RundownSystemStatus = translateWithTracker(
 			}
 		})
 
-		const notes: Array<TrackedNote> = props.playlist.getAllStoredNotes()
-
 		return {
-			notes,
-
 			mosStatus: ingest.status,
 			mosDevices: ingest.onlineOffline,
 			mosLastUpdate: ingest.lastUpdate,
@@ -273,41 +268,6 @@ export const RundownSystemStatus = translateWithTracker(
 			return (
 				<div className="rundown-system-status">
 					<div className="rundown-system-status__indicators">
-						{this.props.notes.length > 0 ? (
-							<div
-								onClick={(e) => this.clickNotes()}
-								className={ClassNames('note-icon', 'warning', this.state.displayNotes ? 'display' : '')}>
-								<img className="icon" src="/icons/warning_icon.svg" />
-								<div className="count">{this.props.notes.length}</div>
-
-								<div className="notes-tooltip">
-									<table>
-										<tbody>
-											{_.map(this.props.notes, (note, key) => {
-												return (
-													<tr key={key}>
-														<th className="notes-tooltip__header">
-															<img className="icon" src="/icons/warning_icon.svg" />
-															{note.type === NoteType.WARNING
-																? 'Warning: '
-																: note.type === NoteType.ERROR
-																? 'Error: '
-																: ''}
-														</th>
-														<td className="notes-tooltip__source">{note.origin.name}</td>
-														<td className="notes-tooltip__message">
-															<a href="#" onClick={(e) => this.clickNote(e, note)}>
-																{note.message}
-															</a>
-														</td>
-													</tr>
-												)
-											})}
-										</tbody>
-									</table>
-								</div>
-							</div>
-						) : null}
 						<div
 							className={ClassNames('indicator', 'mos', {
 								good: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.GOOD,

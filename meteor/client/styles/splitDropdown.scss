@@ -1,12 +1,13 @@
 @import '_colorScheme';
 
 .expco.button {
-	background: $ui-button-primary;
-	color: #fff;
+	border: 1px solid rgba(99, 99, 99, 0.5);
+	color: #636363;
 	box-shadow: unset;
 
 	&:hover {
-		background: $ui-button-primary--hover;
+		border-color: rgba(37, 38, 39, 0.5);
+		color: #252627;
 	}
 
 	.action-btn.right {
@@ -25,31 +26,29 @@
 
 .expco.split-dropdown {
 	position: relative;
-	padding-top: 0;
-	padding-bottom: 0;
-	max-width: 150px;
-	&.expco-expanded  {
+	padding: 0 1.1em 0 0;
+	max-width: 10em;
+	&.expco-expanded {
 		z-index: 2;
 	}
 
 	.expco-expand {
 		cursor: pointer;
-		color: #fff;
+		color: #636363;
 	}
 
 	.expco-title {
 		white-space: nowrap;
 		cursor: auto;
-		width: 80%;
-		color: #fff;
+		color: #636363;
 		border-radius: 0px;
 		padding: 0px;
 
 		.action-btn {
-			color: #fff;
+			color: #636363;
 
 			.layout-icon {
-				color: #fff;
+				color: #636363;
 			}
 		}
 	}
@@ -64,6 +63,13 @@
 		border: 1px solid #bbb;
 		padding: 2px 0 4px 0;
 		box-sizing: unset;
+
+		.expco-item.action-btn {
+			&:hover {
+				color: #fff;
+				background: $ui-button-primary--hover;
+			}
+		}
 	}
 
 	.expco-text {
@@ -75,6 +81,7 @@
 	.expco-item {
 		display: inline-block;
 		white-space: pre;
+		transition: none;
 
 		&.action-btn {
 			padding: 5px 10px;
@@ -82,19 +89,17 @@
 			width: 100%;
 			font-weight: 300;
 
-			&:hover {
-				background: $ui-button-primary--hover;
-				color: #fff;
+			> span {
+				text-decoration: none;
 			}
 		}
 	}
-	
 
 	.expco-header {
 		text-transform: uppercase;
-		font-size: .8em;
+		font-size: 0.8em;
 		font-weight: bold;
-		padding: 12px 10px 4px 10px;
+		padding: 6px 10px 6px;
 		color: #999;
 		white-space: pre;
 	}

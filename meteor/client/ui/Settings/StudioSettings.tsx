@@ -40,7 +40,6 @@ import {
 	mappingIsSisyfos,
 	mappingIsTCPSend,
 	mappingIsSisyfosChannel,
-	mappingIsSisyfosChannels,
 } from '../../../lib/api/studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
@@ -591,14 +590,11 @@ const StudioMappings = withTranslation()(
 									(mappingIsHyperdeck(mapping) && <span>{mapping.mappingType}</span>) ||
 									(mappingIsPharos(mapping) && <span>-</span>) ||
 									(mappingIsOSC(mapping) && <span>-</span>) ||
-									(mappingIsSisyfos(mapping) &&
-										(mappingIsSisyfosChannel(mapping) ? (
-											<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
-										) : mappingIsSisyfosChannels(mapping) ? (
-											<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
-										) : (
-											undefined
-										))) ||
+									(mappingIsSisyfos(mapping) && mappingIsSisyfosChannel(mapping) ? (
+										<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
+									) : (
+										''
+									)) ||
 									(mappingIsQuantel(mapping) && (
 										<span>
 											{t('Port: {{port}}, Channel: {{channel}}', { port: mapping.portId, channel: mapping.channelId })}
