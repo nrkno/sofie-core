@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import * as React from 'react'
 
 export { multilineText, isEventInInputField, loadScript }
 

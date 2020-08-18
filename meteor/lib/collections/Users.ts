@@ -1,8 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
+import { ProtectedString, registerCollection, unprotectString } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString, protectString, unprotectString } from '../lib'
-import { OrganizationId, UserRoles, Organizations, Organization } from './Organization'
+import { Organization, OrganizationId, Organizations, UserRoles } from './Organization'
 
 /** A string, identifying a User */
 export type UserId = ProtectedString<'UserId'>

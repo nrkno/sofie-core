@@ -1,13 +1,13 @@
-import { PieceGeneric, PieceId } from './Pieces'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
-import { createMongoCollection } from './lib'
-import { RundownImportVersions } from './Rundowns'
-import { StudioId } from './Studios'
-import { ShowStyleVariantId } from './ShowStyleVariants'
+import { IBlueprintAdLibPiece } from 'tv-automation-sofie-blueprints-integration'
+import { registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { BucketId } from './Buckets'
+import { createMongoCollection } from './lib'
+import { PieceId } from './Pieces'
+import { RundownImportVersions } from './Rundowns'
+import { ShowStyleVariantId } from './ShowStyleVariants'
+import { StudioId } from './Studios'
 
 export interface BucketAdLib extends IBlueprintAdLibPiece {
 	_id: PieceId

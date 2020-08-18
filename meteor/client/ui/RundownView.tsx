@@ -1,100 +1,94 @@
-import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
-import { parse as queryStringParse } from 'query-string'
-import * as VelocityReact from 'velocity-react'
-import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
-import { VTContent, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { withTranslation, WithTranslation } from 'react-i18next'
-import timer from 'react-timer-hoc'
 import CoreIcon from '@nrk/core-icons/jsx'
-import { Spinner } from '../lib/Spinner'
 import ClassNames from 'classnames'
-import * as _ from 'underscore'
-import Escape from 'react-escape'
 import * as i18next from 'i18next'
-import Moment from 'react-moment'
+import { Meteor } from 'meteor/meteor'
+import { Tracker } from 'meteor/tracker'
+import * as mousetrap from 'mousetrap'
+import { parse as queryStringParse } from 'query-string'
 import Tooltip from 'rc-tooltip'
-import { NavLink, Route, Prompt } from 'react-router-dom'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { Segment, SegmentId } from '../../lib/collections/Segments'
-import { Studio, Studios } from '../../lib/collections/Studios'
-import { Part, Parts, PartId } from '../../lib/collections/Parts'
-
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
-
+import * as React from 'react'
+import { ContextMenu, ContextMenuTrigger, MenuItem } from 'react-contextmenu'
+import Escape from 'react-escape'
+import { withTranslation, WithTranslation } from 'react-i18next'
+import Moment from 'react-moment'
+import { NavLink, Prompt, Route } from 'react-router-dom'
+import timer from 'react-timer-hoc'
+import { TSR, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import * as VelocityReact from 'velocity-react'
+import { ClientAPI } from '../../lib/api/client'
+import { MeteorCall } from '../../lib/api/methods'
+import { NoteType } from '../../lib/api/notes'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PubSub } from '../../lib/api/pubsub'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
+import { Bucket, Buckets } from '../../lib/collections/Buckets'
+import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { Part, PartId, Parts } from '../../lib/collections/Parts'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import {
+	RundownLayout,
+	RundownLayoutBase,
+	RundownLayoutId,
+	RundownLayouts,
+	RundownLayoutType,
+} from '../../lib/collections/RundownLayouts'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { Segment, SegmentId } from '../../lib/collections/Segments'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { Studio, Studios } from '../../lib/collections/Studios'
+import { getCurrentTime, protectString, unprotectString } from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
+import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../lib/clientAPI'
+import { documentTitle } from '../lib/documentTitle'
+import { ErrorBoundary } from '../lib/ErrorBoundary'
+import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
+import { getAllowDeveloper, getAllowStudio } from '../lib/localStorage'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { doModalDialog, isModalShowing, ModalDialog } from '../lib/ModalDialog'
+import { mousetrapHelper } from '../lib/mousetrapHelper'
+import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
+import { NoticeLevel, Notification, NotificationCenter } from '../lib/notifications/notifications'
+import { PointerLockCursor } from '../lib/PointerLockCursor'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { RundownUtils } from '../lib/rundown'
+import { Spinner } from '../lib/Spinner'
+import { doUserAction, UserAction } from '../lib/userAction'
+import {
+	maintainFocusOnPartInstance,
+	scrollToPart,
+	scrollToPartInstance,
+	scrollToPosition,
+	scrollToSegment,
+} from '../lib/viewPort'
+import { VirtualElement } from '../lib/VirtualElement'
+import { OffsetPosition } from '../utils/positions'
+import { AfterBroadcastForm } from './AfterBroadcastForm'
+import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
+import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
+import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
+import {
+	onRONotificationClick as rundownNotificationHandler,
+	reloadRundownPlaylistClick,
+	RONotificationEvent,
+	RundownNotifier,
+} from './RundownView/RundownNotifier'
+import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
+import {
+	AutoNextStatus,
+	CurrentPartRemaining,
 	RundownTimingProvider,
 	withTiming,
 	WithTiming,
-	CurrentPartRemaining,
-	AutoNextStatus,
 } from './RundownView/RundownTiming'
-import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
-import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
-import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
-import { RundownOverview } from './RundownView/RundownOverview'
-import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
-
-import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
-import { RundownUtils } from '../lib/rundown'
-
-import * as mousetrap from 'mousetrap'
-import { ErrorBoundary } from '../lib/ErrorBoundary'
-import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { getAllowStudio, getAllowDeveloper, getHelpMode, getAllowConfigure, getAllowService } from '../lib/localStorage'
-import { ClientAPI } from '../../lib/api/client'
-import {
-	scrollToPart,
-	scrollToPosition,
-	scrollToSegment,
-	maintainFocusOnPartInstance,
-	scrollToPartInstance,
-} from '../lib/viewPort'
-import { AfterBroadcastForm } from './AfterBroadcastForm'
-import { Tracker } from 'meteor/tracker'
-import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
-import { mousetrapHelper } from '../lib/mousetrapHelper'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
-import {
-	RONotificationEvent,
-	onRONotificationClick as rundownNotificationHandler,
-	RundownNotifier,
-	reloadRundownPlaylistClick,
-} from './RundownView/RundownNotifier'
-import { NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, NoticeLevel, Notification } from '../lib/notifications/notifications'
-import { SupportPopUp } from './SupportPopUp'
-import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { doUserAction, UserAction } from '../lib/userAction'
-import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
-import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { NoteType } from '../../lib/api/notes'
-import { PubSub } from '../../lib/api/pubsub'
-import {
-	RundownLayout,
-	RundownLayouts,
-	RundownLayoutType,
-	RundownLayoutBase,
-	RundownLayoutId,
-} from '../../lib/collections/RundownLayouts'
-import { VirtualElement } from '../lib/VirtualElement'
-import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './SegmentTimeline/Renderers/NoraPreviewRenderer'
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
-import { contextMenuHoldToDisplayTime } from '../lib/lib'
-import { OffsetPosition } from '../utils/positions'
-import { Settings } from '../../lib/Settings'
-import { MeteorCall } from '../../lib/api/methods'
-import { PointerLockCursor } from '../lib/PointerLockCursor'
+import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
+import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
+import { PartUi, PieceUi, SegmentTimelineContainer, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
-import { documentTitle } from '../lib/documentTitle'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
-import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
+import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
+import { SupportPopUp } from './SupportPopUp'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 

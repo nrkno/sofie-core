@@ -1,7 +1,7 @@
 import { Accounts } from 'meteor/accounts-base'
-import { UserProfile, UserId } from '../../lib/collections/Users'
-import { protectString } from '../lib'
+import { UserId, UserProfile } from '../../lib/collections/Users'
 import { DBOrganizationBase } from '../collections/Organization'
+import { protectString } from '../lib'
 
 export interface NewUserAPI {
 	enrollUser(email: string, name: string): Promise<UserId>

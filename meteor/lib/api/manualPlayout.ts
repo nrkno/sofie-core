@@ -1,5 +1,5 @@
-import { StudioId } from '../collections/Studios'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
+import { StudioId } from '../collections/Studios'
 
 export interface NewManualPlayoutAPI {
 	insertTimelineObject(studioId: StudioId, timelineObject: TimelineObjectCoreExt): Promise<void>

@@ -1,17 +1,13 @@
 import { Meteor } from 'meteor/meteor'
-import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../__mocks__/helpers/database'
-import { getHash, waitForPromise, protectString, literal, unprotectString } from '../../../lib/lib'
-import { MeteorMock } from '../../../__mocks__/meteor'
-import { StatusCode, status2ExternalStatus, setSystemStatus } from '../systemStatus'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { literal, unprotectString } from '../../../lib/lib'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { MeteorMock } from '../../../__mocks__/meteor'
+import '../../../__mocks__/_extendJest'
+import { setSystemStatus, status2ExternalStatus, StatusCode } from '../systemStatus'
 
 require('../api')
 const PackageInfo = require('../../../package.json')

@@ -1,17 +1,17 @@
 import { Meteor } from 'meteor/meteor'
-import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { RESTART_SALT } from '../../../../lib/api/userActions'
+import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
+import { getHash } from '../../../../lib/lib'
 import {
-	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
 } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import '../../../../__mocks__/_extendJest'
 import { setMinimumTakeSpan } from '../../userActions'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { RESTART_SALT } from '../../../../lib/api/userActions'
-import { getHash } from '../../../../lib/lib'
-import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed

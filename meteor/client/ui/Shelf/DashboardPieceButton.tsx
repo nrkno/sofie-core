@@ -1,33 +1,24 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
-
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { RundownUtils } from '../../lib/rundown'
+import * as React from 'react'
 import {
-	ISourceLayer,
 	IOutputLayer,
-	SourceLayerType,
-	VTContent,
+	ISourceLayer,
 	LiveSpeakContent,
+	SourceLayerType,
 	SplitsContent,
+	VTContent,
 } from 'tv-automation-sofie-blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
-import { IAdLibListItem } from './AdLibListItem'
-import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
-import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
-import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { RundownUtils } from '../../lib/rundown'
+import { IAdLibListItem } from './AdLibListItem'
+import { AdLibPieceUi } from './AdLibPanel'
 
 export interface IDashboardButtonProps {
 	adLibListItem: IAdLibListItem

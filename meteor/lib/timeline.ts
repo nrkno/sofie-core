@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
+import { TimelineObject } from 'superfly-timeline'
 import * as _ from 'underscore'
 import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
-import { TimelineObject } from 'superfly-timeline'
 import { clone, unprotectString } from './lib'
 import { logger } from './logging'
 

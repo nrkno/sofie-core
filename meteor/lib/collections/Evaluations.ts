@@ -1,11 +1,11 @@
-import { TransformedCollection, UserId } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { ProtectedString, registerCollection, Time } from '../lib'
+import { TransformedCollection, UserId } from '../typings/meteor'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
+import { OrganizationId } from './Organization'
 import { RundownPlaylistId } from './RundownPlaylists'
 import { SnapshotId } from './Snapshots'
-import { OrganizationId } from './Organization'
+import { StudioId } from './Studios'
 
 /** A string, identifying a Evaluation */
 export type EvaluationId = ProtectedString<'EvaluationId'>

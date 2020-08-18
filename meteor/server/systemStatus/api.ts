@@ -1,12 +1,11 @@
-import { registerClassToMeteorMethods } from '../methods'
-import { StatusResponse, NewSystemStatusAPI, SystemStatusAPIMethods } from '../../lib/api/systemStatus'
-import { getSystemStatus } from './systemStatus'
-import { ServerResponse, IncomingMessage } from 'http'
-import { PickerGET } from '../api/http'
-import { protectString, makePromise } from '../../lib/lib'
-
-import { Settings } from '../../lib/Settings'
+import { IncomingMessage, ServerResponse } from 'http'
 import { MethodContextAPI } from '../../lib/api/methods'
+import { NewSystemStatusAPI, StatusResponse, SystemStatusAPIMethods } from '../../lib/api/systemStatus'
+import { makePromise, protectString } from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
+import { PickerGET } from '../api/http'
+import { registerClassToMeteorMethods } from '../methods'
+import { getSystemStatus } from './systemStatus'
 
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:

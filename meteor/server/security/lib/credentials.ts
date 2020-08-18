@@ -1,7 +1,7 @@
-import { UserId, User, Users, DBUser } from '../../../lib/collections/Users'
 import { Organization, Organizations } from '../../../lib/collections/Organization'
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
+import { DBUser, User, UserId, Users } from '../../../lib/collections/Users'
+import { cacheResult, clearCacheResult, isProtectedString } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
 
 export interface Credentials {

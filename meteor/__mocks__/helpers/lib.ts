@@ -1,6 +1,6 @@
-import { TransformedCollection } from '../../lib/typings/meteor'
 import * as _ from 'underscore'
 import { ProtectedString } from '../../lib/lib'
+import { TransformedCollection } from '../../lib/typings/meteor'
 
 /*
 interface MockedCollection<T, Y extends any[]> {

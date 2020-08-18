@@ -1,9 +1,9 @@
+import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { Studio, Studios } from '../../../../lib/collections/Studios'
+import { protectString } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, setupMockStudio } from '../../../../__mocks__/helpers/database'
 import { compileStudioConfig, ConfigRef } from '../config'
-import { Studio, Studios } from '../../../../lib/collections/Studios'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { protectString } from '../../../../lib/lib'
 
 describe('Test blueprint config', () => {
 	beforeAll(() => {

@@ -1,14 +1,14 @@
-import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
-import Escape from 'react-escape'
 import ClassNames from 'classnames'
-import * as VelocityReact from 'velocity-react'
-import { mousetrapHelper } from './mousetrapHelper'
-import { logger } from '../../lib/logging'
-import * as _ from 'underscore'
+import * as React from 'react'
+import Escape from 'react-escape'
 import { withTranslation } from 'react-i18next'
+import * as _ from 'underscore'
+import * as VelocityReact from 'velocity-react'
+import { logger } from '../../lib/logging'
+import { EditAttribute, EditAttributeBase, EditAttributeType } from './EditAttribute'
+import { mousetrapHelper } from './mousetrapHelper'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
-import { EditAttribute, EditAttributeType, EditAttributeBase } from './EditAttribute'
 
 interface IModalDialogAttributes {
 	show?: boolean

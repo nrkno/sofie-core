@@ -1,17 +1,12 @@
-import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
+import { Request as MockRequest, Response as MockResponse } from 'mock-http'
+import { RundownLayout, RundownLayouts, RundownLayoutType } from '../../../lib/collections/RundownLayouts'
+import { literal, protectString, unprotectString } from '../../../lib/lib'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { MockResponseDataString, parseResponseBuffer, PickerMock } from '../../../__mocks__/meteorhacks-picker'
 import '../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../__mocks__/helpers/database'
-import { protectString, literal, unprotectString } from '../../../lib/lib'
-import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
-import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import { RundownLayoutType, RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed

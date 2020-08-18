@@ -1,11 +1,11 @@
-import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { ProtectedString, registerCollection, Time } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
-import { RundownPlaylistId } from './RundownPlaylists'
 import { OrganizationId } from './Organization'
+import { RundownPlaylistId } from './RundownPlaylists'
+import { RundownId } from './Rundowns'
+import { StudioId } from './Studios'
 
 export enum SnapshotType {
 	RUNDOWN = 'rundown', // to be deprecated?

@@ -1,5 +1,5 @@
-import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
+import * as React from 'react'
 import * as Escape from 'react-escape'
 import { mousetrapHelper } from '../../../mousetrapHelper'
 

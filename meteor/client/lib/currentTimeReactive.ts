@@ -1,6 +1,6 @@
-import { getCurrentTime, Time } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
+import { getCurrentTime, Time } from '../../lib/lib'
 
 let getCurrentTimeReactiveDep = new Tracker.Dependency()
 export function getCurrentTimeReactive(): Time {

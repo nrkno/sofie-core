@@ -1,6 +1,6 @@
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 

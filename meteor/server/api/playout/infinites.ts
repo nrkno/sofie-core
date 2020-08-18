@@ -1,20 +1,18 @@
-import * as _ from 'underscore'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { DBPart, Part } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { asyncCollectionFindFetch, literal, assertNever, extendMandadory } from '../../../lib/lib'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { DBPart, Part } from '../../../lib/collections/Parts'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { getAllOrderedPartsFromCache, selectNextPart, getSelectedPartInstancesFromCache } from './lib'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { saveIntoCache } from '../../DatabaseCache'
+import { asyncCollectionFindFetch } from '../../../lib/lib'
 import {
+	buildPastInfinitePiecesForThisPartQuery,
+	buildPiecesStartingInThisPartQuery,
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,
-	buildPiecesStartingInThisPartQuery,
-	buildPastInfinitePiecesForThisPartQuery,
 } from '../../../lib/rundown/infinites'
+import { saveIntoCache } from '../../DatabaseCache'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { getAllOrderedPartsFromCache, getSelectedPartInstancesFromCache, selectNextPart } from './lib'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000

@@ -1,13 +1,12 @@
-import { ReactiveVar } from 'meteor/reactive-var'
-import * as _ from 'underscore'
-import { Tracker } from 'meteor/tracker'
+import { EventEmitter } from 'events'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { EventEmitter } from 'events'
-import { Time, ProtectedString, unprotectString, isProtectedString, protectString } from '../../../lib/lib'
-import { HTMLAttributes } from 'react'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { ReactiveVar } from 'meteor/reactive-var'
+import { Tracker } from 'meteor/tracker'
+import * as _ from 'underscore'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { SegmentId } from '../../../lib/collections/Segments'
+import { isProtectedString, ProtectedString, protectString, Time, unprotectString } from '../../../lib/lib'
 
 /**
  * Priority level for Notifications.

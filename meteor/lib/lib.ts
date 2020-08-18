@@ -1,21 +1,21 @@
+import * as crypto from 'crypto'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
+import * as objectPath from 'object-path'
+import { Timecode } from 'timecode'
+import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
+import { DeepReadonly } from 'utility-types'
+import { logger } from './logging'
+import { Settings } from './Settings'
 import {
-	TransformedCollection,
-	MongoQuery,
+	FindOptions,
 	MongoModifier,
+	MongoQuery,
+	TransformedCollection,
 	UpdateOptions,
 	UpsertOptions,
-	FindOptions,
 } from './typings/meteor'
-import { logger } from './logging'
-import { Timecode } from 'timecode'
-import { Settings } from './Settings'
-import * as objectPath from 'object-path'
-import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
-import * as crypto from 'crypto'
-import { DeepReadonly } from 'utility-types'
 const cloneOrg = require('fast-clone')
 
 export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {

@@ -1,68 +1,65 @@
+import { Meteor } from 'meteor/meteor'
 import {
-	Time,
-	getPartGroupId,
 	getPartFirstObjectId,
-	TimelineObjectCoreExt,
+	getPartGroupId,
 	getPieceGroupId,
-	TimelineObjHoldMode,
 	OnGenerateTimelineObj,
-	TSR,
 	PieceLifespan,
+	Time,
+	TimelineObjectCoreExt,
+	TimelineObjHoldMode,
+	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
 import { DeepReadonly } from 'utility-types'
-import { logger } from '../../../lib/logging'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { Part, PartId } from '../../../lib/collections/Parts'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
+import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { Studio, StudioId } from '../../../lib/collections/Studios'
 import {
+	getTimelineId,
+	TimelineContentTypeOther,
 	TimelineObjGeneric,
+	TimelineObjGroupPart,
+	TimelineObjPartAbstract,
+	TimelineObjRecording,
 	TimelineObjRundown,
 	TimelineObjStat,
 	TimelineObjType,
-	TimelineContentTypeOther,
-	TimelineObjRecording,
-	TimelineObjGroupPart,
-	TimelineObjPartAbstract,
-	getTimelineId,
-	TimelineObjGroupRundown,
 } from '../../../lib/collections/Timeline'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { Meteor } from 'meteor/meteor'
 import {
-	waitForPromise,
-	getHash,
-	stringifyObjects,
-	getCurrentTime,
+	asyncCollectionFindOne,
+	clone,
 	extendMandadory,
+	getCurrentTime,
+	getHash,
 	literal,
+	normalizeArrayFunc,
 	omit,
 	protectString,
-	unprotectString,
-	unprotectObjectArray,
+	stringifyObjects,
 	unprotectObject,
-	normalizeArrayFunc,
-	clone,
-	makePromise,
-	asyncCollectionFindOne,
+	unprotectObjectArray,
+	unprotectString,
+	waitForPromise,
 } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
-import * as _ from 'underscore'
-import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
-import { StudioContext, PartEventContext } from '../blueprints/context'
+import { logger } from '../../../lib/logging'
+import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { PackageInfo } from '../../coreSystem'
+import { saveIntoCache } from '../../DatabaseCache'
+import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
+import { getBlueprintOfRundown, loadStudioBlueprints } from '../blueprints/cache'
+import { PartEventContext, StudioContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { generateRecordingTimelineObjs } from '../testTools'
-import { Part, PartId } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
+import { getAllPieceInstancesFromCache, getSelectedPartInstancesFromCache, prefixAllObjectIds } from './lib'
+import { getLookeaheadObjects } from './lookahead'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
-import { PackageInfo } from '../../coreSystem'
-import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
-import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
-import { saveIntoCache } from '../../DatabaseCache'
-import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...

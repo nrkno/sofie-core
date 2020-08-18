@@ -1,11 +1,9 @@
 import * as React from 'react'
-import { Meteor } from 'meteor/meteor'
-import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
-
-import { statusCodeToString } from './Status/SystemStatus'
-import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { MeteorCall } from '../../lib/api/methods'
+import { NoticeLevel, Notification, NotificationCenter } from '../lib/notifications/notifications'
+import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { statusCodeToString } from './Status/SystemStatus'
 
 const PackageInfo = require('../../package.json')
 

@@ -1,9 +1,9 @@
-import { withTracker, translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-import { withTiming, WithTiming } from './RundownView/RundownTiming'
 import { withTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { Meteor } from 'meteor/meteor'
+import { Translated, translateWithTracker, withTracker } from '../lib/ReactMeteorData/ReactMeteorData'
+import { withTiming, WithTiming } from './RundownView/RundownTiming'
 
 // These are examples of how to write different types of components
 

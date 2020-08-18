@@ -1,18 +1,18 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import * as soap from 'soap'
-import * as parser from 'xml2json'
 import {
 	ExternalMessageQueueObjSOAP,
 	ExternalMessageQueueObjSOAPMessageAttrFcn,
-	iterateDeeplyEnum,
-	iterateDeeplyAsync,
 	iterateDeeply,
+	iterateDeeplyAsync,
+	iterateDeeplyEnum,
 } from 'tv-automation-sofie-blueprints-integration'
-import { throwFatalError } from '../ExternalMessageQueue'
+import * as _ from 'underscore'
+import * as parser from 'xml2json'
 import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { logger } from '../../logging'
 import { escapeHtml } from '../../../lib/lib'
+import { logger } from '../../logging'
+import { throwFatalError } from '../ExternalMessageQueue'
 // import { XmlEntities as Entities } from 'html-entities'
 // const entities = new Entities()
 

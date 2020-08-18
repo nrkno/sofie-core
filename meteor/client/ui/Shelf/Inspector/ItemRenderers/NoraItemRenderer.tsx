@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { IBlueprintPieceGeneric, NoraContent } from 'tv-automation-sofie-blueprints-integration'
+import { withTranslation, WithTranslation } from 'react-i18next'
+import { NoraContent } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { RundownUtils } from '../../../../lib/rundown'
 import { IModalAttributes, Modal } from '../../../../lib/ui/containers/modals/Modal'
-import { NoraItemEditor } from './NoraItemEditor'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../../AdLibPanel'
-import { RundownUtils } from '../../../../lib/rundown'
-import { withTranslation, WithTranslation } from 'react-i18next'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
+import { NoraItemEditor } from './NoraItemEditor'
 
 export { isNoraItem }
 

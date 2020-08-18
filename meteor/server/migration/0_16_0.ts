@@ -1,8 +1,8 @@
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
-import { addMigrationSteps } from './databaseMigration'
-import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 /**
  * This file contains system specific migration steps.

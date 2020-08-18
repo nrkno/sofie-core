@@ -1,8 +1,7 @@
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-
-import { ConfigManifestEntry, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { BlueprintManifestType, ConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 

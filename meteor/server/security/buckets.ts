@@ -1,14 +1,13 @@
-import { rejectFields, logNotAllowed } from './lib/lib'
-import { Buckets, Bucket, BucketId } from '../../lib/collections/Buckets'
-import { UserId, MongoQuery } from '../../lib/typings/meteor'
-import { Credentials, ResolvedCredentials } from './lib/credentials'
-import { triggerWriteAccess } from './lib/securityVerify'
+import { Meteor } from 'meteor/meteor'
+import { check } from '../../lib/check'
+import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { BucketId, Buckets } from '../../lib/collections/Buckets'
 import { PieceId } from '../../lib/collections/Pieces'
 import { Settings } from '../../lib/Settings'
-import { check } from '../../lib/check'
-import { Meteor } from 'meteor/meteor'
-import { StudioReadAccess, StudioContentWriteAccess, studioContentAllowWrite } from './studio'
-import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
+import { MongoQuery } from '../../lib/typings/meteor'
+import { Credentials, ResolvedCredentials } from './lib/credentials'
+import { triggerWriteAccess } from './lib/securityVerify'
+import { StudioContentWriteAccess, StudioReadAccess } from './studio'
 
 export namespace BucketSecurity {
 	// Sometimes a studio ID is passed, others the peice / bucket id

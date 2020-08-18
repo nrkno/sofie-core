@@ -1,6 +1,6 @@
-import { getCurrentTime, Time, registerCollection, ProtectedString } from '../lib'
-import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
+import { getCurrentTime, ProtectedString, registerCollection, Time } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
 import { PeripheralDeviceId } from './PeripheralDevices'
 

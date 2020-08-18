@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
-import { Time } from '../lib'
 import { PeripheralDeviceId } from '../collections/PeripheralDevices'
+import { Time } from '../lib'
 
 export interface NewClientAPI {
 	clientErrorReport(timestamp: Time, errorObject: any, location: string): Promise<void>

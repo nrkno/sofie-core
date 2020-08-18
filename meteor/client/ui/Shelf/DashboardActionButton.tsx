@@ -1,7 +1,5 @@
-import * as React from 'react'
 import ClassNames from 'classnames'
-
-import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
+import * as React from 'react'
 import { DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
 
 export interface IDashboardButtonProps {

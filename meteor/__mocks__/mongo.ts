@@ -1,19 +1,19 @@
+import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import {
-	mongoWhere,
 	literal,
+	mongoFindOptions,
+	mongoModify,
+	mongoWhere,
 	Omit,
 	ProtectedString,
-	unprotectString,
 	protectString,
-	mongoModify,
-	mongoFindOptions,
+	unprotectString,
 } from '../lib/lib'
-import { RandomMock } from './random'
-import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } from '../lib/typings/meteor'
+import { FindOptions, ObserveChangesCallbacks, UpdateOptions, UpsertOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
-import { Random } from 'meteor/random'
-import { Meteor } from 'meteor/meteor'
+import { RandomMock } from './random'
 const clone = require('fast-clone')
 
 export namespace MongoMock {

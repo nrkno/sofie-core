@@ -1,40 +1,35 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundown, Rundowns, RundownId } from '../../../lib/collections/Rundowns'
-import { Segment, Segments, SegmentId } from '../../../lib/collections/Segments'
-import { Part, Parts } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
-
-import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
-
-import { getCurrentTime, literal, protectString, unprotectString, ProtectedString } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
-import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { setLoggerLevel } from '../../../server/api/logger'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { MediaManagerAPI } from '../../../lib/api/mediaManager'
+import { MethodContext } from '../../../lib/api/methods'
+import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
+import { Parts } from '../../../lib/collections/Parts'
+import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import {
-	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
+	IngestDeviceSettings,
 } from '../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { Pieces } from '../../../lib/collections/Pieces'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { SegmentId, Segments } from '../../../lib/collections/Segments'
+import { Timeline } from '../../../lib/collections/Timeline'
+import { getCurrentTime, literal, ProtectedString, protectString } from '../../../lib/lib'
+import { setLoggerLevel } from '../../../server/api/logger'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { ServerPlayoutAPI } from '../playout/playout'
 
 jest.mock('../playout/playout.ts')
 const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../playout/playout.ts')
-
-import { ServerPlayoutAPI } from '../playout/playout'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Timeline } from '../../../lib/collections/Timeline'
-import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
-import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
-import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { MethodContext } from '../../../lib/api/methods'
 
 const DEBUG = false
 

@@ -1,59 +1,52 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { withTranslation } from 'react-i18next'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { Part, Parts, PartId } from '../../../lib/collections/Parts'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
-import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faList, faTh, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
+import * as React from 'react'
+import { withTranslation } from 'react-i18next'
 import {
+	IBlueprintActionManifestDisplayContent,
 	IOutputLayer,
 	ISourceLayer,
-	IBlueprintAdLibPiece,
-	IBlueprintAdLibPieceDB,
-	IBlueprintPieceDB,
-	IBlueprintActionManifestDisplayContent,
-	SomeContent,
 	PieceLifespan,
+	SomeContent,
 } from 'tv-automation-sofie-blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import * as _ from 'underscore'
+import { MeteorCall } from '../../../lib/api/methods'
+import { PubSub } from '../../../lib/api/pubsub'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { PartInstances } from '../../../lib/collections/PartInstances'
+import { Part, PartId } from '../../../lib/collections/Parts'
 import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActions,
+} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import {
+	DashboardLayoutFilter,
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
-	DashboardLayoutFilter,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { Random } from 'meteor/random'
-import { literal, extendMandadory, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { Piece, PieceGeneric } from '../../../lib/collections/Pieces'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { literal, normalizeArray, Omit, protectString, unprotectString } from '../../../lib/lib'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
-import { MeteorCall } from '../../../lib/api/methods'
-import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibActions, AdLibActionCommon, AdLibAction } from '../../../lib/collections/AdLibActions'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownUtils } from '../../lib/rundown'
-import { ShelfTabs } from './Shelf'
-import {
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibAction,
-} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { Spinner } from '../../lib/Spinner'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { RundownViewEvents, RundownViewKbdShortcuts } from '../RundownView'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
+import { ShelfTabs } from './Shelf'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>

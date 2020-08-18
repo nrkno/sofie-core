@@ -1,30 +1,30 @@
-import * as _ from 'underscore'
-import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
 import {
-	CURRENT_SYSTEM_VERSION,
-	clearMigrationSteps,
-	addMigrationSteps,
-	prepareMigration,
-	PreparedMigration,
-} from '../databaseMigration'
-import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
-import { literal, protectString, waitForPromise } from '../../../lib/lib'
-import {
-	MigrationStepInputResult,
 	BlueprintManifestType,
-	MigrationStep,
-	MigrationContextStudio,
 	MigrationContextShowStyle,
+	MigrationContextStudio,
+	MigrationStep,
+	MigrationStepInputResult,
 } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { MeteorCall } from '../../../lib/api/methods'
+import { GetMigrationStatusResult, RunMigrationResult } from '../../../lib/api/migration'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
-import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
+import { GENESIS_SYSTEM_VERSION, getCoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
-import { MeteorCall } from '../../../lib/api/methods'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import { literal, protectString, waitForPromise } from '../../../lib/lib'
+import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
+import {
+	addMigrationSteps,
+	clearMigrationSteps,
+	CURRENT_SYSTEM_VERSION,
+	PreparedMigration,
+	prepareMigration,
+} from '../databaseMigration'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed

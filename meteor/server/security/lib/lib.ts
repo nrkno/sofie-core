@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
-import { logger } from '../../logging'
 import { FieldNames } from '../../../lib/typings/meteor'
+import { logger } from '../../logging'
 /**
  * Allow only edits to the fields specified. Edits to any other fields will be rejected
  * @param doc

@@ -1,15 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import Moment from 'react-moment'
-import { Time, unprotectString } from '../../../lib/lib'
-import * as _ from 'underscore'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Evaluations, Evaluation } from '../../../lib/collections/Evaluations'
-import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
+import Moment from 'react-moment'
+import * as _ from 'underscore'
+import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { Evaluation, Evaluations } from '../../../lib/collections/Evaluations'
+import { Time } from '../../../lib/lib'
+import { DatePickerFromTo } from '../../lib/datePicker'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { getQuestionOptions } from '../AfterBroadcastForm'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 interface IEvaluationProps {}
 interface IEvaluationState {
 	dateFrom: Time

@@ -1,14 +1,12 @@
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { Evaluations } from '../../lib/collections/Evaluations'
+import { DBOrganization, Organizations } from '../../lib/collections/Organization'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
-import { Organizations, DBOrganization } from '../../lib/collections/Organization'
+import { OrganizationReadAccess } from '../security/organization'
+import { AutoFillSelector, meteorPublish } from './lib'
 
 meteorPublish(PubSub.organization, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)

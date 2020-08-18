@@ -1,8 +1,7 @@
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
-import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
+import { Studios } from '../../lib/collections/Studios'
+import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 
 /*
  * **************************************************************************************

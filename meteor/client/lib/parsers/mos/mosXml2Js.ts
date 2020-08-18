@@ -1,4 +1,4 @@
-import { IMOSObject, IMOSItem, MosString128, IMOSScope, MosTime, MosDuration } from 'mos-connection'
+import { IMOSItem, MosDuration, MosString128, MosTime } from 'mos-connection'
 import { Parser as MosParser } from 'mos-connection/dist/mosModel/Parser'
 import * as MosUtils from 'mos-connection/dist/utils/Utils'
 import * as _ from 'underscore'

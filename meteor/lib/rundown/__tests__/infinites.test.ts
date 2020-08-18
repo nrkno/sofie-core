@@ -1,12 +1,11 @@
-import { Meteor } from 'meteor/meteor'
-import '../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { literal, protectString } from '../../../lib/lib'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { processAndPrunePieceInstanceTimings } from '../infinites'
+import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { Piece } from '../../../lib/collections/Pieces'
+import { literal, protectString } from '../../../lib/lib'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import '../../../__mocks__/_extendJest'
+import { processAndPrunePieceInstanceTimings } from '../infinites'
 
 describe('Infinites', () => {
 	let env: DefaultEnvironment

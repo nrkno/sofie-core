@@ -1,14 +1,14 @@
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time, Omit, ProtectedString, protectString, isProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
+import { isProtectedString, Omit, ProtectedString, protectString, registerCollection, Time } from '../lib'
 import { logger } from '../logging'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
+import { StudioId } from './Studios'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',

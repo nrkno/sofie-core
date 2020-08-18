@@ -1,23 +1,22 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import {
-	RundownLayoutBase,
-	RundownLayoutAdLibRegion,
-	DashboardLayoutAdLibRegion,
-	RundownLayoutAdLibRegionRole,
-} from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
 import ClassNames from 'classnames'
-import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { unprotectString } from '../../../lib/lib'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import * as _ from 'underscore'
 import { MeteorCall } from '../../../lib/api/methods'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import {
+	DashboardLayoutAdLibRegion,
+	RundownLayoutAdLibRegion,
+	RundownLayoutAdLibRegionRole,
+	RundownLayoutBase,
+} from '../../../lib/collections/RundownLayouts'
+import { unprotectString } from '../../../lib/lib'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { AdLibPieceUi, fetchAndFilter, IAdLibPanelProps, IAdLibPanelTrackedProps, matchFilter } from './AdLibPanel'
+import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
 
 interface IState {}
 

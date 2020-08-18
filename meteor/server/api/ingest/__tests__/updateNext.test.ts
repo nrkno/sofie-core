@@ -1,18 +1,16 @@
-import * as _ from 'underscore'
+import { DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { DBPart, Parts } from '../../../../lib/collections/Parts'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
+import { DBSegment, Segments } from '../../../../lib/collections/Segments'
+import { literal, protectString, saveIntoDb } from '../../../../lib/lib'
 import { runInFiber } from '../../../../__mocks__/Fibers'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
-import { Segments, DBSegment } from '../../../../lib/collections/Segments'
-import { Parts, DBPart } from '../../../../lib/collections/Parts'
-import { literal, saveIntoDb, protectString } from '../../../../lib/lib'
-
+import { wrapWithCacheForRundownPlaylist, wrapWithCacheForRundownPlaylistFromRundown } from '../../../DatabaseCaches'
+import { removeRundownFromCache } from '../../playout/lib'
+import { ServerPlayoutAPI } from '../../playout/playout'
 import { UpdateNext } from '../updateNext'
 
-import { ServerPlayoutAPI } from '../../playout/playout'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
-import { removeRundownFromCache } from '../../playout/lib'
-import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed

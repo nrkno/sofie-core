@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { logger } from './logging'
-import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from '../lib/api/methods'
+import { extractFunctionSignature } from './lib'
+import { logger } from './logging'
 
 type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 

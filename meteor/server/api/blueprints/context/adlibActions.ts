@@ -1,43 +1,42 @@
-import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import {
-	unprotectString,
-	unprotectObject,
-	protectString,
-	assertNever,
-	getCurrentTime,
-	unprotectStringArray,
-	getRandomId,
-	protectStringArray,
-} from '../../../../lib/lib'
-import { Part } from '../../../../lib/collections/Parts'
-import { logger } from '../../../../lib/logging'
-import {
-	EventContext as IEventContext,
 	ActionExecutionContext as IActionExecutionContext,
-	IBlueprintPartInstance,
-	IBlueprintPieceInstance,
-	IBlueprintPiece,
-	IBlueprintPart,
-	IBlueprintResolvedPieceInstance,
-	PieceLifespan,
-	OmitId,
+	EventContext as IEventContext,
 	IBlueprintMutatablePart,
+	IBlueprintPart,
+	IBlueprintPartInstance,
+	IBlueprintPiece,
+	IBlueprintPieceInstance,
+	IBlueprintResolvedPieceInstance,
+	OmitId,
 	PartHoldMode,
+	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studio } from '../../../../lib/collections/Studios'
-import { Rundown } from '../../../../lib/collections/Rundowns'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import * as _ from 'underscore'
+import { PartInstance, PartInstanceId } from '../../../../lib/collections/PartInstances'
+import { Part } from '../../../../lib/collections/Parts'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
-import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Studio } from '../../../../lib/collections/Studios'
+import {
+	assertNever,
+	clone,
+	getCurrentTime,
+	getRandomId,
+	protectString,
+	protectStringArray,
+	unprotectObject,
+	unprotectString,
+	unprotectStringArray,
+} from '../../../../lib/lib'
+import { logger } from '../../../../lib/logging'
+import { MongoQuery } from '../../../../lib/typings/meteor'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
+import { isTooCloseToAutonext } from '../../playout/lib'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext, EventContext } from './context'
-import { isTooCloseToAutonext } from '../../playout/lib'
-import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
-import { MongoQuery } from '../../../../lib/typings/meteor'
-import { clone } from '../../../../lib/lib'
+import { NotesContext, ShowStyleContext } from './context'
 
 export enum ActionPartChange {
 	NONE = 0,

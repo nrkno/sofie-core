@@ -1,14 +1,13 @@
-import { PeripheralDeviceAPI } from '../api/peripheralDevice'
-import { Time, registerCollection, ProtectedString } from '../lib'
-import { TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
-
-import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
-import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
-import { createMongoCollection } from './lib'
 import { DeviceConfigManifest } from '../api/deviceConfig'
-import { StudioId } from './Studios'
+import { PeripheralDeviceAPI } from '../api/peripheralDevice'
+import { ProtectedString, registerCollection, Time } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
+import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
+import { IngestDeviceSecretSettings, IngestDeviceSettings } from './PeripheralDeviceSettings/ingestDevice'
+import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
+import { StudioId } from './Studios'
 
 /** A string, identifying a PeripheralDevice */
 export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>

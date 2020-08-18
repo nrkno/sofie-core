@@ -1,27 +1,26 @@
-import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { Rundown } from '../../../../lib/collections/Rundowns'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, protectString } from '../../../../lib/lib'
-import { Studios, Studio } from '../../../../lib/collections/Studios'
 import {
-	postProcessStudioBaselineObjects,
-	postProcessRundownBaselineItems,
+	IBlueprintAdLibPiece,
+	IBlueprintPiece,
+	PieceLifespan,
+	TimelineObjectCoreExt,
+	TSR,
+} from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
+import { Piece } from '../../../../lib/collections/Pieces'
+import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Studio, Studios } from '../../../../lib/collections/Studios'
+import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
+import { literal, protectString } from '../../../../lib/lib'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { NotesContext, RundownContext } from '../context'
+import {
 	postProcessAdLibPieces,
 	postProcessPieces,
+	postProcessRundownBaselineItems,
+	postProcessStudioBaselineObjects,
 } from '../postProcess'
-import { RundownContext, NotesContext } from '../context'
-import {
-	IBlueprintPiece,
-	IBlueprintAdLibPiece,
-	TimelineObjectCoreExt,
-	IBlueprintPieceDB,
-	TSR,
-	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
-import { Piece } from '../../../../lib/collections/Pieces'
-import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
-import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
 
 describe('Test blueprint post-process', () => {
 	beforeAll(() => {

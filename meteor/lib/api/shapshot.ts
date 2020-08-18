@@ -1,6 +1,6 @@
-import { StudioId } from '../collections/Studios'
-import { SnapshotId } from '../collections/Snapshots'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { SnapshotId } from '../collections/Snapshots'
+import { StudioId } from '../collections/Studios'
 
 export interface NewSnapshotAPI {
 	storeSystemSnapshot(studioId: StudioId | null, reason: string): Promise<SnapshotId>

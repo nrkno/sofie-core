@@ -1,43 +1,41 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import update from 'immutability-helper'
 import * as React from 'react'
-import * as _ from 'underscore'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { IAdLibListItem } from './AdLibListItem'
-import ClassNames from 'classnames'
+import { ContextMenuTrigger } from 'react-contextmenu'
 import {
-	DragSource,
-	DropTarget,
+	ConnectDragPreview,
 	ConnectDragSource,
 	ConnectDropTarget,
+	DragSource,
 	DragSourceMonitor,
+	DropTarget,
 	DropTargetMonitor,
-	ConnectDragPreview,
 } from 'react-dnd'
-import { faBars } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { MeteorCall } from '../../../lib/api/methods'
 import { PubSub } from '../../../lib/api/pubsub'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { literal, unprotectString, partial } from '../../../lib/lib'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
-import { getUnfinishedPieceInstancesReactive, DashboardPanelInner, dashboardElementPosition } from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
-import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { MeteorCall } from '../../../lib/api/methods'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { DragDropItemTypes } from '../DragDropItemTypes'
-import { PieceId } from '../../../lib/collections/Pieces'
-import { BucketPieceButton } from './BucketPieceButton'
-import { ContextMenuTrigger } from 'react-contextmenu'
-import update from 'immutability-helper'
-import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { PartInstances } from '../../../lib/collections/PartInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundowns } from '../../../lib/collections/Rundowns'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../lib/collections/Studios'
+import { literal, partial, unprotectString } from '../../../lib/lib'
+import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { DragDropItemTypes } from '../DragDropItemTypes'
+import { IAdLibListItem } from './AdLibListItem'
+import { BucketPieceButton } from './BucketPieceButton'
+import { getUnfinishedPieceInstancesReactive } from './DashboardPanel'
 
 const HOTKEY_GROUP = 'BucketPanel'
 

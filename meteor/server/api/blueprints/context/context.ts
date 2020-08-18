@@ -1,57 +1,56 @@
-import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import {
-	getHash,
-	formatDateAsTimecode,
-	formatDurationAsTimecode,
-	unprotectString,
-	unprotectObject,
-	unprotectObjectArray,
-	protectString,
-	getCurrentTime,
-} from '../../../../lib/lib'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
-import { check, Match } from '../../../../lib/check'
-import { logger } from '../../../../lib/logging'
-import {
-	ICommonContext,
-	NotesContext as INotesContext,
-	ShowStyleContext as IShowStyleContext,
-	RundownContext as IRundownContext,
-	SegmentContext as ISegmentContext,
-	EventContext as IEventContext,
 	AsRunEventContext as IAsRunEventContext,
-	PartEventContext as IPartEventContext,
-	IStudioConfigContext,
-	ConfigItemValue,
-	IStudioContext,
 	BlueprintMappings,
 	BlueprintRuntimeArguments,
-	IBlueprintSegmentDB,
-	IngestRundown,
-	IngestPart,
-	IBlueprintPartInstance,
-	IBlueprintPieceInstance,
-	IBlueprintPartDB,
-	IBlueprintRundownDB,
+	ConfigItemValue,
+	EventContext as IEventContext,
+	ExtendedIngestRundown,
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
-	ExtendedIngestRundown,
+	IBlueprintPartDB,
+	IBlueprintPartInstance,
+	IBlueprintPieceInstance,
+	IBlueprintRundownDB,
+	IBlueprintSegmentDB,
+	ICommonContext,
+	IngestPart,
+	IStudioConfigContext,
+	IStudioContext,
+	NotesContext as INotesContext,
+	PartEventContext as IPartEventContext,
+	RundownContext as IRundownContext,
+	SegmentContext as ISegmentContext,
+	ShowStyleContext as IShowStyleContext,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studio, StudioId } from '../../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
-import { Rundown } from '../../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { NoteType, INoteBase } from '../../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
-import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
+import * as _ from 'underscore'
+import { INoteBase, NoteType } from '../../../../lib/api/notes'
+import { check, Match } from '../../../../lib/check'
+import { AsRunLog, AsRunLogEvent } from '../../../../lib/collections/AsRunLog'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
+import { PartInstance, unprotectPartInstance } from '../../../../lib/collections/PartInstances'
+import { PartId } from '../../../../lib/collections/Parts'
+import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
+import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../../lib/collections/Rundowns'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
+import { Studio, StudioId } from '../../../../lib/collections/Studios'
+import {
+	formatDateAsTimecode,
+	formatDurationAsTimecode,
+	getCurrentTime,
+	getHash,
+	protectString,
+	unprotectObject,
+	unprotectObjectArray,
+	unprotectString,
+} from '../../../../lib/lib'
+import { logger } from '../../../../lib/logging'
+import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
 import { extendIngestRundownCore } from '../../ingest/lib'
+import { compileStudioConfig, ConfigRef, findMissingConfigs } from '../config'
 
 /** Common */
 

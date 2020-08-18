@@ -1,4 +1,3 @@
-import * as React from 'react'
 import * as _ from 'underscore'
 
 export function makeTableOfObject(o: any) {

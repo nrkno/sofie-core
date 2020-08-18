@@ -1,16 +1,12 @@
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { ServerPlayoutAPI } from '../playout/playout'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { moveNext } from '../userActions'
-import {
-	selectNextPart,
-	isTooCloseToAutonext,
-	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
-} from '../playout/lib'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import {
+	getAllOrderedPartsFromCache,
+	getSelectedPartInstancesFromCache,
+	isTooCloseToAutonext,
+	selectNextPart,
+} from '../playout/lib'
+import { ServerPlayoutAPI } from '../playout/playout'
 
 export namespace UpdateNext {
 	export function ensureNextPartIsValid(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {

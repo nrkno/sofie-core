@@ -1,14 +1,13 @@
+import { Mongo } from 'meteor/mongo'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import _ from 'underscore'
 import { PartInstance, PartInstanceId } from '../collections/PartInstances'
+import { DBPart, PartId } from '../collections/Parts'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../collections/PieceInstances'
-import { DBPart, PartId, Part } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { assertNever, max, flatten, literal } from '../lib'
-import { Mongo } from 'meteor/mongo'
-import { Studio } from '../collections/Studios'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
+import { assertNever, flatten, literal, max } from '../lib'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {
 	return { startPartId: part._id }

@@ -1,35 +1,33 @@
 import * as SuperTimeline from 'superfly-timeline'
-import * as _ from 'underscore'
-import { PieceUi, PartUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
 import { Timecode } from 'timecode'
-import { Settings } from '../../lib/Settings'
 import {
-	SourceLayerType,
-	getPieceGroupId,
-	PieceLifespan,
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
+	PieceLifespan,
+	SourceLayerType,
 	TimelineObjectCoreExt,
 } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
+import { PartId } from '../../lib/collections/Parts'
+import { PieceId } from '../../lib/collections/Pieces'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBSegment, SegmentId } from '../../lib/collections/Segments'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { literal, normalizeArray } from '../../lib/lib'
 import {
-	SegmentExtended,
-	PartExtended,
 	getPieceInstancesForPartInstance,
-	PieceExtended,
 	IOutputLayerExtended,
 	ISourceLayerExtended,
+	PartExtended,
+	PieceExtended,
+	SegmentExtended,
 } from '../../lib/Rundown'
-import { DBSegment, SegmentId } from '../../lib/collections/Segments'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, unprotectObject, unprotectString } from '../../lib/lib'
-import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
-import { PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
-import { PieceInstancePiece } from '../../lib/collections/PieceInstances'
-import { DBPart, PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
+import { Settings } from '../../lib/Settings'
+import { PartUi, PieceUi } from '../ui/SegmentTimeline/SegmentTimelineContainer'
+import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {

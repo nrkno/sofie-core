@@ -1,5 +1,5 @@
 import * as React from 'react'
-import InView, { useInView } from 'react-intersection-observer'
+import InView from 'react-intersection-observer'
 
 export interface IProps {
 	initialShow?: boolean

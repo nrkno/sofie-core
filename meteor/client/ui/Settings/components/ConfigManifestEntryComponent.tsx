@@ -1,12 +1,11 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
+import { ConfigManifestEntry as BlueprintConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
+import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
 import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { TransformedCollection } from '../../../../lib/typings/meteor'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { ConfigManifestEntry, ConfigManifestEntryType } from '../../../../lib/api/deviceConfig'
-import { ConfigManifestEntry as BlueprintConfigManifestEntry } from 'tv-automation-sofie-blueprints-integration'
-import { TransformedCollection } from '../../../../lib/typings/meteor'
 
 export interface IConfigManifestEntryComponentProps {
 	configField: ConfigManifestEntry | BlueprintConfigManifestEntry

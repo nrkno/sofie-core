@@ -1,9 +1,9 @@
-import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { ProtectedString, registerCollection, Time } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
-import { UserId } from './Users'
 import { OrganizationId } from './Organization'
+import { UserId } from './Users'
 
 /** A string, identifying a UserActionsLogItem */
 export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>

@@ -1,6 +1,6 @@
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 1.6.0 (Release 18)
 addMigrationSteps('1.6.0', [

@@ -1,12 +1,12 @@
 import { Meteor } from 'meteor/meteor'
+import { ProtectedString, registerCollection, Time } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time, ProtectedString } from '../lib'
-import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
-import { PartId } from './Parts'
-import { StudioId } from './Studios'
 import { BucketId } from './Buckets'
+import { createMongoCollection } from './lib'
+import { PartId } from './Parts'
 import { PieceId } from './Pieces'
+import { RundownId } from './Rundowns'
+import { StudioId } from './Studios'
 
 /** A string, identifying a ExpectedMediaItem */
 export type ExpectedMediaItemId = ProtectedString<'ExpectedMediaItemId'>

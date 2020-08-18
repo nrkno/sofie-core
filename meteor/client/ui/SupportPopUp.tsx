@@ -1,12 +1,10 @@
-import * as React from 'react'
-import ClassNames from 'classnames'
-import { withTracker } from '../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestion } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import * as React from 'react'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { getHelpMode } from '../lib/localStorage'
+import { CoreSystem } from '../../lib/collections/CoreSystem'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { withTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {}
 

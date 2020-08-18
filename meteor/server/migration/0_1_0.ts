@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
-import { addMigrationSteps } from './databaseMigration'
-import { logger } from '../logging'
-import { Studios, Studio } from '../../lib/collections/Studios'
-import { ensureCollectionProperty } from './lib'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import { protectString } from '../../lib/lib'
+import { logger } from '../logging'
+import { addMigrationSteps } from './databaseMigration'
+import { ensureCollectionProperty } from './lib'
 
 /**
  * This file contains system specific migration steps.

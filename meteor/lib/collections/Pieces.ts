@@ -1,16 +1,10 @@
-import { RundownAPI } from '../api/rundown'
-import { TransformedCollection } from '../typings/meteor'
-import { PartTimings, PartId } from './Parts'
-import { registerCollection, ProtectedString, ProtectedStringProperties, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPieceGeneric,
-	IBlueprintPieceDB,
-	PieceLifespan,
-	BaseContent,
-	Timeline,
-} from 'tv-automation-sofie-blueprints-integration'
+import { BaseContent, IBlueprintPieceDB, IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
+import { RundownAPI } from '../api/rundown'
+import { Omit, ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
+import { PartId, PartTimings } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 

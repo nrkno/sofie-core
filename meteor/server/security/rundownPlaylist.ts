@@ -1,15 +1,15 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
+import { OrganizationId } from '../../lib/collections/Organization'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { isProtectedString } from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
 import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { Credentials, resolveCredentials, ResolvedCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundownPlaylist } from './lib/security'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
-import { isProtectedString } from '../../lib/lib'
-import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
-import { OrganizationId } from '../../lib/collections/Organization'
-import { Settings } from '../../lib/Settings'
 
 type RundownPlaylistContent = { playlistId: RundownPlaylistId }
 export namespace RundownPlaylistReadAccess {

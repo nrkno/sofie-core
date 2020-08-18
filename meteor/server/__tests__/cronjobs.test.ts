@@ -1,27 +1,25 @@
-import { Meteor } from 'meteor/meteor'
-import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
-import { MeteorMock, useControllableDefer } from '../../__mocks__/meteor'
-import { logger } from '../logging'
-import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
 import { Random } from 'meteor/random'
-import { protectString } from '../../lib/lib'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { AsRunLog, AsRunLogEventId } from '../../lib/collections/AsRunLog'
-import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
-import { Snapshots, SnapshotId, SnapshotType } from '../../lib/collections/Snapshots'
 import { IBlueprintAsRunLogEventContent, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { AsRunLog, AsRunLogEventId } from '../../lib/collections/AsRunLog'
+import { IngestCacheType, IngestDataCache, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
+import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { SnapshotId, Snapshots, SnapshotType } from '../../lib/collections/Snapshots'
+import { UserActionsLog, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import * as lib from '../../lib/lib'
+import { protectString } from '../../lib/lib'
+import { runAllTimers, testInFiber } from '../../__mocks__/helpers/jest'
+import { MeteorMock } from '../../__mocks__/meteor'
+import '../../__mocks__/_extendJest'
+import '../cronjobs'
+import { logger } from '../logging'
 
 // Set up mocks for tests in this suite
 let mockCurrentTime = 0
 let origGetCurrentTime
 jest.mock('../logging')
-
-import '../cronjobs'
 
 describe('cronjobs', () => {
 	beforeAll(() => {

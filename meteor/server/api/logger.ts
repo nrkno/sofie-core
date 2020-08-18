@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { logger, transports } from '../logging'
-import * as _ from 'underscore'
 
 Meteor.methods({
 	logger: (type: string, ...args: any[]) => {

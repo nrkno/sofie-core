@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { getElementWidth } from '../../../utils/dimensions'
-
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
+
 interface IProps extends ICustomLayerItemProps {}
 interface IState {}
 

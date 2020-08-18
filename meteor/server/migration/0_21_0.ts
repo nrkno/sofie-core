@@ -1,9 +1,9 @@
-import { addMigrationSteps } from './databaseMigration'
-import * as _ from 'underscore'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Random } from 'meteor/random'
-import { setExpectedVersion } from './lib'
+import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // 0.21.0 ( Release 6 )
 addMigrationSteps('0.21.0', [

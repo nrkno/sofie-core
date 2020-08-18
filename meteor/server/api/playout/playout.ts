@@ -1,86 +1,84 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
+import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { ClientAPI } from '../../../lib/api/client'
+import { MethodContext } from '../../../lib/api/methods'
+import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
+import { check, Match } from '../../../lib/check'
+import { Blueprints } from '../../../lib/collections/Blueprints'
+import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { DBPart, Part, PartId } from '../../../lib/collections/Parts'
+import { PieceInstance, PieceInstanceId, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
-import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
+import { Segment, SegmentId } from '../../../lib/collections/Segments'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { StudioId } from '../../../lib/collections/Studios'
+import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
 import {
 	getCurrentTime,
-	Time,
-	waitForPromise,
-	normalizeArray,
-	unprotectString,
-	protectString,
-	isStringOrProtectedString,
 	getRandomId,
+	isStringOrProtectedString,
+	normalizeArray,
+	protectString,
+	Time,
+	unprotectString,
+	waitForPromise,
 } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
-import { Segment, SegmentId } from '../../../lib/collections/Segments'
-import * as _ from 'underscore'
-import { logger } from '../../logging'
-import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
-import { StudioId } from '../../../lib/collections/Studios'
-import { ClientAPI } from '../../../lib/api/client'
-import {
-	reportRundownHasStarted,
-	reportPartHasStarted,
-	reportPieceHasStarted,
-	reportPartHasStopped,
-	reportPieceHasStopped,
-} from '../asRunLog'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { getBlueprintOfRundown } from '../blueprints/cache'
-import { NotesContext } from '../blueprints/context/context'
-import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
-import { IngestActions } from '../ingest/actions'
-import { updateTimeline } from './timeline'
-import {
-	resetRundownPlaylist as libResetRundownPlaylist,
-	setNextPart as libsetNextPart,
-	setNextSegment as libSetNextSegment,
-	onPartHasStoppedPlaying,
-	selectNextPart,
-	getSegmentsAndPartsFromCache,
-	getSelectedPartInstancesFromCache,
-	getRundownIDsFromCache,
-	getRundownsFromCache,
-	getStudioFromCache,
-	getAllOrderedPartsFromCache,
-	getAllPieceInstancesFromCache,
-	checkAccessAndGetPlaylist,
-} from './lib'
-import {
-	prepareStudioForBroadcast,
-	activateRundownPlaylist as libActivateRundownPlaylist,
-	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
-	deactivateRundownPlaylistInner,
-	standDownStudio,
-} from './actions'
-import { sortPieceInstancesByStart } from './pieces'
+import { Settings } from '../../../lib/Settings'
 import { PackageInfo } from '../../coreSystem'
-import { getActiveRundownPlaylistsInStudio } from './studio'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
-import { ServerPlayoutAdLibAPI } from './adlib'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
-import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
-import { MethodContext } from '../../../lib/api/methods'
-import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
+import {
+	CacheForRundownPlaylist,
+	CacheForStudio,
+	initCacheForNoRundownPlaylist,
+	initCacheForRundownPlaylist,
+	initCacheForStudio,
+} from '../../DatabaseCaches'
+import { logger } from '../../logging'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
 import {
-	initCacheForRundownPlaylist,
-	CacheForRundownPlaylist,
-	initCacheForStudio,
-	initCacheForNoRundownPlaylist,
-	CacheForStudio,
-} from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake } from './take'
+	reportPartHasStarted,
+	reportPartHasStopped,
+	reportPieceHasStarted,
+	reportPieceHasStopped,
+	reportRundownHasStarted,
+} from '../asRunLog'
+import { getBlueprintOfRundown } from '../blueprints/cache'
+import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
+import { NotesContext } from '../blueprints/context/context'
+import { IngestActions } from '../ingest/actions'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
+import {
+	activateRundownPlaylist as libActivateRundownPlaylist,
+	deactivateRundownPlaylist as libDeactivateRundownPlaylist,
+	deactivateRundownPlaylistInner,
+	prepareStudioForBroadcast,
+	standDownStudio,
+} from './actions'
+import { ServerPlayoutAdLibAPI } from './adlib'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { check, Match } from '../../../lib/check'
-import { Settings } from '../../../lib/Settings'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import {
+	checkAccessAndGetPlaylist,
+	getAllOrderedPartsFromCache,
+	getAllPieceInstancesFromCache,
+	getRundownIDsFromCache,
+	getRundownsFromCache,
+	getSegmentsAndPartsFromCache,
+	getSelectedPartInstancesFromCache,
+	getStudioFromCache,
+	onPartHasStoppedPlaying,
+	resetRundownPlaylist as libResetRundownPlaylist,
+	selectNextPart,
+	setNextPart as libsetNextPart,
+	setNextSegment as libSetNextSegment,
+} from './lib'
+import { sortPieceInstancesByStart } from './pieces'
+import { getActiveRundownPlaylistsInStudio } from './studio'
+import { afterTake, takeNextPartInner } from './take'
+import { updateTimeline } from './timeline'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"

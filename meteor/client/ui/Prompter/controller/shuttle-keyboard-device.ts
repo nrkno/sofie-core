@@ -1,5 +1,5 @@
-import { ControllerAbstract, LONGPRESS_TIME } from './lib'
 import { PrompterViewInner } from '../PrompterView'
+import { ControllerAbstract } from './lib'
 
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 

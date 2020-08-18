@@ -1,28 +1,20 @@
+import { Meteor } from 'meteor/meteor'
+import { IBlueprintPartInstance, PartEndState } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { TransformedCollection } from '../typings/meteor'
 import {
 	applyClassToDocument,
-	Time,
-	registerCollection,
+	Omit,
 	ProtectedString,
 	ProtectedStringProperties,
 	protectString,
+	registerCollection,
 	unprotectString,
-	Omit,
 } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPartInstance,
-	BlueprintRuntimeArguments,
-	PartEndState,
-} from 'tv-automation-sofie-blueprints-integration'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
-import { PieceInstance, PieceInstances } from './PieceInstances'
-import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
-import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>

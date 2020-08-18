@@ -1,16 +1,16 @@
-import * as _ from 'underscore'
-import { check, Match } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../../logging'
-import { MediaWorkFlows, MediaWorkFlow, MediaWorkFlowId } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps, MediaWorkFlowStep, MediaWorkFlowStepId } from '../../../lib/collections/MediaWorkFlowSteps'
+import * as _ from 'underscore'
+import { MethodContext } from '../../../lib/api/methods'
 import {
-	PeripheralDeviceAPI,
 	MediaWorkFlowRevision,
 	MediaWorkFlowStepRevision,
+	PeripheralDeviceAPI,
 } from '../../../lib/api/peripheralDevice'
+import { check, Match } from '../../../lib/check'
+import { MediaWorkFlow, MediaWorkFlowId, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep, MediaWorkFlowStepId, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { MethodContext } from '../../../lib/api/methods'
+import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 
 export namespace MediaManagerIntegration {

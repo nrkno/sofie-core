@@ -1,49 +1,45 @@
 /* tslint:disable:no-use-before-declare */
+import { Random } from 'meteor/random'
 import { Resolver } from 'superfly-timeline'
+import {
+	getPieceFirstObjectId,
+	OnGenerateTimelineObj,
+	PieceLifespan,
+	TimelineObjectCoreExt,
+	TSR,
+} from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { DeepReadonly } from 'utility-types'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstancePiece, ResolvedPieceInstance } from '../../../lib/collections/PieceInstances'
 import { Piece } from '../../../lib/collections/Pieces'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
-	literal,
-	extendMandadory,
-	getCurrentTime,
+	TimelineObjGeneric,
+	TimelineObjPieceAbstract,
+	TimelineObjRundown,
+	TimelineObjType,
+} from '../../../lib/collections/Timeline'
+import {
 	clone,
+	extendMandadory,
+	flatten,
+	getCurrentTime,
+	literal,
 	normalizeArray,
+	omit,
 	protectString,
 	unprotectString,
-	omit,
-	flatten,
 } from '../../../lib/lib'
-import {
-	TimelineContentTypeOther,
-	TimelineObjPieceAbstract,
-	TimelineObjGroup,
-	TimelineObjType,
-	TimelineObjRundown,
-	TimelineObjGeneric,
-	TimelineObjGroupRundown,
-} from '../../../lib/collections/Timeline'
-import { logger } from '../../logging'
-import {
-	getPieceGroupId,
-	getPieceFirstObjectId,
-	TimelineObjectCoreExt,
-	OnGenerateTimelineObj,
-	TSR,
-	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
-import { transformTimeline, TimelineContentObject } from '../../../lib/timeline'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { Random } from 'meteor/random'
-import { prefixAllObjectIds, getSelectedPartInstancesFromCache } from './lib'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { TimelineContentObject, transformTimeline } from '../../../lib/timeline'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { logger } from '../../logging'
+import { getSelectedPartInstancesFromCache, prefixAllObjectIds } from './lib'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start

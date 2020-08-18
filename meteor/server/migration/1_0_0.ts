@@ -1,8 +1,8 @@
-import { addMigrationSteps } from './databaseMigration'
 import * as _ from 'underscore'
-import { Studios } from '../../lib/collections/Studios'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { Studios } from '../../lib/collections/Studios'
+import { addMigrationSteps } from './databaseMigration'
+import { ensureCollectionProperty, setExpectedVersion } from './lib'
 
 // 1.0.0 (Release 12)
 addMigrationSteps('1.0.0', [

@@ -1,9 +1,8 @@
-import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
-import { MouseIshController } from './mouse-ish-device'
-import { ControllerAbstract } from './lib'
-import { ShuttleKeyboardController } from './shuttle-keyboard-device'
-import * as _ from 'underscore'
+import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import { KeyboardController } from './keyboard-device'
+import { ControllerAbstract } from './lib'
+import { MouseIshController } from './mouse-ish-device'
+import { ShuttleKeyboardController } from './shuttle-keyboard-device'
 
 export class PrompterControlManager {
 	private _view: PrompterViewInner

@@ -1,16 +1,16 @@
 import { Meteor } from 'meteor/meteor'
-import '../../../../__mocks__/_extendJest'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import '../api'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import {
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
+} from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import '../../../../__mocks__/_extendJest'
+import '../api'
 
 namespace PlayoutAPI {
 	// Using our own method definition, to catch external API changes

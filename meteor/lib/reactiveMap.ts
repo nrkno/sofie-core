@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 
 export class ReactiveMap<T> {

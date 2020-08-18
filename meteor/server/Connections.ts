@@ -1,6 +1,6 @@
-import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
-import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
+import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
+import { getCurrentTime } from '../lib/lib'
 
 Meteor.onConnection((conn: Meteor.Connection) => {
 	let connectionId = conn.id

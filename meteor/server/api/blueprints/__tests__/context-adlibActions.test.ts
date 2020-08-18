@@ -1,26 +1,30 @@
-import * as _ from 'underscore'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
-import { Studio } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
-import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import * as _ from 'underscore'
 import { PartInstance, PartInstanceId, PartInstances } from '../../../../lib/collections/PartInstances'
 import {
 	PieceInstance,
-	ResolvedPieceInstance,
 	PieceInstanceId,
 	PieceInstances,
+	ResolvedPieceInstance,
 } from '../../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
-
+import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { Studio } from '../../../../lib/collections/Studios'
+import { getCurrentTime, getRandomId, protectString, unprotectString, waitForPromise } from '../../../../lib/lib'
+import {
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
+} from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
+import { getRundownIDsFromCache, isTooCloseToAutonext } from '../../playout/lib'
+import { getResolvedPieces } from '../../playout/pieces'
+import { ActionExecutionContext, ActionPartChange, NotesContext } from '../context'
+import { postProcessPieces } from '../postProcess'
+
 ServerPlayoutAdLibAPI.innerStopPieces = jest.fn()
 type TinnerStopPieces = jest.MockedFunction<typeof ServerPlayoutAdLibAPI.innerStopPieces>
 const innerStopPiecesMock = ServerPlayoutAdLibAPI.innerStopPieces as TinnerStopPieces
@@ -36,14 +40,10 @@ type TinnerStartQueuedAdLib = jest.MockedFunction<typeof ServerPlayoutAdLibAPI.i
 const innerStartQueuedAdLibMock = ServerPlayoutAdLibAPI.innerStartQueuedAdLib as TinnerStartQueuedAdLib
 
 jest.mock('../../playout/pieces')
-import { getResolvedPieces } from '../../playout/pieces'
 type TgetResolvedPieces = jest.MockedFunction<typeof getResolvedPieces>
 const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
 
 jest.mock('../postProcess')
-import { postProcessPieces } from '../postProcess'
-import { isTooCloseToAutonext, getRundownIDsFromCache } from '../../playout/lib'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])

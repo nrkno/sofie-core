@@ -1,5 +1,5 @@
+import { IncomingWebhookResult } from '@slack/client'
 import { Meteor } from 'meteor/meteor'
-import { IncomingWebhook, IncomingWebhookResult } from '@slack/client'
 
 export function sendSlackMessageToWebhook(message: string, webhookURL: string): Promise<IncomingWebhookResult> {
 	return new Promise((resolve, reject) => {

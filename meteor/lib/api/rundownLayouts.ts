@@ -1,18 +1,18 @@
+import * as _ from 'underscore'
 import {
-	RundownLayoutBase,
-	RundownLayout,
 	DashboardLayout,
-	RundownLayoutType,
-	RundownLayoutId,
+	PieceDisplayStyle,
+	RundownLayout,
+	RundownLayoutAdLibRegion,
+	RundownLayoutBase,
 	RundownLayoutElementBase,
-	RundownLayoutFilterBase,
 	RundownLayoutElementType,
 	RundownLayoutExternalFrame,
-	RundownLayoutAdLibRegion,
-	PieceDisplayStyle,
+	RundownLayoutFilterBase,
+	RundownLayoutId,
+	RundownLayoutType,
 } from '../collections/RundownLayouts'
 import { ShowStyleBaseId } from '../collections/ShowStyleBases'
-import * as _ from 'underscore'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(

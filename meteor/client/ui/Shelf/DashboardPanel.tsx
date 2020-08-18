@@ -1,47 +1,33 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { withTranslation } from 'react-i18next'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Segment } from '../../../lib/collections/Segments'
-import { Part, PartId } from '../../../lib/collections/Parts'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { AdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
-import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownViewKbdShortcuts } from '../RundownView'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import * as React from 'react'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import * as _ from 'underscore'
+import { MeteorCall } from '../../../lib/api/methods'
+import { PubSub } from '../../../lib/api/pubsub'
+import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { Studio } from '../../../lib/collections/Studios'
+import { getCurrentTime, unprotectString } from '../../../lib/lib'
+import { invalidateAt } from '../../lib/invalidatingTime'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Spinner } from '../../lib/Spinner'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { RundownLayoutFilter, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { Random } from 'meteor/random'
-import { literal, unprotectString, getCurrentTime } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
+import { RundownViewKbdShortcuts } from '../RundownView'
 import {
+	AdLibPanelToolbar,
+	AdLibPieceUi,
+	fetchAndFilter,
 	IAdLibPanelProps,
 	IAdLibPanelTrackedProps,
-	fetchAndFilter,
-	AdLibPieceUi,
 	matchFilter,
-	AdLibPanelToolbar,
 } from './AdLibPanel'
-import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
-import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
-import { invalidateAt } from '../../lib/invalidatingTime'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
-import { MeteorCall } from '../../../lib/api/methods'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { getNextPiecesReactive } from './AdLibRegionPanel'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { DashboardPieceButton } from './DashboardPieceButton'
 
 interface IState {
 	outputLayers: {

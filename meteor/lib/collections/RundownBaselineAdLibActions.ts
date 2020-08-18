@@ -1,7 +1,7 @@
-import { AdLibActionCommon } from './AdLibActions'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
+import { AdLibActionCommon } from './AdLibActions'
 import { createMongoCollection } from './lib'
 
 /** A string, identifying an RundownBaselineAdLibActionId */

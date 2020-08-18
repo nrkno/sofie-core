@@ -1,12 +1,12 @@
 import * as React from 'react'
 import { withTranslation } from 'react-i18next'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { IngestDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { IngestDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
+import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { fetchFrom } from '../../../lib/lib'
+import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 
 interface IConfigManifestOAuthFlowComponentState {}
 interface IConfigManifestOAuthFlowComponentProps {

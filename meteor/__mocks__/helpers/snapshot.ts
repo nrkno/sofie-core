@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
-import { TimelineObjGeneric } from '../../lib/collections/Timeline'
-import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns'
-import { DBSegment } from '../../lib/collections/Segments'
-import { Part, DBPart } from '../../lib/collections/Parts'
+import { DBPart, Part } from '../../lib/collections/Parts'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { PieceInstance } from '../../lib/collections/PieceInstances'
+import { DBRundown } from '../../lib/collections/Rundowns'
+import { DBSegment } from '../../lib/collections/Segments'
+import { TimelineObjGeneric } from '../../lib/collections/Timeline'
 const cloneOrg = require('fast-clone')
 
 // About snapshot testing: https://jestjs.io/docs/en/snapshot-testing

@@ -1,30 +1,30 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../lib/check'
+import {
+	ExternalMessageQueueObjRabbitMQ,
+	ExternalMessageQueueObjSOAP,
+	IBlueprintExternalMessageQueueObj,
+	IBlueprintExternalMessageQueueType,
+} from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { logger } from '../logging'
+import { ExternalMessageQueueAPIMethods, NewExternalMessageQueueAPI } from '../../lib/api/ExternalMessageQueue'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { check } from '../../lib/check'
 import {
 	ExternalMessageQueue,
 	ExternalMessageQueueObj,
 	ExternalMessageQueueObjId,
 } from '../../lib/collections/ExternalMessageQueue'
-import {
-	ExternalMessageQueueObjSOAP,
-	IBlueprintExternalMessageQueueObj,
-	IBlueprintExternalMessageQueueType,
-	ExternalMessageQueueObjRabbitMQ,
-} from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime, removeNullyProperties, getRandomId, makePromise, protectString, omit } from '../../lib/lib'
-import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
-import { sendSOAPMessage } from './integration/soap'
-import { sendSlackMessageToWebhook } from './integration/slack'
-import { sendRabbitMQMessage } from './integration/rabbitMQ'
-import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { StudioContentWriteAccess } from '../security/studio'
-import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { getCurrentTime, getRandomId, makePromise, omit, protectString, removeNullyProperties } from '../../lib/lib'
 import { MongoModifier } from '../../lib/typings/meteor'
+import { logger } from '../logging'
+import { registerClassToMeteorMethods } from '../methods'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { StudioContentWriteAccess } from '../security/studio'
+import { setSystemStatus, StatusCode, StatusObject } from '../systemStatus/systemStatus'
+import { sendRabbitMQMessage } from './integration/rabbitMQ'
+import { sendSlackMessageToWebhook } from './integration/slack'
+import { sendSOAPMessage } from './integration/soap'
 
 export function queueExternalMessages(rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
 	const playlist = rundown.getRundownPlaylist()

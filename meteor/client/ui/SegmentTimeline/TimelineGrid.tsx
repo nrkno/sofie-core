@@ -1,11 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-
-import { RundownUtils } from '../../lib/rundown'
-
 import { Settings } from '../../../lib/Settings'
-import { getElementWidth, getElementHeight } from '../../utils/dimensions'
-import { onElementResize, offElementResize } from '../../lib/resizeObserver'
+import { onElementResize } from '../../lib/resizeObserver'
+import { RundownUtils } from '../../lib/rundown'
+import { getElementHeight, getElementWidth } from '../../utils/dimensions'
 
 // We're cheating a little: Fontface
 declare class FontFace {

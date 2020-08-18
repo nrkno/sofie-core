@@ -1,12 +1,11 @@
-import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, registerCollection, ProtectedString } from '../lib'
-import * as _ from 'underscore'
-import { IConfigItem, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { BlueprintMapping, BlueprintMappings, IConfigItem, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { applyClassToDocument, ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { BlueprintId } from './Blueprints'
-import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
+import { createMongoCollection, ObserveChangesForHash } from './lib'
 import { OrganizationId } from './Organization'
+import { ShowStyleBaseId } from './ShowStyleBases'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt

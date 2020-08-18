@@ -1,5 +1,5 @@
-import { Settings } from '../../lib/Settings'
 import { getUserRoles } from '../../lib/collections/Users'
+import { Settings } from '../../lib/Settings'
 
 enum UiAllowAccess {
 	STUDIO = 'studioMode',

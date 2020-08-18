@@ -1,7 +1,6 @@
-import { setExpectedVersion } from './lib'
-import { addMigrationSteps } from './databaseMigration'
-import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // 0.18.0: Release 4
 addMigrationSteps('0.18.0', [

@@ -1,11 +1,11 @@
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { MediaManagerAPI } from '../api/mediaManager'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
+import { MediaWorkFlowId } from './MediaWorkFlows'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { StudioId } from './Studios'
-import { MediaWorkFlowId } from './MediaWorkFlows'
-import { MediaManagerAPI } from '../api/mediaManager'
 
 /** A string, identifying a MediaWorkFlowStep */
 export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>

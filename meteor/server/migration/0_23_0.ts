@@ -1,8 +1,7 @@
-import { addMigrationSteps } from './databaseMigration'
-import * as _ from 'underscore'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // 0.23.0 ( Release 8 )
 addMigrationSteps('0.23.0', [

@@ -1,15 +1,9 @@
 import * as React from 'react'
-import { getElementWidth } from '../../../utils/dimensions'
-
-import { FloatingInspector } from '../../FloatingInspector'
-
-import ClassNames from 'classnames'
-import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-
 import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
 import { literal } from '../../../../lib/lib'
-import * as _ from 'underscore'
-import { RundownUtils } from '../../../lib/rundown'
+import { getElementWidth } from '../../../utils/dimensions'
+import { FloatingInspector } from '../../FloatingInspector'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
 export enum SplitRole {
 	ART = 0,

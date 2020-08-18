@@ -1,12 +1,12 @@
-import * as _ from 'underscore'
-import { applyClassToDocument, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Parts, DBPart } from './Parts'
-import { Rundowns, RundownId } from './Rundowns'
-import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { Meteor } from 'meteor/meteor'
 import { IBlueprintSegmentDB, Time } from 'tv-automation-sofie-blueprints-integration'
-import { PartNote, SegmentNote } from '../api/notes'
+import * as _ from 'underscore'
+import { SegmentNote } from '../api/notes'
+import { applyClassToDocument, ProtectedString, ProtectedStringProperties, registerCollection } from '../lib'
+import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
+import { DBPart, Parts } from './Parts'
+import { RundownId } from './Rundowns'
 
 /** A string, identifying a Segment */
 export type SegmentId = ProtectedString<'SegmentId'>

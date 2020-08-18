@@ -1,14 +1,14 @@
-import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__mocks__/helpers/database'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, Omit, getRandomId, protectString } from '../../../../lib/lib'
-import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
-import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
-import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { Meteor } from 'meteor/meteor'
-import { insertBlueprint, uploadBlueprint } from '../api'
+import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { MethodContext } from '../../../../lib/api/methods'
+import { Blueprint, Blueprints } from '../../../../lib/collections/Blueprints'
+import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../../../lib/collections/CoreSystem'
+import { getRandomId, literal, Omit, protectString } from '../../../../lib/lib'
+import { packageBlueprint, setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { insertBlueprint, uploadBlueprint } from '../api'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 

@@ -1,12 +1,11 @@
-import { PieceGeneric, RundownPieceGeneric } from './Pieces'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedStringProperties, Omit } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
+import { BaseContent, IBlueprintAdLibPiece } from 'tv-automation-sofie-blueprints-integration'
+import { registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
-import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
-import { BucketId } from './Buckets'
+import { PieceGeneric } from './Pieces'
+import { RundownId } from './Rundowns'
 
 export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	/** The object describing the piece in detail */

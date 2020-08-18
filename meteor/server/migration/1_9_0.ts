@@ -1,7 +1,7 @@
-import { addMigrationSteps } from './databaseMigration'
-import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // Release 21
 addMigrationSteps('1.9.0', [

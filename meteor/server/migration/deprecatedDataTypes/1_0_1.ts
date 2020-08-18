@@ -1,13 +1,13 @@
-import { Time, literal, protectString } from '../../../lib/lib'
-import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
-import { RundownNote } from '../../../lib/api/notes'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
+import { RundownNote } from '../../../lib/api/notes'
+import { PartId } from '../../../lib/collections/Parts'
+import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { DBRundown, RundownHoldState, RundownImportVersions } from '../../../lib/collections/Rundowns'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { StudioId } from '../../../lib/collections/Studios'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { PartId } from '../../../lib/collections/Parts'
+import { literal, protectString, Time } from '../../../lib/lib'
 
 export interface Rundown {
 	externalId: string

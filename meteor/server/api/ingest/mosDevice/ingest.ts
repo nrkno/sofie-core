@@ -1,58 +1,55 @@
-import * as _ from 'underscore'
-import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
+import * as MOS from 'mos-connection'
+import { IngestPart, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { IngestCacheType, IngestDataCache } from '../../../../lib/collections/IngestDataCache'
+import { PartId } from '../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getStudioFromDevice, getSegmentId, canBeUpdated, getRundown, getPartId, getRundownPlaylist } from '../lib'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
+import { Segment } from '../../../../lib/collections/Segments'
+import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { Studio } from '../../../../lib/collections/Studios'
 import {
-	getRundownIdFromMosRO,
-	getPartIdFromMosStory,
-	getSegmentExternalId,
-	fixIllegalObject,
-	parseMosString,
-} from './lib'
-import {
+	getCurrentTime,
 	literal,
-	asyncCollectionUpdate,
-	waitForPromiseAll,
+	normalizeArray,
 	protectString,
 	unprotectString,
 	waitForPromise,
-	getCurrentTime,
-	normalizeArray,
 } from '../../../../lib/lib'
-import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
-import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
+import { logger } from '../../../../lib/logging'
+import { Settings } from '../../../../lib/Settings'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { loadShowStyleBlueprints } from '../../blueprints/cache'
+import { getSelectedPartInstancesFromCache } from '../../playout/lib'
+import { removeSegments, ServerRundownAPI } from '../../rundown'
 import {
-	rundownPlaylistSyncFunction,
-	RundownSyncFunctionPriority,
-	handleUpdatedRundownInner,
-	handleUpdatedPartInner,
-	updateSegmentsFromIngestData,
-} from '../rundownInput'
-import {
-	loadCachedRundownData,
-	saveRundownCache,
 	loadCachedIngestSegment,
+	loadCachedRundownData,
 	loadIngestDataCachePart,
+	LocalIngestPart,
 	LocalIngestRundown,
 	LocalIngestSegment,
-	LocalIngestPart,
+	saveRundownCache,
 	updateIngestRundownWithData,
 } from '../ingestCache'
-import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
-import { Studio } from '../../../../lib/collections/Studios'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { Segments, Segment } from '../../../../lib/collections/Segments'
-import { loadShowStyleBlueprints } from '../../blueprints/cache'
-import { removeSegments, ServerRundownAPI } from '../../rundown'
+import { canBeUpdated, getPartId, getRundown, getRundownPlaylist, getSegmentId, getStudioFromDevice } from '../lib'
+import {
+	handleUpdatedPartInner,
+	handleUpdatedRundownInner,
+	rundownPlaylistSyncFunction,
+	RundownSyncFunctionPriority,
+	updateSegmentsFromIngestData,
+} from '../rundownInput'
 import { UpdateNext } from '../updateNext'
-import { logger } from '../../../../lib/logging'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Parts, PartId } from '../../../../lib/collections/Parts'
-import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
-import { Settings } from '../../../../lib/Settings'
+import {
+	fixIllegalObject,
+	getPartIdFromMosStory,
+	getRundownIdFromMosRO,
+	getSegmentExternalId,
+	parseMosString,
+} from './lib'
 
 interface AnnotatedIngestPart {
 	externalId: string

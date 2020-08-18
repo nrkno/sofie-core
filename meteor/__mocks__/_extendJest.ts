@@ -1,5 +1,3 @@
-import { setLoggerLevel } from '../server/api/logger'
-
 // Include this file in to get access to the extended functions
 
 expect.extend({

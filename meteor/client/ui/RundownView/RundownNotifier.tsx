@@ -1,41 +1,41 @@
+import { Meteor } from 'meteor/meteor'
+import { ReactiveVar } from 'meteor/reactive-var'
+import { Tracker } from 'meteor/tracker'
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
-import { Tracker } from 'meteor/tracker'
+import { MeteorCall } from '../../../lib/api/methods'
+import { NoteType, TrackedNote } from '../../../lib/api/notes'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { RundownAPI, RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
+import { IMediaObjectIssue, RankedNote } from '../../../lib/api/rundownNotifications'
+import { PartId, Parts } from '../../../lib/collections/Parts'
+import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownId } from '../../../lib/collections/Rundowns'
+import { SegmentId, Segments } from '../../../lib/collections/Segments'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { Studio, StudioId } from '../../../lib/collections/Studios'
+import { getCurrentTime, unprotectString } from '../../../lib/lib'
+import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
+import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
+import { PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { doModalDialog } from '../../lib/ModalDialog'
 import {
+	getNoticeLevelForPieceStatus,
+	NoticeLevel,
+	Notification,
 	NotificationCenter,
 	NotificationList,
 	NotifierHandle,
-	Notification,
-	NoticeLevel,
-	getNoticeLevelForPieceStatus,
 } from '../../lib/notifications/notifications'
-import { RundownAPI, RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
-import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { checkPieceContentStatus, getMediaObjectMediaId } from '../../../lib/mediaObjects'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Parts, PartId } from '../../../lib/collections/Parts'
-import { getCurrentTime, unprotectString } from '../../../lib/lib'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { ReactiveVar } from 'meteor/reactive-var'
-import { Segments, SegmentId } from '../../../lib/collections/Segments'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
-import { Rundowns, RundownId, Rundown } from '../../../lib/collections/Rundowns'
-import { doModalDialog } from '../../lib/ModalDialog'
+import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { doUserAction, UserAction } from '../../lib/userAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator } from '../i18n'
-import { PartNote, NoteType, TrackedNote } from '../../../lib/api/notes'
-import { Pieces, PieceId } from '../../../lib/collections/Pieces'
-import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownPlaylistReloadResponse } from '../RundownView'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { MeteorCall } from '../../../lib/api/methods'
-import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
-import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)

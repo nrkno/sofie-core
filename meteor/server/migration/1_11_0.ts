@@ -1,7 +1,7 @@
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { CoreSystem } from '../../lib/collections/CoreSystem'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // Release 23
 addMigrationSteps('1.11.0', [

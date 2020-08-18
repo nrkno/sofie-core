@@ -3,7 +3,6 @@
  */
 
 import '../lib/main'
-
 // Import all files that register Meteor methods:
 import './api/blueprints/api'
 import './api/blueprints/http'
@@ -15,36 +14,34 @@ import './api/integration/media-scanner'
 import './api/integration/mediaWorkFlows'
 import './api/logger'
 import './api/manualPlayout'
+import './api/organizations'
 import './api/peripheralDevice'
 import './api/playout/api'
+// import all files that calls Meteor.startup:
+import './api/rest/rest'
 import './api/rundown'
 import './api/rundownLayouts'
 import './api/rundownNotifications'
 import './api/showStyles'
 import './api/snapshot'
 import './api/studios'
+import './api/systemTime/systemTime'
 import './api/testTools'
+import './api/user'
 import './api/userActions'
+import './Connections'
+import './coreSystem'
+import './cronjobs'
+import './email'
 import './methods'
 import './migration/api'
 import './migration/databaseMigration'
 import './migration/migrations'
 import './mockData/rundownData'
 import './performanceMonitor'
-import './systemStatus/api'
-import './api/user'
-import './api/organizations'
-
-// import all files that calls Meteor.startup:
-import './api/rest/rest'
-import './api/systemTime/systemTime'
-import './Connections'
-import './coreSystem'
-import './cronjobs'
-import './email'
 // import './api/ExternalMessageQueue' // called above
 // import './performanceMonitor' // called above
-
 // Setup publications and security:
 import './publications/_publications'
 import './security/_security'
+import './systemStatus/api'

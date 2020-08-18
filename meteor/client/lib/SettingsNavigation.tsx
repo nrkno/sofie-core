@@ -1,13 +1,10 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { Redirect } from 'react-router'
-import { withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
+import * as React from 'react'
 import { withTranslation } from 'react-i18next'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { Studios } from '../../lib/collections/Studios'
+import { Redirect } from 'react-router'
 import { MeteorCall } from '../../lib/api/methods'
+import { Studios } from '../../lib/collections/Studios'
+import { withTracker } from './ReactMeteorData/ReactMeteorData'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType

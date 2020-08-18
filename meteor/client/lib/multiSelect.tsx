@@ -1,10 +1,9 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import ClassNames from 'classnames'
-
+import { faCheckSquare, faChevronUp, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheckSquare, faSquare, faChevronUp } from '@fortawesome/free-solid-svg-icons'
-import { Manager, Reference, Popper } from 'react-popper'
+import ClassNames from 'classnames'
+import * as React from 'react'
+import { Manager, Popper, Reference } from 'react-popper'
+import * as _ from 'underscore'
 
 export interface MultiSelectEvent {
 	selectedValues: Array<string>

@@ -1,6 +1,5 @@
-import * as _ from 'underscore'
+import { ProtectedString, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { createMongoCollection } from './lib'
 import { UserId } from './Users'
 

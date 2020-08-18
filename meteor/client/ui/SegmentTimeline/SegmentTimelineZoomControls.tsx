@@ -1,8 +1,7 @@
 import * as React from 'react'
-import ClassNames from 'classnames'
+import { offElementResize, onElementResize } from '../../lib/resizeObserver'
 import { getElementWidth } from '../../utils/dimensions'
 import { getElementDocumentOffset } from '../../utils/positions'
-import { onElementResize, offElementResize } from '../../lib/resizeObserver'
 
 interface IPropsHeader {
 	scrollLeft: number

@@ -1,12 +1,11 @@
-import * as React from 'react'
-import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
+import * as React from 'react'
 import { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { getUser } from '../../../../lib/collections/Users'
-import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
+import { getUser } from '../../../../lib/collections/Users'
+import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
+import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
+import { NotLoggedInContainer } from './lib'
 
 interface IResetPageProps extends RouteComponentProps<{ token: string }> {}
 

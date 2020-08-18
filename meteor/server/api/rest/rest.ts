@@ -1,12 +1,12 @@
-import { ServerResponse, IncomingMessage } from 'http'
-import { Router, Params } from 'meteor/meteorhacks:picker'
-import * as _ from 'underscore'
+import { IncomingMessage, ServerResponse } from 'http'
 import { Meteor } from 'meteor/meteor'
-import { MeteorMethodSignatures } from '../../methods'
+import { Params, Router } from 'meteor/meteorhacks:picker'
+import * as _ from 'underscore'
 import { PubSub } from '../../../lib/api/pubsub'
-import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
-import { PickerPOST, PickerGET } from '../http'
+import { MeteorMethodSignatures } from '../../methods'
+import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
+import { PickerGET, PickerPOST } from '../http'
 
 const apiVersion = 0
 

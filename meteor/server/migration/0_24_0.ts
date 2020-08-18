@@ -1,9 +1,8 @@
-import { addMigrationSteps } from './databaseMigration'
-import * as _ from 'underscore'
-import { Blueprints } from '../../lib/collections/Blueprints'
 import { BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
-import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // 0.24.0 (Release 9)
 addMigrationSteps('0.24.0', [

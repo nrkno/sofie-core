@@ -1,15 +1,15 @@
-import { DeepReadonly } from 'utility-types'
-import { PieceInstanceWithTimings } from './infinites'
-import {
-	TimelineObjRundown,
-	TimelineObjGroup,
-	TimelineContentTypeOther,
-	TimelineObjType,
-	TimelineObjGroupRundown,
-} from '../collections/Timeline'
-import { TSR, OnGenerateTimelineObj, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { literal, unprotectString, protectString } from '../lib'
+import { getPieceGroupId, OnGenerateTimelineObj, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { clone } from 'underscore'
+import { DeepReadonly } from 'utility-types'
+import {
+	TimelineContentTypeOther,
+	TimelineObjGroup,
+	TimelineObjGroupRundown,
+	TimelineObjRundown,
+	TimelineObjType,
+} from '../collections/Timeline'
+import { literal, protectString, unprotectString } from '../lib'
+import { PieceInstanceWithTimings } from './infinites'
 
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<

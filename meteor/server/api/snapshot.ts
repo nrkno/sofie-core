@@ -1,84 +1,77 @@
-import * as Path from 'path'
+import { IncomingMessage, ServerResponse } from 'http'
 import { Meteor } from 'meteor/meteor'
+import * as Path from 'path'
+import { AudioContent, getPieceFirstObjectId, getPieceGroupId, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { ServerResponse, IncomingMessage } from 'http'
-import * as bodyParser from 'body-parser'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { check, Match } from '../../lib/check'
-import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { Blueprint, BlueprintId, Blueprints } from '../../lib/collections/Blueprints'
+import { CoreSystem, getCoreSystem, ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
+import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { IngestDataCache, IngestDataCacheObj } from '../../lib/collections/IngestDataCache'
+import { MediaObject, MediaObjects } from '../../lib/collections/MediaObjects'
+import { OrganizationId } from '../../lib/collections/Organization'
+import { PartInstance, PartInstanceId, PartInstances } from '../../lib/collections/PartInstances'
+import { Part, PartId, Parts } from '../../lib/collections/Parts'
+import { PeripheralDeviceCommand, PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PieceInstance, PieceInstanceId, PieceInstances } from '../../lib/collections/PieceInstances'
+import { Piece, PieceId, Pieces } from '../../lib/collections/Pieces'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
+import { DBRundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { DBRundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import {
-	Snapshots,
 	DeprecatedSnapshotRundown,
-	SnapshotType,
-	SnapshotSystem,
-	SnapshotDebug,
 	SnapshotBase,
-	SnapshotRundownPlaylist,
+	SnapshotDebug,
 	SnapshotId,
+	SnapshotRundownPlaylist,
+	Snapshots,
+	SnapshotSystem,
+	SnapshotType,
 } from '../../lib/collections/Snapshots'
-import { Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
+import { Studio, StudioId, Studios } from '../../lib/collections/Studios'
+import { Timeline, TimelineObjGeneric, TimelineObjRundown } from '../../lib/collections/Timeline'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { Segments, Segment, SegmentId } from '../../lib/collections/Segments'
-import { Part, Parts, PartId } from '../../lib/collections/Parts'
-import { Pieces, Piece, PieceId } from '../../lib/collections/Pieces'
-import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import {
-	getCurrentTime,
-	Time,
-	formatDateTime,
 	fixValidPath,
-	saveIntoDb,
-	sumChanges,
-	normalizeArray,
-	protectString,
+	formatDateTime,
+	getCurrentTime,
 	getRandomId,
-	unprotectString,
 	makePromise,
 	ProtectedString,
+	protectString,
 	protectStringArray,
+	saveIntoDb,
+	sumChanges,
+	Time,
+	unprotectString,
 } from '../../lib/lib'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { logger } from '../logging'
-import { Timeline, TimelineObjGeneric, TimelineObjRundown } from '../../lib/collections/Timeline'
-import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { ServerPeripheralDeviceAPI } from './peripheralDevice'
-import { registerClassToMeteorMethods } from '../methods'
-import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
-import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
-import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-automation-sofie-blueprints-integration'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
-import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { IngestDataCacheObj, IngestDataCache } from '../../lib/collections/IngestDataCache'
-import { importIngestRundown } from './ingest/http'
-import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import {
-	RundownPlaylists,
-	DBRundownPlaylist,
-	RundownPlaylistId,
-	RundownPlaylist,
-} from '../../lib/collections/RundownPlaylists'
-import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { substituteObjectIds } from './playout/lib'
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { PartInstances, PartInstance, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
-import { OrganizationId, Organization } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
-import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { resolveCredentials, Credentials, isResolvedCredentials } from '../security/lib/credentials'
+import { MongoQuery } from '../../lib/typings/meteor'
+import { fsReadFile, fsUnlinkFile, fsWriteFile } from '../lib'
+import { logger } from '../logging'
+import { registerClassToMeteorMethods } from '../methods'
+import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
+import { makePlaylistFromRundown_1_0_0 } from '../migration/deprecatedDataTypes/1_0_1'
+import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
-import { PickerPOST, PickerGET } from './http'
+import { PickerGET, PickerPOST } from './http'
+import { importIngestRundown } from './ingest/http'
 import { getPartId, getSegmentId } from './ingest/lib'
+import { ServerPeripheralDeviceAPI } from './peripheralDevice'
+import { substituteObjectIds } from './playout/lib'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists

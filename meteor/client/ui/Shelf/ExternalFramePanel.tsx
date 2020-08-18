@@ -1,36 +1,33 @@
-import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
+import { IMOSItem } from 'mos-connection'
+import * as React from 'react'
+import { withTranslation } from 'react-i18next'
+import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import {
-	RundownLayoutExternalFrame,
-	RundownLayoutBase,
-	DashboardLayoutExternalFrame,
-} from '../../../lib/collections/RundownLayouts'
+import { MeteorCall } from '../../../lib/api/methods'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition } from './DashboardPanel'
-import { literal, protectString } from '../../../lib/lib'
+import { check } from '../../../lib/check'
+import { BucketId, Buckets } from '../../../lib/collections/Buckets'
+import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import {
+	DashboardLayoutExternalFrame,
+	RundownLayoutBase,
+	RundownLayoutExternalFrame,
+} from '../../../lib/collections/RundownLayouts'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
-import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { literal, protectString } from '../../../lib/lib'
 import {
 	createMosAppInfoXmlString,
+	Events as MOSEvents,
 	UIMetric as MOSUIMetric,
 	UIMetricMode as MOSUIMetricMode,
-	createMosItemRequest,
-	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
-import { MODULE_BROWSER_ORIGIN } from './Inspector/ItemRenderers/NoraItemEditor'
-import { IMOSItem } from 'mos-connection'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { withTranslation } from 'react-i18next'
+import { fixMosData, MosPluginMessage, parseMosPluginMessageXml } from '../../lib/parsers/mos/mosXml2Js'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets, Bucket, BucketId } from '../../../lib/collections/Buckets'
-import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
-import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
-import { check } from '../../../lib/check'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { dashboardElementPosition } from './DashboardPanel'
 
 const PackageInfo = require('../../../package.json')
 

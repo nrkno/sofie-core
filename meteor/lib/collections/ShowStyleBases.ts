@@ -1,16 +1,15 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import {
-	IConfigItem,
+	IBlueprintRuntimeArgumentsItem,
 	IBlueprintShowStyleBase,
+	IConfigItem,
 	IOutputLayer,
 	ISourceLayer,
-	IBlueprintRuntimeArgumentsItem,
 } from 'tv-automation-sofie-blueprints-integration'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { applyClassToDocument, ProtectedString, ProtectedStringProperties, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { BlueprintId } from './Blueprints'
+import { createMongoCollection, ObserveChangesForHash } from './lib'
 import { OrganizationId } from './Organization'
 
 export interface HotkeyDefinition {

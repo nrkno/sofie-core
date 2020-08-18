@@ -1,28 +1,27 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { RecordedFiles, RecordedFile, RecordedFileId } from '../../lib/collections/RecordedFiles'
-import { Studios, Studio, ITestToolsConfig, MappingExt, StudioId } from '../../lib/collections/Studios'
+import moment from 'moment'
+import * as request from 'request'
+import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { promisify } from 'util'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { NewTestToolsAPI, TestToolsAPIMethods } from '../../lib/api/testTools'
+import { check } from '../../lib/check'
+import { RecordedFile, RecordedFileId, RecordedFiles } from '../../lib/collections/RecordedFiles'
+import { ITestToolsConfig, MappingExt, Studio, StudioId, Studios } from '../../lib/collections/Studios'
+import { setTimelineId, TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
 import {
 	getCurrentTime,
-	literal,
-	waitForPromise,
 	getHash,
 	getRandomId,
-	protectString,
+	literal,
 	makePromise,
+	protectString,
+	waitForPromise,
 } from '../../lib/lib'
-import { NewTestToolsAPI, TestToolsAPIMethods } from '../../lib/api/testTools'
-import { registerClassToMeteorMethods } from '../methods'
-import moment from 'moment'
-import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/collections/Timeline'
-import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
-import * as request from 'request'
-import { promisify } from 'util'
-import { check } from '../../lib/check'
-import { updateTimeline } from './playout/timeline'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { StudioContentWriteAccess } from '../security/studio'
 import { initCacheForRundownPlaylistFromStudio } from '../DatabaseCaches'
+import { registerClassToMeteorMethods } from '../methods'
+import { StudioContentWriteAccess } from '../security/studio'
+import { updateTimeline } from './playout/timeline'
 
 const deleteRequest = promisify(request.delete)
 

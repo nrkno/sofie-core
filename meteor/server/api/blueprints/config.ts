@@ -1,8 +1,8 @@
-import * as _ from 'underscore'
-import { ConfigItemValue, ConfigManifestEntry, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
-import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
+import { ConfigItemValue, ConfigManifestEntry, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
 import { getShowStyleCompound, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { protectString } from '../../../lib/lib'
 
 /**

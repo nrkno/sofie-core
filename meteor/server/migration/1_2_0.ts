@@ -1,7 +1,7 @@
-import { addMigrationSteps } from './databaseMigration'
-import { ensureCollectionProperty, setExpectedVersion } from './lib'
-import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // 1.2.0 (Release 14)
 addMigrationSteps('1.2.0', [

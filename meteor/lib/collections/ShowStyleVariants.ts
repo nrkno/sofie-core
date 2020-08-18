@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
+import { IBlueprintShowStyleVariant, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
+import { applyClassToDocument, ProtectedString, ProtectedStringProperties, registerCollection } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
-import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
-import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
+import { createMongoCollection, ObserveChangesForHash } from './lib'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
 
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>

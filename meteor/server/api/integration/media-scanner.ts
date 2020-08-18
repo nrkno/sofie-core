@@ -1,11 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { MethodContext } from '../../../lib/api/methods'
+import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 import { MediaObject, MediaObjects, MediaObjId } from '../../../lib/collections/MediaObjects'
 import { getStudioIdFromDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { protectString } from '../../../lib/lib'
-import { MediaObjectRevision } from '../../../lib/api/peripheralDevice'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
-import { MethodContext } from '../../../lib/api/methods'
 
 export namespace MediaScannerIntegration {
 	export function getMediaObjectRevisions(

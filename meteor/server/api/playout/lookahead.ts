@@ -1,25 +1,25 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import {
 	LookaheadMode,
-	Timeline as TimelineTypes,
 	OnGenerateTimelineObj,
+	Timeline as TimelineTypes,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studio, MappingExt } from '../../../lib/collections/Studios'
-import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
+import * as _ from 'underscore'
+import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { Part, PartId } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { literal, clone, unprotectString, protectString, asyncCollectionFindFetch } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { MappingExt, Studio } from '../../../lib/collections/Studios'
+import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
+import { asyncCollectionFindFetch, clone, literal, protectString, unprotectString } from '../../../lib/lib'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import {
-	selectNextPart,
-	getSelectedPartInstancesFromCache,
 	getAllOrderedPartsFromCache,
 	getRundownIDsFromCache,
+	getSelectedPartInstancesFromCache,
+	selectNextPart,
 } from './lib'
-import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1

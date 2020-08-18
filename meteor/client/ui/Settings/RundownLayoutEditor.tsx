@@ -1,43 +1,43 @@
-import * as _ from 'underscore'
-import * as React from 'react'
-import ClassNames from 'classnames'
-import { EditAttribute } from '../../lib/EditAttribute'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { faStar, faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faDownload, faPencilAlt, faPlus, faStar, faTrash, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ClassNames from 'classnames'
+import { Random } from 'meteor/random'
+import * as React from 'react'
+import { Link } from 'react-router-dom'
+import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { MeteorCall } from '../../../lib/api/methods'
+import { PubSub } from '../../../lib/api/pubsub'
+import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import {
-	RundownLayouts,
-	RundownLayout,
-	RundownLayoutType,
-	RundownLayoutBase,
-	RundownLayoutFilter,
-	PieceDisplayStyle,
-	RundownLayoutFilterBase,
-	DashboardLayout,
 	ActionButtonType,
+	DashboardLayout,
 	DashboardLayoutActionButton,
-	RundownLayoutElementType,
-	RundownLayoutElementBase,
-	RundownLayoutExternalFrame,
+	PieceDisplayStyle,
+	RundownLayout,
 	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
+	RundownLayoutBase,
+	RundownLayoutElementBase,
+	RundownLayoutElementType,
+	RundownLayoutExternalFrame,
+	RundownLayoutFilter,
+	RundownLayoutFilterBase,
 	RundownLayoutId,
+	RundownLayouts,
+	RundownLayoutType,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { PubSub } from '../../../lib/api/pubsub'
-import { literal, unprotectString } from '../../../lib/lib'
-import { Random } from 'meteor/random'
-import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import { UploadButton } from '../../lib/uploadButton'
-import { doModalDialog } from '../../lib/ModalDialog'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { fetchFrom } from '../../lib/lib'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
-import { Link } from 'react-router-dom'
-import { MeteorCall } from '../../../lib/api/methods'
+import { literal } from '../../../lib/lib'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
+import { EditAttribute } from '../../lib/EditAttribute'
+import { fetchFrom } from '../../lib/lib'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { UploadButton } from '../../lib/uploadButton'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase

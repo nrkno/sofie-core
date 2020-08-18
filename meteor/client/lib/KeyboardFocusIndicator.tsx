@@ -1,9 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
-
-import { getAllowStudio, getAllowDeveloper, getHelpMode, getAllowConfigure, getAllowService } from '../lib/localStorage'
-
 import { MeteorCall } from '../../lib/api/methods'
+import { getAllowConfigure, getAllowService, getAllowStudio } from '../lib/localStorage'
 
 interface IKeyboardFocusIndicatorState {
 	inFocus: boolean

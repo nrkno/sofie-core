@@ -1,11 +1,11 @@
-import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import {
-	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
 } from '../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { RundownUtils } from '../rundown'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment

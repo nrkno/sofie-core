@@ -1,16 +1,16 @@
-import * as _ from 'underscore'
 import * as SuperTimeline from 'superfly-timeline'
-import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
-import { literal } from './lib'
-import { DBSegment, SegmentId } from './collections/Segments'
-import { PartId, Part, DBPart } from './collections/Parts'
+import * as _ from 'underscore'
 import { PartInstance } from './collections/PartInstances'
-import { PieceInstance, PieceInstances, wrapPieceToTemporaryInstance } from './collections/PieceInstances'
+import { DBPart, PartId } from './collections/Parts'
+import { PieceInstance, PieceInstances } from './collections/PieceInstances'
+import { Piece, Pieces } from './collections/Pieces'
+import { DBSegment, SegmentId } from './collections/Segments'
+import { literal } from './lib'
 import {
-	getPieceInstancesForPart,
-	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
+	buildPiecesStartingInThisPartQuery,
+	getPieceInstancesForPart,
 } from './rundown/infinites'
 
 export interface SegmentExtended extends DBSegment {

@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
-import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
-import { syncFunction, Callback, syncFunctionIgnore } from '../codeControl'
-import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction } from '../api/ingest/rundownInput'
-import { tic, toc, waitForPromise, makePromise, waitForPromiseAll, waitTime, protectString } from '../../lib/lib'
+import { makePromise, protectString, tic, toc, waitForPromiseAll, waitTime } from '../../lib/lib'
+import { runAllTimers, testInFiber } from '../../__mocks__/helpers/jest'
 import { useControllableDefer, useNextTickDefer } from '../../__mocks__/meteor'
+import '../../__mocks__/_extendJest'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import { Callback, syncFunction, syncFunctionIgnore } from '../codeControl'
 
 const TIME_FUZZY = 200
 const takesALongTimeInner = Meteor.wrapAsync(function takesALongTime(name: string, cb: Callback) {

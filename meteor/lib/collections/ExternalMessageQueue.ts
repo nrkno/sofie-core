@@ -1,13 +1,13 @@
-import { TransformedCollection } from '../typings/meteor'
-import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,
 } from 'tv-automation-sofie-blueprints-integration'
+import { ProtectedString, ProtectedStringProperties, registerCollection, Time } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
+import { StudioId } from './Studios'
 
 /** A string, identifying a ExternalMessageQueueObj */
 export type ExternalMessageQueueObjId = ProtectedString<'ExternalMessageQueueObjId'>

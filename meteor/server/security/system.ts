@@ -1,16 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { Users, UserId } from '../../lib/collections/Users'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { Credentials, resolveCredentials } from './lib/credentials'
-import { logNotAllowed, allowOnlyFields } from './lib/lib'
-import {
-	allowAccessToCoreSystem,
-	allowAccessToCurrentUser,
-	allowAccessToOrganization,
-	allowAccessToSystemStatus,
-} from './lib/security'
+import { UserId } from '../../lib/collections/Users'
 import { Settings } from '../../lib/Settings'
+import { Credentials, resolveCredentials } from './lib/credentials'
+import { logNotAllowed } from './lib/lib'
+import { allowAccessToCoreSystem, allowAccessToCurrentUser, allowAccessToSystemStatus } from './lib/security'
 import { triggerWriteAccess } from './lib/securityVerify'
 
 export namespace SystemReadAccess {

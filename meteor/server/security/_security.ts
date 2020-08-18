@@ -1,7 +1,6 @@
-import './lib/lib'
-
 import './buckets'
 import './collections'
+import './lib/lib'
 import './noSecurity'
 import './organization'
 import './peripheralDevice'

@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 interface IProps {
 	children: JSX.Element[]
 }

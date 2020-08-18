@@ -1,12 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
-import { createMongoCollection } from './lib'
 import { ExpectedPlayoutItemGeneric } from 'tv-automation-sofie-blueprints-integration'
-import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
+import { createMongoCollection } from './lib'
 import { PartId } from './Parts'
 import { PieceId } from './Pieces'
+import { RundownId } from './Rundowns'
+import { StudioId } from './Studios'
 
 /** A string, identifying a Rundown */
 export type ExpectedPlayoutItemId = ProtectedString<'ExpectedPlayoutItemId'>

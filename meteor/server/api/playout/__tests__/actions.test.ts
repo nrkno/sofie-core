@@ -1,29 +1,26 @@
-import { Meteor } from 'meteor/meteor'
-import '../../../../__mocks__/_extendJest'
-import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundown,
-	setupMockPeripheralDevice,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import '../api'
-import { Timeline as OrgTimeline } from '../../../../lib/collections/Timeline'
-import { activateRundownPlaylist, prepareStudioForBroadcast } from '../actions'
+import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import * as _ from 'underscore'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { protectString } from '../../../../lib/lib'
-import { removeRundownFromCache, removeRundownPlaylistFromCache } from '../lib'
 import {
-	wrapWithCacheForRundownPlaylistFromRundown,
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
+	setupMockPeripheralDevice,
+} from '../../../../__mocks__/helpers/database'
+import { beforeEachInFiber, testInFiber } from '../../../../__mocks__/helpers/jest'
+import '../../../../__mocks__/_extendJest'
+import {
 	wrapWithCacheForRundownPlaylist,
+	wrapWithCacheForRundownPlaylistFromRundown,
 	wrapWithCacheForRundownPlaylistFromStudio,
 } from '../../../DatabaseCaches'
+import { activateRundownPlaylist, prepareStudioForBroadcast } from '../actions'
+import '../api'
+import { removeRundownFromCache, removeRundownPlaylistFromCache } from '../lib'
 
 // const Timeline = mockupCollection(OrgTimeline)
 

@@ -1,15 +1,15 @@
 import * as React from 'react'
+import { ContextMenu, MenuItem } from 'react-contextmenu'
 import Escape from 'react-escape'
 import { withTranslation } from 'react-i18next'
-import { ContextMenu, MenuItem } from 'react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { SegmentId } from '../../../lib/collections/Segments'
+import { Settings } from '../../../lib/Settings'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
-import { SegmentId, Segment } from '../../../lib/collections/Segments'
-import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void

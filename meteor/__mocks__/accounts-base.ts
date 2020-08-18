@@ -1,5 +1,5 @@
-import { RandomMock } from './random'
 import { MeteorMock } from './meteor'
+import { RandomMock } from './random'
 
 export class AccountsBaseMock {
 	static mockUsers: any = {}

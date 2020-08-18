@@ -1,12 +1,12 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import DatePicker from 'react-datepicker'
-import moment from 'moment'
-import 'react-datepicker/dist/react-datepicker.css'
+import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faChevronRight, faChevronLeft } from '@fortawesome/free-solid-svg-icons'
-import { Time } from '../../lib/lib'
+import moment from 'moment'
+import * as React from 'react'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 import { withTranslation, WithTranslation } from 'react-i18next'
+import * as _ from 'underscore'
+import { Time } from '../../lib/lib'
 
 interface IProps {
 	from: Time

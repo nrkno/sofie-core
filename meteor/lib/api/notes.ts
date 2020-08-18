@@ -1,7 +1,7 @@
-import { RundownId } from '../collections/Rundowns'
-import { SegmentId } from '../collections/Segments'
 import { PartId } from '../collections/Parts'
 import { PieceId } from '../collections/Pieces'
+import { RundownId } from '../collections/Rundowns'
+import { SegmentId } from '../collections/Segments'
 
 export enum NoteType {
 	WARNING = 1,

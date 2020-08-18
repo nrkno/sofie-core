@@ -1,13 +1,12 @@
 /* global Package */
 /* eslint-disable react/prefer-stateless-function */
 
-import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
+import * as React from 'react'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import * as _ from 'underscore'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined

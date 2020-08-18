@@ -1,38 +1,37 @@
-import * as _ from 'underscore'
-import {
-	Time,
-	applyClassToDocument,
-	getCurrentTime,
-	registerCollection,
-	asyncCollectionFindFetch,
-	ProtectedString,
-	ProtectId,
-	ProtectedStringProperties,
-} from '../lib'
-import { Segments, DBSegment, Segment } from './Segments'
-import { Parts, Part, DBPart } from './Parts'
-import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
-import { Studios, Studio, StudioId } from './Studios'
-import { Pieces } from './Pieces'
 import { Meteor } from 'meteor/meteor'
-import { AdLibPieces, AdLibPiece } from './AdLibPieces'
-import { RundownBaselineObjs } from './RundownBaselineObjs'
-import { RundownBaselineAdLibPieces, RundownBaselineAdLibItem } from './RundownBaselineAdLibPieces'
-import { IBlueprintRundownDB, TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleCompound, getShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
+import { IBlueprintRundownDB } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
 import { RundownNote } from '../api/notes'
-import { IngestDataCache } from './IngestDataCache'
-import { ExpectedMediaItems } from './ExpectedMediaItems'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from './RundownPlaylists'
-import { createMongoCollection } from './lib'
-import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
-import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
-import { PieceInstances, PieceInstance } from './PieceInstances'
-import { PeripheralDeviceId } from './PeripheralDevices'
-import { OrganizationId } from './Organization'
+import {
+	applyClassToDocument,
+	asyncCollectionFindFetch,
+	getCurrentTime,
+	ProtectedString,
+	ProtectedStringProperties,
+	registerCollection,
+	Time,
+} from '../lib'
+import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { AdLibActions } from './AdLibActions'
+import { AdLibPiece, AdLibPieces } from './AdLibPieces'
+import { ExpectedMediaItems } from './ExpectedMediaItems'
+import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
+import { IngestDataCache } from './IngestDataCache'
+import { createMongoCollection } from './lib'
+import { OrganizationId } from './Organization'
+import { DBPartInstance, PartInstance, PartInstances } from './PartInstances'
+import { DBPart, Part, Parts } from './Parts'
+import { PeripheralDeviceId } from './PeripheralDevices'
+import { PieceInstances } from './PieceInstances'
+import { Pieces } from './Pieces'
 import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from './RundownBaselineAdLibPieces'
+import { RundownBaselineObjs } from './RundownBaselineObjs'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from './RundownPlaylists'
+import { DBSegment, Segment, Segments } from './Segments'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
+import { getShowStyleCompound, ShowStyleCompound, ShowStyleVariantId } from './ShowStyleVariants'
+import { Studio, StudioId, Studios } from './Studios'
 
 export enum RundownHoldState {
 	NONE = 0,

@@ -1,23 +1,23 @@
 import { Meteor } from 'meteor/meteor'
-import { MeteorMock } from '../../../__mocks__/meteor'
-import { queueExternalMessages } from '../ExternalMessageQueue'
-import { ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessageQueue'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import {
-	ExternalMessageQueueObjSOAP,
-	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
 	ExternalMessageQueueObjSlack,
+	ExternalMessageQueueObjSOAP,
+	IBlueprintExternalMessageQueueType,
 } from 'tv-automation-sofie-blueprints-integration'
-import { testInFiber, runAllTimers, testInFiberOnly } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { ExternalMessageQueueAPIMethods } from '../../../lib/api/ExternalMessageQueue'
+import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { getCurrentTime, protectString } from '../../../lib/lib'
 import { runInFiber } from '../../../__mocks__/Fibers'
-import { sendSOAPMessage } from '../integration/soap'
-import { sendSlackMessageToWebhook } from '../integration/slack'
+import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { runAllTimers, testInFiber } from '../../../__mocks__/helpers/jest'
+import { MeteorMock } from '../../../__mocks__/meteor'
+import { queueExternalMessages } from '../ExternalMessageQueue'
 import { sendRabbitMQMessage } from '../integration/rabbitMQ'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { sendSlackMessageToWebhook } from '../integration/slack'
+import { sendSOAPMessage } from '../integration/soap'
 // import { setLoggerLevel } from '../../../server/api/logger'
 
 describe('Test external message queue static methods', () => {

@@ -28,9 +28,6 @@ import {
 	MigrationStepType,
 	RunMigrationResult,
 } from '../../lib/api/migration'
-import { logger } from '../../lib/logging'
-import { internalStoreSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import {
 	GENESIS_SYSTEM_VERSION,
@@ -39,11 +36,14 @@ import {
 	setCoreSystemVersion,
 	Version,
 } from '../../lib/collections/CoreSystem'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 import { Studios } from '../../lib/collections/Studios'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
+import { logger } from '../../lib/logging'
 import { evalBlueprints } from '../api/blueprints/cache'
 import { MigrationContextShowStyle, MigrationContextStudio } from '../api/blueprints/migrationContext'
+import { internalStoreSystemSnapshot } from '../api/snapshot'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)

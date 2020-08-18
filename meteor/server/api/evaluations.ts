@@ -1,13 +1,13 @@
-import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
-import { getCurrentTime, getRandomId } from '../../lib/lib'
-import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
-import { Studios } from '../../lib/collections/Studios'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { sendSlackMessageToWebhookSync } from './integration/slack'
 import * as _ from 'underscore'
 import { MethodContext } from '../../lib/api/methods'
+import { EvaluationBase, Evaluations } from '../../lib/collections/Evaluations'
+import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { Studios } from '../../lib/collections/Studios'
+import { getCurrentTime, getRandomId } from '../../lib/lib'
+import { logger } from '../logging'
 import { OrganizationContentWriteAccess } from '../security/organization'
+import { sendSlackMessageToWebhookSync } from './integration/slack'
 
 export function saveEvaluation(methodContext: MethodContext, evaluation: EvaluationBase): void {
 	const allowedCred = OrganizationContentWriteAccess.evaluation({ userId: methodContext.userId })

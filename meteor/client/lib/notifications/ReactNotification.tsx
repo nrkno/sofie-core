@@ -1,8 +1,8 @@
-import * as _ from 'underscore'
-import * as React from 'react'
 import { Random } from 'meteor/random'
-import { NoticeLevel, NotificationCenter, Notification, NotificationAction } from './notifications'
+import * as React from 'react'
+import * as _ from 'underscore'
 import { getCurrentTime } from '../../../lib/lib'
+import { NoticeLevel, Notification, NotificationAction, NotificationCenter } from './notifications'
 
 export interface IProps {
 	level?: NoticeLevel

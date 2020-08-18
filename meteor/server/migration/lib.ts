@@ -1,18 +1,17 @@
+import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import * as _ from 'underscore'
+import * as semver from 'semver'
 import {
+	MigrationStepBase,
 	MigrationStepInput,
 	MigrationStepInputFilteredResult,
-	MigrationStepBase,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Collections, objectPathGet, DBObj, ProtectedString } from '../../lib/lib'
-import { Meteor } from 'meteor/meteor'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { logger } from '../logging'
-import { Studios, Studio } from '../../lib/collections/Studios'
-import * as semver from 'semver'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { TransformedCollection } from '../../lib/typings/meteor'
+import { logger } from '../logging'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection

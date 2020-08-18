@@ -1,9 +1,9 @@
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { TimelineObjGeneric } from './Timeline'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
+import { TimelineObjGeneric } from './Timeline'
 
 /** A string, identifying a RundownBaselineObj */
 export type RundownBaselineObjId = ProtectedString<'RundownBaselineObjId'>

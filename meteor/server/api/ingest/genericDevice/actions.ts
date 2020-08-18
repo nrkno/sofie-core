@@ -1,14 +1,14 @@
 import { Meteor } from 'meteor/meteor'
+import { IngestRundown, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../../lib/collections/Rundowns'
-import { NewUserActionAPI, TriggerReloadDataResponse } from '../../../../lib/api/userActions'
+import { Segment } from '../../../../lib/collections/Segments'
 import { WrapAsyncCallback } from '../../../../lib/lib'
 import { logger } from '../../../logging'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
-import * as _ from 'underscore'
-import { IngestRundown, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
-import { handleUpdatedSegment, handleUpdatedRundown } from '../rundownInput'
-import { Segment } from '../../../../lib/collections/Segments'
+import { handleUpdatedRundown, handleUpdatedSegment } from '../rundownInput'
 
 export namespace GenericDeviceActions {
 	export const reloadRundown: (

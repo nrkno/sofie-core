@@ -1,9 +1,7 @@
-import { CoreSystem } from '../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
+import { PickerDELETE, PickerGET, PickerPOST } from '../http'
 import { postHandler } from './postHandler'
-import { logger } from '../../logging'
 import { deleteMessage, readAllMessages } from './serviceMessagesApi'
-import { PickerPOST, PickerGET, PickerDELETE } from '../http'
 
 PickerPOST.route('/serviceMessages', postHandler)
 

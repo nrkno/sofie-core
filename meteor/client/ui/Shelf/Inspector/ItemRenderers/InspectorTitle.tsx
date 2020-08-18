@@ -1,11 +1,10 @@
-import * as React from 'react'
 import ClassNames from 'classnames'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
-import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibPieceUi } from '../../AdLibPanel'
-import { RundownUtils } from '../../../../lib/rundown'
 import { RundownAPI } from '../../../../../lib/api/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
+import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { RundownUtils } from '../../../../lib/rundown'
+import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
+import { AdLibPieceUi } from '../../AdLibPanel'
 
 export default function InspectorTitle(props: { piece: PieceUi | AdLibPieceUi; showStyleBase: ShowStyleBase }) {
 	const piece = RundownUtils.isAdLibPiece(props.piece)

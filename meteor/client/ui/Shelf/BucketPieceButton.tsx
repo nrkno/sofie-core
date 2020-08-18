@@ -1,42 +1,20 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import ClassNames from 'classnames'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
-
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { RundownUtils } from '../../lib/rundown'
 import {
-	ISourceLayer,
-	IOutputLayer,
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-} from 'tv-automation-sofie-blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { PubSub } from '../../../lib/api/pubsub'
-import { IDashboardButtonProps, IDashboardButtonTrackedProps, DashboardPieceButtonBase } from './DashboardPieceButton'
-
-import {
-	DragSource,
-	DropTarget,
+	ConnectDragPreview,
 	ConnectDragSource,
 	ConnectDropTarget,
+	DragSource,
 	DragSourceMonitor,
+	DropTarget,
 	DropTargetMonitor,
-	ConnectDragPreview,
 } from 'react-dnd'
-import { DragDropItemTypes } from '../DragDropItemTypes'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketId } from '../../../lib/collections/Buckets'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { DragDropItemTypes } from '../DragDropItemTypes'
+import { AdLibPieceUi } from './AdLibPanel'
+import { DashboardPieceButtonBase, IDashboardButtonProps, IDashboardButtonTrackedProps } from './DashboardPieceButton'
 
 type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps & IDashboardButtonTrackedProps
 

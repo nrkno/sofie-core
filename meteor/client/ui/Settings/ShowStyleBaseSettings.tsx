@@ -1,42 +1,41 @@
-import * as _ from 'underscore'
-import * as React from 'react'
-import ClassNames from 'classnames'
-import Tooltip from 'rc-tooltip'
-import { EditAttribute } from '../../lib/EditAttribute'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Spinner } from '../../lib/Spinner'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import {
-	ShowStyleBase,
-	ShowStyleBases,
-	HotkeyDefinition,
-	ShowStyleBaseId,
-} from '../../../lib/collections/ShowStyleBases'
-import { doModalDialog } from '../../lib/ModalDialog'
-import { faTrash, faPencilAlt, faCheck, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faExclamationTriangle, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { findHighestRank } from './StudioSettings'
-import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
+import ClassNames from 'classnames'
 import { Random } from 'meteor/random'
+import Tooltip from 'rc-tooltip'
+import * as React from 'react'
 import { withTranslation } from 'react-i18next'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { Link } from 'react-router-dom'
 import {
-	ISourceLayer,
-	SourceLayerType,
-	IOutputLayer,
-	IBlueprintRuntimeArgumentsItem,
 	BlueprintManifestType,
 	ConfigManifestEntry,
+	IBlueprintRuntimeArgumentsItem,
+	IOutputLayer,
+	ISourceLayer,
+	SourceLayerType,
 } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Studios, Studio, MappingsExt } from '../../../lib/collections/Studios'
-import { Link } from 'react-router-dom'
-import RundownLayoutEditor from './RundownLayoutEditor'
-import { getHelpMode } from '../../lib/localStorage'
-import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import * as _ from 'underscore'
 import { MeteorCall } from '../../../lib/api/methods'
+import { Blueprints } from '../../../lib/collections/Blueprints'
+import {
+	HotkeyDefinition,
+	ShowStyleBase,
+	ShowStyleBaseId,
+	ShowStyleBases,
+} from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { MappingsExt, Studio, Studios } from '../../../lib/collections/Studios'
+import { literal, ProtectedString } from '../../../lib/lib'
+import { EditAttribute } from '../../lib/EditAttribute'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { SettingsNavigation } from '../../lib/SettingsNavigation'
+import { Spinner } from '../../lib/Spinner'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
+import RundownLayoutEditor from './RundownLayoutEditor'
+import { findHighestRank } from './StudioSettings'
 
 interface IProps {
 	match: {

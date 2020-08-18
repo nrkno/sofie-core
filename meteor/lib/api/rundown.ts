@@ -1,9 +1,9 @@
-import { Rundown, RundownId } from '../collections/Rundowns'
-import { NoteType } from './notes'
 import * as _ from 'underscore'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
-import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
+import { Rundown, RundownId } from '../collections/Rundowns'
 import { SegmentId } from '../collections/Segments'
+import { NoteType } from './notes'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from './userActions'
 
 export interface RundownPlaylistValidateBlueprintConfigResult {
 	studio: string[]

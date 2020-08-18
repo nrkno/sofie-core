@@ -1,8 +1,7 @@
-import * as _ from 'underscore'
-
-import { diffSegmentEntries, compileSegmentEntries } from '../ingest'
 import { IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
 import { LocalIngestSegment } from '../../ingestCache'
+import { compileSegmentEntries, diffSegmentEntries } from '../ingest'
 
 function clone<T>(o: T): T {
 	return JSON.parse(JSON.stringify(o))

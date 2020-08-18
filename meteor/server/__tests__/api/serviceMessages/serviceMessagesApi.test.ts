@@ -1,6 +1,6 @@
-import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
 import * as CoreSystem from '../../../../lib/collections/CoreSystem'
 import { protectString } from '../../../../lib/lib'
+import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
 
 function convertExternalToServiceMessage(message: CoreSystem.ExternalServiceMessage): CoreSystem.ServiceMessage {
 	return {

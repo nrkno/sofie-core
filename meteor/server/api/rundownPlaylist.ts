@@ -1,10 +1,10 @@
-import { Studio } from '../../lib/collections/Studios'
+import * as _ from 'underscore'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { removeRundownPlaylistFromCache } from './playout/lib'
+import { Studio } from '../../lib/collections/Studios'
 import { waitForPromise } from '../../lib/lib'
-import { initCacheForRundownPlaylistFromStudio, initCacheForRundownPlaylist } from '../DatabaseCaches'
-import * as _ from 'underscore'
+import { initCacheForRundownPlaylist } from '../DatabaseCaches'
+import { removeRundownPlaylistFromCache } from './playout/lib'
 
 export function removeEmptyPlaylists(studio: Studio) {
 	const playlistsInStudio = RundownPlaylists.find({

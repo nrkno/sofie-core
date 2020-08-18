@@ -1,47 +1,35 @@
-import * as React from 'react'
-import * as PropTypes from 'prop-types'
-import { withTranslation } from 'react-i18next'
-
 import ClassNames from 'classnames'
+import * as PropTypes from 'prop-types'
+import * as React from 'react'
 import { ContextMenuTrigger } from 'react-contextmenu'
-
+import { withTranslation } from 'react-i18next'
+import { NoteType, SegmentNote } from '../../../lib/api/notes'
+import { PartId } from '../../../lib/collections/Parts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
+import { RundownHoldState } from '../../../lib/collections/Rundowns'
+import { SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
-import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
-import { TimelineGrid } from './TimelineGrid'
+import { literal, unprotectString } from '../../../lib/lib'
+import { Settings } from '../../../lib/Settings'
+import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { LottieButton } from '../../lib/LottieButton'
+import { CriticalIconSmall, WarningIconSmall } from '../../lib/notificationIcons'
+import { hidePointerLockCursor, showPointerLockCursor } from '../../lib/PointerLockCursor'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { RundownUtils } from '../../lib/rundown'
+import { scrollToPart } from '../../lib/viewPort'
+import { IContextMenuContext, RundownViewEvents } from '../RundownView'
+import { CurrentPartRemaining, PartCountdown, RundownTiming, SegmentDuration } from '../RundownView/RundownTiming'
+import { IOutputLayerUi, PartUi, PieceUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentTimelinePart } from './SegmentTimelinePart'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
-import { SegmentDuration, PartCountdown, RundownTiming, CurrentPartRemaining } from '../RundownView/RundownTiming'
-
-import { RundownUtils } from '../../lib/rundown'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { scrollToSegment, scrollToPart } from '../../lib/viewPort'
-
+import { TimelineGrid } from './TimelineGrid'
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
-import * as Zoom_In_MouseOver from './Zoom_In_MouseOver.json'
-// @ts-ignore Not recognized by Typescript
 import * as Zoom_Normal_MouseOut from './Zoom_Normal_MouseOut.json'
 // @ts-ignore Not recognized by Typescript
-import * as Zoom_Normal_MouseOver from './Zoom_Normal_MouseOver.json'
-// @ts-ignore Not recognized by Typescript
 import * as Zoom_Out_MouseOut from './Zoom_Out_MouseOut.json'
-// @ts-ignore Not recognized by Typescript
-import * as Zoom_Out_MouseOver from './Zoom_Out_MouseOver.json'
-import { LottieButton } from '../../lib/LottieButton'
-import { PartNote, NoteType, SegmentNote } from '../../../lib/api/notes'
-import { getAllowSpeaking } from '../../lib/localStorage'
-import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
-import { Settings } from '../../../lib/Settings'
-import { MAGIC_TIME_SCALE_FACTOR, RundownViewEvents, IContextMenuContext } from '../RundownView'
-import { literal, unprotectString } from '../../../lib/lib'
-import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
-import { contextMenuHoldToDisplayTime } from '../../lib/lib'
-import { WarningIconSmall, CriticalIconSmall } from '../../lib/notificationIcons'
 
 interface IProps {
 	id: string

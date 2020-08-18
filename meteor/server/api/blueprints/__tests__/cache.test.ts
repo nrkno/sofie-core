@@ -1,24 +1,23 @@
-import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, protectString } from '../../../../lib/lib'
-import {
-	loadSystemBlueprints,
-	loadStudioBlueprints,
-	loadShowStyleBlueprints,
-	getBlueprintOfRundown,
-	WrappedStudioBlueprint,
-} from '../cache'
-import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studios, Studio } from '../../../../lib/collections/Studios'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
+import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
+import { DBRundown, Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { Studio, Studios } from '../../../../lib/collections/Studios'
+import { literal, protectString } from '../../../../lib/lib'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import {
+	getBlueprintOfRundown,
+	loadShowStyleBlueprints,
+	loadStudioBlueprints,
+	loadSystemBlueprints,
+	WrappedStudioBlueprint,
+} from '../cache'
 import { generateFakeBlueprint } from './lib'
 
 describe('Test blueprint cache', () => {

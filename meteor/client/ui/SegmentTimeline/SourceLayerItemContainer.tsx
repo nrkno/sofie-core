@@ -1,23 +1,13 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { Timeline } from '../../../lib/collections/Timeline'
-import { SourceLayerItem } from './SourceLayerItem'
-import { getCurrentTime, unprotectObject } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import {
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-	getPieceGroupId,
-} from 'tv-automation-sofie-blueprints-integration'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-// @ts-ignore Meteor package not recognized by Typescript
-import { ComputedField } from 'meteor/peerlibrary:computed-field'
 import { Meteor } from 'meteor/meteor'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import { ISourceLayerUi, IOutputLayerUi, SegmentUi, PartUi, PieceUi } from './SegmentTimelineContainer'
 import { Tracker } from 'meteor/tracker'
+import * as React from 'react'
+import { LiveSpeakContent, SourceLayerType, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
+import { SourceLayerItem } from './SourceLayerItem'
 
 interface IPropsHeader {
 	layer: ISourceLayerUi

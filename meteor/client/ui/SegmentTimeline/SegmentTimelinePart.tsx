@@ -1,28 +1,20 @@
-import * as React from 'react'
-import { withTranslation, WithTranslation } from 'react-i18next'
-
 import ClassNames from 'classnames'
+import * as React from 'react'
+import { ContextMenuTrigger } from 'react-contextmenu'
+import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { Studio } from '../../../lib/collections/Studios'
-import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
-import { SourceLayerItemContainer } from './SourceLayerItemContainer'
-import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
-
-import { ContextMenuTrigger } from 'react-contextmenu'
-
-import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
-import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
-
-import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
-
+import { RundownUtils } from '../../lib/rundown'
+import { CSSProperties } from '../../styles/_cssVariables'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { IContextMenuContext, RundownViewEvents } from '../RundownView'
-import { CSSProperties } from '../../styles/_cssVariables'
+import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
+import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi, SegmentUi } from './SegmentTimelineContainer'
+import { DEBUG_MODE } from './SegmentTimelineDebugMode'
+import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'

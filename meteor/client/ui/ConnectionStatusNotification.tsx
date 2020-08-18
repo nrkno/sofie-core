@@ -1,26 +1,24 @@
-import { Meteor } from 'meteor/meteor'
+import * as i18next from 'i18next'
 import { DDP } from 'meteor/ddp'
+import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as React from 'react'
+import { withTranslation } from 'react-i18next'
 import * as _ from 'underscore'
-
-import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
+import { PubSub } from '../../lib/api/pubsub'
+import { CoreSystem, Criticality, ICoreSystem, ServiceMessage } from '../../lib/collections/CoreSystem'
+import { documentTitle } from '../lib/documentTitle'
 import { MomentFromNow } from '../lib/Moment'
-
+import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
 import {
-	NotificationCenter,
 	NoticeLevel,
 	Notification,
+	NotificationCenter,
 	NotificationList,
 	NotifierHandle,
 } from '../lib/notifications/notifications'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
-import { withTranslation } from 'react-i18next'
-import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
-import { PubSub } from '../../lib/api/pubsub'
-import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
-import * as i18next from 'i18next'
-import { documentTitle } from '../lib/documentTitle'
+import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList

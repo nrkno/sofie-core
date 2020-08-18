@@ -1,6 +1,6 @@
 import * as React from 'react'
+import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
 import { PieceGeneric } from '../../../../lib/collections/Pieces'
-import { SplitsContent, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 
 // @todo: use colours from the scss
 // @todo: split can use any source (rather than cam + live)

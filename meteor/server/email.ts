@@ -1,6 +1,5 @@
-import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
-import { Settings } from '../lib/Settings'
+import { Meteor } from 'meteor/meteor'
 
 Meteor.startup(function() {
 	process.env.MAIL_URL = Meteor.settings.MAIL_URL

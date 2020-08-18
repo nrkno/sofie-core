@@ -1,24 +1,21 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { allowAccessToStudio } from './lib/security'
-import { StudioId, Studios, Studio } from '../../lib/collections/Studios'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
-import * as _ from 'underscore'
-import { logNotAllowed, rejectFields } from './lib/lib'
 import {
 	ExternalMessageQueue,
-	ExternalMessageQueueObjId,
 	ExternalMessageQueueObj,
+	ExternalMessageQueueObjId,
 } from '../../lib/collections/ExternalMessageQueue'
-import { RecordedFiles, RecordedFileId, RecordedFile } from '../../lib/collections/RecordedFiles'
-import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { Timeline } from '../../lib/collections/Timeline'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Settings } from '../../lib/Settings'
 import { OrganizationId } from '../../lib/collections/Organization'
-import { triggerWriteAccess } from './lib/securityVerify'
+import { RecordedFile, RecordedFileId, RecordedFiles } from '../../lib/collections/RecordedFiles'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { Studio, StudioId, Studios } from '../../lib/collections/Studios'
 import { isProtectedString } from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
+import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { Credentials, resolveCredentials, ResolvedCredentials } from './lib/credentials'
+import { logNotAllowed } from './lib/lib'
+import { allowAccessToStudio } from './lib/security'
+import { triggerWriteAccess } from './lib/securityVerify'
 
 type StudioContent = { studioId: StudioId }
 export namespace StudioReadAccess {

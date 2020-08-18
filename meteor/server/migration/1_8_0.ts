@@ -1,5 +1,5 @@
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { addMigrationSteps } from './databaseMigration'
 import { setExpectedVersion } from './lib'
 
 // 1.8.0 (Release 20)

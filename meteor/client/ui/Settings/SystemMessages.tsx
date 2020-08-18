@@ -1,9 +1,8 @@
-import * as React from 'react'
-import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
+import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { EditAttribute } from '../../lib/EditAttribute'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {}
 

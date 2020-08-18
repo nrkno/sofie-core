@@ -1,17 +1,15 @@
-import * as React from 'react'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-
-import { Studios, Studio, MappingExt } from '../../lib/collections/Studios'
+import { MeteorCall } from '../../lib/api/methods'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PubSub } from '../../lib/api/pubsub'
+import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../lib/collections/PeripheralDeviceSettings/playoutDevice'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { MappingExt, Studio, Studios } from '../../lib/collections/Studios'
 import { EditAttribute } from '../lib/EditAttribute'
-import { mappingIsCasparCG, mappingIsQuantel } from '../../lib/api/studios'
-import { PubSub } from '../../lib/api/pubsub'
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
-import { unprotectString } from '../../lib/lib'
-import { MeteorCall } from '../../lib/api/methods'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+
 interface IManualPlayoutProps {}
 interface IManualPlayoutState {
 	inputValues: {

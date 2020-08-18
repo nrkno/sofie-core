@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { PubSub } from '../../lib/api/pubsub'
-import { extractFunctionSignature } from '../lib'
-import { Mongocursor, UserId } from '../../lib/typings/meteor'
-import { ProtectedString } from '../../lib/lib'
-import { Credentials, ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
-import { Settings } from '../../lib/Settings'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ProtectedString } from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
+import { Mongocursor, UserId } from '../../lib/typings/meteor'
+import { extractFunctionSignature } from '../lib'
+import { Credentials, resolveCredentials, ResolvedCredentials } from '../security/lib/credentials'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}

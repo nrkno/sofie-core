@@ -1,14 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import { check } from '../../../lib/check'
-import { IngestActions } from './actions'
-import { updateTimeline, getActiveRundownPlaylist } from '../playout/timeline'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
-
+import { waitForPromise } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
-import { waitForPromise } from '../../../lib/lib'
+import { getActiveRundownPlaylist, updateTimeline } from '../playout/timeline'
+import { IngestActions } from './actions'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({

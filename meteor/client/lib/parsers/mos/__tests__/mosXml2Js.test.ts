@@ -1,8 +1,7 @@
-import { parseMosPluginMessageXml, fixMosData, generateMosPluginItemXml } from '../mosXml2Js'
 import { readFileSync } from 'fs'
 import { join } from 'path'
-import * as parser from 'xml2json'
 import * as _ from 'underscore'
+import { fixMosData, generateMosPluginItemXml, parseMosPluginMessageXml } from '../mosXml2Js'
 
 const mosReqAppInfoXmlString = readFileSync(join(__dirname, './mosReqAppInfo.xml'), 'utf-8')
 const domParser = new DOMParser()

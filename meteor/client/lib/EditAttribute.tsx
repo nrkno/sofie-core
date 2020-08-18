@@ -1,15 +1,12 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { withTracker } from './ReactMeteorData/react-meteor-data'
 import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Mongo } from 'meteor/mongo'
-
-import { MultiSelect, MultiSelectEvent } from './multiSelect'
+import * as React from 'react'
+import * as _ from 'underscore'
 import { TransformedCollection } from '../../lib/typings/meteor'
-import ClassNames from 'classnames'
-import { ColorPickerEvent, ColorPicker } from './colorPicker'
+import { ColorPicker, ColorPickerEvent } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
+import { MultiSelect, MultiSelectEvent } from './multiSelect'
+import { withTracker } from './ReactMeteorData/react-meteor-data'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType

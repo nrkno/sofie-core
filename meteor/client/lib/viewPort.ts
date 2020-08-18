@@ -1,12 +1,9 @@
-import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
-
-import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
-import { Parts, PartId } from '../../lib/collections/Parts'
-import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances } from '../../lib/collections/PartInstances'
+import { PartId, Parts } from '../../lib/collections/Parts'
 import { SegmentId } from '../../lib/collections/Segments'
 import { isProtectedString } from '../../lib/lib'
-import { RundownViewEvents, IGoToPartEvent, IGoToPartInstanceEvent } from '../ui/RundownView'
+import { IGoToPartEvent, IGoToPartInstanceEvent, RundownViewEvents } from '../ui/RundownView'
+import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
 
 let focusInterval: NodeJS.Timer | undefined
 let _dontClearInterval: boolean = false

@@ -1,22 +1,18 @@
-import { TransformedCollection } from '../typings/meteor'
+import { Meteor } from 'meteor/meteor'
+import { IBlueprintPieceInstance, IBlueprintResolvedPieceInstance } from 'tv-automation-sofie-blueprints-integration'
 import {
-	registerCollection,
 	literal,
+	Omit,
+	omit,
 	ProtectedString,
 	ProtectedStringProperties,
 	protectString,
-	Omit,
-	omit,
+	registerCollection,
 } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPieceInstance,
-	Time,
-	IBlueprintResolvedPieceInstance,
-} from 'tv-automation-sofie-blueprints-integration'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
+import { PartInstanceId } from './PartInstances'
 import { Piece, PieceId } from './Pieces'
-import { PartInstance, PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 
 /** A string, identifying a PieceInstance */

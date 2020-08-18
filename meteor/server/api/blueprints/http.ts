@@ -1,14 +1,14 @@
-import * as _ from 'underscore'
-import { logger } from '../../logging'
+import { IncomingMessage, ServerResponse } from 'http'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintManifestSet } from 'tv-automation-sofie-blueprints-integration'
-import { ServerResponse, IncomingMessage } from 'http'
-import { check, Match } from '../../../lib/check'
+import * as _ from 'underscore'
 import { parse as parseUrl } from 'url'
-import { uploadBlueprint } from './api'
-import { protectString } from '../../../lib/lib'
+import { check, Match } from '../../../lib/check'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { protectString } from '../../../lib/lib'
+import { logger } from '../../logging'
 import { PickerPOST } from '../http'
+import { uploadBlueprint } from './api'
 
 PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')

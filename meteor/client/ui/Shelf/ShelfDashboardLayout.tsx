@@ -1,16 +1,13 @@
-import * as React from 'react'
-import { DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { TimelineDashboardPanel } from './TimelineDashboardPanel'
+import { Bucket } from '../../../lib/collections/Buckets'
+import { DashboardLayout, DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { AdLibRegionPanel } from './AdLibRegionPanel'
+import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
 import { DashboardPanel } from './DashboardPanel'
 import { ExternalFramePanel } from './ExternalFramePanel'
-import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { Bucket } from '../../../lib/collections/Buckets'
-import { unprotectString } from '../../../lib/lib'
-import { AdLibRegionPanel } from './AdLibRegionPanel'
+import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout

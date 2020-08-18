@@ -1,21 +1,19 @@
 import { Meteor } from 'meteor/meteor'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
-import { Studio } from '../../../lib/collections/Studios'
-import { getBlueprintOfRundown, loadShowStyleBlueprints } from '../blueprints/cache'
-import { ShowStyleContext, NotesContext } from '../blueprints/context'
-import { postProcessAdLibPieces, postProcessBucketAdLib } from '../blueprints/postProcess'
-import { RundownImportVersions } from '../../../lib/collections/Rundowns'
-import { PackageInfo } from '../../coreSystem'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { BucketId } from '../../../lib/collections/Buckets'
 import { PieceId } from '../../../lib/collections/Pieces'
+import { RundownImportVersions } from '../../../lib/collections/Rundowns'
+import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../lib/collections/Studios'
+import { PackageInfo } from '../../coreSystem'
+import { loadShowStyleBlueprints } from '../blueprints/cache'
+import { NotesContext, ShowStyleContext } from '../blueprints/context'
+import { postProcessBucketAdLib } from '../blueprints/postProcess'
 import {
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from '../expectedMediaItems'
-import { waitForPromise } from '../../../lib/lib'
-import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
 
 export function updateBucketAdlibFromIngestData(
 	showStyle: ShowStyleCompound,

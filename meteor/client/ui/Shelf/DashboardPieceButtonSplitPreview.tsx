@@ -1,13 +1,10 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import ClassNames from 'classnames'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownUtils } from '../../lib/rundown'
 import { SourceLayerType, SplitsContent } from 'tv-automation-sofie-blueprints-integration'
-import { SplitRole } from '../SegmentTimeline/Renderers/SplitsSourceRenderer'
-import { literal } from '../../../lib/lib'
+import * as _ from 'underscore'
 import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { literal } from '../../../lib/lib'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { SplitRole } from '../SegmentTimeline/Renderers/SplitsSourceRenderer'
 
 interface SplitSubItem {
 	_id: string

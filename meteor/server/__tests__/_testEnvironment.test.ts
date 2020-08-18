@@ -1,11 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { RandomMock } from '../../__mocks__/random'
-import { MongoMock } from '../../__mocks__/mongo'
-
-import { waitForPromise, protectString } from '../../lib/lib'
-import { testInFiber } from '../../__mocks__/helpers/jest'
-
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { AsRunLog } from '../../lib/collections/AsRunLog'
 import { Blueprints } from '../../lib/collections/Blueprints'
@@ -29,10 +23,14 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
-import { Studios, DBStudio } from '../../lib/collections/Studios'
+import { DBStudio, Studios } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { protectString, waitForPromise } from '../../lib/lib'
 import { isInFiber } from '../../__mocks__/Fibers'
+import { testInFiber } from '../../__mocks__/helpers/jest'
+import { MongoMock } from '../../__mocks__/mongo'
+import { RandomMock } from '../../__mocks__/random'
 
 describe('Basic test of test environment', () => {
 	testInFiber('Check that tests will run in fibers correctly', () => {

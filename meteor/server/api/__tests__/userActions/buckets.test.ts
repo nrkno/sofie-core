@@ -1,23 +1,13 @@
 import { Meteor } from 'meteor/meteor'
-import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import {
-	setupDefaultStudioEnvironment,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { setMinimumTakeSpan } from '../../userActions'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { RESTART_SALT } from '../../../../lib/api/userActions'
-import { getHash, waitForPromise, protectString } from '../../../../lib/lib'
-import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
-import { MeteorCall } from '../../../../lib/api/methods'
-import { ClientAPI } from '../../../../lib/api/client'
-import { Bucket, Buckets } from '../../../../lib/collections/Buckets'
 import { Random } from 'meteor/random'
-import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { ClientAPI } from '../../../../lib/api/client'
+import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
+import { Bucket, Buckets } from '../../../../lib/collections/Buckets'
+import { protectString } from '../../../../lib/lib'
+import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import '../../../../__mocks__/_extendJest'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed

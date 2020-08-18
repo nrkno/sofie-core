@@ -1,28 +1,27 @@
-import * as _ from 'underscore'
-import { OmitId, trimIfString, getHash, unprotectObject, protectString, unprotectString } from '../../../lib/lib'
-import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
+import { Mongo } from 'meteor/mongo'
 import {
-	ConfigItemValue,
-	MigrationContextStudio as IMigrationContextStudio,
-	MigrationContextShowStyle as IMigrationContextShowStyle,
 	BlueprintMapping,
+	ConfigItemValue,
+	IBlueprintRuntimeArgumentsItem,
+	IBlueprintShowStyleVariant,
 	IConfigItem,
 	IOutputLayer,
 	ISourceLayer,
+	MigrationContextShowStyle as IMigrationContextShowStyle,
+	MigrationContextStudio as IMigrationContextStudio,
 	ShowStyleVariantPart,
-	IBlueprintShowStyleVariant,
-	IBlueprintRuntimeArgumentsItem,
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
-
-import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { check } from '../../../lib/check'
+import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { check } from '../../../lib/check'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
-import { Mongo } from 'meteor/mongo'
+import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariantId, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { DBStudio, Studio, Studios } from '../../../lib/collections/Studios'
+import { getHash, OmitId, protectString, trimIfString, unprotectObject, unprotectString } from '../../../lib/lib'
 
 export class MigrationContextStudio implements IMigrationContextStudio {
 	private studio: Studio

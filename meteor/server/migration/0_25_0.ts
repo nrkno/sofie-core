@@ -1,39 +1,30 @@
-import { addMigrationSteps } from './databaseMigration'
-import * as _ from 'underscore'
-import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 import * as semver from 'semver'
-import { getCoreSystem } from '../../lib/collections/CoreSystem'
-import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
-import {
-	asyncCollectionInsert,
-	asyncCollectionInsertIgnore,
-	waitForPromiseAll,
-	partial,
-	protectString,
-} from '../../lib/lib'
-
+import * as _ from 'underscore'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { AsRunLog } from '../../lib/collections/AsRunLog'
+import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { Evaluations } from '../../lib/collections/Evaluations'
 import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
+import { Parts } from '../../lib/collections/Parts'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Pieces } from '../../lib/collections/Pieces'
+import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
-import { Timeline } from '../../lib/collections/Timeline'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { Pieces } from '../../lib/collections/Pieces'
-import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
-import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { Rundowns, DBRundown } from '../../lib/collections/Rundowns'
-import { Parts } from '../../lib/collections/Parts'
 import { Studios } from '../../lib/collections/Studios'
-import { logger } from '../../lib/logging'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { Rundown as Rundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
+import { Timeline } from '../../lib/collections/Timeline'
+import { asyncCollectionInsertIgnore, waitForPromiseAll } from '../../lib/lib'
+import { addMigrationSteps } from './databaseMigration'
+import { dropDeprecatedDatabases, getDeprecatedDatabases } from './deprecatedDatabases/0_25_0'
+import { renamePropertiesInCollection, setExpectedVersion } from './lib'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [

@@ -1,14 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { check } from '../../lib/check'
-import * as _ from 'underscore'
-import { Rundowns } from '../collections/Rundowns'
-import { Part, PartId } from '../collections/Parts'
 import { ScriptContent } from 'tv-automation-sofie-blueprints-integration'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../collections/RundownPlaylists'
-import { normalizeArray, protectString, unprotectString, getRandomId } from '../lib'
-import { SegmentId } from '../collections/Segments'
+import * as _ from 'underscore'
+import { check } from '../../lib/check'
+import { PartId } from '../collections/Parts'
 import { PieceId } from '../collections/Pieces'
+import { RundownPlaylistId, RundownPlaylists } from '../collections/RundownPlaylists'
+import { SegmentId } from '../collections/Segments'
+import { getRandomId, normalizeArray, protectString } from '../lib'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>

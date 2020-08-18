@@ -1,10 +1,10 @@
-import { addMigrationSteps } from './databaseMigration'
-import { setExpectedVersion } from './lib'
+import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import * as _ from 'underscore'
 import { protectString } from '../../lib/lib'
+import { addMigrationSteps } from './databaseMigration'
+import { setExpectedVersion } from './lib'
 
 // 1.5.0 (Release 17)
 addMigrationSteps('1.5.0', [

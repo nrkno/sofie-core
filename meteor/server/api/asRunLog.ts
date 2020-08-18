@@ -1,35 +1,33 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { AsRunLogEventBase, AsRunLog, AsRunLogEvent } from '../../lib/collections/AsRunLog'
 import {
-	getCurrentTime,
-	Time,
-	waitForPromise,
-	pushOntoPath,
-	waitForPromiseAll,
+	IBlueprintAsRunLogEventContent,
+	IBlueprintExternalMessageQueueObj,
+} from 'tv-automation-sofie-blueprints-integration'
+import { AsRunLog, AsRunLogEvent, AsRunLogEventBase } from '../../lib/collections/AsRunLog'
+import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { Parts } from '../../lib/collections/Parts'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { Pieces } from '../../lib/collections/Pieces'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import {
 	asyncCollectionFindOne,
 	asyncCollectionUpdate,
-	extendMandadory,
 	asyncCollectionUpsert,
+	extendMandadory,
+	getCurrentTime,
 	getHash,
 	protectString,
-	isProtectedString,
+	pushOntoPath,
+	Time,
+	waitForPromise,
+	waitForPromiseAll,
 } from '../../lib/lib'
-import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { Parts } from '../../lib/collections/Parts'
-import { Pieces } from '../../lib/collections/Pieces'
 import { logger } from '../../lib/logging'
-import {
-	IBlueprintExternalMessageQueueObj,
-	IBlueprintAsRunLogEventContent,
-} from 'tv-automation-sofie-blueprints-integration'
-import { queueExternalMessages } from './ExternalMessageQueue'
+import { CacheForRundownPlaylist } from '../DatabaseCaches'
 import { getBlueprintOfRundown } from './blueprints/cache'
 import { AsRunEventContext } from './blueprints/context'
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist } from '../DatabaseCaches'
+import { queueExternalMessages } from './ExternalMessageQueue'
 
 const EVENT_WAIT_TIME = 500
 

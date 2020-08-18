@@ -1,67 +1,66 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { check } from '../../lib/check'
-import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { Part, DBPart } from '../../lib/collections/Parts'
-import { Piece } from '../../lib/collections/Pieces'
-import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
-import { Segments, SegmentId } from '../../lib/collections/Segments'
-import {
-	saveIntoDb,
-	getCurrentTime,
-	getHash,
-	waitForPromise,
-	unprotectObjectArray,
-	protectString,
-	unprotectString,
-	makePromise,
-	waitForPromiseObj,
-	asyncCollectionFindFetch,
-	normalizeArray,
-} from '../../lib/lib'
-import { logger } from '../logging'
-import { registerClassToMeteorMethods } from '../methods'
-import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
-import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
-import {
-	ShowStyleVariants,
-	ShowStyleVariant,
-	ShowStyleVariantId,
-	createShowStyleCompound,
-} from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { Studios, Studio } from '../../lib/collections/Studios'
 import { BlueprintResultOrderedRundowns, ExtendedIngestRundown } from 'tv-automation-sofie-blueprints-integration'
-import { StudioConfigContext } from './blueprints/context'
-import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
-import { PackageInfo } from '../coreSystem'
-import { IngestActions } from './ingest/actions'
+import * as _ from 'underscore'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
+import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
+import { check } from '../../lib/check'
+import { AdLibActions } from '../../lib/collections/AdLibActions'
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { Blueprints } from '../../lib/collections/Blueprints'
+import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { DBPart, Part } from '../../lib/collections/Parts'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { Piece } from '../../lib/collections/Pieces'
 import {
 	DBRundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistId,
 	RundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
-import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
-import { RundownPlaylistContentWriteAccess, RundownPlaylistReadAccess } from '../security/rundownPlaylist'
+import { DBRundown, Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { SegmentId, Segments } from '../../lib/collections/Segments'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import {
+	createShowStyleCompound,
+	ShowStyleVariant,
+	ShowStyleVariantId,
+	ShowStyleVariants,
+} from '../../lib/collections/ShowStyleVariants'
+import { Studio, Studios } from '../../lib/collections/Studios'
+import {
+	asyncCollectionFindFetch,
+	getCurrentTime,
+	getHash,
+	makePromise,
+	normalizeArray,
+	protectString,
+	saveIntoDb,
+	unprotectObjectArray,
+	unprotectString,
+	waitForPromise,
+	waitForPromiseObj,
+} from '../../lib/lib'
+import { Settings } from '../../lib/Settings'
+import { PackageInfo } from '../coreSystem'
+import { saveIntoCache } from '../DatabaseCache'
 import {
 	CacheForRundownPlaylist,
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromRundown,
 } from '../DatabaseCaches'
-import { saveIntoCache } from '../DatabaseCache'
-import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
-import { AdLibActions } from '../../lib/collections/AdLibActions'
-import { Settings } from '../../lib/Settings'
-import { findMissingConfigs } from './blueprints/config'
+import { logger } from '../logging'
+import { registerClassToMeteorMethods } from '../methods'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { modifyPlaylistExternalId } from './ingest/lib'
+import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
+import { StudioContentWriteAccess } from '../security/studio'
+import { loadShowStyleBlueprints, loadStudioBlueprints } from './blueprints/cache'
+import { findMissingConfigs } from './blueprints/config'
+import { StudioConfigContext } from './blueprints/context'
+import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
+import { IngestActions } from './ingest/actions'
+import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
+import { getAllOrderedPartsFromCache, removeRundownFromCache, removeRundownPlaylistFromCache } from './playout/lib'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 
 export function selectShowStyleVariant(

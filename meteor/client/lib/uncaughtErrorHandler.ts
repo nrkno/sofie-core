@@ -1,9 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { Time } from 'tv-automation-sofie-blueprints-integration'
-import { getCurrentTime } from '../../lib/lib'
-import { ClientAPI } from '../../lib/api/client'
 import { MeteorCall } from '../../lib/api/methods'
+import { getCurrentTime } from '../../lib/lib'
 
 interface LoggedError {
 	location: string

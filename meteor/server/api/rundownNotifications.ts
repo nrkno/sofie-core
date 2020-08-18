@@ -1,18 +1,17 @@
 import { Meteor } from 'meteor/meteor'
-import {
-	RundownNotificationsAPI,
-	IMediaObjectIssue,
-	RundownNotificationsAPIMethods,
-	RankedNote,
-} from '../../lib/api/rundownNotifications'
-import { registerClassToMeteorMethods } from '../methods'
-import { RundownId } from '../../lib/collections/Rundowns'
+import { MethodContextAPI } from '../../lib/api/methods'
 import { PartNote } from '../../lib/api/notes'
+import {
+	IMediaObjectIssue,
+	RundownNotificationsAPI,
+	RundownNotificationsAPIMethods,
+} from '../../lib/api/rundownNotifications'
+import { RundownId } from '../../lib/collections/Rundowns'
 import { makePromise } from '../../lib/lib'
-import { getSegmentPartNotes, getMediaObjectIssues } from '../../lib/rundownNotifications'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { RundownReadAccess } from '../security/rundown'
+import { getMediaObjectIssues, getSegmentPartNotes } from '../../lib/rundownNotifications'
+import { registerClassToMeteorMethods } from '../methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { RundownReadAccess } from '../security/rundown'
 
 class ServerRundownNotificationsAPI extends MethodContextAPI implements RundownNotificationsAPI {
 	getSegmentPartNotes(rundownIds: RundownId[]): Promise<(PartNote & { rank: number })[]> {

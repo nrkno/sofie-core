@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { PrompterViewInner } from '../PrompterView'
 
 export const LONGPRESS_TIME = 500

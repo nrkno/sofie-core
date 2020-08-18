@@ -1,5 +1,4 @@
 import { Meteor } from 'meteor/meteor'
-import { MeteorCall } from './api/methods'
 import * as _ from 'underscore'
 
 export interface LoggerInstanceFixed {

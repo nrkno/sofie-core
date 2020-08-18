@@ -1,14 +1,13 @@
 import * as React from 'react'
-import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
-import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
 import { PieceGeneric } from '../../../../../lib/collections/Pieces'
+import { literal } from '../../../../../lib/lib'
 import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
 	UIMetricMode as MOSUIMetricMode,
 } from '../../../../lib/data/mos/plugin-support'
-import { IMOSItem } from 'mos-connection'
-import { literal } from '../../../../../lib/lib'
+import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
+import { MosPluginMessage, parseMosPluginMessageXml } from '../../../../lib/parsers/mos/mosXml2Js'
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`

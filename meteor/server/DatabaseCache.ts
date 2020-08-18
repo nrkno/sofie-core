@@ -1,26 +1,24 @@
 import { Meteor } from 'meteor/meteor'
-import {
-	ProtectedString,
-	mongoWhere,
-	isProtectedString,
-	unprotectString,
-	getRandomId,
-	protectString,
-	clone,
-	asyncCollectionRemove,
-	asyncCollectionInsert,
-	asyncCollectionUpdate,
-	asyncCollectionFindFetch,
-	mongoModify,
-	mongoFindOptions,
-	DBObj,
-	compareObjs,
-	waitForPromiseAll,
-	waitForPromise,
-	asyncCollectionUpsert,
-} from '../lib/lib'
 import * as _ from 'underscore'
-import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
+import {
+	asyncCollectionFindFetch,
+	asyncCollectionRemove,
+	asyncCollectionUpdate,
+	asyncCollectionUpsert,
+	clone,
+	compareObjs,
+	DBObj,
+	getRandomId,
+	isProtectedString,
+	mongoFindOptions,
+	mongoModify,
+	mongoWhere,
+	ProtectedString,
+	protectString,
+	unprotectString,
+	waitForPromise,
+} from '../lib/lib'
+import { FindOptions, MongoModifier, MongoQuery, TransformedCollection } from '../lib/typings/meteor'
 
 export function isDbCacheCollection(o: any): o is DbCacheCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)

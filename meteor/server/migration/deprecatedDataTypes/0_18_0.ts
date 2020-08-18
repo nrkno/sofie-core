@@ -1,7 +1,6 @@
-import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from '../../../lib/typings/meteor'
 import { createMongoCollection } from '../../../lib/collections/lib'
 import { ProtectedString } from '../../../lib/lib'
+import { TransformedCollection } from '../../../lib/typings/meteor'
 
 // lib/collections/ShowStyles.ts
 export interface TemplateMappings {

@@ -1,7 +1,5 @@
-import * as _ from 'underscore'
-import * as React from 'react'
-
 import { Lottie } from '@crello/react-lottie'
+import * as React from 'react'
 
 interface IProps {
 	inAnimation?: any

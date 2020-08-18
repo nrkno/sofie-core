@@ -1,12 +1,10 @@
-import * as React from 'react'
-
-import { ISourceLayerUi, IOutputLayerUi, PartUi, PieceUi } from '../SegmentTimelineContainer'
-
-import { RundownUtils } from '../../../lib/rundown'
 import { faCut } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import * as React from 'react'
 import { PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { RundownUtils } from '../../../lib/rundown'
 import { OffsetPosition } from '../../../utils/positions'
+import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi } from '../SegmentTimelineContainer'
 
 export interface ICustomLayerItemProps {
 	mediaPreviewUrl?: string

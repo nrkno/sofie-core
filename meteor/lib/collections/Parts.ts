@@ -1,31 +1,24 @@
-import * as _ from 'underscore'
-import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
-import { Rundowns, Rundown, RundownId } from './Rundowns'
-import { Piece, Pieces } from './Pieces'
-import { AdLibPieces, AdLibPiece } from './AdLibPieces'
-import { Segments, SegmentId } from './Segments'
+import { Meteor } from 'meteor/meteor'
+import { IBlueprintPartDB, IBlueprintPartDBTimings, PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
+import { NoteType, PartNote } from '../api/notes'
+import { RundownAPI } from '../api/rundown'
 import {
 	applyClassToDocument,
-	Time,
-	registerCollection,
 	normalizeArray,
 	ProtectedString,
 	ProtectedStringProperties,
+	registerCollection,
+	Time,
 } from '../lib'
-import { RundownAPI } from '../api/rundown'
 import { checkPieceContentStatus, getNoteTypeForPieceStatus } from '../mediaObjects'
-import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPartDB,
-	PartHoldMode,
-	BlueprintRuntimeArguments,
-	IBlueprintPartDBTimings,
-	PartEndState,
-} from 'tv-automation-sofie-blueprints-integration'
-import { PartNote, NoteType } from '../api/notes'
+import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
+import { AdLibPiece, AdLibPieces } from './AdLibPieces'
 import { createMongoCollection } from './lib'
-import { Studio } from './Studios'
+import { Piece, Pieces } from './Pieces'
+import { RundownId, Rundowns } from './Rundowns'
+import { SegmentId, Segments } from './Segments'
 import { ShowStyleBase } from './ShowStyleBases'
+import { Studio } from './Studios'
 
 /** A string, identifying a Part */
 export type PartId = ProtectedString<'PartId'>

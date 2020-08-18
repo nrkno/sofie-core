@@ -1,24 +1,23 @@
-import ClassNames from 'classnames'
-import * as React from 'react'
-import * as _ from 'underscore'
+import { faCheck, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { withTranslation } from 'react-i18next'
-import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
-import { ModalDialog } from '../../../lib/ModalDialog'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
+import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
-import { DeviceItem } from '../../Status/SystemStatus'
+import * as React from 'react'
+import { withTranslation } from 'react-i18next'
+import * as _ from 'underscore'
 import {
 	ConfigManifestEntry,
 	ConfigManifestEntryType,
 	TableConfigManifestEntry,
 	TableEntryConfigManifestEntry,
 } from '../../../../lib/api/deviceConfig'
+import { PeripheralDevice, PeripheralDeviceId, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
+import { ModalDialog } from '../../../lib/ModalDialog'
+import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
+import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
-import { unprotectString, protectString } from '../../../../lib/lib'
 
 type EditId = PeripheralDeviceId | string
 interface IGenericDeviceSettingsComponentState {

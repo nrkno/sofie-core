@@ -1,32 +1,26 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import ClassNames from 'classnames'
-
-import { Spinner } from '../../lib/Spinner'
 import { IOutputLayer, ISourceLayer } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
 import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
+import { ensureHasTrailingSlash } from '../../lib/lib'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Spinner } from '../../lib/Spinner'
 import {
+	AdLibPanelToolbar,
+	AdLibPieceUi,
+	fetchAndFilter,
 	IAdLibPanelProps,
 	IAdLibPanelTrackedProps,
-	fetchAndFilter,
-	AdLibPieceUi,
 	matchFilter,
-	AdLibPanelToolbar,
 } from './AdLibPanel'
-import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
+import { getNextPiecesReactive } from './AdLibRegionPanel'
 import {
 	DashboardPanelInner,
-	dashboardElementPosition,
 	getUnfinishedPieceInstancesReactive,
-	IDashboardPanelTrackedProps,
 	IDashboardPanelProps,
+	IDashboardPanelTrackedProps,
 } from './DashboardPanel'
-import { PieceInstanceId, PieceInstance } from '../../../lib/collections/PieceInstances'
-import { unprotectString, protectString } from '../../../lib/lib'
-import { getNextPiecesReactive } from './AdLibRegionPanel'
+import { DashboardPieceButton } from './DashboardPieceButton'
+
 interface IState {
 	outputLayers: {
 		[key: string]: IOutputLayer

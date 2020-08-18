@@ -32,6 +32,5 @@ import './collections/Snapshots'
 import './collections/Studios'
 import './collections/Timeline'
 import './collections/UserActionsLog'
-
 import './Settings'
 import './systemTime'

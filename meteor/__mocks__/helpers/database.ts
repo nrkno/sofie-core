@@ -1,66 +1,58 @@
-import * as _ from 'underscore'
-import { Random } from 'meteor/random'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { StatusCode } from '../../server/systemStatus/systemStatus'
-import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
-	PieceLifespan,
-	getPieceGroupId,
-	IOutputLayer,
-	ISourceLayer,
-	SourceLayerType,
-	StudioBlueprintManifest,
-	BlueprintManifestType,
-	Timeline,
-	IStudioContext,
-	IStudioConfigContext,
-	IBlueprintShowStyleBase,
-	IngestRundown,
 	BlueprintManifestBase,
-	ShowStyleBlueprintManifest,
-	IBlueprintShowStyleVariant,
-	ShowStyleContext,
+	BlueprintManifestType,
+	BlueprintResultPart,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
-	IngestSegment,
-	SegmentContext,
 	IBlueprintAdLibPiece,
-	IBlueprintRundown,
-	IBlueprintSegment,
-	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
+	IBlueprintRundown,
 	IBlueprintRuntimeArgumentsItem,
+	IBlueprintSegment,
+	IBlueprintShowStyleBase,
+	IBlueprintShowStyleVariant,
+	IngestRundown,
+	IngestSegment,
+	IOutputLayer,
+	ISourceLayer,
+	IStudioConfigContext,
+	IStudioContext,
+	PieceLifespan,
+	SegmentContext,
+	ShowStyleBlueprintManifest,
+	ShowStyleContext,
+	SourceLayerType,
+	StudioBlueprintManifest,
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariant,
-	DBShowStyleVariant,
-	ShowStyleVariants,
-	ShowStyleVariantId,
-} from '../../lib/collections/ShowStyleVariants'
-import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
-import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import { internalUploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime, protectString, unprotectString, getRandomId } from '../../lib/lib'
-import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { DBPart, Parts } from '../../lib/collections/Parts'
-import { Piece, Pieces } from '../../lib/collections/Pieces'
+import * as _ from 'underscore'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { RundownAPI } from '../../lib/api/rundown'
-import {
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistId,
-} from '../../lib/collections/RundownPlaylists'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { restartRandomId } from '../random'
+import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
+import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { DBPart, Parts } from '../../lib/collections/Parts'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { DBRundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { DBRundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { DBSegment, Segments } from '../../lib/collections/Segments'
+import { DBShowStyleBase, ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import {
+	DBShowStyleVariant,
+	ShowStyleVariant,
+	ShowStyleVariantId,
+	ShowStyleVariants,
+} from '../../lib/collections/ShowStyleVariants'
+import { DBStudio, Studio, Studios } from '../../lib/collections/Studios'
+import { getCurrentTime, getRandomId, literal, protectString, unprotectString } from '../../lib/lib'
+import { internalUploadBlueprint } from '../../server/api/blueprints/api'
+import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
+import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { MongoMock } from '../mongo'
+import { restartRandomId } from '../random'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',

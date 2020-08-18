@@ -1,13 +1,10 @@
 import * as React from 'react'
+import { ContextMenuTrigger } from 'react-contextmenu'
 import * as _ from 'underscore'
-import { IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
-import { IModalAttributes, Modal } from '../../../lib/ui/containers/modals/Modal'
-import renderItem from './ItemRenderers/ItemRendererFactory'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../AdLibPanel'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { ContextMenuTrigger } from 'react-contextmenu'
-import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
+import renderItem from './ItemRenderers/ItemRendererFactory'
 
 export { ShelfInspector }
 

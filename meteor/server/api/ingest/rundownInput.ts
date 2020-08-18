@@ -1,143 +1,118 @@
 import { Meteor } from 'meteor/meteor'
-import { check } from '../../../lib/check'
-import * as _ from 'underscore'
-import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Part, Parts, DBPart, PartId } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import {
-	saveIntoDb,
-	getCurrentTime,
-	literal,
-	sumChanges,
-	anythingChanged,
-	ReturnType,
-	asyncCollectionUpsert,
-	asyncCollectionUpdate,
-	waitForPromise,
-	PreparedChanges,
-	prepareSaveIntoDb,
-	savePreparedChanges,
-	asyncCollectionFindOne,
-	waitForPromiseAll,
-	asyncCollectionRemove,
-	normalizeArrayFunc,
-	asyncCollectionInsert,
-	asyncCollectionFindFetch,
-	waitForPromiseObj,
-	unprotectString,
-	protectString,
-	omit,
-	ProtectedString,
-	Omit,
-	PreparedChangesChangesDoc,
-} from '../../../lib/lib'
-import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
-import {
-	IngestRundown,
-	IngestSegment,
-	IngestPart,
-	BlueprintResultSegment,
-} from 'tv-automation-sofie-blueprints-integration'
-import { logger } from '../../../lib/logging'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import {
-	selectShowStyleVariant,
-	afterRemoveSegments,
-	afterRemoveParts,
-	ServerRundownAPI,
-	removeSegments,
-	updatePartRanks,
-	produceRundownPlaylistInfo,
-} from '../rundown'
-import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
-import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
-import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
-import {
-	RundownBaselineObj,
-	RundownBaselineObjs,
-	RundownBaselineObjId,
-} from '../../../lib/collections/RundownBaselineObjs'
+import { Mongo } from 'meteor/mongo'
 import { Random } from 'meteor/random'
 import {
-	postProcessRundownBaselineItems,
-	postProcessAdLibPieces,
-	postProcessPieces,
+	BlueprintResultSegment,
+	IngestPart,
+	IngestRundown,
+	IngestSegment,
+} from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { MethodContext } from '../../../lib/api/methods'
+import { NoteType, PartNote, RundownNote, SegmentNote } from '../../../lib/api/notes'
+import { check } from '../../../lib/check'
+import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { Blueprint, BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { DBPart, Part, PartId } from '../../../lib/collections/Parts'
+import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PieceInstance, PieceInstanceId, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import { Piece } from '../../../lib/collections/Pieces'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActions,
+} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
+import {
+	DBRundownPlaylist,
+	RundownPlaylist,
+	RundownPlaylistId,
+	RundownPlaylists,
+} from '../../../lib/collections/RundownPlaylists'
+import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBSegment, SegmentId, Segments } from '../../../lib/collections/Segments'
+import { Studio, Studios } from '../../../lib/collections/Studios'
+import {
+	anythingChanged,
+	getCurrentTime,
+	literal,
+	normalizeArrayFunc,
+	Omit,
+	PreparedChanges,
+	PreparedChangesChangesDoc,
+	prepareSaveIntoDb,
+	ProtectedString,
+	protectString,
+	ReturnType,
+	saveIntoDb,
+	sumChanges,
+	unprotectString,
+	waitForPromise,
+} from '../../../lib/lib'
+import { logger } from '../../../lib/logging'
+import { Settings } from '../../../lib/Settings'
+import { syncFunction } from '../../codeControl'
+import { PackageInfo } from '../../coreSystem'
+import { prepareSaveIntoCache, saveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { reportRundownDataHasChanged } from '../asRunLog'
+import { getBlueprintOfRundown, loadShowStyleBlueprints } from '../blueprints/cache'
+import { NotesContext, RundownContext, SegmentContext, ShowStyleContext } from '../blueprints/context'
+import {
 	postProcessAdLibActions,
+	postProcessAdLibPieces,
 	postProcessGlobalAdLibActions,
+	postProcessPieces,
+	postProcessRundownBaselineItems,
 } from '../blueprints/postProcess'
+import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import {
-	RundownBaselineAdLibItem,
-	RundownBaselineAdLibPieces,
-} from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+	getRundownPlaylistFromCache,
+	getRundownsSegmentsAndPartsFromCache,
+	getSelectedPartInstancesFromCache,
+	isTooCloseToAutonext,
+	removeRundownFromCache,
+} from '../playout/lib'
+import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
 import {
-	saveRundownCache,
-	saveSegmentCache,
+	afterRemoveParts,
+	afterRemoveSegments,
+	produceRundownPlaylistInfo,
+	removeSegments,
+	selectShowStyleVariant,
+	ServerRundownAPI,
+	updatePartRanks,
+} from '../rundown'
+import { removeEmptyPlaylists } from '../rundownPlaylist'
+import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
+import {
+	isLocalIngestRundown,
 	loadCachedIngestSegment,
 	loadCachedRundownData,
 	LocalIngestRundown,
 	LocalIngestSegment,
-	makeNewIngestSegment,
 	makeNewIngestPart,
 	makeNewIngestRundown,
-	updateIngestRundownWithData,
-	isLocalIngestRundown,
+	makeNewIngestSegment,
+	saveRundownCache,
+	saveSegmentCache,
 } from './ingestCache'
 import {
-	getRundownId,
-	getSegmentId,
-	getPartId,
-	getStudioFromDevice,
-	getRundown,
 	canBeUpdated,
-	getRundownPlaylist,
-	getSegment,
 	checkAccessAndGetPeripheralDevice,
 	extendIngestRundownCore,
+	getPartId,
+	getRundown,
+	getRundownId,
+	getRundownPlaylist,
+	getSegment,
+	getSegmentId,
+	getStudioFromDevice,
 	modifyPlaylistExternalId,
 } from './lib'
-import { PackageInfo } from '../../coreSystem'
-import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
-import { triggerUpdateTimelineAfterIngestData } from '../playout/playout'
-import { PartNote, NoteType, SegmentNote, RundownNote } from '../../../lib/api/notes'
-import { syncFunction } from '../../codeControl'
 import { UpdateNext } from './updateNext'
-import { updateExpectedPlayoutItemsOnRundown } from './expectedPlayoutItems'
-import {
-	RundownPlaylists,
-	DBRundownPlaylist,
-	RundownPlaylist,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
-import { Mongo } from 'meteor/mongo'
-import {
-	isTooCloseToAutonext,
-	getSelectedPartInstancesFromCache,
-	getRundownPlaylistFromCache,
-	getRundownsSegmentsAndPartsFromCache,
-	removeRundownFromCache,
-} from '../playout/lib'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
-import {
-	PieceInstances,
-	wrapPieceToInstance,
-	PieceInstance,
-	PieceInstanceId,
-} from '../../../lib/collections/PieceInstances'
-import { MethodContext } from '../../../lib/api/methods'
-import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
-import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
-import { reportRundownDataHasChanged } from '../asRunLog'
-import { Settings } from '../../../lib/Settings'
-import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
-import {
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibAction,
-} from '../../../lib/collections/RundownBaselineAdLibActions'
-import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import { removeEmptyPlaylists } from '../rundownPlaylist'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {

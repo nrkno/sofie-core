@@ -1,42 +1,41 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
+import { PieceLifespan, SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { SourceLayerType, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { Part } from '../../../lib/collections/Parts'
 import {
+	PieceInstance,
+	PieceInstanceId,
+	PieceInstances,
+	rewrapPieceToInstance,
+} from '../../../lib/collections/PieceInstances'
+import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
+import {
+	assertNever,
 	getCurrentTime,
+	getRandomId,
 	literal,
 	protectString,
 	unprotectString,
-	getRandomId,
 	waitForPromise,
-	assertNever,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
-import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
-import { TimelineObjGeneric, TimelineObjType } from '../../../lib/collections/Timeline'
-import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
-import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getAllPieceInstancesFromCache } from './lib'
-import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
-import { updateTimeline } from './timeline'
-import { updatePartRanks, afterRemoveParts } from '../rundown'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
-
-import {
-	PieceInstances,
-	PieceInstance,
-	PieceInstanceId,
-	rewrapPieceToInstance,
-} from '../../../lib/collections/PieceInstances'
-import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
-import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
+import { afterRemoveParts, updatePartRanks } from '../rundown'
+import { DEFINITELY_ENDED_FUTURE_DURATION, syncPlayheadInfinitesForNextPartInstance } from './infinites'
+import { getRundownIDsFromCache, prefixAllObjectIds, setNextPart } from './lib'
+import { convertAdLibToPieceInstance, convertPieceToAdLibPiece, getResolvedPieces } from './pieces'
+import { updateTimeline } from './timeline'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(

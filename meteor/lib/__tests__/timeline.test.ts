@@ -1,8 +1,8 @@
-import { testInFiber } from '../../__mocks__/helpers/jest'
-import { transformTimeline } from '../timeline'
-import { TimelineObjGeneric, TimelineObjType, TimelineObjRundown } from '../collections/Timeline'
-import { protectString } from '../lib'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
+import { testInFiber } from '../../__mocks__/helpers/jest'
+import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../collections/Timeline'
+import { protectString } from '../lib'
+import { transformTimeline } from '../timeline'
 
 describe('lib/timeline', () => {
 	testInFiber('transformTimeline', () => {

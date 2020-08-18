@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
-import { createMongoCollection } from './lib'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { BlueprintId } from './Blueprints'
+import { createMongoCollection } from './lib'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { UserId } from './Users'
 

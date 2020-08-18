@@ -1,11 +1,10 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import ClassNames from 'classnames'
-
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas, faChevronUp, IconName, IconPack, IconDefinition } from '@fortawesome/free-solid-svg-icons'
+import { faChevronUp, fas, IconDefinition, IconName, IconPack } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ClassNames from 'classnames'
+import * as React from 'react'
 import { withTranslation } from 'react-i18next'
+import * as _ from 'underscore'
 import { Translated } from './ReactMeteorData/ReactMeteorData'
 
 library.add(fas)

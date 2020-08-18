@@ -1,12 +1,11 @@
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
 import * as AMQP from 'amqplib'
-import { logger } from '../../logging'
+import { Meteor } from 'meteor/meteor'
 import { ExternalMessageQueueObjRabbitMQ } from 'tv-automation-sofie-blueprints-integration'
-import { promisify } from 'util'
+import * as _ from 'underscore'
 import { ExternalMessageQueueObj, ExternalMessageQueueObjId } from '../../../lib/collections/ExternalMessageQueue'
-import { ConfigRef } from '../blueprints/config'
 import { unprotectString } from '../../../lib/lib'
+import { logger } from '../../logging'
+import { ConfigRef } from '../blueprints/config'
 
 interface Message {
 	_id: ExternalMessageQueueObjId

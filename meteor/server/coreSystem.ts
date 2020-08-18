@@ -1,28 +1,28 @@
-import {
-	getCoreSystem,
-	CoreSystem,
-	SYSTEM_ID,
-	getCoreSystemCursor,
-	parseVersion,
-	Version,
-	parseRange,
-	stripVersion,
-	VersionRange,
-	GENESIS_SYSTEM_VERSION,
-} from '../lib/collections/CoreSystem'
-import { getCurrentTime, unprotectString } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CURRENT_SYSTEM_VERSION, prepareMigration, runMigration } from './migration/databaseMigration'
-import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
-import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
-import * as _ from 'underscore'
-import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { Studios, StudioId } from '../lib/collections/Studios'
-import { logger } from './logging'
 import * as semver from 'semver'
+import * as _ from 'underscore'
+import { Blueprint, Blueprints } from '../lib/collections/Blueprints'
+import {
+	CoreSystem,
+	GENESIS_SYSTEM_VERSION,
+	getCoreSystem,
+	getCoreSystemCursor,
+	parseRange,
+	parseVersion,
+	stripVersion,
+	SYSTEM_ID,
+	Version,
+	VersionRange,
+} from '../lib/collections/CoreSystem'
+import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
+import { createShowStyleCompound, ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
+import { StudioId, Studios } from '../lib/collections/Studios'
+import { getCurrentTime, unprotectString } from '../lib/lib'
 import { findMissingConfigs } from './api/blueprints/config'
-import { ShowStyleVariants, createShowStyleCompound } from '../lib/collections/ShowStyleVariants'
 import { syncFunction } from './codeControl'
+import { logger } from './logging'
+import { CURRENT_SYSTEM_VERSION, prepareMigration, runMigration } from './migration/databaseMigration'
+import { removeSystemStatus, setSystemStatus, StatusCode } from './systemStatus/systemStatus'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 

@@ -1,29 +1,26 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { IConfigItem } from 'tv-automation-sofie-blueprints-integration'
-import { logger } from '../../logging'
-import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { Parts } from '../../../lib/collections/Parts'
-import { Studio } from '../../../lib/collections/Studios'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
+import { Studio } from '../../../lib/collections/Studios'
 import { getCurrentTime } from '../../../lib/lib'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { logger } from '../../logging'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
+import { IngestActions } from '../ingest/actions'
 import {
-	setNextPart,
-	onPartHasStoppedPlaying,
-	selectNextPart,
+	getAllOrderedPartsFromCache,
 	getSelectedPartInstancesFromCache,
 	getStudioFromCache,
-	getAllOrderedPartsFromCache,
+	onPartHasStoppedPlaying,
+	selectNextPart,
+	setNextPart,
 } from './lib'
-import { updateTimeline } from './timeline'
-import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { updateTimeline } from './timeline'
 
 export function activateRundownPlaylist(
 	cache: CacheForRundownPlaylist,

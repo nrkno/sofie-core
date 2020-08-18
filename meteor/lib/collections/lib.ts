@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection } from '../typings/meteor'
-import { stringifyObjects, getHash, ProtectedString } from '../lib'
 import * as _ from 'underscore'
+import { getHash, ProtectedString, stringifyObjects } from '../lib'
 import { logger } from '../logging'
+import { TransformedCollection } from '../typings/meteor'
 
 const ObserveChangeBufferTimeout = 2000
 

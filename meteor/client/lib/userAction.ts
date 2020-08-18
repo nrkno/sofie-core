@@ -1,8 +1,8 @@
 import * as i18next from 'i18next'
-import { NotificationCenter, Notification, NoticeLevel } from './notifications/notifications'
-import { ClientAPI } from '../../lib/api/client'
 import { Meteor } from 'meteor/meteor'
+import { ClientAPI } from '../../lib/api/client'
 import { eventContextForLog } from './clientAPI'
+import { NoticeLevel, Notification, NotificationCenter } from './notifications/notifications'
 
 export enum UserAction {
 	SAVE_EVALUATION,

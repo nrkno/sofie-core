@@ -1,27 +1,28 @@
-import '../../../../__mocks__/_extendJest'
-import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
+import { BlueprintManifestType, ShowStyleBlueprintManifest } from 'tv-automation-sofie-blueprints-integration'
+import { MethodContext } from '../../../../lib/api/methods'
+import { BlueprintId, Blueprints } from '../../../../lib/collections/Blueprints'
+import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
+import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import {
 	DefaultEnvironment,
-	setupDefaultStudioEnvironment,
-	setupDefaultRundownPlaylist,
 	packageBlueprint,
+	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
 } from '../../../../__mocks__/helpers/database'
-import { ServerPlayoutAPI } from '../playout'
-import { ActionExecutionContext, ActionPartChange } from '../../blueprints/context'
-import { Rundown, Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
-import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { Blueprints, BlueprintId } from '../../../../lib/collections/Blueprints'
+import { beforeEachInFiber, testInFiber } from '../../../../__mocks__/helpers/jest'
+import '../../../../__mocks__/_extendJest'
 import { BLUEPRINT_CACHE_CONTROL } from '../../blueprints/cache'
-import { ShowStyleBlueprintManifest, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
+import { ActionExecutionContext, ActionPartChange } from '../../blueprints/context'
+import {
+	fetchPiecesThatMayBeActiveForPart,
+	getPieceInstancesForPart,
+	syncPlayheadInfinitesForNextPartInstance,
+} from '../../playout/infinites'
+import { updateTimeline } from '../../playout/timeline'
+import { ServerPlayoutAPI } from '../playout'
 
 jest.mock('../../playout/infinites')
-import {
-	syncPlayheadInfinitesForNextPartInstance,
-	getPieceInstancesForPart,
-	fetchPiecesThatMayBeActiveForPart,
-} from '../../playout/infinites'
 type TsyncPlayheadInfinitesForNextPartInstance = jest.MockedFunction<typeof syncPlayheadInfinitesForNextPartInstance>
 const syncPlayheadInfinitesForNextPartInstanceMock = syncPlayheadInfinitesForNextPartInstance as TsyncPlayheadInfinitesForNextPartInstance
 type TgetPieceInstancesForPart = jest.MockedFunction<typeof getPieceInstancesForPart>
@@ -36,8 +37,6 @@ const {
 )
 
 jest.mock('../../playout/timeline')
-import { updateTimeline } from '../../playout/timeline'
-import { MethodContext } from '../../../../lib/api/methods'
 type TupdateTimeline = jest.MockedFunction<typeof updateTimeline>
 const updateTimelineMock = updateTimeline as TupdateTimeline
 

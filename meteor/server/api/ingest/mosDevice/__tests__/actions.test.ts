@@ -1,22 +1,21 @@
 import { Meteor } from 'meteor/meteor'
 import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { MeteorCall } from '../../../../../lib/api/methods'
+import { IngestCacheType, IngestDataCache } from '../../../../../lib/collections/IngestDataCache'
 import { Parts } from '../../../../../lib/collections/Parts'
-import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
-import { MOSDeviceActions } from '../actions'
 import {
-	PeripheralDeviceCommands,
 	PeripheralDeviceCommand,
 	PeripheralDeviceCommandId,
+	PeripheralDeviceCommands,
 } from '../../../../../lib/collections/PeripheralDeviceCommands'
-import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections/IngestDataCache'
-
-import { mockRO } from './mock-mos-data'
-import { MeteorCall } from '../../../../../lib/api/methods'
+import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
+import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { waitForPromise } from '../../../../../lib/lib'
+import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { MOSDeviceActions } from '../actions'
+import { mockRO } from './mock-mos-data'
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 

@@ -1,16 +1,9 @@
 import * as React from 'react'
-
-import ClassNames from 'classnames'
-import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
-
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
-
-import { PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
-import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { unprotectString } from '../../../lib/lib'
+import { IOutputLayerUi, ISourceLayerUi, PartUi, PieceUi } from './SegmentTimelineContainer'
+import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 
 interface IProps {
 	playlist: RundownPlaylist

@@ -1,5 +1,5 @@
-import { Picker } from 'meteor/meteorhacks:picker'
 import * as bodyParser from 'body-parser'
+import { Picker } from 'meteor/meteorhacks:picker'
 
 // Set up and expose server-side router:
 

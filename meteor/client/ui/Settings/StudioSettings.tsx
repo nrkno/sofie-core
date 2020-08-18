@@ -1,53 +1,49 @@
-import ClassNames from 'classnames'
-import * as React from 'react'
-import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import Tooltip from 'rc-tooltip'
-import { Studio, Studios, MappingExt, StudioId } from '../../../lib/collections/Studios'
-import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
-import { doModalDialog } from '../../lib/ModalDialog'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Spinner } from '../../lib/Spinner'
+import { faCheck, faExclamationTriangle, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExclamationTriangle, faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-
-import { Link } from 'react-router-dom'
-import { MomentFromNow } from '../../lib/Moment'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import ClassNames from 'classnames'
+import { Meteor } from 'meteor/meteor'
+import Tooltip from 'rc-tooltip'
+import * as React from 'react'
 import { withTranslation } from 'react-i18next'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { Link } from 'react-router-dom'
 import {
-	LookaheadMode,
 	BlueprintManifestType,
-	TSR,
 	ConfigManifestEntry,
+	LookaheadMode,
+	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
+import * as _ from 'underscore'
+import { MeteorCall } from '../../../lib/api/methods'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import {
 	mappingIsAbstract,
-	mappingIsCasparCG,
 	mappingIsAtem,
-	mappingIsLawo,
-	mappingIsPanasonicPtz,
+	mappingIsCasparCG,
 	mappingIsHTTPSend,
 	mappingIsHyperdeck,
-	mappingIsPharos,
+	mappingIsLawo,
 	mappingIsOSC,
+	mappingIsPanasonicPtz,
+	mappingIsPharos,
 	mappingIsQuantel,
 	mappingIsSisyfos,
-	mappingIsTCPSend,
 	mappingIsSisyfosChannel,
+	mappingIsTCPSend,
 } from '../../../lib/api/studios'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { getHelpMode } from '../../lib/localStorage'
+import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
+import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { ShowStyleBase, ShowStyleBaseId, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariantId, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { MappingExt, Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { protectString, unprotectString } from '../../../lib/lib'
+import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { MomentFromNow } from '../../lib/Moment'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
-import { unprotectString, protectString } from '../../../lib/lib'
-import { PlayoutAPIMethods } from '../../../lib/api/playout'
-import { MeteorCall } from '../../../lib/api/methods'
-import { Settings } from '../../../lib/Settings'
+import { Spinner } from '../../lib/Spinner'
+import { ConfigManifestSettings } from './ConfigManifestSettings'
 
 interface IStudioDevicesProps {
 	studio: Studio

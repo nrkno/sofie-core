@@ -1,15 +1,11 @@
 import * as React from 'react'
-import ClassNames from 'classnames'
-import { RundownAPI } from '../../../lib/api/rundown'
-
-import { DEFAULT_BUTTON_HEIGHT, DEFAULT_BUTTON_WIDTH } from './DashboardPieceButton'
-import { DashboardLayoutActionButton, ActionButtonType } from '../../../lib/collections/RundownLayouts'
-import { DashboardActionButton } from './DashboardActionButton'
-import { doUserAction, UserAction } from '../../lib/userAction'
 import { withTranslation } from 'react-i18next'
-import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
+import { ActionButtonType, DashboardLayoutActionButton } from '../../../lib/collections/RundownLayouts'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { DashboardActionButton } from './DashboardActionButton'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]

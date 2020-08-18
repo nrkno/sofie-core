@@ -1,9 +1,7 @@
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
-import { logger } from './logging'
-import { PeripheralDeviceAPI } from './api/peripheralDevice'
-import { systemTime } from './lib'
 import { MeteorCall } from './api/methods'
+import { systemTime } from './lib'
+import { logger } from './logging'
 
 if (Meteor.isServer) {
 	// handled in systemTime

@@ -1,15 +1,15 @@
-import * as _ from 'underscore'
-import {
-	VTContent,
-	SourceLayerType,
-	ISourceLayer,
-	IBlueprintPieceGeneric,
-} from 'tv-automation-sofie-blueprints-integration'
-import { RundownAPI } from './api/rundown'
-import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
-import { IStudioSettings } from './collections/Studios'
+import {
+	IBlueprintPieceGeneric,
+	ISourceLayer,
+	SourceLayerType,
+	VTContent,
+} from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
 import { NoteType } from './api/notes'
+import { RundownAPI } from './api/rundown'
+import { Anomaly, FieldOrder, MediaInfo, MediaObject, MediaObjects, MediaStream } from './collections/MediaObjects'
+import { IStudioSettings } from './collections/Studios'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a

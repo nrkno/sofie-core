@@ -1,5 +1,5 @@
-import { createMosAppInfoXmlString } from '../plugin-support'
 import * as parser from 'xml2json'
+import { createMosAppInfoXmlString } from '../plugin-support'
 
 describe('createMosAppInfoXmlString', () => {
 	const xmlString = createMosAppInfoXmlString()

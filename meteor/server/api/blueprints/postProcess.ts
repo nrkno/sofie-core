@@ -1,31 +1,30 @@
-import * as _ from 'underscore'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
-import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
-	TimelineObjectCoreExt,
-	IBlueprintPiece,
-	IBlueprintAdLibPiece,
-	RundownContext,
-	TSR,
 	IBlueprintActionManifest,
+	IBlueprintAdLibPiece,
+	IBlueprintPiece,
 	NotesContext as INotesContext,
+	RundownContext,
+	TimelineObjectCoreExt,
+	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { ShowStyleContext, NotesContext } from './context'
-import { RundownImportVersions } from '../../../lib/collections/Rundowns'
-import { BlueprintId } from '../../../lib/collections/Blueprints'
-import { PartId } from '../../../lib/collections/Parts'
-import { BucketId } from '../../../lib/collections/Buckets'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { BlueprintId } from '../../../lib/collections/Blueprints'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { BucketId } from '../../../lib/collections/Buckets'
+import { PartId } from '../../../lib/collections/Parts'
+import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { RundownId } from '../../../lib/collections/Rundowns'
-import { prefixAllObjectIds } from '../playout/lib'
+import { RundownId, RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { Studio } from '../../../lib/collections/Studios'
+import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
+import { literal, Omit, protectString, unprotectString } from '../../../lib/lib'
+import { prefixAllObjectIds } from '../playout/lib'
+import { NotesContext, ShowStyleContext } from './context'
 
 export function postProcessPieces(
 	innerContext: ShowStyleContext,

@@ -1,32 +1,28 @@
-import { Meteor } from 'meteor/meteor'
-import { Random } from 'meteor/random'
-import { Mongo } from 'meteor/mongo'
+import {
+	IBlueprintPieceGeneric,
+	ISourceLayer,
+	PieceLifespan,
+	SourceLayerType,
+} from 'tv-automation-sofie-blueprints-integration'
 import { testInFiber } from '../../__mocks__/helpers/jest'
-import {
-	buildFormatString,
-	acceptFormat,
-	getAcceptedFormats,
-	getMediaObjectMediaId,
-	checkPieceContentStatus,
-} from '../mediaObjects'
-import {
-	MediaObjects,
-	MediaInfo,
-	MediaObject,
-	FieldOrder,
-	MediaStream,
-	Anomaly,
-	MediaStreamType,
-} from './../collections/MediaObjects'
+import { RundownAPI } from '../api/rundown'
+import { IStudioSettings } from '../collections/Studios'
 import { literal, protectString } from '../lib'
 import {
-	ISourceLayer,
-	SourceLayerType,
-	IBlueprintPieceGeneric,
-	PieceLifespan,
-} from 'tv-automation-sofie-blueprints-integration'
-import { IStudioSettings } from '../collections/Studios'
-import { RundownAPI } from '../api/rundown'
+	acceptFormat,
+	buildFormatString,
+	checkPieceContentStatus,
+	getAcceptedFormats,
+	getMediaObjectMediaId,
+} from '../mediaObjects'
+import {
+	FieldOrder,
+	MediaInfo,
+	MediaObject,
+	MediaObjects,
+	MediaStream,
+	MediaStreamType,
+} from './../collections/MediaObjects'
 
 describe('lib/mediaObjects', () => {
 	testInFiber('buildFormatString', () => {

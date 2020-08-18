@@ -1,7 +1,7 @@
+import { makeCompatible } from 'meteor-promise'
 import { setLoggerLevel } from '../server/api/logger'
 import { Fiber } from './Fibers'
 import { resetRandomId } from './random'
-import { makeCompatible } from 'meteor-promise'
 
 // This file is run before all tests start.
 

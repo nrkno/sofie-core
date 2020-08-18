@@ -1,24 +1,16 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import * as React from 'react'
 import { RouteComponentProps } from 'react-router'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
-import {
-	NotificationCenter,
-	Notification,
-	NoticeLevel,
-	NotificationAction,
-} from '../../lib/notifications/notifications'
-import { MeteorCall } from '../../../lib/api/methods'
-import { getUser, User, Users, getUserRoles } from '../../../lib/collections/Users'
-import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
-import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
+import { MeteorCall } from '../../../lib/api/methods'
+import { DBOrganization, Organizations, UserRoles } from '../../../lib/collections/Organization'
+import { getUser, getUserRoles, User } from '../../../lib/collections/Users'
 import { unprotectString } from '../../../lib/lib'
 import { EditAttribute } from '../../lib/EditAttribute'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { Spinner } from '../../lib/Spinner'
 
 interface IAccountPageProps extends RouteComponentProps {
 	user: User | null

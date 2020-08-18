@@ -1,49 +1,47 @@
-import * as React from 'react'
-import { WithTranslation } from 'react-i18next'
 import * as m from 'moment'
 import 'moment/min/locales'
 import { parse as queryStringParse } from 'query-string'
-import Header from './Header'
+import { WithTranslation } from 'react-i18next'
+import { BrowserRouter as Router, Redirect, Route, RouteComponentProps, Switch } from 'react-router-dom'
+import { PubSub } from '../../lib/api/pubsub'
+import { getUser, User } from '../../lib/collections/Users'
+import { Settings } from '../../lib/Settings'
+import { ErrorBoundary } from '../lib/ErrorBoundary'
 import {
-	setAllowStudio,
-	setAllowConfigure,
-	getAllowStudio,
 	getAllowConfigure,
-	setAllowDeveloper,
-	setAllowTesting,
-	getAllowTesting,
 	getAllowDeveloper,
-	setAllowSpeaking,
-	setAllowService,
 	getAllowService,
+	getAllowStudio,
+	getAllowTesting,
+	getUIZoom,
+	setAllowConfigure,
+	setAllowDeveloper,
+	setAllowService,
+	setAllowSpeaking,
+	setAllowStudio,
+	setAllowTesting,
 	setHelpMode,
 	setUIZoom,
-	getUIZoom,
 } from '../lib/localStorage'
-import Status from './Status'
-import { Settings as SettingsComponent } from './Settings'
-import TestTools from './TestTools'
-import { RundownList } from './RundownList'
-import { RundownView } from './RundownView'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
+import { Translated, translateWithTracker } from '../lib/ReactMeteorData/ReactMeteorData'
+import { AccountPage } from './Account/AccountPage'
+import { LoginPage } from './Account/NotLoggedIn/LoginPage'
+import { LostPasswordPage } from './Account/NotLoggedIn/LostPassword'
+import { ResetPasswordPage } from './Account/NotLoggedIn/ResetPasswordPage'
+import { SignupPage } from './Account/NotLoggedIn/SignupPage'
+import { OrganizationPage } from './Account/OrganizationPage'
 import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView'
 import { ConnectionStatusNotification } from './ConnectionStatusNotification'
-import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
-import { ErrorBoundary } from '../lib/ErrorBoundary'
+import Header from './Header'
 import { PrompterView } from './Prompter/PrompterView'
-import { ModalDialogGlobalContainer } from '../lib/ModalDialog'
-import { Settings } from '../../lib/Settings'
-import { LoginPage } from './Account/NotLoggedIn/LoginPage'
-import { SignupPage } from './Account/NotLoggedIn/SignupPage'
-import { LostPasswordPage } from './Account/NotLoggedIn/LostPassword'
-import { ResetPasswordPage } from './Account/NotLoggedIn/ResetPasswordPage'
-import { AccountPage } from './Account/AccountPage'
-import { OrganizationPage } from './Account/OrganizationPage'
-import { getUser, User } from '../../lib/collections/Users'
-import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { read } from 'fs'
+import { RundownList } from './RundownList'
+import { RundownView } from './RundownView'
+import { Settings as SettingsComponent } from './Settings'
+import Status from './Status'
+import TestTools from './TestTools'
 
 const NullComponent = () => null
 

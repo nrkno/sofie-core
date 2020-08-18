@@ -1,13 +1,12 @@
-import { Meteor } from 'meteor/meteor'
-import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { ShowStyleReadAccess } from '../security/showStyle'
-import { OrganizationReadAccess } from '../security/organization'
+import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
+import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
+import { OrganizationReadAccess } from '../security/organization'
+import { ShowStyleReadAccess } from '../security/showStyle'
+import { AutoFillSelector, meteorPublish } from './lib'
 
 meteorPublish(PubSub.showStyleBases, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)

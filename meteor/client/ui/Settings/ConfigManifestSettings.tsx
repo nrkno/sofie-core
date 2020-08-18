@@ -1,49 +1,44 @@
-import * as objectPath from 'object-path'
-import ClassNames from 'classnames'
-import * as React from 'react'
-import * as _ from 'underscore'
-import Tooltip from 'rc-tooltip'
-import { Studio, Studios, MappingsExt, StudioId } from '../../../lib/collections/Studios'
-import { EditAttribute } from '../../lib/EditAttribute'
-import { ModalDialog } from '../../lib/ModalDialog'
-import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Blueprints } from '../../../lib/collections/Blueprints'
 import {
+	faCheck,
+	faDownload,
+	faPencilAlt,
+	faPlus,
+	faSort,
+	faSortDown,
+	faSortUp,
+	faTrash,
+	faUpload,
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import ClassNames from 'classnames'
+import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
+import * as objectPath from 'object-path'
+import Tooltip from 'rc-tooltip'
+import * as React from 'react'
+import {
+	BasicConfigManifestEntry,
+	ConfigItemValue,
 	ConfigManifestEntry,
+	ConfigManifestEntryEnum,
+	ConfigManifestEntryLayerMappings,
+	ConfigManifestEntrySelectFromOptions,
+	ConfigManifestEntrySourceLayers,
+	ConfigManifestEntryTable,
 	ConfigManifestEntryType,
 	IConfigItem,
-	BasicConfigManifestEntry,
-	ConfigManifestEntryEnum,
-	ConfigItemValue,
-	ConfigManifestEntryTable,
-	TableConfigItemValue,
-	ConfigManifestEntrySourceLayers,
-	ConfigManifestEntryLayerMappings,
 	SourceLayerType,
-	ConfigManifestEntrySelectFromOptions,
+	TableConfigItemValue,
 } from 'tv-automation-sofie-blueprints-integration'
-import { literal, DBObj, KeysByType, ProtectedString } from '../../../lib/lib'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { logger } from '../../../lib/logging'
+import * as _ from 'underscore'
+import { MappingsExt } from '../../../lib/collections/Studios'
+import { DBObj, KeysByType, literal, ProtectedString } from '../../../lib/lib'
 import { MongoModifier, TransformedCollection } from '../../../lib/typings/meteor'
-import { Meteor } from 'meteor/meteor'
-import { getHelpMode } from '../../lib/localStorage'
-import { Random } from 'meteor/random'
-import {
-	faDownload,
-	faTrash,
-	faPencilAlt,
-	faCheck,
-	faPlus,
-	faUpload,
-	faSortUp,
-	faSortDown,
-	faSort,
-} from '@fortawesome/free-solid-svg-icons'
+import { EditAttribute } from '../../lib/EditAttribute'
+import { ModalDialog } from '../../lib/ModalDialog'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { UploadButton } from '../../lib/uploadButton'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 
 function filterSourceLayers(
 	select: ConfigManifestEntrySourceLayers<true | false>,

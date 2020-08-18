@@ -1,22 +1,18 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { RundownUtils } from '../../../lib/rundown'
-
-import { FloatingInspector } from '../../FloatingInspector'
-import { getElementWidth } from '../../../utils/dimensions'
-
-import ClassNames from 'classnames'
-import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { MediaObject, Anomaly } from '../../../../lib/collections/MediaObjects'
-
 import { Lottie } from '@crello/react-lottie'
+import * as React from 'react'
+import { withTranslation, WithTranslation } from 'react-i18next'
+import { PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { Anomaly, MediaObject } from '../../../../lib/collections/MediaObjects'
+import { CriticalIconSmall, WarningIconSmall } from '../../../lib/notificationIcons'
+import { getNoticeLevelForPieceStatus, NoticeLevel } from '../../../lib/notifications/notifications'
+import { RundownUtils } from '../../../lib/rundown'
+import { getElementWidth } from '../../../utils/dimensions'
+import { FloatingInspector } from '../../FloatingInspector'
+import { PieceStatusIcon } from '../PieceStatusIcon'
+import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 // @ts-ignore Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
-import { withTranslation, WithTranslation } from 'react-i18next'
-import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { PieceStatusIcon } from '../PieceStatusIcon'
-import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
-import { CriticalIconSmall, WarningIconSmall } from '../../../lib/notificationIcons'
 
 interface IProps extends ICustomLayerItemProps {}
 interface IState {

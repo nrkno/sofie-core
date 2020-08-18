@@ -1,48 +1,39 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { withTranslation } from 'react-i18next'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
-import { Part, Parts } from '../../../lib/collections/Parts'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
-import ClassNames from 'classnames'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-
-import { faTh, faList, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { faList, faTh, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-import { RundownViewKbdShortcuts, RundownViewEvents } from '../RundownView'
-
-import { Spinner } from '../../lib/Spinner'
-import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
-import { RundownAPI } from '../../../lib/api/rundown'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { Meteor } from 'meteor/meteor'
+import * as React from 'react'
+import { withTranslation } from 'react-i18next'
 import {
+	IBlueprintActionManifestDisplayContent,
 	IOutputLayer,
 	ISourceLayer,
-	SomeContent,
-	IBlueprintActionManifestDisplayContent,
 	PieceLifespan,
+	SomeContent,
 } from 'tv-automation-sofie-blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { AdlibSegmentUi, AdLibPieceUi } from './AdLibPanel'
+import * as _ from 'underscore'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownUtils } from '../../lib/rundown'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { ShelfTabs } from './Shelf'
+import { PubSub } from '../../../lib/api/pubsub'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { PartInstances } from '../../../lib/collections/PartInstances'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../lib/collections/Rundowns'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { literal, normalizeArray, Omit, protectString, unprotectString } from '../../../lib/lib'
 import { ReactiveMap } from '../../../lib/reactiveMap'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { RundownUtils } from '../../lib/rundown'
+import { Spinner } from '../../lib/Spinner'
+import { doUserAction, UserAction } from '../../lib/userAction'
+import { RundownViewEvents, RundownViewKbdShortcuts } from '../RundownView'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
+import { AdLibPieceUi, AdlibSegmentUi } from './AdLibPanel'
+import { ShelfTabs } from './Shelf'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void

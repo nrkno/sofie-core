@@ -1,14 +1,12 @@
 import * as React from 'react'
-import * as _ from 'underscore'
-import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../lib/collections/Rundowns'
 import { withTranslation } from 'react-i18next'
-import { EditAttribute } from '../lib/EditAttribute'
-import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { doUserAction, UserAction } from '../lib/userAction'
 import { MeteorCall } from '../../lib/api/methods'
+import { EvaluationBase } from '../../lib/collections/Evaluations'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { SnapshotId } from '../../lib/collections/Snapshots'
+import { EditAttribute } from '../lib/EditAttribute'
+import { Translated } from '../lib/ReactMeteorData/ReactMeteorData'
+import { doUserAction, UserAction } from '../lib/userAction'
 
 interface IProps {
 	playlist: RundownPlaylist

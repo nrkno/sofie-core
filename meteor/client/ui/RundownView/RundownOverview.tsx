@@ -1,20 +1,14 @@
-import * as React from 'react'
 import * as _ from 'underscore'
-
-import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import ClassNames from 'classnames'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { getCurrentTime, extendMandadory, normalizeArray, literal, unprotectString } from '../../../lib/lib'
-import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { withTiming, WithTiming } from './RundownTiming'
+import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { DBSegment, SegmentId } from '../../../lib/collections/Segments'
+import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RundownUtils } from '../../lib/rundown'
-import { PartExtended } from '../../../lib/Rundown'
-import { Part } from '../../../lib/collections/Parts'
-import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
+import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { withTiming, WithTiming } from './RundownTiming'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

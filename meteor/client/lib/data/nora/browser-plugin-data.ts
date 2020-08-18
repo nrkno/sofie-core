@@ -1,4 +1,4 @@
-import { NoraPayload, IBlueprintPieceGeneric } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPieceGeneric, NoraPayload } from 'tv-automation-sofie-blueprints-integration'
 import { isArray } from 'util'
 
 export { createMosObjectXmlStringNoraBluePrintPiece }

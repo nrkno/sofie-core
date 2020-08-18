@@ -1,52 +1,44 @@
-import * as _ from 'underscore'
 import {
-	setupDefaultStudioEnvironment,
-	setupMockStudio,
-	setupDefaultRundown,
-	DefaultEnvironment,
-	setupDefaultRundownPlaylist,
-} from '../../../../__mocks__/helpers/database'
-import { getHash, literal, protectString, unprotectObject, unprotectString } from '../../../../lib/lib'
-import { Studio } from '../../../../lib/collections/Studios'
-import {
-	LookaheadMode,
-	NotesContext as INotesContext,
-	IBlueprintPart,
-	IBlueprintPartDB,
 	IBlueprintAsRunLogEventContent,
-	IBlueprintSegment,
-	IBlueprintSegmentDB,
-	IBlueprintPieceDB,
-	TSR,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
+	IBlueprintSegmentDB,
+	LookaheadMode,
+	NotesContext as INotesContext,
+	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { AsRunLog, AsRunLogEvent } from '../../../../lib/collections/AsRunLog'
+import { IngestCacheType, IngestDataCache } from '../../../../lib/collections/IngestDataCache'
 import {
-	CommonContext,
-	StudioConfigContext,
-	StudioContext,
-	ShowStyleContext,
-	NotesContext,
-	SegmentContext,
-	PartEventContext,
-	AsRunEventContext,
-} from '../context'
-import { ConfigRef } from '../config'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
-import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
-import { Pieces } from '../../../../lib/collections/Pieces'
-import {
-	wrapPartToTemporaryInstance,
-	PartInstance,
 	PartInstances,
 	unprotectPartInstance,
+	wrapPartToTemporaryInstance,
 } from '../../../../lib/collections/PartInstances'
+import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
+import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../../lib/collections/Segments'
+import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../../lib/collections/Studios'
+import { getHash, protectString, unprotectObject, unprotectString } from '../../../../lib/lib'
+import {
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
+	setupMockStudio,
+} from '../../../../__mocks__/helpers/database'
+import { ConfigRef } from '../config'
+import {
+	AsRunEventContext,
+	CommonContext,
+	NotesContext,
+	PartEventContext,
+	ShowStyleContext,
+	StudioConfigContext,
+	StudioContext,
+} from '../context'
 
 describe('Test blueprint api context', () => {
 	function generateSparsePieceInstances(rundown: Rundown) {

@@ -1,26 +1,21 @@
 import * as React from 'react'
-import ClassNames from 'classnames'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
-
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
-
-import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
-import { Parts, Part } from '../../lib/collections/Parts'
-import { PartUi } from './SegmentTimeline/SegmentTimelineContainer'
-
-import { RundownUtils } from '../lib/rundown'
-import { getCurrentTime, objectPathGet, extendMandadory, literal } from '../../lib/lib'
-import { PieceIconContainer, PieceNameContainer } from './PieceIcons/PieceIcon'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
-import { ShowStyle } from '../../server/migration/deprecatedDataTypes/0_18_0'
+import { PubSub } from '../../lib/api/pubsub'
 import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
+import { Part } from '../../lib/collections/Parts'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { DBSegment, Segment } from '../../lib/collections/Segments'
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { StudioId } from '../../lib/collections/Studios'
+import { extendMandadory, getCurrentTime, literal, objectPathGet } from '../../lib/lib'
+import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { RundownUtils } from '../lib/rundown'
+import { PieceIconContainer, PieceNameContainer } from './PieceIcons/PieceIcon'
+import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
+import { PartUi } from './SegmentTimeline/SegmentTimelineContainer'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

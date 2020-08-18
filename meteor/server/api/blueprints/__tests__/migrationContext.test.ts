@@ -1,25 +1,25 @@
-import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
-import { literal, getRandomId, protectString } from '../../../../lib/lib'
 import {
-	LookaheadMode,
 	BlueprintMapping,
-	IConfigItem,
-	ISourceLayer,
-	SourceLayerType,
-	IOutputLayer,
 	IBlueprintRuntimeArgumentsItem,
-	TSR,
 	IBlueprintShowStyleVariant,
+	IConfigItem,
+	IOutputLayer,
+	ISourceLayer,
+	LookaheadMode,
+	SourceLayerType,
+	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
-import { MigrationContextStudio, MigrationContextShowStyle } from '../migrationContext'
+import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { MappingExt, Studio, Studios } from '../../../../lib/collections/Studios'
+import { getRandomId, literal, protectString } from '../../../../lib/lib'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { MigrationContextShowStyle, MigrationContextStudio } from '../migrationContext'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(() => {

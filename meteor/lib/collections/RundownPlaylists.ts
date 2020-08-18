@@ -1,33 +1,28 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { TransformedCollection, MongoQuery, FindOptions } from '../typings/meteor'
+import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
+import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import {
-	Time,
 	applyClassToDocument,
-	registerCollection,
-	normalizeArray,
-	makePromise,
-	getCurrentTime,
 	asyncCollectionFindFetch,
-	waitForPromise,
+	getCurrentTime,
+	normalizeArray,
 	normalizeArrayFunc,
-	mongoWhere,
 	ProtectedString,
+	registerCollection,
+	Time,
 	unprotectString,
 } from '../lib'
-import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
-import { Studio, Studios, StudioId } from './Studios'
-import { Segments, Segment, DBSegment, SegmentId } from './Segments'
-import { Parts, Part, DBPart } from './Parts'
-import { Pieces, Piece } from './Pieces'
-import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
-import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { PieceInstance, PieceInstances } from './PieceInstances'
-import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
-import { PeripheralDeviceId } from './PeripheralDevices'
+import { FindOptions, MongoQuery, TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
+import { PartInstance, PartInstanceId, PartInstances } from './PartInstances'
+import { DBPart, Part, Parts } from './Parts'
+import { PeripheralDeviceId } from './PeripheralDevices'
+import { DBRundown, Rundown, RundownHoldState, RundownId, Rundowns } from './Rundowns'
+import { DBSegment, Segment, SegmentId, Segments } from './Segments'
+import { Studio, StudioId, Studios } from './Studios'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>

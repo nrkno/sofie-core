@@ -1,11 +1,10 @@
-import { Meteor } from 'meteor/meteor'
-import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
-import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { StudioReadAccess } from '../security/studio'
-import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'
+import { OrganizationReadAccess } from '../security/organization'
+import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
+import { StudioReadAccess } from '../security/studio'
+import { AutoFillSelector, meteorPublish } from './lib'
 
 meteorPublish(PubSub.rundownPlaylists, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)

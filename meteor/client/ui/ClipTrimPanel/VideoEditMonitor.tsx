@@ -1,6 +1,3 @@
-import * as React from 'react'
-import { withTranslation } from 'react-i18next'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import {
 // 	faStepForward,
@@ -10,6 +7,9 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 // 	faFastBackward
 // } from '@fortawesome/free-solid-svg-icons'
 import ClassNames from 'classnames'
+import * as React from 'react'
+import { withTranslation } from 'react-i18next'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 export interface IProps {
 	currentTime?: number

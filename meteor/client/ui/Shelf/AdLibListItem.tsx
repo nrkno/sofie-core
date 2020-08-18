@@ -1,29 +1,23 @@
-import * as React from 'react'
-import * as _ from 'underscore'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RundownAPI } from '../../../lib/api/rundown'
-
-import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
-import { RundownUtils } from '../../lib/rundown'
 import {
-	ISourceLayer,
 	IOutputLayer,
+	ISourceLayer,
+	LiveSpeakContent,
 	SourceLayerType,
 	VTContent,
-	LiveSpeakContent,
 } from 'tv-automation-sofie-blueprints-integration'
-import { AdLibPieceUi } from './AdLibPanel'
-import { checkPieceContentStatus } from '../../../lib/mediaObjects'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
-import { unprotectString } from '../../../lib/lib'
-import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { RundownAPI } from '../../../lib/api/rundown'
+import { PieceGeneric } from '../../../lib/collections/Pieces'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { checkPieceContentStatus } from '../../../lib/mediaObjects'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import { RundownUtils } from '../../lib/rundown'
+import { AdLibPieceUi } from './AdLibPanel'
+import { DefaultListItemRenderer } from './Renderers/DefaultLayerItemRenderer'
 
 export interface IAdLibListItem extends PieceGeneric {
 	status: RundownAPI.PieceStatusCode

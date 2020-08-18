@@ -1,46 +1,45 @@
-import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { ClientAPI } from '../../../lib/api/client'
-import {
-	getCurrentTime,
-	waitForPromise,
-	makePromise,
-	unprotectObjectArray,
-	protectString,
-	literal,
-	clone,
-	getRandomId,
-	omit,
-	asyncCollectionFindOne,
-} from '../../../lib/lib'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import { ClientAPI } from '../../../lib/api/client'
+import { MethodContext } from '../../../lib/api/methods'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { Part } from '../../../lib/collections/Parts'
+import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceId } from '../../../lib/collections/Pieces'
+import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, RundownHoldState, Rundowns } from '../../../lib/collections/Rundowns'
+import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { StudioId } from '../../../lib/collections/Studios'
 import {
-	setNextPart as libsetNextPart,
+	asyncCollectionFindOne,
+	clone,
+	getCurrentTime,
+	getRandomId,
+	literal,
+	omit,
+	protectString,
+	unprotectObjectArray,
+	waitForPromise,
+} from '../../../lib/lib'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import { logger } from '../../logging'
+import { reportPartHasStarted } from '../asRunLog'
+import { getBlueprintOfRundown } from '../blueprints/cache'
+import { PartEventContext, RundownContext } from '../blueprints/context/context'
+import { IngestActions } from '../ingest/actions'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
+import {
+	checkAccessAndGetPlaylist,
+	getSegmentsAndPartsFromCache,
 	getSelectedPartInstancesFromCache,
 	isTooCloseToAutonext,
-	getSegmentsAndPartsFromCache,
 	selectNextPart,
-	checkAccessAndGetPlaylist,
+	setNextPart as libsetNextPart,
 } from './lib'
-import { getBlueprintOfRundown } from '../blueprints/cache'
-import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { updateTimeline } from './timeline'
-import { logger } from '../../logging'
-import { PartEndState, PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { getResolvedPieces } from './pieces'
-import { Part } from '../../../lib/collections/Parts'
-import * as _ from 'underscore'
-import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { PartEventContext, RundownContext } from '../blueprints/context/context'
-import { PartInstance } from '../../../lib/collections/PartInstances'
-import { IngestActions } from '../ingest/actions'
-import { StudioId } from '../../../lib/collections/Studios'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { reportPartHasStarted } from '../asRunLog'
-import { MethodContext } from '../../../lib/api/methods'
+import { updateTimeline } from './timeline'
 
 export function takeNextPartInner(
 	context: MethodContext,

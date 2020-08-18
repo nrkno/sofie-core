@@ -1,38 +1,38 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber } from '../../__mocks__/helpers/jest'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { setLoggerLevel } from '../../server/api/logger'
+import { testInFiber } from '../../__mocks__/helpers/jest'
+import { Timeline, TimelineObjGeneric, TimelineObjType } from '../collections/Timeline'
 import {
-	getHash,
-	MeteorPromiseCall,
-	waitForPromise,
-	getCurrentTime,
-	systemTime,
-	saveIntoDb,
-	sumChanges,
 	anythingChanged,
-	literal,
 	applyClassToDocument,
+	escapeHtml,
 	formatDateAsTimecode,
-	formatDurationAsTimecode,
 	formatDateTime,
-	removeNullyProperties,
+	formatDurationAsTimecode,
+	getCurrentTime,
+	getHash,
+	literal,
+	MeteorPromiseCall,
+	mongoFindOptions,
 	objectPathGet,
 	objectPathSet,
-	stringifyObjects,
 	// rateLimit,
 	// rateLimitAndDoItLater,
 	// rateLimitIgnore,
 	// getRank,
 	partial,
 	partialExceptId,
-	escapeHtml,
-	protectString,
-	mongoFindOptions,
 	ProtectedString,
+	protectString,
+	removeNullyProperties,
+	saveIntoDb,
+	stringifyObjects,
+	sumChanges,
+	systemTime,
+	waitForPromise,
 } from '../lib'
-import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
-import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { FindOptions } from '../typings/meteor'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed

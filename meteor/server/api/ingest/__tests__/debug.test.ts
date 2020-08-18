@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Segments } from '../../../../lib/collections/Segments'
-import { Parts } from '../../../../lib/collections/Parts'
 import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
-import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { PeripheralDeviceAPIMethods } from '../../../../lib/api/peripheralDevice'
+import { Parts } from '../../../../lib/collections/Parts'
+import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
+import { Segments } from '../../../../lib/collections/Segments'
+import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../debug.ts') // include in order to create the Meteor methods needed

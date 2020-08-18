@@ -1,27 +1,20 @@
-import { getRundown, getPeripheralDeviceFromRundown } from './lib'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
-import { Part } from '../../../lib/collections/Parts'
-import { check } from '../../../lib/check'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { loadCachedRundownData } from './ingestCache'
-import { resetRundown, removeRundownFromCache } from '../playout/lib'
-import {
-	handleUpdatedRundown,
-	RundownSyncFunctionPriority,
-	rundownPlaylistSyncFunction,
-	handleUpdatedRundownInner,
-} from './rundownInput'
-import { logger } from '../../logging'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
+import { check } from '../../../lib/check'
+import { Part } from '../../../lib/collections/Parts'
+import { RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Segment } from '../../../lib/collections/Segments'
 import { waitForPromise } from '../../../lib/lib'
 import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
-import { Segment } from '../../../lib/collections/Segments'
+import { logger } from '../../logging'
+import { removeRundownFromCache, resetRundown } from '../playout/lib'
 import { GenericDeviceActions } from './genericDevice/actions'
+import { loadCachedRundownData } from './ingestCache'
+import { getPeripheralDeviceFromRundown } from './lib'
+import { MOSDeviceActions } from './mosDevice/actions'
+import { handleUpdatedRundownInner, rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
 
 /*
 This file contains actions that can be performed on an ingest-device (MOS-device)

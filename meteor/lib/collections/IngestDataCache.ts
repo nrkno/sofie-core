@@ -1,11 +1,11 @@
-import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
+import { IngestPart, IngestRundown, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
+import { ProtectedString, registerCollection } from '../lib'
+import { TransformedCollection } from '../typings/meteor'
 import { createMongoCollection } from './lib'
+import { PartId } from './Parts'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
-import { PartId } from './Parts'
 
 export enum IngestCacheType {
 	RUNDOWN = 'rundown',

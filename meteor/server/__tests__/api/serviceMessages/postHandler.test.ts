@@ -1,9 +1,8 @@
-import { postHandler, BodyParsingIncomingMessage } from '../../../api/serviceMessages/postHandler'
-import { Criticality, ServiceMessage, ExternalServiceMessage } from '../../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
 import { Socket } from 'net'
+import { Criticality, ExternalServiceMessage } from '../../../../lib/collections/CoreSystem'
+import { BodyParsingIncomingMessage, postHandler } from '../../../api/serviceMessages/postHandler'
 import * as serviceMessagesApi from '../../../api/serviceMessages/serviceMessagesApi'
-import { isNumber } from 'util'
 
 jest.mock('../../../api/serviceMessages/serviceMessagesApi', () => {
 	return {

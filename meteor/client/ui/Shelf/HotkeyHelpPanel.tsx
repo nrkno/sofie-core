@@ -1,8 +1,8 @@
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { withTranslation } from 'react-i18next'
 import * as React from 'react'
-import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { withTranslation } from 'react-i18next'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { mousetrapHelper } from '../../lib/mousetrapHelper'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 interface IProps {
 	visible?: boolean

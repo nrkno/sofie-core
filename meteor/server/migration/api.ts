@@ -1,11 +1,11 @@
-import { check, Match } from '../../lib/check'
-import { registerClassToMeteorMethods } from '../methods'
-import { MigrationChunk, NewMigrationAPI, RunMigrationResult, MigrationAPIMethods } from '../../lib/api/migration'
-import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from 'tv-automation-sofie-blueprints-integration'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { MigrationAPIMethods, MigrationChunk, NewMigrationAPI, RunMigrationResult } from '../../lib/api/migration'
+import { check, Match } from '../../lib/check'
 import { makePromise } from '../../lib/lib'
-import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { registerClassToMeteorMethods } from '../methods'
 import { SystemWriteAccess } from '../security/system'
+import * as Migrations from './databaseMigration'
 
 function getMigrationStatus(context: MethodContext) {
 	SystemWriteAccess.migrations(context)

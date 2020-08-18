@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from 'http'
-import { Response as MockResponse, MockResponseData } from 'mock-http'
+import { MockResponseData, Response as MockResponse } from 'mock-http'
 
 export interface Params {
 	[key: string]: string

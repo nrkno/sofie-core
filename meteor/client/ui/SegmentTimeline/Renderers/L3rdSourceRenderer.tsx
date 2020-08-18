@@ -1,16 +1,13 @@
 import * as React from 'react'
+import { withTranslation, WithTranslation } from 'react-i18next'
+import Moment from 'react-moment'
+import { NoraContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { getElementWidth } from '../../../utils/dimensions'
 import { Time } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
-import Moment from 'react-moment'
-
-import { PieceLifespan, NoraContent } from 'tv-automation-sofie-blueprints-integration'
-
+import { getElementWidth } from '../../../utils/dimensions'
 import { FloatingInspector } from '../../FloatingInspector'
-
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
-import { withTranslation, WithTranslation } from 'react-i18next'
 import { NoraPreviewController } from './NoraPreviewRenderer'
 
 type KeyValue = { key: string; value: string }

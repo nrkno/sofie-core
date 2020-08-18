@@ -1,15 +1,13 @@
 import * as React from 'react'
-import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
-import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Route, Switch, Redirect, NavLink } from 'react-router-dom'
-
-import { RecordingsList, RecordingsStudioSelect } from './RecordingsList'
-import { TimelineView, TimelineStudioSelect } from './Timeline'
-import { RecordingView } from './RecordingView'
-import { UserLogPlayerPage, UserLogRundownSelect } from './UserLogPlayer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { NavLink, Redirect, Route, Switch } from 'react-router-dom'
 import { PubSub } from '../../../lib/api/pubsub'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
+import { RecordingsList, RecordingsStudioSelect } from './RecordingsList'
+import { RecordingView } from './RecordingView'
+import { TimelineStudioSelect, TimelineView } from './Timeline'
+import { UserLogPlayerPage, UserLogRundownSelect } from './UserLogPlayer'
 
 interface IStatusMenuProps {
 	match?: any

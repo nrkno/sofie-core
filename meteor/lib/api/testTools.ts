@@ -1,5 +1,5 @@
-import { StudioId } from '../collections/Studios'
 import { RecordedFileId } from '../collections/RecordedFiles'
+import { StudioId } from '../collections/Studios'
 
 export interface NewTestToolsAPI {
 	recordStop(studioId: StudioId): Promise<void>
