@@ -321,7 +321,7 @@ body.tv2 {
 
 			&.live {
 				border: 4px solid;
-				border-color: var(--general-live-color);
+				border-color: var(--general-live-color) !important;
 			}
 		}
 	}
