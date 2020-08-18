@@ -46,17 +46,18 @@ class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 	rundownTake(playlistId: RundownPlaylistId) {
 		return makePromise(() => ServerPlayoutAPI.takeNextPart(this, playlistId))
 	}
-	rundownTogglePartArgument(
-		playlistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		property: string,
-		value: string
-	) {
-		return makePromise(() => ClientAPI.responseSuccess(undefined))
-		// return makePromise(() =>
-		// 	ServerPlayoutAPI.rundownTogglePartArgument(this, playlistId, partInstanceId, property, value)
-		// )
-	}
+	// This method has been deprecated in R24
+	// rundownTogglePartArgument(
+	// 	playlistId: RundownPlaylistId,
+	// 	partInstanceId: PartInstanceId,
+	// 	property: string,
+	// 	value: string
+	// ) {
+	// 	return makePromise(() => ClientAPI.responseError(501, 'This method is deprecated'))
+	// 	// return makePromise(() =>
+	// 	// 	ServerPlayoutAPI.rundownTogglePartArgument(this, playlistId, partInstanceId, property, value)
+	// 	// )
+	// }
 	rundownSetNext(playlistId: RundownPlaylistId, partId: PartId, timeOffset?: number | undefined) {
 		return makePromise(() => ServerPlayoutAPI.setNextPart(this, playlistId, partId, true, timeOffset))
 	}

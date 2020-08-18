@@ -22,12 +22,12 @@ export interface NewPlayoutAPI {
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	): Promise<void>
 	rundownTake(playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	rundownTogglePartArgument(
-		playlistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		property: string,
-		value: string
-	): Promise<ClientAPI.ClientResponse<void>>
+	// rundownTogglePartArgument(
+	// 	playlistId: RundownPlaylistId,
+	// 	partInstanceId: PartInstanceId,
+	// 	property: string,
+	// 	value: string
+	// ): Promise<ClientAPI.ClientResponse<void>>
 	rundownSetNext(
 		playlistId: RundownPlaylistId,
 		partId: PartId,
@@ -83,7 +83,7 @@ export enum PlayoutAPIMethods {
 	'rundownMoveNext' = 'playout.rundownMoveNext',
 	'rundownActivateHold' = 'playout.rundownActivateHold',
 	'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
-	'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument',
+	// 'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument', // DEPRECATED
 
 	'pieceTakeNow' = 'playout.pieceTakeNow',
 	'segmentAdLibPieceStart' = 'playout.segmentAdLibPieceStart',

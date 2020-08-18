@@ -31,7 +31,7 @@ namespace PlayoutAPI {
 		'rundownMoveNext' = 'playout.rundownMoveNext',
 		'rundownActivateHold' = 'playout.rundownActivateHold',
 		'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
-		'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument',
+		// 'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument',
 		// 'partPlaybackStartedCallback'		= 'playout.partPlaybackStartedCallback',
 		// 'piecePlaybackStartedCallback'		= 'playout.piecePlaybackStartedCallback',
 		'pieceTakeNow' = 'playout.pieceTakeNow',
