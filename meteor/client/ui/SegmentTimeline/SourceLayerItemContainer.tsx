@@ -141,10 +141,15 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 	}
 
 	componentDidMount() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-			this.updateDataTracker()
-		})
+		window.requestIdleCallback(
+			() => {
+				this.updateMediaObjectSubscription()
+				this.updateDataTracker()
+			},
+			{
+				timeout: 500,
+			}
+		)
 	}
 
 	componentDidUpdate(prevProps: IPropsHeader) {
