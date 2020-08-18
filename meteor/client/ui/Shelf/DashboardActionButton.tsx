@@ -39,7 +39,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		const { button } = this.props
 		switch (button.type) {
 			case ActionButtonType.KLAR_ON_AIR:
-				return this.props.playlist.rehearsal || this.props.playlist.active
+				return !!this.props.playlist.rehearsal || !!this.props.playlist.active
 			default:
 				return false
 		}
