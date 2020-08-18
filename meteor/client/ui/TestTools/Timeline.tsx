@@ -11,6 +11,7 @@ import { loadScript } from '../../lib/lib'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { StudioSelect } from './StudioSelect'
+import { makeTableOfObject } from '../../lib/utilComponents'
 
 interface ITimelineViewProps {
 	match?: {
@@ -260,17 +261,24 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 		renderTimelineState(state: TimelineState) {
 			return _.map(
 				_.sortBy(_.values(state.layers), (o) => o.layer),
-				(o) => (
-					<tr key={o.layer}>
-						<td>{o.layer}</td>
-						<td>{o.id}</td>
-						<td>{makeTableOfObject(o.enable)}</td>
-						<td>{o.instance.end ? o.instance.end - o.instance.start : ''}</td>
-						<td>{o.content.type}</td>
-						<td>{makeTableOfObject(o.classes || [])}</td>
-						<td>{makeTableOfObject(o.content)}</td>
-					</tr>
-				)
+				(o) => {
+					const { enable, layer, id, instance, content, classes } = o
+					const tableEnable = makeTableOfObject(enable)
+					const tableClasses = makeTableOfObject(classes || [])
+					const tableContent = makeTableOfObject(content)
+
+					return (
+						<tr key={layer}>
+							<td>{layer}</td>
+							<td>{id}</td>
+							<td>{tableEnable}</td>
+							<td>{instance.end ? instance.end - instance.start : ''}</td>
+							<td>{content.type}</td>
+							<td>{tableClasses}</td>
+							<td>{tableContent}</td>
+						</tr>
+					)
+				}
 			)
 		}
 		render() {
