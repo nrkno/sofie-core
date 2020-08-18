@@ -825,14 +825,13 @@ export function getUnfinishedPieceInstancesGrouped(
 } {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId, adlib)
 
-	const unfinishedAdLibIds: PieceId[] = [
-		...new Set(
-			unfinishedPieceInstances.filter((piece) => !!piece.piece.adLibSourceId).map((piece) => piece.piece.adLibSourceId!)
-		),
-	]
-	const unfinishedTags: string[] = [
-		...new Set(...unfinishedPieceInstances.filter((piece) => !!piece.piece.tags).map((piece) => piece.piece.tags!)),
-	]
+	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.piece.adLibSourceId)
+		.map((piece) => piece.piece.adLibSourceId!)
+	const unfinishedTags: string[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.piece.tags)
+		.map((piece) => piece.piece.tags!)
+		.reduce((a, b) => a.concat(b), [])
 
 	return {
 		unfinishedAdLibIds,
@@ -894,21 +893,17 @@ export const DashboardPanel = translateWithTracker<
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
-		const {
-			unfinishedAdLibIds: unfinishedPieceInstancesByAdlibId,
-			unfinishedTags: unfinishedPieceInstancesByTag,
-		} = getUnfinishedPieceInstancesGrouped(props.playlist.currentPartInstanceId)
-		const {
-			nextAdLibIds: nextPieceInstancesByAdlibId,
-			nextTags: nextPieceInstancesByAdlibTag,
-		} = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
-			unfinishedAdLibIds: unfinishedPieceInstancesByAdlibId,
-			unfinishedTags: unfinishedPieceInstancesByTag,
-			nextAdLibIds: nextPieceInstancesByAdlibId,
-			nextTags: nextPieceInstancesByAdlibTag,
+			unfinishedAdLibIds,
+			unfinishedTags,
+			nextAdLibIds,
+			nextTags,
 		}
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
