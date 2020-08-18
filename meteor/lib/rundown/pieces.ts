@@ -66,7 +66,7 @@ export function createPieceGroupAndCap(
 		capObjs.push(nowObj)
 	}
 
-	if (pieceGroup.enable.duration !== undefined) {
+	if (pieceGroup.enable.duration !== undefined || pieceGroup.enable.end !== undefined) {
 		// TODO-INFINITES some cases here could be flattened out if there are no 'now' in use
 		if (pieceInstance.resolvedEndCap !== undefined) {
 			const pieceGroupId = getPieceGroupId(unprotectString(pieceInstance.piece._id))

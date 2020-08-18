@@ -524,6 +524,7 @@ function buildTimelineObjsForRundown(
 						groupClasses,
 						previousPartGroup,
 						nowInPreviousPart,
+						false,
 						undefined,
 						activePlaylist.holdState
 					)
@@ -587,42 +588,31 @@ function buildTimelineObjsForRundown(
 				groupClasses.push('continues_infinite')
 			}
 
-			if (piece.infinite) {
-				// TODO-INFINITES - something new here?
-				// // TODO-PartInstance - this will be wrong once infinites work on only the instances
-				// const originalItem = cache.Pieces.findOne(piece.piece.infiniteId)
+			let nowInParent = nowInPart
+			let isAbsoluteInfinitePartGroup = false
+			if (piece.piece.startedPlayback) {
+				// Make the start time stick
+				infiniteGroup.enable = { start: piece.piece.startedPlayback }
+				nowInParent = currentTime - piece.piece.startedPlayback
+				isAbsoluteInfinitePartGroup = true
 
-				// // If we are a continuation, set the same start point to ensure that anything timed is correct
-				// if (originalItem && originalItem.startedPlayback) {
-				// 	infiniteGroup.enable = { start: originalItem.startedPlayback }
-
-				// 	// If an absolute time has been set by a hotkey, then update the duration to be correct
-				// 	const partStartedPlayback = partLastStarted
-				// 	if (piece.piece.userDuration && partStartedPlayback) {
-				// 		const previousPartsDuration = partStartedPlayback - originalItem.startedPlayback
-				// 		if (piece.piece.userDuration.end) {
-				// 			infiniteGroup.enable.end = piece.piece.userDuration.end
-				// 		} else {
-				// 			infiniteGroup.enable.duration = offsetTimelineEnableExpression(
-				// 				piece.piece.userDuration.duration,
-				// 				previousPartsDuration
-				// 			)
-				// 		}
-				// 	}
-				// }
-
-				// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
-				const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
-					enable.duration !== undefined || enable.end !== undefined
-				const infiniteInNextPart = nextPartInfinites[unprotectString(piece.infinite.infinitePieceId)]
-				if (
-					infiniteInNextPart &&
-					!hasDurationOrEnd(infiniteGroup.enable) &&
-					hasDurationOrEnd(infiniteInNextPart.piece.enable)
-				) {
-					// infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
-					infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
+				// If an absolute time has been set by a hotkey, then update the duration to be correct
+				if (piece.userDuration) {
+					infiniteGroup.enable.duration = piece.userDuration.end
 				}
+			}
+
+			// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
+			const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
+				enable.duration !== undefined || enable.end !== undefined
+			const infiniteInNextPart = nextPartInfinites[unprotectString(piece.infinite.infinitePieceId)]
+			if (
+				infiniteInNextPart &&
+				!hasDurationOrEnd(infiniteGroup.enable) &&
+				hasDurationOrEnd(infiniteInNextPart.piece.enable)
+			) {
+				// infiniteGroup.enable.end = infiniteInNextPart.piece.enable.end
+				infiniteGroup.enable.duration = infiniteInNextPart.piece.enable.duration
 			}
 
 			// If this piece does not continue in the next part, then set it to end with the part it belongs to
@@ -648,7 +638,8 @@ function buildTimelineObjsForRundown(
 					[piece],
 					groupClasses,
 					infiniteGroup,
-					nowInPart,
+					nowInParent,
+					isAbsoluteInfinitePartGroup,
 					undefined,
 					activePlaylist.holdState,
 					isOriginOfInfinite
@@ -673,6 +664,7 @@ function buildTimelineObjsForRundown(
 				groupClasses,
 				currentPartGroup,
 				nowInPart,
+				false,
 				transProps,
 				activePlaylist.holdState
 			)
@@ -714,6 +706,7 @@ function buildTimelineObjsForRundown(
 					groupClasses,
 					nextPartGroup,
 					0,
+					false,
 					transProps
 				)
 			)
@@ -826,6 +819,13 @@ function hasPieceInstanceDefinitelyEnded(
 		relativeEnd = relativeEnd === undefined ? candidateEnd : Math.min(relativeEnd, candidateEnd)
 	}
 
+	console.log(
+		pieceInstance._id,
+		relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart,
+		relativeEnd,
+		nowInPart
+	)
+
 	return relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart
 }
 
@@ -836,6 +836,7 @@ function transformPartIntoTimeline(
 	firstObjClasses: string[],
 	partGroup: TimelineObjRundown,
 	nowInPart: number,
+	isAbsoluteInfinitePartGroup: boolean,
 	transitionProps?: TransformTransitionProps,
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
@@ -865,17 +866,34 @@ function transformPartIntoTimeline(
 
 		const isInfiniteContinuation = pieceInstance.infinite && pieceInstance.piece.startPartId !== partId
 
-		const pieceEnable: TSR.Timeline.TimelineEnable = { ...pieceInstance.piece.enable }
-		if (pieceEnable.start === 0 && !isInfiniteContinuation) {
-			// If timed absolute and there is a transition delay, then apply delay
-			if (!pieceInstance.piece.isTransition && allowTransition && transition && !pieceInstance.adLibSourceId) {
-				const transitionContentsDelayStr =
-					transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
-				pieceEnable.start = `#${getPieceGroupId(
-					unprotectString(transition.piece._id)
-				)}.start ${transitionContentsDelayStr}`
-			} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
-				pieceEnable.start = Math.max(0, transitionPieceDelay)
+		const pieceEnable: TSR.Timeline.TimelineEnable = {}
+		if (pieceInstance.userDuration) {
+			pieceEnable.end = pieceInstance.userDuration.end
+		} else {
+			pieceEnable.duration = pieceInstance.piece.enable.duration
+		}
+
+		if (isAbsoluteInfinitePartGroup) {
+			pieceEnable.start = 0
+		} else {
+			pieceEnable.start = pieceInstance.piece.enable.start
+
+			if (pieceEnable.start === 0 && !isInfiniteContinuation) {
+				// If timed absolute and there is a transition delay, then apply delay
+				if (
+					!pieceInstance.piece.isTransition &&
+					allowTransition &&
+					transition &&
+					!pieceInstance.adLibSourceId
+				) {
+					const transitionContentsDelayStr =
+						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
+					pieceEnable.start = `#${getPieceGroupId(
+						unprotectString(transition.piece._id)
+					)}.start ${transitionContentsDelayStr}`
+				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
+					pieceEnable.start = Math.max(0, transitionPieceDelay)
+				}
 			}
 		}
 
@@ -896,13 +914,6 @@ function transformPartIntoTimeline(
 						continue
 					}
 				}
-				// if (partGroup) {
-				// If we are leaving a HOLD, the transition was suppressed, so force it to run now
-				// if (item.isTransition && holdState === RundownHoldState.COMPLETE) {
-				// 	o.trigger.value = TriggerType.TIME_ABSOLUTE
-				// 	o.trigger.value = 'now'
-				// }
-				// }
 
 				timelineObjs.push({
 					...clone<TimelineObjectCoreExt>(o),
