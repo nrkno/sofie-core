@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "meteor run",
-    "dev": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run start --\" \"npm run watch-types -- --preserveWatchOutput\"",
+    "dev": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
     "debug": "meteor run --inspect",
     "postinstall": "meteor npm run prepareForTest",
     "prepareForTest": "node ../scripts/fixTestFibers.js",

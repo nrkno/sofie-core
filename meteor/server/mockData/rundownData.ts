@@ -11,6 +11,8 @@ import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/Rundo
 import { Settings } from '../../lib/Settings'
 import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../api/playout/lib'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -75,6 +77,19 @@ if (!Settings.enableUserAccounts) {
 			rundowns.map((i) => {
 				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id)) // todo: is this correct? - what if rundown has no playlist?
 				updateExpectedMediaItemsOnRundown(cache, i._id)
+				waitForPromise(cache.saveAllToDatabase())
+			})
+		},
+
+		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
+			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
+
+			rundownPlaylistSyncFunction(id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+				const playlist = RundownPlaylists.findOne(id)
+				if (!playlist) throw new Meteor.Error(404, 'not found')
+
+				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
 				waitForPromise(cache.saveAllToDatabase())
 			})
 		},

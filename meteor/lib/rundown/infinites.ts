@@ -124,7 +124,8 @@ export function getPlayheadTrackingInfinitesForPart(
 						case PieceLifespan.OutOnRundownEnd:
 							isValid =
 								candidatePiece.rundownId === part.rundownId &&
-								segmentsBeforeThisInRundownSet.has(currentPartInstance.segmentId)
+								(segmentsBeforeThisInRundownSet.has(currentPartInstance.segmentId) ||
+									currentPartInstance.segmentId === part.segmentId)
 							break
 					}
 

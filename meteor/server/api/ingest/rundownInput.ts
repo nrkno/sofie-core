@@ -701,7 +701,7 @@ function updateRundownFromIngestData(
 	let prepareSavePieces = prepareSaveIntoCache(
 		cache.Pieces,
 		{
-			rundownId: rundownId,
+			startRundownId: rundownId,
 		},
 		segmentPieces
 	)
@@ -1194,8 +1194,8 @@ function updateSegmentFromIngestData(
 	const prepareSavePieces = prepareSaveIntoCache<Piece, Piece>(
 		cache.Pieces,
 		{
-			rundownId: rundown._id,
-			partId: { $in: parts.map((p) => p._id) },
+			startRundownId: rundown._id,
+			startPartId: { $in: parts.map((p) => p._id) },
 		},
 		segmentPieces
 	)
