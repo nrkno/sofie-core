@@ -898,3 +898,17 @@ export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: Ru
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
 	return playlist
 }
+export function triggerGarbageCollection() {
+	Meteor.setTimeout(() => {
+		// Trigger a manual garbage collection:
+		if (global.gc) {
+			// This is only avaialble of the flag --expose_gc
+			// This can be done in prod by: node --expose_gc main.js
+			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
+
+			// by passing true, we're triggering the
+			// @ts-ignore
+			global.gc(true)
+		}
+	}, 500)
+}

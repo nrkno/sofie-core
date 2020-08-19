@@ -501,6 +501,15 @@ function startupMessage() {
 
 		logger.info(`Core package version: "${PackageInfo.versionExtended || PackageInfo.version}"`)
 
+		// @ts-ignore
+		if (global.gc) {
+			logger.info(`Manual garbage-collection is enabled`)
+		} else {
+			logger.warn(
+				`Enable garbage-collection by passing --expose_gc to node in prod or set SERVER_NODE_OPTIONS=--expose_gc in dev`
+			)
+		}
+
 		const versions = getRelevantSystemVersions()
 		_.each(versions, (version, name) => {
 			logger.info(`Core package ${name} version: "${version}"`)

@@ -387,6 +387,8 @@ export function afterTake(
 			IngestActions.notifyCurrentPlayingPart(currentRundown, takePartInstance.part)
 		}
 	}, 40)
+
+	triggerGarbageCollection()
 }
 
 function startHold(
