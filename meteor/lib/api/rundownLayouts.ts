@@ -55,7 +55,7 @@ export namespace RundownLayoutsAPI {
 		return element.type === RundownLayoutElementType.KEYBOARD_PREVIEW
 	}
 
-	export function isPartCountdown (element: RundownLayoutElementBase): element is RundownLayoutPartCountdown {
+	export function isPartCountdown(element: RundownLayoutElementBase): element is RundownLayoutPartCountdown {
 		return element.type === RundownLayoutElementType.PART_COUNTDOWN
 	}
 

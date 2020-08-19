@@ -526,4 +526,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		return unprotectStringArray(stoppedIds)
 	}
+	takeAfterExecuteAction(take: boolean): boolean {
+		this.takeAfterExecute = take
+
+		return this.takeAfterExecute
+	}
 }
