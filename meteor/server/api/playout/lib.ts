@@ -46,6 +46,7 @@ import { afterRemoveParts } from '../rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
+import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 /**
  * Reset the rundown:
@@ -977,13 +978,16 @@ export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: 
 	cache.Segments.remove({ rundownId: rundown._id })
 	cache.Parts.remove({ rundownId: rundown._id })
 	cache.PartInstances.remove({ rundownId: rundown._id })
-	cache.Pieces.remove({ rundownId: rundown._id })
-	cache.PieceInstances.remove({ rundownId: rundown._id })
+	cache.Pieces.remove({ startRundownId: rundown._id })
+	cache.PieceInstances.remove({ rundownId: rundown._id }) // TODO - we don't load all the pieceinstances, so this doesnt do much
 	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
 
 	// These are not present in the cache because they do not directly affect output.
-	AdLibPieces.remove({ rundownId: rundown._id })
-	RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
+	// TODO - should this be a cache.defer??
+	AdLibActions.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	AdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	RundownBaselineAdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	RundownBaselineAdLibActions.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
 	IngestDataCache.remove({ rundownId: rundown._id })
 	ExpectedMediaItems.remove({ rundownId: rundown._id })
 	ExpectedPlayoutItems.remove({ rundownId: rundown._id })
