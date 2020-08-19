@@ -88,7 +88,10 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		if (selector['_id'] && _.isString(selector['_id'])) {
 			// Optimization: Make the lookup as small as possible:
 			docsToSearch = {}
-			docsToSearch[selector['_id']] = this.documents[selector['_id']]
+			const doc = this.documents[selector['_id']]
+			if (doc) {
+				docsToSearch[selector['_id']] = doc
+			}
 		}
 
 		const results: Class[] = []
