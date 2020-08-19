@@ -780,7 +780,7 @@ export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: 
 	cache.Segments.remove({ rundownId: rundown._id })
 	cache.Parts.remove({ rundownId: rundown._id })
 	cache.PartInstances.remove({ rundownId: rundown._id })
-	cache.Pieces.remove({ rundownId: rundown._id })
+	cache.Pieces.remove({ startRundownId: rundown._id })
 	cache.PieceInstances.remove({ rundownId: rundown._id })
 	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
 
