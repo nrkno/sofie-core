@@ -22,6 +22,7 @@ import {
 	getSegmentsAndPartsFromCache,
 	selectNextPart,
 	checkAccessAndGetPlaylist,
+	triggerGarbageCollection,
 } from './lib'
 import { getBlueprintOfRundown } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
