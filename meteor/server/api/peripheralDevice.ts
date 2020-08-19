@@ -195,7 +195,7 @@ export namespace ServerPeripheralDeviceAPI {
 				studioId: studioId,
 				active: true,
 			})
-			// TODO-INFINITE - This cache usage NEEDS to be inside a rundownPlaylistSyncFunction. otherwise the cache.saveAllToDatabase() could fight with another
+			// TODO - This cache usage NEEDS to be inside a rundownPlaylistSyncFunction. otherwise the cache.saveAllToDatabase() could fight with another
 			const cache = activePlaylist
 				? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
 				: waitForPromise(initCacheForNoRundownPlaylist(studioId))

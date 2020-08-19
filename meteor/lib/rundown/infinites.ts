@@ -130,17 +130,9 @@ export function getPlayheadTrackingInfinitesForPart(
 					}
 
 					if (isValid) {
-						// we need to check it should be masked by another infinite
 						const pieceSet = piecesOnSourceLayers.get(sourceLayerId) ?? {}
-						const currentPiece = pieceSet[mode]
-						if (currentPiece) {
-							// Which should we use?
-							// TODO-INFINITES when should the adlib take priority over preprogrammed?
-						} else {
-							// There isnt a conflict, so its easy
-							pieceSet[mode] = candidatePiece
-							piecesOnSourceLayers.set(sourceLayerId, pieceSet)
-						}
+						pieceSet[mode] = candidatePiece
+						piecesOnSourceLayers.set(sourceLayerId, pieceSet)
 					}
 				}
 			}
@@ -348,8 +340,11 @@ export function getPieceInstancesForPart(
 }
 
 export interface PieceInstanceWithTimings extends PieceInstance {
-	// resolvedStart: number | 'now' // TODO - document that this is the value to use, not a bounds (and is identical to piece.enable.start)
-	resolvedEndCap?: number | 'now' // TODO - document that this is value is a bounds, not the value to use
+	/**
+	 * This is a maximum end point of the pieceInstance.
+	 * If the pieceInstance also has a enable.duration of userDuration set then the shortest one will need to be used
+	 */
+	resolvedEndCap?: number | 'now'
 	priority: number
 }
 

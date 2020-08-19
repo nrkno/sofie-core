@@ -283,7 +283,7 @@ addMigrationSteps('0.25.0', [
 		{
 			externalId: 'mosId',
 			startPartId: 'segmentLineId',
-			// TODO-INFINITES startSegmentId
+			// Technically this shold define startSegmentId, but as the infinite modes wil be wrong it wont be needed
 			startRundownId: 'runningOrderId',
 		},
 		'migrateDatabaseCollections'

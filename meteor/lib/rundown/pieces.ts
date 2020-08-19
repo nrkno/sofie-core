@@ -48,7 +48,7 @@ export function createPieceGroupAndCap(
 
 	let nowObj: TimelineObjRundown | undefined
 	if (pieceInstance.resolvedEndCap === 'now') {
-		// TODO-INFINITE - there could already be a piece with a cap of 'now' that we could use as our end time
+		// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
 		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
 		nowObj = literal<TimelineObjRundown>({
 			_id: protectString(''), // set later
@@ -67,8 +67,20 @@ export function createPieceGroupAndCap(
 	}
 
 	if (pieceGroup.enable.duration !== undefined || pieceGroup.enable.end !== undefined) {
-		// TODO-INFINITES some cases here could be flattened out if there are no 'now' in use
-		if (pieceInstance.resolvedEndCap !== undefined) {
+		let updatedPieceGroup = false
+		if (typeof pieceInstance.resolvedEndCap === 'number') {
+			// If everything is numeric, we can keep it simple and flatten it out here
+			if (typeof pieceGroup.enable.end === 'number') {
+				updatedPieceGroup = true
+				pieceGroup.enable.end = Math.min(pieceGroup.enable.end, pieceInstance.resolvedEndCap)
+			} else if (typeof pieceGroup.enable.start === 'number' && typeof pieceGroup.enable.duration === 'number') {
+				pieceGroup.enable.end = pieceGroup.enable.start + pieceGroup.enable.duration
+				delete pieceGroup.enable.duration
+			}
+		}
+
+		if (!updatedPieceGroup && pieceInstance.resolvedEndCap !== undefined) {
+			// Create a wrapper group to apply the end cap
 			const pieceGroupId = getPieceGroupId(unprotectString(pieceInstance.piece._id))
 
 			const pieceEndCapGroup = literal<TimelineObjGroupRundown>({

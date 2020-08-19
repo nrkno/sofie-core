@@ -405,7 +405,10 @@ export namespace ServerPlayoutAPI {
 			const nextPartInstanceTmp = nextPartInstance || currentPartInstance
 			if (!nextPartInstanceTmp)
 				throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" has no next and no current part!`)
-			// TODO-INFINITES this needs to handle the part being orphaned. Either we error gracefully because it could not be found, or we could try to figure out where we could have been before that (does the segment exist?)
+
+			const nextPart = cache.Parts.findOne(nextPartInstanceTmp.part._id)
+			if (!nextPart)
+				throw new Meteor.Error(404, `Part "${nextPartInstanceTmp.part._id}" no longer exists in the rundown!`)
 			currentNextPart = nextPartInstanceTmp.part
 		}
 
