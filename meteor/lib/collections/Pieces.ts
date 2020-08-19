@@ -54,7 +54,7 @@ export interface RundownPieceGeneric extends PieceGeneric {
 	// partId?: PartId
 }
 
-export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'infiniteId'> {
+export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'> {
 	startRundownId: RundownId
 	startSegmentId: SegmentId
 	startPartId: PartId
@@ -67,15 +67,6 @@ export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id
 	// 	duration?: number
 	// 	end?: string
 	// }
-
-	// /** This is set when the piece is infinite, to deduplicate the contents on the timeline, while allowing out of order */
-	// infiniteMode?: PieceLifespan
-	// /** [timestamp) After this time, the piece has definitely ended and its content can be omitted from the timeline */
-	// definitelyEnded?: number
-	// /** This is a backup of the original infiniteMode of the piece, so that the normal field can be modified during playback and restored afterwards */
-	// originalInfiniteMode?: PieceLifespan
-	// /** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
-	// infiniteId?: PieceId
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece

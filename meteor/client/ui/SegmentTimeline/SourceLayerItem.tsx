@@ -338,7 +338,6 @@ export const SourceLayerItem = withTranslation()(
 				!piece.instance.userDuration
 			) {
 				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
-				// console.log(piece.infiniteMode + ', ' + piece.infiniteId)
 			}
 
 			return itemDuration
