@@ -80,9 +80,19 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		this._initialize()
 
 		selector = selector || {}
+		if (isProtectedString(selector)) {
+			selector = { _id: selector } as MongoQuery<DBInterface>
+		}
+
+		let docsToSearch = this.documents
+		if (selector['_id'] && _.isString(selector['_id'])) {
+			// Optimization: Make the lookup as small as possible:
+			docsToSearch = {}
+			docsToSearch[selector['_id']] = this.documents[selector['_id']]
+		}
 
 		const results: Class[] = []
-		_.each(this.documents, (doc, _id) => {
+		_.each(docsToSearch, (doc, _id) => {
 			if (doc.removed) return
 			if (
 				!selector
