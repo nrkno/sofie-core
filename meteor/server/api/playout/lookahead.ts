@@ -108,6 +108,23 @@ export function getLookeaheadObjects(
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 
+	// nextPartInstance should always have a backing part (if it exists), so this will be safe
+	let futureParts: Part[] = []
+	const lastPartInstanceOnTimeline = _.last(partInstancesOnTimeline) || previousPartInfo || null
+	if (
+		lastPartInstanceOnTimeline &&
+		nextPartInstance &&
+		lastPartInstanceOnTimeline.part._id !== nextPartInstance._id
+	) {
+		// We need to find the nextPart and do lookahead from there
+		const nextPartIndex = orderedParts.findIndex((p) => p._id === nextPartInstance.part._id)
+		futureParts = nextPartIndex !== undefined ? orderedParts.slice(nextPartIndex) : []
+	} else {
+		// next is already handled, so work from after that
+		const nextPartIndex = selectNextPart(playlist, lastPartInstanceOnTimeline?.part ?? null, orderedParts)?.index
+		futureParts = nextPartIndex !== undefined ? orderedParts.slice(nextPartIndex) : []
+	}
+
 	const orderedPiecesCache = new Map<PartId, PieceResolved[]>()
 
 	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
@@ -121,7 +138,7 @@ export function getLookeaheadObjects(
 			playlist,
 			partInstancesOnTimeline,
 			previousPartInfo,
-			orderedParts,
+			futureParts.slice(0, lookaheadMaxSearchDistance),
 			orderedPiecesCache,
 			layerId,
 			mapping.lookahead,
@@ -189,7 +206,7 @@ function findLookaheadForlayer(
 	playlist: RundownPlaylist,
 	partInstancesOnTimeline: PartInstanceAndPieceInstances[],
 	previousPartInstanceInfo: PartInstanceAndPieceInstances | undefined,
-	orderedParts: Part[],
+	futureParts: Part[],
 	orderedPiecesCache: Map<PartId, PieceResolved[]>,
 	layer: string,
 	mode: LookaheadMode,
@@ -253,14 +270,6 @@ function findLookaheadForlayer(
 		return res
 	}
 
-	const parts = getAllOrderedPartsFromCache(cache, playlist)
-
-	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPartInstance = _.last(partInstancesOnTimeline) || previousPartInstanceInfo || null
-	const nextPart = selectNextPart(playlist, nextPartInstance ? nextPartInstance.part : null, orderedParts)
-	const lastPartIndex =
-		nextPart && lookaheadMaxSearchDistance !== undefined ? nextPart.index + lookaheadMaxSearchDistance : undefined
-	const futureParts = nextPart ? orderedParts.slice(nextPart.index, lastPartIndex ? lastPartIndex : undefined) : []
 	if (futureParts.length === 0) {
 		return res
 	}
