@@ -27,6 +27,7 @@ import { afterRemoveParts } from '../rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { MethodContext } from '../../../lib/api/methods'
+import { MongoQuery } from '../../../lib/typings/meteor'
 
 /**
  * Reset the rundown:
@@ -732,35 +733,29 @@ export function getSelectedPartInstancesFromCache(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
 	rundownIds?: RundownId[]
-) {
+): {
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
+	previousPartInstance: PartInstance | undefined
+} {
 	if (!rundownIds) {
 		rundownIds = getRundownIDsFromCache(cache, playlist)
 	}
 
-	const ids = _.compact([
-		playlist.currentPartInstanceId,
-		playlist.previousPartInstanceId,
-		playlist.nextPartInstanceId,
-	])
-
-	if (ids.length === 0) {
-		return {
-			currentPartInstance: undefined,
-			nextPartInstance: undefined,
-			previousPartInstance: undefined,
-		}
-	}
-
-	const instances = cache.PartInstances.findFetch({
+	const selector: MongoQuery<DBPartInstance> = {
 		rundownId: { $in: rundownIds },
-		_id: { $in: ids },
 		reset: { $ne: true },
-	})
-
+	}
 	return {
-		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInstanceId),
-		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInstanceId),
-		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInstanceId),
+		currentPartInstance: playlist.currentPartInstanceId
+			? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
+			: undefined,
+		nextPartInstance: playlist.nextPartInstanceId
+			? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
+			: undefined,
+		previousPartInstance: playlist.previousPartInstanceId
+			? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
+			: undefined,
 	}
 }
 
