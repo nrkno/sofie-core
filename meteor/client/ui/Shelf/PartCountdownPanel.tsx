@@ -7,7 +7,13 @@ import {
 	DashboardLayoutPartCountdown,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
+import {
+	dashboardElementPosition,
+	getUnfinishedPieceInstancesReactive,
+	IDashboardPanelTrackedProps,
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
+} from './DashboardPanel'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
@@ -23,10 +29,7 @@ interface IPartCountdownPanelProps {
 	playlist: RundownPlaylist
 }
 
-interface IPartCountdownPanelTrackedProps {
-	unfinishedPieces: {
-		[key: string]: PieceInstance[]
-	}
+interface IPartCountdownPanelTrackedProps extends IDashboardPanelTrackedProps {
 	livePiece?: PieceInstance
 	livePart?: PartInstance
 }
@@ -112,6 +115,10 @@ export class PartCountdownPanelInner extends MeteorReactComponent<
 export const PartCountdownPanel = withTracker<IPartCountdownPanelProps, IState, IPartCountdownPanelTrackedProps>(
 	(props: IPartCountdownPanelProps & IPartCountdownPanelTrackedProps) => {
 		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId, false)
+		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		const livePiece: PieceInstance | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
 				? _.find(_.flatten(_.values(unfinishedPieces)), (piece: PieceInstance) => {
@@ -122,7 +129,10 @@ export const PartCountdownPanel = withTracker<IPartCountdownPanelProps, IState, 
 			? PartInstances.findOne(props.playlist.currentPartInstanceId)
 			: undefined
 		return {
-			unfinishedPieces,
+			unfinishedAdLibIds,
+			unfinishedTags,
+			nextAdLibIds,
+			nextTags,
 			livePiece,
 			livePart,
 		}
