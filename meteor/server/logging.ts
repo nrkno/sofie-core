@@ -52,7 +52,7 @@ function safeStringify(o: any): string {
 	}
 }
 const customFormat = Winston.format.printf(({ timestamp, level, message, meta }) => {
-	return `${timestamp} [${level}] ${message} ${meta ? safeStringify(meta) : ''}` // kz: TODO make this format correct
+	return `[${level}] ${message} ${meta ? safeStringify(meta) : ''}` // kz: TODO make this format correct
 })
 
 if (logToFile || logPath !== '') {
