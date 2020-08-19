@@ -335,7 +335,7 @@ export const SourceLayerItem = withTranslation()(
 				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
 					(innerPiece.enable.start !== undefined && innerPiece.enable.duration === undefined)) &&
 				!piece.cropped &&
-				!piece.instance.userDuration
+				piece.renderedDuration === null
 			) {
 				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 			}
