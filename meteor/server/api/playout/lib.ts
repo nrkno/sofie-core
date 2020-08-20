@@ -842,7 +842,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 /**
  * time in ms before an autotake when we don't accept takes/updates
  */
-const AUTOTAKE_UPDATE_DEBOUNCE = 2000
+const AUTOTAKE_UPDATE_DEBOUNCE = 5000
 const AUTOTAKE_TAKE_DEBOUNCE = 1000
 
 export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefined, isTake?: boolean) {

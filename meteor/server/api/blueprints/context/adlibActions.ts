@@ -354,7 +354,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance, false)) {
+		if (isTooCloseToAutonext(currentPartInstance, true)) {
 			throw new Error('Too close to an autonext to queue a part')
 		}
 
