@@ -147,7 +147,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 		// blueprintId?: BlueprintId
 		mappings: {},
 		supportedShowStyleBase: [],
-		config: [],
+		blueprintConfig: {},
 		// testToolsConfig?: ITestToolsConfig
 		settings: {
 			mediaPreviewsUrl: '',
@@ -189,7 +189,7 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 				exclusiveGroup: 'main',
 			}),
 		],
-		config: [],
+		blueprintConfig: {},
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		runtimeArguments: [
@@ -217,7 +217,7 @@ export function setupMockShowStyleVariant(
 		_id: protectString('mockShowStyleVariant' + dbI++),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,
-		config: [],
+		blueprintConfig: {},
 		_rundownVersionHash: '',
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)

@@ -160,6 +160,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -184,6 +185,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -208,6 +210,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -362,6 +365,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			outputLayers: [],
 			sourceLayers: [],
 			hotkeyLegend: [],
+			// @ts-ignore
 			config: [],
 			_rundownVersionHash: '',
 		})
@@ -370,6 +374,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			_id: protectString('variant0'),
 			name: '',
 			showStyleBaseId: protectString('showStyle0'),
+			// @ts-ignore
 			config: [],
 			_rundownVersionHash: '',
 		})

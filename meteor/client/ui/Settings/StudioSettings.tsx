@@ -1258,7 +1258,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								object={this.props.studio}
 								layerMappings={this.getLayerMappingsFlat()}
 								collection={Studios}
-								configPath={'config'}
+								configPath={'blueprintConfig'}
 							/>
 						</div>
 					</div>

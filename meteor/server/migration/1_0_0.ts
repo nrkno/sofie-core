@@ -24,6 +24,7 @@ addMigrationSteps('1.0.0', [
 			let validate: boolean | string = false
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.slackEvaluationUrls) {
+					// @ts-ignore
 					if (_.find(studio.config, (c) => c._id === 'slack_evaluation')) {
 						validate = `slackEvaluationUrls not set on studio ${studio._id}`
 					}
@@ -34,11 +35,13 @@ addMigrationSteps('1.0.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.slackEvaluationUrls) {
+					// @ts-ignore
 					const value = _.find(studio.config, (c) => c._id === 'slack_evaluation')
 					if (value) {
 						// Update the studio
 						Studios.update(studio._id, {
 							$set: {
+								// @ts-ignore
 								'settings.slackEvaluationUrls': value.value,
 							},
 							$pull: {
@@ -73,6 +76,7 @@ addMigrationSteps('1.0.0', [
 			let validate: boolean | string = false
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.supportedMediaFormats) {
+					// @ts-ignore
 					if (_.find(studio.config, (c) => c._id === 'mediaResolutions')) {
 						validate = `supportedMediaFormats not set on studio ${studio._id}`
 					}
@@ -83,11 +87,13 @@ addMigrationSteps('1.0.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.supportedMediaFormats) {
+					// @ts-ignore
 					const value = _.find(studio.config, (c) => c._id === 'mediaResolutions')
 					if (value) {
 						// Update the studio
 						Studios.update(studio._id, {
 							$set: {
+								// @ts-ignore
 								'settings.supportedMediaFormats': value.value,
 							},
 							$pull: {
@@ -122,6 +128,7 @@ addMigrationSteps('1.0.0', [
 			let validate: boolean | string = false
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.supportedAudioStreams) {
+					// @ts-ignore
 					if (_.find(studio.config, (c) => c._id === 'audioStreams')) {
 						validate = `supportedAudioStreams not set on studio ${studio._id}`
 					}
@@ -132,11 +139,13 @@ addMigrationSteps('1.0.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.supportedAudioStreams) {
+					// @ts-ignore
 					const value = _.find(studio.config, (c) => c._id === 'audioStreams')
 					if (value) {
 						// Update the studio
 						Studios.update(studio._id, {
 							$set: {
+								// @ts-ignore
 								'settings.supportedAudioStreams': value.value,
 							},
 							$pull: {

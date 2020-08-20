@@ -152,10 +152,7 @@ describe('Test blueprint api context', () => {
 					sofieUrl: 'testUrl',
 					mediaPreviewsUrl: '',
 				},
-				config: [
-					{ _id: 'abc', value: true },
-					{ _id: '123', value: 'val2' },
-				],
+				blueprintConfig: { abc: true, '123': 'val2' },
 			})
 		}
 

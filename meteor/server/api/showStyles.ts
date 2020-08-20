@@ -14,7 +14,7 @@ export function insertShowStyleBase(): ShowStyleBaseId {
 			blueprintId: protectString(''),
 			outputLayers: [],
 			sourceLayers: [],
-			config: [],
+			blueprintConfig: {},
 			runtimeArguments: [],
 			_rundownVersionHash: '',
 		})
@@ -32,7 +32,7 @@ export function insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId, name?: 
 		_id: getRandomId(),
 		showStyleBaseId: showStyleBase._id,
 		name: name || 'Variant',
-		config: [],
+		blueprintConfig: {},
 		_rundownVersionHash: '',
 	})
 }

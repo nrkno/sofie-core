@@ -16,10 +16,7 @@ describe('Test blueprint config', () => {
 				sofieUrl: 'host url',
 				mediaPreviewsUrl: '',
 			},
-			config: [
-				{ _id: 'sdfsdf', value: 'one' },
-				{ _id: 'another', value: 5 },
-			],
+			blueprintConfig: { sdfsdf: 'one', another: 5 },
 		})
 
 		const res = compileStudioConfig(studio)

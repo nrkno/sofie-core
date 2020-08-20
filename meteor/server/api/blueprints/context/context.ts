@@ -1,4 +1,5 @@
 import * as _ from 'underscore'
+import * as objectPath from 'object-path'
 import { Meteor } from 'meteor/meteor'
 import {
 	getHash,
@@ -10,6 +11,8 @@ import {
 	protectString,
 	check,
 	getCurrentTime,
+	objectPathGet,
+	objectPathSet,
 } from '../../../../lib/lib'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { Match } from 'meteor/check'
@@ -39,11 +42,16 @@ import {
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
 } from 'tv-automation-sofie-blueprints-integration'
-import { Studio, StudioId } from '../../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
+import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
+import { ConfigRef, compileStudioConfig, findMissingConfigs, compileShowStyleConfig } from '../config'
 import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
+import {
+	getShowStyleCompound,
+	ShowStyleVariantId,
+	ShowStyleVariants,
+	ShowStyleVariant,
+} from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { PartNote, NoteType, INoteBase } from '../../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
@@ -155,6 +163,13 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 }
 
+const studioBlueprintConfigCache: { [id: string]: Cache } = {}
+const showStyleBlueprintConfigCache: { [id: string]: { [id: string]: Cache } } = {}
+interface Cache {
+	versionHash: string
+	config: any
+}
+
 /** Studio */
 
 export class StudioConfigContext implements IStudioConfigContext {
@@ -170,18 +185,33 @@ export class StudioConfigContext implements IStudioConfigContext {
 	getStudio(): Readonly<Studio> {
 		return this.studio
 	}
-	getStudioConfig(): Readonly<{ [key: string]: ConfigItemValue }> {
+	getStudioConfig(): any {
+		const cacheId = unprotectString(this.studio._id)
+		if (studioBlueprintConfigCache[cacheId]) {
+			return studioBlueprintConfigCache[cacheId].config
+		}
+
+		logger.debug('Building Studio config')
 		const studioBlueprint = Blueprints.findOne(this.studio.blueprintId)
 		if (studioBlueprint) {
-			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest, this.studio.config)
+			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest, this.studio.blueprintConfig)
 			if (diffs && diffs.length) {
 				logger.warn(`Studio "${this.studio._id}" missing required config: ${diffs.join(', ')}`)
 			}
 		} else {
 			logger.warn(`Studio blueprint "${this.studio.blueprintId}" not found!`)
 		}
-
-		return compileStudioConfig(this.studio)
+		const compiledConfig = compileStudioConfig(this.studio, studioBlueprint)
+		studioBlueprintConfigCache[cacheId] = {
+			versionHash: this.studio._rundownVersionHash,
+			config: compiledConfig,
+		}
+		return compiledConfig
+	}
+	protected wipeCache() {
+		const cacheId = unprotectString(this.studio._id)
+		delete studioBlueprintConfigCache[cacheId]
+		this.getStudioConfig()
 	}
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
@@ -221,13 +251,23 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 		return showStyleBase
 	}
-	getShowStyleConfig(): { [key: string]: ConfigItemValue } {
+	getShowStyleConfig(): any {
+		const cacheId = `${this.showStyleBaseId}.${this.showStyleVariantId}`
+		const cachedConfig = objectPathGet(showStyleBlueprintConfigCache, cacheId)
+		if (cachedConfig) {
+			return cachedConfig.config
+		}
+
+		logger.debug('Building ShowStyle config')
 		const showStyleCompound = getShowStyleCompound(this.showStyleVariantId)
 		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.showStyleVariantId}"`)
 
 		const showStyleBlueprint = Blueprints.findOne(showStyleCompound.blueprintId)
 		if (showStyleBlueprint) {
-			const diffs = findMissingConfigs(showStyleBlueprint.showStyleConfigManifest, showStyleCompound.config)
+			const diffs = findMissingConfigs(
+				showStyleBlueprint.showStyleConfigManifest,
+				showStyleCompound.blueprintConfig
+			)
 			if (diffs && diffs.length) {
 				logger.warn(
 					`ShowStyle "${showStyleCompound._id}-${
@@ -239,11 +279,18 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 			logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
 		}
 
-		const res: { [key: string]: ConfigItemValue } = {}
-		_.each(showStyleCompound.config, (c) => {
-			res[c._id] = c.value
+		const compiledConfig = compileShowStyleConfig(showStyleCompound, showStyleBlueprint)
+		objectPathSet(showStyleBlueprintConfigCache, cacheId, {
+			versionHash: `${showStyleCompound._rundownVersionHash}_${showStyleCompound._rundownVersionHashVariant}`,
+			config: compiledConfig,
 		})
-		return res
+		return compiledConfig
+	}
+	wipeCache() {
+		super.wipeCache()
+		const cacheId = `${this.showStyleBaseId}.${this.showStyleVariantId}`
+		objectPath.del(showStyleBlueprintConfigCache, cacheId)
+		this.getShowStyleConfig()
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)
@@ -514,3 +561,41 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		return ids.join(',')
 	}
 }
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Studios.find(
+			{},
+			{
+				fields: {
+					_rundownVersionHash: 1,
+				},
+			}
+		).observeChanges({
+			changed: (id: StudioId) => delete studioBlueprintConfigCache[unprotectString(id)],
+		})
+		ShowStyleBases.find(
+			{},
+			{
+				fields: {
+					_rundownVersionHash: 1,
+				},
+			}
+		).observeChanges({
+			changed: (id: ShowStyleBaseId) => delete showStyleBlueprintConfigCache[unprotectString(id)],
+		})
+		ShowStyleVariants.find(
+			{},
+			{
+				fields: {
+					_rundownVersionHash: 1,
+					showStyleBaseId: 1,
+					_id: 1,
+				},
+			}
+		).observe({
+			changed: (doc: ShowStyleVariant) =>
+				objectPath.del(showStyleBlueprintConfigCache, `${doc.showStyleBaseId}.${doc._id}`),
+		})
+	}
+})

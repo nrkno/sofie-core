@@ -49,6 +49,7 @@ addMigrationSteps('0.19.0', [
 					sourceLayers: studio.sourceLayers,
 					// @ts-ignore
 					hotkeyLegend: studio.hotkeyLegend,
+					// @ts-ignore
 					config: [],
 					_rundownVersionHash: '',
 				})
@@ -58,6 +59,7 @@ addMigrationSteps('0.19.0', [
 					_id: variantId,
 					name: 'Default variant',
 					showStyleBaseId: id,
+					// @ts-ignore
 					config: [],
 					_rundownVersionHash: '',
 				})
@@ -78,6 +80,7 @@ addMigrationSteps('0.19.0', [
 					blueprintId: protectString(''),
 					outputLayers: [],
 					sourceLayers: [],
+					// @ts-ignore
 					config: [],
 					_rundownVersionHash: '',
 				})
@@ -86,6 +89,7 @@ addMigrationSteps('0.19.0', [
 					_id: getRandomId(),
 					name: 'Default variant',
 					showStyleBaseId: protectString('show0'),
+					// @ts-ignore
 					config: [],
 					_rundownVersionHash: '',
 				})
@@ -218,6 +222,7 @@ addMigrationSteps('0.19.0', [
 			let validate: boolean | string = false
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
+					// @ts-ignore
 					if (_.find(studio.config, (c) => c._id === 'media_previews_url')) {
 						validate = `mediaPreviewsUrl not set on studio ${studio._id}`
 					}
@@ -228,6 +233,7 @@ addMigrationSteps('0.19.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.mediaPreviewsUrl) {
+					// @ts-ignore
 					const value = _.find(studio.config, (c) => c._id === 'media_previews_url')
 					if (value) {
 						// Update the studio
@@ -255,6 +261,7 @@ addMigrationSteps('0.19.0', [
 			let validate: boolean | string = false
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
+					// @ts-ignore
 					if (_.find(studio.config, (c) => c._id === 'sofie_url')) {
 						validate = `sofieUrl not set on studio ${studio._id}`
 					}
@@ -265,6 +272,7 @@ addMigrationSteps('0.19.0', [
 		migrate: () => {
 			Studios.find().forEach((studio) => {
 				if (!studio.settings || !studio.settings.sofieUrl) {
+					// @ts-ignore
 					const value = _.find(studio.config, (c) => c._id === 'sofie_url')
 					if (value) {
 						// Update the studio

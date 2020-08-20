@@ -16,7 +16,7 @@ export function insertStudio(newId?: StudioId): StudioId {
 			// blueprintId?: BlueprintId
 			mappings: {},
 			supportedShowStyleBase: [],
-			config: [],
+			blueprintConfig: {},
 			// testToolsConfig?: ITestToolsConfig
 			settings: {
 				mediaPreviewsUrl: '',

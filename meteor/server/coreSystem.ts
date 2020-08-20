@@ -344,7 +344,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 		const blueprint = Blueprints.findOne(studio.blueprintId)
 		if (!blueprint) return
 
-		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.config)
+		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
 		const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
 		setBlueprintConfigStatus(systemStatusId, diff, studio._id)
 		blueprintIds[systemStatusId] = true
@@ -365,7 +365,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 			const compound = createShowStyleCompound(showBase, variant)
 			if (!compound) return
 
-			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.config)
+			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
 			if (diff && diff.length) {
 				allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 			}

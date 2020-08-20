@@ -33,6 +33,7 @@ addMigrationSteps('0.1.0', [
 					sofieUrl: '',
 				},
 				mappings: {},
+				// @ts-ignore
 				config: [],
 				_rundownVersionHash: '',
 			})
