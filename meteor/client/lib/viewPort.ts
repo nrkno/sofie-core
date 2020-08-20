@@ -90,8 +90,8 @@ export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnim
 	return Promise.reject('Could not find part')
 }
 
-export const HEADER_HEIGHT = 150 // TV2 has: 54
-export const HEADER_MARGIN = 15
+export const HEADER_HEIGHT = 64 // TV2 has: 54
+export const HEADER_MARGIN = 19
 
 export function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
