@@ -12,7 +12,7 @@ import {
 	objectPathSet,
 } from '../../../lib/lib'
 import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
@@ -27,7 +27,7 @@ import {
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 
-import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariants, ShowStyleVariantId, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
@@ -85,6 +85,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 	getConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
+		if (configId === '') return undefined
 		let configItem = objectPathGet(this.studio.blueprintConfig, configId)
 		if (configItem) return trimIfString(configItem)
 	}
@@ -505,6 +506,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	}
 	getBaseConfig(configId: string): ConfigItemValue | undefined {
 		check(configId, String)
+		if (configId === '') return undefined
 		let configItem = objectPathGet(this.showStyleBase.blueprintConfig, configId)
 		if (configItem) return trimIfString(configItem)
 	}
@@ -518,7 +520,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 
 		value = trimIfString(value)
 
-		let modifier: Mongo.Modifier<DBStudio> = {
+		let modifier: Mongo.Modifier<DBShowStyleBase> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},
@@ -551,6 +553,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 	getVariantConfig(variantId: string, configId: string): ConfigItemValue | undefined {
 		check(variantId, String)
 		check(configId, String)
+		if (configId === '') return undefined
 
 		const variant = ShowStyleVariants.findOne({
 			_id: this.getProtectedVariantId(variantId),
@@ -581,14 +584,14 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		})
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-		let modifier: Mongo.Modifier<DBStudio> = {
+		let modifier: Mongo.Modifier<DBShowStyleVariant> = {
 			$set: {
 				[`blueprintConfig.${configId}`]: value,
 			},
 		}
-		ShowStyleBases.update(
+		ShowStyleVariants.update(
 			{
-				_id: this.showStyleBase._id,
+				_id: variant._id,
 			},
 			modifier
 		)
