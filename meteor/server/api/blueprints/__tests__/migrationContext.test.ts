@@ -341,7 +341,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getConfig('conf1')).toEqual(expectedItem.value)
 
 				// Config should have changed
-				initialConfig[0] = expectedItem
+				initialConfig[expectedItem._id] = expectedItem.value
 				expect(studio.blueprintConfig).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
@@ -360,7 +360,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getConfig('conf1')).toEqual(expectedItem.value)
 
 				// Config should have changed
-				initialConfig[0] = expectedItem
+				initialConfig[expectedItem._id] = expectedItem.value
 				expect(studio.blueprintConfig).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
@@ -1387,7 +1387,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getBaseConfig('conf1')).toEqual(expectedItem.value)
 
 				// BaseConfig should have changed
-				initialBaseConfig[0] = expectedItem
+				initialBaseConfig[expectedItem._id] = expectedItem.value
 				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
@@ -1544,7 +1544,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getVariantConfig('configVariant', 'conf19')).toEqual(expectedItem.value)
 
 				// VariantConfig should have changed
-				initialVariantConfig[expectedItem._id] = 34
+				initialVariantConfig[expectedItem._id] = expectedItem.value
 				expect(getAllVariantConfigFromDb(ctx, 'configVariant')).toEqual(initialVariantConfig)
 			})
 			testInFiber('setVariantConfig: insert undefined', () => {
@@ -1579,7 +1579,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getVariantConfig('configVariant', 'conf1')).toEqual(expectedItem.value)
 
 				// VariantConfig should have changed
-				initialVariantConfig[0] = expectedItem
+				initialVariantConfig[expectedItem._id] = expectedItem.value
 				expect(getAllVariantConfigFromDb(ctx, 'configVariant')).toEqual(initialVariantConfig)
 			})
 			testInFiber('setVariantConfig: update undefined', () => {

@@ -5,6 +5,7 @@ import {
 	setupDefaultRundown,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	setupMockStudioBlueprint,
 } from '../../../../__mocks__/helpers/database'
 import { getHash, literal, protectString, unprotectObject, unprotectString } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
@@ -20,6 +21,7 @@ import {
 	TSR,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
+	ConfigManifestEntryType,
 } from 'tv-automation-sofie-blueprints-integration'
 import {
 	CommonContext,
@@ -47,6 +49,8 @@ import {
 } from '../../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { SegmentId } from '../../../../lib/collections/Segments'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
 
 describe('Test blueprint api context', () => {
 	function generateSparsePieceInstances(rundown: Rundown) {
@@ -147,12 +151,33 @@ describe('Test blueprint api context', () => {
 
 	describe('StudioConfigContext', () => {
 		function mockStudio() {
+			const blueprint = setupMockStudioBlueprint(protectString(''))
+			blueprint.studioConfigManifest = [
+				{
+					id: 'abc',
+					name: '',
+					description: '',
+					type: ConfigManifestEntryType.BOOLEAN,
+					defaultVal: false,
+					required: false,
+				},
+				{
+					id: '123',
+					name: '',
+					description: '',
+					type: ConfigManifestEntryType.STRING,
+					defaultVal: '',
+					required: false,
+				},
+			]
+			Blueprints.update(blueprint._id, blueprint)
 			return setupMockStudio({
 				settings: {
 					sofieUrl: 'testUrl',
 					mediaPreviewsUrl: '',
 				},
-				blueprintConfig: { abc: true, '123': 'val2' },
+				blueprintConfig: { abc: true, '123': 'val2', notInManifest: 'val3' },
+				blueprintId: blueprint._id,
 			})
 		}
 
@@ -162,7 +187,7 @@ describe('Test blueprint api context', () => {
 
 			expect(context.getStudio()).toEqual(studio)
 		})
-		test('getStudioConfig', () => {
+		testInFiber('getStudioConfig', () => {
 			const studio = mockStudio()
 			const context = new StudioConfigContext(studio)
 
@@ -242,6 +267,38 @@ describe('Test blueprint api context', () => {
 			const showStyleVariant = ShowStyleVariants.findOne() as ShowStyleVariant
 			expect(showStyleVariant).toBeTruthy()
 
+			const showStyleBase = ShowStyleBases.findOne()
+			Blueprints.update(showStyleBase!.blueprintId, {
+				$set: {
+					showStyleConfigManifest: [
+						{
+							id: 'one',
+							name: '',
+							description: '',
+							type: ConfigManifestEntryType.BOOLEAN,
+							defaultVal: false,
+							required: false,
+						},
+						{
+							id: 'two',
+							name: '',
+							description: '',
+							type: ConfigManifestEntryType.STRING,
+							defaultVal: '',
+							required: false,
+						},
+						{
+							id: 'three',
+							name: '',
+							description: '',
+							type: ConfigManifestEntryType.NUMBER,
+							defaultVal: 0,
+							required: false,
+						},
+					],
+				},
+			})
+
 			const notesContext = new NotesContext(
 				contextName || 'N/A',
 				`rundownId=${rundownId},segmentId=${segmentId}`,
@@ -279,25 +336,19 @@ describe('Test blueprint api context', () => {
 			expect(showStyleBase._id).toEqual((context as any).showStyleBaseId)
 		})
 
-		test('getShowStyleConfig', () => {
+		testInFiber('getShowStyleConfig', () => {
 			const studio = mockStudio()
 			const context = getContext(studio)
 
 			// Set some config
 			ShowStyleVariants.update((context as any).showStyleVariantId, {
 				$set: {
-					config: [
-						{ _id: 'one', value: true },
-						{ _id: 'two', value: 'val2' },
-					],
+					blueprintConfig: { one: true, two: 'val2' },
 				},
 			})
 			ShowStyleBases.update((context as any).showStyleBaseId, {
 				$set: {
-					config: [
-						{ _id: 'two', value: 'default' },
-						{ _id: 'three', value: 765 },
-					],
+					blueprintConfig: { two: 'default', three: 765 },
 				},
 			})
 

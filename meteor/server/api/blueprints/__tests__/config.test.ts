@@ -87,24 +87,7 @@ describe('Test blueprint config', () => {
 
 			Studios.update(studio._id, {
 				$set: {
-					config: [
-						{
-							_id: 'two',
-							value: 'abc',
-						},
-						{
-							_id: 'number',
-							value: 99,
-						},
-						{
-							_id: 'bool',
-							value: true,
-						},
-						{
-							_id: 'obj',
-							value: [{ _id: '0', a: 1 }],
-						},
-					],
+					blueprintConfig: { two: 'abc', number: 99, bool: true, obj: [{ _id: '0', a: 1 }] },
 				},
 			})
 
@@ -123,34 +106,12 @@ describe('Test blueprint config', () => {
 
 			ShowStyleBases.update(variant.showStyleBaseId, {
 				$set: {
-					config: [
-						{
-							_id: 'number',
-							value: 56,
-						},
-						{
-							_id: 'bool',
-							value: true,
-						},
-					],
+					blueprintConfig: { number: 56, bool: true },
 				},
 			})
 			ShowStyleVariants.update(variant._id, {
 				$set: {
-					config: [
-						{
-							_id: 'two',
-							value: 'abc',
-						},
-						{
-							_id: 'number',
-							value: 88,
-						},
-						{
-							_id: 'obj',
-							value: [{ _id: '0', a: 1 }],
-						},
-					],
+					blueprintConfig: { two: 'abc', number: 88, obj: [{ _id: '0', a: 1 }] },
 				},
 			})
 
