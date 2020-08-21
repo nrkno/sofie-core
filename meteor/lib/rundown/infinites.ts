@@ -5,7 +5,7 @@ import { DBPart, PartId, Part } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { assertNever, max, flatten, literal } from '../lib'
+import { assertNever, max, flatten, literal, protectString } from '../lib'
 import { Mongo } from 'meteor/mongo'
 import { Studio } from '../collections/Studios'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
@@ -141,6 +141,7 @@ export function getPlayheadTrackingInfinitesForPart(
 
 	const rewrapInstance = (p: PieceInstance) => {
 		const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
+		instance._id = protectString(`${instance._id}_continue`)
 
 		// instance.infinite = p.infinite
 		if (p.infinite) {

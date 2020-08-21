@@ -15,17 +15,13 @@ import {
 	flatten,
 } from '../../../lib/lib'
 import {
-	TimelineContentTypeOther,
 	TimelineObjPieceAbstract,
-	TimelineObjGroup,
 	TimelineObjType,
 	TimelineObjRundown,
 	TimelineObjGeneric,
-	TimelineObjGroupRundown,
 } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
 import {
-	getPieceGroupId,
 	getPieceFirstObjectId,
 	TimelineObjectCoreExt,
 	OnGenerateTimelineObj,
@@ -41,7 +37,7 @@ import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 

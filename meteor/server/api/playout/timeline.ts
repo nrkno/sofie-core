@@ -882,7 +882,7 @@ function transformPartIntoTimeline(
 					const transitionContentsDelayStr =
 						transitionContentsDelay < 0 ? `- ${-transitionContentsDelay}` : `+ ${transitionContentsDelay}`
 					pieceEnable.start = `#${getPieceGroupId(
-						unprotectString(transition.piece._id)
+						unprotectString(transition._id)
 					)}.start ${transitionContentsDelayStr}`
 				} else if (pieceInstance.piece.isTransition && transitionPieceDelay) {
 					pieceEnable.start = Math.max(0, transitionPieceDelay)

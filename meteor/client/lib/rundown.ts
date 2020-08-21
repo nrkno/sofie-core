@@ -5,7 +5,6 @@ import { Timecode } from 'timecode'
 import { Settings } from '../../lib/Settings'
 import {
 	SourceLayerType,
-	getPieceGroupId,
 	PieceLifespan,
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
@@ -22,12 +21,11 @@ import {
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, unprotectObject, unprotectString } from '../../lib/lib'
+import { literal, normalizeArray } from '../../lib/lib'
 import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
-import { PieceInstancePiece } from '../../lib/collections/PieceInstances'
-import { DBPart, PartId } from '../../lib/collections/Parts'
+import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
 
