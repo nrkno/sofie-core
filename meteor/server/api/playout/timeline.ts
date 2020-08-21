@@ -819,13 +819,6 @@ function hasPieceInstanceDefinitelyEnded(
 		relativeEnd = relativeEnd === undefined ? candidateEnd : Math.min(relativeEnd, candidateEnd)
 	}
 
-	console.log(
-		pieceInstance._id,
-		relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart,
-		relativeEnd,
-		nowInPart
-	)
-
 	return relativeEnd !== undefined && relativeEnd + DEFINITELY_ENDED_FUTURE_DURATION < nowInPart
 }
 

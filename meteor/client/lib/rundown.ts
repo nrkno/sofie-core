@@ -575,7 +575,6 @@ export namespace RundownUtils {
 										currentItem.renderedInPoint - previousItem.renderedInPoint
 									previousItem.cropped = true
 									if (previousItem.instance.infinite) {
-										// TODO-INFINITE
 										previousItem.instance.piece.lifespan = PieceLifespan.WithinPart
 										delete previousItem.instance.infinite
 									}

@@ -235,21 +235,6 @@ export function getResolvedPieces(
 		`PartInstance #${partInstance._id}`
 	)
 
-	// // crop infinite pieces
-	// // TODO-INFINITES - is this needed?
-	// resolvedPieces.forEach((pieceInstance, index, source) => {
-	// 	if (pieceInstance.infinite) {
-	// 		for (let i = index + 1; i < source.length; i++) {
-	// 			const sourcePieceInstance = source[i]
-	// 			if (pieceInstance.piece.sourceLayerId === sourcePieceInstance.piece.sourceLayerId) {
-	// 				// TODO - verify this (it is different to the getResolvedPiecesFromFullTimeline...)
-	// 				pieceInstance.resolvedDuration = sourcePieceInstance.resolvedStart - pieceInstance.resolvedStart
-	// 				return
-	// 			}
-	// 		}
-	// 	}
-	// })
-
 	return resolvedPieces
 }
 export function getResolvedPiecesFromFullTimeline(
@@ -297,27 +282,6 @@ export function getResolvedPiecesFromFullTimeline(
 
 	const pieceInstanceMap = normalizeArray(pieceInstances, '_id')
 	const resolvedPieces = resolvePieceTimeline(transformedObjs, now, pieceInstanceMap, 'timeline')
-
-	// // crop infinite pieces
-	// // TODO-INFINITES - is this needed?
-	// resolvedPieces.forEach((instance, index, source) => {
-	// 	if (instance.infinite) {
-	// 		// && piece.infiniteMode !== PieceLifespan.OutOnNextPart) {
-	// 		for (let i = index + 1; i < source.length; i++) {
-	// 			const sourceInstance = source[i]
-	// 			if (instance.piece.sourceLayerId === sourceInstance.piece.sourceLayerId) {
-	// 				// TODO - verify this, the min is necessary and correct though (and it is different to getResolvedPieces)
-	// 				const infDuration = sourceInstance.resolvedStart - instance.resolvedStart
-	// 				if (instance.resolvedDuration) {
-	// 					instance.resolvedDuration = Math.min(instance.resolvedDuration, infDuration)
-	// 				} else {
-	// 					instance.resolvedDuration = infDuration
-	// 				}
-	// 				return
-	// 			}
-	// 		}
-	// 	}
-	// })
 
 	return {
 		pieces: resolvedPieces,
