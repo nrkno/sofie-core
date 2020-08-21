@@ -74,7 +74,7 @@ Array [
     "studioId": "mockStudio4",
   },
   Object {
-    "_id": "mockStudio4_piece_group_randomId9002_piece001",
+    "_id": "mockStudio4_piece_group_randomId9002_part0_0_randomId9007_randomId9002_piece001",
     "children": Array [],
     "content": Object {
       "deviceType": 0,
@@ -83,7 +83,7 @@ Array [
     "enable": Object {
       "start": 0,
     },
-    "id": "piece_group_randomId9002_piece001",
+    "id": "piece_group_randomId9002_part0_0_randomId9007_randomId9002_piece001",
     "inGroup": "part_group_randomId9002_part0_0_randomId9007",
     "isGroup": true,
     "layer": "vt0",
