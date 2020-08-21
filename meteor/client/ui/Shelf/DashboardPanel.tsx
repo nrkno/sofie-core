@@ -200,7 +200,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					_id: rundowns[0].showStyleBaseId,
 				})
 				this.subscribe(PubSub.pieceInstances, {
-					startRundownId: {
+					rundownId: {
 						$in: rundownIds,
 					},
 					startedPlayback: {
