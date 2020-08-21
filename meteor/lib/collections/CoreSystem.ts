@@ -75,6 +75,12 @@ export interface ICoreSystem {
 	serviceMessages: {
 		[index: string]: ServiceMessage
 	}
+
+	/** elastic APM (application performance monitoring) settings */
+	apm: {
+		enabled: boolean
+		transactionSampleRate: number /** set to -1 for performance, 0.5 for 50% and 1 for all */
+	}
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.

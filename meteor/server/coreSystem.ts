@@ -25,6 +25,8 @@ import { ShowStyleVariants, createShowStyleCompound } from '../lib/collections/S
 import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
+// @ts-ignore: ts can't find meteor packages
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export { PackageInfo }
 
@@ -42,6 +44,10 @@ function initializeCoreSystem() {
 			previousVersion: null,
 			storePath: '', // to be filled in later
 			serviceMessages: {},
+			apm: {
+				enabled: false,
+				transactionSampleRate: -1,
+			},
 		})
 
 		// Check what migration has to provide:
@@ -517,9 +523,36 @@ function startupMessage() {
 	}
 }
 
+function startInstrumenting() {
+	// attempt init elastic APM
+	const system = getCoreSystem()
+	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
+
+	if (APM_HOST && system && system.apm) {
+		logger.info(`APM agent starting up`)
+		Agent.start({
+			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+			hostname: APP_HOST,
+			serverUrl: APM_HOST,
+			secretToken: APM_SECRET,
+			active: system.apm.enabled,
+			transactionSampleRate: system.apm.transactionSampleRate,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+	} else {
+		logger.info(`APM agent inactive`)
+		Agent.start({
+			serviceName: 'tv-automation-server-core',
+			active: false,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+	}
+}
+
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		startupMessage()
 		initializeCoreSystem()
+		startInstrumenting()
 	}
 })

@@ -21,6 +21,8 @@ import {
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
+// @ts-ignore: ts can't find meteor packages
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -52,6 +54,7 @@ function getOrderedPartsAfterPlayhead(
 	if (partCount <= 0) {
 		return []
 	}
+	const span = Agent.startSpan('getOrderedPartsAfterPlayhead')
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
@@ -99,9 +102,11 @@ function getOrderedPartsAfterPlayhead(
 		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
 		res.push(...playableParts)
 
+		if (span) span.end()
 		// Final trim to ensure it is within bounds
 		return res.slice(0, partCount)
 	} else {
+		if (span) span.end()
 		// We reached the target or ran out of parts
 		return res.slice(0, partCount)
 	}
@@ -112,10 +117,12 @@ export async function getLookeaheadObjects(
 	studio: Studio,
 	playlist: RundownPlaylist
 ): Promise<Array<TimelineObjGeneric>> {
+	const span = Agent.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
 		([id, map]) => map.lookahead !== LookaheadMode.NONE
 	)
 	if (mappingsToConsider.length === 0) {
+		if (span) span.end()
 		return []
 	}
 
@@ -265,6 +272,7 @@ export async function getLookeaheadObjects(
 			mutateAndPushObject(entry.obj, `future${i}`, enable, mapping, priority)
 		})
 	}
+	if (span) span.end()
 	return timelineObjs
 }
 
@@ -289,6 +297,7 @@ function findLookaheadForlayer(
 	lookaheadTargetObjects: number,
 	lookaheadMaxSearchDistance: number
 ): LookaheadResult {
+	const span = Agent.startSpan('findLookaheadForlayer')
 	const res: LookaheadResult = {
 		timed: [],
 		future: [],
@@ -361,6 +370,7 @@ function findLookaheadForlayer(
 		}
 	}
 
+	if (span) span.end()
 	return res
 }
 
@@ -375,6 +385,7 @@ function findObjectsForPart(
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
+	const span = Agent.startSpan('findObjectsForPart')
 
 	let allObjs: TimelineObjRundown[] = []
 	for (const piece of partInfo.pieces) {
@@ -400,9 +411,11 @@ function findObjectsForPart(
 	}
 
 	if (allObjs.length === 0) {
+		if (span) span.end()
 		// Should never happen. suggests something got 'corrupt' during this process
 		return []
 	} else if (allObjs.length === 1) {
+		if (span) span.end()
 		// Only one, just return it
 		return allObjs
 	} else {
@@ -473,6 +486,7 @@ function findObjectsForPart(
 				)
 			}
 		})
+		if (span) span.end()
 		return res
 	}
 }

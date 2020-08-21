@@ -25,6 +25,8 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/col
 import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 import { isInTestWrite } from './security/lib/securityVerify'
+// @ts-ignore: ts can't find meteor packages
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -65,6 +67,7 @@ export class Cache {
 		})
 	}
 	async saveAllToDatabase() {
+		const span = Agent.startSpan('Cache.saveAllToDatabase')
 		this._abortActiveTimeout()
 
 		// shouldn't the deferred functions be executed after updating the db?
@@ -78,6 +81,7 @@ export class Cache {
 				}
 			})
 		)
+		if (span) span.end()
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
@@ -188,6 +192,7 @@ async function fillCacheForRundownPlaylistWithData(
 	playlist: RundownPlaylist,
 	initializeImmediately: boolean
 ) {
+	const span = Agent.startSpan('Cache.fillCacheForRundownPlaylistWithData')
 	const ps: Promise<any>[] = []
 	cache.Rundowns.prepareInit({ playlistId: playlist._id }, true)
 
@@ -274,6 +279,7 @@ async function fillCacheForRundownPlaylistWithData(
 	)
 
 	await Promise.all(ps)
+	if (span) span.end()
 }
 export async function initCacheForRundownPlaylist(
 	playlist: RundownPlaylist,

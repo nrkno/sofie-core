@@ -29,6 +29,8 @@ import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylis
 import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
+// @ts-ignore: ts can't find meteor packages
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /**
  * Reset the rundown:
@@ -283,6 +285,7 @@ export function selectNextPart(
 	previousPartInstance: PartInstance | null,
 	parts: Part[]
 ): SelectNextPartResult | undefined {
+	const span = Agent.startSpan('selectNextPart')
 	const findFirstPlayablePart = (
 		offset: number,
 		condition?: (part: Part) => boolean
@@ -326,7 +329,9 @@ export function selectNextPart(
 	// TODO - rundownPlaylist.loop
 
 	// Filter to after and find the first playabale
-	return nextPart || findFirstPlayablePart(offset)
+	const res = nextPart || findFirstPlayablePart(offset)
+	if (span) span.end()
+	return res
 }
 export function setNextPart(
 	cache: CacheForRundownPlaylist,
@@ -335,6 +340,7 @@ export function setNextPart(
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
+	const span = Agent.startSpan('setNextPart')
 	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 		cache,
@@ -497,12 +503,15 @@ export function setNextPart(
 		})
 		// delete rundownPlaylist.nextSegmentId
 	}
+
+	if (span) span.end()
 }
 export function setNextSegment(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist,
 	nextSegment: Segment | null
 ) {
+	const span = Agent.startSpan('setNextSegment')
 	const acceptableRundowns = getRundownIDsFromCache(cache, rundownPlaylist)
 	if (nextSegment) {
 		if (acceptableRundowns.indexOf(nextSegment.rundownId) === -1) {
@@ -530,6 +539,7 @@ export function setNextSegment(
 			},
 		})
 	}
+	if (span) span.end()
 }
 
 function resetPart(cache: CacheForRundownPlaylist, part: Part): void {

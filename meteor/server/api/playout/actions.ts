@@ -24,6 +24,8 @@ import { getActiveRundownPlaylistsInStudio } from './studio'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+// @ts-ignore: ts can't find meteor packages
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export function activateRundownPlaylist(
 	cache: CacheForRundownPlaylist,
@@ -106,6 +108,7 @@ export function deactivateRundownPlaylistInner(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist
 ): Rundown | undefined {
+	const span = Agent.startSpan('deactivateRundownPlaylistInner')
 	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
 
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
@@ -158,6 +161,7 @@ export function deactivateRundownPlaylistInner(
 			},
 		})
 	}
+	if (span) span.end()
 	return rundown
 }
 /**

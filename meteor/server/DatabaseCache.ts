@@ -21,6 +21,8 @@ import {
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
+// @ts-ignore: ts can't find meteor packages
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export function isDbCacheCollection(o: any): o is DbCacheCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
@@ -77,6 +79,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class[] {
+		const span = Agent.startSpan('DBCachefindFetch.')
 		this._initialize()
 
 		selector = selector || {}
@@ -115,7 +118,10 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 				results.push(doc.document)
 			}
 		})
-		return mongoFindOptions(results, options)
+
+		const res = mongoFindOptions(results, options)
+		if (span) span.end()
+		return res
 	}
 	findOne(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
@@ -126,6 +132,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		return this.findFetch(selector, options)[0]
 	}
 	insert(doc: DBInterface): DBInterface['_id'] {
+		const span = Agent.startSpan('DBCache.insert')
 		this._initialize()
 
 		const existing = doc._id && this.documents[unprotectString(doc._id)]
@@ -137,9 +144,11 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			inserted: true,
 			document: this._transform(clone(doc)), // Unlinke a normal collection, this class stores the transformed objects
 		}
+		if (span) span.end()
 		return doc._id
 	}
 	remove(selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>): number {
+		const span = Agent.startSpan('untitled')
 		this._initialize()
 
 		const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
@@ -147,12 +156,14 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			this.documents[id].removed = true
 			delete this.documents[id].document
 		})
+		if (span) span.end()
 		return idsToRemove.length
 	}
 	update(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>
 	): number {
+		const span = Agent.startSpan('untitled')
 		this._initialize()
 
 		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
@@ -185,6 +196,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			}
 			count++
 		})
+		if (span) span.end()
 		return count
 	}
 
@@ -195,6 +207,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
+		const span = Agent.startSpan('DBCache.upsert')
 		this._initialize()
 
 		if (isProtectedString(selector)) {
@@ -203,6 +216,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 
 		const updatedCount = this.update(selector, doc)
 		if (updatedCount > 0) {
+			if (span) span.end()
 			return { numberAffected: updatedCount }
 		} else {
 			if (!selector['_id']) {
@@ -215,6 +229,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 				)
 			}
 
+			if (span) span.end()
 			return { numberAffected: 1, insertedId: this.insert(doc) }
 		}
 	}
@@ -244,6 +259,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		})
 	}
 	async updateDatabaseWithData() {
+		const span = Agent.startSpan('DBCache.updateDatabaseWithData')
 		const changes: {
 			insert: number
 			update: number
@@ -277,6 +293,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		})
 		await Promise.all(ps)
 
+		if (span) span.end()
 		return changes
 	}
 	private _transform(doc: DBInterface): Class {

@@ -44,6 +44,8 @@ import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { PieceInstanceWithTimings, processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+// @ts-ignore: ts can't find meteor packages
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	const aStart = a.enable.start === 'now' ? nowInPart : a.enable.start
@@ -203,6 +205,7 @@ export function getResolvedPieces(
 	showStyleBase: ShowStyleBase,
 	partInstance: PartInstance
 ): ResolvedPieceInstance[] {
+	const span = Agent.startSpan('getResolvedPieces')
 	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
@@ -250,6 +253,7 @@ export function getResolvedPieces(
 	// 	}
 	// })
 
+	if (span) span.end()
 	return resolvedPieces
 }
 export function getResolvedPiecesFromFullTimeline(
@@ -257,6 +261,7 @@ export function getResolvedPiecesFromFullTimeline(
 	playlist: RundownPlaylist,
 	allObjs: TimelineObjGeneric[]
 ): { pieces: ResolvedPieceInstance[]; time: number } {
+	const span = Agent.startSpan('untitled')
 	const objs = clone(
 		allObjs.filter((o) => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId)))
 	)
@@ -319,6 +324,7 @@ export function getResolvedPiecesFromFullTimeline(
 	// 	}
 	// })
 
+	if (span) span.end()
 	return {
 		pieces: resolvedPieces,
 		time: now,
@@ -326,6 +332,7 @@ export function getResolvedPiecesFromFullTimeline(
 }
 
 export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece {
+	const span = Agent.startSpan('convertPieceToAdLibPiece')
 	// const oldId = piece._id
 	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
@@ -352,6 +359,8 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 		)
 		newAdLibPiece.content.timelineObjects = objs
 	}
+
+	if (span) span.end()
 	return newAdLibPiece
 }
 
@@ -360,6 +369,7 @@ export function convertAdLibToPieceInstance(
 	partInstance: PartInstance,
 	queue: boolean
 ): PieceInstance {
+	const span = Agent.startSpan('convertAdLibToPieceInstance')
 	let duration: number | undefined = undefined
 	if (adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
@@ -425,5 +435,7 @@ export function convertAdLibToPieceInstance(
 		)
 		newPieceInstance.piece.content.timelineObjects = objs
 	}
+
+	if (span) span.end()
 	return newPieceInstance
 }

@@ -36,3 +36,4 @@ ostrio:meteor-root
 underscore@1.0.10
 #mdg:validated-method
 accounts-password
+kschingiz:meteor-elastic-apm
