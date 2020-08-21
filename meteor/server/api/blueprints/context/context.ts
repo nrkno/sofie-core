@@ -166,7 +166,6 @@ export class NotesContext extends CommonContext implements INotesContext {
 const studioBlueprintConfigCache: { [id: string]: Cache } = {}
 const showStyleBlueprintConfigCache: { [id: string]: { [id: string]: Cache } } = {}
 interface Cache {
-	versionHash: string
 	config: any
 }
 
@@ -203,7 +202,6 @@ export class StudioConfigContext implements IStudioConfigContext {
 		}
 		const compiledConfig = compileStudioConfig(this.studio, studioBlueprint)
 		studioBlueprintConfigCache[cacheId] = {
-			versionHash: this.studio._rundownVersionHash,
 			config: compiledConfig,
 		}
 		return compiledConfig
@@ -281,7 +279,6 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 		const compiledConfig = compileShowStyleConfig(showStyleCompound, showStyleBlueprint)
 		objectPathSet(showStyleBlueprintConfigCache, cacheId, {
-			versionHash: `${showStyleCompound._rundownVersionHash}_${showStyleCompound._rundownVersionHashVariant}`,
 			config: compiledConfig,
 		})
 		return compiledConfig
