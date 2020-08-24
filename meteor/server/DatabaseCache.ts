@@ -79,7 +79,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class[] {
-		const span = Agent.startSpan('DBCachefindFetch.')
+		const span = Agent.startSpan(`DBCache.findFetch.${this.name}`)
 		this._initialize()
 
 		selector = selector || {}
@@ -132,7 +132,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		return this.findFetch(selector, options)[0]
 	}
 	insert(doc: DBInterface): DBInterface['_id'] {
-		const span = Agent.startSpan('DBCache.insert')
+		const span = Agent.startSpan(`DBCache.insert.${this.name}`)
 		this._initialize()
 
 		const existing = doc._id && this.documents[unprotectString(doc._id)]
@@ -148,7 +148,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		return doc._id
 	}
 	remove(selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>): number {
-		const span = Agent.startSpan('untitled')
+		const span = Agent.startSpan(`DBCache.remove.${this.name}`)
 		this._initialize()
 
 		const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
@@ -163,7 +163,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>
 	): number {
-		const span = Agent.startSpan('untitled')
+		const span = Agent.startSpan(`DBCache.update.${this.name}`)
 		this._initialize()
 
 		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
@@ -207,7 +207,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
-		const span = Agent.startSpan('DBCache.upsert')
+		const span = Agent.startSpan(`DBCache.upsert.${this.name}`)
 		this._initialize()
 
 		if (isProtectedString(selector)) {
@@ -235,9 +235,12 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 	}
 
 	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
+		const span = Agent.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
 		this._innerfillWithDataFromArray(docs)
+
+		if (span) span.end()
 		return docs.length
 	}
 	fillWithDataFromArray(documents: DBInterface[]) {
@@ -259,7 +262,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		})
 	}
 	async updateDatabaseWithData() {
-		const span = Agent.startSpan('DBCache.updateDatabaseWithData')
+		const span = Agent.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
 			insert: number
 			update: number
@@ -293,6 +296,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		})
 		await Promise.all(ps)
 
+		if (span) span.addLabels(changes)
 		if (span) span.end()
 		return changes
 	}
@@ -338,9 +342,22 @@ export function saveIntoCache<DocClass extends DBInterface, DBInterface extends 
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
+	const span = Agent.startSpan(`DBCache.saveIntoCache.${collection.name}`)
 	const preparedChanges = prepareSaveIntoCache(collection, filter, newData, options)
 
-	return savePreparedChangesIntoCache(preparedChanges, collection, options)
+	if (span)
+		span.addLabels({
+			prepInsert: preparedChanges.inserted.length,
+			prepChanged: preparedChanges.changed.length,
+			prepRemoved: preparedChanges.removed.length,
+			prepUnchanged: preparedChanges.unchanged.length,
+		})
+
+	const changes = savePreparedChangesIntoCache(preparedChanges, collection, options)
+
+	if (span) span.addLabels(changes)
+	if (span) span.end()
+	return changes
 }
 export interface PreparedChanges<T> {
 	inserted: T[]
@@ -390,6 +407,7 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 
 	_.each(newData, function(o) {
 		const oldObj = removeObjs['' + o[identifier]]
+
 		if (oldObj) {
 			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
 			const eql = compareObjs(oldObj, o2)

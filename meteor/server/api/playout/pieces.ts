@@ -242,7 +242,7 @@ export function getResolvedPiecesFromFullTimeline(
 	playlist: RundownPlaylist,
 	allObjs: TimelineObjGeneric[]
 ): { pieces: ResolvedPieceInstance[]; time: number } {
-	const span = Agent.startSpan('untitled')
+	const span = Agent.startSpan('getResolvedPiecesFromFullTimeline')
 	const objs = clone(
 		allObjs.filter((o) => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId)))
 	)
