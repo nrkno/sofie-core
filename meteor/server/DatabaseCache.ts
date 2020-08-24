@@ -7,24 +7,16 @@ import {
 	getRandomId,
 	protectString,
 	clone,
-	asyncCollectionRemove,
-	asyncCollectionInsert,
-	asyncCollectionUpdate,
 	asyncCollectionFindFetch,
 	mongoModify,
 	mongoFindOptions,
 	DBObj,
 	compareObjs,
-	waitForPromiseAll,
 	waitForPromise,
-	asyncCollectionUpsert,
-	asyncCollectionBulkRemoveById,
-	asyncCollectionBulkUpsert,
-	asyncCollectionBulkUpdate,
-	BulkUpdateModifier,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
+import { BulkWriteOperation } from 'mongodb'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
@@ -270,29 +262,33 @@ export class DbCacheWriteCollection<
 			update: 0,
 			remove: 0,
 		}
-		const ps: Promise<any>[] = []
-		const insertedDocs: Array<BulkUpdateModifier<Class>> = []
-		const updatedDocs: Array<BulkUpdateModifier<Class>> = []
+
+		const updates: BulkWriteOperation<DBInterface>[] = []
 		const removedDocs: Class['_id'][] = []
 		_.each(this.documents, (doc, id) => {
-			const _id = protectString(id)
+			const _id: DBInterface['_id'] = protectString(id)
 			if (doc.removed) {
 				removedDocs.push(_id)
 				changes.remove++
 			} else if (doc.inserted) {
-				insertedDocs.push({
-					selector: {
-						_id: _id,
+				updates.push({
+					replaceOne: {
+						filter: {
+							_id: id as any,
+						},
+						replacement: doc.document,
+						upsert: true,
 					},
-					modifier: doc.document,
 				})
 				changes.insert++
 			} else if (doc.updated) {
-				updatedDocs.push({
-					selector: {
-						_id: _id,
+				updates.push({
+					replaceOne: {
+						filter: {
+							_id: id as any,
+						},
+						replacement: doc.document,
 					},
-					modifier: doc.document,
 				})
 				changes.update++
 			}
@@ -301,19 +297,27 @@ export class DbCacheWriteCollection<
 			// Note: we don't delete doc.removed, because that breaks this._collection[x].document
 		})
 		if (removedDocs.length) {
-			ps.push(asyncCollectionBulkRemoveById(this._collection, removedDocs))
+			updates.push({
+				deleteMany: {
+					filter: {
+						_id: { $in: removedDocs as any },
+					},
+				},
+			})
 		}
-		if (insertedDocs.length) {
-			ps.push(asyncCollectionBulkUpsert(this._collection, insertedDocs))
-		}
-		if (updatedDocs.length) {
-			ps.push(asyncCollectionBulkUpdate(this._collection, updatedDocs))
-		}
+
+		const rawCollection = this._collection.rawCollection()
+		const ps =
+			updates.length > 0
+				? rawCollection.bulkWrite(updates, {
+						ordered: false,
+				  })
+				: Promise.resolve()
+
 		_.each(removedDocs, (_id) => {
 			delete this._collection[unprotectString(_id)]
 		})
-		/*ps.push()*/
-		await Promise.all(ps)
+		await ps
 
 		return changes
 	}

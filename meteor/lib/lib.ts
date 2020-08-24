@@ -763,25 +763,6 @@ export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface 
 		})
 	})
 }
-export interface BulkUpdateModifier<DBInterface extends { _id: ProtectedString<any> }> {
-	selector: {
-		_id: DBInterface['_id']
-	}
-	modifier: MongoModifier<DBInterface>
-}
-export function asyncCollectionBulkUpdate<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, changes: Array<BulkUpdateModifier<DBInterface>>) {
-	return collection.rawCollection().bulkWrite(
-		changes.map((change) => ({
-			updateOne: {
-				filter: change.selector,
-				update: change.modifier,
-			},
-		}))
-	)
-}
 
 export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
@@ -802,42 +783,12 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 	})
 }
 
-export function asyncCollectionBulkUpsert<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, changes: Array<BulkUpdateModifier<DBInterface>>) {
-	return collection.rawCollection().bulkWrite(
-		changes.map((change) => ({
-			updateOne: {
-				filter: change.selector,
-				update: change.modifier,
-				upsert: true,
-			},
-		}))
-	)
-}
-
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	selector: MongoQuery<DBInterface> | DBInterface['_id']
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
 		collection.remove(selector, (err: any) => {
-			if (err) reject(err)
-			else resolve()
-		})
-	})
-}
-
-export function asyncCollectionBulkRemoveById<
-	DocClass extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	ids: Array<ProtectedString<DBInterface['_id']>>
-): Promise<void> {
-	return new Promise((resolve, reject) => {
-		collection.remove({ _id: { $in: ids as any } }, (err: any) => {
 			if (err) reject(err)
 			else resolve()
 		})
