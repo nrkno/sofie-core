@@ -845,14 +845,13 @@ export function getNextPieceInstancesGrouped(
 ): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
 	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
 
-	const nextAdLibIds: PieceId[] = [
-		...new Set(
-			nextPieceInstances.filter((piece) => !!piece.piece.adLibSourceId).map((piece) => piece.piece.adLibSourceId!)
-		),
-	]
-	const nextTags: string[] = [
-		...new Set(...nextPieceInstances.filter((piece) => !!piece.piece.tags).map((piece) => piece.piece.tags!)),
-	]
+	const nextAdLibIds: PieceId[] = nextPieceInstances
+		.filter((piece) => !!piece.piece.adLibSourceId)
+		.map((piece) => piece.piece.adLibSourceId!)
+	const nextTags: string[] = nextPieceInstances
+		.filter((piece) => !!piece.piece.tags)
+		.map((piece) => piece.piece.tags!)
+		.reduce((a, b) => a.concat(b), [])
 
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
