@@ -15,7 +15,6 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '../../../lib/rundown/infinites'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */

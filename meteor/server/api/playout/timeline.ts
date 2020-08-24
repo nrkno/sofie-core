@@ -64,7 +64,6 @@ import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '.
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /**

@@ -37,7 +37,6 @@ import { MongoQuery } from '../../../lib/typings/meteor'
 import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export namespace ServerPlayoutAdLibAPI {

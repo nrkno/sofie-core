@@ -25,7 +25,6 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/col
 import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 import { isInTestWrite } from './security/lib/securityVerify'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 type DeferredFunction<Cache> = (cache: Cache) => void

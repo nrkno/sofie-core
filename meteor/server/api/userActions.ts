@@ -53,7 +53,6 @@ import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 let MINIMUM_TAKE_SPAN = 1000

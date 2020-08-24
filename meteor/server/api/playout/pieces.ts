@@ -40,7 +40,6 @@ import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {

@@ -25,7 +25,6 @@ import { ShowStyleVariants, createShowStyleCompound } from '../lib/collections/S
 import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export { PackageInfo }

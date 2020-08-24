@@ -30,7 +30,6 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist } from '../DatabaseCaches'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 const EVENT_WAIT_TIME = 500

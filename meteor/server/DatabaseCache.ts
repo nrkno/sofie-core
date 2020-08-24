@@ -21,7 +21,6 @@ import {
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export function isDbCacheCollection(o: any): o is DbCacheCollection<any, any> {
@@ -355,7 +354,7 @@ export function saveIntoCache<DocClass extends DBInterface, DBInterface extends 
 
 	const changes = savePreparedChangesIntoCache(preparedChanges, collection, options)
 
-	if (span) span.addLabels(changes)
+	if (span) span.addLabels(changes as any)
 	if (span) span.end()
 	return changes
 }

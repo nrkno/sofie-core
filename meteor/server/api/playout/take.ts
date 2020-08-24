@@ -42,7 +42,6 @@ import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export function takeNextPartInner(

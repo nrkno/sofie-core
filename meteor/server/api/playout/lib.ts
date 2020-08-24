@@ -29,7 +29,6 @@ import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylis
 import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /**

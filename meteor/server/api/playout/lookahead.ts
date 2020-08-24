@@ -21,7 +21,6 @@ import {
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
-// @ts-ignore: ts can't find meteor packages
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
