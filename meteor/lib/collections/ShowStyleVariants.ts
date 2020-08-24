@@ -5,6 +5,7 @@ import { IBlueprintConfig, IBlueprintShowStyleVariant } from 'tv-automation-sofi
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
+import deepmerge from 'deepmerge'
 
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
@@ -36,7 +37,9 @@ export function createShowStyleCompound(
 ): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
-	let configs = { ...showStyleBase.blueprintConfig, ...showStyleVariant.blueprintConfig }
+	let configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
+		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
+	})
 
 	return {
 		...showStyleBase,

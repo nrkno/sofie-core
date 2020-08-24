@@ -295,6 +295,41 @@ describe('Test blueprint api context', () => {
 							defaultVal: 0,
 							required: false,
 						},
+						{
+							id: 'four.a',
+							name: '',
+							description: '',
+							type: ConfigManifestEntryType.STRING,
+							defaultVal: '',
+							required: false,
+						},
+						{
+							id: 'four.b',
+							name: '',
+							description: '',
+							type: ConfigManifestEntryType.TABLE,
+							defaultVal: [],
+							required: false,
+							columns: [
+								{
+									id: 'x',
+									name: '',
+									description: '',
+									type: ConfigManifestEntryType.NUMBER,
+									required: false,
+									defaultVal: 0,
+									rank: 0,
+								},
+							],
+						},
+						{
+							id: 'four.c',
+							name: '',
+							description: '',
+							type: ConfigManifestEntryType.NUMBER,
+							defaultVal: 0,
+							required: false,
+						},
 					],
 				},
 			})
@@ -343,12 +378,34 @@ describe('Test blueprint api context', () => {
 			// Set some config
 			ShowStyleVariants.update((context as any).showStyleVariantId, {
 				$set: {
-					blueprintConfig: { one: true, two: 'val2' },
+					blueprintConfig: {
+						one: true,
+						two: 'val2',
+						four: {
+							a: 'abc',
+							b: [
+								{ _id: '0', x: 789 },
+								{ _id: '1', x: 567 },
+							],
+						},
+					},
 				},
 			})
 			ShowStyleBases.update((context as any).showStyleBaseId, {
 				$set: {
-					blueprintConfig: { two: 'default', three: 765 },
+					blueprintConfig: {
+						two: 'default',
+						three: 765,
+						four: {
+							a: 'xyz',
+							b: [
+								{ _id: '0', x: 123 },
+								{ _id: '1', x: 456 },
+								{ _id: '2', x: 789 },
+							],
+							c: 1234,
+						},
+					},
 				},
 			})
 
@@ -356,6 +413,14 @@ describe('Test blueprint api context', () => {
 				one: true,
 				two: 'val2',
 				three: 765,
+				four: {
+					a: 'abc',
+					b: [
+						{ _id: '0', x: 789 },
+						{ _id: '1', x: 567 },
+					],
+					c: 1234,
+				},
 			})
 		})
 
