@@ -723,7 +723,7 @@ export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part:
 }
 export function getStudioFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
 	if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-	let studio = cache.Studios.findOne(playlist.studioId)
+	let studio = cache.activationCache.getStudio()
 	if (studio) {
 		return studio
 	} else {

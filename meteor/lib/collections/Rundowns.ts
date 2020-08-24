@@ -97,6 +97,8 @@ export interface DBRundown
 	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
+	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
+	baselineModifyHash?: string
 }
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
@@ -130,6 +132,7 @@ export class Rundown implements DBRundown {
 	public playlistExternalId?: string
 	public playlistId: RundownPlaylistId
 	public _rank: number
+	public baselineModifyHash?: string
 	_: any
 
 	constructor(document: DBRundown) {

@@ -30,6 +30,7 @@ import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/col
 import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 import { isInTestWrite } from './security/lib/securityVerify'
+import { ActivationCache, getActivationCache } from './ActivationCache'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -189,6 +190,11 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 	AdLibPieces: DbCacheWriteCollection<AdLibPiece, AdLibPiece>
 	AdLibActions: DbCacheWriteCollection<AdLibAction, AdLibAction>
 
+	// These have been moved into ActivationCache:
+	// RundownBaselineAdLibPieces
+	// RundownBaselineAdLibActions
+
+	activationCache: ActivationCache
 	constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super(studioId)
 		this.containsDataFromPlaylist = playlistId
@@ -209,6 +215,7 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
+		this.activationCache = getActivationCache(studioId, playlistId)
 		return super.defer(fcn)
 	}
 }
@@ -286,6 +293,7 @@ async function fillCacheForRundownPlaylistWithData(
 
 	await Promise.all(ps)
 }
+ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
 export async function initCacheForRundownPlaylist(
 	playlist: RundownPlaylist,
 	extendFromCache?: CacheForStudioBase,
@@ -313,6 +321,9 @@ export async function initCacheForNoRundownPlaylist(
 
 	return cache
 }
+const studio = Studios.findOne(studioId) as Studio
+if (!studio && !isInTestWrite()) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+await cache.activationCache.initializeForNoPlaylist(studio)
 export async function initCacheForRundownPlaylistFromRundown(rundownId: RundownId) {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)

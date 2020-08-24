@@ -9,6 +9,7 @@ import {
 	unprotectObjectArray,
 	protectString,
 	getCurrentTime,
+	waitForPromise,
 } from '../../../../lib/lib'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
@@ -41,7 +42,12 @@ import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
+import {
+	ShowStyleVariantId,
+	ShowStyleVariant,
+	createShowStyleCompound,
+	ShowStyleVariants,
+} from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
@@ -51,6 +57,8 @@ import { unprotectPartInstance, PartInstance } from '../../../../lib/collections
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
+import { loadStudioBlueprints, loadShowStyleBlueprints } from '../cache'
+import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 
 /** Common */
 
@@ -158,9 +166,9 @@ export class StudioConfigContext implements IStudioConfigContext {
 		return this.studio
 	}
 	getStudioConfig(): Readonly<{ [key: string]: ConfigItemValue }> {
-		const studioBlueprint = Blueprints.findOne(this.studio.blueprintId)
+		const studioBlueprint = loadStudioBlueprints(this.studio)
 		if (studioBlueprint) {
-			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest, this.studio.config)
+			const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, this.studio.config)
 			if (diffs && diffs.length) {
 				logger.warn(`Studio "${this.studio._id}" missing required config: ${diffs.join(', ')}`)
 			}
@@ -184,37 +192,53 @@ export class StudioContext extends StudioConfigContext implements IStudioContext
 /** Show Style Variant */
 
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
-	public readonly showStyleBaseId: ShowStyleBaseId
-	public readonly showStyleVariantId: ShowStyleVariantId
-
 	readonly notesContext: NotesContext
 
 	constructor(
 		studio: Studio,
-		showStyleBaseId: ShowStyleBaseId,
-		showStyleVariantId: ShowStyleVariantId,
+		private readonly cache: CacheForRundownPlaylist | undefined,
+		readonly _rundown: Rundown | undefined,
+		readonly showStyleBaseId: ShowStyleBaseId,
+		readonly showStyleVariantId: ShowStyleVariantId,
 		notesContext: NotesContext
 	) {
 		super(studio)
 
-		this.showStyleBaseId = showStyleBaseId
-		this.showStyleVariantId = showStyleVariantId
 		this.notesContext = notesContext
 	}
 
 	getShowStyleBase(): ShowStyleBase {
-		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
-		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.showStyleBaseId + '" not found')
-
-		return showStyleBase
+		if (this.cache && this._rundown) {
+			return waitForPromise(this.cache.activationCache.getShowStyleBase(this._rundown))
+		} else {
+			const showstyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
+			if (!showstyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
+			return showstyleBase
+		}
+	}
+	getShowStyleVariant(): ShowStyleVariant {
+		if (this.cache && this._rundown) {
+			return waitForPromise(this.cache.activationCache.getShowStyleVariant(this._rundown))
+		} else {
+			const showstyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
+			if (!showstyleVariant)
+				throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
+			return showstyleVariant
+		}
 	}
 	getShowStyleConfig(): { [key: string]: ConfigItemValue } {
-		const showStyleCompound = getShowStyleCompound(this.showStyleVariantId)
-		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.showStyleVariantId}"`)
+		const showStyleBase = this.getShowStyleBase()
+		const showStyleVariant = this.getShowStyleVariant()
 
-		const showStyleBlueprint = Blueprints.findOne(showStyleCompound.blueprintId)
+		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
+		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
+
+		const showStyleBlueprint = loadShowStyleBlueprints(showStyleCompound)
 		if (showStyleBlueprint) {
-			const diffs = findMissingConfigs(showStyleBlueprint.showStyleConfigManifest, showStyleCompound.config)
+			const diffs = findMissingConfigs(
+				showStyleBlueprint.blueprint.showStyleConfigManifest,
+				showStyleCompound.config
+			)
 			if (diffs && diffs.length) {
 				logger.warn(
 					`ShowStyle "${showStyleCompound._id}-${
@@ -265,9 +289,16 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	readonly _rundown: Rundown
 	readonly playlistId: RundownPlaylistId
 
-	constructor(rundown: Rundown, notesContext: NotesContext | undefined, studio?: Studio) {
+	constructor(
+		rundown: Rundown,
+		cache: CacheForRundownPlaylist,
+		notesContext: NotesContext | undefined,
+		studio?: Studio
+	) {
 		super(
 			studio || rundown.getStudio(),
+			cache,
+			rundown,
 			rundown.showStyleBaseId,
 			rundown.showStyleVariantId,
 			notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false)
@@ -285,8 +316,13 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 }
 
 export class SegmentContext extends RundownContext implements ISegmentContext {
-	constructor(rundown: Rundown, studio: Studio | undefined, notesContext: NotesContext) {
-		super(rundown, notesContext, studio)
+	constructor(
+		rundown: Rundown,
+		cache: CacheForRundownPlaylist,
+		studio: Studio | undefined,
+		notesContext: NotesContext
+	) {
+		super(rundown, cache, notesContext, studio)
 	}
 }
 
@@ -303,9 +339,15 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor(rundown: Rundown, studio: Studio | undefined, partInstance: PartInstance) {
+	constructor(
+		rundown: Rundown,
+		cache: CacheForRundownPlaylist,
+		studio: Studio | undefined,
+		partInstance: PartInstance
+	) {
 		super(
 			rundown,
+			cache,
 			new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false),
 			studio
 		)
@@ -321,9 +363,15 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
-	constructor(rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
+	constructor(
+		rundown: Rundown,
+		cache: CacheForRundownPlaylist,
+		studio: Studio | undefined,
+		asRunEvent: AsRunLogEvent
+	) {
 		super(
 			rundown,
+			cache,
 			new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false),
 			studio
 		)

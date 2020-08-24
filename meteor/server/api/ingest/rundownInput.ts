@@ -31,6 +31,7 @@ import {
 	ProtectedString,
 	Omit,
 	PreparedChangesChangesDoc,
+	getRandomId,
 } from '../../../lib/lib'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import {
@@ -55,8 +56,8 @@ import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
 	RundownBaselineObj,
-	RundownBaselineObjs,
 	RundownBaselineObjId,
+	RundownBaselineObjs,
 } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
 import {
@@ -467,7 +468,14 @@ function updateRundownFromIngestData(
 		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		true
 	)
-	const blueprintContext = new ShowStyleContext(studio, showStyle.base._id, showStyle.variant._id, notesContext)
+	const blueprintContext = new ShowStyleContext(
+		studio,
+		undefined,
+		undefined,
+		showStyle.base._id,
+		showStyle.variant._id,
+		notesContext
+	)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, extendedIngestRundown)
 
 	// Ensure the ids in the notes are clean
@@ -616,7 +624,7 @@ function updateRundownFromIngestData(
 
 	// Save the baseline
 	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
-	const blueprintRundownContext = new RundownContext(dbRundown, rundownNotesContext, studio)
+	const blueprintRundownContext = new RundownContext(dbRundown, cache, rundownNotesContext, studio)
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
 
@@ -665,7 +673,7 @@ function updateRundownFromIngestData(
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
 		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
-		const context = new SegmentContext(dbRundown, studio, notesContext)
+		const context = new SegmentContext(dbRundown, cache, studio, notesContext)
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(
@@ -813,20 +821,18 @@ function updateRundownFromIngestData(
 			return false
 		}
 	}
-	const allChanges = sumChanges(
-		rundownChanges,
-		playlistChanges,
-		// Save the baseline
-		saveIntoCache<RundownBaselineObj, RundownBaselineObj>(
-			cache.RundownBaselineObjs,
+
+	const rundownBaselineChanges = sumChanges(
+		saveIntoDb<RundownBaselineObj, RundownBaselineObj>(
+			RundownBaselineObjs,
 			{
 				rundownId: dbRundown._id,
 			},
 			[baselineObj]
 		),
 		// Save the global adlibs
-		saveIntoCache<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
-			cache.RundownBaselineAdLibPieces,
+		saveIntoDb<RundownBaselineAdLibItem, RundownBaselineAdLibItem>(
+			RundownBaselineAdLibPieces,
 			{
 				rundownId: dbRundown._id,
 			},
@@ -838,7 +844,21 @@ function updateRundownFromIngestData(
 				rundownId: dbRundown._id,
 			},
 			baselineAdlibActions
-		),
+		)
+	)
+	if (anythingChanged(rundownBaselineChanges)) {
+		// If any of the rundown baseline datas was modified, we'll update the baselineModifyHash of the rundown
+		cache.Rundowns.update(dbRundown._id, {
+			$set: {
+				baselineModifyHash: unprotectString(getRandomId()),
+			},
+		})
+	}
+
+	const allChanges = sumChanges(
+		rundownChanges,
+		playlistChanges,
+		rundownBaselineChanges,
 
 		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
 
@@ -1161,7 +1181,7 @@ function updateSegmentFromIngestData(
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
 	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
-	const context = new SegmentContext(rundown, studio, notesContext)
+	const context = new SegmentContext(rundown, cache, studio, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(

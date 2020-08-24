@@ -9,11 +9,11 @@ import { ServerClientAPI } from './client'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
 import { StudioContentWriteAccess } from '../security/studio'
-import { CacheForStudio, initCacheForNoRundownPlaylist } from '../DatabaseCaches'
+import { CacheForStudio, initCacheForNoRundownPlaylist, CacheForStudioBase } from '../DatabaseCaches'
 
 function insertTimelineObject(
 	context: MethodContext,
-	cache: CacheForStudio,
+	cache: CacheForStudioBase,
 	studioId: StudioId,
 	timelineObjectOrg: TimelineObjectCoreExt
 ) {
@@ -29,24 +29,21 @@ function insertTimelineObject(
 		objectType: TimelineObjType.MANUAL,
 	}
 
-	let studio = cache.Studios.findOne(studioId)
-
+	const studio = Studios.findOne(studioId)
 	if (studio) {
 		cache.Timeline.upsert(timelineObject._id, timelineObject)
-		afterUpdateTimeline(cache, studio._id)
+		afterUpdateTimeline(cache, studioId)
 	}
 }
-function removeTimelineObject(context: MethodContext, cache: CacheForStudio, studioId: StudioId, id: string) {
+function removeTimelineObject(context: MethodContext, cache: CacheForStudioBase, studioId: StudioId, id: string) {
 	check(studioId, String)
 	check(id, String)
 
 	StudioContentWriteAccess.timeline(context, studioId)
 
-	let studio = cache.Studios.findOne(studioId)
-
+	const studio = Studios.findOne(studioId)
 	if (studio) {
 		cache.Timeline.remove(getTimelineId(studio._id, id))
-
 		afterUpdateTimeline(cache, studio._id)
 	}
 }
