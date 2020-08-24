@@ -23,7 +23,7 @@ import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise } from '../lib/lib'
+import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime } from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -69,6 +69,7 @@ export class Cache {
 		})
 	}
 	async saveAllToDatabase() {
+		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
 
 		// shouldn't the deferred functions be executed after updating the db?
@@ -82,6 +83,7 @@ export class Cache {
 				}
 			})
 		)
+		logger.info(`Save all to database took: ${getCurrentTime() - startTime}ms`)
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
