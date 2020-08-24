@@ -195,6 +195,7 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 	// RundownBaselineAdLibActions
 
 	activationCache: ActivationCache
+
 	constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super(studioId)
 		this.containsDataFromPlaylist = playlistId
@@ -213,9 +214,10 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 
 		this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
 		this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
+
+		this.activationCache = getActivationCache(studioId, playlistId)
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
-		this.activationCache = getActivationCache(studioId, playlistId)
 		return super.defer(fcn)
 	}
 }
@@ -291,9 +293,10 @@ async function fillCacheForRundownPlaylistWithData(
 		)
 	)
 
+	ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
+
 	await Promise.all(ps)
 }
-ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
 export async function initCacheForRundownPlaylist(
 	playlist: RundownPlaylist,
 	extendFromCache?: CacheForStudioBase,
@@ -318,12 +321,12 @@ export async function initCacheForNoRundownPlaylist(
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}
+	const studio = Studios.findOne(studioId) as Studio
+	if (!studio && !isInTestWrite()) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
+	await cache.activationCache.initializeForNoPlaylist(studio)
 
 	return cache
 }
-const studio = Studios.findOne(studioId) as Studio
-if (!studio && !isInTestWrite()) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
-await cache.activationCache.initializeForNoPlaylist(studio)
 export async function initCacheForRundownPlaylistFromRundown(rundownId: RundownId) {
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
