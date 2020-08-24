@@ -3,8 +3,8 @@ import { check } from '../../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
-import { Part, Parts, DBPart, PartId } from '../../../lib/collections/Parts'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
+import { Piece } from '../../../lib/collections/Pieces'
 import {
 	saveIntoDb,
 	getCurrentTime,
@@ -12,27 +12,15 @@ import {
 	sumChanges,
 	anythingChanged,
 	ReturnType,
-	asyncCollectionUpsert,
-	asyncCollectionUpdate,
 	waitForPromise,
 	PreparedChanges,
 	prepareSaveIntoDb,
-	savePreparedChanges,
-	asyncCollectionFindOne,
-	waitForPromiseAll,
-	asyncCollectionRemove,
-	normalizeArrayFunc,
-	asyncCollectionInsert,
-	asyncCollectionFindFetch,
-	waitForPromiseObj,
 	unprotectString,
 	protectString,
-	omit,
 	ProtectedString,
 	Omit,
 	PreparedChangesChangesDoc,
 } from '../../../lib/lib'
-import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import {
 	IngestRundown,
 	IngestSegment,
@@ -53,11 +41,7 @@ import {
 import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
-import {
-	RundownBaselineObj,
-	RundownBaselineObjs,
-	RundownBaselineObjId,
-} from '../../../lib/collections/RundownBaselineObjs'
+import { RundownBaselineObj, RundownBaselineObjId } from '../../../lib/collections/RundownBaselineObjs'
 import { Random } from 'meteor/random'
 import {
 	postProcessRundownBaselineItems,
@@ -66,12 +50,9 @@ import {
 	postProcessAdLibActions,
 	postProcessGlobalAdLibActions,
 } from '../blueprints/postProcess'
-import {
-	RundownBaselineAdLibItem,
-	RundownBaselineAdLibPieces,
-} from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { DBSegment, Segments, SegmentId } from '../../../lib/collections/Segments'
-import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
+import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import {
 	saveRundownCache,
 	saveSegmentCache,
@@ -82,7 +63,6 @@ import {
 	makeNewIngestSegment,
 	makeNewIngestPart,
 	makeNewIngestRundown,
-	updateIngestRundownWithData,
 	isLocalIngestRundown,
 } from './ingestCache'
 import {
@@ -115,17 +95,10 @@ import { Mongo } from 'meteor/mongo'
 import {
 	isTooCloseToAutonext,
 	getSelectedPartInstancesFromCache,
-	getRundownPlaylistFromCache,
 	getRundownsSegmentsAndPartsFromCache,
 	removeRundownFromCache,
 } from '../playout/lib'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
-import {
-	PieceInstances,
-	wrapPieceToInstance,
-	PieceInstance,
-	PieceInstanceId,
-} from '../../../lib/collections/PieceInstances'
+import { PartInstances } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
@@ -136,7 +109,6 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
@@ -915,8 +887,6 @@ function updateRundownFromIngestData(
 		})
 	)
 
-	syncChangesToSelectedPartInstances(cache, dbPlaylist, parts, segmentPieces)
-
 	const didChange = anythingChanged(allChanges)
 	if (didChange) {
 		afterIngestChangedData(
@@ -931,82 +901,6 @@ function updateRundownFromIngestData(
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 	waitForPromise(cache.saveAllToDatabase())
 	return didChange
-}
-
-function syncChangesToSelectedPartInstances(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	parts: DBPart[],
-	pieces: Piece[]
-) {
-	// TODO-PartInstances - to be removed once new data flow
-
-	function syncPartChanges(partInstance: PartInstance | undefined, rawPieceInstances: PieceInstance[]) {
-		// We need to do this locally to avoid wiping out any stored changes
-		if (partInstance) {
-			const newPart = parts.find((p) => p._id === partInstance.part._id)
-			// The part missing is ok, as it should never happen to the current one (and if it does it is better to just keep playing)
-			// Or if it was the next, then that will be resolved by a future call to updatenext
-			if (newPart) {
-				cache.PartInstances.update(partInstance._id, {
-					$set: {
-						part: {
-							...partInstance.part,
-							...newPart,
-						},
-					},
-				})
-
-				// Pieces
-				const piecesForPart = pieces.filter((p) => p.startPartId === newPart._id)
-				const currentPieceInstances = rawPieceInstances.filter((p) => p.partInstanceId === partInstance._id)
-				const currentPieceInstancesMap = normalizeArrayFunc(currentPieceInstances, (p) =>
-					unprotectString(p.piece._id)
-				)
-
-				// insert
-				const newPieces = piecesForPart.filter((p) => !currentPieceInstancesMap[unprotectString(p._id)])
-				const insertedIds: PieceInstanceId[] = []
-				for (const newPiece of newPieces) {
-					const newPieceInstance = wrapPieceToInstance(newPiece, partInstance._id)
-					cache.PieceInstances.insert(newPieceInstance)
-					insertedIds.push(newPieceInstance._id)
-				}
-
-				// prune
-				cache.PieceInstances.remove({
-					partInstanceId: partInstance._id,
-					'piece._id': { $not: { $in: piecesForPart.map((p) => p._id) } },
-					dynamicallyInserted: { $ne: true },
-				})
-
-				// update
-				for (const instance of currentPieceInstances) {
-					const piece = piecesForPart.find((p) => p._id === instance.piece._id)
-					// If missing that is because the remove is still running, but that is fine
-					if (piece) {
-						cache.PieceInstances.update(instance._id, {
-							$set: {
-								piece: {
-									...instance.piece,
-									...piece,
-								},
-							},
-						})
-					}
-				}
-			}
-		}
-	}
-
-	// Every PartInstance that is not reset needs to be kept in sync for now.
-	// Its bad, but that is what the infinites logic requires
-	const partInstances = cache.PartInstances.findFetch({ reset: { $ne: true } })
-	const pieceInstances = cache.PieceInstances.findFetch({ reset: { $ne: true } })
-
-	_.each(partInstances, (partInstance) => {
-		syncPartChanges(partInstance, pieceInstances)
-	})
 }
 
 /** Set order and playlistID of rundowns in a playlist */
@@ -1295,8 +1189,6 @@ function updateSegmentFromIngestData(
 			},
 		})
 	)
-
-	syncChangesToSelectedPartInstances(cache, getRundownPlaylistFromCache(cache, rundown), parts, segmentPieces)
 
 	return anythingChanged(changes) ? segmentId : null
 }

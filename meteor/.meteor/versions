@@ -64,7 +64,6 @@ npm-bcrypt@0.9.3
 npm-mongo@3.7.1
 ordered-dict@1.1.0
 ostrio:meteor-root@1.0.7
-peerlibrary:computed-field@0.9.0
 promise@0.11.2
 random@1.2.0
 rate-limit@1.0.9

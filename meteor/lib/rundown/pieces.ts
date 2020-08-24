@@ -23,7 +23,7 @@ export function createPieceGroupAndCap(
 	capObjs: TimelineObjRundown[]
 } {
 	const pieceGroup = literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
-		id: getPieceGroupId(unprotectString(pieceInstance.piece._id)),
+		id: getPieceGroupId(unprotectString(pieceInstance._id)),
 		_id: protectString(''), // set later
 		studioId: protectString(''), // set later
 		content: {
@@ -81,13 +81,11 @@ export function createPieceGroupAndCap(
 
 		if (!updatedPieceGroup && pieceInstance.resolvedEndCap !== undefined) {
 			// Create a wrapper group to apply the end cap
-			const pieceGroupId = getPieceGroupId(unprotectString(pieceInstance.piece._id))
-
 			const pieceEndCapGroup = literal<TimelineObjGroupRundown>({
 				_id: protectString(''), // set later
 				studioId: protectString(''), // set later
 				objectType: TimelineObjType.RUNDOWN,
-				id: `${pieceGroupId}_cap`,
+				id: `${pieceGroup.id}_cap`,
 				enable: {
 					start: 0,
 					end: nowObj ? `#${nowObj.id}.start` : pieceInstance.resolvedEndCap,

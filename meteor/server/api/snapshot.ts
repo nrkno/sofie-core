@@ -694,12 +694,6 @@ export function restoreFromRundownPlaylistSnapshot(
 		}
 	})
 
-	const enableIdMap: { [key: string]: string | undefined } = {}
-	_.each(pieceIdMap, (newId, oldId) => {
-		enableIdMap[getPieceGroupId(oldId)] = getPieceGroupId(unprotectString(newId))
-		enableIdMap[getPieceFirstObjectId(oldId)] = getPieceFirstObjectId(unprotectString(newId))
-	})
-
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
 
 	// Apply the updates of any properties to any document
@@ -709,7 +703,6 @@ export function restoreFromRundownPlaylistSnapshot(
 			rundownId?: RundownId
 			partId?: PartId
 			segmentId?: SegmentId
-			enable?: TSR.Timeline.TimelineEnable
 			part?: T
 			piece?: T
 		}
@@ -726,20 +719,9 @@ export function restoreFromRundownPlaylistSnapshot(
 				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
 			}
 
-			if (obj.enable) {
-				obj.enable = substituteObjectIds(obj.enable, enableIdMap)
-			}
-
 			if (updateId) {
 				obj._id = getRandomId()
 			}
-
-			// Find any timeline objects
-			const content = (obj as any).content as Piece['content']
-			const tlObjects: TimelineObjRundown[] = content ? content.timelineObjects || [] : (obj as any).objects
-			_.each(tlObjects, (tlObj: TimelineObjRundown) => {
-				tlObj.enable = substituteObjectIds(tlObj.enable, enableIdMap)
-			})
 
 			if (obj.part) {
 				updateIds(obj.part)
