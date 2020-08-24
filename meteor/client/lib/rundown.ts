@@ -28,6 +28,7 @@ import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
+import { PieceInstances } from '../../lib/collections/PieceInstances'
 
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {
@@ -321,6 +322,12 @@ export namespace RundownUtils {
 			// fetch all the pieces for the parts
 			const partIds = partsInSegment.map((part) => part._id)
 
+			const currentPartIndex = currentPartInstance
+				? orderedAllPartIds.indexOf(currentPartInstance.part._id)
+				: null
+
+			const nextPartIndex = nextPartInstance ? orderedAllPartIds.indexOf(nextPartInstance.part._id) : null
+
 			partsE = partsInSegment.map((part, itIndex) => {
 				const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
 				let partTimeline: SuperTimeline.TimelineObject[] = []
@@ -362,7 +369,13 @@ export namespace RundownUtils {
 					new Set(partIds.slice(0, itIndex)),
 					segmentsBeforeThisInRundownSet,
 					orderedAllPartIds,
-					false
+					currentPartIndex !== null && nextPartIndex !== null ? currentPartIndex < nextPartIndex : false,
+					currentPartInstance,
+					currentPartInstance
+						? PieceInstances.find({
+								partInstanceId: currentPartInstance._id,
+						  }).fetch()
+						: undefined
 				)
 				const nowInPart = 0 // TODO-INFINITE
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(

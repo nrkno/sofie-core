@@ -257,7 +257,7 @@ Meteor.startup(() => {
 		})
 		Parts._ensureIndex({
 			rundownId: 1,
-			_rank: 1,
+			segmentId: 1,
 		})
 	}
 })

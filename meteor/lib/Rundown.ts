@@ -91,12 +91,14 @@ export function getPieceInstancesForPartInstance(
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	orderedAllParts: PartId[],
-	nextPartIsAfterCurrentPart: boolean
+	nextPartIsAfterCurrentPart: boolean,
+	currentPartInstance: PartInstance | undefined,
+	currentPartInstancePieceInstances: PieceInstance[] | undefined
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
-			undefined,
-			undefined,
+			currentPartInstance,
+			currentPartInstancePieceInstances,
 			partInstance.part,
 			partsBeforeThisInSegmentSet,
 			segmentsBeforeThisInRundownSet,

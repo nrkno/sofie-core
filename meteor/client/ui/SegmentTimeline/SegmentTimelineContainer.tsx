@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -274,28 +274,32 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		componentDidMount() {
-			this.subscribe(PubSub.segments, {
-				rundownId: this.props.rundownId,
-				_id: this.props.segmentId,
-			})
-			this.subscribe(PubSub.parts, {
-				rundownId: this.props.rundownId,
-				segmentId: this.props.segmentId,
-			})
-			this.subscribe(PubSub.partInstances, {
-				rundownId: this.props.rundownId,
-				segmentId: this.props.segmentId,
-				reset: {
-					$ne: true,
-				},
-			})
+			// this.subscribe(PubSub.segments, {
+			// 	rundownId: this.props.rundownId,
+			// 	_id: this.props.segmentId,
+			// })
+			// this.subscribe(PubSub.parts, {
+			// 	rundownId: this.props.rundownId,
+			// 	segmentId: this.props.segmentId,
+			// })
+			// this.subscribe(PubSub.partInstances, {
+			// 	rundownId: this.props.rundownId,
+			// 	segmentId: this.props.segmentId,
+			// 	reset: {
+			// 		$ne: true,
+			// 	},
+			// })
 			this.autorun(() => {
-				const partIds = Parts.find({
-					segmentId: this.props.segmentId,
-				}).map((part) => part._id)
-				const partInstanceIds = PartInstances.find({
-					segmentId: this.props.segmentId,
-				}).map((instance) => instance._id)
+				const partIds = Parts.find(
+					{
+						segmentId: this.props.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+						},
+					}
+				).map((part) => part._id)
 
 				this.subscribe(PubSub.pieces, {
 					startRundownId: this.props.rundownId,
@@ -303,19 +307,43 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						$in: partIds,
 					},
 				})
+			})
+			this.autorun(() => {
+				const partInstanceIds = PartInstances.find(
+					{
+						segmentId: this.props.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+							part: 1,
+						},
+					}
+				).map((instance) => instance._id)
+				const playlist = RundownPlaylists.findOne(this.props.playlist._id, {
+					fields: {
+						currentPartInstanceId: 1,
+					},
+				})
+				if (playlist?.currentPartInstanceId) {
+					partInstanceIds.push(playlist?.currentPartInstanceId)
+				}
+
 				this.subscribe(PubSub.pieceInstances, {
 					rundownId: this.props.rundownId,
 					partInstanceId: {
 						$in: partInstanceIds,
 					},
-					reset: {
-						$ne: true,
-					},
 				})
 			})
 			// past inifnites subscription
 			this.pastInfinitesComp = this.autorun(() => {
-				const segment = Segments.findOne(this.props.segmentId)
+				const segment = Segments.findOne(this.props.segmentId, {
+					fields: {
+						_id: 1,
+						rundownId: 1,
+					},
+				})
 				segment &&
 					this.subscribe(PubSub.pieces, {
 						invalid: {
