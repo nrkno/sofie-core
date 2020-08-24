@@ -752,7 +752,7 @@ export function asyncCollectionInsertIgnore<
 }
 export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 ): Promise<number> {
@@ -763,14 +763,16 @@ export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface 
 		})
 	})
 }
-
+export interface BulkUpdateModifier<DBInterface extends { _id: ProtectedString<any> }> {
+	selector: {
+		_id: DBInterface['_id']
+	}
+	modifier: MongoModifier<DBInterface>
+}
 export function asyncCollectionBulkUpdate<
 	DocClass extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	changes: Array<{ selector: { _id: ProtectedString<any> }; modifier: MongoModifier<DBInterface> }>
-) {
+>(collection: TransformedCollection<DocClass, DBInterface>, changes: Array<BulkUpdateModifier<DBInterface>>) {
 	return collection.rawCollection().bulkWrite(
 		changes.map((change) => ({
 			updateOne: {
@@ -783,7 +785,7 @@ export function asyncCollectionBulkUpdate<
 
 export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 ): Promise<{ numberAffected: number; insertedId: string }> {
@@ -803,10 +805,7 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 export function asyncCollectionBulkUpsert<
 	DocClass extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
->(
-	collection: TransformedCollection<DocClass, DBInterface>,
-	changes: Array<{ selector: { _id: ProtectedString<any> }; modifier: MongoModifier<DBInterface> }>
-) {
+>(collection: TransformedCollection<DocClass, DBInterface>, changes: Array<BulkUpdateModifier<DBInterface>>) {
 	return collection.rawCollection().bulkWrite(
 		changes.map((change) => ({
 			updateOne: {
@@ -820,7 +819,7 @@ export function asyncCollectionBulkUpsert<
 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>
+	selector: MongoQuery<DBInterface> | DBInterface['_id']
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
 		collection.remove(selector, (err: any) => {
@@ -833,7 +832,10 @@ export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface 
 export function asyncCollectionBulkRemoveById<
 	DocClass extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any> }
->(collection: TransformedCollection<DocClass, DBInterface>, ids: Array<ProtectedString<any>>): Promise<void> {
+>(
+	collection: TransformedCollection<DocClass, DBInterface>,
+	ids: Array<ProtectedString<DBInterface['_id']>>
+): Promise<void> {
 	return new Promise((resolve, reject) => {
 		collection.remove({ _id: { $in: ids as any } }, (err: any) => {
 			if (err) reject(err)

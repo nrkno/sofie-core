@@ -21,6 +21,7 @@ import {
 	asyncCollectionBulkRemoveById,
 	asyncCollectionBulkUpsert,
 	asyncCollectionBulkUpdate,
+	BulkUpdateModifier,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
@@ -270,22 +271,29 @@ export class DbCacheWriteCollection<
 			remove: 0,
 		}
 		const ps: Promise<any>[] = []
-		const removedDocs: ProtectedString<any>[] = []
-		const insertedDocs: Array<Class> = []
-		const updatedDocs: Array<Class> = []
+		const insertedDocs: Array<BulkUpdateModifier<Class>> = []
+		const updatedDocs: Array<BulkUpdateModifier<Class>> = []
+		const removedDocs: Class['_id'][] = []
 		_.each(this.documents, (doc, id) => {
 			const _id = protectString(id)
 			if (doc.removed) {
-				// ps.push(asyncCollectionRemove(this._collection, _id))
-				changes.remove++
 				removedDocs.push(_id)
+				changes.remove++
 			} else if (doc.inserted) {
-				insertedDocs.push(doc.document)
-				// ps.push(asyncCollectionUpsert(this._collection, doc.document._id, doc.document))
+				insertedDocs.push({
+					selector: {
+						_id: _id,
+					},
+					modifier: doc.document,
+				})
 				changes.insert++
 			} else if (doc.updated) {
-				// ps.push(asyncCollectionUpdate(this._collection, _id, doc.document))
-				updatedDocs.push(doc.document)
+				updatedDocs.push({
+					selector: {
+						_id: _id,
+					},
+					modifier: doc.document,
+				})
 				changes.update++
 			}
 			delete doc.inserted
@@ -295,39 +303,15 @@ export class DbCacheWriteCollection<
 		if (removedDocs.length) {
 			ps.push(asyncCollectionBulkRemoveById(this._collection, removedDocs))
 		}
+		if (insertedDocs.length) {
+			ps.push(asyncCollectionBulkUpsert(this._collection, insertedDocs))
+		}
+		if (updatedDocs.length) {
+			ps.push(asyncCollectionBulkUpdate(this._collection, updatedDocs))
+		}
 		_.each(removedDocs, (_id) => {
 			delete this._collection[unprotectString(_id)]
 		})
-		if (insertedDocs.length) {
-			ps.push(
-				asyncCollectionBulkUpsert(
-					this._collection,
-					insertedDocs.map((doc) => {
-						return {
-							selector: {
-								_id: doc._id,
-							},
-							modifier: doc,
-						}
-					})
-				)
-			)
-		}
-		if (updatedDocs.length) {
-			ps.push(
-				asyncCollectionBulkUpdate(
-					this._collection,
-					updatedDocs.map((doc) => {
-						return {
-							selector: {
-								_id: doc._id,
-							},
-							modifier: doc,
-						}
-					})
-				)
-			)
-		}
 		/*ps.push()*/
 		await Promise.all(ps)
 
