@@ -147,13 +147,13 @@ export class Rundown implements DBRundown {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
-	getShowStyleCompound(): ShowStyleCompound {
-		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
-		let ss = getShowStyleCompound(this.showStyleVariantId)
-		if (ss) {
-			return ss
-		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
-	}
+	// getShowStyleCompound(): ShowStyleCompound {
+	// 	if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
+	// 	let ss = getShowStyleCompound(this.showStyleVariantId)
+	// 	if (ss) {
+	// 		return ss
+	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
+	// }
 	getShowStyleBase(): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
