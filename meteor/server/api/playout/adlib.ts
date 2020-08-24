@@ -11,6 +11,7 @@ import {
 	getRandomId,
 	waitForPromise,
 	unprotectStringArray,
+	sleep,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { Rundowns, RundownHoldState, Rundown } from '../../../lib/collections/Rundowns'
@@ -233,8 +234,10 @@ export namespace ServerPlayoutAdLibAPI {
 				)
 
 			innerStartOrQueueAdLibPiece(cache, rundownPlaylist, rundown, queue, partInstance, adLibPiece)
-
-			waitForPromise(cache.saveAllToDatabase())
+			waitForPromise(cache.saveTimelineToDatabase())
+			logger.debug('saveTimelineToDatabase')
+			waitForPromise(sleep(2))
+			waitForPromise(cache.saveAllExceptTimelineToDatabase())
 		})
 	}
 	function innerStartOrQueueAdLibPiece(

@@ -1483,3 +1483,7 @@ export function isPromise<T extends any>(val: any): val is Promise<T> {
 export function assertNever(_never: never): void {
 	// Do nothing. This is a type guard
 }
+
+export function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms))
+}

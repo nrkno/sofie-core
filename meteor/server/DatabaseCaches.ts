@@ -61,7 +61,7 @@ export class Cache {
 			}
 		})
 	}
-	async saveAllToDatabase() {
+	async saveAllToDatabase(except?: string[]) {
 		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
 
@@ -71,7 +71,7 @@ export class Cache {
 		})
 		await Promise.all(
 			_.map(_.values(this), async (db) => {
-				if (isDbCacheCollection(db)) {
+				if (isDbCacheCollection(db) && (!except || !except.includes(db.name || ''))) {
 					await db.updateDatabaseWithData()
 				}
 			})
@@ -105,6 +105,12 @@ export class CacheForStudio extends Cache {
 	}
 	defer(fcn: DeferredFunction<CacheForStudio>) {
 		return super.defer(fcn)
+	}
+	async saveAllExceptTimelineToDatabase() {
+		return this.saveAllToDatabase(['timeline'])
+	}
+	async saveTimelineToDatabase() {
+		await this.Timeline.updateDatabaseWithData()
 	}
 }
 function emptyCacheForStudio(studioId: StudioId): CacheForStudio {
