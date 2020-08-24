@@ -83,18 +83,6 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
 
-	if (activePlaylist) {
-		// remove anything not related to active rundown
-		cache.Timeline.remove({
-			studioId: studio._id,
-			playlistId: {
-				$not: {
-					$eq: activePlaylist._id,
-				},
-			},
-		})
-	}
-
 	const timelineObjs: Array<TimelineObjGeneric> = [
 		...getTimelineRundown(cache, studio),
 		...getTimelineRecording(cache, studio),
