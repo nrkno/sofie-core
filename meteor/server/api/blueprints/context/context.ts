@@ -166,7 +166,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 const studioBlueprintConfigCache: { [id: string]: Cache } = {}
 const showStyleBlueprintConfigCache: { [id: string]: { [id: string]: Cache } } = {}
 interface Cache {
-	config: any
+	config: unknown
 }
 
 /** Studio */
@@ -184,7 +184,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 	getStudio(): Readonly<Studio> {
 		return this.studio
 	}
-	getStudioConfig(): any {
+	getStudioConfig(): unknown {
 		const cacheId = unprotectString(this.studio._id)
 		if (studioBlueprintConfigCache[cacheId]) {
 			return studioBlueprintConfigCache[cacheId].config
@@ -249,7 +249,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 		return showStyleBase
 	}
-	getShowStyleConfig(): any {
+	getShowStyleConfig(): unknown {
 		const cacheId = `${this.showStyleBaseId}.${this.showStyleVariantId}`
 		const cachedConfig = objectPathGet(showStyleBlueprintConfigCache, cacheId)
 		if (cachedConfig) {
