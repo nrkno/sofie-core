@@ -146,7 +146,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
  * @param studioId id of the studio to update
  */
 export function afterUpdateTimeline(
-	cache: CacheForStudio,
+	cache: CacheForStudioBase,
 	studioId: StudioId,
 	timelineObjs?: Array<TimelineObjGeneric>
 ) {
@@ -188,7 +188,7 @@ export function afterUpdateTimeline(
 
 	cache.Timeline.upsert(statObj._id, statObj)
 }
-export function getActiveRundownPlaylist(cache: CacheForStudio, studioId: StudioId): RundownPlaylist | undefined {
+export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({
 		studioId: studioId,
 		active: true,

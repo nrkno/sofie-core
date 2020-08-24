@@ -22,17 +22,21 @@ import {
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
 
-export function isDbCacheCollection(o: any): o is DbCacheCollection<any, any> {
+export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
+	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
+}
+export function isDbCacheWriteCollection(o: any): o is DbCacheWriteCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
 }
-export class DbCacheCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
+/** Caches data, allowing reads from cache, but not writes */
+export class DbCacheReadCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
 	documents: { [_id: string]: DbCacheCollectionDocument<Class> } = {}
 
 	private _initialized: boolean = false
 	private _initializer?: MongoQuery<DBInterface> | (() => Promise<void>) = undefined
 	private _initializing: Promise<any> | undefined
 
-	constructor(private _collection: TransformedCollection<Class, DBInterface>) {
+	constructor(protected _collection: TransformedCollection<Class, DBInterface>) {
 		//
 	}
 	get name(): string | undefined {
@@ -45,7 +49,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			this._initialize()
 		}
 	}
-	extendWithData(cacheCollection: DbCacheCollection<Class, DBInterface>) {
+	extendWithData(cacheCollection: DbCacheReadCollection<Class, DBInterface>) {
 		this._initialized = cacheCollection._initialized
 		this._initializer = cacheCollection._initializer
 		_.each(cacheCollection.documents, (doc, key) => {
@@ -53,7 +57,7 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 		})
 	}
 
-	private _initialize() {
+	protected _initialize() {
 		if (this._initializing) {
 			// Only allow one fiber to run this at a time
 			waitForPromise(this._initializing)
@@ -125,6 +129,40 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 
 		return this.findFetch(selector, options)[0]
 	}
+
+	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
+		const docs = await asyncCollectionFindFetch(this._collection, selector)
+
+		this._innerfillWithDataFromArray(docs)
+		return docs.length
+	}
+	private _innerfillWithDataFromArray(documents: Class[]) {
+		_.each(documents, (doc) => {
+			const id = unprotectString(doc._id)
+			if (this.documents[id]) {
+				throw new Meteor.Error(
+					500,
+					`Unable to fill cache with data "${this._collection['name']}", _id "${doc._id}" already exists`
+				)
+			}
+
+			this.documents[id] = {
+				document: doc,
+			}
+		})
+	}
+	protected _transform(doc: DBInterface): Class {
+		// @ts-ignore hack: using internal function in collection
+		const transform = this._collection._transform
+		if (transform) {
+			return transform(doc)
+		} else return doc as Class
+	}
+}
+export class DbCacheWriteCollection<
+	Class extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+> extends DbCacheReadCollection<Class, DBInterface> {
 	insert(doc: DBInterface): DBInterface['_id'] {
 		this._initialize()
 
@@ -218,31 +256,6 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 			return { numberAffected: 1, insertedId: this.insert(doc) }
 		}
 	}
-
-	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
-		const docs = await asyncCollectionFindFetch(this._collection, selector)
-
-		this._innerfillWithDataFromArray(docs)
-		return docs.length
-	}
-	fillWithDataFromArray(documents: DBInterface[]) {
-		return this._innerfillWithDataFromArray(documents.map((doc) => this._transform(doc)))
-	}
-	private _innerfillWithDataFromArray(documents: Class[]) {
-		_.each(documents, (doc) => {
-			const id = unprotectString(doc._id)
-			if (this.documents[id]) {
-				throw new Meteor.Error(
-					500,
-					`Unable to fill cache with data "${this._collection['name']}", _id "${doc._id}" already exists`
-				)
-			}
-
-			this.documents[id] = {
-				document: doc,
-			}
-		})
-	}
 	async updateDatabaseWithData() {
 		const changes: {
 			insert: number
@@ -279,13 +292,6 @@ export class DbCacheCollection<Class extends DBInterface, DBInterface extends { 
 
 		return changes
 	}
-	private _transform(doc: DBInterface): Class {
-		// @ts-ignore hack: using internal function in collection
-		const transform = this._collection._transform
-		if (transform) {
-			return transform(doc)
-		} else return doc as Class
-	}
 }
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean
 interface DbCacheCollectionDocument<Class> {
@@ -316,7 +322,7 @@ interface Changes {
 	removed: number
 }
 export function saveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: DbCacheCollection<DocClass, DBInterface>,
+	collection: DbCacheWriteCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
@@ -332,7 +338,7 @@ export interface PreparedChanges<T> {
 	unchanged: T[]
 }
 export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: DbCacheCollection<DocClass, DBInterface>,
+	collection: DbCacheWriteCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
@@ -401,7 +407,7 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 }
 export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
 	preparedChanges: PreparedChanges<DBInterface>,
-	collection: DbCacheCollection<DocClass, DBInterface>,
+	collection: DbCacheWriteCollection<DocClass, DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ) {
 	let change: Changes = {
