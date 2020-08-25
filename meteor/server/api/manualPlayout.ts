@@ -44,14 +44,14 @@ class ServerManualPlayoutAPI implements NewManualPlayoutAPI {
 		return makePromise(() => {
 			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 			insertTimelineObject(cache, studioId, timelineObject)
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	removeTimelineObject(studioId: StudioId, id: string) {
 		return makePromise(() => {
 			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 			removeTimelineObject(cache, studioId, id)
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 }

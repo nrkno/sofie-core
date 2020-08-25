@@ -140,7 +140,7 @@ export namespace ServerPlayoutAdLibAPI {
 			updateSourceLayerInfinitesAfterPart(cache, rundown, partInstance.part)
 			updateTimeline(cache, rundown.studioId)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	export function segmentAdLibPieceStart(
@@ -187,7 +187,7 @@ export namespace ServerPlayoutAdLibAPI {
 
 			innerStartOrQueueAdLibPiece(cache, rundownPlaylist, rundown, queue, partInstance, adLibPiece)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	export function rundownBaselineAdLibPieceStart(
@@ -234,10 +234,8 @@ export namespace ServerPlayoutAdLibAPI {
 				)
 
 			innerStartOrQueueAdLibPiece(cache, rundownPlaylist, rundown, queue, partInstance, adLibPiece)
-			waitForPromise(cache.saveTimelineToDatabase())
-			logger.debug('saveTimelineToDatabase')
-			waitForPromise(sleep(2))
-			waitForPromise(cache.saveAllExceptTimelineToDatabase())
+
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	function innerStartOrQueueAdLibPiece(
@@ -327,7 +325,7 @@ export namespace ServerPlayoutAdLibAPI {
 				innerStartOrQueueAdLibPiece(cache, playlist, rundown, false, currentPartInstance, lastPiece)
 			}
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 
@@ -560,7 +558,7 @@ export namespace ServerPlayoutAdLibAPI {
 			const newPieceInstance = convertAdLibToPieceInstance(bucketAdlib, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 }

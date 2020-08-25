@@ -140,7 +140,7 @@ export namespace ServerPlayoutAPI {
 
 			libActivateRundownPlaylist(cache, playlist, true) // Activate rundownPlaylist (rehearsal)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	/**
@@ -163,7 +163,7 @@ export namespace ServerPlayoutAPI {
 
 			updateTimeline(cache, playlist.studioId)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	/**
@@ -186,7 +186,7 @@ export namespace ServerPlayoutAPI {
 			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, !!rehearsal) // Activate rundown
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	/**
@@ -229,7 +229,7 @@ export namespace ServerPlayoutAPI {
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	/**
@@ -249,7 +249,7 @@ export namespace ServerPlayoutAPI {
 			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	/**
@@ -268,7 +268,7 @@ export namespace ServerPlayoutAPI {
 			standDownStudio(cache, getStudioFromCache(cache, playlist), true)
 			libDeactivateRundownPlaylist(cache, playlist)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	/**
@@ -421,7 +421,7 @@ export namespace ServerPlayoutAPI {
 
 				updateTimeline(cache, playlist.studioId)
 
-				waitForPromise(cache.saveAllToDatabase())
+				cache.saveTimelineThenAllToDatabase()
 
 				return ClientAPI.responseSuccess(undefined)
 			}
@@ -663,7 +663,7 @@ export namespace ServerPlayoutAPI {
 					}
 				}
 			})
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 
 			return ClientAPI.responseSuccess(undefined)
 		})
@@ -688,7 +688,7 @@ export namespace ServerPlayoutAPI {
 
 			setNextPartInner(cache, playlist, nextPartId, setManually, nextTimeOffset)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 			return ClientAPI.responseSuccess(undefined)
 		})
 	}
@@ -741,7 +741,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
 			const res = moveNextPartInner(cache, playlist, horizontalDelta, verticalDelta, setManually)
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 			return res
 		})
 	}
@@ -927,7 +927,7 @@ export namespace ServerPlayoutAPI {
 
 			updateTimeline(cache, playlist.studioId)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	export function deactivateHold(rundownPlaylistId: RundownPlaylistId) {
@@ -948,7 +948,7 @@ export namespace ServerPlayoutAPI {
 			cache.RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.NONE } })
 
 			updateTimeline(cache, playlist.studioId)
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	export function disableNextPiece(rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
@@ -1060,7 +1060,7 @@ export namespace ServerPlayoutAPI {
 
 				updateTimeline(cache, playlist.studioId)
 
-				waitForPromise(cache.saveAllToDatabase())
+				cache.saveTimelineThenAllToDatabase()
 			} else {
 				throw new Meteor.Error(500, 'Found no future pieces')
 			}
@@ -1279,7 +1279,7 @@ export namespace ServerPlayoutAPI {
 
 					afterTake(cache, rundownPlaylist, playingPartInstance)
 
-					waitForPromise(cache.saveAllToDatabase())
+					cache.saveTimelineThenAllToDatabase()
 				}
 			} else {
 				throw new Meteor.Error(404, `PartInstance "${partInstanceId}" in rundown "${rundownId}" not found!`)
@@ -1482,7 +1482,7 @@ export namespace ServerPlayoutAPI {
 				updateTimeline(cache, playlist.studioId)
 			}
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	export function sourceLayerOnPartStop(
@@ -1529,7 +1529,7 @@ export namespace ServerPlayoutAPI {
 
 			updateTimeline(cache, playlist.studioId)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 		})
 	}
 	export function rundownTogglePartArgument(
@@ -1608,7 +1608,7 @@ export namespace ServerPlayoutAPI {
 				}
 			}
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 			return ClientAPI.responseSuccess(undefined)
 		})
 	}
@@ -1892,7 +1892,7 @@ export function triggerUpdateTimelineAfterIngestData(
 					updateTimeline(cache, rundown.studioId)
 				}
 
-				waitForPromise(cache.saveAllToDatabase())
+				cache.saveTimelineThenAllToDatabase()
 			})
 		}
 	}, 1000)

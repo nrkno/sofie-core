@@ -18,7 +18,7 @@ import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime } from '../lib/lib'
+import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime, sleep } from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -111,6 +111,11 @@ export class CacheForStudio extends Cache {
 	}
 	async saveTimelineToDatabase() {
 		await this.Timeline.updateDatabaseWithData()
+	}
+	saveTimelineThenAllToDatabase() {
+		waitForPromise(this.Timeline.updateDatabaseWithData())
+		waitForPromise(sleep(2))
+		waitForPromise(this.saveAllExceptTimelineToDatabase())
 	}
 }
 function emptyCacheForStudio(studioId: StudioId): CacheForStudio {
