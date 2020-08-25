@@ -27,6 +27,8 @@ export function updateBucketAdlibFromIngestData(
 
 	const context = new ShowStyleContext(
 		studio,
+		undefined,
+		undefined,
 		showStyle._id,
 		showStyle.showStyleVariantId,
 		new NotesContext('Bucket Ad-Lib', 'bucket-adlib', false)

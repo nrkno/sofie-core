@@ -114,7 +114,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, true) // Activate rundownPlaylist (rehearsal)
 
@@ -165,7 +165,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, !!rehearsal) // Activate rundown
 			waitForPromise(cache.saveAllToDatabase())
@@ -209,7 +209,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 
@@ -233,7 +233,7 @@ export namespace ServerPlayoutAPI {
 			const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 			waitForPromise(cache.saveAllToDatabase())
@@ -1066,7 +1066,7 @@ export namespace ServerPlayoutAPI {
 			const playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 
-			const studio = cache.Studios.findOne(playlist.studioId)
+			const studio = cache.activationCache.getStudio()
 			if (!studio) throw new Meteor.Error(501, `Current Studio "${playlist.studioId}" could not be found`)
 
 			const currentPartInstance = playlist.currentPartInstanceId

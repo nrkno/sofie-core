@@ -150,25 +150,26 @@ export namespace ServerTestToolsAPI {
 		if (!config.recordings.channelIndex)
 			throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
 
-		// Ensure the layer mappings in the db are correct
-		const setter: any = {}
-		setter['mappings.' + layerInput] = literal<TSR.MappingCasparCG & MappingExt>({
-			device: TSR.DeviceType.CASPARCG,
-			deviceId: config.recordings.deviceId,
-			channel: config.recordings.channelIndex,
-			layer: 10,
-			lookahead: LookaheadMode.NONE,
-			internal: true,
-		})
-		setter['mappings.' + layerRecord] = literal<TSR.MappingCasparCG & MappingExt>({
-			device: TSR.DeviceType.CASPARCG,
-			deviceId: config.recordings.deviceId,
-			channel: config.recordings.channelIndex,
-			layer: 0,
-			lookahead: LookaheadMode.NONE,
-			internal: true,
-		})
-		cache.Studios.update(studio._id, { $set: setter })
+		// Note: this part has been disabled, Studio settings should not be modified during playout:
+		// // Ensure the layer mappings in the db are correct
+		// const setter: any = {}
+		// setter['mappings.' + layerInput] = literal<TSR.MappingCasparCG & MappingExt>({
+		// 	device: TSR.DeviceType.CASPARCG,
+		// 	deviceId: config.recordings.deviceId,
+		// 	channel: config.recordings.channelIndex,
+		// 	layer: 10,
+		// 	lookahead: LookaheadMode.NONE,
+		// 	internal: true,
+		// })
+		// setter['mappings.' + layerRecord] = literal<TSR.MappingCasparCG & MappingExt>({
+		// 	device: TSR.DeviceType.CASPARCG,
+		// 	deviceId: config.recordings.deviceId,
+		// 	channel: config.recordings.channelIndex,
+		// 	layer: 0,
+		// 	lookahead: LookaheadMode.NONE,
+		// 	internal: true,
+		// })
+		// cache.Studios.update(studio._id, { $set: setter })
 
 		const fileId: RecordedFileId = getRandomId(7)
 		const path = (config.recordings.filePrefix || defaultConfig.prefix) + fileId + '.mp4'

@@ -42,7 +42,7 @@ describe('Expected Media Items', () => {
 			_id: rplId,
 			externalId: 'mock_rpl',
 			name: 'Mock Playlist',
-			studioId: protectString(''),
+			studioId: env.studio._id,
 			peripheralDeviceId: protectString(''),
 			created: 0,
 			modified: 0,
