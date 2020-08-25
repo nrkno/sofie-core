@@ -185,10 +185,9 @@ class RundownViewNotifier extends WithManagedTracker {
 						newNotification = new Notification(
 							unsyncedId,
 							NoticeLevel.CRITICAL,
-							t(
-								'The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.',
-								{ nrcsName: Settings.nrcsName }
-							),
+							t('The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.', {
+								nrcsName: Settings.nrcsName,
+							}),
 							'Rundown',
 							getCurrentTime(),
 							true,

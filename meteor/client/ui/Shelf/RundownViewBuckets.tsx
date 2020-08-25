@@ -501,6 +501,7 @@ export const RundownViewBuckets = withTranslation()(
 												findBucket={this.findBucket}
 												onBucketReorder={this.onBucketReorder}
 												onAdLibContext={this.onAdLibContext}
+												hotkeyGroup={bucket.name}
 											/>
 										)}
 									</ContextMenuTrigger>

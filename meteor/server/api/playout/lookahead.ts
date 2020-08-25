@@ -209,7 +209,26 @@ export async function getLookeaheadObjects(
 
 	const piecesToSearch = await pPiecesToSearch
 
-	for (const [layerId, mapping] of mappingsToConsider) {
+	// nextPartInstance should always have a backing part (if it exists), so this will be safe
+	let futureParts: Part[] = []
+	const lastPartInstanceOnTimeline = _.last(partInstancesOnTimeline) || previousPartInfo || null
+	if (
+		lastPartInstanceOnTimeline &&
+		nextPartInstance &&
+		lastPartInstanceOnTimeline.part._id !== nextPartInstance._id
+	) {
+		// We need to find the nextPart and do lookahead from there
+		const nextPartIndex = orderedParts.findIndex((p) => p._id === nextPartInstance.part._id)
+		futureParts = nextPartIndex !== undefined ? orderedParts.slice(nextPartIndex) : []
+	} else {
+		// next is already handled, so work from after that
+		const nextPartIndex = selectNextPart(playlist, lastPartInstanceOnTimeline?.part ?? null, orderedParts)?.index
+		futureParts = nextPartIndex !== undefined ? orderedParts.slice(nextPartIndex) : []
+	}
+
+	const orderedPiecesCache = new Map<PartId, PieceResolved[]>()
+
+	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadMaxSearchDistance =
 			mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
@@ -219,8 +238,8 @@ export async function getLookeaheadObjects(
 			playlist,
 			partInstancesInfo,
 			previousPartInfo,
-			orderedPartsFollowingPlayhead,
-			piecesToSearch,
+			futureParts.slice(0, lookaheadMaxSearchDistance),
+			orderedPiecesCache,
 			layerId,
 			mapping.lookahead,
 			lookaheadTargetObjects,
@@ -283,8 +302,8 @@ function findLookaheadForlayer(
 	playlist: RundownPlaylist,
 	partInstancesInfo: PartInstanceAndPieceInstances[],
 	previousPartInstanceInfo: PartInstanceAndPieceInstances | undefined,
-	orderedPartsFollowingPlayhead: Part[],
-	piecesToSearch: Piece[],
+	futureParts: Part[],
+	orderedPiecesCache: Map<PartId, PieceResolved[]>,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadTargetObjects: number,
@@ -331,18 +350,16 @@ function findLookaheadForlayer(
 		previousPartInfo = partInfo
 	}
 
-	if (lookaheadMaxSearchDistance > 1) {
-		// have pieces grouped by part, so we can look based on rank to choose the correct one
-		const piecesUsingLayerByPart = new Map<PartId, Piece[]>()
-		for (const piece of piecesToSearch) {
-			if (_.find(piece.content?.timelineObjects ?? [], (o) => o && o.layer === layer)) {
-				const existing = piecesUsingLayerByPart.get(piece.startPartId)
-				if (existing) {
-					existing.push(piece)
-				} else {
-					piecesUsingLayerByPart.set(piece.startPartId, [piece])
-				}
-			}
+	if (futureParts.length === 0) {
+		return res
+	}
+
+	// have pieces grouped by part, so we can look based on rank to choose the correct one
+	const piecesUsingLayerByPart: { [partId: string]: Piece[] | undefined } = {}
+	piecesUsingLayer.forEach((i) => {
+		const partId = unprotectString(i.partId)
+		if (!piecesUsingLayerByPart[partId]) {
+			piecesUsingLayerByPart[partId] = []
 		}
 
 		for (const part of orderedPartsFollowingPlayhead.slice(0, lookaheadMaxSearchDistance - 1)) {

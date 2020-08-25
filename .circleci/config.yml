@@ -188,4 +188,5 @@ workflows:
                 - master
                 - develop
                 - stage
+                - stable
                 - /release\d+/

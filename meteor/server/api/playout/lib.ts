@@ -25,8 +25,9 @@ import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutIt
 import { saveIntoCache } from '../../DatabaseCache'
 import { afterRemoveParts } from '../rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { MethodContext } from '../../../lib/api/methods'
+import { MongoQuery } from '../../../lib/typings/meteor'
+import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 
 /**
  * Reset the rundown:
@@ -737,35 +738,29 @@ export function getSelectedPartInstancesFromCache(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
 	rundownIds?: RundownId[]
-) {
+): {
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
+	previousPartInstance: PartInstance | undefined
+} {
 	if (!rundownIds) {
 		rundownIds = getRundownIDsFromCache(cache, playlist)
 	}
 
-	const ids = _.compact([
-		playlist.currentPartInstanceId,
-		playlist.previousPartInstanceId,
-		playlist.nextPartInstanceId,
-	])
-
-	if (ids.length === 0) {
-		return {
-			currentPartInstance: undefined,
-			nextPartInstance: undefined,
-			previousPartInstance: undefined,
-		}
-	}
-
-	const instances = cache.PartInstances.findFetch({
+	const selector: MongoQuery<DBPartInstance> = {
 		rundownId: { $in: rundownIds },
-		_id: { $in: ids },
 		reset: { $ne: true },
-	})
-
+	}
 	return {
-		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInstanceId),
-		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInstanceId),
-		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInstanceId),
+		currentPartInstance: playlist.currentPartInstanceId
+			? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
+			: undefined,
+		nextPartInstance: playlist.nextPartInstanceId
+			? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
+			: undefined,
+		previousPartInstance: playlist.previousPartInstanceId
+			? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
+			: undefined,
 	}
 }
 
@@ -778,12 +773,13 @@ export function removeRundownPlaylistFromCache(cache: CacheForRundownPlaylist, p
 export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	cache.Rundowns.remove(rundown._id)
 	if (rundown.playlistId) {
-		// Check if any other members of the playlist are left
+		// Check if any other rundowns in the playlist are left
 		if (
 			cache.Rundowns.findFetch({
 				playlistId: rundown.playlistId,
 			}).length === 0
 		) {
+			// No other rundowns left, remove the playlist as well then:
 			cache.RundownPlaylists.remove(rundown.playlistId)
 		}
 	}
@@ -792,16 +788,27 @@ export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: 
 	cache.PartInstances.remove({ rundownId: rundown._id })
 	cache.Pieces.remove({ rundownId: rundown._id })
 	cache.PieceInstances.remove({ rundownId: rundown._id })
+	cache.RundownBaselineAdLibActions.remove({ rundownId: rundown._id })
 	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
 
-	// These are not present in the cache because they do not directly affect output.
-	// TODO - should this be a cache.defer??
-	AdLibActions.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
-	AdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
-	RundownBaselineAdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
-	IngestDataCache.remove({ rundownId: rundown._id })
-	ExpectedMediaItems.remove({ rundownId: rundown._id })
-	ExpectedPlayoutItems.remove({ rundownId: rundown._id })
+	cache.defer(() => {
+		// These are not present in the cache because they do not directly affect output.
+		AdLibActions.remove({ rundownId: rundown._id })
+		AdLibPieces.remove({ rundownId: rundown._id })
+		ExpectedMediaItems.remove({ rundownId: rundown._id })
+		ExpectedPlayoutItems.remove({ rundownId: rundown._id })
+		IngestDataCache.remove({ rundownId: rundown._id })
+		RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
+
+		// These might only partly be present in the cache, this should make sure they are properly removed:
+		Segments.remove({ rundownId: rundown._id })
+		Parts.remove({ rundownId: rundown._id })
+		PartInstances.remove({ rundownId: rundown._id })
+		Pieces.remove({ rundownId: rundown._id })
+		PieceInstances.remove({ rundownId: rundown._id })
+		RundownBaselineAdLibActions.remove({ rundownId: rundown._id })
+		RundownBaselineObjs.remove({ rundownId: rundown._id })
+	})
 }
 
 /** Get all piece instances in a part instance */
