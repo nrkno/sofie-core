@@ -134,7 +134,7 @@ export function takeNextPartInner(
 			try {
 				waitForPromise(
 					Promise.resolve(
-						blueprint.onPreTake(new PartEventContext(takeRundown, cache, undefined, takePartInstance))
+						blueprint.onPreTake(new PartEventContext(takeRundown, cache, takePartInstance))
 					).catch(logger.error)
 				)
 				if (span) span.end()
@@ -283,9 +283,7 @@ export function takeNextPartInner(
 						const span = Agent.startSpan('blueprint.onRundownFirstTake')
 						waitForPromise(
 							Promise.resolve(
-								blueprint.onRundownFirstTake(
-									new PartEventContext(takeRundown, cache, undefined, takePartInstance)
-								)
+								blueprint.onRundownFirstTake(new PartEventContext(takeRundown, cache, takePartInstance))
 							).catch(logger.error)
 						)
 						if (span) span.end()
@@ -296,7 +294,7 @@ export function takeNextPartInner(
 					const span = Agent.startSpan('blueprint.onPostTake')
 					waitForPromise(
 						Promise.resolve(
-							blueprint.onPostTake(new PartEventContext(takeRundown, cache, undefined, takePartInstance))
+							blueprint.onPostTake(new PartEventContext(takeRundown, cache, takePartInstance))
 						).catch(logger.error)
 					)
 					if (span) span.end()

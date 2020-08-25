@@ -80,7 +80,7 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 
 				if (blueprint.onAsRunEvent) {
 					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-					const context = new AsRunEventContext(rundown, cache, undefined, event)
+					const context = new AsRunEventContext(rundown, cache, event)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
 						.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {

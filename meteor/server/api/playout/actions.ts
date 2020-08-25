@@ -84,9 +84,12 @@ export function activateRundownPlaylist(
 
 	cache.defer(() => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const { blueprint } = getBlueprintOfRundown(undefined, rundown)
+		const { blueprint } = getBlueprintOfRundown(
+			waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
+			rundown
+		)
 		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, cache, undefined, studio))).catch(
+			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, cache, undefined))).catch(
 				logger.error
 			)
 		}
@@ -97,9 +100,12 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 
 	updateTimeline(cache, rundownPlaylist.studioId)
 
-	cache.defer(() => {
+	cache.defer((cache) => {
 		if (rundown) {
-			const { blueprint } = getBlueprintOfRundown(undefined, rundown)
+			const { blueprint } = getBlueprintOfRundown(
+				waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
+				rundown
+			)
 			if (blueprint.onRundownDeActivate) {
 				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(
 					logger.error

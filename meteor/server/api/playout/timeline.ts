@@ -240,7 +240,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 
 			if (showStyleBlueprintManifest.onTimelineGenerate && currentPartInstance) {
 				const currentPart = currentPartInstance
-				const context = new PartEventContext(activeRundown, cache, studio, currentPart)
+				const context = new PartEventContext(activeRundown, cache, currentPart)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
 				try {
 					const tlGenRes = waitForPromise(

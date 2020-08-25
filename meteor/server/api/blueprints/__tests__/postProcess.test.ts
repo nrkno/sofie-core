@@ -75,7 +75,7 @@ describe('Test blueprint post-process', () => {
 		let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
 		const rundownNotesContext = new NotesContext(rundown.name, `rundownId=${rundown._id}`, true)
-		return new RundownContext(rundown, cache, rundownNotesContext, getStudio())
+		return new RundownContext(rundown, cache, rundownNotesContext)
 	}
 
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {

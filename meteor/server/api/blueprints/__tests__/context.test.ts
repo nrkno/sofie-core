@@ -397,7 +397,7 @@ describe('Test blueprint api context', () => {
 			}
 
 			const tmpPart = wrapPartToTemporaryInstance(mockPart as DBPart)
-			const context = new PartEventContext(rundown, cache, undefined, tmpPart)
+			const context = new PartEventContext(rundown, cache, tmpPart)
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.part).toEqual(tmpPart)
@@ -421,7 +421,7 @@ describe('Test blueprint api context', () => {
 
 			let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-			return new AsRunEventContext(rundown, cache, undefined, mockEvent)
+			return new AsRunEventContext(rundown, cache, mockEvent)
 		}
 		testInFiber('getAllAsRunEvents', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
@@ -442,7 +442,7 @@ describe('Test blueprint api context', () => {
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			}
 
-			const context = new AsRunEventContext(rundown, cache, undefined, mockEvent)
+			const context = new AsRunEventContext(rundown, cache, mockEvent)
 			expect(context.getStudio()).toBeTruthy()
 			expect(context.asRunEvent).toEqual(mockEvent)
 
