@@ -314,7 +314,7 @@ export namespace ServerPlayoutAPI {
 		})
 	}
 
-	function takeNextpartInner(rundownPlaylistId: RundownPlaylistId, existingCache?: CacheForRundownPlaylist) {
+	export function takeNextpartInner(rundownPlaylistId: RundownPlaylistId, existingCache?: CacheForRundownPlaylist) {
 		let now = getCurrentTime()
 
 		let playlist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -1485,7 +1485,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			if (context.takeAfterExecute) {
-				return takeNextpartInner(rundownPlaylistId, cache)
+				return ServerPlayoutAPI.takeNextpartInner(rundownPlaylistId, cache)
 			} else {
 				if (
 					context.currentPartState !== ActionPartChange.NONE ||
