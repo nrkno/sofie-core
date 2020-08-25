@@ -752,7 +752,7 @@ export function asyncCollectionInsertIgnore<
 }
 export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 ): Promise<number> {
@@ -766,7 +766,7 @@ export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 ): Promise<{ numberAffected: number; insertedId: string }> {
@@ -785,7 +785,7 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>
+	selector: MongoQuery<DBInterface> | DBInterface['_id']
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
 		collection.remove(selector, (err: any) => {
@@ -794,6 +794,7 @@ export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface 
 		})
 	})
 }
+
 /**
  * Supresses the "UnhandledPromiseRejectionWarning" warning
  * ref: https://stackoverflow.com/questions/40920179/should-i-refrain-from-handling-promise-rejection-asynchronously

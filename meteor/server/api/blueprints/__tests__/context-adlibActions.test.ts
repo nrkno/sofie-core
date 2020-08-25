@@ -5,7 +5,7 @@ import {
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
 import { protectString, unprotectString, waitForPromise, getRandomId, getCurrentTime } from '../../../../lib/lib'
-import { Studio } from '../../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { IBlueprintPart, IBlueprintPiece, PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { NotesContext, ActionExecutionContext, ActionPartChange } from '../context'
 import { Rundown, Rundowns } from '../../../../lib/collections/Rundowns'
@@ -44,6 +44,7 @@ jest.mock('../postProcess')
 import { postProcessPieces } from '../postProcess'
 import { isTooCloseToAutonext, getRundownIDsFromCache } from '../../playout/lib'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { activateRundownPlaylist, deactivateRundownPlaylist } from '../../playout/actions'
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
@@ -99,7 +100,7 @@ describe('Test blueprint api context', () => {
 		const rundown = cache.Rundowns.findOne({ playlistId: cache.containsDataFromPlaylist }) as Rundown
 		expect(rundown).toBeTruthy()
 
-		const studio = cache.Studios.findOne(rundown.studioId) as Studio
+		const studio = Studios.findOne(playlist.studioId) as Studio
 		expect(studio).toBeTruthy()
 
 		// Load all the PieceInstances, as we set the selected instances later
@@ -269,7 +270,6 @@ describe('Test blueprint api context', () => {
 				})
 			})
 		})
-
 		describe('findLastPieceOnLayer', () => {
 			testInFiber('invalid parameters', () => {
 				wrapWithCache((cache) => {

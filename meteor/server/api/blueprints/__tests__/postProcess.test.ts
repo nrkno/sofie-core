@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
-import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
+import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, protectString, waitForPromise } from '../../../../lib/lib'
 import { Studios, Studio } from '../../../../lib/collections/Studios'
 import {
 	postProcessStudioBaselineObjects,
@@ -22,10 +22,13 @@ import {
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { initCacheForRundownPlaylist } from '../../../DatabaseCaches'
 
 describe('Test blueprint post-process', () => {
+	let env: DefaultEnvironment
 	beforeAll(() => {
-		setupDefaultStudioEnvironment()
+		env = setupDefaultStudioEnvironment()
 	})
 
 	function getStudio() {
@@ -34,15 +37,45 @@ describe('Test blueprint post-process', () => {
 		return studio
 	}
 	function getContext() {
-		const rundown = {
+		const rundown = new Rundown({
 			externalId: 'fakeRo',
-			_id: 'fakeRo',
+			_id: protectString('fakeRo'),
 			name: 'Fake RO',
-			showStyleBaseId: '',
-			showStyleVariantId: '',
-		}
+			showStyleBaseId: protectString(''),
+			showStyleVariantId: protectString(''),
+			organizationId: protectString(''),
+			studioId: env.studio._id,
+			peripheralDeviceId: protectString(''),
+			created: 0,
+			modified: 0,
+			importVersions: {
+				studio: '',
+				showStyleBase: '',
+				showStyleVariant: '',
+				blueprint: '',
+				core: '',
+			},
+			dataSource: '',
+			playlistId: protectString(''),
+			_rank: 0,
+		})
+		const playlist = new RundownPlaylist({
+			_id: protectString(''),
+			externalId: '',
+			organizationId: protectString(''),
+			studioId: env.studio._id,
+			peripheralDeviceId: protectString(''),
+			name: 'playlistmock',
+			created: 0,
+			modified: 0,
+			currentPartInstanceId: null,
+			nextPartInstanceId: null,
+			previousPartInstanceId: null,
+		})
+		let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
 		const rundownNotesContext = new NotesContext(rundown.name, `rundownId=${rundown._id}`, true)
-		return new RundownContext(new Rundown(rundown as any), rundownNotesContext, getStudio())
+		return new RundownContext(rundown, cache, rundownNotesContext, getStudio())
 	}
 
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {

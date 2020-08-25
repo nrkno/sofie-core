@@ -214,10 +214,9 @@ export namespace ServerPlayoutAdLibAPI {
 					`Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylist._id}!"`
 				)
 
-			const adLibPiece = cache.RundownBaselineAdLibPieces.findOne({
-				_id: baselineAdLibPieceId,
-				rundownId: partInstance.rundownId,
-			})
+			const adLibPiece = waitForPromise(cache.activationCache.getRundownBaselineAdLibPieces(rundown)).find(
+				(adlib) => adlib._id === baselineAdLibPieceId
+			)
 			if (!adLibPiece)
 				throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
 			if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId)

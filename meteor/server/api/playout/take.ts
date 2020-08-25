@@ -77,7 +77,7 @@ export function takeNextPartInner(
 				`Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`
 			)
 
-		let pShowStyle = asyncCollectionFindOne(ShowStyleBases, currentRundown.showStyleBaseId)
+		let pShowStyle = cache.activationCache.getShowStyleBase(currentRundown)
 		let pBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, currentRundown))
 
 		const currentPart = currentPartInstance
@@ -134,7 +134,7 @@ export function takeNextPartInner(
 			try {
 				waitForPromise(
 					Promise.resolve(
-						blueprint.onPreTake(new PartEventContext(takeRundown, undefined, takePartInstance))
+						blueprint.onPreTake(new PartEventContext(takeRundown, cache, undefined, takePartInstance))
 					).catch(logger.error)
 				)
 				if (span) span.end()
@@ -152,7 +152,7 @@ export function takeNextPartInner(
 				const resolvedPieces = getResolvedPieces(cache, showStyle, previousPartInstance)
 
 				const span = Agent.startSpan('blueprint.getEndStateForPart')
-				const context = new RundownContext(takeRundown, undefined)
+				const context = new RundownContext(takeRundown, cache, undefined)
 				previousPartEndState = blueprint.getEndStateForPart(
 					context,
 					playlist.previousPersistentState,
@@ -264,10 +264,9 @@ export function takeNextPartInner(
 
 				// Simulate playout, if no gateway
 				if (takePartInstance) {
-					const playoutDevices = cache.PeripheralDevices.findFetch({
-						studioId: takeRundown.studioId,
-						type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-					})
+					const playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
+						(d) => d.studioId === takeRundown.studioId && d.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+					)
 					if (playoutDevices.length === 0) {
 						logger.info(
 							`No Playout gateway attached to studio, reporting PartInstance "${
@@ -285,7 +284,7 @@ export function takeNextPartInner(
 						waitForPromise(
 							Promise.resolve(
 								blueprint.onRundownFirstTake(
-									new PartEventContext(takeRundown, undefined, takePartInstance)
+									new PartEventContext(takeRundown, cache, undefined, takePartInstance)
 								)
 							).catch(logger.error)
 						)
@@ -297,7 +296,7 @@ export function takeNextPartInner(
 					const span = Agent.startSpan('blueprint.onPostTake')
 					waitForPromise(
 						Promise.resolve(
-							blueprint.onPostTake(new PartEventContext(takeRundown, undefined, takePartInstance))
+							blueprint.onPostTake(new PartEventContext(takeRundown, cache, undefined, takePartInstance))
 						).catch(logger.error)
 					)
 					if (span) span.end()

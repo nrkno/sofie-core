@@ -29,6 +29,7 @@ import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylis
 import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { isAnySyncFunctionsRunning } from '../../codeControl'
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /**
@@ -732,7 +733,7 @@ export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part:
 }
 export function getStudioFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
 	if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-	let studio = cache.Studios.findOne(playlist.studioId)
+	let studio = cache.activationCache.getStudio()
 	if (studio) {
 		return studio
 	} else {
@@ -917,9 +918,11 @@ export function triggerGarbageCollection() {
 			// This can be done in prod by: node --expose_gc main.js
 			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
 
-			// by passing true, we're triggering the
-			// @ts-ignore
-			global.gc(true)
+			if (!isAnySyncFunctionsRunning()) {
+				// by passing true, we're triggering the "full" collection
+				// @ts-ignore (typings not avaiable)
+				global.gc(true)
+			}
 		}
 	}, 500)
 }
