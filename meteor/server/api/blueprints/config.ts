@@ -86,8 +86,8 @@ export function compileStudioConfig(studio: Studio, blueprint?: StudioBlueprintM
 	// Expose special values as defined in the studio
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
-	if (blueprint && blueprint.parseConfig) {
-		res = blueprint.parseConfig(res)
+	if (blueprint && blueprint.preprocessConfig) {
+		res = blueprint.preprocessConfig(res)
 	}
 	return res
 }
@@ -99,8 +99,8 @@ export function compileShowStyleConfig(showStyle: ShowStyleCompound, blueprint?:
 	} else {
 		res = showStyle.blueprintConfig
 	}
-	if (blueprint && blueprint.parseConfig) {
-		res = blueprint.parseConfig(res)
+	if (blueprint && blueprint.preprocessConfig) {
+		res = blueprint.preprocessConfig(res)
 	}
 	return res
 }
