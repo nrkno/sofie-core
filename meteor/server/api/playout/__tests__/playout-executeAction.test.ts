@@ -252,6 +252,10 @@ describe('Playout API', () => {
 		})
 
 		testInFiber('take after execute', () => {
+			const api = ServerPlayoutAPI
+			const mockTake = jest.fn().mockReturnThis()
+			api.takeNextpartInner = mockTake
+
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
 			const STATE_NONE = ActionPartChange.NONE
 			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
@@ -282,9 +286,11 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
+			api.executeAction(playlistId, actionId, userData)
 
-			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
+			const timesTakeCalled = mockTake.mock.calls.length
+			mockTake.mockRestore()
+			expect(timesTakeCalled).toBe(1)
 		})
 	})
 })

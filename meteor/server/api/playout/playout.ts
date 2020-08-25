@@ -1101,7 +1101,7 @@ export namespace ServerPlayoutAPI {
             }
 
 			if (context.takeAfterExecute) {
-				return takeNextpartInner(rundownPlaylistId, cache)
+				return ServerPlayoutAPI.takeNextpartInner(rundownPlaylistId, cache)
 			} else {
 				if (
 					context.currentPartState !== ActionPartChange.NONE ||
