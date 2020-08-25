@@ -16,7 +16,7 @@ import DeviceSettings from './Settings/DeviceSettings'
 import ShowStyleSettings from './Settings/ShowStyleBaseSettings'
 import SnapshotsView from './Settings/SnapshotsView'
 import BlueprintSettings from './Settings/BlueprintSettings'
-import SystemMessages from './Settings/SystemMessages'
+import SystemManagement from './Settings/SystemManagement'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 
 import { faPlus, faTrash, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -417,8 +417,8 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 							<NavLink
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/messages">
-								<h3>{t('System Messages')}</h3>
+								to="/settings/tools/system">
+								<h3>{t('Core System settings')}</h3>
 							</NavLink>
 							<NavLink
 								activeClassName="selectable-selected"
@@ -487,7 +487,7 @@ export const Settings = withTranslation()(
 										/>
 										<Route path="/settings/tools/snapshots" component={SnapshotsView} />
 										<Route path="/settings/tools/migration" component={MigrationView} />
-										<Route path="/settings/tools/messages" component={SystemMessages} />
+										<Route path="/settings/tools/system" component={SystemManagement} />
 										<Redirect to="/settings" />
 									</Switch>
 								</ErrorBoundary>
