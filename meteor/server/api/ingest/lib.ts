@@ -29,6 +29,7 @@ export function checkAccessAndGetPeripheralDevice(
 	context: Credentials | MethodContext
 ): PeripheralDevice {
 	const span = Agent.startSpan('lib.checkAccessAndGetPeripheralDevice')
+
 	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 	const peripheralDevice = access.device
 	if (!peripheralDevice) {
@@ -39,9 +40,7 @@ export function checkAccessAndGetPeripheralDevice(
 		throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 	}
 
-	if (span) {
-		span.end()
-	}
+	span?.end()
 
 	return peripheralDevice
 }
