@@ -297,6 +297,7 @@ export namespace ServerPlayoutAPI {
 
 		return takeNextPartInner(context, rundownPlaylistId)
 	}
+
 	export function setNextPart(
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
@@ -1056,8 +1057,6 @@ export namespace ServerPlayoutAPI {
 			currentPartInstance: PartInstance
 		) => void
 	) {
-		let takeAfterExecute = false
-
 		rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
@@ -1099,18 +1098,21 @@ export namespace ServerPlayoutAPI {
 
 			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
 				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+            }
 
-				updateTimeline(cache, playlist.studioId)
+			if (context.takeAfterExecute) {
+				return takeNextpartInner(rundownPlaylistId, cache)
+			} else {
+				if (
+					context.currentPartState !== ActionPartChange.NONE ||
+					context.nextPartState !== ActionPartChange.NONE
+				) {
+					updateTimeline(cache, playlist.studioId)
+				}
+
+				waitForPromise(cache.saveAllToDatabase())
 			}
-
-			waitForPromise(cache.saveAllToDatabase())
-
-			takeAfterExecute = context.takeAfterExecute
 		})
-
-		if (takeAfterExecute) {
-			ServerPlayoutAPI.takeNextPart(rundownPlaylistId)
-		}
 	}
 	export function sourceLayerOnPartStop(
 		context: MethodContext,
