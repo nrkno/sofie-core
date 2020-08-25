@@ -3,10 +3,10 @@ import {
 	ConfigItemValue,
 	ConfigManifestEntry,
 	IBlueprintConfig,
-	ConfigManifestEntryType,
-	TableConfigItemValue,
 	StudioBlueprintManifest,
 	ShowStyleBlueprintManifest,
+	BasicConfigItemValue,
+	TableConfigItemValue,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -134,39 +134,12 @@ export function applyToConfig(
 	for (const val of configManifest) {
 		let newVal = val.defaultVal
 
-		const overrideVal = objectPathGet(blueprintConfig, val.id) as ConfigItemValue | undefined
+		const overrideVal = objectPathGet(blueprintConfig, val.id) as
+			| BasicConfigItemValue
+			| TableConfigItemValue
+			| undefined
 		if (overrideVal !== undefined) {
-			switch (val.type) {
-				case ConfigManifestEntryType.BOOLEAN:
-					newVal = overrideVal as boolean
-					break
-				case ConfigManifestEntryType.NUMBER:
-					newVal = overrideVal as number
-					break
-				case ConfigManifestEntryType.STRING:
-					newVal = overrideVal as string
-					break
-				case ConfigManifestEntryType.ENUM:
-					newVal = overrideVal as string
-					break
-				case ConfigManifestEntryType.JSON:
-					newVal = overrideVal as string
-					break
-				case ConfigManifestEntryType.TABLE:
-					newVal = overrideVal as TableConfigItemValue
-					break
-				case ConfigManifestEntryType.SELECT:
-				case ConfigManifestEntryType.LAYER_MAPPINGS:
-				case ConfigManifestEntryType.SOURCE_LAYERS:
-					newVal = val.multiple ? (overrideVal as string[]) : (overrideVal as string)
-					break
-				case ConfigManifestEntryType.MULTILINE_STRING:
-					newVal = overrideVal as string[]
-					break
-				default:
-					logger.warning('Unknown config field type: ' + val)
-					break
-			}
+			newVal = overrideVal
 		} else if (val.required) {
 			logger.warning(`Required config not defined in ${source}: "${val.name}"`)
 		}
