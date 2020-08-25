@@ -84,7 +84,7 @@ export interface DBObj {
 	_id: ProtectedString<any>
 	[key: string]: any
 }
-interface SaveIntoDbOptions<DocClass, DBInterface> {
+export interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeInsert?: (o: DBInterface) => DBInterface
 	beforeUpdate?: (o: DBInterface, pre?: DocClass) => DBInterface
 	beforeRemove?: (o: DocClass) => DBInterface
@@ -226,13 +226,13 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 	const removedDocs: DocClass['_id'][] = []
 
 	_.each(preparedChanges.changed || [], (oUpdate) => {
-		checkInsertId(oUpdate.doc._id)
+		checkInsertId(oUpdate._id)
 		updates.push({
 			replaceOne: {
 				filter: {
-					_id: oUpdate.oldId as any,
+					_id: oUpdate._id as any,
 				},
-				replacement: oUpdate.doc,
+				replacement: oUpdate,
 			},
 		})
 		change.updated++
@@ -266,7 +266,7 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 		})
 	}
 
-	const pBulkWriteResult = asyncCollectionBulkWrite(this._collection, updates)
+	const pBulkWriteResult = asyncCollectionBulkWrite(collection, updates)
 
 	if (options.unchanged) {
 		_.each(preparedChanges.unchanged || [], (o) => {
