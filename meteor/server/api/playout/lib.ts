@@ -29,6 +29,7 @@ import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylis
 import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { isAnySyncFunctionsRunning } from '../../codeControl'
 
 /**
  * Reset the rundown:
@@ -908,9 +909,11 @@ export function triggerGarbageCollection() {
 			// This can be done in prod by: node --expose_gc main.js
 			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
 
-			// by passing true, we're triggering the
-			// @ts-ignore
-			global.gc(true)
+			if (!isAnySyncFunctionsRunning()) {
+				// by passing true, we're triggering the "full" collection
+				// @ts-ignore (typings not avaiable)
+				global.gc(true)
+			}
 		}
 	}, 500)
 }
