@@ -102,12 +102,20 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									modifiedClassName="bghl"
 									attribute="apm.transactionSampleRate"
 									obj={this.props.coreSystem}
-									type="text"
+									type="float"
 									collection={CoreSystem}
 									className="mdinput"
 								/>
 								<span className="mdfx"></span>
 							</div>
+							<div>
+								(
+								{t(
+									'How many of the transactions to monitor. Set to -1 to log nothing (max performance), 0.5 to log 50% of the transactions, 1 to log all transactions'
+								)}
+								)
+							</div>
+							<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 						</label>
 					</div>
 				</div>

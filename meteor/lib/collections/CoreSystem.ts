@@ -79,7 +79,14 @@ export interface ICoreSystem {
 	/** elastic APM (application performance monitoring) settings */
 	apm?: {
 		enabled?: boolean
-		transactionSampleRate?: number /** set to -1 for performance, 0.5 for 50% and 1 for all */
+		/**
+		 * How many of the transactions to monitor.
+		 * Set to:
+		 * -1 to log nothing (max performance),
+		 * 0.5 to log 50% of the transactions,
+		 * 1 to log all transactions
+		 */
+		transactionSampleRate?: number
 	}
 }
 

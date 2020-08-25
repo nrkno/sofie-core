@@ -418,7 +418,7 @@ const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState
 								activeClassName="selectable-selected"
 								className="settings-menu__settings-menu-item selectable clickable"
 								to="/settings/tools/system">
-								<h3>{t('System management')}</h3>
+								<h3>{t('Core System settings')}</h3>
 							</NavLink>
 							<NavLink
 								activeClassName="selectable-selected"
