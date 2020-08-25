@@ -1793,7 +1793,7 @@ body.no-overflow {
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
 
 					&.hidden {
-						opacity: 0;
+						display: none;
 					}
 				}
 			}
