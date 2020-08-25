@@ -1206,11 +1206,6 @@ const RundownHeader = withTranslation()(
 									rundownIds={this.props.rundownIds}
 								/>
 							</div>
-							{/* <div className="row dark">
-								<div className="col c12 rundown-overview">
-									<RundownOverview rundownPlaylistId={this.props.playlist._id} />
-								</div>
-						</div> */}
 						</ContextMenuTrigger>
 					</div>
 					<ModalDialog
