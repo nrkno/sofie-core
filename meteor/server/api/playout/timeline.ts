@@ -212,7 +212,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 		if (playlist && activeRundown) {
 			// Fetch showstyle blueprint:
 			const activeRundown0 = activeRundown
-			const pShowStyle = asyncCollectionFindOne(ShowStyleBases, activeRundown.showStyleBaseId)
+			const pShowStyle = cache.activationCache.getShowStyleBase(activeRundown)
 			const pshowStyleBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, activeRundown0))
 
 			// Fetch baseline
