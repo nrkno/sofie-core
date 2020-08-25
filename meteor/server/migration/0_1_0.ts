@@ -49,7 +49,6 @@ addMigrationSteps('0.1.0', [
 		'Enter the Name of the Studio "$id"'
 	),
 	ensureCollectionProperty('Studios', {}, 'mappings', {}),
-	ensureCollectionProperty('Studios', {}, 'config', []),
 
 	{
 		id: 'Assign devices to studio',

@@ -56,7 +56,8 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					$set: {
 						organizationId: null,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		},
 	},
@@ -82,7 +83,8 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					$set: {
 						organizationId: null,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		},
 	},
@@ -108,7 +110,8 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					$set: {
 						organizationId: null,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		},
 	},
@@ -120,7 +123,7 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			const studio = ShowStyleBases.find().fetch()
 			let result: string | boolean = false
 			studio.forEach((siItem) => {
-				if ((siItem as any).runtimeArguments && (siItem as any).runtimeArguments.length > 0) {
+				if ((siItem as any).runtimeArguments) {
 					result = `Rundown Arguments set in a Studio Installation "${siItem._id}"`
 				}
 			})
@@ -133,7 +136,8 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					$unset: {
 						runtimeArguments: 1,
 					},
-				}
+				},
+				{ multi: true }
 			)
 		},
 	},
@@ -166,17 +170,21 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					}
 				}
 				if (part) {
-					Pieces.update(piece._id, {
-						$set: {
-							startRundownId: piece.rundownId,
-							startPartId: piece.partId,
-							startSegmentId: part.segmentId,
+					Pieces.update(
+						piece._id,
+						{
+							$set: {
+								startRundownId: piece.rundownId,
+								startPartId: piece.partId,
+								startSegmentId: part.segmentId,
+							},
+							$unset: {
+								rundownId: 1,
+								partId: 1,
+							},
 						},
-						$unset: {
-							rundownId: 1,
-							partId: 1,
-						},
-					})
+						{ multi: true }
+					)
 				}
 			})
 		},
@@ -191,7 +199,7 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
 ])
 
-export function migrateConfigToBlueprintConfig<
+function migrateConfigToBlueprintConfig<
 	T extends DBInterface,
 	DBInterface extends { _id: ProtectedString<any>; blueprintConfig: IBlueprintConfig }
 >(id: string, collection: TransformedCollection<T, DBInterface>) {

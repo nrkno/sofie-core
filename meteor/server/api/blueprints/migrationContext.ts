@@ -91,7 +91,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		check(configId, String)
 		if (configId === '') return undefined
 		let configItem = objectPathGet(this.studio.blueprintConfig, configId)
-		if (configItem) return trimIfString(configItem)
+		return trimIfString(configItem)
 	}
 	setConfig(configId: string, value: ConfigItemValue): void {
 		check(configId, String)
@@ -101,43 +101,28 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		value = trimIfString(value)
 
-		const configItem = objectPathGet(this.studio.blueprintConfig, configId)
-		if (configItem !== undefined) {
-			let modifier: Mongo.Modifier<DBStudio> = {}
-			if (value === undefined) {
-				modifier = {
-					$unset: {
-						[`blueprintConfig.${configId}`]: 1,
-					},
-				}
-				objectPath.del(this.studio.blueprintConfig, configId) // Update local
-			} else {
-				modifier = {
-					$set: {
-						[`blueprintConfig.${configId}`]: value,
-					},
-				}
-				objectPathSet(this.studio.blueprintConfig, configId, value) // Update local
+		let modifier: Mongo.Modifier<DBStudio> = {}
+		if (value === undefined) {
+			modifier = {
+				$unset: {
+					[`blueprintConfig.${configId}`]: 1,
+				},
 			}
-			Studios.update(
-				{
-					_id: this.studio._id,
-				},
-				modifier
-			)
+			objectPath.del(this.studio.blueprintConfig, configId) // Update local
 		} else {
-			Studios.update(
-				{
-					_id: this.studio._id,
+			modifier = {
+				$set: {
+					[`blueprintConfig.${configId}`]: value,
 				},
-				{
-					$set: {
-						[`blueprintConfig.${configId}`]: value,
-					},
-				}
-			)
-			objectPathSet(this.studio.blueprintConfig, configId, value)
+			}
+			objectPathSet(this.studio.blueprintConfig, configId, value) // Update local
 		}
+		Studios.update(
+			{
+				_id: this.studio._id,
+			},
+			modifier
+		)
 	}
 	removeConfig(configId: string): void {
 		check(configId, String)
@@ -511,7 +496,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		check(configId, String)
 		if (configId === '') return undefined
 		let configItem = objectPathGet(this.showStyleBase.blueprintConfig, configId)
-		if (configItem) return trimIfString(configItem)
+		return trimIfString(configItem)
 	}
 	setBaseConfig(configId: string, value: ConfigItemValue): void {
 		check(configId, String)
@@ -565,7 +550,7 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
 		let configItem = objectPathGet(variant.blueprintConfig, configId)
-		if (configItem) return trimIfString(configItem)
+		return trimIfString(configItem)
 	}
 	setVariantConfig(variantId: string, configId: string, value: ConfigItemValue): void {
 		check(variantId, String)

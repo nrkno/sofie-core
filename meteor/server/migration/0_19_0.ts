@@ -97,7 +97,6 @@ addMigrationSteps('0.19.0', [
 	},
 	ensureCollectionProperty('ShowStyleBases', {}, 'outputLayers', []),
 	ensureCollectionProperty('ShowStyleBases', {}, 'sourceLayers', []),
-	ensureCollectionProperty('ShowStyleBases', {}, 'config', []),
 	{
 		id: 'Remove runtimeArguments from Studio',
 		canBeRunAutomatically: true,
@@ -122,7 +121,6 @@ addMigrationSteps('0.19.0', [
 			)
 		},
 	},
-	ensureCollectionProperty('ShowStyleVariants', {}, 'config', []),
 
 	{
 		// Ensure rundowns have showStyleBaseId and showStyleVariandId set
