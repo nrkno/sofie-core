@@ -16,6 +16,7 @@ import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as crypto from 'crypto'
 import { DeepReadonly } from 'utility-types'
+import { BulkWriteOperation } from 'mongodb'
 const cloneOrg = require('fast-clone')
 
 export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
@@ -88,13 +89,13 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeUpdate?: (o: DBInterface, pre?: DocClass) => DBInterface
 	beforeRemove?: (o: DocClass) => DBInterface
 	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
-	insert?: (o: DBInterface) => void
-	update?: (id: ProtectedString<any>, o: DBInterface) => void
-	remove?: (o: DBInterface) => void
+	// insert?: (o: DBInterface) => void
+	// update?: (id: ProtectedString<any>, o: DBInterface) => void
+	// remove?: (o: DBInterface) => void
 	unchanged?: (o: DBInterface) => void
-	afterInsert?: (o: DBInterface) => void
-	afterUpdate?: (o: DBInterface) => void
-	afterRemove?: (o: DBInterface) => void
+	// afterInsert?: (o: DBInterface) => void
+	// afterUpdate?: (o: DBInterface) => void
+	// afterRemove?: (o: DBInterface) => void
 	afterRemoveAll?: (o: Array<DBInterface>) => void
 }
 interface Changes {
@@ -121,15 +122,11 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 }
 export interface PreparedChanges<T> {
 	inserted: T[]
-	changed: PreparedChangesChangesDoc<T>[]
+	changed: T[]
 	removed: T[]
 	unchanged: T[]
 }
 
-export interface PreparedChangesChangesDoc<T> {
-	doc: T
-	oldId: ProtectedString<any>
-}
 export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: TransformedCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
@@ -182,7 +179,7 @@ export function prepareSaveIntoDb<DocClass extends DBInterface, DBInterface exte
 
 			if (!eql) {
 				let oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o
-				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id })
+				preparedChanges.changed.push(oUpdate)
 			} else {
 				preparedChanges.unchanged.push(oldObj)
 			}
@@ -214,8 +211,6 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 	}
 	const options: SaveIntoDbOptions<DocClass, DBInterface> = optionsOrg || {}
 
-	const ps: Array<Promise<any>> = []
-
 	const newObjIds: { [identifier: string]: true } = {}
 	const checkInsertId = (id) => {
 		if (newObjIds[id]) {
@@ -227,63 +222,59 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 		newObjIds[id] = true
 	}
 
+	const updates: BulkWriteOperation<DBInterface>[] = []
+	const removedDocs: DocClass['_id'][] = []
+
 	_.each(preparedChanges.changed || [], (oUpdate) => {
 		checkInsertId(oUpdate.doc._id)
-		let p: Promise<any> | undefined
-		if (options.update) {
-			options.update(oUpdate.oldId, oUpdate.doc)
-		} else {
-			p = asyncCollectionUpdate(collection, oUpdate.oldId, oUpdate.doc)
-		}
-		if (options.afterUpdate) {
-			p = Promise.resolve(p).then(() => {
-				if (options.afterUpdate) options.afterUpdate(oUpdate.doc)
-			})
-		}
-
-		if (p) ps.push(p)
+		updates.push({
+			replaceOne: {
+				filter: {
+					_id: oUpdate.oldId as any,
+				},
+				replacement: oUpdate.doc,
+			},
+		})
 		change.updated++
 	})
 
 	_.each(preparedChanges.inserted || [], (oInsert) => {
 		checkInsertId(oInsert._id)
-		let p: Promise<any> | undefined
-		if (options.insert) {
-			options.insert(oInsert)
-		} else {
-			p = asyncCollectionInsert(collection, oInsert)
-		}
-		if (options.afterInsert) {
-			p = Promise.resolve(p).then(() => {
-				if (options.afterInsert) options.afterInsert(oInsert)
-			})
-		}
-		if (p) ps.push(p)
+		updates.push({
+			replaceOne: {
+				filter: {
+					_id: oInsert._id as any,
+				},
+				replacement: oInsert,
+				upsert: true,
+			},
+		})
 		change.added++
 	})
 
 	_.each(preparedChanges.removed || [], (oRemove) => {
-		let p: Promise<any> | undefined
-		if (options.remove) {
-			options.remove(oRemove)
-		} else {
-			p = asyncCollectionRemove(collection, oRemove._id)
-		}
-
-		if (options.afterRemove) {
-			p = Promise.resolve(p).then(() => {
-				if (options.afterRemove) options.afterRemove(oRemove)
-			})
-		}
-		if (p) ps.push(p)
+		removedDocs.push(oRemove._id)
 		change.removed++
 	})
+	if (removedDocs.length) {
+		updates.push({
+			deleteMany: {
+				filter: {
+					_id: { $in: removedDocs as any },
+				},
+			},
+		})
+	}
+
+	const pBulkWriteResult = asyncCollectionBulkWrite(this._collection, updates)
+
 	if (options.unchanged) {
 		_.each(preparedChanges.unchanged || [], (o) => {
 			if (options.unchanged) options.unchanged(o)
 		})
 	}
-	waitForPromiseAll(ps)
+
+	waitForPromise(pBulkWriteResult)
 
 	if (options.afterRemoveAll) {
 		const objs = _.compact(preparedChanges.removed || [])
@@ -293,6 +284,31 @@ export function savePreparedChanges<DocClass extends DBInterface, DBInterface ex
 	}
 
 	return change
+}
+export async function asyncCollectionBulkWrite<
+	DocClass extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+>(
+	collection: TransformedCollection<DocClass, DBInterface>,
+	ops: Array<BulkWriteOperation<DBInterface>>
+): Promise<void> {
+	if (ops.length > 0) {
+		const rawCollection = collection.rawCollection()
+		const bulkWriteResult = await rawCollection.bulkWrite(ops, {
+			ordered: false,
+		})
+
+		if (
+			bulkWriteResult &&
+			_.isArray(bulkWriteResult.result?.writeErrors) &&
+			bulkWriteResult.result.writeErrors.length
+		) {
+			throw new Meteor.Error(
+				500,
+				`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
+			)
+		}
+	}
 }
 export function sumChanges(...changes: (Changes | null)[]): Changes {
 	let change: Changes = {
