@@ -75,7 +75,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function compileStudioConfig(studio: Studio, blueprint?: Blueprint) {
+export function compileStudioConfig(studio: Studio, blueprint?: StudioBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.studioConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
@@ -86,27 +86,21 @@ export function compileStudioConfig(studio: Studio, blueprint?: Blueprint) {
 	// Expose special values as defined in the studio
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
-	if (blueprint) {
-		const blueprintManifest = safeEvalBlueprints(blueprint) as StudioBlueprintManifest
-		if (blueprintManifest.parseConfig) {
-			res = blueprintManifest.parseConfig(res)
-		}
+	if (blueprint && blueprint.parseConfig) {
+		res = blueprint.parseConfig(res)
 	}
 	return res
 }
 
-export function compileShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: Blueprint) {
+export function compileShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: ShowStyleBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.showStyleConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)
 	} else {
 		res = showStyle.blueprintConfig
 	}
-	if (blueprint) {
-		const blueprintManifest = safeEvalBlueprints(blueprint) as ShowStyleBlueprintManifest
-		if (blueprintManifest.parseConfig) {
-			res = blueprintManifest.parseConfig(res)
-		}
+	if (blueprint && blueprint.parseConfig) {
+		res = blueprint.parseConfig(res)
 	}
 	return res
 }

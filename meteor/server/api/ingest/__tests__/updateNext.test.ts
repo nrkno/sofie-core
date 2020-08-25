@@ -31,7 +31,7 @@ function createMockRO() {
 		name: 'mock studio',
 		mappings: {},
 		supportedShowStyleBase: [],
-		config: [],
+		blueprintConfig: {},
 		settings: {
 			mediaPreviewsUrl: '',
 			sofieUrl: '',

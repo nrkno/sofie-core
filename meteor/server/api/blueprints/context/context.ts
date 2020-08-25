@@ -284,7 +284,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 			logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
 		}
 
-		const compiledConfig = compileShowStyleConfig(showStyleCompound, showStyleBlueprint)
+		const compiledConfig = compileShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
 		objectPathSet(showStyleBlueprintConfigCache, cacheId, {
 			config: compiledConfig,
 		})
