@@ -16,7 +16,7 @@ import {
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
-import { BulkWriteOperation } from 'mongodb'
+import { BulkWriteOperation, BulkWriteOpResultObject } from 'mongodb'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
@@ -307,17 +307,28 @@ export class DbCacheWriteCollection<
 		}
 
 		const rawCollection = this._collection.rawCollection()
-		const ps =
+		const pBulkWriteResult =
 			updates.length > 0
 				? rawCollection.bulkWrite(updates, {
 						ordered: false,
 				  })
-				: Promise.resolve()
+				: Promise.resolve(null)
 
 		_.each(removedDocs, (_id) => {
 			delete this._collection[unprotectString(_id)]
 		})
-		await ps
+		const bulkWriteResult = await pBulkWriteResult
+
+		if (
+			bulkWriteResult &&
+			_.isArray(bulkWriteResult.result?.writeErrors) &&
+			bulkWriteResult.result.writeErrors.length
+		) {
+			throw new Meteor.Error(
+				500,
+				`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
+			)
+		}
 
 		return changes
 	}
