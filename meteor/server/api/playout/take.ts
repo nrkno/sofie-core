@@ -110,7 +110,7 @@ export function takeNextPartInner(
 		} else if (playlist.holdState === RundownHoldState.ACTIVE) {
 			completeHold(cache, playlist, currentPartInstance)
 
-			waitForPromise(cache.saveAllToDatabase())
+			cache.saveTimelineThenAllToDatabase()
 
 			return ClientAPI.responseSuccess(undefined)
 		}
@@ -301,7 +301,7 @@ export function takeNextPartInner(
 				}
 			}
 		})
-		waitForPromise(cache.saveAllToDatabase())
+		cache.saveTimelineThenAllToDatabase()
 
 		if (span) span.end()
 		return ClientAPI.responseSuccess(undefined)
