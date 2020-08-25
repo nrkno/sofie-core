@@ -6,7 +6,10 @@ import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Pieces } from '../../lib/collections/Pieces'
 import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece as Piece_1_11_0 } from './deprecatedDataTypes/1_11_0'
-import { unprotectString } from '../../lib/lib'
+import { unprotectString, ProtectedString, objectPathSet } from '../../lib/lib'
+import { TransformedCollection } from '../../lib/typings/meteor'
+import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
+import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 
 /*
  * **************************************************************************************
@@ -178,9 +181,42 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			})
 		},
 	},
+	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in Studios', Studios),
+	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleBases', ShowStyleBases),
+	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleVariants', ShowStyleVariants),
 	//
 	//
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
 ])
+
+export function migrateConfigToBlueprintConfig<
+	T extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any>; blueprintConfig: IBlueprintConfig }
+>(id: string, collection: TransformedCollection<T, DBInterface>) {
+	return {
+		id,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const documents = collection.find({ config: { $exists: true } }).fetch()
+			if (documents.length) {
+				return true
+			}
+			return false
+		},
+		migrate: () => {
+			const documents = collection.find({ config: { $exists: true } }).fetch() as Array<
+				T & { config: Array<{ _id: string; value: any }> }
+			>
+			for (const document of documents) {
+				document.blueprintConfig = {}
+				for (const item of document.config) {
+					objectPathSet(document.blueprintConfig, item._id, item.value)
+				}
+				delete document.config
+				collection.update(document._id, document)
+			}
+		},
+	}
+}

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Parts } from '../../../lib/collections/Parts'
@@ -88,10 +87,10 @@ export function activateRundownPlaylist(
 			waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
 			rundown
 		)
+		const context = new RundownContext(rundown, cache, undefined)
+		context.wipeCache()
 		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, cache, undefined))).catch(
-				logger.error
-			)
+			Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
 		}
 	})
 }

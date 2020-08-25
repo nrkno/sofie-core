@@ -34,7 +34,7 @@ addMigrationSteps('0.1.0', [
 					sofieUrl: '',
 				},
 				mappings: {},
-				config: [],
+				blueprintConfig: {},
 				_rundownVersionHash: '',
 			})
 		},
