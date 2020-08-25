@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
-import { check as MeteorCheck, Match } from 'meteor/check'
 import * as _ from 'underscore'
 import {
 	TransformedCollection,
@@ -16,11 +15,27 @@ import { Settings } from './Settings'
 import * as objectPath from 'object-path'
 import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints-integration'
 import * as crypto from 'crypto'
+import { DeepReadonly } from 'utility-types'
 const cloneOrg = require('fast-clone')
 
-export function clone<T>(o: T): T {
+export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
 	// Use this instead of fast-clone directly, as this retains the type
 	return cloneOrg(o)
+}
+
+export function flatten<T>(vals: Array<T[] | undefined>): T[] {
+	return _.flatten(
+		vals.filter((v) => v !== undefined),
+		true
+	)
+}
+
+export function max<T>(vals: T[], iterator: _.ListIterator<T, any>): T | undefined {
+	if (vals.length <= 1) {
+		return vals[0]
+	} else {
+		return _.max(vals, iterator)
+	}
 }
 
 export function getHash(str: string): string {
@@ -47,10 +62,6 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 			else resolve(res)
 		})
 	})
-}
-export function check(value: any, pattern: Match.Pattern) {
-	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
-	MeteorCheck(value, pattern)
 }
 
 export type Time = number
@@ -495,86 +506,86 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 		raw.stats(cb)
 	}
 )
-export function fetchBefore<T>(
-	collection: TransformedCollection<T, any>,
-	selector: MongoQuery<T> = {},
-	rank: number = Number.POSITIVE_INFINITY
-): T {
-	return collection
-		.find(
-			_.extend(selector, {
-				_rank: { $lt: rank },
-			}),
-			{
-				sort: {
-					_rank: -1,
-					_id: -1,
-				},
-				limit: 1,
-			}
-		)
-		.fetch()[0]
-}
-export function fetchNext<T extends { _id: ProtectedString<any> }>(
-	values: Array<T>,
-	currentValue: T | undefined
-): T | undefined {
-	if (!currentValue) return values[0]
+// export function fetchBefore<T>(
+// 	collection: TransformedCollection<T, any>,
+// 	selector: MongoQuery<T> = {},
+// 	rank: number = Number.POSITIVE_INFINITY
+// ): T {
+// 	return collection
+// 		.find(
+// 			_.extend(selector, {
+// 				_rank: { $lt: rank },
+// 			}),
+// 			{
+// 				sort: {
+// 					_rank: -1,
+// 					_id: -1,
+// 				},
+// 				limit: 1,
+// 			}
+// 		)
+// 		.fetch()[0]
+// }
+// export function fetchNext<T extends { _id: ProtectedString<any> }>(
+// 	values: Array<T>,
+// 	currentValue: T | undefined
+// ): T | undefined {
+// 	if (!currentValue) return values[0]
 
-	let nextValue: T | undefined
-	let found: boolean = false
-	return _.find(values, (value) => {
-		if (found) {
-			nextValue = value
-			return true
-		}
+// 	let nextValue: T | undefined
+// 	let found: boolean = false
+// 	return _.find(values, (value) => {
+// 		if (found) {
+// 			nextValue = value
+// 			return true
+// 		}
 
-		if (currentValue._id) {
-			found = currentValue._id === value._id
-		} else {
-			found = currentValue === value
-		}
-		return false
-	})
-}
-/**
- * Returns a rank number, to be used to insert new objects in a ranked list
- * @param before	Object before, null/undefined if inserted first
- * @param after			Object after, null/undefined if inserted last
- * @param i				If inserting multiple objects, this is the number of this object
- * @param count			If inserting multiple objects, this is total count of objects
- */
-export function getRank<T extends { _rank: number }>(
-	before: T | null | undefined,
-	after: T | null | undefined,
-	i: number = 0,
-	count: number = 1
-): number {
-	let newRankMax
-	let newRankMin
+// 		if (currentValue._id) {
+// 			found = currentValue._id === value._id
+// 		} else {
+// 			found = currentValue === value
+// 		}
+// 		return false
+// 	})
+// }
+// /**
+//  * Returns a rank number, to be used to insert new objects in a ranked list
+//  * @param before	Object before, null/undefined if inserted first
+//  * @param after			Object after, null/undefined if inserted last
+//  * @param i				If inserting multiple objects, this is the number of this object
+//  * @param count			If inserting multiple objects, this is total count of objects
+//  */
+// export function getRank<T extends { _rank: number }>(
+// 	before: T | null | undefined,
+// 	after: T | null | undefined,
+// 	i: number = 0,
+// 	count: number = 1
+// ): number {
+// 	let newRankMax
+// 	let newRankMin
 
-	if (after) {
-		if (before) {
-			newRankMin = before._rank
-			newRankMax = after._rank
-		} else {
-			// First
-			newRankMin = after._rank - 1
-			newRankMax = after._rank
-		}
-	} else {
-		if (before) {
-			// Last
-			newRankMin = before._rank
-			newRankMax = before._rank + 1
-		} else {
-			// Empty list
-			newRankMin = 0
-			newRankMax = 1
-		}
-	}
-	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
-}
+// 	if (after) {
+// 		if (before) {
+// 			newRankMin = before._rank
+// 			newRankMax = after._rank
+// 		} else {
+// 			// First
+// 			newRankMin = after._rank - 1
+// 			newRankMax = after._rank
+// 		}
+// 	} else {
+// 		if (before) {
+// 			// Last
+// 			newRankMin = before._rank
+// 			newRankMax = before._rank + 1
+// 		} else {
+// 			// Empty list
+// 			newRankMin = 0
+// 			newRankMax = 1
+// 		}
+// 	}
+// 	return newRankMin + ((i + 1) / (count + 1)) * (newRankMax - newRankMin)
+// }
 export function normalizeArrayFunc<T>(array: Array<T>, getKey: (o: T) => string): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (let i = 0; i < array.length; i++) {
@@ -596,106 +607,6 @@ export function last<T>(values: T[]): T {
 	return _.last(values) as T
 }
 
-const rateLimitCache: { [name: string]: number } = {}
-export function rateLimit(name: string, f1: Function, f2: Function, t: number) {
-	// if time t has passed since last call, run f1(), otherwise run f2()
-	if (Math.random() < 0.05) Meteor.setTimeout(cleanUpRateLimit, 10000)
-
-	if (rateLimitCache[name] && Math.abs(Date.now() - rateLimitCache[name]) < t) {
-		if (f2) return f2()
-		return null
-	}
-
-	rateLimitCache[name] = Date.now()
-	if (f1) return f1()
-
-	return null
-}
-function cleanUpRateLimit() {
-	const now = Date.now()
-	const maxTime = 1000
-	for (const name in rateLimitCache) {
-		if (rateLimitCache[name] && Math.abs(now - rateLimitCache[name]) > maxTime) {
-			delete rateLimitCache[name]
-		}
-	}
-}
-
-const rateLimitAndDoItLaterCache: { [name: string]: number } = {}
-export function rateLimitAndDoItLater(name: string, f1: Function, limit: number) {
-	// if time *limit* has passed since last call, run f1(), otherwise run f1 later
-	if (Math.random() < 0.05) Meteor.setTimeout(cleanUprateLimitAndDoItLater, 10000)
-
-	const timeSinceLast = Date.now() - (rateLimitAndDoItLaterCache[name] || 0)
-
-	if (timeSinceLast > limit) {
-		// do it right away:
-		rateLimitAndDoItLaterCache[name] = Date.now()
-		f1()
-		return true
-	} else {
-		// do it later
-		rateLimitAndDoItLaterCache[name] += limit
-		Meteor.setTimeout(f1, Date.now() - rateLimitAndDoItLaterCache[name])
-
-		return false
-	}
-}
-function cleanUprateLimitAndDoItLater() {
-	const now = Date.now()
-	for (const name in rateLimitAndDoItLaterCache) {
-		if (rateLimitAndDoItLaterCache[name] && rateLimitAndDoItLaterCache[name] < now - 100) {
-			delete rateLimitAndDoItLaterCache[name]
-		}
-	}
-}
-
-const rateLimitIgnoreCache: { [name: string]: number } = {}
-export function rateLimitIgnore(name: string, f1: Function, limit: number) {
-	// if time *limit* has passed since function was last run, run it right away.
-	// Otherwise, set it to run in some time
-	// If the function is set to run in the future, additional calls will be ignored.
-
-	if (Math.random() < 0.05) Meteor.setTimeout(cleanUprateLimitIgnore, 10 * 1000)
-
-	const timeSinceLast = Date.now() - (rateLimitIgnoreCache[name] || 0)
-
-	if (timeSinceLast > limit) {
-		// do it right away:
-
-		rateLimitIgnoreCache[name] = Date.now()
-		f1()
-		return 1
-	} else {
-		// do it later:
-
-		const lastTime = rateLimitIgnoreCache[name]
-		const nextTime = lastTime + limit
-
-		// is there a timeout set?
-		if (!rateLimitIgnoreCache[name + '_timeout']) {
-			rateLimitIgnoreCache[name + '_timeout'] = Meteor.setTimeout(() => {
-				delete rateLimitIgnoreCache[name + '_timeout']
-
-				f1()
-
-				rateLimitIgnoreCache[name] = Date.now()
-			}, nextTime - Date.now() || 0)
-			return 0
-		} else {
-			// there is already a timeout on it's way, ignore this call then.
-			return -1
-		}
-	}
-}
-function cleanUprateLimitIgnore() {
-	const now = Date.now()
-	for (const name in rateLimitIgnoreCache) {
-		if (rateLimitIgnoreCache[name] && rateLimitIgnoreCache[name] < now - 100) {
-			delete rateLimitIgnoreCache[name]
-		}
-	}
-}
 const cacheResultCache: {
 	[name: string]: {
 		ttl: number
@@ -705,7 +616,7 @@ const cacheResultCache: {
 /** Cache the result of function for a limited time */
 export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000) {
 	if (Math.random() < 0.01) {
-		Meteor.setTimeout(cleanCacheResult, 10000)
+		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
 	const cache = cacheResultCache[name]
 	if (!cache || cache.ttl < Date.now()) {
@@ -719,9 +630,12 @@ export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1
 		return cache.value
 	}
 }
-function cleanCacheResult() {
+export function clearCacheResult(name: string) {
+	delete cacheResultCache[name]
+}
+function cleanOldCacheResult() {
 	_.each(cacheResultCache, (cache, name) => {
-		if (cache.ttl < Date.now()) delete cacheResultCache[name]
+		if (cache.ttl < Date.now()) clearCacheResult(name)
 	})
 }
 
@@ -838,7 +752,7 @@ export function asyncCollectionInsertIgnore<
 }
 export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpdateOptions
 ): Promise<number> {
@@ -852,7 +766,7 @@ export function asyncCollectionUpdate<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>,
+	selector: MongoQuery<DBInterface> | DBInterface['_id'],
 	modifier: MongoModifier<DBInterface>,
 	options?: UpsertOptions
 ): Promise<{ numberAffected: number; insertedId: string }> {
@@ -871,7 +785,7 @@ export function asyncCollectionUpsert<DocClass extends DBInterface, DBInterface 
 
 export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface extends { _id: ProtectedString<any> }>(
 	collection: TransformedCollection<DocClass, DBInterface>,
-	selector: MongoQuery<DBInterface> | ProtectedString<any>
+	selector: MongoQuery<DBInterface> | DBInterface['_id']
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
 		collection.remove(selector, (err: any) => {
@@ -880,6 +794,7 @@ export function asyncCollectionRemove<DocClass extends DBInterface, DBInterface 
 		})
 	})
 }
+
 /**
  * Supresses the "UnhandledPromiseRejectionWarning" warning
  * ref: https://stackoverflow.com/questions/40920179/should-i-refrain-from-handling-promise-rejection-asynchronously
@@ -1434,4 +1349,13 @@ export function isPromise<T extends any>(val: any): val is Promise<T> {
 
 export function assertNever(_never: never): void {
 	// Do nothing. This is a type guard
+}
+
+export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
+	if (a === b) return true
+	if (a.size !== b.size) return false
+	for (let val of a.values()) {
+		if (!b.has(val)) return false
+	}
+	return true
 }

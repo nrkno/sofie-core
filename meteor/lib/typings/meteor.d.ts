@@ -2,6 +2,12 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { Omit, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { Collection as RawCollection } from 'mongodb'
+
+// This is a copy of the type used in the Users collection,
+// to avoid nasty dependencies
+/** A string, identifying a User */
+export type UserId = ProtectedString<'UserId'>
 
 declare module 'meteor/tracker' {
 	namespace Tracker {
@@ -80,16 +86,16 @@ export type FieldNames<DBInterface> = (keyof DBInterface)[]
 
 export interface TransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
 	allow(options: {
-		insert?: (userId: string, doc: DBInterface) => boolean
-		update?: (userId: string, doc: DBInterface, fieldNames: FieldNames<DBInterface>, modifier: any) => boolean
-		remove?: (userId: string, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (userId: UserId, doc: DBInterface, fieldNames: FieldNames<DBInterface>, modifier: any) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
 	deny(options: {
-		insert?: (userId: string, doc: DBInterface) => boolean
-		update?: (userId: string, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
-		remove?: (userId: string, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (userId: UserId, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
@@ -102,7 +108,7 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 		options?: Omit<FindOptions<DBInterface>, 'limit'>
 	): Class | undefined
 	insert(doc: DBInterface, callback?: Function): DBInterface['_id']
-	rawCollection(): any
+	rawCollection(): RawCollection<DBInterface>
 	rawDatabase(): any
 	remove(selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], callback?: Function): number
 	update(

@@ -43,6 +43,7 @@ addMigrationSteps('0.19.0', [
 				ShowStyleBases.insert({
 					_id: id,
 					name: showstyle.name || 'Default showstyle',
+					organizationId: null,
 					blueprintId: protectString(''),
 					// @ts-ignore
 					outputLayers: studio.outputLayers,
@@ -76,6 +77,7 @@ addMigrationSteps('0.19.0', [
 				ShowStyleBases.insert({
 					_id: protectString('show0'),
 					name: 'Default showstyle',
+					organizationId: null,
 					blueprintId: protectString(''),
 					outputLayers: [],
 					sourceLayers: [],
@@ -96,9 +98,8 @@ addMigrationSteps('0.19.0', [
 	ensureCollectionProperty('ShowStyleBases', {}, 'outputLayers', []),
 	ensureCollectionProperty('ShowStyleBases', {}, 'sourceLayers', []),
 	ensureCollectionProperty('ShowStyleBases', {}, 'config', []),
-	ensureCollectionProperty('ShowStyleBases', {}, 'runtimeArguments', []),
 	{
-		id: 'Move rundownArguments from Studio into ShowStyleBase',
+		id: 'Remove runtimeArguments from Studio',
 		canBeRunAutomatically: true,
 		validate: () => {
 			const studio = Studios.find().fetch()
@@ -111,49 +112,14 @@ addMigrationSteps('0.19.0', [
 			return result
 		},
 		migrate: () => {
-			const studio = Studios.find().fetch()
-			let result: string | undefined = undefined
-			studio.forEach((siItem) => {
-				if ((siItem as any).runtimeArguments) {
-					if ((siItem as any).runtimeArguments.length > 0) {
-						const showStyles = ShowStyleBases.find({ _id: { $in: siItem.supportedShowStyleBase } }).fetch()
-						showStyles.forEach((ssb) => {
-							ssb.runtimeArguments = ssb.runtimeArguments || [] // HAHA: typeScript fails on this, thinking its a function call without the semicolon
-							;(siItem as any).runtimeArguments.forEach((item) => {
-								// const bItem: IBlueprintRuntimeArgumentsItem = item
-								const exisitng = ssb.runtimeArguments.find((ssbItem) => {
-									return (
-										ssbItem.hotkeys === item.hotkeys &&
-										ssbItem.label === item.label &&
-										ssbItem.property === item.property &&
-										ssbItem.value === item.value
-									)
-								})
-								if (!exisitng) {
-									ssb.runtimeArguments.push(item)
-								}
-							})
-
-							ShowStyleBases.update(ssb._id, {
-								$set: {
-									runtimeArguments: ssb.runtimeArguments,
-								},
-							})
-						})
-					}
-
-					// No result set means no errors and the runtimeArguments can be removed from studio
-
-					if (!result) {
-						Studios.update(siItem._id, {
-							$unset: {
-								runtimeArguments: 1,
-							},
-						})
-					}
+			Studios.update(
+				{},
+				{
+					$unset: {
+						runtimeArguments: 1,
+					},
 				}
-			})
-			return result
+			)
 		},
 	},
 	ensureCollectionProperty('ShowStyleVariants', {}, 'config', []),

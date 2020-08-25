@@ -17,7 +17,7 @@ addMigrationSteps('1.11.0', [
 			if (core) {
 				for (let [key, message] of Object.entries(core.serviceMessages)) {
 					if (typeof message.timestamp === 'string') {
-						return true
+						return `Message "${message.message}" has string timestamp.`
 					}
 				}
 				return false
@@ -26,15 +26,16 @@ addMigrationSteps('1.11.0', [
 		},
 		migrate: () => {
 			const core = CoreSystem.findOne()
+			const updateObj = {}
 			if (core) {
 				for (let [key, message] of Object.entries(core.serviceMessages)) {
 					if (typeof message.timestamp !== 'number') {
-						core.serviceMessages[key] = {
-							...message,
-							timestamp: new Date(message.timestamp).getTime(),
-						}
+						updateObj[`serviceMessages.${key}.timestamp`] = new Date(message.timestamp).getTime()
 					}
 				}
+				CoreSystem.update(core._id, {
+					$set: updateObj,
+				})
 			}
 		},
 	},

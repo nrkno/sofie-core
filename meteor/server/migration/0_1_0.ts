@@ -27,6 +27,7 @@ addMigrationSteps('0.1.0', [
 			Studios.insert({
 				_id: protectString('studio0'),
 				name: 'Default studio',
+				organizationId: null,
 				supportedShowStyleBase: [],
 				settings: {
 					mediaPreviewsUrl: '',

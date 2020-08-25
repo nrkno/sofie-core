@@ -47,6 +47,7 @@ import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
+import { Settings } from '../../../lib/Settings'
 
 interface IStudioDevicesProps {
 	studio: Studio

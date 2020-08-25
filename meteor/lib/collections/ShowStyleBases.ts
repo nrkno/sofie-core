@@ -7,10 +7,10 @@ import {
 	IBlueprintShowStyleBase,
 	IOutputLayer,
 	ISourceLayer,
-	IBlueprintRuntimeArgumentsItem,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
+import { OrganizationId } from './Organization'
 
 export interface HotkeyDefinition {
 	_id: string
@@ -24,10 +24,10 @@ export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintSho
 	name: string
 	/** Id of the blueprint used by this show-style */
 	blueprintId: BlueprintId
+	/** If set, the Organization that owns this ShowStyleBase */
+	organizationId: OrganizationId | null
 
 	hotkeyLegend?: Array<HotkeyDefinition>
-
-	runtimeArguments?: Array<IBlueprintRuntimeArgumentsItem>
 
 	_rundownVersionHash: string
 }
@@ -35,18 +35,18 @@ export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintSho
 export class ShowStyleBase implements DBShowStyleBase {
 	public _id: ShowStyleBaseId
 	public name: string
+	public organizationId: OrganizationId | null
 	public blueprintId: BlueprintId
 	public outputLayers: Array<IOutputLayer>
 	public sourceLayers: Array<ISourceLayer>
 	public blueprintConfig: IBlueprintConfig
 	public hotkeyLegend?: Array<HotkeyDefinition>
-	public runtimeArguments: Array<IBlueprintRuntimeArgumentsItem>
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleBase) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 }
 
@@ -57,9 +57,9 @@ registerCollection('ShowStyleBases', ShowStyleBases)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		// ShowStyleBases._ensureIndex({
-		// 	_id: 1,
-		// })
+		ShowStyleBases._ensureIndex({
+			organizationId: 1,
+		})
 
 		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfig', 'blueprintId'])
 	}

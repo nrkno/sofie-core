@@ -8,12 +8,16 @@ import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDe
 import { createMongoCollection } from './lib'
 import { DeviceConfigManifest } from '../api/deviceConfig'
 import { StudioId } from './Studios'
+import { OrganizationId } from './Organization'
 
 /** A string, identifying a PeripheralDevice */
 export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
 
 export interface PeripheralDevice {
 	_id: PeripheralDeviceId
+
+	/** If set, this device is owned by that organization */
+	organizationId: OrganizationId | null
 
 	name: string
 
@@ -66,7 +70,14 @@ registerCollection('PeripheralDevices', PeripheralDevices)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		PeripheralDevices._ensureIndex({
+			organizationId: 1,
 			studioId: 1,
+		})
+		PeripheralDevices._ensureIndex({
+			studioId: 1,
+		})
+		PeripheralDevices._ensureIndex({
+			token: 1,
 		})
 	}
 })

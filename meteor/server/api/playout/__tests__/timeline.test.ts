@@ -6,6 +6,7 @@ import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	setupMockPeripheralDevice,
 } from '../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
@@ -15,16 +16,38 @@ import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { protectString, waitForPromise } from '../../../../lib/lib'
+import { MethodContext } from '../../../../lib/api/methods'
 import {
 	initCacheForNoRundownPlaylist,
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromStudio,
 } from '../../../DatabaseCaches'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+
+const DEFAULT_CONTEXT: MethodContext = {
+	userId: null,
+	isSimulation: false,
+	connection: {
+		id: 'mockConnectionId',
+		close: () => {},
+		onClose: () => {},
+		clientAddress: '127.0.0.1',
+		httpHeaders: {},
+	},
+	setUserId: () => {},
+	unblock: () => {},
+}
 
 describe('Timeline', () => {
 	let env: DefaultEnvironment
 	beforeEach(() => {
 		env = setupDefaultStudioEnvironment()
+		const device = setupMockPeripheralDevice(
+			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			env.studio
+		)
 	})
 	testInFiber('non-existing studio', () => {
 		expect(() => {
@@ -56,7 +79,7 @@ describe('Timeline', () => {
 
 		{
 			// Prepare and activate in rehersal:
-			ServerPlayoutAPI.activateRundownPlaylist(playlistId0, false)
+			ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlistId0, false)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeFalsy()
 			expect(nextPartInstance).toBeTruthy()
@@ -71,7 +94,7 @@ describe('Timeline', () => {
 
 		{
 			// Take the first Part:
-			ServerPlayoutAPI.takeNextPart(playlistId0)
+			ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlistId0)
 			const { currentPartInstance, nextPartInstance } = getPlaylist0().getSelectedPartInstances()
 			expect(currentPartInstance).toBeTruthy()
 			expect(nextPartInstance).toBeTruthy()
@@ -100,7 +123,7 @@ describe('Timeline', () => {
 
 		{
 			// Deactivate rundown:
-			ServerPlayoutAPI.deactivateRundownPlaylist(playlistId0)
+			ServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, playlistId0)
 			expect(getPlaylist0()).toMatchObject({
 				active: false,
 				currentPartInstanceId: null,

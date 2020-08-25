@@ -7,7 +7,6 @@ import {
 	unprotectObject,
 	protectString,
 	unprotectString,
-	check,
 	objectPathGet,
 	objectPathSet,
 } from '../../../lib/lib'
@@ -23,11 +22,16 @@ import {
 	ISourceLayer,
 	ShowStyleVariantPart,
 	IBlueprintShowStyleVariant,
-	IBlueprintRuntimeArgumentsItem,
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 
-import { ShowStyleVariants, ShowStyleVariantId, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import {
+	ShowStyleVariants,
+	ShowStyleVariant,
+	ShowStyleVariantId,
+	DBShowStyleVariant,
+} from '../../../lib/collections/ShowStyleVariants'
+import { check } from '../../../lib/check'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PlayoutDeviceSettings } from '../../../lib/collections/PeripheralDeviceSettings/playoutDevice'
@@ -307,19 +311,18 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 			})
 		)
 	}
-	updateVariant(variantId: string, variant: Partial<ShowStyleVariantPart>): void {
+	updateVariant(variantId: string, newVariant: Partial<ShowStyleVariantPart>): void {
 		check(variantId, String)
 		if (!variantId) {
 			throw new Meteor.Error(500, `Variant id "${variantId}" is invalid`)
 		}
+		const variant = ShowStyleVariants.findOne({
+			_id: this.getProtectedVariantId(variantId),
+			showStyleBaseId: this.showStyleBase._id,
+		})
+		if (!variant) throw new Meteor.Error(404, `Variant "${variantId}" not found`)
 
-		ShowStyleVariants.update(
-			{
-				_id: this.getProtectedVariantId(variantId),
-				showStyleBaseId: this.showStyleBase._id,
-			},
-			{ $set: variant }
-		)
+		ShowStyleVariants.update(variant._id, { $set: newVariant })
 	}
 	removeVariant(variantId: string): void {
 		check(variantId, String)
@@ -621,91 +624,5 @@ export class MigrationContextShowStyle implements IMigrationContextShowStyle {
 			// Update local:
 			objectPath.del(variant.blueprintConfig, configId)
 		}
-	}
-
-	getRuntimeArgument(argumentId: string): IBlueprintRuntimeArgumentsItem | undefined {
-		check(argumentId, String)
-		if (!argumentId) {
-			throw new Meteor.Error(500, `RuntimeArgument id "${argumentId}" is invalid`)
-		}
-
-		return _.find(this.showStyleBase.runtimeArguments || [], (ra) => ra._id === argumentId)
-	}
-	insertRuntimeArgument(argumentId: string, argument: OmitId<IBlueprintRuntimeArgumentsItem>) {
-		check(argumentId, String)
-		if (!argumentId) {
-			throw new Meteor.Error(500, `RuntimeArgument id "${argumentId}" is invalid`)
-		}
-
-		const oldRa = _.find(this.showStyleBase.runtimeArguments || [], (ra) => ra._id === argumentId)
-		if (oldRa) {
-			throw new Meteor.Error(500, `RuntimeArgument "${argumentId}" already exists`)
-		}
-
-		const fullRa: IBlueprintRuntimeArgumentsItem = {
-			...argument,
-			_id: argumentId,
-		}
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			{
-				$push: {
-					runtimeArguments: fullRa,
-				},
-			}
-		)
-		if (!this.showStyleBase.runtimeArguments) this.showStyleBase.runtimeArguments = []
-		this.showStyleBase.runtimeArguments.push(fullRa) // Update local
-	}
-	updateRuntimeArgument(argumentId: string, argument: Partial<OmitId<IBlueprintRuntimeArgumentsItem>>) {
-		check(argumentId, String)
-		if (!argumentId) {
-			throw new Meteor.Error(500, `RuntimeArgument id "${argumentId}" is invalid`)
-		}
-
-		const localRaIndex = _.findIndex(this.showStyleBase.runtimeArguments || [], (ra) => ra._id === argumentId)
-		if (localRaIndex === -1) {
-			throw new Meteor.Error(404, `RuntimeArgument "${argumentId}" cannot be updated as it does not exist`)
-		}
-
-		const fullRa = {
-			...this.showStyleBase.runtimeArguments[localRaIndex],
-			...argument,
-		}
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-				'runtimeArguments._id': argumentId,
-			},
-			{
-				$set: {
-					'runtimeArguments.$': fullRa,
-				},
-			}
-		)
-		this.showStyleBase.runtimeArguments[localRaIndex] = fullRa // Update local
-	}
-	removeRuntimeArgument(argumentId: string) {
-		check(argumentId, String)
-		if (!argumentId) {
-			throw new Meteor.Error(500, `RuntimeArgument id "${argumentId}" is invalid`)
-		}
-
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			{
-				$pull: {
-					runtimeArguments: {
-						_id: argumentId,
-					},
-				},
-			}
-		)
-		// Update local:
-		this.showStyleBase.runtimeArguments = _.reject(this.showStyleBase.runtimeArguments, (c) => c._id === argumentId)
 	}
 }

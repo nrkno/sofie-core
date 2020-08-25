@@ -1,13 +1,13 @@
 {
   "name": "automation-core",
-  "version": "1.11.0-in-development.0",
+  "version": "1.12.0-in-development",
   "private": true,
   "engines": {
     "node": "12.16"
   },
   "scripts": {
     "start": "meteor run",
-    "dev": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run start --\" \"npm run watch-types -- --preserveWatchOutput\"",
+    "dev": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
     "debug": "meteor run --inspect",
     "postinstall": "meteor npm run prepareForTest",
     "prepareForTest": "node ../scripts/fixTestFibers.js",
@@ -95,8 +95,9 @@
     "soap": "^0.31.0",
     "superfly-timeline": "^7.3.1",
     "timecode": "0.0.4",
-    "tv-automation-sofie-blueprints-integration": "2.1.0-nightly-20200813-114228-0e4f14d0.0",
+    "tv-automation-sofie-blueprints-integration": "2.2.0-nightly-release24-20200818-141230-d49f7dd9.0",
     "underscore": "^1.10.2",
+    "utility-types": "^3.10.0",
     "velocity-animate": "^1.5.2",
     "velocity-react": "^1.4.3",
     "vm2": "^3.9.2",
@@ -111,6 +112,7 @@
     "@types/fibers": "3.1.0",
     "@types/jest": "^26.0.0",
     "@types/meteor": "1.4.47",
+    "@types/mongodb": "^3.5.26",
     "@types/mousetrap": "^1.6.3",
     "@types/node": "^12.12.47",
     "@types/prop-types": "^15.7.3",
@@ -127,8 +129,8 @@
     "@types/xml2json": "^0.11.0",
     "@types/xmldom": "^0.1.29",
     "@welldone-software/why-did-you-render": "^4.2.5",
-    "conventional-changelog-conventionalcommits": "4.4.0",
     "codecov": "^3.7.0",
+    "conventional-changelog-conventionalcommits": "4.4.0",
     "ejson": "^2.2.0",
     "fibers-npm": "npm:fibers@4.0.3",
     "glob": "^7.1.6",
@@ -152,6 +154,7 @@
     "tslint-plugin-prettier": "^2.1.0",
     "typedoc": "^0.17.7",
     "typescript": "~3.8.3",
+    "typescript-tslint-plugin": "^0.5.5",
     "xmldom": "^0.3.0",
     "yargs": "^15.4.1"
   },
