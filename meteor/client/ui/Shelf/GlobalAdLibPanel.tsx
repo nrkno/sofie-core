@@ -325,6 +325,8 @@ interface ITrackedProps {
 	currentRundown: Rundown | undefined
 }
 
+export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
+
 export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps, state: IState) => {
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
 

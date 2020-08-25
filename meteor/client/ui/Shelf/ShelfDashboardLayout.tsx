@@ -80,6 +80,7 @@ export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
 							showStyleBase={props.showStyleBase}
 							studioMode={props.studioMode}
 							selectedPiece={undefined}
+							hotkeyGroup={panel.name.replace(/\W/, '_')}
 						/>
 					) : (
 						undefined

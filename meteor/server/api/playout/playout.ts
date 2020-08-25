@@ -75,7 +75,7 @@ import {
 	initCacheForNoRundownPlaylist,
 	CacheForStudio,
 } from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake } from './take'
+import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
@@ -1031,12 +1031,17 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(playlist, sourceLayerId)
 	}
-	export function executeAction(rundownPlaylistId: RundownPlaylistId, actionId: string, userData: any) {
+	export function executeAction(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		actionId: string,
+		userData: any
+	) {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
 
-		return executeActionInner(rundownPlaylistId, (context, cache, rundown) => {
+		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
 			const blueprint = getBlueprintOfRundown(undefined, rundown) // todo: database again
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
@@ -1044,11 +1049,12 @@ export namespace ServerPlayoutAPI {
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-			blueprint.blueprint.executeAction(context, actionId, userData)
+			blueprint.blueprint.executeAction(actionContext, actionId, userData)
 		})
 	}
 
 	export function executeActionInner(
+		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		func: (
 			context: ActionExecutionContext,
@@ -1057,6 +1063,8 @@ export namespace ServerPlayoutAPI {
 			currentPartInstance: PartInstance
 		) => void
 	) {
+		const now = getCurrentTime()
+
 		rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
@@ -1091,21 +1099,24 @@ export namespace ServerPlayoutAPI {
 				},execution=${getRandomId()}`,
 				false
 			)
-			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+			const actionContext = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 
 			// If any action cannot be done due to timings, that needs to be rejected by the context
-			func(context, cache, rundown, currentPartInstance)
+			func(actionContext, cache, rundown, currentPartInstance)
 
-			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
+			if (
+				actionContext.currentPartState !== ActionPartChange.NONE ||
+				actionContext.nextPartState !== ActionPartChange.NONE
+			) {
 				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
-            }
+			}
 
-			if (context.takeAfterExecute) {
-				return ServerPlayoutAPI.takeNextpartInner(rundownPlaylistId, cache)
+			if (actionContext.takeAfterExecute) {
+				return ServerPlayoutAPI.callTakeWithCache(context, rundownPlaylistId, now, cache)
 			} else {
 				if (
-					context.currentPartState !== ActionPartChange.NONE ||
-					context.nextPartState !== ActionPartChange.NONE
+					actionContext.currentPartState !== ActionPartChange.NONE ||
+					actionContext.nextPartState !== ActionPartChange.NONE
 				) {
 					updateTimeline(cache, playlist.studioId)
 				}
@@ -1113,6 +1124,17 @@ export namespace ServerPlayoutAPI {
 				waitForPromise(cache.saveAllToDatabase())
 			}
 		})
+	}
+	/**
+	 * This exists for the purpose of mocking this call for testing.
+	 */
+	export function callTakeWithCache(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		now: number,
+		cache: CacheForRundownPlaylist
+	) {
+		return takeNextPartInnerSync(context, rundownPlaylistId, now, cache)
 	}
 	export function sourceLayerOnPartStop(
 		context: MethodContext,
