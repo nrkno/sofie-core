@@ -20,6 +20,7 @@ import { touchRundownPlaylistsInCache } from '../playout/lib'
 import { Credentials } from '../../security/lib/credentials'
 import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -27,9 +28,20 @@ export function checkAccessAndGetPeripheralDevice(
 	token: string | undefined,
 	context: Credentials | MethodContext
 ): PeripheralDevice {
+	const span = Agent.startSpan('lib.checkAccessAndGetPeripheralDevice')
 	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 	const peripheralDevice = access.device
-	if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+	if (!peripheralDevice) {
+		if (span) {
+			span.setLabel('exception', `PeripheralDevice "${deviceId}" not found`)
+			span.end()
+		}
+		throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+	}
+
+	if (span) {
+		span.end()
+	}
 
 	return peripheralDevice
 }

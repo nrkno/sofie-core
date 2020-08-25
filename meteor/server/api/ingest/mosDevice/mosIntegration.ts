@@ -21,9 +21,17 @@ import {
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../../lib/api/methods'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
-export namespace MosIntegration {
-	export function mosRoCreate(
+function traceFunction(description: string, fn: (...args: any[]) => void, ...args: any[]) {
+	const transaction = Agent.startTransaction(description, 'mosIntegration')
+	const res = fn(...args)
+	if (transaction) transaction.end()
+	return res
+}
+
+const fns: { [key: string]: (...args: any[]) => void } = {
+	mosRoCreate: function mosRoCreate(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -35,8 +43,8 @@ export namespace MosIntegration {
 		logger.debug(rundown)
 
 		handleMosRundownData(peripheralDevice, rundown, true)
-	}
-	export function mosRoReplace(
+	},
+	mosRoReplace: function mosRoReplace(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -48,8 +56,8 @@ export namespace MosIntegration {
 		// @ts-ignore
 		logger.debug(rundown)
 		handleMosRundownData(peripheralDevice, rundown, true)
-	}
-	export function mosRoDelete(
+	},
+	mosRoDelete: function mosRoDelete(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -60,8 +68,8 @@ export namespace MosIntegration {
 
 		logger.info(`mosRoDelete "${rundownId}"`)
 		handleRemovedRundown(peripheralDevice, parseMosString(rundownId))
-	}
-	export function mosRoMetadata(
+	},
+	mosRoMetadata: function mosRoMetadata(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -73,8 +81,8 @@ export namespace MosIntegration {
 		logger.debug(rundownData)
 
 		handleMosRundownMetadata(peripheralDevice, rundownData)
-	}
-	export function mosRoStatus(
+	},
+	mosRoStatus: function mosRoStatus(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -94,8 +102,8 @@ export namespace MosIntegration {
 				status: status.Status,
 			},
 		})
-	}
-	export function mosRoStoryStatus(
+	},
+	mosRoStoryStatus: function mosRoStoryStatus(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -135,8 +143,8 @@ export namespace MosIntegration {
 				{ multi: true }
 			)
 		} else throw new Meteor.Error(404, `Part ${status.ID} in rundown ${status.RunningOrderId} not found`)
-	}
-	export function mosRoStoryInsert(
+	},
+	mosRoStoryInsert: function mosRoStoryInsert(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -150,8 +158,8 @@ export namespace MosIntegration {
 		logger.debug(Action, Stories)
 
 		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, false, Stories)
-	}
-	export function mosRoStoryReplace(
+	},
+	mosRoStoryReplace: function mosRoStoryReplace(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -165,8 +173,8 @@ export namespace MosIntegration {
 		logger.debug(Action, Stories)
 
 		handleInsertParts(peripheralDevice, Action.RunningOrderID, Action.StoryID, true, Stories)
-	}
-	export function mosRoStoryMove(
+	},
+	mosRoStoryMove: function mosRoStoryMove(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -178,8 +186,8 @@ export namespace MosIntegration {
 		logger.info(`mosRoStoryMove "${Action.StoryID}" Stories: ${Stories}`)
 
 		handleMoveStories(peripheralDevice, Action.RunningOrderID, Action.StoryID, Stories)
-	}
-	export function mosRoStoryDelete(
+	},
+	mosRoStoryDelete: function mosRoStoryDelete(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -191,8 +199,8 @@ export namespace MosIntegration {
 		logger.info(`mosRoStoryDelete "${Action.RunningOrderID}" Stories: ${Stories}`)
 
 		handleMosDeleteStory(peripheralDevice, Action.RunningOrderID, Stories)
-	}
-	export function mosRoStorySwap(
+	},
+	mosRoStorySwap: function mosRoStorySwap(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -205,8 +213,8 @@ export namespace MosIntegration {
 		logger.info(`mosRoStorySwap "${StoryID0}", "${StoryID1}"`)
 
 		handleSwapStories(peripheralDevice, Action.RunningOrderID, StoryID0, StoryID1)
-	}
-	export function mosRoReadyToAir(
+	},
+	mosRoReadyToAir: function mosRoReadyToAir(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -230,8 +238,8 @@ export namespace MosIntegration {
 			})
 			regenerateRundown(rundown._id)
 		}
-	}
-	export function mosRoFullStory(
+	},
+	mosRoFullStory: function mosRoFullStory(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
@@ -242,6 +250,210 @@ export namespace MosIntegration {
 		logger.info(`mosRoFullStory "${story.ID}"`)
 
 		handleMosFullStory(peripheralDevice, story)
+	},
+	mosRoItemDelete: function mosRoItemDelete(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSStoryAction,
+		Items: Array<MOS.MosString128>
+	) {
+		checkAccessAndGetPeripheralDevice(id, token, context)
+
+		logger.warn(`mosRoItemDelete NOT SUPPORTED "${Action.StoryID}"`)
+		// @ts-ignore
+		logger.debug(Action, Items)
+	},
+	mosRoItemStatus: function mosRoItemStatus(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		status: MOS.IMOSItemStatus
+	) {
+		checkAccessAndGetPeripheralDevice(id, token, context)
+
+		logger.warn(`mosRoItemStatus NOT SUPPORTED "${status.ID}"`)
+		// @ts-ignore
+		logger.debug(status)
+	},
+	mosRoItemInsert: function mosRoItemInsert(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSItemAction,
+		Items: Array<MOS.IMOSItem>
+	) {
+		checkAccessAndGetPeripheralDevice(id, token, context)
+
+		logger.warn(`mosRoItemInsert NOT SUPPORTED "${Action.ItemID}"`)
+		// @ts-ignore
+		logger.debug(Action, Items)
+	},
+	mosRoItemReplace: function mosRoItemReplace(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSItemAction,
+		Items: Array<MOS.IMOSItem>
+	) {
+		checkAccessAndGetPeripheralDevice(id, token, context)
+
+		logger.warn(`mosRoItemReplace NOT SUPPORTED "${Action.ItemID}"`)
+		// @ts-ignore
+		logger.debug(Action, Items)
+	},
+	mosRoItemMove: function mosRoItemMove(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSItemAction,
+		Items: Array<MOS.MosString128>
+	) {
+		checkAccessAndGetPeripheralDevice(id, token, context)
+
+		logger.warn(`mosRoItemMove NOT SUPPORTED "${Action.ItemID}"`)
+		// @ts-ignore
+		logger.debug(Action, Items)
+	},
+	mosRoItemSwap: function mosRoItemSwap(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSStoryAction,
+		ItemID0: MOS.MosString128,
+		ItemID1: MOS.MosString128
+	) {
+		checkAccessAndGetPeripheralDevice(id, token, context)
+
+		logger.warn(`mosRoItemSwap NOT SUPPORTED "${ItemID0}", "${ItemID1}"`)
+		// @ts-ignore
+		logger.debug(Action, ItemID0, ItemID1)
+	},
+}
+
+export namespace MosIntegration {
+	export function mosRoCreate(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		rundown: MOS.IMOSRunningOrder
+	) {
+		return traceFunction('mosRoCreate', fns.mosRoCreate, context, id, token, rundown)
+	}
+
+	export function mosRoReplace(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		rundown: MOS.IMOSRunningOrder
+	) {
+		return traceFunction('mosRoReplace', fns.mosRoReplace, context, id, token, rundown)
+	}
+
+	export function mosRoDelete(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		rundownId: MOS.MosString128,
+		force?: boolean
+	) {
+		return traceFunction('mosRoDelete', fns.mosRoDelete, context, id, token, rundownId, force)
+	}
+
+	export function mosRoMetadata(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		rundownData: MOS.IMOSRunningOrderBase
+	) {
+		traceFunction('mosRoMetadata', fns.mosRoMetadata, context, id, token, rundownData)
+	}
+
+	export function mosRoStatus(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		status: MOS.IMOSRunningOrderStatus
+	) {
+		traceFunction('mosRoStatus', fns.mosRoStatus, context, id, token, status)
+	}
+
+	export function mosRoStoryStatus(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		status: MOS.IMOSStoryStatus
+	) {
+		traceFunction('mosRoStoryStatus', fns.mosRoStoryStatus, context, id, token, status)
+	}
+
+	export function mosRoStoryInsert(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSStoryAction,
+		Stories: Array<MOS.IMOSROStory>
+	) {
+		traceFunction('mosRoStoryInsert', fns.mosRoStoryInsert, context, id, token, Action, Stories)
+	}
+
+	export function mosRoStoryReplace(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSStoryAction,
+		Stories: Array<MOS.IMOSROStory>
+	) {
+		traceFunction('mosRoStoryReplace', fns.mosRoStoryReplace, context, id, token, Action, Stories)
+	}
+
+	export function mosRoStoryMove(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSStoryAction,
+		Stories: Array<MOS.MosString128>
+	) {
+		traceFunction('mosRoStoryMove', fns.mosRoStoryMove, context, id, token, Action, Stories)
+	}
+
+	export function mosRoStoryDelete(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSROAction,
+		Stories: Array<MOS.MosString128>
+	) {
+		traceFunction('mosRoStoryDelete', fns.mosRoStoryDelete, context, id, token, Action, Stories)
+	}
+
+	export function mosRoStorySwap(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSROAction,
+		StoryID0: MOS.MosString128,
+		StoryID1: MOS.MosString128
+	) {
+		traceFunction('mosRoStorySwap', fns.mosRoStorySwap, context, id, token, Action, StoryID0, StoryID1)
+	}
+
+	export function mosRoReadyToAir(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		Action: MOS.IMOSROReadyToAir
+	) {
+		traceFunction('mosRoReadyToAir', fns.mosRoReadyToAir, context, id, token, Action)
+	}
+
+	export function mosRoFullStory(
+		context: MethodContext,
+		id: PeripheralDeviceId,
+		token: string,
+		story: MOS.IMOSROFullStory
+	) {
+		traceFunction('mosRoFullStory', fns.mosRoFullStory, context, id, token, story)
 	}
 
 	/**
@@ -255,24 +467,18 @@ export namespace MosIntegration {
 		Action: MOS.IMOSStoryAction,
 		Items: Array<MOS.MosString128>
 	) {
-		checkAccessAndGetPeripheralDevice(id, token, context)
-
-		logger.warn(`mosRoItemDelete NOT SUPPORTED "${Action.StoryID}"`)
-		// @ts-ignore
-		logger.debug(Action, Items)
+		traceFunction('mosRoItemDelete', fns.mosRoItemDelete, context, id, token, Action, Items)
 	}
+
 	export function mosRoItemStatus(
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
 		status: MOS.IMOSItemStatus
 	) {
-		checkAccessAndGetPeripheralDevice(id, token, context)
-
-		logger.warn(`mosRoItemStatus NOT SUPPORTED "${status.ID}"`)
-		// @ts-ignore
-		logger.debug(status)
+		traceFunction('mosRoItemStatus', fns.mosRoItemStatus, context, id, token, status)
 	}
+
 	export function mosRoItemInsert(
 		context: MethodContext,
 		id: PeripheralDeviceId,
@@ -280,12 +486,9 @@ export namespace MosIntegration {
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
 	) {
-		checkAccessAndGetPeripheralDevice(id, token, context)
-
-		logger.warn(`mosRoItemInsert NOT SUPPORTED "${Action.ItemID}"`)
-		// @ts-ignore
-		logger.debug(Action, Items)
+		traceFunction('mosRoItemInsert', fns.mosRoItemInsert, context, id, token, Action, Items)
 	}
+
 	export function mosRoItemReplace(
 		context: MethodContext,
 		id: PeripheralDeviceId,
@@ -293,12 +496,9 @@ export namespace MosIntegration {
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
 	) {
-		checkAccessAndGetPeripheralDevice(id, token, context)
-
-		logger.warn(`mosRoItemReplace NOT SUPPORTED "${Action.ItemID}"`)
-		// @ts-ignore
-		logger.debug(Action, Items)
+		traceFunction('mosRoItemReplace', fns.mosRoItemReplace, context, id, token, Action, Items)
 	}
+
 	export function mosRoItemMove(
 		context: MethodContext,
 		id: PeripheralDeviceId,
@@ -306,12 +506,9 @@ export namespace MosIntegration {
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.MosString128>
 	) {
-		checkAccessAndGetPeripheralDevice(id, token, context)
-
-		logger.warn(`mosRoItemMove NOT SUPPORTED "${Action.ItemID}"`)
-		// @ts-ignore
-		logger.debug(Action, Items)
+		traceFunction('mosRoItemMove', fns.mosRoItemMove, context, id, token, Action, Items)
 	}
+
 	export function mosRoItemSwap(
 		context: MethodContext,
 		id: PeripheralDeviceId,
@@ -320,10 +517,6 @@ export namespace MosIntegration {
 		ItemID0: MOS.MosString128,
 		ItemID1: MOS.MosString128
 	) {
-		checkAccessAndGetPeripheralDevice(id, token, context)
-
-		logger.warn(`mosRoItemSwap NOT SUPPORTED "${ItemID0}", "${ItemID1}"`)
-		// @ts-ignore
-		logger.debug(Action, ItemID0, ItemID1)
+		traceFunction('mosRoItemSwap', fns.mosRoItemSwap, context, id, token, Action, ItemID0, ItemID1)
 	}
 }
