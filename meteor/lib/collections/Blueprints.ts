@@ -4,12 +4,14 @@ import { Meteor } from 'meteor/meteor'
 
 import { ConfigManifestEntry, BlueprintManifestType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
+import { OrganizationId } from './Organization'
 
 /** A string, identifying a Blueprint */
 export type BlueprintId = ProtectedString<'BlueprintId'>
 
 export interface Blueprint {
 	_id: BlueprintId
+	organizationId: OrganizationId | null
 	name: string
 	code: string
 	modified: number
@@ -40,7 +42,8 @@ export const Blueprints: TransformedCollection<Blueprint, Blueprint> = createMon
 registerCollection('Blueprints', Blueprints)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		// Blueprints._ensureIndex({
-		// })
+		Blueprints._ensureIndex({
+			organizationId: 1,
+		})
 	}
 })

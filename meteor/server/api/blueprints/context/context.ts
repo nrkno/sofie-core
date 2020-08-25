@@ -8,11 +8,11 @@ import {
 	unprotectObject,
 	unprotectObjectArray,
 	protectString,
-	check,
 	getCurrentTime,
+	waitForPromise,
 } from '../../../../lib/lib'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
-import { Match } from 'meteor/check'
+import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
@@ -27,7 +27,6 @@ import {
 	ConfigItemValue,
 	IStudioContext,
 	BlueprintMappings,
-	BlueprintRuntimeArguments,
 	IBlueprintSegmentDB,
 	IngestRundown,
 	IngestPart,
@@ -41,29 +40,25 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId } from '../../../../lib/collections/Studios'
 import { ConfigRef, compileStudioConfig, findMissingConfigs } from '../config'
-import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../../lib/collections/ShowStyleVariants'
+import {
+	ShowStyleVariantId,
+	ShowStyleVariant,
+	createShowStyleCompound,
+	ShowStyleVariants,
+} from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
-import { PartNote, NoteType, INoteBase } from '../../../../lib/api/notes'
+import { NoteType, INoteBase } from '../../../../lib/api/notes'
 import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
-import { RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
-import { Segment, SegmentId } from '../../../../lib/collections/Segments'
-import {
-	PieceInstances,
-	unprotectPieceInstance,
-	PieceInstanceId,
-	PieceInstance,
-} from '../../../../lib/collections/PieceInstances'
-import {
-	InternalIBlueprintPartInstance,
-	PartInstanceId,
-	unprotectPartInstance,
-	PartInstance,
-} from '../../../../lib/collections/PartInstances'
+import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
+import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
+import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
+import { loadStudioBlueprints, loadShowStyleBlueprints } from '../cache'
+import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 
 /** Common */
 
@@ -171,9 +166,9 @@ export class StudioConfigContext implements IStudioConfigContext {
 		return this.studio
 	}
 	getStudioConfig(): Readonly<{ [key: string]: ConfigItemValue }> {
-		const studioBlueprint = Blueprints.findOne(this.studio.blueprintId)
+		const studioBlueprint = loadStudioBlueprints(this.studio)
 		if (studioBlueprint) {
-			const diffs = findMissingConfigs(studioBlueprint.studioConfigManifest, this.studio.config)
+			const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, this.studio.config)
 			if (diffs && diffs.length) {
 				logger.warn(`Studio "${this.studio._id}" missing required config: ${diffs.join(', ')}`)
 			}
@@ -197,37 +192,53 @@ export class StudioContext extends StudioConfigContext implements IStudioContext
 /** Show Style Variant */
 
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
-	public readonly showStyleBaseId: ShowStyleBaseId
-	public readonly showStyleVariantId: ShowStyleVariantId
-
 	readonly notesContext: NotesContext
 
 	constructor(
 		studio: Studio,
-		showStyleBaseId: ShowStyleBaseId,
-		showStyleVariantId: ShowStyleVariantId,
+		private readonly cache: CacheForRundownPlaylist | undefined,
+		readonly _rundown: Rundown | undefined,
+		readonly showStyleBaseId: ShowStyleBaseId,
+		readonly showStyleVariantId: ShowStyleVariantId,
 		notesContext: NotesContext
 	) {
 		super(studio)
 
-		this.showStyleBaseId = showStyleBaseId
-		this.showStyleVariantId = showStyleVariantId
 		this.notesContext = notesContext
 	}
 
 	getShowStyleBase(): ShowStyleBase {
-		const showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
-		if (!showStyleBase) throw new Meteor.Error(404, 'ShowStyleBase "' + this.showStyleBaseId + '" not found')
-
-		return showStyleBase
+		if (this.cache && this._rundown) {
+			return waitForPromise(this.cache.activationCache.getShowStyleBase(this._rundown))
+		} else {
+			const showstyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
+			if (!showstyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)
+			return showstyleBase
+		}
+	}
+	getShowStyleVariant(): ShowStyleVariant {
+		if (this.cache && this._rundown) {
+			return waitForPromise(this.cache.activationCache.getShowStyleVariant(this._rundown))
+		} else {
+			const showstyleVariant = ShowStyleVariants.findOne(this.showStyleVariantId)
+			if (!showstyleVariant)
+				throw new Meteor.Error(404, `ShowStyleVariant "${this.showStyleVariantId}" not found!`)
+			return showstyleVariant
+		}
 	}
 	getShowStyleConfig(): { [key: string]: ConfigItemValue } {
-		const showStyleCompound = getShowStyleCompound(this.showStyleVariantId)
-		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${this.showStyleVariantId}"`)
+		const showStyleBase = this.getShowStyleBase()
+		const showStyleVariant = this.getShowStyleVariant()
 
-		const showStyleBlueprint = Blueprints.findOne(showStyleCompound.blueprintId)
+		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
+		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
+
+		const showStyleBlueprint = loadShowStyleBlueprints(showStyleCompound)
 		if (showStyleBlueprint) {
-			const diffs = findMissingConfigs(showStyleBlueprint.showStyleConfigManifest, showStyleCompound.config)
+			const diffs = findMissingConfigs(
+				showStyleBlueprint.blueprint.showStyleConfigManifest,
+				showStyleCompound.config
+			)
 			if (diffs && diffs.length) {
 				logger.warn(
 					`ShowStyle "${showStyleCompound._id}-${
@@ -278,9 +289,11 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	readonly _rundown: Rundown
 	readonly playlistId: RundownPlaylistId
 
-	constructor(rundown: Rundown, notesContext: NotesContext | undefined, studio?: Studio) {
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext | undefined) {
 		super(
-			studio || rundown.getStudio(),
+			cache.activationCache.getStudio(),
+			cache,
+			rundown,
 			rundown.showStyleBaseId,
 			rundown.showStyleVariantId,
 			notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false)
@@ -297,34 +310,9 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	}
 }
 
-export type BlueprintRuntimeArgumentsSet = { [key: string]: BlueprintRuntimeArguments | undefined }
 export class SegmentContext extends RundownContext implements ISegmentContext {
-	private readonly runtimeArguments: Readonly<BlueprintRuntimeArgumentsSet>
-	private readonly segment: Readonly<Segment>
-
-	constructor(
-		rundown: Rundown,
-		studio: Studio | undefined,
-		runtimeArguments: BlueprintRuntimeArgumentsSet | DBPart[],
-		notesContext: NotesContext
-	) {
-		super(rundown, notesContext, studio)
-
-		if (_.isArray(runtimeArguments)) {
-			const existingRuntimeArguments: BlueprintRuntimeArgumentsSet = {}
-			_.each(runtimeArguments, (p) => {
-				if (p.runtimeArguments) {
-					existingRuntimeArguments[p.externalId] = p.runtimeArguments
-				}
-			})
-			this.runtimeArguments = existingRuntimeArguments
-		} else {
-			this.runtimeArguments = runtimeArguments
-		}
-	}
-
-	getRuntimeArguments(externalId: string): BlueprintRuntimeArguments | undefined {
-		return this.runtimeArguments[externalId]
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext) {
+		super(rundown, cache, notesContext)
 	}
 }
 
@@ -341,11 +329,11 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor(rundown: Rundown, studio: Studio | undefined, partInstance: PartInstance) {
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, partInstance: PartInstance) {
 		super(
 			rundown,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false),
-			studio
+			cache,
+			new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false)
 		)
 
 		this.part = unprotectPartInstance(partInstance)
@@ -359,11 +347,11 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
-	constructor(rundown: Rundown, studio: Studio | undefined, asRunEvent: AsRunLogEvent) {
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
 		super(
 			rundown,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false),
-			studio
+			cache,
+			new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false)
 		)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}

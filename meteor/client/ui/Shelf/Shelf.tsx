@@ -136,7 +136,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			e.stopImmediatePropagation()
 			e.stopPropagation()
 		}
-		_.each(this.bindKeys, (k) => {
+		this.bindKeys.forEach((k) => {
 			const method = k.global ? mousetrap.bindGlobal : mousetrap.bind
 			if (k.up) {
 				method(
@@ -175,7 +175,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	componentWillUnmount() {
-		_.each(this.bindKeys, (k) => {
+		this.bindKeys.forEach((k) => {
 			if (k.up) {
 				mousetrap.unbind(k.key, 'keyup')
 				mousetrap.unbind(k.key, 'keydown')
@@ -334,7 +334,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	}
 
 	endResize = () => {
-		let stateChange = {
+		const stateChange: Partial<IState> = {
 			moving: false,
 			overrideHeight: undefined,
 		}
@@ -343,9 +343,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 		if (Date.now() - this._mouseDown > 350) {
 			if (this.state.overrideHeight && window.innerHeight - this.state.overrideHeight > CLOSE_MARGIN) {
-				stateChange = _.extend(stateChange, {
-					shelfHeight: Math.max(0.1, 0, this.state.overrideHeight / window.innerHeight) * 100 + 'vh',
-				})
+				stateChange.shelfHeight = Math.max(0.1, 0, this.state.overrideHeight / window.innerHeight) * 100 + 'vh'
 				shouldBeExpanded = true
 			} else {
 				shouldBeExpanded = false
@@ -354,7 +352,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			shouldBeExpanded = !this.props.isExpanded
 		}
 
-		this.setState(stateChange)
+		this.setState(stateChange as any)
 
 		document.body.style.cursor = ''
 

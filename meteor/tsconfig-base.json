@@ -12,6 +12,6 @@
 		"allowJs": false,
 		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017", "es2018"]
 	},
-	"include": ["client/**/*", "server/**/*", "lib/**/*", "__mocks__/**/*"],
+	"include": ["client/**/*", "server/**/*", "lib/**/*", "__mocks__/**/*", "tslint-rules/**/*"],
 	"exclude": ["node_modules", "**/.coverage/**/*"]
 }

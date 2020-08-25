@@ -17,6 +17,7 @@ import { ClientAPI } from '../../../../lib/api/client'
 import { Bucket, Buckets } from '../../../../lib/collections/Buckets'
 import { Random } from 'meteor/random'
 import { BucketAdLibs } from '../../../../lib/collections/BucketAdlibs'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
@@ -70,6 +71,7 @@ describe('User Actions - Buckets', () => {
 				showStyleVariantId: env.showStyleVariantId,
 				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
 				studioId: env.studio._id,
+				lifespan: PieceLifespan.WithinPart,
 			})
 		}
 
@@ -98,7 +100,7 @@ describe('User Actions - Buckets', () => {
 					'FAKE_ID',
 					null
 				) as ClientAPI.ClientResponseSuccess<Bucket>
-			}).toThrowError(/studio not found/gi)
+			}).toThrowError(/studio .* not found/gi)
 		}
 
 		{

@@ -75,6 +75,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 					{
 						fields: {
 							_rank: 1,
+							title: 1,
 							rundownId: 1,
 							segmentId: 1,
 							duration: 1,

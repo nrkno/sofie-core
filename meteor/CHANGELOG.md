@@ -4,7 +4,6 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.11.0-in-development.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.10.0...v1.11.0-in-development.0) (2020-08-17)
 
-
 ### Features
 
 * Add icons to shelf links ([61bef38](https://github.com/nrkno/tv-automation-server-core/commit/61bef38637441a777ed591aa17cd219ac5eeeb12))
@@ -64,6 +63,14 @@ All notable changes to this project will be documented in this file. See [standa
 * update blueprints-integration dep ([9390a56](https://github.com/nrkno/tv-automation-server-core/commit/9390a56df7a86a60f1575adecd471c2aaa679d2a))
 * Use correct event for Icon Picker ([84b4880](https://github.com/nrkno/tv-automation-server-core/commit/84b4880b8b31038d7228bbfe3301c9deb331f17a))
 * zoom area move and resize ([ab98a05](https://github.com/nrkno/tv-automation-server-core/commit/ab98a053c80c4afba7b2acec5a1bcd7a64114174))
+
+### [1.10.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.10.0...v1.10.1) (2020-08-24)
+
+
+### Bug Fixes
+
+* nora preview renderer cross-origin requests ([ea483e7](https://github.com/nrkno/tv-automation-server-core/commit/ea483e7aadb5b559655237b70e356f6e9fa7b85d))
+
 
 ## [1.10.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.10.0-0...v1.10.0) (2020-08-17)
 
