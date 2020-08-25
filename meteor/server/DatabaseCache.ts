@@ -13,10 +13,13 @@ import {
 	DBObj,
 	compareObjs,
 	waitForPromise,
+	asyncCollectionBulkWrite,
+	PreparedChanges,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
-import { BulkWriteOperation, BulkWriteOpResultObject } from 'mongodb'
+import { BulkWriteOperation } from 'mongodb'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
@@ -77,6 +80,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class[] {
+		const span = Agent.startSpan(`DBCache.findFetch.${this.name}`)
 		this._initialize()
 
 		selector = selector || {}
@@ -115,7 +119,10 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 				results.push(doc.document)
 			}
 		})
-		return mongoFindOptions(results, options)
+
+		const res = mongoFindOptions(results, options)
+		if (span) span.end()
+		return res
 	}
 	findOne(
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
@@ -160,6 +167,7 @@ export class DbCacheWriteCollection<
 	DBInterface extends { _id: ProtectedString<any> }
 > extends DbCacheReadCollection<Class, DBInterface> {
 	insert(doc: DBInterface): DBInterface['_id'] {
+		const span = Agent.startSpan(`DBCache.insert.${this.name}`)
 		this._initialize()
 
 		const existing = doc._id && this.documents[unprotectString(doc._id)]
@@ -171,22 +179,37 @@ export class DbCacheWriteCollection<
 			inserted: true,
 			document: this._transform(clone(doc)), // Unlinke a normal collection, this class stores the transformed objects
 		}
+		if (span) span.end()
 		return doc._id
 	}
 	remove(selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>): number {
+		const span = Agent.startSpan(`DBCache.remove.${this.name}`)
 		this._initialize()
 
-		const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
-		_.each(idsToRemove, (id) => {
-			this.documents[id].removed = true
-			delete this.documents[id].document
-		})
-		return idsToRemove.length
+		let removed = 0
+		if (isProtectedString(selector)) {
+			const oldDoc = this.documents[unprotectString(selector)]
+			if (oldDoc && !oldDoc.removed) {
+				oldDoc.removed = true
+				delete oldDoc.document
+			}
+		} else {
+			const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
+			_.each(idsToRemove, (id) => {
+				this.documents[id].removed = true
+				delete this.documents[id].document
+			})
+			removed += idsToRemove.length
+		}
+
+		if (span) span.end()
+		return removed
 	}
 	update(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>
 	): number {
+		const span = Agent.startSpan(`DBCache.update.${this.name}`)
 		this._initialize()
 
 		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
@@ -219,7 +242,31 @@ export class DbCacheWriteCollection<
 			}
 			count++
 		})
+		if (span) span.end()
 		return count
+	}
+
+	/** Returns true if a doc was replace, false if inserted */
+	replace(doc: DBInterface): boolean {
+		const span = Agent.startSpan(`DBCache.replace.${this.name}`)
+		this._initialize()
+
+		if (!doc._id) throw new Meteor.Error(500, `Error: The (immutable) field '_id' must be defined: "${doc._id}"`)
+		const _id = unprotectString(doc._id)
+
+		const oldDoc = this.documents[_id]
+		if (oldDoc && !oldDoc.removed) {
+			oldDoc.updated = true
+			oldDoc.document = this._transform(doc)
+		} else {
+			this.documents[_id] = {
+				inserted: true,
+				document: this._transform(doc),
+			}
+		}
+
+		if (span) span.end()
+		return !!oldDoc
 	}
 
 	upsert(
@@ -229,6 +276,7 @@ export class DbCacheWriteCollection<
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
+		const span = Agent.startSpan(`DBCache.upsert.${this.name}`)
 		this._initialize()
 
 		if (isProtectedString(selector)) {
@@ -237,6 +285,7 @@ export class DbCacheWriteCollection<
 
 		const updatedCount = this.update(selector, doc)
 		if (updatedCount > 0) {
+			if (span) span.end()
 			return { numberAffected: updatedCount }
 		} else {
 			if (!selector['_id']) {
@@ -249,10 +298,12 @@ export class DbCacheWriteCollection<
 				)
 			}
 
+			if (span) span.end()
 			return { numberAffected: 1, insertedId: this.insert(doc) }
 		}
 	}
 	async updateDatabaseWithData() {
+		const span = Agent.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
 			insert: number
 			update: number
@@ -306,30 +357,16 @@ export class DbCacheWriteCollection<
 			})
 		}
 
-		const rawCollection = this._collection.rawCollection()
-		const pBulkWriteResult =
-			updates.length > 0
-				? rawCollection.bulkWrite(updates, {
-						ordered: false,
-				  })
-				: Promise.resolve(null)
+		const pBulkWriteResult = asyncCollectionBulkWrite(this._collection, updates)
 
 		_.each(removedDocs, (_id) => {
 			delete this._collection[unprotectString(_id)]
 		})
-		const bulkWriteResult = await pBulkWriteResult
 
-		if (
-			bulkWriteResult &&
-			_.isArray(bulkWriteResult.result?.writeErrors) &&
-			bulkWriteResult.result.writeErrors.length
-		) {
-			throw new Meteor.Error(
-				500,
-				`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
-			)
-		}
+		await pBulkWriteResult
 
+		if (span) span.addLabels(changes)
+		if (span) span.end()
 		return changes
 	}
 }
@@ -348,7 +385,7 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	beforeRemove?: (o: DocClass) => DBInterface
 	beforeDiff?: (o: DBInterface, oldObj: DocClass) => DBInterface
 	insert?: (o: DBInterface) => void
-	update?: (id: ProtectedString<any>, o: DBInterface) => void
+	update?: (o: DBInterface) => void
 	remove?: (o: DBInterface) => void
 	unchanged?: (o: DBInterface) => void
 	afterInsert?: (o: DBInterface) => void
@@ -367,15 +404,22 @@ export function saveIntoCache<DocClass extends DBInterface, DBInterface extends 
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
+	const span = Agent.startSpan(`DBCache.saveIntoCache.${collection.name}`)
 	const preparedChanges = prepareSaveIntoCache(collection, filter, newData, options)
 
-	return savePreparedChangesIntoCache(preparedChanges, collection, options)
-}
-export interface PreparedChanges<T> {
-	inserted: T[]
-	changed: { doc: T; oldId: ProtectedString<any> }[]
-	removed: T[]
-	unchanged: T[]
+	if (span)
+		span.addLabels({
+			prepInsert: preparedChanges.inserted.length,
+			prepChanged: preparedChanges.changed.length,
+			prepRemoved: preparedChanges.removed.length,
+			prepUnchanged: preparedChanges.unchanged.length,
+		})
+
+	const changes = savePreparedChangesIntoCache(preparedChanges, collection, options)
+
+	if (span) span.addLabels(changes as any)
+	if (span) span.end()
+	return changes
 }
 export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: DbCacheWriteCollection<DocClass, DBInterface>,
@@ -419,13 +463,14 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 
 	_.each(newData, function(o) {
 		const oldObj = removeObjs['' + o[identifier]]
+
 		if (oldObj) {
 			const o2 = options.beforeDiff ? options.beforeDiff(o, oldObj) : o
 			const eql = compareObjs(oldObj, o2)
 
 			if (!eql) {
 				let oUpdate = options.beforeUpdate ? options.beforeUpdate(o, oldObj) : o
-				preparedChanges.changed.push({ doc: oUpdate, oldId: oldObj._id })
+				preparedChanges.changed.push(oUpdate)
 			} else {
 				preparedChanges.unchanged.push(oldObj)
 			}
@@ -471,13 +516,13 @@ export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInt
 	}
 
 	_.each(preparedChanges.changed || [], (oUpdate) => {
-		checkInsertId(oUpdate.doc._id)
+		checkInsertId(oUpdate._id)
 		if (options.update) {
-			options.update(oUpdate.oldId, oUpdate.doc)
+			options.update(oUpdate)
 		} else {
-			collection.update(oUpdate.oldId, oUpdate.doc)
+			collection.replace(oUpdate)
 		}
-		if (options.afterUpdate) options.afterUpdate(oUpdate.doc)
+		if (options.afterUpdate) options.afterUpdate(oUpdate)
 		change.updated++
 	})
 

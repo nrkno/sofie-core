@@ -13,14 +13,12 @@ import {
 	anythingChanged,
 	ReturnType,
 	waitForPromise,
-	PreparedChanges,
-	prepareSaveIntoDb,
 	unprotectString,
 	protectString,
 	ProtectedString,
 	Omit,
-	PreparedChangesChangesDoc,
 	getRandomId,
+	PreparedChanges,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
@@ -109,7 +107,7 @@ import {
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
-import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
+import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
 import { AdLibAction, AdLibActions } from '../../../lib/collections/AdLibActions'
@@ -603,7 +601,7 @@ function updateRundownFromIngestData(
 
 	// Save the baseline
 	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
-	const blueprintRundownContext = new RundownContext(dbRundown, cache, rundownNotesContext, studio)
+	const blueprintRundownContext = new RundownContext(dbRundown, cache, rundownNotesContext)
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
 
@@ -652,7 +650,7 @@ function updateRundownFromIngestData(
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
 		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
-		const context = new SegmentContext(dbRundown, cache, studio, notesContext)
+		const context = new SegmentContext(dbRundown, cache, notesContext)
 		const res = blueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(
@@ -699,8 +697,8 @@ function updateRundownFromIngestData(
 		},
 		adlibPieces
 	)
-	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(
-		AdLibActions,
+	const prepareSaveAdLibActions = prepareSaveIntoCache<AdLibAction, AdLibAction>(
+		cache.AdLibActions,
 		{
 			rundownId: rundownId,
 		},
@@ -713,7 +711,7 @@ function updateRundownFromIngestData(
 				cache,
 				dbPlaylist,
 				dbRundown,
-				{ changed: [{ doc: dbRundown, oldId: dbRundown._id }] },
+				{ changed: [dbRundown] },
 				prepareSaveSegments,
 				prepareSaveParts
 			)
@@ -735,7 +733,7 @@ function updateRundownFromIngestData(
 						cache,
 						dbPlaylist,
 						dbRundown,
-						{ changed: [{ doc: dbRundown, oldId: dbRundown._id }] },
+						{ changed: [dbRundown] },
 						segmentChange.segment,
 						segmentChange.parts
 					)
@@ -790,7 +788,7 @@ function updateRundownFromIngestData(
 				cache,
 				dbPlaylist,
 				dbRundown,
-				{ changed: [{ doc: dbRundown, oldId: dbRundown._id }] },
+				{ changed: [dbRundown] },
 				prepareSaveSegments,
 				prepareSaveParts
 			)
@@ -1082,7 +1080,7 @@ function updateSegmentFromIngestData(
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
 	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
-	const context = new SegmentContext(rundown, cache, studio, notesContext)
+	const context = new SegmentContext(rundown, cache, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
@@ -1129,8 +1127,8 @@ function updateSegmentFromIngestData(
 		},
 		adlibPieces
 	)
-	const prepareSaveAdLibActions = prepareSaveIntoDb<AdLibAction, AdLibAction>(
-		AdLibActions,
+	const prepareSaveAdLibActions = prepareSaveIntoCache<AdLibAction, AdLibAction>(
+		cache.AdLibActions,
 		{
 			rundownId: rundown._id,
 			partId: { $in: parts.map((p) => p._id) },
@@ -1139,16 +1137,7 @@ function updateSegmentFromIngestData(
 	)
 
 	// determine if update is allowed here
-	if (
-		!isUpdateAllowed(
-			cache,
-			playlist,
-			rundown,
-			{},
-			{ changed: [{ doc: newSegment, oldId: newSegment._id }] },
-			prepareSaveParts
-		)
-	) {
+	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
 		ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 		return null
 	}
@@ -1330,7 +1319,7 @@ export function handleUpdatedPartInner(
 		rundownId: rundown._id,
 	})
 
-	if (part && !isUpdateAllowed(cache, playlist, rundown, {}, {}, { changed: [{ doc: part, oldId: part._id }] })) {
+	if (part && !isUpdateAllowed(cache, playlist, rundown, {}, {}, { changed: [part] })) {
 		ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 	} else {
 		// Blueprints will handle the creation of the Part
@@ -1564,7 +1553,7 @@ export function isUpdateAllowed(
 function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {
 	let str = ''
 
-	if (changes.changed) str += _.map(changes.changed, (doc) => 'change:' + doc.doc._id).join(',')
+	if (changes.changed) str += _.map(changes.changed, (doc) => 'change:' + doc._id).join(',')
 	if (changes.inserted) str += _.map(changes.inserted, (doc) => 'insert:' + doc._id).join(',')
 	if (changes.removed) str += _.map(changes.removed, (doc) => 'remove:' + doc._id).join(',')
 
@@ -1589,10 +1578,10 @@ function splitIntoSegments(
 	const partsToSegments: PartIdToSegmentId = new Map()
 
 	prepareSaveParts.changed.forEach((part) => {
-		partsToSegments.set(part.doc._id, part.doc.segmentId)
-		const index = changes.findIndex((c) => c.segmentId === part.doc.segmentId)
+		partsToSegments.set(part._id, part.segmentId)
+		const index = changes.findIndex((c) => c.segmentId === part.segmentId)
 		if (index === -1) {
-			const newChange = makeChangeObj(part.doc.segmentId)
+			const newChange = makeChangeObj(part.segmentId)
 			newChange.parts.changed.push(part)
 			changes.push(newChange)
 		} else {
@@ -1614,9 +1603,9 @@ function splitIntoSegments(
 	})
 
 	for (const piece of prepareSavePieces.changed) {
-		const segmentId = partsToSegments.get(piece.doc.startPartId)
+		const segmentId = partsToSegments.get(piece.startPartId)
 		if (!segmentId) {
-			logger.warning(`SegmentId could not be found when trying to modify piece ${piece.doc._id}`)
+			logger.warning(`SegmentId could not be found when trying to modify piece ${piece._id}`)
 			break // In theory this shouldn't happen, but reject 'orphaned' changes
 		}
 		const index = changes.findIndex((c) => c.segmentId === segmentId)
@@ -1648,9 +1637,9 @@ function splitIntoSegments(
 	})
 
 	for (const adlib of prepareSaveAdLibPieces.changed) {
-		const segmentId = adlib.doc.partId ? partsToSegments.get(adlib.doc.partId) : undefined
+		const segmentId = adlib.partId ? partsToSegments.get(adlib.partId) : undefined
 		if (!segmentId) {
-			logger.warning(`SegmentId could not be found when trying to modify adlib ${adlib.doc._id}`)
+			logger.warning(`SegmentId could not be found when trying to modify adlib ${adlib._id}`)
 			break // In theory this shouldn't happen, but reject 'orphaned' changes
 		}
 		const index = changes.findIndex((c) => c.segmentId === segmentId)
@@ -1684,27 +1673,20 @@ function splitIntoSegments(
 	return changes
 }
 
-function processChangeGroup<
-	ChangeType extends keyof PreparedChanges<DBSegment>,
-	ChangedObj extends DBSegment | DBPart | Piece | AdLibPiece
->(changes: SegmentChanges[], preparedChanges: PreparedChanges<ChangedObj>, changeField: ChangeType) {
+function processChangeGroup<ChangeType extends keyof PreparedChanges<DBSegment>>(
+	changes: SegmentChanges[],
+	preparedChanges: PreparedChanges<DBSegment>,
+	changeField: ChangeType
+) {
 	const subset = preparedChanges[changeField]
 	// @ts-ignore
 	subset.forEach((ch) => {
 		if (changeField === 'changed') {
-			const existing = changes.findIndex(
-				(c) => (ch as PreparedChangesChangesDoc<ChangedObj>).doc._id === c.segmentId
-			)
-			processChangeGroupInner(
-				existing,
-				changes,
-				changeField,
-				ch,
-				(ch as PreparedChangesChangesDoc<ChangedObj>).doc._id
-			)
+			const existing = changes.findIndex((c) => ch._id === c.segmentId)
+			processChangeGroupInner(existing, changes, changeField, ch, ch._id)
 		} else {
-			const existing = changes.findIndex((c) => (ch as ChangedObj)._id === c.segmentId)
-			processChangeGroupInner(existing, changes, changeField, ch, (ch as ChangedObj)._id)
+			const existing = changes.findIndex((c) => ch._id === c.segmentId)
+			processChangeGroupInner(existing, changes, changeField, ch, ch._id)
 		}
 	})
 }
@@ -1713,7 +1695,7 @@ function processChangeGroupInner<ChangeType extends keyof PreparedChanges<DBSegm
 	existing: number,
 	changes: SegmentChanges[],
 	changeField: ChangeType,
-	changedObject: PreparedChangesChangesDoc<DBSegment> | DBSegment,
+	changedObject: DBSegment,
 	segmentId
 ) {
 	if (existing !== -1) {

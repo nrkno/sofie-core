@@ -31,6 +31,7 @@ import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 import { isInTestWrite } from './security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -69,6 +70,7 @@ export class Cache {
 		})
 	}
 	async saveAllToDatabase() {
+		const span = Agent.startSpan('Cache.saveAllToDatabase')
 		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
 
@@ -84,6 +86,7 @@ export class Cache {
 			})
 		)
 		logger.info(`Save all to database took: ${getCurrentTime() - startTime}ms`)
+		if (span) span.end()
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
@@ -231,6 +234,7 @@ async function fillCacheForRundownPlaylistWithData(
 	playlist: RundownPlaylist,
 	initializeImmediately: boolean
 ) {
+	const span = Agent.startSpan('Cache.fillCacheForRundownPlaylistWithData')
 	const ps: Promise<any>[] = []
 	cache.Rundowns.prepareInit({ playlistId: playlist._id }, true)
 
@@ -298,6 +302,7 @@ async function fillCacheForRundownPlaylistWithData(
 	ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
 
 	await Promise.all(ps)
+	if (span) span.end()
 }
 export async function initCacheForRundownPlaylist(
 	playlist: RundownPlaylist,

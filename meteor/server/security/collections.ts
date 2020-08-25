@@ -53,7 +53,7 @@ CoreSystem.allow({
 	update(userId, doc, fields, modifier) {
 		const access = allowAccessToCoreSystem({ userId: userId })
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
-		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name'])
+		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'apm'])
 	},
 	remove() {
 		return false

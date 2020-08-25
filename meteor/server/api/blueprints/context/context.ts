@@ -329,14 +329,9 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	readonly _rundown: Rundown
 	readonly playlistId: RundownPlaylistId
 
-	constructor(
-		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
-		notesContext: NotesContext | undefined,
-		studio?: Studio
-	) {
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext | undefined) {
 		super(
-			studio || rundown.getStudio(),
+			cache.activationCache.getStudio(),
 			cache,
 			rundown,
 			rundown.showStyleBaseId,
@@ -356,13 +351,8 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 }
 
 export class SegmentContext extends RundownContext implements ISegmentContext {
-	constructor(
-		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
-		studio: Studio | undefined,
-		notesContext: NotesContext
-	) {
-		super(rundown, cache, notesContext, studio)
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext) {
+		super(rundown, cache, notesContext)
 	}
 }
 
@@ -379,17 +369,11 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor(
-		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
-		studio: Studio | undefined,
-		partInstance: PartInstance
-	) {
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, partInstance: PartInstance) {
 		super(
 			rundown,
 			cache,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false),
-			studio
+			new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false)
 		)
 
 		this.part = unprotectPartInstance(partInstance)
@@ -403,17 +387,11 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
-	constructor(
-		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
-		studio: Studio | undefined,
-		asRunEvent: AsRunLogEvent
-	) {
+	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
 		super(
 			rundown,
 			cache,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false),
-			studio
+			new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false)
 		)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}
