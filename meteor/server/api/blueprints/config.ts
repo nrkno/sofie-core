@@ -75,7 +75,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function compileStudioConfig(studio: Studio, blueprint?: StudioBlueprintManifest) {
+export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.studioConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
@@ -92,7 +92,7 @@ export function compileStudioConfig(studio: Studio, blueprint?: StudioBlueprintM
 	return res
 }
 
-export function compileShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: ShowStyleBlueprintManifest) {
+export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: ShowStyleBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.showStyleConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)

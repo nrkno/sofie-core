@@ -42,7 +42,7 @@ import {
 	ExtendedIngestRundown,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
-import { ConfigRef, compileStudioConfig, findMissingConfigs, compileShowStyleConfig } from '../config'
+import { ConfigRef, preprocessStudioConfig, findMissingConfigs, preprocessShowStyleConfig } from '../config'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
 import {
@@ -154,8 +154,8 @@ export class NotesContext extends CommonContext implements INotesContext {
 	}
 }
 
-const studioBlueprintConfigCache: { [id: string]: Cache } = {}
-const showStyleBlueprintConfigCache: { [id: string]: { [id: string]: Cache } } = {}
+const studioBlueprintConfigCache: { [studioId: string]: Cache } = {}
+const showStyleBlueprintConfigCache: { [showStyleBaseId: string]: { [showStyleVariantId: string]: Cache } } = {}
 interface Cache {
 	config: unknown
 }
@@ -176,9 +176,9 @@ export class StudioConfigContext implements IStudioConfigContext {
 		return this.studio
 	}
 	getStudioConfig(): unknown {
-		const cacheId = unprotectString(this.studio._id)
-		if (studioBlueprintConfigCache[cacheId]) {
-			return studioBlueprintConfigCache[cacheId].config
+		const studioId = unprotectString(this.studio._id)
+		if (studioBlueprintConfigCache[studioId]) {
+			return studioBlueprintConfigCache[studioId].config
 		}
 
 		logger.debug('Building Studio config')
@@ -194,15 +194,15 @@ export class StudioConfigContext implements IStudioConfigContext {
 		} else {
 			logger.warn(`Studio blueprint "${this.studio.blueprintId}" not found!`)
 		}
-		const compiledConfig = compileStudioConfig(this.studio, studioBlueprint?.blueprint)
-		studioBlueprintConfigCache[cacheId] = {
+		const compiledConfig = preprocessStudioConfig(this.studio, studioBlueprint?.blueprint)
+		studioBlueprintConfigCache[studioId] = {
 			config: compiledConfig,
 		}
 		return compiledConfig
 	}
 	protected wipeCache() {
-		const cacheId = unprotectString(this.studio._id)
-		delete studioBlueprintConfigCache[cacheId]
+		const studioId = unprotectString(this.studio._id)
+		delete studioBlueprintConfigCache[studioId]
 		this.getStudioConfig()
 	}
 	getStudioConfigRef(configKey: string): string {
@@ -284,7 +284,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 			logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
 		}
 
-		const compiledConfig = compileShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
+		const compiledConfig = preprocessShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
 		objectPathSet(showStyleBlueprintConfigCache, cacheId, {
 			config: compiledConfig,
 		})

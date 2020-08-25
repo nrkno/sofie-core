@@ -1,5 +1,5 @@
 import { setupDefaultStudioEnvironment, setupMockStudio } from '../../../../__mocks__/helpers/database'
-import { compileStudioConfig, ConfigRef } from '../config'
+import { preprocessStudioConfig, ConfigRef } from '../config'
 import { Studio, Studios } from '../../../../lib/collections/Studios'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
@@ -19,7 +19,7 @@ describe('Test blueprint config', () => {
 			blueprintConfig: { sdfsdf: 'one', another: 5 },
 		})
 
-		const res = compileStudioConfig(studio)
+		const res = preprocessStudioConfig(studio)
 		expect(res).toEqual({
 			SofieHostURL: 'host url',
 			sdfsdf: 'one',
