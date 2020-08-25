@@ -1031,12 +1031,17 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(playlist, sourceLayerId)
 	}
-	export function executeAction(rundownPlaylistId: RundownPlaylistId, actionId: string, userData: any) {
+	export function executeAction(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		actionId: string,
+		userData: any
+	) {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
 
-		return executeActionInner(rundownPlaylistId, (context, cache, rundown) => {
+		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
 			const blueprint = getBlueprintOfRundown(undefined, rundown) // todo: database again
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
@@ -1044,11 +1049,12 @@ export namespace ServerPlayoutAPI {
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-			blueprint.blueprint.executeAction(context, actionId, userData)
+			blueprint.blueprint.executeAction(actionContext, actionId, userData)
 		})
 	}
 
 	export function executeActionInner(
+		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		func: (
 			context: ActionExecutionContext,
@@ -1110,7 +1116,7 @@ export namespace ServerPlayoutAPI {
 		})
 
 		if (takeAfterExecute) {
-			ServerPlayoutAPI.takeNextPart(rundownPlaylistId)
+			ServerPlayoutAPI.takeNextPart(context, rundownPlaylistId)
 		}
 	}
 	export function sourceLayerOnPartStop(

@@ -91,16 +91,20 @@ describe('Playout API', () => {
 
 		testInFiber('invalid parameters', () => {
 			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(9, '', '')).toThrowError('Match error: Expected string')
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, 9, '', '')).toThrowError(
+				'Match error: Expected string'
+			)
 			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction('', 9, '')).toThrowError('Match error: Expected string')
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, '', 9, '')).toThrowError(
+				'Match error: Expected string'
+			)
 		})
 
 		testInFiber('throws errors', () => {
 			const actionId = 'some-action'
 			const userData = { blobby: true }
 
-			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError(
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)).toThrowError(
 				'ShowStyle blueprint does not support executing actions'
 			)
 
@@ -125,7 +129,7 @@ describe('Playout API', () => {
 					),
 				},
 			})
-			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError(
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)).toThrowError(
 				'action execution threw'
 			)
 
@@ -165,7 +169,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
@@ -205,7 +209,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
@@ -245,7 +249,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
