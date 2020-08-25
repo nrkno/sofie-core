@@ -14,6 +14,15 @@ import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } fr
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
+import {
+	BulkWriteOperation,
+	BulkWriteInsertOneOperation,
+	BulkWriteUpdateOneOperation,
+	BulkWriteUpdateManyOperation,
+	BulkWriteReplaceOneOperation,
+	BulkWriteDeleteOneOperation,
+	BulkWriteDeleteManyOperation,
+} from 'mongodb'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -128,8 +137,8 @@ export namespace MongoMock {
 				let docs = this.find(query)._fetchRaw()
 
 				// By default mongo only updates one doc, unless told multi
-				if (!options || !options.multi) {
-					docs = _.take(docs, 1)
+				if (this.documents.length && !options?.multi) {
+					docs = [docs[0]]
 				}
 
 				// console.log(query, docs)
@@ -188,7 +197,7 @@ export namespace MongoMock {
 
 			const docs = this.find(id)._fetchRaw()
 
-			if (docs.length === 1) {
+			if (docs.length) {
 				// console.log(docs)
 				this.update(docs[0]._id, modifier, options, cb)
 			} else {
@@ -218,6 +227,47 @@ export namespace MongoMock {
 		}
 		allow() {
 			// todo
+		}
+		rawCollection() {
+			return {
+				// indexes: () => {}
+				// stats: () => {}
+				// drop: () => {}
+				bulkWrite: (updates: BulkWriteOperation<any>[], _options) => {
+					for (let update of updates) {
+						if (update['insertOne']) {
+							update = update as BulkWriteInsertOneOperation<any>
+							this.insert(update.insertOne.document)
+						} else if (update['updateOne']) {
+							update = update as BulkWriteUpdateOneOperation<any>
+							if (update.updateOne.upsert) {
+								this.upsert(update.updateOne.filter, update.updateOne.update, { multi: false })
+							} else {
+								this.update(update.updateOne.filter, update.updateOne.update, { multi: false })
+							}
+						} else if (update['updateMany']) {
+							update = update as BulkWriteUpdateManyOperation<any>
+							if (update.updateMany.upsert) {
+								this.upsert(update.updateMany.filter, update.updateMany.update, { multi: true })
+							} else {
+								this.update(update.updateMany.filter, update.updateMany.update, { multi: true })
+							}
+						} else if (update['deleteOne']) {
+							update = update as BulkWriteDeleteOneOperation<any>
+							const docs = this.find(update.deleteOne.filter).fetch()
+							if (docs.length) {
+								this.remove(docs[0]._id)
+							}
+						} else if (update['deleteMany']) {
+							update = update as BulkWriteDeleteManyOperation<any>
+							this.remove(update.deleteMany.filter)
+						} else if (update['replaceOne']) {
+							update = update as BulkWriteReplaceOneOperation<any>
+							this.upsert(update.replaceOne.filter, update.replaceOne.replacement)
+						}
+					}
+				},
+			}
 		}
 		// observe () {
 		// 	// todo
