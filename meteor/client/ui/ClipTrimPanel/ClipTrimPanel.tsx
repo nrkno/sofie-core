@@ -90,7 +90,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		}
 
 		componentDidMount() {
-			this.subscribe(PubSub.pieces, { _id: this.props.pieceId, rundownId: this.props.rundownId })
+			this.subscribe(PubSub.pieces, { _id: this.props.pieceId, startRundownId: this.props.rundownId })
 			this.autorun(() => {
 				if (this.props.piece && this.props.piece.content && this.props.piece.content.fileName) {
 					const piece = this.props.piece

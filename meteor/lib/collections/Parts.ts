@@ -18,7 +18,6 @@ import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPartDB,
 	PartHoldMode,
-	BlueprintRuntimeArguments,
 	IBlueprintPartDBTimings,
 	PartEndState,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -73,10 +72,6 @@ export interface DBPart
 	/** if the part was dunamically inserted (adlib) */
 	// dynamicallyInserted?: boolean
 
-	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an part */
-	// runtimeArguments?: BlueprintRuntimeArguments
-	// /** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
-	// dirty?: boolean
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
 	canCombineQueue?: boolean
@@ -131,8 +126,6 @@ export class Part implements DBPart {
 	// public previousPartEndState?: PartEndState
 	public notes?: Array<PartNote>
 	public dynamicallyInsertedAfterPartId?: PartId
-	// public runtimeArguments?: BlueprintRuntimeArguments
-	// public dirty?: boolean
 	public identifier?: string
 
 	constructor(document: DBPart) {

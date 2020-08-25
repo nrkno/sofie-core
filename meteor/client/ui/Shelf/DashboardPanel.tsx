@@ -205,8 +205,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				this.subscribe(PubSub.showStyleBases, {
 					_id: rundowns[0].showStyleBaseId,
 				})
-				this.subscribe(PubSub.pieces, {
-					// TODO-INFINITES this needs to be pieceInstances now
+				this.subscribe(PubSub.pieceInstances, {
 					rundownId: {
 						$in: rundownIds,
 					},
@@ -711,29 +710,37 @@ export function getUnfinishedPieceInstancesReactive(
 						},
 					],
 				},
+				// TODO-INFINITES is this ok?
+				// {
+				// 	definitelyEnded: {
+				// 		$exists: false,
+				// 	},
+				// },
+			],
+			$or: [
 				{
-					definitelyEnded: {
-						$exists: false,
+					adLibSourceId: {
+						$exists: true,
 					},
 				},
 				{
-					$or: [
-						...(adlib
-							? [
-									{
-										'piece.adLibSourceId': {
-											$exists: true,
-										},
-									},
-							  ]
-							: []),
-						{
-							'piece.tags': {
-								$exists: true,
-							},
-						},
-					],
+					'piece.tags': {
+						$exists: true,
+					},
 				},
+			],
+			// $or: [
+			// 	{
+			// 		'userDuration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// 	{
+			// 		'userDuration.duration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// ],
 		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY
@@ -804,8 +811,8 @@ export function getUnfinishedPieceInstancesGrouped(
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId, adlib)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.adLibSourceId)
-		.map((piece) => piece.piece.adLibSourceId!)
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
 	const unfinishedTags: string[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.piece.tags)
 		.map((piece) => piece.piece.tags!)
@@ -824,8 +831,8 @@ export function getNextPieceInstancesGrouped(
 	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
-		.filter((piece) => !!piece.piece.adLibSourceId)
-		.map((piece) => piece.piece.adLibSourceId!)
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
 	const nextTags: string[] = nextPieceInstances
 		.filter((piece) => !!piece.piece.tags)
 		.map((piece) => piece.piece.tags!)

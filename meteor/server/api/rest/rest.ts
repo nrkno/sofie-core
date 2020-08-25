@@ -48,12 +48,32 @@ Meteor.startup(() => {
 				docString += `/:${paramName}`
 			})
 
-			assignRoute('GET', resource, docString, (p) => {
+			assignRoute('GET', resource, docString, (args) => {
+				for (const i in args) {
+					let val = args[i]
+					if (val === 'null') val = null
+					else if (val === 'undefined') val = undefined
+					else val = unescape(val)
+
+					if (!_.isNaN(Number(val))) {
+						val = Number(val)
+					} else {
+						let json: any = null
+						try {
+							json = JSON.parse(val)
+						} catch (e) {
+							// ignore
+						}
+						if (json) val = json
+					}
+
+					args[i] = val
+				}
 				const cursor = f.apply(
 					{
 						ready: () => null,
 					},
-					p
+					args
 				)
 				if (cursor) return cursor.fetch()
 				return []

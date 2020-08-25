@@ -29,7 +29,7 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist } from '../DatabaseCaches'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../DatabaseCaches'
 
 const EVENT_WAIT_TIME = 500
 
@@ -72,10 +72,14 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
+				const playlist = RundownPlaylists.findOne(rundown.playlistId)
+				if (!playlist) throw new Meteor.Error(404, `Playlist "${rundown.playlistId}" not found!`)
+
 				const { blueprint } = getBlueprintOfRundown(undefined, rundown)
 
 				if (blueprint.onAsRunEvent) {
-					const context = new AsRunEventContext(rundown, undefined, event)
+					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					const context = new AsRunEventContext(rundown, cache, undefined, event)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
 						.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {

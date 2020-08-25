@@ -1418,13 +1418,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			label: string
 			global?: boolean
 		}> = []
-		private usedArgumentKeys: Array<{
-			key: string
-			up?: (e: KeyboardEvent) => any
-			down?: (e: KeyboardEvent) => any
-			label: string
-			global?: boolean
-		}> = []
 		private _segmentZoomOn: boolean = false
 		private _hideNotificationsAfterMount: number | undefined
 
@@ -1457,8 +1450,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					global: false,
 				})
 			}
-
-			this.usedArgumentKeys = []
 
 			this.state = {
 				timeScale: MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale,
@@ -1734,13 +1725,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 
 			if (
-				typeof this.props.showStyleBase !== typeof prevProps.showStyleBase ||
-				(this.props.showStyleBase && this.props.showStyleBase.runtimeArguments)
-			) {
-				this.refreshHotkeys()
-			}
-
-			if (
 				typeof this.props.playlist !== typeof prevProps.playlist ||
 				(this.props.playlist || { name: '' }).name !== (prevProps.playlist || { name: '' }).name
 			) {
@@ -1859,16 +1843,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 				if (k.down) {
 					mousetrap.unbind(k.key, 'keydown')
-				}
-			})
-
-			this.usedArgumentKeys.forEach((k) => {
-				if (k.up) {
-					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keyup')
-					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
-				}
-				if (k.down) {
-					mousetrapHelper.unbind(k.key, 'RuntimeArguments', 'keydown')
 				}
 			})
 

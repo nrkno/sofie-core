@@ -33,7 +33,6 @@ namespace UserActionAPI {
 		'unsyncRundown' = 'userAction.unsyncRundown',
 
 		'disableNextPiece' = 'userAction.disableNextPiece',
-		'togglePartArgument' = 'userAction.togglePartArgument',
 		'pieceTakeNow' = 'userAction.pieceTakeNow',
 		'setInOutPoints' = 'userAction.pieceSetInOutPoints',
 

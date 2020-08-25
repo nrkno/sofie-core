@@ -6,13 +6,11 @@ import { StatusCode } from '../../server/systemStatus/systemStatus'
 import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
-	getPieceGroupId,
 	IOutputLayer,
 	ISourceLayer,
 	SourceLayerType,
 	StudioBlueprintManifest,
 	BlueprintManifestType,
-	Timeline,
 	IStudioContext,
 	IStudioConfigContext,
 	IBlueprintShowStyleBase,
@@ -31,7 +29,6 @@ import {
 	BlueprintResultPart,
 	IBlueprintPart,
 	IBlueprintPiece,
-	IBlueprintRuntimeArgumentsItem,
 	TSR,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
@@ -201,15 +198,6 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 		config: [],
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
-		runtimeArguments: [
-			literal<IBlueprintRuntimeArgumentsItem>({
-				_id: 'ra0',
-				label: 'mix12',
-				hotkeys: 'ctrl+j',
-				value: '12',
-				property: 'mix',
-			}),
-		],
 		_rundownVersionHash: '',
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)

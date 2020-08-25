@@ -31,16 +31,10 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
-	// /** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
-	// adLibSourceId?: PieceId
-	// /** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
-	// dynamicallyInserted?: boolean
 	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartTimings
-	// /** Actual duration of the piece, as played-back, in milliseconds. This value will be updated during playback for some types of pieces. */
-	// playoutDuration?: number
 
 	isTransition?: boolean
 	extendOnHold?: boolean
@@ -54,28 +48,25 @@ export interface RundownPieceGeneric extends PieceGeneric {
 	// partId?: PartId
 }
 
-export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId' | 'infiniteId'> {
+export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'continuesRefId'> {
+	/**
+	 * This is the id of the rundown this piece starts playing in.
+	 * Currently this is the only rundown the piece could be playing in
+	 */
 	startRundownId: RundownId
+	/**
+	 * This is the id of the segment this piece starts playing in.
+	 * It is the only segment the piece could be playing in, unless the piece has a lifespan which spans beyond the segment
+	 */
 	startSegmentId: SegmentId
+	/**
+	 * This is the id of the part this piece starts playing in.
+	 * If the lifespan is WithinPart, it is the only part the piece could be playing in.
+	 */
 	startPartId: PartId
 
 	/** This is set when the part is invalid and these pieces should be ignored */
 	invalid: boolean
-
-	// /** This is set when an piece's duration needs to be overriden */
-	// userDuration?: {
-	// 	duration?: number
-	// 	end?: string
-	// }
-
-	// /** This is set when the piece is infinite, to deduplicate the contents on the timeline, while allowing out of order */
-	// infiniteMode?: PieceLifespan
-	// /** [timestamp) After this time, the piece has definitely ended and its content can be omitted from the timeline */
-	// definitelyEnded?: number
-	// /** This is a backup of the original infiniteMode of the piece, so that the normal field can be modified during playback and restored afterwards */
-	// originalInfiniteMode?: PieceLifespan
-	// /** This is the id of the original segment of an infinite piece chain. If it matches the id of itself then it is the first in the chain */
-	// infiniteId?: PieceId
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece

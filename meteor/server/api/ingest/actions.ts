@@ -9,12 +9,7 @@ import { check } from '../../../lib/check'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
 import { resetRundown, removeRundownFromCache } from '../playout/lib'
-import {
-	handleUpdatedRundown,
-	RundownSyncFunctionPriority,
-	rundownPlaylistSyncFunction,
-	handleUpdatedRundownInner,
-} from './rundownInput'
+import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction, handleUpdatedRundownInner } from './rundownInput'
 import { logger } from '../../logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -116,7 +111,7 @@ export namespace IngestActions {
 
 		const cache = waitForPromise(initCacheForRundownPlaylist(rundownPlaylist))
 
-		const studio = cache.Studios.findOne(rundownPlaylist.studioId)
+		const studio = cache.activationCache.getStudio()
 		if (!studio) {
 			throw new Meteor.Error(
 				404,
@@ -131,7 +126,9 @@ export namespace IngestActions {
 						`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`
 					)
 				}
-				const peripheralDevice = cache.PeripheralDevices.findOne(rundown.peripheralDeviceId)
+				const peripheralDevice = waitForPromise(cache.activationCache.getPeripheralDevices()).find(
+					(d) => d._id === rundown.peripheralDeviceId
+				)
 				if (!peripheralDevice) {
 					logger.info(`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`)
 				}

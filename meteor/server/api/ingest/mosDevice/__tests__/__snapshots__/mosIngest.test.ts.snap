@@ -18,6 +18,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
+  "baselineModifyHash": "randomId10002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -297,6 +298,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
+  "baselineModifyHash": "randomId11002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -577,6 +579,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId29002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -869,6 +872,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId16001",
   "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -1149,6 +1153,7 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
 Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
+  "baselineModifyHash": "randomId14002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -1430,6 +1435,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId27002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -1678,6 +1684,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId16001",
   "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -1971,6 +1978,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId16001",
   "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -2272,6 +2280,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId39002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -2555,6 +2564,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId38002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -2838,6 +2848,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId25002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -3107,6 +3118,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId16001",
   "dataSource": "regenerate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -3391,6 +3403,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId36002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -3666,6 +3679,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId37002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -3973,6 +3987,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId33002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {
@@ -4257,6 +4272,7 @@ Object {
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "_rank": 1,
   "airStatus": "READY",
+  "baselineModifyHash": "randomId32002",
   "dataSource": "mosCreate",
   "externalId": "SLENPS01;P_NDSL\\\\W;68E40DE6-2D08-487D-aaaaa",
   "importVersions": Object {

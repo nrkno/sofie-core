@@ -79,6 +79,7 @@ import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
+import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -626,12 +627,29 @@ export function restoreFromRundownPlaylistSnapshot(
 		}
 	})
 
-	const getNewRundownId = (oldRundownId: RundownId) => {
-		return rundownIdMap[unprotectString(oldRundownId)]
-	}
+	// Migrate old data:
+	// 1.12.0 Release 24:
+	const partSegmentIds: { [partId: string]: SegmentId } = {}
+	_.each(snapshot.parts, (part) => {
+		partSegmentIds[unprotectString(part._id)] = part.segmentId
+	})
+	_.each(snapshot.pieces, (piece) => {
+		const pieceOld = (piece as any) as Piece_1_11_0
+		if (pieceOld.rundownId) {
+			piece.startRundownId = pieceOld.rundownId
+			delete pieceOld.rundownId
+
+			piece.startPartId = pieceOld.partId
+			delete pieceOld.partId
+			piece.startSegmentId = partSegmentIds[unprotectString(piece.startPartId)]
+		}
+	})
 
 	// List any ids that need updating on other documents
 	const rundownIdMap: { [key: string]: RundownId } = {}
+	const getNewRundownId = (oldRundownId: RundownId) => {
+		return rundownIdMap[unprotectString(oldRundownId)]
+	}
 	_.each(snapshot.rundowns, (rd) => {
 		const oldId = rd._id
 		rundownIdMap[unprotectString(oldId)] = rd._id = getRandomId()
@@ -658,6 +676,9 @@ export function restoreFromRundownPlaylistSnapshot(
 	const pieceIdMap: { [key: string]: PieceId } = {}
 	_.each(snapshot.pieces, (piece) => {
 		const oldId = piece._id
+		piece.startRundownId = rundownIdMap[unprotectString(piece.startRundownId)]
+		piece.startPartId = partIdMap[unprotectString(piece.startPartId)]
+		piece.startSegmentId = segmentIdMap[unprotectString(piece.startSegmentId)]
 		pieceIdMap[unprotectString(oldId)] = piece._id = getRandomId()
 	})
 	const pieceInstanceIdMap: { [key: string]: PieceInstanceId } = {}
@@ -665,12 +686,13 @@ export function restoreFromRundownPlaylistSnapshot(
 		const oldId = pieceInstance._id
 		pieceInstanceIdMap[unprotectString(oldId)] = pieceInstance._id = getRandomId()
 		pieceInstance.piece._id = pieceIdMap[unprotectString(pieceInstance.piece._id)] || getRandomId()
-	})
-
-	const enableIdMap: { [key: string]: string | undefined } = {}
-	_.each(pieceIdMap, (newId, oldId) => {
-		enableIdMap[getPieceGroupId(oldId)] = getPieceGroupId(unprotectString(newId))
-		enableIdMap[getPieceFirstObjectId(oldId)] = getPieceFirstObjectId(unprotectString(newId))
+		if (pieceInstance.infinite) {
+			pieceInstance.infinite.infinitePieceId = pieceIdMap[unprotectString(pieceInstance.infinite.infinitePieceId)]
+			if (pieceInstance.infinite.lastPartInstanceId) {
+				pieceInstance.infinite.lastPartInstanceId =
+					partInstanceIdMap[unprotectString(pieceInstance.infinite.lastPartInstanceId)]
+			}
+		}
 	})
 
 	const rundownIds = snapshot.rundowns.map((r) => r._id)
@@ -682,8 +704,6 @@ export function restoreFromRundownPlaylistSnapshot(
 			rundownId?: RundownId
 			partId?: PartId
 			segmentId?: SegmentId
-			infiniteId?: PieceId
-			enable?: TSR.Timeline.TimelineEnable
 			part?: T
 			piece?: T
 		}
@@ -699,24 +719,10 @@ export function restoreFromRundownPlaylistSnapshot(
 			if (obj.segmentId) {
 				obj.segmentId = segmentIdMap[unprotectString(obj.segmentId)]
 			}
-			if (obj.infiniteId) {
-				obj.infiniteId = pieceIdMap[unprotectString(obj.infiniteId)]
-			}
-
-			if (obj.enable) {
-				obj.enable = substituteObjectIds(obj.enable, enableIdMap)
-			}
 
 			if (updateId) {
 				obj._id = getRandomId()
 			}
-
-			// Find any timeline objects
-			const content = (obj as any).content as Piece['content']
-			const tlObjects: TimelineObjRundown[] = content ? content.timelineObjects || [] : (obj as any).objects
-			_.each(tlObjects, (tlObj: TimelineObjRundown) => {
-				tlObj.enable = substituteObjectIds(tlObj.enable, enableIdMap)
-			})
 
 			if (obj.part) {
 				updateIds(obj.part)
@@ -743,7 +749,7 @@ export function restoreFromRundownPlaylistSnapshot(
 	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
 	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
 	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
-	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false)) // TODO-INFINITES - mutate them
+	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
 	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
 	saveIntoDb(

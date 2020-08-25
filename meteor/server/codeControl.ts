@@ -198,6 +198,16 @@ function isFunctionQueued(id: string): boolean {
 	})
 	return !!queued
 }
+export function isAnySyncFunctionsRunning(): boolean {
+	let found = false
+	for (const fcn of syncFunctionFcns) {
+		if (fcn.status === syncFunctionFcnStatus.RUNNING) {
+			found = true
+			break
+		}
+	}
+	return found
+}
 /**
  * like syncFunction, but ignores subsequent calls, if there is a function queued to be executed already
  * @param fcn

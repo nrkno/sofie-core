@@ -115,7 +115,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, true) // Activate rundownPlaylist (rehearsal)
 
@@ -166,7 +166,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, !!rehearsal) // Activate rundown
 			waitForPromise(cache.saveAllToDatabase())
@@ -210,7 +210,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 
@@ -234,7 +234,7 @@ export namespace ServerPlayoutAPI {
 			const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 			waitForPromise(cache.saveAllToDatabase())
@@ -407,7 +407,10 @@ export namespace ServerPlayoutAPI {
 			const nextPartInstanceTmp = nextPartInstance || currentPartInstance
 			if (!nextPartInstanceTmp)
 				throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" has no next and no current part!`)
-			// TODO-INFINITES this needs to handle the part being orphaned. Either we error gracefully because it could not be found, or we could try to figure out where we could have been before that (does the segment exist?)
+
+			const nextPart = cache.Parts.findOne(nextPartInstanceTmp.part._id)
+			if (!nextPart)
+				throw new Meteor.Error(404, `Part "${nextPartInstanceTmp.part._id}" no longer exists in the rundown!`)
 			currentNextPart = nextPartInstanceTmp.part
 		}
 
@@ -423,20 +426,9 @@ export namespace ServerPlayoutAPI {
 			}
 		})
 
-		let partIndex: number = -1
-		_.find(parts, (part, i) => {
-			if (part._id === currentNextPart._id) {
-				partIndex = i
-				return true
-			}
-		})
-		let segmentIndex: number = -1
-		_.find(segments, (s, i) => {
-			if (s._id === currentNextSegment._id) {
-				segmentIndex = i
-				return true
-			}
-		})
+		let partIndex = parts.findIndex((part) => part._id === currentNextPart._id)
+		let segmentIndex = segments.findIndex((s) => s._id === currentNextSegment._id)
+
 		if (partIndex === -1) throw new Meteor.Error(404, `Part not found in list of parts!`)
 		if (segmentIndex === -1)
 			throw new Meteor.Error(404, `Segment "${currentNextSegment._id}" not found in segmentsWithParts!`)
@@ -449,13 +441,7 @@ export namespace ServerPlayoutAPI {
 			const part = _.first(partsInSegments[unprotectString(segment._id)])
 			if (!part) throw new Meteor.Error(404, `No Parts in segment "${segment._id}"!`)
 
-			partIndex = -1
-			_.find(parts, (p, i) => {
-				if (p._id === part._id) {
-					partIndex = i
-					return true
-				}
-			})
+			partIndex = parts.findIndex((p) => p._id === part._id)
 			if (partIndex === -1) throw new Meteor.Error(404, `Part (from segment) not found in list of parts!`)
 		}
 		partIndex += horizontalDelta
@@ -1084,7 +1070,7 @@ export namespace ServerPlayoutAPI {
 			const playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 
-			const studio = cache.Studios.findOne(playlist.studioId)
+			const studio = cache.activationCache.getStudio()
 			if (!studio) throw new Meteor.Error(501, `Current Studio "${playlist.studioId}" could not be found`)
 
 			const currentPartInstance = playlist.currentPartInstanceId

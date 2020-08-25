@@ -31,6 +31,8 @@ import { OrganizationId } from './Organization'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
+/** A string, identifying an activation of a playlist */
+export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
 
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
@@ -61,6 +63,8 @@ export interface DBRundownPlaylist {
 	holdState?: RundownHoldState
 	/** Is the playlist currently active in the studio */
 	active?: boolean
+	/** This is set to a random string when the rundown is activated */
+	activeInstanceId?: ActiveInstanceId
 	/** Should the playlist loop at the end */
 	loop?: boolean
 
@@ -104,6 +108,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public rehearsal?: boolean
+	public activeInstanceId?: ActiveInstanceId
 	public holdState?: RundownHoldState
 	public active?: boolean
 	public currentPartInstanceId: PartInstanceId | null

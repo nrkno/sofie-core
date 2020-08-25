@@ -213,10 +213,9 @@ export namespace ServerPlayoutAdLibAPI {
 					`Rundown "${rundown._id}" not a part of RundownPlaylist "${rundownPlaylist._id}!"`
 				)
 
-			const adLibPiece = cache.RundownBaselineAdLibPieces.findOne({
-				_id: baselineAdLibPieceId,
-				rundownId: partInstance.rundownId,
-			})
+			const adLibPiece = waitForPromise(cache.activationCache.getRundownBaselineAdLibPieces(rundown)).find(
+				(adlib) => adlib._id === baselineAdLibPieceId
+			)
 			if (!adLibPiece)
 				throw new Meteor.Error(404, `Rundown Baseline Ad Lib Item "${baselineAdLibPieceId}" not found!`)
 			if (!queue && rundownPlaylist.currentPartInstanceId !== partInstanceId)
@@ -420,8 +419,7 @@ export namespace ServerPlayoutAdLibAPI {
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
 		newPieceInstance.dynamicallyInserted = true
 
-		// TODO-INFINITES set definitelyEnded on any pieceInstances which are stopped by this
-		// TODO-INFINITES stop other pieces in the exclusivityGroup
+		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
 		cache.PieceInstances.insert(newPieceInstance)
 	}
@@ -442,7 +440,6 @@ export namespace ServerPlayoutAdLibAPI {
 
 		const resolvedPieces = getResolvedPieces(cache, showStyleBase, currentPartInstance)
 		const stopAt = getCurrentTime() + (timeOffset || 0)
-		const definitelyEnded = stopAt + DEFINITELY_ENDED_FUTURE_DURATION
 		const relativeStopAt = stopAt - lastStartedPlayback
 
 		const stoppedInfiniteIds = new Set<PieceId>()
@@ -458,7 +455,6 @@ export namespace ServerPlayoutAdLibAPI {
 							userDuration: {
 								end: relativeStopAt,
 							},
-							definitelyEnded,
 						}
 						if (pieceInstance.infinite) {
 							// Mark where this ends
@@ -504,13 +500,11 @@ export namespace ServerPlayoutAdLibAPI {
 								currentPartInstance._id
 							),
 							dynamicallyInserted: true,
-							definitelyEnded,
 							infinite: {
 								infinitePieceId: pieceId,
 							},
 						})
 
-						// TODO-INFINITES check this is ok
 						stoppedInstances.push(pieceInstance._id)
 						break
 					}

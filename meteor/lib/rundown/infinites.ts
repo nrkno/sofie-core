@@ -5,7 +5,7 @@ import { DBPart, PartId, Part } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
-import { assertNever, max, flatten, literal } from '../lib'
+import { assertNever, max, flatten, literal, protectString } from '../lib'
 import { Mongo } from 'meteor/mongo'
 import { Studio } from '../collections/Studios'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
@@ -124,22 +124,15 @@ export function getPlayheadTrackingInfinitesForPart(
 						case PieceLifespan.OutOnRundownEnd:
 							isValid =
 								candidatePiece.rundownId === part.rundownId &&
-								segmentsBeforeThisInRundownSet.has(currentPartInstance.segmentId)
+								(segmentsBeforeThisInRundownSet.has(currentPartInstance.segmentId) ||
+									currentPartInstance.segmentId === part.segmentId)
 							break
 					}
 
 					if (isValid) {
-						// we need to check it should be masked by another infinite
 						const pieceSet = piecesOnSourceLayers.get(sourceLayerId) ?? {}
-						const currentPiece = pieceSet[mode]
-						if (currentPiece) {
-							// Which should we use?
-							// TODO-INFINITES when should the adlib take priority over preprogrammed?
-						} else {
-							// There isnt a conflict, so its easy
-							pieceSet[mode] = candidatePiece
-							piecesOnSourceLayers.set(sourceLayerId, pieceSet)
-						}
+						pieceSet[mode] = candidatePiece
+						piecesOnSourceLayers.set(sourceLayerId, pieceSet)
 					}
 				}
 			}
@@ -148,6 +141,7 @@ export function getPlayheadTrackingInfinitesForPart(
 
 	const rewrapInstance = (p: PieceInstance) => {
 		const instance = rewrapPieceToInstance(p.piece, part.rundownId, newInstanceId, isTemporary)
+		instance._id = protectString(`${instance._id}_continue`)
 
 		// instance.infinite = p.infinite
 		if (p.infinite) {
@@ -200,37 +194,28 @@ export function isPiecePotentiallyActiveInPart(
 				segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
 			)
 		case PieceLifespan.OutOnSegmentChange:
-			if (previousPartInstance === undefined) {
+			if (previousPartInstance !== undefined) {
+				// This gets handled by getPlayheadTrackingInfinitesForPart
+				// We will only copy the pieceInstance from the previous, never using the original piece
+				return false
+			} else {
 				// Predicting what will happen at arbitrary point in the future
 				return (
 					pieceToCheck.startSegmentId === part.segmentId &&
 					partsBeforeThisInSegment.has(pieceToCheck.startPartId)
 				)
-			} else {
-				// TODO-INFINITES
-				return false
-				// return (
-				// 	(pieceToCheck.startSegmentId === segment._id &&
-				// 		playHead.partId === part && // we're checking in t	he currently-playing part
-				// 			pieceToCheck.startPartRank >= part._rank) ||
-				// 	(nextHead.segmentId === segment && // We're checking the currently-playing segment
-				// 		pieceToCheck.rank >= nextHead.partRank &&
-				// 		part.rank < playHead.partRank) ||
-				// 	(nextHead.partId !== part &&
-				// 		pieceToCheck.startSegmentId === segment._id &&
-				// 		pieceToCheck.startPartRank >= part._rank)
-				// )
 			}
 		case PieceLifespan.OutOnRundownChange:
-			if (previousPartInstance === undefined) {
+			if (previousPartInstance !== undefined) {
+				// This gets handled by getPlayheadTrackingInfinitesForPart
+				// We will only copy the pieceInstance from the previous, never using the original piece
+				return false
+			} else {
 				// Predicting what will happen at arbitrary point in the future
 				return (
 					pieceToCheck.startRundownId === part.rundownId &&
 					segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
 				)
-			} else {
-				// TODO-INFINITES
-				return false
 			}
 		default:
 			assertNever(pieceToCheck.lifespan)
@@ -315,19 +300,6 @@ export function getPieceInstancesForPart(
 		  )
 		: []
 
-	// Prune any on layers where the normalPiece starts at 0
-	const normalPieces = possiblePieces.filter((p) => p.startPartId === part._id)
-	// TODO-INFINITES - this would be nicer to do from the playout/ui logic
-	// for (const normalPiece of normalPieces) {
-	// 	if (normalPiece.enable.start === 0) {
-	// 		const pieceSet = piecesOnSourceLayers.get(normalPiece.sourceLayerId) ?? {}
-	// 		// If an onChange starts at 0, then we will replace it.
-	// 		// onEnd can't can only be overridden, so dont prune those
-	// 		delete pieceSet['onChange']
-	// 		// TODO - fix
-	// 	}
-	// }
-
 	// Compile the resulting list
 
 	const wrapPiece = (p: PieceInstancePiece) => {
@@ -351,6 +323,7 @@ export function getPieceInstancesForPart(
 		return instance
 	}
 
+	const normalPieces = possiblePieces.filter((p) => p.startPartId === part._id)
 	const result = normalPieces.map(wrapPiece).concat(infinitesFromPrevious)
 	for (const pieceSet of Array.from(piecesOnSourceLayers.values())) {
 		const basicPieces = _.compact([
@@ -368,8 +341,11 @@ export function getPieceInstancesForPart(
 }
 
 export interface PieceInstanceWithTimings extends PieceInstance {
-	// resolvedStart: number | 'now' // TODO - document that this is the value to use, not a bounds (and is identical to piece.enable.start)
-	resolvedEndCap?: number | 'now' // TODO - document that this is value is a bounds, not the value to use
+	/**
+	 * This is a maximum end point of the pieceInstance.
+	 * If the pieceInstance also has a enable.duration of userDuration set then the shortest one will need to be used
+	 */
+	resolvedEndCap?: number | 'now'
 	priority: number
 }
 

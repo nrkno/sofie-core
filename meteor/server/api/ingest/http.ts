@@ -1,7 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
-import { updateRundownAndSaveCache } from './rundownInput'
+import { updateRundownAndSaveCache, handleUpdatedRundown } from './rundownInput'
 import { Studios, StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
 import { Rundowns } from '../../../lib/collections/Rundowns'
@@ -50,6 +50,5 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
 			`Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`
 		)
 
-	updateRundownAndSaveCache(studio, rundownId, existingDbRundown, ingestRundown, 'http')
-	// handleUpdatedRundown(studio, undefined, ingestRundown, 'http') // TODO-INFINITES
+	handleUpdatedRundown(studio, undefined, ingestRundown, 'http')
 }

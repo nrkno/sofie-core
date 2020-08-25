@@ -25,9 +25,11 @@ import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutIt
 import { saveIntoCache } from '../../DatabaseCache'
 import { afterRemoveParts } from '../rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
+import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { isAnySyncFunctionsRunning } from '../../codeControl'
 
 /**
  * Reset the rundown:
@@ -35,7 +37,6 @@ import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBas
  */
 export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	logger.info('resetRundown ' + rundown._id)
-
 	// Remove all dunamically inserted pieces (adlibs etc)
 
 	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
@@ -56,7 +57,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 				startedPlayback: 1,
 				taken: 1,
 				timings: 1,
-				// runtimeArguments: 1,
 				stoppedPlayback: 1,
 			},
 		}
@@ -150,7 +150,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 				duration: 1,
 				startedPlayback: 1,
 				timings: 1,
-				// runtimeArguments: 1,
 				stoppedPlayback: 1,
 				taken: 1,
 			},
@@ -544,8 +543,6 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 				duration: 1,
 				startedPlayback: 1,
 				taken: 1,
-				// runtimeArguments: 1,
-				// dirty: 1,
 				stoppedPlayback: 1,
 			},
 		}
@@ -649,7 +646,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 /**
  * time in ms before an autotake when we don't accept takes/updates
  */
-const AUTOTAKE_UPDATE_DEBOUNCE = 2000
+const AUTOTAKE_UPDATE_DEBOUNCE = 5000
 const AUTOTAKE_TAKE_DEBOUNCE = 1000
 
 export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefined, isTake?: boolean) {
@@ -727,7 +724,7 @@ export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part:
 }
 export function getStudioFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
 	if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-	let studio = cache.Studios.findOne(playlist.studioId)
+	let studio = cache.activationCache.getStudio()
 	if (studio) {
 		return studio
 	} else {
@@ -773,42 +770,31 @@ export function removeRundownPlaylistFromCache(cache: CacheForRundownPlaylist, p
 export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
 	cache.Rundowns.remove(rundown._id)
 	if (rundown.playlistId) {
-		// Check if any other rundowns in the playlist are left
+		// Check if any other members of the playlist are left
 		if (
 			cache.Rundowns.findFetch({
 				playlistId: rundown.playlistId,
 			}).length === 0
 		) {
-			// No other rundowns left, remove the playlist as well then:
 			cache.RundownPlaylists.remove(rundown.playlistId)
 		}
 	}
 	cache.Segments.remove({ rundownId: rundown._id })
 	cache.Parts.remove({ rundownId: rundown._id })
 	cache.PartInstances.remove({ rundownId: rundown._id })
-	cache.Pieces.remove({ rundownId: rundown._id })
-	cache.PieceInstances.remove({ rundownId: rundown._id })
-	cache.RundownBaselineAdLibActions.remove({ rundownId: rundown._id })
+	cache.Pieces.remove({ startRundownId: rundown._id })
+	cache.PieceInstances.remove({ rundownId: rundown._id }) // TODO - we don't load all the pieceinstances, so this doesnt do much
 	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
 
-	cache.defer(() => {
-		// These are not present in the cache because they do not directly affect output.
-		AdLibActions.remove({ rundownId: rundown._id })
-		AdLibPieces.remove({ rundownId: rundown._id })
-		ExpectedMediaItems.remove({ rundownId: rundown._id })
-		ExpectedPlayoutItems.remove({ rundownId: rundown._id })
-		IngestDataCache.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
-
-		// These might only partly be present in the cache, this should make sure they are properly removed:
-		Segments.remove({ rundownId: rundown._id })
-		Parts.remove({ rundownId: rundown._id })
-		PartInstances.remove({ rundownId: rundown._id })
-		Pieces.remove({ rundownId: rundown._id })
-		PieceInstances.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibActions.remove({ rundownId: rundown._id })
-		RundownBaselineObjs.remove({ rundownId: rundown._id })
-	})
+	// These are not present in the cache because they do not directly affect output.
+	// TODO - should this be a cache.defer??
+	AdLibActions.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	AdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	RundownBaselineAdLibPieces.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	RundownBaselineAdLibActions.remove({ rundownId: rundown._id }) // TODO these can be in the cache?
+	IngestDataCache.remove({ rundownId: rundown._id })
+	ExpectedMediaItems.remove({ rundownId: rundown._id })
+	ExpectedPlayoutItems.remove({ rundownId: rundown._id })
 }
 
 /** Get all piece instances in a part instance */
@@ -914,4 +900,20 @@ export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: Ru
 	const playlist = access.playlist
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${playlistId}" not found!`)
 	return playlist
+}
+export function triggerGarbageCollection() {
+	Meteor.setTimeout(() => {
+		// Trigger a manual garbage collection:
+		if (global.gc) {
+			// This is only avaialble of the flag --expose_gc
+			// This can be done in prod by: node --expose_gc main.js
+			// or when running Meteor in development, set set SERVER_NODE_OPTIONS=--expose_gc
+
+			if (!isAnySyncFunctionsRunning()) {
+				// by passing true, we're triggering the "full" collection
+				// @ts-ignore (typings not avaiable)
+				global.gc(true)
+			}
+		}
+	}, 500)
 }

@@ -57,9 +57,10 @@ function canContinueAdlibOnEndInfinites(
 }
 
 function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) {
+	// Note: This makes the assumption that nextPart is a part found in this cache
 	const partsBeforeThisInSegment = cache.Parts.findFetch({
 		segmentId: nextPart.segmentId,
-		_rank: { $lt: nextPart._rank }, // TODO-INFINITES is this ok?
+		_rank: { $lt: nextPart._rank },
 	}).map((p) => p._id)
 	const currentSegment = cache.Segments.findOne(nextPart.segmentId)
 	const segmentsBeforeThisInRundown = currentSegment

@@ -11,11 +11,7 @@ import {
 	Omit,
 } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPartInstance,
-	BlueprintRuntimeArguments,
-	PartEndState,
-} from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPartInstance, PartEndState } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
 import { PieceInstance, PieceInstances } from './PieceInstances'

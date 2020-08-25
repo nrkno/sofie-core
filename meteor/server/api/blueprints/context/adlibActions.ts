@@ -65,7 +65,6 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
 	adlibTransitionKeepAlive: 0,
-	canCombineQueue: false,
 	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
@@ -97,7 +96,7 @@ const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSam
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
-	private readonly cache: CacheForRundownPlaylist
+	private readonly _cache: CacheForRundownPlaylist
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
 
@@ -116,8 +115,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		rundownPlaylist: RundownPlaylist,
 		rundown: Rundown
 	) {
-		super(studio, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
-		this.cache = cache
+		super(studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
+		this._cache = cache
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -146,7 +145,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			return undefined
 		}
 
-		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		return clone(unprotectObject(partInstance))
 	}
 	getPieceInstances(part: 'current' | 'next'): IBlueprintPieceInstance[] {
@@ -155,7 +154,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			return []
 		}
 
-		const pieceInstances = this.cache.PieceInstances.findFetch({ partInstanceId })
+		const pieceInstances = this._cache.PieceInstances.findFetch({ partInstanceId })
 		return pieceInstances.map((piece) => clone(unprotectObject(piece)))
 	}
 	getResolvedPieceInstances(part: 'current' | 'next'): IBlueprintResolvedPieceInstance[] {
@@ -164,12 +163,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			return []
 		}
 
-		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		if (!partInstance) {
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(this.cache, this.getShowStyleBase(), partInstance)
+		const resolvedInstances = getResolvedPieces(this._cache, this.getShowStyleBase(), partInstance)
 		return resolvedInstances.map((piece) => clone(unprotectObject(piece)))
 	}
 
@@ -195,7 +194,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		}
 
 		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(
-			this.cache,
+			this._cache,
 			this.rundownPlaylist,
 			sourceLayerId,
 			(options && options.originalOnly) || false,
@@ -210,12 +209,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot insert piece when no active part')
 		}
 
-		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		if (!partInstance) {
 			throw new Error('Cannot queue part when no partInstance')
 		}
 
-		const rundown = this.cache.Rundowns.findOne(partInstance.rundownId)
+		const rundown = this._cache.Rundowns.findOne(partInstance.rundownId)
 		if (!rundown) {
 			throw new Error('Failed to find rundown of partInstance')
 		}
@@ -236,7 +235,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartAdLibPiece(
-			this.cache,
+			this._cache,
 			this.rundownPlaylist,
 			rundown,
 			partInstance,
@@ -258,7 +257,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Some valid properties must be defined')
 		}
 
-		const pieceInstance = this.cache.PieceInstances.findOne(protectString(pieceInstanceId))
+		const pieceInstance = this._cache.PieceInstances.findOne(protectString(pieceInstanceId))
 		if (!pieceInstance) {
 			throw new Error('PieceInstance could not be found')
 		}
@@ -303,16 +302,16 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			}
 		}
 
-		this.cache.PieceInstances.update(pieceInstance._id, update)
+		this._cache.PieceInstances.update(pieceInstance._id, update)
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
 
-		return clone(unprotectObject(this.cache.PieceInstances.findOne(pieceInstance._id)!))
+		return clone(unprotectObject(this._cache.PieceInstances.findOne(pieceInstance._id)!))
 	}
 	queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): IBlueprintPartInstance {
 		const currentPartInstance = this.rundownPlaylist.currentPartInstanceId
-			? this.cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId)
+			? this._cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId)
 			: undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
@@ -368,7 +367,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartQueuedAdLib(
-			this.cache,
+			this._cache,
 			this.rundownPlaylist,
 			this.rundown,
 			currentPartInstance,
@@ -392,7 +391,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PartInstance could not be found')
 		}
 
-		const partInstance = this.cache.PartInstances.findOne(partInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(partInstanceId)
 		if (!partInstance) {
 			throw new Error('PartInstance could not be found')
 		}
@@ -410,7 +409,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			}
 		}
 
-		this.cache.PartInstances.update(partInstance._id, update)
+		this._cache.PartInstances.update(partInstance._id, update)
 
 		this.nextPartState = Math.max(
 			this.nextPartState,
@@ -421,7 +420,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current' ? ActionPartChange.SAFE_CHANGE : ActionPartChange.NONE
 		)
 
-		return clone(unprotectObject(this.cache.PartInstances.findOne(partInstance._id)!))
+		return clone(unprotectObject(this._cache.PartInstances.findOne(partInstance._id)!))
 	}
 
 	stopPiecesOnLayers(sourceLayerIds: string[], timeOffset?: number | undefined): string[] {
@@ -450,12 +449,12 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
 
-		const pieceInstances = this.cache.PieceInstances.findFetch({
+		const pieceInstances = this._cache.PieceInstances.findFetch({
 			partInstanceId: partInstanceId,
 			_id: { $in: protectStringArray(pieceInstanceIds) },
 		})
 
-		this.cache.PieceInstances.remove({
+		this._cache.PieceInstances.remove({
 			partInstanceId: partInstanceId,
 			_id: { $in: pieceInstances.map((p) => p._id) },
 		})
@@ -469,13 +468,13 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		if (!this.rundownPlaylist.currentPartInstanceId) {
 			return []
 		}
-		const partInstance = this.cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId)
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
 
 		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(
-			this.cache,
+			this._cache,
 			this.getShowStyleBase(),
 			partInstance,
 			filter,
