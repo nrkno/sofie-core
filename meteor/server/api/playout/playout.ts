@@ -1220,7 +1220,7 @@ export namespace ServerPlayoutAPI {
 			const cachePlayout = waitForPromise(initCacheForNoRundownPlaylist(studioId, cache))
 			updateTimeline(cachePlayout, studioId)
 			const result = shouldUpdateStudioBaselineInner(cache, studioId)
-			cache.saveTimelineThenAllToDatabase()
+			cachePlayout.saveTimelineThenAllToDatabase()
 			return result
 		} else {
 			const result = shouldUpdateStudioBaselineInner(cache, studioId)
