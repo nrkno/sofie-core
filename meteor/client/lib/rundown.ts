@@ -419,9 +419,9 @@ export namespace RundownUtils {
 							sourceLayer = sourceLayers[piece.piece.sourceLayerId]
 							if (sourceLayer) {
 								sourceLayer = { ...sourceLayer }
-								let part = sourceLayer
-								part.pieces = []
-								outputLayer.sourceLayers.push(part)
+								let partSourceLayer = sourceLayer
+								partSourceLayer.pieces = []
+								outputLayer.sourceLayers.push(partSourceLayer)
 							}
 						}
 
