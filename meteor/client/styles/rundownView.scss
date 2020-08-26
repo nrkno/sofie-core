@@ -548,15 +548,16 @@ body.no-overflow {
 
 				> .segment-timeline__title__notes__count {
 					display: inline-block;
-					width: 1.1em;
+					min-width: 1.1em;
 					line-height: 1.1em;
 					font-weight: 600;
 					text-align: center;
-					border-radius: 100%;
+					border-radius: 1em;
 					font-size: 0.9em;
 					position: relative;
 					top: -0.3em;
 					left: -0.3em;
+					white-space: nowrap;
 				}
 
 				> svg.type-warning + .segment-timeline__title__notes__count {
