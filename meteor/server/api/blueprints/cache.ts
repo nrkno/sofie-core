@@ -22,6 +22,7 @@ interface Cache {
 	modified: number
 	manifest: SomeBlueprintManifest
 }
+const blueprintDocCache: { [id: string]: Blueprint } = {}
 
 export const BLUEPRINT_CACHE_CONTROL = { disable: false }
 
@@ -130,8 +131,10 @@ export function loadShowStyleBlueprints(showStyleBase: ShowStyleBase): WrappedSh
 }
 
 function loadBlueprintsById(blueprintId: BlueprintId): SomeBlueprintManifest | undefined {
-	const blueprint = Blueprints.findOne(blueprintId)
+	const cache = blueprintDocCache[unprotectString(blueprintId)]
+	const blueprint = cache || Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
+	if (!cache) blueprintDocCache[unprotectString(blueprintId)] = blueprint
 
 	return safeEvalBlueprints(blueprint, false)
 }
@@ -195,3 +198,18 @@ export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlu
 		return manifest
 	}
 }
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Blueprints.find(
+			{},
+			{
+				fields: {
+					_id: 1,
+				},
+			}
+		).observeChanges({
+			changed: (id: BlueprintId) => delete blueprintDocCache[unprotectString(id)],
+		})
+	}
+})
