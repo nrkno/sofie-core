@@ -24,7 +24,7 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId } from '../../../lib/collections/Rundowns'
@@ -33,6 +33,7 @@ import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Tracker } from 'meteor/tracker'
+import { Meteor } from 'meteor/meteor'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -295,6 +296,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const partInstanceIds = PartInstances.find(
 					{
 						segmentId: this.props.segmentId,
+						reset: {
+							$ne: true,
+						},
 					},
 					{
 						fields: {
@@ -306,28 +310,23 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				const playlist = RundownPlaylists.findOne(this.props.playlist._id, {
 					fields: {
 						currentPartInstanceId: 1,
+						nextPartInstanceId: 1,
 					},
 				})
 				if (playlist?.currentPartInstanceId) {
 					partInstanceIds.push(playlist?.currentPartInstanceId)
 				}
-
-				this.subscribe(PubSub.pieceInstances, {
-					rundownId: this.props.rundownId,
-					partInstanceId: {
-						$in: partInstanceIds,
-					},
-					reset: {
-						$ne: true,
-					},
-				})
+				if (playlist?.nextPartInstanceId) {
+					partInstanceIds.push(playlist?.nextPartInstanceId)
+				}
+				this.subscribeToPieceInstances(partInstanceIds)
 			})
 			// past inifnites subscription
 			this.pastInfinitesComp = this.autorun(() => {
 				const segment = Segments.findOne(this.props.segmentId, {
 					fields: {
-						_id: 1,
 						rundownId: 1,
+						_rank: 1,
 					},
 				})
 				segment &&
@@ -485,8 +484,55 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (this.intersectionObserver && this.props.isLiveSegment && this.props.followLiveSegments) {
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 			}
+			if (this.partInstanceSub !== undefined) {
+				const sub = this.partInstanceSub
+				setTimeout(() => {
+					sub.stop()
+				}, 500)
+			}
 			this.stopLive()
 			window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+		}
+
+		private partInstanceSub: Meteor.SubscriptionHandle | undefined
+		private partInstanceSubPartInstanceIds: PartInstanceId[] | undefined
+		private subscribeToPieceInstancesInner = (partInstanceIds: PartInstanceId[]) => {
+			this.partInstanceSubDebounce = undefined
+			if (
+				this.partInstanceSubPartInstanceIds &&
+				equivalentArrays(this.partInstanceSubPartInstanceIds, partInstanceIds)
+			) {
+				// old subscription is equivalent to the new one, don't do anything
+				return
+			}
+			// avoid having the subscription automatically scrapped by a re-run of the autorun
+			Tracker.nonreactive(() => {
+				if (this.partInstanceSub !== undefined) {
+					this.partInstanceSub.stop()
+				}
+				this.partInstanceSub = this.subscribe(PubSub.pieceInstances, {
+					rundownId: this.props.rundownId,
+					partInstanceId: {
+						$in: partInstanceIds,
+					},
+					reset: {
+						$ne: true,
+					},
+				})
+				this.partInstanceSubPartInstanceIds = partInstanceIds
+			})
+		}
+		private partInstanceSubDebounce: NodeJS.Timeout | undefined
+		private subscribeToPieceInstances(partInstanceIds: PartInstanceId[]) {
+			// run the first subscribe immediately, to avoid unneccessary wait time during bootup
+			if (this.partInstanceSub === undefined) {
+				this.subscribeToPieceInstancesInner(partInstanceIds)
+			} else {
+				if (this.partInstanceSubDebounce !== undefined) {
+					clearTimeout(this.partInstanceSubDebounce)
+				}
+				this.partInstanceSubDebounce = setTimeout(this.subscribeToPieceInstancesInner, 40, partInstanceIds)
+			}
 		}
 
 		onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
