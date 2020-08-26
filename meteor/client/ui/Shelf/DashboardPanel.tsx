@@ -165,19 +165,34 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					startedPlayback: {
 						$exists: true,
 					},
-					adLibSourceId: {
-						$exists: true,
-					},
-					$or: [
+					$and: [
 						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
+							$or: [
+								{
+									adLibSourceId: {
+										$exists: true,
+									},
+								},
+								{
+									'piece.tags': {
+										$exists: true,
+									},
+								},
+							],
 						},
 						{
-							stoppedPlayback: {
-								$exists: false,
-							},
+							$or: [
+								{
+									stoppedPlayback: {
+										$eq: 0,
+									},
+								},
+								{
+									stoppedPlayback: {
+										$exists: false,
+									},
+								},
+							],
 						},
 					],
 				})
@@ -591,20 +606,33 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 						},
 					],
 				},
-			],
-			adLibSourceId: {
-				$exists: true,
-			},
-			$or: [
 				{
-					userDuration: {
-						$exists: false,
-					},
+					$or: [
+						{
+							adLibSourceId: {
+								$exists: true,
+							},
+						},
+						{
+							'piece.tags': {
+								$exists: true,
+							},
+						},
+					],
 				},
 				{
-					'userDuration.end': {
-						$exists: false,
-					},
+					$or: [
+						{
+							userDuration: {
+								$exists: false,
+							},
+						},
+						{
+							'userDuration.end': {
+								$exists: false,
+							},
+						},
+					],
 				},
 			],
 		}).fetch()
@@ -674,8 +702,8 @@ export function getUnfinishedPieceInstancesGrouped(
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
-		.filter((piece) => !!piece.piece.adLibSourceId)
-		.map((piece) => piece.piece.adLibSourceId!)
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
 	const unfinishedTags: string[] = unfinishedPieceInstances
 		.filter((piece) => !!piece.piece.tags)
 		.map((piece) => piece.piece.tags!)
@@ -693,8 +721,8 @@ export function getNextPieceInstancesGrouped(
 	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
-		.filter((piece) => !!piece.piece.adLibSourceId)
-		.map((piece) => piece.piece.adLibSourceId!)
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
 	const nextTags: string[] = nextPieceInstances
 		.filter((piece) => !!piece.piece.tags)
 		.map((piece) => piece.piece.tags!)
