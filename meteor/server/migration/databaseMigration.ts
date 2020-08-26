@@ -314,9 +314,16 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 	// Filter steps:
 	let migrationSteps: { [id: string]: MigrationStepInternal } = {}
 	let ignoredSteps: { [id: string]: true } = {}
+	let includesCoreStep = false
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
 		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length)))
 			throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
+
+		if (step.chunk.sourceType !== MigrationStepType.CORE && includesCoreStep) {
+			// stop here as core migrations need to be run before anything else can
+			partialMigration = true
+			return
+		}
 
 		if (partialMigration) return
 		if (
@@ -366,6 +373,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 			if (step._validateResult) {
 				migrationSteps[step.id] = step
+				includesCoreStep = includesCoreStep || step.chunk.sourceType === MigrationStepType.CORE
 			} else {
 				// No need to run step
 				ignoredSteps[step.id] = true

@@ -63,7 +63,7 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, UserActionAPIMethods } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
 import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
@@ -75,7 +75,7 @@ import {
 	initCacheForNoRundownPlaylist,
 	CacheForStudio,
 } from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake } from './take'
+import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
@@ -297,6 +297,7 @@ export namespace ServerPlayoutAPI {
 
 		return takeNextPartInner(context, rundownPlaylistId)
 	}
+
 	export function setNextPart(
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
@@ -327,8 +328,7 @@ export namespace ServerPlayoutAPI {
 		playlist: RundownPlaylist,
 		nextPartId: PartId | Part | null,
 		setManually?: boolean,
-		nextTimeOffset?: number | undefined,
-		skipRunResetPart?: boolean
+		nextTimeOffset?: number | undefined
 	) {
 		if (!playlist.active) throw new Meteor.Error(501, `Rundown Playlist "${playlist._id}" is not active!`)
 		if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE)
@@ -1063,7 +1063,7 @@ export namespace ServerPlayoutAPI {
 			currentPartInstance: PartInstance
 		) => void
 	) {
-		let takeAfterExecute = false
+		const now = getCurrentTime()
 
 		rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
@@ -1099,25 +1099,42 @@ export namespace ServerPlayoutAPI {
 				},execution=${getRandomId()}`,
 				false
 			)
-			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+			const actionContext = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 
 			// If any action cannot be done due to timings, that needs to be rejected by the context
-			func(context, cache, rundown, currentPartInstance)
+			func(actionContext, cache, rundown, currentPartInstance)
 
-			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
+			if (
+				actionContext.currentPartState !== ActionPartChange.NONE ||
+				actionContext.nextPartState !== ActionPartChange.NONE
+			) {
 				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
-
-				updateTimeline(cache, playlist.studioId)
 			}
 
-			waitForPromise(cache.saveAllToDatabase())
+			if (actionContext.takeAfterExecute) {
+				return ServerPlayoutAPI.callTakeWithCache(context, rundownPlaylistId, now, cache)
+			} else {
+				if (
+					actionContext.currentPartState !== ActionPartChange.NONE ||
+					actionContext.nextPartState !== ActionPartChange.NONE
+				) {
+					updateTimeline(cache, playlist.studioId)
+				}
 
-			takeAfterExecute = context.takeAfterExecute
+				waitForPromise(cache.saveAllToDatabase())
+			}
 		})
-
-		if (takeAfterExecute) {
-			ServerPlayoutAPI.takeNextPart(context, rundownPlaylistId)
-		}
+	}
+	/**
+	 * This exists for the purpose of mocking this call for testing.
+	 */
+	export function callTakeWithCache(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		now: number,
+		cache: CacheForRundownPlaylist
+	) {
+		return takeNextPartInnerSync(context, rundownPlaylistId, now, cache)
 	}
 	export function sourceLayerOnPartStop(
 		context: MethodContext,

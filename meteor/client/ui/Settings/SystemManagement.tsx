@@ -16,7 +16,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 		coreSystem: CoreSystem.findOne(),
 	}
 })(
-	class SystemMessages extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
+	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
 		componentDidMount() {
 			meteorSubscribe(PubSub.coreSystem, null)
 		}
@@ -41,6 +41,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 								<span className="mdfx"></span>
 							</div>
 						</label>
+
 						<h2 className="mhn mtn">{t('System-wide Notification Message')}</h2>
 						<label className="field">
 							{t('Message')}
@@ -66,6 +67,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 									collection={CoreSystem}></EditAttribute>
 							</div>
 						</div>
+
 						<h2 className="mhn">{t('Edit Support Panel')}</h2>
 						<label className="field">
 							{t('HTML that will be shown in the Support Panel')}
@@ -80,6 +82,40 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 								/>
 								<span className="mdfx"></span>
 							</div>
+						</label>
+
+						<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
+						<div className="field">
+							{t('Enabled')}
+							<div className="mdi">
+								<EditAttribute
+									attribute="apm.enabled"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}></EditAttribute>
+							</div>
+						</div>
+						<label className="field">
+							{t('Transaction Sample Rate')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="apm.transactionSampleRate"
+									obj={this.props.coreSystem}
+									type="float"
+									collection={CoreSystem}
+									className="mdinput"
+								/>
+								<span className="mdfx"></span>
+							</div>
+							<div>
+								(
+								{t(
+									'How many of the transactions to monitor. Set to -1 to log nothing (max performance), 0.5 to log 50% of the transactions, 1 to log all transactions'
+								)}
+								)
+							</div>
+							<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 						</label>
 					</div>
 				</div>

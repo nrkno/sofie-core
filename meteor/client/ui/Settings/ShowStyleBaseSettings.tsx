@@ -33,7 +33,6 @@ import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
 import {
 	ConfigManifestEntry,
 	BlueprintManifestType,
-	IBlueprintRuntimeArgumentsItem,
 	ISourceLayer,
 	SourceLayerType,
 	IOutputLayer,
@@ -237,7 +236,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								collection={ShowStyleBases}
 								layerMappings={this.getLayerMappingsFlat()}
 								sourceLayers={this.getSourceLayersFlat()}
-								configPath={'config'}
+								configPath={'blueprintConfig'}
 							/>
 						</div>
 					</div>
@@ -1259,7 +1258,7 @@ const ShowStyleVariantsSettings = withTranslation()(
 												tReady={this.props.tReady}
 												manifest={this.props.blueprintConfigManifest}
 												collection={ShowStyleVariants}
-												configPath={'config'}
+												configPath={'blueprintConfig'}
 												object={showStyleVariant}
 												subPanel={true}
 											/>

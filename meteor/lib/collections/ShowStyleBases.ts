@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import {
-	IConfigItem,
+	IBlueprintConfig,
 	IBlueprintShowStyleBase,
 	IOutputLayer,
 	ISourceLayer,
@@ -42,7 +42,7 @@ export class ShowStyleBase implements DBShowStyleBase {
 	public blueprintId: BlueprintId
 	public outputLayers: Array<IOutputLayer>
 	public sourceLayers: Array<ISourceLayer>
-	public config: Array<IConfigItem>
+	public blueprintConfig: IBlueprintConfig
 	public hotkeyLegend?: Array<HotkeyDefinition>
 	public _rundownVersionHash: string
 
@@ -64,6 +64,6 @@ Meteor.startup(() => {
 			organizationId: 1,
 		})
 
-		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['config', 'blueprintId'])
+		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfig', 'blueprintId'])
 	}
 })

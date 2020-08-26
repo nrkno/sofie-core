@@ -790,14 +790,14 @@ export namespace ClientRundownAPI {
 						id: id,
 						name: compound.name,
 						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.config),
+						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
 					}
 				}
 			}
 		)
 
 		return {
-			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.config),
+			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),
 			showStyles: showStyleWarnings,
 		}
 	}

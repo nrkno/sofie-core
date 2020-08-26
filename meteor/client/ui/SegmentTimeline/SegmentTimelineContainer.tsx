@@ -217,8 +217,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		if (
 			typeof props.studio !== typeof nextProps.studio ||
 			!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
-			!_.isEqual(props.studio.config, nextProps.studio.config) ||
-			!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
 			!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
 			!_.isEqual(props.showStyleBase.outputLayers, nextProps.showStyleBase.outputLayers)
 		) {

@@ -161,6 +161,7 @@ describe('Migrations', () => {
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -186,6 +187,7 @@ describe('Migrations', () => {
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -211,6 +213,7 @@ describe('Migrations', () => {
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -366,6 +369,7 @@ describe('Migrations', () => {
 			outputLayers: [],
 			sourceLayers: [],
 			hotkeyLegend: [],
+			// @ts-ignore
 			config: [],
 			_rundownVersionHash: '',
 		})
@@ -374,6 +378,7 @@ describe('Migrations', () => {
 			_id: protectString('variant0'),
 			name: '',
 			showStyleBaseId: protectString('showStyle0'),
+			// @ts-ignore
 			config: [],
 			_rundownVersionHash: '',
 		})

@@ -133,14 +133,18 @@ function loadBlueprintsById(blueprintId: BlueprintId): SomeBlueprintManifest | u
 	const blueprint = Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
 
+	return safeEvalBlueprints(blueprint, false)
+}
+
+export function safeEvalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	if (blueprint.code) {
 		try {
-			return evalBlueprints(blueprint, false)
+			return evalBlueprints(blueprint, noCache)
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
 		}
 	} else {
-		throw new Meteor.Error(500, `Blueprint "${blueprintId}" code not set!`)
+		throw new Meteor.Error(500, `Blueprint "${blueprint._id}" code not set!`)
 	}
 }
 export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {

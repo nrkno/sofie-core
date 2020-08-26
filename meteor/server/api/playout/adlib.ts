@@ -37,6 +37,7 @@ import { MongoQuery } from '../../../lib/typings/meteor'
 import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -237,6 +238,7 @@ export namespace ServerPlayoutAdLibAPI {
 		currentPartInstance: PartInstance,
 		adLibPiece: AdLibPiece | BucketAdLib
 	) {
+		const span = Agent.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
 				_id: getRandomId(),
@@ -273,6 +275,8 @@ export namespace ServerPlayoutAdLibAPI {
 		syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
 
 		updateTimeline(cache, rundownPlaylist.studioId)
+
+		if (span) span.end()
 	}
 
 	export function sourceLayerStickyPieceStart(rundownPlaylist: RundownPlaylist, sourceLayerId: string) {
@@ -326,6 +330,7 @@ export namespace ServerPlayoutAdLibAPI {
 		originalOnly: boolean,
 		customQuery?: MongoQuery<PieceInstance>
 	) {
+		const span = Agent.startSpan('innerFindLastPieceOnLayer')
 		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 
 		const query = {
@@ -343,6 +348,8 @@ export namespace ServerPlayoutAdLibAPI {
 				$ne: true,
 			}
 		}
+
+		if (span) span.end()
 
 		// Note: This does not want to use the cache, as we want to search as far back as we can
 		// TODO - will this cause problems?
@@ -362,6 +369,7 @@ export namespace ServerPlayoutAdLibAPI {
 		newPartInstance: PartInstance,
 		newPieceInstances: PieceInstance[]
 	) {
+		const span = Agent.startSpan('innerStartQueuedAdLib')
 		logger.info('adlibQueueInsertPartInstance')
 
 		// check if there's already a queued part after this:
@@ -405,6 +413,8 @@ export namespace ServerPlayoutAdLibAPI {
 		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
 
 		setNextPart(cache, rundownPlaylist, newPartInstance)
+
+		if (span) span.end()
 	}
 
 	export function innerStartAdLibPiece(
@@ -414,6 +424,7 @@ export namespace ServerPlayoutAdLibAPI {
 		existingPartInstance: PartInstance,
 		newPieceInstance: PieceInstance
 	) {
+		const span = Agent.startSpan('innerStartAdLibPiece')
 		// Ensure it is labelled as dynamic
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
@@ -422,6 +433,7 @@ export namespace ServerPlayoutAdLibAPI {
 		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
 		cache.PieceInstances.insert(newPieceInstance)
+		if (span) span.end()
 	}
 
 	export function innerStopPieces(
@@ -431,6 +443,7 @@ export namespace ServerPlayoutAdLibAPI {
 		filter: (pieceInstance: PieceInstance) => boolean,
 		timeOffset: number | undefined
 	) {
+		const span = Agent.startSpan('innerStopPieces')
 		const stoppedInstances: PieceInstanceId[] = []
 
 		const lastStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
@@ -514,6 +527,7 @@ export namespace ServerPlayoutAdLibAPI {
 			}
 		}
 
+		if (span) span.end()
 		return stoppedInstances
 	}
 	export function startBucketAdlibPiece(

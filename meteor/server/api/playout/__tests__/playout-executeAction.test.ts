@@ -254,5 +254,85 @@ describe('Playout API', () => {
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
 		})
+
+		testInFiber('take after execute (true)', () => {
+			const api = ServerPlayoutAPI
+			const mockTake = jest.fn().mockReturnThis()
+			api.callTakeWithCache = mockTake
+
+			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
+			const STATE_NONE = ActionPartChange.NONE
+			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
+
+			Blueprints.update(blueprintId, {
+				$set: {
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									context.takeAfterExecuteAction(true)
+								},
+							}
+						}
+					),
+				},
+			})
+
+			const actionId = 'some-action'
+			const userData = { blobby: true }
+			api.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+
+			const timesTakeCalled = mockTake.mock.calls.length
+			mockTake.mockRestore()
+			expect(timesTakeCalled).toBe(1)
+		})
+
+		testInFiber('take after execute (false)', () => {
+			const api = ServerPlayoutAPI
+			const mockTake = jest.fn().mockReturnThis()
+			api.callTakeWithCache = mockTake
+
+			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
+			const STATE_NONE = ActionPartChange.NONE
+			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
+
+			Blueprints.update(blueprintId, {
+				$set: {
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									context.takeAfterExecuteAction(false)
+								},
+							}
+						}
+					),
+				},
+			})
+
+			const actionId = 'some-action'
+			const userData = { blobby: true }
+			api.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+
+			const timesTakeCalled = mockTake.mock.calls.length
+			mockTake.mockRestore()
+			expect(timesTakeCalled).toBe(0)
+		})
 	})
 })

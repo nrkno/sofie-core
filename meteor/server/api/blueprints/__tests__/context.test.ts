@@ -5,6 +5,7 @@ import {
 	setupDefaultRundown,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	setupMockStudioBlueprint,
 } from '../../../../__mocks__/helpers/database'
 import { getHash, literal, protectString, unprotectObject, unprotectString, waitForPromise } from '../../../../lib/lib'
 import { Studio } from '../../../../lib/collections/Studios'
@@ -20,6 +21,10 @@ import {
 	TSR,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
+	ConfigManifestEntryType,
+	BlueprintManifestType,
+	ConfigManifestEntry,
+	SomeBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import {
 	CommonContext,
@@ -47,9 +52,11 @@ import {
 } from '../../../../lib/collections/PartInstances'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { SegmentId } from '../../../../lib/collections/Segments'
+import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
 import { initCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { generateFakeBlueprint } from './lib'
 
 describe('Test blueprint api context', () => {
 	function generateSparsePieceInstances(rundown: Rundown) {
@@ -150,15 +157,43 @@ describe('Test blueprint api context', () => {
 
 	describe('StudioConfigContext', () => {
 		function mockStudio() {
+			const manifest = () => ({
+				blueprintType: 'studio' as BlueprintManifestType.STUDIO,
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0',
+
+				studioConfigManifest: [
+					{
+						id: 'abc',
+						name: '',
+						description: '',
+						type: 'boolean' as ConfigManifestEntryType.BOOLEAN,
+						defaultVal: false,
+						required: false,
+					},
+					{
+						id: '123',
+						name: '',
+						description: '',
+						type: 'string' as ConfigManifestEntryType.STRING,
+						defaultVal: '',
+						required: false,
+					},
+				] as ConfigManifestEntry[],
+				studioMigrations: [],
+				getBaseline: () => [],
+				getShowStyleId: () => null,
+			})
+			const blueprint = generateFakeBlueprint('', BlueprintManifestType.STUDIO, manifest)
 			return setupMockStudio({
 				settings: {
 					sofieUrl: 'testUrl',
 					mediaPreviewsUrl: '',
 				},
-				config: [
-					{ _id: 'abc', value: true },
-					{ _id: '123', value: 'val2' },
-				],
+				blueprintConfig: { abc: true, '123': 'val2', notInManifest: 'val3' },
+				blueprintId: Blueprints.insert(blueprint),
 			})
 		}
 
@@ -248,6 +283,87 @@ describe('Test blueprint api context', () => {
 			const showStyleVariant = ShowStyleVariants.findOne() as ShowStyleVariant
 			expect(showStyleVariant).toBeTruthy()
 
+			const manifest = () => ({
+				blueprintType: 'showstyle' as BlueprintManifestType.SHOWSTYLE,
+				blueprintVersion: '0.0.0',
+				integrationVersion: '0.0.0',
+				TSRVersion: '0.0.0',
+				minimumCoreVersion: '0.0.0',
+
+				showStyleConfigManifest: [
+					{
+						id: 'one',
+						name: '',
+						description: '',
+						type: 'boolean' as ConfigManifestEntryType.BOOLEAN,
+						defaultVal: false,
+						required: false,
+					},
+					{
+						id: 'two',
+						name: '',
+						description: '',
+						type: 'string' as ConfigManifestEntryType.STRING,
+						defaultVal: '',
+						required: false,
+					},
+					{
+						id: 'three',
+						name: '',
+						description: '',
+						type: 'number' as ConfigManifestEntryType.NUMBER,
+						defaultVal: 0,
+						required: false,
+					},
+					{
+						id: 'four.a',
+						name: '',
+						description: '',
+						type: 'string' as ConfigManifestEntryType.STRING,
+						defaultVal: '',
+						required: false,
+					},
+					{
+						id: 'four.b',
+						name: '',
+						description: '',
+						type: 'table' as ConfigManifestEntryType.TABLE,
+						defaultVal: [],
+						required: false,
+						columns: [
+							{
+								id: 'x',
+								name: '',
+								description: '',
+								type: 'number' as ConfigManifestEntryType.NUMBER,
+								required: false,
+								defaultVal: 0,
+								rank: 0,
+							},
+						],
+					},
+					{
+						id: 'four.c',
+						name: '',
+						description: '',
+						type: 'number' as ConfigManifestEntryType.NUMBER,
+						defaultVal: 0,
+						required: false,
+					},
+				] as ConfigManifestEntry[],
+				showStyleMigrations: [],
+				getRundown: () => null,
+				getSegment: () => null,
+				getShowStyleVariantId: () => null,
+			})
+			const showStyleBase = ShowStyleBases.findOne()
+			const blueprint = generateFakeBlueprint(
+				unprotectString(showStyleBase!.blueprintId),
+				BlueprintManifestType.SHOWSTYLE,
+				(manifest as any) as () => SomeBlueprintManifest
+			)
+			Blueprints.update(blueprint._id, blueprint)
+
 			const notesContext = new NotesContext(
 				contextName || 'N/A',
 				`rundownId=${rundownId},segmentId=${segmentId}`,
@@ -299,18 +415,34 @@ describe('Test blueprint api context', () => {
 			// Set some config
 			ShowStyleVariants.update((context as any).showStyleVariantId, {
 				$set: {
-					config: [
-						{ _id: 'one', value: true },
-						{ _id: 'two', value: 'val2' },
-					],
+					blueprintConfig: {
+						one: true,
+						two: 'val2',
+						four: {
+							a: 'abc',
+							b: [
+								{ _id: '0', x: 789 },
+								{ _id: '1', x: 567 },
+							],
+						},
+					},
 				},
 			})
 			ShowStyleBases.update((context as any).showStyleBaseId, {
 				$set: {
-					config: [
-						{ _id: 'two', value: 'default' },
-						{ _id: 'three', value: 765 },
-					],
+					blueprintConfig: {
+						two: 'default',
+						three: 765,
+						four: {
+							a: 'xyz',
+							b: [
+								{ _id: '0', x: 123 },
+								{ _id: '1', x: 456 },
+								{ _id: '2', x: 789 },
+							],
+							c: 1234,
+						},
+					},
 				},
 			})
 
@@ -318,6 +450,14 @@ describe('Test blueprint api context', () => {
 				one: true,
 				two: 'val2',
 				three: 765,
+				four: {
+					a: 'abc',
+					b: [
+						{ _id: '0', x: 789 },
+						{ _id: '1', x: 567 },
+					],
+					c: 1234,
+				},
 			})
 		})
 
@@ -397,7 +537,7 @@ describe('Test blueprint api context', () => {
 			}
 
 			const tmpPart = wrapPartToTemporaryInstance(mockPart as DBPart)
-			const context = new PartEventContext(rundown, cache, undefined, tmpPart)
+			const context = new PartEventContext(rundown, cache, tmpPart)
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.part).toEqual(tmpPart)
@@ -421,7 +561,7 @@ describe('Test blueprint api context', () => {
 
 			let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-			return new AsRunEventContext(rundown, cache, undefined, mockEvent)
+			return new AsRunEventContext(rundown, cache, mockEvent)
 		}
 		testInFiber('getAllAsRunEvents', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
@@ -442,7 +582,7 @@ describe('Test blueprint api context', () => {
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			}
 
-			const context = new AsRunEventContext(rundown, cache, undefined, mockEvent)
+			const context = new AsRunEventContext(rundown, cache, mockEvent)
 			expect(context.getStudio()).toBeTruthy()
 			expect(context.asRunEvent).toEqual(mockEvent)
 

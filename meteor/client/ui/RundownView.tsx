@@ -1418,6 +1418,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			label: string
 			global?: boolean
 		}> = []
+		private usedArgumentKeys: Array<{
+			key: string
+			up?: (e: KeyboardEvent) => any
+			down?: (e: KeyboardEvent) => any
+			label: string
+			global?: boolean
+		}> = []
 		private _segmentZoomOn: boolean = false
 		private _hideNotificationsAfterMount: number | undefined
 
@@ -1766,42 +1773,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.usedArgumentKeys = []
-
-			if (this.props.showStyleBase) {
-				this.props.showStyleBase.runtimeArguments.forEach((i) => {
-					const combos = i.hotkeys.split(',')
-
-					const handler = (e: KeyboardEvent) => {
-						if (this.props.playlist && this.props.playlist.active && this.props.playlist.nextPartInstanceId) {
-							const playlistId = this.props.playlist._id
-							const nextPartInstanceId = this.props.playlist.nextPartInstanceId
-							doUserAction(t, e, UserAction.TOGGLE_PART_ARGUMENT, (e) =>
-								MeteorCall.userAction.togglePartArgument(e, playlistId, nextPartInstanceId, i.property, i.value)
-							)
-						}
-					}
-					combos.forEach((combo: string) => {
-						mousetrapHelper.bind(combo, handler, 'keyup', 'RuntimeArguments')
-						mousetrapHelper.bind(combo, noOp, 'keydown', 'RuntimeArguments')
-						this.usedArgumentKeys.push({
-							up: handler,
-							key: combo,
-							label: i.label || '',
-						})
-
-						registerHotkey(
-							combo,
-							i.label || '',
-							HotkeyAssignmentType.RUNTIME_ARGUMENT,
-							undefined,
-							false,
-							handler,
-							undefined,
-							HOTKEY_GROUP
-						)
-					})
-				})
-			}
 		}
 
 		onSelectPiece = (piece: PieceUi) => {
