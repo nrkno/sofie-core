@@ -57,10 +57,9 @@ interface IState {
 const BUTTON_GRID_WIDTH = 1
 const BUTTON_GRID_HEIGHT = 0.61803
 
-const HOTKEY_GROUP = 'DashboardPanel'
-
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
+	hotkeyGroup: string
 }
 
 export interface IDashboardPanelTrackedProps {
@@ -191,7 +190,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -199,8 +198,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	componentWillUnmount() {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
 		this.usedHotkeys.length = 0
 	}
@@ -236,7 +235,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
 						(e: ExtendedKeyboardEvent) => {
@@ -244,14 +243,14 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							this.onToggleAdLib(item, false, e)
 						},
 						'keyup',
-						HOTKEY_GROUP
+						this.props.hotkeyGroup
 					)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
 							(e: ExtendedKeyboardEvent) => {
@@ -259,7 +258,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 								this.onToggleAdLib(item, true, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(queueHotkey)
 					}
@@ -270,7 +269,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.props.rundownBaselineAdLibs) {
 			this.props.rundownBaselineAdLibs.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
 						(e: ExtendedKeyboardEvent) => {
@@ -278,14 +277,14 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							this.onToggleAdLib(item, false, e)
 						},
 						'keyup',
-						HOTKEY_GROUP
+						this.props.hotkeyGroup
 					)
-					this.usedHotkeys.push(item.hotkey, HOTKEY_GROUP)
+					this.usedHotkeys.push(item.hotkey, this.props.hotkeyGroup)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
 							(e: ExtendedKeyboardEvent) => {
@@ -293,7 +292,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 								this.onToggleAdLib(item, true, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(queueHotkey)
 					}
@@ -314,7 +313,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
 					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach((element) => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							element,
 							(e: ExtendedKeyboardEvent) => {
@@ -322,7 +321,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 								this.onToggleSticky(sourceLayer._id, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(element)
 					})
@@ -330,7 +329,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			})
 
 			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
-				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 				mousetrapHelper.bind(
 					hotkey,
 					(e: ExtendedKeyboardEvent) => {
@@ -338,7 +337,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						this.onClearAllSourceLayers(sourceLayers, e)
 					},
 					'keyup',
-					HOTKEY_GROUP
+					this.props.hotkeyGroup
 				)
 				this.usedHotkeys.push(hotkey)
 			})

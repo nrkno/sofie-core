@@ -29,7 +29,8 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist } from '../DatabaseCaches'
+import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../DatabaseCaches'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 const EVENT_WAIT_TIME = 500
 
@@ -72,10 +73,14 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
+				const playlist = RundownPlaylists.findOne(rundown.playlistId)
+				if (!playlist) throw new Meteor.Error(404, `Playlist "${rundown.playlistId}" not found!`)
+
 				const { blueprint } = getBlueprintOfRundown(undefined, rundown)
 
 				if (blueprint.onAsRunEvent) {
-					const context = new AsRunEventContext(rundown, undefined, event)
+					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					const context = new AsRunEventContext(rundown, cache, event)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
 						.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
@@ -162,6 +167,7 @@ export function reportRundownDataHasChanged(
 
 export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstance: PartInstance, timestamp: Time) {
 	if (partInstance) {
+		const span = Agent.startSpan('reportPartHasStarted')
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
 				'part.startedPlayback': true,
@@ -204,6 +210,7 @@ export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstanc
 				`RundownPlaylist "${cache.containsDataFromPlaylist}" not found in reportPartHasStarted "${partInstance._id}"`
 			)
 		}
+		if (span) span.end()
 	}
 }
 export function reportPartHasStopped(playlistId: RundownPlaylistId, partInstance: PartInstance, timestamp: Time) {

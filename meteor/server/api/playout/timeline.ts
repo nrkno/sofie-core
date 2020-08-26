@@ -58,12 +58,13 @@ import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, CacheForStudio } from '../../DatabaseCaches'
+import { CacheForRundownPlaylist, CacheForStudio, CacheForStudioBase } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -73,8 +74,9 @@ import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 // export const updateTimeline: (cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) => void
 // = syncFunctionIgnore(function updateTimeline (cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
 export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
+	const span = Agent.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
-	const studio = cache.Studios.findOne(studioId)
+	const studio = cache.activationCache.getStudio()
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
 
 	if (activePlaylist && cache.containsDataFromPlaylist !== activePlaylist._id) {
@@ -82,18 +84,6 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	}
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
-
-	if (activePlaylist) {
-		// remove anything not related to active rundown
-		cache.Timeline.remove({
-			studioId: studio._id,
-			playlistId: {
-				$not: {
-					$eq: activePlaylist._id,
-				},
-			},
-		})
-	}
 
 	const timelineObjs: Array<TimelineObjGeneric> = [
 		...getTimelineRundown(cache, studio),
@@ -137,6 +127,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	afterUpdateTimeline(cache, studio._id, savedTimelineObjs)
 
 	logger.debug('updateTimeline done!')
+	if (span) span.end()
 }
 // '$1') // This causes syncFunctionIgnore to only use the second argument (studioId) when ignoring
 
@@ -146,10 +137,11 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
  * @param studioId id of the studio to update
  */
 export function afterUpdateTimeline(
-	cache: CacheForStudio,
+	cache: CacheForStudioBase,
 	studioId: StudioId,
 	timelineObjs?: Array<TimelineObjGeneric>
 ) {
+	const span = Agent.startSpan('afterUpdateTimeline')
 	// logger.info('afterUpdateTimeline')
 	if (!timelineObjs) {
 		timelineObjs = cache.Timeline.findFetch({
@@ -187,8 +179,9 @@ export function afterUpdateTimeline(
 	statObj._id = getTimelineId(statObj)
 
 	cache.Timeline.upsert(statObj._id, statObj)
+	if (span) span.end()
 }
-export function getActiveRundownPlaylist(cache: CacheForStudio, studioId: StudioId): RundownPlaylist | undefined {
+export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({
 		studioId: studioId,
 		active: true,
@@ -198,6 +191,7 @@ export function getActiveRundownPlaylist(cache: CacheForStudio, studioId: Studio
  * Returns timeline objects related to rundowns in a studio
  */
 function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): TimelineObjRundown[] {
+	const span = Agent.startSpan('getTimelineRundown')
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
 
@@ -218,7 +212,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 		if (playlist && activeRundown) {
 			// Fetch showstyle blueprint:
 			const activeRundown0 = activeRundown
-			const pShowStyle = asyncCollectionFindOne(ShowStyleBases, activeRundown.showStyleBaseId)
+			const pShowStyle = cache.activationCache.getShowStyleBase(activeRundown)
 			const pshowStyleBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, activeRundown0))
 
 			// Fetch baseline
@@ -246,7 +240,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 
 			if (showStyleBlueprintManifest.onTimelineGenerate && currentPartInstance) {
 				const currentPart = currentPartInstance
-				const context = new PartEventContext(activeRundown, studio, currentPart)
+				const context = new PartEventContext(activeRundown, cache, currentPart)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
 				try {
 					const tlGenRes = waitForPromise(
@@ -278,6 +272,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 				}
 			}
 
+			if (span) span.end()
 			return timelineObjs.map<TimelineObjRundown>((timelineObj) => {
 				return {
 					...omit(timelineObj, 'pieceInstanceId', 'infinitePieceId'), // temporary fields from OnGenerateTimelineObj
@@ -317,9 +312,11 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 				)
 			}
 
+			if (span) span.end()
 			return studioBaseline
 		}
 	} catch (e) {
+		if (span) span.end()
 		logger.error(e)
 		return []
 	}
@@ -365,6 +362,7 @@ function getTimelineRecording(
  * @param timelineObjs Array of timeline objects
  */
 function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjGeneric>): void {
+	const span = Agent.startSpan('processTimelineObjects')
 	// first, split out any grouped objects, to make the timeline shallow:
 	let fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
@@ -397,6 +395,7 @@ function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjG
 		o._id = getTimelineId(o)
 		fixObjectChildren(o)
 	})
+	if (span) span.end()
 }
 /**
  * goes through timelineObjs and forces the "now"-values to the absolute time specified
@@ -418,6 +417,7 @@ function buildTimelineObjsForRundown(
 	baselineItems: RundownBaselineObj[],
 	activePlaylist: RundownPlaylist
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
+	const span = Agent.startSpan('buildTimelineObjsForRundown')
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 	let currentPartGroup: TimelineObjRundown | undefined
 	let previousPartGroup: TimelineObjRundown | undefined
@@ -718,6 +718,7 @@ function buildTimelineObjsForRundown(
 		logger.info(`No next part and no current part set on RundownPlaylist "${activePlaylist._id}".`)
 	}
 
+	if (span) span.end()
 	return timelineObjs
 }
 function createPartGroup(
@@ -834,6 +835,7 @@ function transformPartIntoTimeline(
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObj> {
+	const span = Agent.startSpan('transformPartIntoTimeline')
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 
 	const isHold = holdState === RundownHoldState.ACTIVE
@@ -920,6 +922,7 @@ function transformPartIntoTimeline(
 			}
 		}
 	}
+	if (span) span.end()
 	return timelineObjs
 }
 

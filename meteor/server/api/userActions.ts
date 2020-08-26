@@ -53,6 +53,7 @@ import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -445,7 +446,7 @@ export function executeAction(
 	if (!playlist.currentPartInstanceId)
 		return ClientAPI.responseError(`No part is playing, please Take a part before executing an action.`)
 
-	return ClientAPI.responseSuccess(ServerPlayoutAPI.executeAction(rundownPlaylistId, actionId, userData))
+	return ClientAPI.responseSuccess(ServerPlayoutAPI.executeAction(context, rundownPlaylistId, actionId, userData))
 }
 export function segmentAdLibPieceStart(
 	context: MethodContext,
@@ -789,45 +790,68 @@ export function noop(context: MethodContext) {
 	return ClientAPI.responseSuccess(undefined)
 }
 
+export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
+	const transaction = Agent.startTransaction(description, 'userAction')
+	return makePromise(() => {
+		const res = fn(...args)
+		if (transaction) transaction.end()
+		return res
+	})
+}
+
 class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	take(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return makePromise(() => take(this, rundownPlaylistId))
+		return traceAction('userAction.take', take, this, rundownPlaylistId)
 	}
 	setNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, partId: PartId, timeOffset?: number) {
-		return makePromise(() => setNext(this, rundownPlaylistId, partId, true, timeOffset))
+		return traceAction('userAction.setNext', setNext, this, rundownPlaylistId, partId, true, timeOffset)
 	}
 	setNextSegment(_userEvent: string, rundownPlaylistId: RundownPlaylistId, segmentId: SegmentId) {
-		return makePromise(() => setNextSegment(this, rundownPlaylistId, segmentId))
+		return traceAction('userAction.setNextSegment', setNextSegment, this, rundownPlaylistId, segmentId)
 	}
 	moveNext(_userEvent: string, rundownPlaylistId: RundownPlaylistId, horisontalDelta: number, verticalDelta: number) {
-		return makePromise(() => moveNext(this, rundownPlaylistId, horisontalDelta, verticalDelta, true))
+		return traceAction(
+			'userAction.moveNext',
+			moveNext,
+			this,
+			rundownPlaylistId,
+			horisontalDelta,
+			verticalDelta,
+			true
+		)
 	}
 	prepareForBroadcast(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return makePromise(() => prepareForBroadcast(this, rundownPlaylistId))
+		return traceAction('userAction.prepareForBroadcast', prepareForBroadcast, this, rundownPlaylistId)
 	}
 	resetRundownPlaylist(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return makePromise(() => resetRundownPlaylist(this, rundownPlaylistId))
+		return traceAction('userAction.resetRundownPlaylist', resetRundownPlaylist, this, rundownPlaylistId)
 	}
 	resetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal?: boolean) {
-		return makePromise(() => resetAndActivate(this, rundownPlaylistId, rehearsal))
+		return traceAction('userAction.resetAndActivate', resetAndActivate, this, rundownPlaylistId, rehearsal)
 	}
 	activate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
-		return makePromise(() => activate(this, rundownPlaylistId, rehearsal))
+		return traceAction('userAction.activate', activate, this, rundownPlaylistId, rehearsal)
 	}
 	deactivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return makePromise(() => deactivate(this, rundownPlaylistId))
+		return traceAction('userAction.deactivate', deactivate, this, rundownPlaylistId)
 	}
 	forceResetAndActivate(_userEvent: string, rundownPlaylistId: RundownPlaylistId, rehearsal: boolean) {
-		return makePromise(() => forceResetAndActivate(this, rundownPlaylistId, rehearsal))
+		return traceAction(
+			'userAction.forceResetAndActivate',
+			forceResetAndActivate,
+			this,
+			rundownPlaylistId,
+			rehearsal
+		)
 	}
 	reloadData(_userEvent: string, rundownPlaylistId: RundownPlaylistId) {
-		return makePromise(() => reloadRundownPlaylistData(this, rundownPlaylistId))
+		return traceAction('userAction.reloadRundownPlaylistData', reloadRundownPlaylistData, this, rundownPlaylistId)
 	}
 	unsyncRundown(_userEvent: string, rundownId: RundownId) {
-		return makePromise(() => unsyncRundown(this, rundownId))
+		return traceAction('userAction.unsyncRundown', unsyncRundown, this, rundownId)
 	}
 	disableNextPiece(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		return makePromise(() => disableNextPiece(this, rundownPlaylistId, undo))
+		return traceAction('userAction.disableNextPiece', disableNextPiece, this, rundownPlaylistId, undo)
 	}
 	pieceTakeNow(
 		_userEvent: string,
@@ -835,7 +859,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		partInstanceId: PartInstanceId,
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	) {
-		return makePromise(() => pieceTakeNow(this, rundownPlaylistId, partInstanceId, pieceInstanceIdOrPieceIdToCopy))
+		return traceAction(
+			'userAction.pieceTakeNow',
+			pieceTakeNow,
+			this,
+			rundownPlaylistId,
+			partInstanceId,
+			pieceInstanceIdOrPieceIdToCopy
+		)
 	}
 	setInOutPoints(
 		_userEvent: string,
@@ -853,7 +884,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		actionId: string,
 		userData: ActionUserData
 	) {
-		return makePromise(() => executeAction(this, rundownPlaylistId, actionId, userData))
+		return traceAction('userAction.executeAction', executeAction, this, rundownPlaylistId, actionId, userData)
 	}
 	segmentAdLibPieceStart(
 		_userEvent: string,
@@ -862,7 +893,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		adlibPieceId: PieceId,
 		queue: boolean
 	) {
-		return makePromise(() => segmentAdLibPieceStart(this, rundownPlaylistId, partInstanceId, adlibPieceId, queue))
+		return traceAction(
+			'userAction.segmentAdLibPieceStart',
+			segmentAdLibPieceStart,
+			this,
+			rundownPlaylistId,
+			partInstanceId,
+			adlibPieceId,
+			queue
+		)
 	}
 	sourceLayerOnPartStop(
 		_userEvent: string,
@@ -870,7 +909,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		partInstanceId: PartInstanceId,
 		sourceLayerIds: string[]
 	) {
-		return makePromise(() => sourceLayerOnPartStop(this, rundownPlaylistId, partInstanceId, sourceLayerIds))
+		return traceAction(
+			'userAction.sourceLayerOnPartStop',
+			sourceLayerOnPartStop,
+			this,
+			rundownPlaylistId,
+			partInstanceId,
+			sourceLayerIds
+		)
 	}
 	baselineAdLibPieceStart(
 		_userEvent: string,
@@ -879,12 +925,24 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		adlibPieceId: PieceId,
 		queue: boolean
 	) {
-		return makePromise(() =>
-			rundownBaselineAdLibPieceStart(this, rundownPlaylistId, partInstanceId, adlibPieceId, queue)
+		return traceAction(
+			'userAction.			rundownBaselineAdLibPieceStart',
+			rundownBaselineAdLibPieceStart,
+			this,
+			rundownPlaylistId,
+			partInstanceId,
+			adlibPieceId,
+			queue
 		)
 	}
 	sourceLayerStickyPieceStart(_userEvent: string, rundownPlaylistId: RundownPlaylistId, sourceLayerId: string) {
-		return makePromise(() => sourceLayerStickyPieceStart(this, rundownPlaylistId, sourceLayerId))
+		return traceAction(
+			'userAction.sourceLayerStickyPieceStart',
+			sourceLayerStickyPieceStart,
+			this,
+			rundownPlaylistId,
+			sourceLayerId
+		)
 	}
 	bucketAdlibImport(
 		_userEvent: string,
@@ -893,7 +951,15 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		bucketId: BucketId,
 		ingestItem: IngestAdlib
 	) {
-		return makePromise(() => bucketAdlibImport(this, studioId, showStyleVariantId, bucketId, ingestItem))
+		return traceAction(
+			'userAction.bucketAdlibImport',
+			bucketAdlibImport,
+			this,
+			studioId,
+			showStyleVariantId,
+			bucketId,
+			ingestItem
+		)
 	}
 	bucketAdlibStart(
 		_userEvent: string,
@@ -902,31 +968,39 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		bucketAdlibId: PieceId,
 		queue?: boolean
 	) {
-		return makePromise(() => bucketAdlibStart(this, rundownPlaylistId, partInstanceId, bucketAdlibId, queue))
+		return traceAction(
+			'userAction.bucketAdlibStart',
+			bucketAdlibStart,
+			this,
+			rundownPlaylistId,
+			partInstanceId,
+			bucketAdlibId,
+			queue
+		)
 	}
 	activateHold(_userEvent: string, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
-		return makePromise(() => activateHold(this, rundownPlaylistId, undo))
+		return traceAction('userAction.activateHold', activateHold, this, rundownPlaylistId, undo)
 	}
 	saveEvaluation(_userEvent: string, evaluation: EvaluationBase) {
 		return makePromise(() => userSaveEvaluation(this, evaluation))
 	}
 	storeRundownSnapshot(_userEvent: string, playlistId: RundownPlaylistId, reason: string) {
-		return makePromise(() => userStoreRundownSnapshot(this, playlistId, reason))
+		return traceAction('userAction.userStoreRundownSnapshot', userStoreRundownSnapshot, this, playlistId, reason)
 	}
 	removeRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return makePromise(() => removeRundownPlaylist(this, playlistId))
+		return traceAction('userAction.removeRundownPlaylist', removeRundownPlaylist, this, playlistId)
 	}
 	resyncRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return makePromise(() => resyncRundownPlaylist(this, playlistId))
+		return traceAction('userAction.resyncRundownPlaylist', resyncRundownPlaylist, this, playlistId)
 	}
 	removeRundown(_userEvent: string, rundownId: RundownId) {
-		return makePromise(() => removeRundown(this, rundownId))
+		return traceAction('userAction.removeRundown', removeRundown, this, rundownId)
 	}
 	resyncRundown(_userEvent: string, rundownId: RundownId) {
-		return makePromise(() => resyncRundown(this, rundownId))
+		return traceAction('userAction.resyncRundown', resyncRundown, this, rundownId)
 	}
 	resyncSegment(_userEvent: string, rundownId: RundownId, segmentId: SegmentId) {
-		return makePromise(() => resyncSegment(this, rundownId, segmentId))
+		return traceAction('userAction.resyncSegment', resyncSegment, this, rundownId, segmentId)
 	}
 	recordStop(_userEvent: string, studioId: StudioId) {
 		return makePromise(() => recordStop(this, studioId))
@@ -953,7 +1027,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return makePromise(() => mediaAbortAllWorkflows(this))
 	}
 	regenerateRundownPlaylist(_userEvent: string, playlistId: RundownPlaylistId) {
-		return makePromise(() => regenerateRundownPlaylist(this, playlistId))
+		return traceAction('userAction.regenerateRundownPlaylist', regenerateRundownPlaylist, this, playlistId)
 	}
 	generateRestartToken(_userEvent: string) {
 		return makePromise(() => generateRestartToken(this))
@@ -962,28 +1036,28 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		return makePromise(() => restartCore(this, token))
 	}
 	guiFocused(_userEvent: string, _viewInfo: any[]) {
-		return makePromise(() => noop(this))
+		return traceAction('userAction.noop', noop, this)
 	}
 	guiBlurred(_userEvent: string, _viewInfo: any[]) {
-		return makePromise(() => noop(this))
+		return traceAction('userAction.noop', noop, this)
 	}
 	bucketsRemoveBucket(_userEvent: string, id: BucketId) {
-		return makePromise(() => bucketsRemoveBucket(this, id))
+		return traceAction('userAction.bucketsRemoveBucket', bucketsRemoveBucket, this, id)
 	}
 	bucketsModifyBucket(_userEvent: string, id: BucketId, bucket: Partial<Omit<Bucket, '_id'>>) {
-		return makePromise(() => bucketsModifyBucket(this, id, bucket))
+		return traceAction('userAction.bucketsModifyBucket', bucketsModifyBucket, this, id, bucket)
 	}
 	bucketsEmptyBucket(_userEvent: string, id: BucketId) {
-		return makePromise(() => bucketsEmptyBucket(this, id))
+		return traceAction('userAction.bucketsEmptyBucket', bucketsEmptyBucket, this, id)
 	}
 	bucketsCreateNewBucket(_userEvent: string, name: string, studioId: StudioId, userId: string | null) {
-		return makePromise(() => bucketsCreateNewBucket(this, name, studioId, userId))
+		return traceAction('userAction.bucketsCreateNewBucket', bucketsCreateNewBucket, this, name, studioId, userId)
 	}
 	bucketsRemoveBucketAdLib(_userEvent: string, id: PieceId) {
-		return makePromise(() => bucketsRemoveBucketAdLib(this, id))
+		return traceAction('userAction.bucketsRemoveBucketAdLib', bucketsRemoveBucketAdLib, this, id)
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
-		return makePromise(() => bucketsModifyBucketAdLib(this, id, bucketAdlib))
+		return traceAction('userAction.bucketsModifyBucketAdLib', bucketsModifyBucketAdLib, this, id, bucketAdlib)
 	}
 }
 registerClassToMeteorMethods(

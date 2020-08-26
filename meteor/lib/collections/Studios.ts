@@ -1,7 +1,7 @@
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection, ProtectedString } from '../lib'
 import * as _ from 'underscore'
-import { IConfigItem, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintConfig, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
@@ -53,7 +53,7 @@ export interface DBStudio {
 	supportedShowStyleBase: Array<ShowStyleBaseId>
 
 	/** Config values are used by the Blueprints */
-	config: Array<IConfigItem>
+	blueprintConfig: IBlueprintConfig
 	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioSettings
@@ -79,7 +79,7 @@ export class Studio implements DBStudio {
 	public blueprintId?: BlueprintId
 	public mappings: MappingsExt
 	public supportedShowStyleBase: Array<ShowStyleBaseId>
-	public config: Array<IConfigItem> // TODO - migration to rename
+	public blueprintConfig: IBlueprintConfig
 	public settings: IStudioSettings
 	public testToolsConfig?: ITestToolsConfig
 
@@ -99,6 +99,6 @@ registerCollection('Studios', Studios)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(Studios, '_rundownVersionHash', ['config'])
+		ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfig'])
 	}
 })

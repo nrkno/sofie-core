@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { runInFiber } from '../../../../__mocks__/Fibers'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
+import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
 import { literal, saveIntoDb, protectString } from '../../../../lib/lib'
@@ -13,6 +13,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../.
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 import { removeRundownFromCache } from '../../playout/lib'
 import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { Studios } from '../../../../lib/collections/Studios'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
@@ -24,11 +25,25 @@ function createMockRO() {
 	if (existing)
 		wrapWithCacheForRundownPlaylistFromRundown(existing._id, (cache) => removeRundownFromCache(cache, existing))
 
+	Studios.insert({
+		_id: protectString('mock_studio'),
+		organizationId: null,
+		name: 'mock studio',
+		mappings: {},
+		supportedShowStyleBase: [],
+		blueprintConfig: {},
+		settings: {
+			mediaPreviewsUrl: '',
+			sofieUrl: '',
+		},
+		_rundownVersionHash: '',
+	})
+
 	RundownPlaylists.insert({
 		_id: rundownPlaylistId,
 		externalId: 'mock_rpl',
 		name: 'Mock',
-		studioId: protectString(''),
+		studioId: protectString('mock_studio'),
 		peripheralDeviceId: protectString(''),
 		created: 0,
 		modified: 0,
@@ -42,7 +57,7 @@ function createMockRO() {
 		_id: rundownId,
 		externalId: 'mock_ro',
 		name: 'Mock',
-		studioId: protectString(''),
+		studioId: protectString('mock_studio'),
 		showStyleBaseId: protectString(''),
 		showStyleVariantId: protectString(''),
 		peripheralDeviceId: protectString(''),

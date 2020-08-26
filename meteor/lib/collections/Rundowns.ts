@@ -97,6 +97,8 @@ export interface DBRundown
 	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
+	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
+	baselineModifyHash?: string
 }
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
@@ -130,6 +132,7 @@ export class Rundown implements DBRundown {
 	public playlistExternalId?: string
 	public playlistId: RundownPlaylistId
 	public _rank: number
+	public baselineModifyHash?: string
 	_: any
 
 	constructor(document: DBRundown) {
@@ -144,13 +147,13 @@ export class Rundown implements DBRundown {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
-	getShowStyleCompound(): ShowStyleCompound {
-		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
-		let ss = getShowStyleCompound(this.showStyleVariantId)
-		if (ss) {
-			return ss
-		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
-	}
+	// getShowStyleCompound(): ShowStyleCompound {
+	// 	if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
+	// 	let ss = getShowStyleCompound(this.showStyleVariantId)
+	// 	if (ss) {
+	// 		return ss
+	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
+	// }
 	getShowStyleBase(): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)

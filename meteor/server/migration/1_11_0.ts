@@ -2,6 +2,7 @@ import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import _ from 'underscore'
 
 // Release 23
 addMigrationSteps('1.11.0', [

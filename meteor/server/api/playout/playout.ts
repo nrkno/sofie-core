@@ -63,7 +63,7 @@ import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ing
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse, UserActionAPIMethods } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
 import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
@@ -75,12 +75,13 @@ import {
 	initCacheForNoRundownPlaylist,
 	CacheForStudio,
 } from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake } from './take'
+import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { UserAction } from '../../../client/lib/userAction'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -114,7 +115,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, true) // Activate rundownPlaylist (rehearsal)
 
@@ -165,7 +166,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, !!rehearsal) // Activate rundown
 			waitForPromise(cache.saveAllToDatabase())
@@ -209,7 +210,7 @@ export namespace ServerPlayoutAPI {
 			}
 
 			libResetRundownPlaylist(cache, playlist)
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 
@@ -233,7 +234,7 @@ export namespace ServerPlayoutAPI {
 			const playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
-			prepareStudioForBroadcast(cache, getStudioFromCache(cache, playlist), true, playlist)
+			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 			waitForPromise(cache.saveAllToDatabase())
@@ -296,6 +297,7 @@ export namespace ServerPlayoutAPI {
 
 		return takeNextPartInner(context, rundownPlaylistId)
 	}
+
 	export function setNextPart(
 		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
@@ -1029,12 +1031,17 @@ export namespace ServerPlayoutAPI {
 
 		return ServerPlayoutAdLibAPI.sourceLayerStickyPieceStart(playlist, sourceLayerId)
 	}
-	export function executeAction(rundownPlaylistId: RundownPlaylistId, actionId: string, userData: any) {
+	export function executeAction(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		actionId: string,
+		userData: any
+	) {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
 
-		return executeActionInner(rundownPlaylistId, (context, cache, rundown) => {
+		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
 			const blueprint = getBlueprintOfRundown(undefined, rundown) // todo: database again
 			if (!blueprint.blueprint.executeAction) {
 				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
@@ -1042,11 +1049,12 @@ export namespace ServerPlayoutAPI {
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
 
-			blueprint.blueprint.executeAction(context, actionId, userData)
+			blueprint.blueprint.executeAction(actionContext, actionId, userData)
 		})
 	}
 
 	export function executeActionInner(
+		context: MethodContext,
 		rundownPlaylistId: RundownPlaylistId,
 		func: (
 			context: ActionExecutionContext,
@@ -1055,7 +1063,9 @@ export namespace ServerPlayoutAPI {
 			currentPartInstance: PartInstance
 		) => void
 	) {
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+		const now = getCurrentTime()
+
+		rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
 			const tmpPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
 			if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 			if (!tmpPlaylist.active) throw new Meteor.Error(403, `Pieces can be only manipulated in an active rundown!`)
@@ -1066,7 +1076,7 @@ export namespace ServerPlayoutAPI {
 			const playlist = cache.RundownPlaylists.findOne(rundownPlaylistId)
 			if (!playlist) throw new Meteor.Error(404, `Rundown "${rundownPlaylistId}" not found!`)
 
-			const studio = cache.Studios.findOne(playlist.studioId)
+			const studio = cache.activationCache.getStudio()
 			if (!studio) throw new Meteor.Error(501, `Current Studio "${playlist.studioId}" could not be found`)
 
 			const currentPartInstance = playlist.currentPartInstanceId
@@ -1089,19 +1099,42 @@ export namespace ServerPlayoutAPI {
 				},execution=${getRandomId()}`,
 				false
 			)
-			const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+			const actionContext = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 
 			// If any action cannot be done due to timings, that needs to be rejected by the context
-			func(context, cache, rundown, currentPartInstance)
+			func(actionContext, cache, rundown, currentPartInstance)
 
-			if (context.currentPartState !== ActionPartChange.NONE || context.nextPartState !== ActionPartChange.NONE) {
+			if (
+				actionContext.currentPartState !== ActionPartChange.NONE ||
+				actionContext.nextPartState !== ActionPartChange.NONE
+			) {
 				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
-
-				updateTimeline(cache, playlist.studioId)
 			}
 
-			waitForPromise(cache.saveAllToDatabase())
+			if (actionContext.takeAfterExecute) {
+				return ServerPlayoutAPI.callTakeWithCache(context, rundownPlaylistId, now, cache)
+			} else {
+				if (
+					actionContext.currentPartState !== ActionPartChange.NONE ||
+					actionContext.nextPartState !== ActionPartChange.NONE
+				) {
+					updateTimeline(cache, playlist.studioId)
+				}
+
+				waitForPromise(cache.saveAllToDatabase())
+			}
 		})
+	}
+	/**
+	 * This exists for the purpose of mocking this call for testing.
+	 */
+	export function callTakeWithCache(
+		context: MethodContext,
+		rundownPlaylistId: RundownPlaylistId,
+		now: number,
+		cache: CacheForRundownPlaylist
+	) {
+		return takeNextPartInnerSync(context, rundownPlaylistId, now, cache)
 	}
 	export function sourceLayerOnPartStop(
 		context: MethodContext,

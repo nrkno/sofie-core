@@ -25,6 +25,7 @@ import { ShowStyleVariants, createShowStyleCompound } from '../lib/collections/S
 import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export { PackageInfo }
 
@@ -42,6 +43,10 @@ function initializeCoreSystem() {
 			previousVersion: null,
 			storePath: '', // to be filled in later
 			serviceMessages: {},
+			apm: {
+				enabled: false,
+				transactionSampleRate: -1,
+			},
 		})
 
 		// Check what migration has to provide:
@@ -344,7 +349,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 		const blueprint = Blueprints.findOne(studio.blueprintId)
 		if (!blueprint) return
 
-		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.config)
+		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
 		const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
 		setBlueprintConfigStatus(systemStatusId, diff, studio._id)
 		blueprintIds[systemStatusId] = true
@@ -365,7 +370,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 			const compound = createShowStyleCompound(showBase, variant)
 			if (!compound) return
 
-			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.config)
+			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
 			if (diff && diff.length) {
 				allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 			}
@@ -517,9 +522,36 @@ function startupMessage() {
 	}
 }
 
+function startInstrumenting() {
+	// attempt init elastic APM
+	const system = getCoreSystem()
+	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
+
+	if (APM_HOST && system && system.apm) {
+		logger.info(`APM agent starting up`)
+		Agent.start({
+			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+			hostname: APP_HOST,
+			serverUrl: APM_HOST,
+			secretToken: APM_SECRET,
+			active: system.apm.enabled,
+			transactionSampleRate: system.apm.transactionSampleRate,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+	} else {
+		logger.info(`APM agent inactive`)
+		Agent.start({
+			serviceName: 'tv-automation-server-core',
+			active: false,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+	}
+}
+
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		startupMessage()
 		initializeCoreSystem()
+		startInstrumenting()
 	}
 })
