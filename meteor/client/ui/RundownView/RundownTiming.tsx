@@ -11,7 +11,12 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
+import {
+	PartInstance,
+	findPartInstanceOrWrapToTemporary,
+	PartInstanceId,
+	wrapPartToTemporaryInstance,
+} from '../../../lib/collections/PartInstances'
 import { Settings } from '../../../lib/Settings'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
@@ -175,6 +180,10 @@ export const RundownTimingProvider = withTracker<
 		refreshTimerInterval: number
 		refreshDecimator: number
 
+		private temporaryPartInstances: {
+			[key: string]: PartInstance
+		} = {}
+
 		private linearParts: Array<[PartId, number | null]> = []
 		// look at the comments on RundownTimingContext to understand what these do
 		private partDurations: {
@@ -240,6 +249,10 @@ export const RundownTimingProvider = withTracker<
 				Meteor.clearInterval(this.refreshTimer)
 				this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			}
+			if (prevProps.parts !== this.props.parts) {
+				// empty the temporary Part Instances cache
+				this.temporaryPartInstances = {}
+			}
 		}
 
 		componentWillUnmount() {
@@ -268,6 +281,24 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
+		private getPartInstanceOrGetCachedTemp(
+			partInstancesMap: { [key: string]: PartInstance | undefined },
+			part: Part
+		): PartInstance {
+			const origPartId = unprotectString(part._id)
+			if (partInstancesMap[origPartId] !== undefined) {
+				return partInstancesMap[origPartId]!
+			} else {
+				if (this.temporaryPartInstances[origPartId]) {
+					return this.temporaryPartInstances[origPartId]
+				} else {
+					const partInstance = wrapPartToTemporaryInstance(part)
+					this.temporaryPartInstances[origPartId] = partInstance
+					return partInstance
+				}
+			}
+		}
+
 		updateDurations(now: number, isLowResolution: boolean) {
 			let totalRundownDuration = 0
 			let remainingRundownDuration = 0
@@ -290,7 +321,7 @@ export const RundownTimingProvider = withTracker<
 
 			if (playlist && parts) {
 				parts.forEach((origPart, itIndex) => {
-					const partInstance = findPartInstanceOrWrapToTemporary(partInstancesMap, origPart)
+					const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
 
 					// add piece to accumulator
 					const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
