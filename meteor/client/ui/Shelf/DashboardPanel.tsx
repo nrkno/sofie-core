@@ -207,7 +207,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
-		return isAdLibNext(this.props.nextAdLibIds, this.props.nextTags, adLib)
+		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
 	}
 
 	refreshKeyboardHotkeys() {
@@ -721,11 +721,13 @@ export function isAdLibOnAir(
 
 export function isAdLibNext(
 	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
+	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
 	nextTags: IDashboardPanelTrackedProps['nextTags'],
 	adLib: AdLibPieceUi
 ) {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
+		(adLib.setNextTags && adLib.setNextTags.every((tag) => unfinishedTags.includes(tag))) ||
 		(adLib.setNextTags && adLib.setNextTags.every((tag) => nextTags.includes(tag)))
 	) {
 		return true
