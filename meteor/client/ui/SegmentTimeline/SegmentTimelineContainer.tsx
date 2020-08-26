@@ -272,21 +272,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		componentDidMount() {
-			// this.subscribe(PubSub.segments, {
-			// 	rundownId: this.props.rundownId,
-			// 	_id: this.props.segmentId,
-			// })
-			// this.subscribe(PubSub.parts, {
-			// 	rundownId: this.props.rundownId,
-			// 	segmentId: this.props.segmentId,
-			// })
-			// this.subscribe(PubSub.partInstances, {
-			// 	rundownId: this.props.rundownId,
-			// 	segmentId: this.props.segmentId,
-			// 	reset: {
-			// 		$ne: true,
-			// 	},
-			// })
 			this.autorun(() => {
 				const partIds = Parts.find(
 					{
@@ -332,6 +317,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					partInstanceId: {
 						$in: partInstanceIds,
 					},
+					reset: {
+						$ne: true,
+					},
 				})
 			})
 			// past inifnites subscription
@@ -344,13 +332,13 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				})
 				segment &&
 					this.subscribe(PubSub.pieces, {
+						startRundownId: segment.rundownId,
+						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
 						invalid: {
 							$ne: true,
 						},
 						// same rundown, and previous segment
 						lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
-						startRundownId: segment.rundownId,
-						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
 					})
 			})
 			SpeechSynthesiser.init()
