@@ -67,7 +67,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 				sub.stop()
 			}, 100)
 		}
-		for (let computation of Object.values(this._computations)) {
+		for (let computation of this._computations) {
 			computation.stop()
 		}
 	}

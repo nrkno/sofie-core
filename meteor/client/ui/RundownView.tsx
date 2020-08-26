@@ -1609,6 +1609,46 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
+				const playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						previousPartInstanceId: 1,
+						currentPartInstanceId: 1,
+						nextPartInstanceId: 1,
+					},
+				})
+				if (playlist) {
+					const rundownIds = playlist.getRundownIDs(undefined, {
+						fields: {
+							_id: 1,
+						},
+					})
+					const partInstanceIds: PartInstanceId[] = []
+					if (playlist.previousPartInstanceId) {
+						partInstanceIds.push(playlist.previousPartInstanceId)
+					}
+					if (playlist.currentPartInstanceId) {
+						partInstanceIds.push(playlist.currentPartInstanceId)
+					}
+					if (playlist.nextPartInstanceId) {
+						partInstanceIds.push(playlist.nextPartInstanceId)
+					}
+					// run this subscription manually, so that it doesn't affect subscriptionsReady()
+					// it's in a MeteorReactComponent.autorun, so the component lifecycle will
+					// cause it to be unsubscribed when the view is unloaded
+					Meteor.subscribe(PubSub.pieceInstances, {
+						rundownId: {
+							$in: rundownIds,
+						},
+						partInstanceId: {
+							$in: partInstanceIds,
+						},
+						reset: {
+							$ne: true,
+						},
+					})
+				}
+			})
+			this.autorun(() => {
 				let subsReady = this.subscriptionsReady()
 				if (subsReady !== this.state.subsReady) {
 					this.setState({

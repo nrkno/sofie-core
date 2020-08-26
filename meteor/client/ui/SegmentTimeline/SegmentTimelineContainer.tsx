@@ -307,18 +307,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						},
 					}
 				).map((instance) => instance._id)
-				const playlist = RundownPlaylists.findOne(this.props.playlist._id, {
-					fields: {
-						currentPartInstanceId: 1,
-						nextPartInstanceId: 1,
-					},
-				})
-				if (playlist?.currentPartInstanceId) {
-					partInstanceIds.push(playlist?.currentPartInstanceId)
-				}
-				if (playlist?.nextPartInstanceId) {
-					partInstanceIds.push(playlist?.nextPartInstanceId)
-				}
 				this.subscribeToPieceInstances(partInstanceIds)
 			})
 			// past inifnites subscription
@@ -510,7 +498,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				if (this.partInstanceSub !== undefined) {
 					this.partInstanceSub.stop()
 				}
-				this.partInstanceSub = this.subscribe(PubSub.pieceInstances, {
+				// we handle this subscription manually
+				this.partInstanceSub = Meteor.subscribe(PubSub.pieceInstances, {
 					rundownId: this.props.rundownId,
 					partInstanceId: {
 						$in: partInstanceIds,
