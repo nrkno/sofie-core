@@ -42,19 +42,17 @@ export const TimelineDashboardPanel = translateWithTracker<
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
-		const { unfinishedPieceInstancesByAdlibId, unfinishedPieceInstancesByTag } = getUnfinishedPieceInstancesGrouped(
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist.currentPartInstanceId
 		)
-		const { nextPieceInstancesByAdlibId, nextPieceInstancesByAdlibTag } = getNextPieceInstancesGrouped(
-			props.playlist.nextPartInstanceId
-		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
-			unfinishedPieceInstancesByAdlibId,
-			unfinishedPieceInstancesByTag,
-			nextPieceInstancesByAdlibId,
-			nextPieceInstancesByAdlibTag,
+			unfinishedAdLibIds,
+			unfinishedTags,
+			nextAdLibIds,
+			nextTags,
 		}
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
