@@ -24,7 +24,11 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { literal, unprotectString, partial } from '../../../lib/lib'
 import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { getUnfinishedPieceInstancesReactive, DashboardPanelInner, dashboardElementPosition } from './DashboardPanel'
+import {
+	IDashboardPanelTrackedProps,
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
+} from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
@@ -155,9 +159,8 @@ export interface IBucketPanelProps {
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLib }, callback: () => void) => void
 }
 
-export interface IBucketPanelTrackedProps {
+export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
 	adLibPieces: BucketAdLib[]
-	unfinishedPieceInstances: _.Dictionary<PieceInstance[]>
 	studio: Studio
 	showStyleVariantId: ShowStyleVariantId
 }
@@ -208,6 +211,12 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				showStyleVariantId = rundown.showStyleVariantId
 			}
 		}
+		const { unfinishedPieceInstancesByAdlibId, unfinishedPieceInstancesByTag } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextPieceInstancesByAdlibId, nextPieceInstancesByAdlibTag } = getNextPieceInstancesGrouped(
+			props.playlist.nextPartInstanceId
+		)
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: BucketAdLibs.find(
 				{
@@ -221,8 +230,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 			).fetch(),
 			studio: props.playlist.getStudio(),
-			unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+			unfinishedPieceInstancesByAdlibId,
+			unfinishedPieceInstancesByTag,
 			showStyleVariantId,
+			nextPieceInstancesByAdlibId,
+			nextPieceInstancesByAdlibTag,
 		})
 	},
 	(data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
@@ -329,8 +341,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 				isAdLibOnAir(adLib: IAdLibListItem) {
 					if (
-						this.props.unfinishedPieceInstances[unprotectString(adLib._id)] &&
-						this.props.unfinishedPieceInstances[unprotectString(adLib._id)].length > 0
+						this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)] &&
+						this.props.unfinishedPieceInstancesByAdlibId[unprotectString(adLib._id)].length > 0
 					) {
 						return true
 					}
