@@ -38,6 +38,14 @@ export const MicSourceRenderer = withTranslation()(
 			this.lineItem.style.left = this.linePosition + 'px'
 		}
 
+		addClassToLine = (className: string) => {
+			this.lineItem.classList.add(className)
+		}
+
+		removeClassFromLine = (className: string) => {
+			this.lineItem.classList.remove(className)
+		}
+
 		refreshLine = () => {
 			if (this.itemElement) {
 				this.itemPosition = this.itemElement.offsetLeft
@@ -46,16 +54,22 @@ export const MicSourceRenderer = withTranslation()(
 				if (content && content.sourceDuration) {
 					scriptReadTime = content.sourceDuration * this.props.timeScale
 					this.readTime = content.sourceDuration
+					const positionByReadTime = this.itemPosition + scriptReadTime
+					const positionByPartEnd = this.props.partDuration * this.props.timeScale
+					const positionByExpectedPartEnd =
+						(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale
+					if (positionByReadTime !== this.linePosition) {
+						this.linePosition = Math.min(positionByReadTime, positionByPartEnd)
+						this.repositionLine()
+						if (Math.abs(positionByReadTime - positionByExpectedPartEnd) <= 1) {
+							this.addClassToLine('at-end')
+						} else {
+							this.removeClassFromLine('at-end')
+						}
+					}
+					this.removeClassFromLine('hidden')
 				} else {
-					scriptReadTime = getElementWidth(this.itemElement)
-				}
-
-				if (this.itemPosition + scriptReadTime !== this.linePosition) {
-					this.linePosition = Math.min(
-						this.itemPosition + scriptReadTime,
-						this.props.partDuration * this.props.timeScale
-					)
-					this.repositionLine()
+					this.addClassToLine('hidden')
 				}
 			}
 		}

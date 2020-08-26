@@ -308,6 +308,7 @@ interface IProps {
 	showStyleBase: ShowStyleBase
 	visible: boolean
 	studioMode: boolean
+	hotkeyGroup: string
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
@@ -323,8 +324,6 @@ interface ITrackedProps {
 	rundownAdLibs: Array<AdLibPieceUi>
 	currentRundown: Rundown | undefined
 }
-
-const HOTKEY_GROUP = 'GlobalAdLibPanel'
 
 export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
 
@@ -474,8 +473,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 			this.usedHotkeys.length = 0
 
 			this.refreshKeyboardHotkeys()
@@ -483,8 +482,8 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 		componentWillUnmount() {
 			this._cleanUp()
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
 			this.usedHotkeys.length = 0
 
@@ -501,7 +500,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 			if (this.props.rundownAdLibs) {
 				this.props.rundownAdLibs.forEach((item) => {
 					if (item.hotkey) {
-						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							item.hotkey,
 							(e: ExtendedKeyboardEvent) => {
@@ -509,14 +508,14 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 								this.onToggleAdLib(item, false, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(item.hotkey)
 
 						const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 						if (sourceLayer && sourceLayer.isQueueable) {
 							const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 							mousetrapHelper.bind(
 								queueHotkey,
 								(e: ExtendedKeyboardEvent) => {
@@ -524,7 +523,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 									this.onToggleAdLib(item, true, e)
 								},
 								'keyup',
-								HOTKEY_GROUP
+								this.props.hotkeyGroup
 							)
 							this.usedHotkeys.push(queueHotkey)
 						}
@@ -545,7 +544,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 
 					if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
 						sourceLayer.activateStickyKeyboardHotkey.split(',').forEach((element) => {
-							mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
+							mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
 							mousetrapHelper.bind(
 								element,
 								(e: ExtendedKeyboardEvent) => {
@@ -553,7 +552,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 									this.onToggleSticky(sourceLayer._id, e)
 								},
 								'keyup',
-								HOTKEY_GROUP
+								this.props.hotkeyGroup
 							)
 							this.usedHotkeys.push(element)
 						})
@@ -561,7 +560,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 				})
 
 				_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
-					mousetrapHelper.bind(hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+					mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						hotkey,
 						(e: ExtendedKeyboardEvent) => {
@@ -569,7 +568,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 							this.onClearAllSourceLayers(sourceLayers, e)
 						},
 						'keyup',
-						HOTKEY_GROUP
+						this.props.hotkeyGroup
 					)
 					this.usedHotkeys.push(hotkey)
 				})
