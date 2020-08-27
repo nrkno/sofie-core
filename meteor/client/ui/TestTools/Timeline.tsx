@@ -69,10 +69,11 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 	ITimelineVisualizerInStudioState,
 	ITimelineVisualizerInStudioTrackedProps
 >((props: ITimelineVisualizerInStudioProps) => {
+	const findMeATimeline = Timeline.findOne({
+		_id: props.studioId,
+	})
 	return {
-		timeline: Timeline.find({
-			studioId: props.studioId,
-		}).fetch(),
+		timeline: (findMeATimeline && findMeATimeline.timeline) || [],
 	}
 })(
 	class TimelineVisualizerInStudio extends MeteorReactComponent<
@@ -228,14 +229,19 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 		try {
 			// These properties will be exposed under this.props
 			// Note that these properties are reactively recalculated
-			let timeline = transformTimeline(
-				Timeline.find(
-					{
-						studioId: props.studioId,
-					},
-					{ sort: { _id: 1 } }
-				).fetch()
-			)
+			const tlComplete = Timeline.findOne(props.studioId)
+			const timeline =
+				(tlComplete &&
+					tlComplete.timeline.sort((a, b) => {
+						if (a._id > b._id) {
+							return 1
+						}
+						if (a._id < b._id) {
+							return -1
+						}
+						return 0
+					})) ||
+				[]
 
 			// console.log('rerun')
 

@@ -14,7 +14,7 @@ import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
-import { afterUpdateTimeline } from './playout/timeline'
+// import { afterUpdateTimeline } from './playout/timeline'
 import { RundownInput } from './ingest/rundownInput'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
@@ -203,39 +203,55 @@ export namespace ServerPeripheralDeviceAPI {
 				? _.map(cache.Rundowns.findFetch({ playlistId: activePlaylist._id }), (r) => r._id)
 				: []
 
-			_.each(results, (o) => {
-				check(o.id, String)
+			const timelineDoc = cache.Timeline.findOne({ _id: studioId })
+			let tlChanged = false
+			if (timelineDoc) {
+				_.each(results, (o) => {
+					check(o.id, String)
 
-				// check(o.time, Number)
-				logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
+					// check(o.time, Number)
+					logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
-				const id = getTimelineId(studioId, o.id)
-				const obj = cache.Timeline.findOne({
-					_id: id,
-					studioId: studioId,
-				})
-				if (obj) {
-					cache.Timeline.update(
-						{
-							_id: id,
-							studioId: studioId,
-						},
-						{
+					const id = getTimelineId(studioId, o.id)
+					const obj = timelineDoc.timeline.find((tlo) => tlo._id === id)
+					if (obj) {
+						// cache.Timeline.update(
+						// 	{
+						// 		_id: id,
+						// 		studioId: studioId,
+						// 	},
+						// 	{
+						// 		$set: {
+						// 			'enable.start': o.time,
+						// 			'enable.setFromNow': true,
+						// 		},
+						// 	}
+						// )
+
+						obj.enable.start = o.time
+						obj.enable.setFromNow = true
+
+						tlChanged = true
+
+						ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(
+							context,
+							cache,
+							allowedRundownsIds,
+							obj,
+							o.time
+						)
+					}
+					if (tlChanged) {
+						cache.Timeline.update(studioId, {
 							$set: {
-								'enable.start': o.time,
-								'enable.setFromNow': true,
+								timeline: timelineDoc.timeline,
 							},
-						}
-					)
-
-					obj.enable.start = o.time
-					obj.enable.setFromNow = true
-
-					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(context, cache, allowedRundownsIds, obj, o.time)
-				}
-			})
-			// After we've updated the timeline, we must call afterUpdateTimeline!
-			afterUpdateTimeline(cache, studioId)
+						})
+					}
+				})
+			}
+			// afterUpdateTimeline no longer required - stats object and has removed for single timeline objects
+			// afterUpdateTimeline(cache, studioId)
 			waitForPromise(cache.saveAllToDatabase())
 		}
 	},
