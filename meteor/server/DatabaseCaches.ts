@@ -47,6 +47,7 @@ type DeferredFunction<Cache> = (cache: Cache) => void
 /** This cache contains data relevant in a studio */
 export class Cache {
 	private _deferredFunctions: DeferredFunction<Cache>[] = []
+	private _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
 
 	constructor() {
@@ -83,6 +84,11 @@ export class Cache {
 		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
 
+		// Execute cache.defer()'s
+		for (let i = 0; i < this._deferredFunctions.length; i++) {
+			this._deferredFunctions[i](this)
+		}
+
 		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
 		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
 
@@ -114,16 +120,19 @@ export class Cache {
 		}
 		logger.info(`Save all to database took: ${getCurrentTime() - startTime}ms`)
 
-		// Execute cache.defer()'s
-		_.each(this._deferredFunctions, (fcn) => {
-			fcn(this)
-		})
+		// Execute cache.deferAfterSave()'s
+		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
+			this._deferredAfterSaveFunctions[i]()
+		}
 
 		if (span) span.end()
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }
 export class CacheForStudioBase extends Cache {
@@ -146,6 +155,9 @@ export class CacheForStudioBase extends Cache {
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {
 		return super.defer(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		return super.deferAfterSave(fcn)
 	}
 }
 export class CacheForStudio extends CacheForStudioBase {
@@ -257,6 +269,9 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		return super.deferAfterSave(fcn)
 	}
 }
 function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
