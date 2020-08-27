@@ -39,6 +39,7 @@ import {
 	mappingIsQuantel,
 	mappingIsSisyfos,
 	mappingIsTCPSend,
+	mappingIsSisyfosChannel,
 } from '../../../lib/api/studios'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getHelpMode } from '../../lib/localStorage'
@@ -46,6 +47,7 @@ import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { unprotectString, protectString } from '../../../lib/lib'
 import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
+import { Settings } from '../../../lib/Settings'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -589,8 +591,10 @@ const StudioMappings = withTranslation()(
 									(mappingIsHyperdeck(mapping) && <span>{mapping.mappingType}</span>) ||
 									(mappingIsPharos(mapping) && <span>-</span>) ||
 									(mappingIsOSC(mapping) && <span>-</span>) ||
-									(mappingIsSisyfos(mapping) && (
+									(mappingIsSisyfos(mapping) && mappingIsSisyfosChannel(mapping) ? (
 										<span>{t('Channel: {{channel}}', { channel: mapping.channel })}</span>
+									) : (
+										''
 									)) ||
 									(mappingIsQuantel(mapping) && (
 										<span>
@@ -1255,7 +1259,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								object={this.props.studio}
 								layerMappings={this.getLayerMappingsFlat()}
 								collection={Studios}
-								configPath={'config'}
+								configPath={'blueprintConfig'}
 							/>
 						</div>
 					</div>

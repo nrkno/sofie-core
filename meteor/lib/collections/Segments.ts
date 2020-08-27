@@ -50,9 +50,9 @@ export class Segment implements DBSegment {
 	public identifier?: string
 
 	constructor(document: DBSegment) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	getParts(selector?: MongoQuery<DBSegment>, options?: FindOptions<DBPart>) {
 		selector = selector || {}

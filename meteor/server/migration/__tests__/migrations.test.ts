@@ -41,7 +41,7 @@ require('fs')
 		}
 	})
 
-describe('Test ingest actions for rundowns and segments', () => {
+describe('Migrations', () => {
 	beforeAll(() => {
 		setupEmptyEnvironment()
 	})
@@ -154,12 +154,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 					Studios.insert({
 						_id: protectString('studioMock2'),
 						name: 'Default studio',
+						organizationId: null,
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -178,12 +180,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 					Studios.insert({
 						_id: protectString('studioMock3'),
 						name: 'Default studio',
+						organizationId: null,
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -202,12 +206,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 					Studios.insert({
 						_id: protectString('studioMock1'),
 						name: 'Default studio',
+						organizationId: null,
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
 							sofieUrl: '',
 						},
 						mappings: {},
+						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
 					})
@@ -358,10 +364,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 		ShowStyleBases.insert({
 			_id: protectString('showStyle0'),
 			name: '',
+			organizationId: null,
 			blueprintId: protectString('showStyle0'),
 			outputLayers: [],
 			sourceLayers: [],
 			hotkeyLegend: [],
+			// @ts-ignore
 			config: [],
 			_rundownVersionHash: '',
 		})
@@ -370,6 +378,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			_id: protectString('variant0'),
 			name: '',
 			showStyleBaseId: protectString('showStyle0'),
+			// @ts-ignore
 			config: [],
 			_rundownVersionHash: '',
 		})

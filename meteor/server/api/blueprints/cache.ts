@@ -15,7 +15,7 @@ import {
 	SystemBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
-import { makePromise, rateLimit, cacheResult, unprotectString } from '../../../lib/lib'
+import { makePromise, cacheResult, unprotectString } from '../../../lib/lib'
 
 const blueprintCache: { [id: string]: Cache } = {}
 interface Cache {
@@ -76,16 +76,18 @@ export function loadStudioBlueprints(studio: Studio): WrappedStudioBlueprint | u
 	}
 }
 
-export function getBlueprintOfRundownAsync(rundown: Rundown): Promise<WrappedShowStyleBlueprint> {
-	return makePromise(() => {
-		return getBlueprintOfRundown(rundown)
-	})
-}
-export function getBlueprintOfRundown(rundown: Rundown, noCache?: boolean): WrappedShowStyleBlueprint {
+export function getBlueprintOfRundown(
+	showStyle: ShowStyleBase | undefined,
+	rundown: Rundown,
+	noCache?: boolean
+): WrappedShowStyleBlueprint {
 	const fcn = () => {
 		if (!rundown.showStyleBaseId)
 			throw new Meteor.Error(400, `Rundown "${rundown._id}" is missing showStyleBaseId!`)
-		let showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+		const showStyleBase =
+			showStyle && showStyle._id === rundown.showStyleBaseId
+				? showStyle
+				: ShowStyleBases.findOne(rundown.showStyleBaseId)
 		if (!showStyleBase)
 			throw new Meteor.Error(
 				404,
@@ -131,14 +133,18 @@ function loadBlueprintsById(blueprintId: BlueprintId): SomeBlueprintManifest | u
 	const blueprint = Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
 
+	return safeEvalBlueprints(blueprint, false)
+}
+
+export function safeEvalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {
 	if (blueprint.code) {
 		try {
-			return evalBlueprints(blueprint, false)
+			return evalBlueprints(blueprint, noCache)
 		} catch (e) {
 			throw new Meteor.Error(402, 'Syntax error in blueprint "' + blueprint._id + '": ' + e.toString())
 		}
 	} else {
-		throw new Meteor.Error(500, `Blueprint "${blueprintId}" code not set!`)
+		throw new Meteor.Error(500, `Blueprint "${blueprint._id}" code not set!`)
 	}
 }
 export function evalBlueprints(blueprint: Blueprint, noCache?: boolean): SomeBlueprintManifest {

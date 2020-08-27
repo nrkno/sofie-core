@@ -1,6 +1,7 @@
 import * as Winston from 'winston'
 import * as fs from 'fs'
 import { getAbsolutePath } from './lib'
+import { Meteor } from 'meteor/meteor'
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
@@ -51,7 +52,7 @@ function safeStringify(o: any): string {
 	}
 }
 const customFormat = Winston.format.printf(({ timestamp, level, message, meta }) => {
-	return `${timestamp} [${level}] ${message} ${meta ? safeStringify(meta) : ''}` // kz: TODO make this format correct
+	return `[${level}] ${message} ${meta ? safeStringify(meta) : ''}` // kz: TODO make this format correct
 })
 
 if (logToFile || logPath !== '') {
@@ -101,10 +102,17 @@ if (logToFile || logPath !== '') {
 			handleExceptions: true,
 		}),
 	}
-	logger = Winston.createLogger({
-		format: Winston.format.combine(Winston.format.timestamp(), customFormat),
-		transports: [transports.console],
-	})
+	if (Meteor.isProduction) {
+		logger = Winston.createLogger({
+			format: Winston.format.json(),
+			transports: [transports.console],
+		})
+	} else {
+		logger = Winston.createLogger({
+			format: Winston.format.combine(Winston.format.timestamp(), customFormat),
+			transports: [transports.console],
+		})
+	}
 }
 
 export { logger, transports }

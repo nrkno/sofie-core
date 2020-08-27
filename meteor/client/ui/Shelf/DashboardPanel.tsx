@@ -57,10 +57,9 @@ interface IState {
 const BUTTON_GRID_WIDTH = 1
 const BUTTON_GRID_HEIGHT = 0.61803
 
-const HOTKEY_GROUP = 'DashboardPanel'
-
 export interface IDashboardPanelProps {
 	shouldQueue: boolean
+	hotkeyGroup: string
 }
 
 export interface IDashboardPanelTrackedProps {
@@ -149,13 +148,12 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				tSLayers[sourceLayer._id] = sourceLayer
 			})
 
-			return _.extend(state, {
+			return {
 				outputLayers: tOLayers,
 				sourceLayers: tSLayers,
-			})
-		} else {
-			return state
+			}
 		}
+		return null
 	}
 
 	componentDidMount() {
@@ -200,7 +198,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				this.subscribe(PubSub.showStyleBases, {
 					_id: rundowns[0].showStyleBaseId,
 				})
-				this.subscribe(PubSub.pieces, {
+				this.subscribe(PubSub.pieceInstances, {
 					rundownId: {
 						$in: rundownIds,
 					},
@@ -230,7 +228,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
 
 		this.refreshKeyboardHotkeys()
@@ -238,8 +236,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	componentWillUnmount() {
 		this._cleanUp()
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+		mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
 		this.usedHotkeys.length = 0
 	}
@@ -275,7 +273,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.props.liveSegment && this.props.liveSegment.pieces) {
 			this.props.liveSegment.pieces.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
 						(e: ExtendedKeyboardEvent) => {
@@ -283,14 +281,14 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							this.onToggleAdLib(item, false, e)
 						},
 						'keyup',
-						HOTKEY_GROUP
+						this.props.hotkeyGroup
 					)
 					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
 							(e: ExtendedKeyboardEvent) => {
@@ -298,7 +296,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 								this.onToggleAdLib(item, true, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(queueHotkey)
 					}
@@ -309,7 +307,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.props.rundownBaselineAdLibs) {
 			this.props.rundownBaselineAdLibs.forEach((item) => {
 				if (item.hotkey) {
-					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
 						(e: ExtendedKeyboardEvent) => {
@@ -317,14 +315,14 @@ export class DashboardPanelInner extends MeteorReactComponent<
 							this.onToggleAdLib(item, false, e)
 						},
 						'keyup',
-						HOTKEY_GROUP
+						this.props.hotkeyGroup
 					)
-					this.usedHotkeys.push(item.hotkey, HOTKEY_GROUP)
+					this.usedHotkeys.push(item.hotkey, this.props.hotkeyGroup)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {
 						const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
 							(e: ExtendedKeyboardEvent) => {
@@ -332,7 +330,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 								this.onToggleAdLib(item, true, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(queueHotkey)
 					}
@@ -353,7 +351,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
 					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach((element) => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							element,
 							(e: ExtendedKeyboardEvent) => {
@@ -361,7 +359,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 								this.onToggleSticky(sourceLayer._id, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(element)
 					})
@@ -369,7 +367,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			})
 
 			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
-				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 				mousetrapHelper.bind(
 					hotkey,
 					(e: ExtendedKeyboardEvent) => {
@@ -377,7 +375,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						this.onClearAllSourceLayers(sourceLayers, e)
 					},
 					'keyup',
-					HOTKEY_GROUP
+					this.props.hotkeyGroup
 				)
 				this.usedHotkeys.push(hotkey)
 			})
@@ -421,7 +419,12 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
-				if (!adlibPiece.isGlobal) {
+				if (adlibPiece.isAction && adlibPiece.adlibAction) {
+					const action = adlibPiece.adlibAction
+					doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
+						MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+					)
+				} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
 					doUserAction(t, e, UserAction.START_ADLIB, (e) =>
 						MeteorCall.userAction.segmentAdLibPieceStart(
 							e,
@@ -641,47 +644,41 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 						},
 					],
 				},
-				{
-					'piece.definitelyEnded': {
-						$exists: false,
-					},
-				},
+				// TODO-INFINITES is this ok?
+				// {
+				// 	definitelyEnded: {
+				// 		$exists: false,
+				// 	},
+				// },
 			],
-			'piece.playoutDuration': {
-				$exists: false,
-			},
-			'piece.adLibSourceId': {
+			adLibSourceId: {
 				$exists: true,
 			},
-			$or: [
-				{
-					'piece.userDuration': {
-						$exists: false,
-					},
-				},
-				{
-					'piece.userDuration.duration': {
-						$exists: false,
-					},
-				},
-			],
+			// $or: [
+			// 	{
+			// 		'userDuration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// 	{
+			// 		'userDuration.duration': {
+			// 			$exists: false,
+			// 		},
+			// 	},
+			// ],
 		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY
 		prospectivePieces = prospectivePieces.filter((pieceInstance) => {
 			const piece = pieceInstance.piece
-			let duration: number | undefined = piece.playoutDuration
-				? piece.playoutDuration
-				: piece.userDuration && typeof piece.userDuration.duration === 'number'
-				? piece.userDuration.duration
-				: piece.userDuration && typeof piece.userDuration.end === 'string'
-				? 0 // TODO: obviously, it would be best to evaluate this, but for now we assume that userDuration of any sort is probably in the past
-				: typeof piece.enable.duration === 'number'
-				? piece.enable.duration
-				: undefined
+			let end: number | undefined =
+				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
+					? pieceInstance.userDuration.end
+					: typeof piece.enable.duration === 'number'
+					? piece.enable.duration + piece.startedPlayback!
+					: undefined
 
-			if (duration !== undefined) {
-				const end = piece.startedPlayback! + duration
+			if (end !== undefined) {
 				if (end > now) {
 					nearestEnd = nearestEnd > end ? end : nearestEnd
 					return true
@@ -698,7 +695,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	// Convert to array of ids as that is all that is needed
 	const unfinishedPieceInstances: { [adlibId: string]: PieceInstance[] } = {}
 	_.each(
-		_.groupBy(prospectivePieces, (piece) => piece.piece.adLibSourceId),
+		_.groupBy(prospectivePieces, (piece) => piece.adLibSourceId),
 		(grp, id) => (unfinishedPieceInstances[id] = _.map(grp, (instance) => instance))
 	)
 

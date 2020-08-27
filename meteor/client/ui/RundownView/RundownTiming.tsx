@@ -278,7 +278,7 @@ export const RundownTimingProvider = withTracker<
 			let startsAtAccumulator = 0
 			let displayStartsAtAccumulator = 0
 
-			_.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
+			Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 			this.linearParts.length = 0
 
 			let debugConsole = ''
@@ -604,12 +604,10 @@ export function withTiming<IProps, IState>(
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState>
 ) => new (props: IProps, context: any) => React.Component<IProps, IState> {
-	let expandedOptions: WithTimingOptions = _.extend(
-		{
-			isHighResolution: false,
-		},
-		typeof options === 'function' ? {} : options
-	)
+	let expandedOptions: WithTimingOptions = {
+		isHighResolution: false,
+		...(typeof options === 'function' ? {} : options),
+	}
 
 	return (WrappedComponent) => {
 		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
@@ -625,7 +623,10 @@ export function withTiming<IProps, IState>(
 				super(props, context)
 
 				if (typeof options === 'function') {
-					expandedOptions = _.extend(expandedOptions, options(this.props))
+					expandedOptions = {
+						...expandedOptions,
+						...options(this.props),
+					}
 				}
 
 				if (typeof expandedOptions.filter === 'function') {

@@ -14,12 +14,13 @@ import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
 import { Settings } from '../../../lib/Settings'
 import { Rundown } from '../../../lib/collections/Rundowns'
+import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
-	rundown: Rundown | undefined
+	rundown: Rundown
 	studio: Studio
-	selectedPiece: Piece
+	selectedPiece: PieceInstancePiece
 
 	onClose?: () => void
 }
@@ -58,7 +59,7 @@ export const ClipTrimDialog = withTranslation()(
 					MeteorCall.userAction.setInOutPoints(
 						e,
 						this.props.playlistId,
-						selectedPiece.partId,
+						selectedPiece.startPartId,
 						selectedPiece._id,
 						this.state.inPoint,
 						this.state.duration
@@ -152,8 +153,9 @@ export const ClipTrimDialog = withTranslation()(
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}
+						rundownId={this.props.rundown._id}
 						pieceId={this.props.selectedPiece._id}
-						partId={this.props.selectedPiece.partId}
+						partId={this.props.selectedPiece.startPartId}
 						inPoint={this.state.inPoint}
 						duration={this.state.duration}
 						onChange={this.handleChange}

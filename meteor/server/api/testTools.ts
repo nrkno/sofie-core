@@ -10,7 +10,6 @@ import {
 	getRandomId,
 	protectString,
 	makePromise,
-	check,
 } from '../../lib/lib'
 import { NewTestToolsAPI, TestToolsAPIMethods } from '../../lib/api/testTools'
 import { registerClassToMeteorMethods } from '../methods'
@@ -19,7 +18,10 @@ import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/
 import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
+import { check } from '../../lib/check'
 import { updateTimeline } from './playout/timeline'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { StudioContentWriteAccess } from '../security/studio'
 import { initCacheForRundownPlaylistFromStudio } from '../DatabaseCaches'
 
 const deleteRequest = promisify(request.delete)
@@ -99,11 +101,11 @@ export namespace ServerTestToolsAPI {
 	/**
 	 * Stop a currently running recording
 	 */
-	export function recordStop(studioId: StudioId) {
+	export function recordStop(context: MethodContext, studioId: StudioId) {
 		check(studioId, String)
+		checkAccessAndGetStudio(context, studioId)
 
 		const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
-
 		const updated = cache.RecordedFiles.update(
 			{
 				studioId: studioId,
@@ -123,14 +125,12 @@ export namespace ServerTestToolsAPI {
 		waitForPromise(cache.saveAllToDatabase())
 	}
 
-	export function recordStart(studioId: StudioId, name: string) {
+	export function recordStart(context: MethodContext, studioId: StudioId, name: string) {
 		check(studioId, String)
 		check(name, String)
 
+		const studio = checkAccessAndGetStudio(context, studioId)
 		const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
-
-		const studio = cache.Studios.findOne(studioId)
-		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
 
 		const active = cache.RecordedFiles.findOne({
 			studioId: studioId,
@@ -150,25 +150,26 @@ export namespace ServerTestToolsAPI {
 		if (!config.recordings.channelIndex)
 			throw new Meteor.Error(500, `Recording channel for Studio "${studio._id}" not defined!`)
 
-		// Ensure the layer mappings in the db are correct
-		const setter: any = {}
-		setter['mappings.' + layerInput] = literal<TSR.MappingCasparCG & MappingExt>({
-			device: TSR.DeviceType.CASPARCG,
-			deviceId: config.recordings.deviceId,
-			channel: config.recordings.channelIndex,
-			layer: 10,
-			lookahead: LookaheadMode.NONE,
-			internal: true,
-		})
-		setter['mappings.' + layerRecord] = literal<TSR.MappingCasparCG & MappingExt>({
-			device: TSR.DeviceType.CASPARCG,
-			deviceId: config.recordings.deviceId,
-			channel: config.recordings.channelIndex,
-			layer: 0,
-			lookahead: LookaheadMode.NONE,
-			internal: true,
-		})
-		cache.Studios.update(studio._id, { $set: setter })
+		// Note: this part has been disabled, Studio settings should not be modified during playout:
+		// // Ensure the layer mappings in the db are correct
+		// const setter: any = {}
+		// setter['mappings.' + layerInput] = literal<TSR.MappingCasparCG & MappingExt>({
+		// 	device: TSR.DeviceType.CASPARCG,
+		// 	deviceId: config.recordings.deviceId,
+		// 	channel: config.recordings.channelIndex,
+		// 	layer: 10,
+		// 	lookahead: LookaheadMode.NONE,
+		// 	internal: true,
+		// })
+		// setter['mappings.' + layerRecord] = literal<TSR.MappingCasparCG & MappingExt>({
+		// 	device: TSR.DeviceType.CASPARCG,
+		// 	deviceId: config.recordings.deviceId,
+		// 	channel: config.recordings.channelIndex,
+		// 	layer: 0,
+		// 	lookahead: LookaheadMode.NONE,
+		// 	internal: true,
+		// })
+		// cache.Studios.update(studio._id, { $set: setter })
 
 		const fileId: RecordedFileId = getRandomId(7)
 		const path = (config.recordings.filePrefix || defaultConfig.prefix) + fileId + '.mp4'
@@ -187,9 +188,11 @@ export namespace ServerTestToolsAPI {
 		waitForPromise(cache.saveAllToDatabase())
 	}
 
-	export function recordDelete(fileId: RecordedFileId) {
+	export function recordDelete(context: MethodContext, fileId: RecordedFileId) {
 		check(fileId, String)
-		const file = RecordedFiles.findOne(fileId)
+
+		const access = StudioContentWriteAccess.recordedFile(context, fileId)
+		const file = access.file
 		if (!file) throw new Meteor.Error(404, `Recording "${fileId}" was not found!`)
 
 		const studio = Studios.findOne(file.studioId)
@@ -209,15 +212,21 @@ export namespace ServerTestToolsAPI {
 		RecordedFiles.remove(fileId)
 	}
 }
-class ServerTestToolsAPIClass implements NewTestToolsAPI {
+function checkAccessAndGetStudio(context: MethodContext, studioId: StudioId): Studio {
+	const access = StudioContentWriteAccess.recordedFiles(context, studioId)
+	const studio = access.studio
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" was not found!`)
+	return studio
+}
+class ServerTestToolsAPIClass extends MethodContextAPI implements NewTestToolsAPI {
 	recordStop(studioId: StudioId) {
-		return makePromise(() => ServerTestToolsAPI.recordStop(studioId))
+		return makePromise(() => ServerTestToolsAPI.recordStop(this, studioId))
 	}
 	recordStart(studioId: StudioId, name: string) {
-		return makePromise(() => ServerTestToolsAPI.recordStart(studioId, name))
+		return makePromise(() => ServerTestToolsAPI.recordStart(this, studioId, name))
 	}
 	recordDelete(fileId: RecordedFileId) {
-		return makePromise(() => ServerTestToolsAPI.recordDelete(fileId))
+		return makePromise(() => ServerTestToolsAPI.recordDelete(this, fileId))
 	}
 }
 registerClassToMeteorMethods(TestToolsAPIMethods, ServerTestToolsAPIClass, false)

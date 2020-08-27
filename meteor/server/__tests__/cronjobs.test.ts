@@ -96,6 +96,7 @@ describe('cronjobs', () => {
 				_id: rundown0Id,
 				_rank: 0,
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
+				organizationId: null,
 				dataSource: '',
 				externalId: '',
 				importVersions: {
@@ -188,6 +189,8 @@ describe('cronjobs', () => {
 			const userAction0 = protectString<UserActionsLogItemId>(Random.id())
 			UserActionsLog.insert({
 				_id: userAction0,
+				organizationId: null,
+				userId: null,
 				args: '',
 				clientAddress: '',
 				context: '',
@@ -199,6 +202,8 @@ describe('cronjobs', () => {
 			const userAction1 = protectString<UserActionsLogItemId>(Random.id())
 			UserActionsLog.insert({
 				_id: userAction1,
+				organizationId: null,
+				userId: null,
 				args: '',
 				clientAddress: '',
 				context: '',
@@ -219,6 +224,7 @@ describe('cronjobs', () => {
 			const snapshot0 = protectString<SnapshotId>(Random.id())
 			Snapshots.insert({
 				_id: snapshot0,
+				organizationId: null,
 				comment: '',
 				fileName: '',
 				name: '',
@@ -231,6 +237,7 @@ describe('cronjobs', () => {
 			const snapshot1 = protectString<SnapshotId>(Random.id())
 			Snapshots.insert({
 				_id: snapshot1,
+				organizationId: null,
 				comment: '',
 				fileName: '',
 				name: '',
@@ -251,6 +258,7 @@ describe('cronjobs', () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
+				organizationId: null,
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 				configManifest: {
@@ -271,6 +279,7 @@ describe('cronjobs', () => {
 			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockCasparCg,
+				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -292,6 +301,7 @@ describe('cronjobs', () => {
 			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockATEM,
+				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,

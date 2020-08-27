@@ -5,11 +5,10 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
+import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
+import { DBSegment } from '../../lib/collections/Segments'
 
 import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
-import { Parts, Part } from '../../lib/collections/Parts'
 import { PartUi } from './SegmentTimeline/SegmentTimelineContainer'
 
 import { RundownUtils } from '../lib/rundown'
@@ -17,7 +16,6 @@ import { getCurrentTime, objectPathGet, extendMandadory, literal } from '../../l
 import { PieceIconContainer, PieceNameContainer } from './PieceIcons/PieceIcon'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
-import { ShowStyle } from '../../server/migration/deprecatedDataTypes/0_18_0'
 import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
 import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { StudioId } from '../../lib/collections/Studios'
@@ -74,13 +72,13 @@ const ClockComponent = withTranslation()(
 
 				if (playlist) {
 					const allPartInstancesMap = playlist.getActivePartInstancesMap()
-					segments = _.map(playlist.getSegments(), (segment) => {
+					segments = playlist.getSegments().map((segment) => {
 						const displayDurationGroups: _.Dictionary<number> = {}
 						const parts = segment.getParts()
 						let displayDuration = 0
 
 						return extendMandadory<DBSegment, SegmentUi>(segment, {
-							items: _.map(parts, (part, index) => {
+							items: parts.map((part, index) => {
 								const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
 								if (
 									part.displayDurationGroup &&
@@ -326,9 +324,6 @@ const ClockComponent = withTranslation()(
 interface IPropsHeader extends WithTranslation {
 	key: string
 	playlist: RundownPlaylist
-	rundowns: Array<Rundown> | undefined
-	segments: Array<Segment> | undefined
-	parts: Array<Part> | undefined
 	match: {
 		params: {
 			studioId: StudioId
@@ -346,17 +341,8 @@ export const ClockView = withTranslation()(
 			studioId: studioId,
 		})
 
-		const rundowns = playlist ? playlist.getRundowns() : undefined
-		const segmentsAndParts = playlist && playlist.getSegmentsAndPartsSync()
-
-		const segments = segmentsAndParts && segmentsAndParts.segments
-		const parts = segmentsAndParts && segmentsAndParts.parts
-
 		return {
 			playlist,
-			rundowns,
-			segments,
-			parts,
 		}
 	})(
 		class ClockView extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {

@@ -95,7 +95,12 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 		const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
-			if (!piece.isGlobal) {
+			if (piece.isAction && piece.adlibAction) {
+				const action = piece.adlibAction
+				doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
+					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+				)
+			} else if (!piece.isGlobal && !piece.isAction) {
 				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
 					MeteorCall.userAction.segmentAdLibPieceStart(
 						e,
@@ -187,24 +192,15 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 	if (nextPartInstanceId) {
 		prospectivePieceInstances = PieceInstances.find({
 			partInstanceId: nextPartInstanceId,
-			$and: [
-				{
-					piece: {
-						$exists: true,
-					},
-				},
-				{
-					'piece.adLibSourceId': {
-						$exists: true,
-					},
-				},
-			],
+			adLibSourceId: {
+				$exists: true,
+			},
 		}).fetch()
 	}
 
 	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
 	_.each(
-		_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId),
+		_.groupBy(prospectivePieceInstances, (piece) => piece.adLibSourceId),
 		(grp, id) => (nextPieces[id] = _.map(grp, (instance) => instance))
 	)
 	return nextPieces

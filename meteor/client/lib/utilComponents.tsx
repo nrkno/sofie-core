@@ -5,7 +5,7 @@ export function makeTableOfObject(o: any) {
 	return (
 		<table>
 			<tbody>
-				{_.map(_.keys(o), (key) => {
+				{Object.keys(o).map((key) => {
 					const val = o[key]
 
 					let content: any = null

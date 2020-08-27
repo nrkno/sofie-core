@@ -1,17 +1,20 @@
 import * as React from 'react'
 import { WithTranslation } from 'react-i18next'
-
-import { NavLink } from 'react-router-dom'
+import { Meteor } from 'meteor/meteor'
+import { NavLink, Link } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter } from '../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
+import { UserId } from '../../lib/collections/Users'
+import { Settings } from '../../lib/Settings'
 
 interface IPropsHeader {
+	user: boolean
 	allowConfigure?: boolean
 	allowTesting?: boolean
 	allowDeveloper?: boolean
@@ -22,8 +25,8 @@ interface ITrackedPropsHeader {
 }
 
 interface IStateHeader {
-	showNotifications: boolean
-	showSupportPanel: boolean
+	isNotificationCenterOpen: NoticeLevel | undefined
+	isSupportPanelOpen: boolean
 }
 
 class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
@@ -31,22 +34,41 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		super(props)
 
 		this.state = {
-			showNotifications: false,
-			showSupportPanel: false,
+			isNotificationCenterOpen: undefined,
+			isSupportPanelOpen: false,
 		}
 	}
 
-	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>) => {
-		NotificationCenter.isOpen = !this.state.showNotifications
+	private handleLogout(e: React.MouseEvent<HTMLAnchorElement>) {
+		e.preventDefault()
+		Meteor.logout((error) => {
+			if (error) {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						`Error when trying to log out: ${error.toString()}`,
+						'Page Header'
+					)
+				)
+			}
+		})
+	}
+
+	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>, filter: NoticeLevel | undefined) => {
+		if (this.state.isNotificationCenterOpen === filter) {
+			filter = undefined
+		}
+		NotificationCenter.isOpen = filter !== undefined ? true : false
 
 		this.setState({
-			showNotifications: !this.state.showNotifications,
+			isNotificationCenterOpen: filter,
 		})
 	}
 
 	onToggleSupportPanel = (e: React.MouseEvent<HTMLButtonElement>) => {
 		this.setState({
-			showSupportPanel: !this.state.showSupportPanel,
+			isSupportPanelOpen: !this.state.isSupportPanelOpen,
 		})
 	}
 
@@ -71,7 +93,9 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							easing: 'ease-in',
 							duration: 500,
 						}}>
-						{this.state.showNotifications && <NotificationCenterPanel limitCount={15} />}
+						{this.state.isNotificationCenterOpen !== undefined && (
+							<NotificationCenterPanel limitCount={15} filter={this.state.isNotificationCenterOpen} />
+						)}
 					</VelocityReact.VelocityTransitionGroup>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{
@@ -88,32 +112,51 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 							easing: 'ease-in',
 							duration: 500,
 						}}>
-						{this.state.showSupportPanel && <SupportPopUp />}
+						{this.state.isSupportPanelOpen && <SupportPopUp />}
 					</VelocityReact.VelocityTransitionGroup>
 				</ErrorBoundary>
 				<ErrorBoundary>
 					<div className="status-bar">
-						<NotificationCenterPanelToggle onClick={this.onToggleNotifications} isOpen={this.state.showNotifications} />
-						<SupportPopUpToggle onClick={this.onToggleSupportPanel} isOpen={this.state.showSupportPanel} />
+						<NotificationCenterPanelToggle
+							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.CRITICAL)}
+							isOpen={this.state.isNotificationCenterOpen === NoticeLevel.CRITICAL}
+							filter={NoticeLevel.CRITICAL}
+							className="type-critical"
+						/>
+						<NotificationCenterPanelToggle
+							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.WARNING)}
+							isOpen={this.state.isNotificationCenterOpen === NoticeLevel.WARNING}
+							filter={NoticeLevel.WARNING}
+							className="type-warning"
+						/>
+						<NotificationCenterPanelToggle
+							onClick={(e) => this.onToggleNotifications(e, NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
+							isOpen={this.state.isNotificationCenterOpen === (NoticeLevel.NOTIFICATION | NoticeLevel.TIP)}
+							filter={NoticeLevel.NOTIFICATION | NoticeLevel.TIP}
+							className="type-notification"
+						/>
+						<SupportPopUpToggle onClick={this.onToggleSupportPanel} isOpen={this.state.isSupportPanelOpen} />
 					</div>
 				</ErrorBoundary>
 				<div className="header dark">
 					<div className="gutter frow va-middle ha-between phm">
 						<div className="fcol">
 							<div className="frow">
-								<div className="badge">
-									<div className="media-elem mrs sofie-logo" />
-									<div className="bd mls">
-										<span className="logo-text">Sofie {this.props.name ? ' - ' + this.props.name : null}</span>
+								<Link className="badge" to="/">
+									<div>
+										<div className="media-elem mrs sofie-logo" />
+										<div className="bd mls">
+											<span className="logo-text">Sofie {this.props.name ? ' - ' + this.props.name : null}</span>
+										</div>
 									</div>
-								</div>
+								</Link>
 							</div>
 						</div>
 						<div className="fcol">
 							<div className="frow ha-right">
 								<nav className="links mod">
 									{/* <NavLink to='/' activeClassName='active'>{t('Home')}</NavLink> */}
-									<NavLink to="/" activeClassName="active">
+									<NavLink to="/rundowns" activeClassName="active">
 										{t('Rundowns')}
 									</NavLink>
 									{this.props.allowTesting && (
@@ -127,6 +170,16 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 									{this.props.allowConfigure && (
 										<NavLink to="/settings" activeClassName="active">
 											{t('Settings')}
+										</NavLink>
+									)}
+									{Settings.enableUserAccounts && this.props.user && (
+										<NavLink to="/account" activeClassName="active">
+											{t('Account')}
+										</NavLink>
+									)}
+									{Settings.enableUserAccounts && this.props.user && (
+										<NavLink to="/" activeClassName="active" onClick={this.handleLogout}>
+											{t('Logout')}
 										</NavLink>
 									)}
 								</nav>
