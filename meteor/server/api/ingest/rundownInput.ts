@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceId, getExternalNRCSName } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -498,15 +498,21 @@ function updateRundownFromIngestData(
 				created: 0, // omitted, set later, below
 				modified: 0, // omitted, set later, below
 				peripheralDeviceId: protectString(''), // omitted, set later, below
+				externalNRCSName: '', // omitted, set later, below
 				dataSource: '', // omitted, set later, below
 				playlistId: protectString<RundownPlaylistId>(''), // omitted, set later, in produceRundownPlaylistInfo
 				_rank: 0, // omitted, set later, in produceRundownPlaylistInfo
 			}),
-			['created', 'modified', 'peripheralDeviceId', 'dataSource', 'playlistId', '_rank']
+			['created', 'modified', 'peripheralDeviceId', 'externalNRCSName', 'dataSource', 'playlistId', '_rank']
 		)
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
+		dbRundownData.externalNRCSName = getExternalNRCSName(peripheralDevice)
+	} else {
+		if (!dbRundownData.externalNRCSName) {
+			dbRundownData.externalNRCSName = getExternalNRCSName(undefined)
+		}
 	}
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource

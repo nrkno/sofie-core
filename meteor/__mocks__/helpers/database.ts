@@ -506,6 +506,7 @@ export function setupDefaultRundown(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 
@@ -722,6 +723,7 @@ export function setupRundownWithAutoplayPart0(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 

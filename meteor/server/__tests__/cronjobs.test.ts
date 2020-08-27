@@ -113,6 +113,7 @@ describe('cronjobs', () => {
 				showStyleBaseId: protectString(''),
 				showStyleVariantId: protectString(''),
 				studioId: protectString(''),
+				externalNRCSName: 'mock',
 			})
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(Random.id())
