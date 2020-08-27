@@ -8,7 +8,7 @@ import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods } from '../../methods'
 import { parseVersion, parseRange, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
-import { evalBlueprints } from './cache'
+import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../../security/organization'
@@ -127,7 +127,7 @@ export function innerUploadBlueprint(
 
 	let blueprintManifest: SomeBlueprintManifest | undefined
 	try {
-		blueprintManifest = evalBlueprints(newBlueprint, false)
+		blueprintManifest = evalBlueprint(newBlueprint)
 	} catch (e) {
 		throw new Meteor.Error(400, `Blueprint ${blueprintId} failed to parse`)
 	}
