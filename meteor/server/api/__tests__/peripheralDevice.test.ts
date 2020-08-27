@@ -35,6 +35,7 @@ import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { PeripheralDevicesAPI } from '../../../client/lib/clientAPI'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { MethodContext } from '../../../lib/api/methods'
+import { time } from 'console'
 
 const DEBUG = false
 
@@ -392,12 +393,11 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLoggerLevel('debug')
 		const playlist = RundownPlaylists.findOne(rundownPlaylistID)
 		expect(playlist).toBeTruthy()
-		const timelineObjs = Timeline.find({
-			studioId: env.studio._id,
-			enable: {
-				start: 'now',
-			},
-		}).fetch()
+		const studioTimeline = Timeline.findOne({
+			_id: env.studio._id,
+		})
+		const timelineObjs =
+			(studioTimeline && studioTimeline.timeline.filter((x) => x.enable && x.enable.start === 'now')) || []
 		expect(timelineObjs.length).toBe(1)
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
 			id: tObj.id,
@@ -406,11 +406,12 @@ describe('test peripheralDevice general API methods', () => {
 
 		Meteor.call(PeripheralDeviceAPIMethods.timelineTriggerTime, device._id, device.token, timelineTriggerTimeResult)
 
-		const timelineUpdatedObjs = Timeline.find({
-			_id: {
-				$in: timelineObjs.map((tlObj) => tlObj._id),
-			},
+		const updatedStudioTimeline = Timeline.findOne({
+			_id: env.studio._id,
 		})
+		const prevIds = timelineObjs.map((x) => x._id)
+		const timelineUpdatedObjs =
+			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x._id) >= 0)) || []
 		timelineUpdatedObjs.forEach((tlObj) => {
 			expect(tlObj.enable.setFromNow).toBe(true)
 			expect(tlObj.enable.start).toBeGreaterThan(0)
