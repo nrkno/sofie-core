@@ -419,71 +419,8 @@ describe('Test blueprint cache', () => {
 			const rundown = getRundown()
 			rundown.showStyleBaseId = showStyle._id
 
-			const blueprint = getBlueprintOfRundown(undefined, rundown, true)
+			const blueprint = loadShowStyleBlueprint(showStyle)
 			expect(blueprint).toBeTruthy()
-		})
-		testInFiber('Wrong showStyleBase', () => {
-			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-			expect(showStyle).toBeTruthy()
-
-			const rundown = getRundown()
-			rundown.showStyleBaseId = protectString(showStyle._id + '1')
-
-			expect(() => getBlueprintOfRundown(showStyle, rundown, true)).toThrowError(
-				`ShowStyleBase "${rundown.showStyleBaseId}" not found!`
-			)
-		})
-		testInFiber('Test caching', () => {
-			jest.useFakeTimers()
-
-			try {
-				const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-				expect(showStyle).toBeTruthy()
-
-				const rundown = getRundown()
-				rundown.showStyleBaseId = showStyle._id
-
-				const blueprint1 = getBlueprintOfRundown(undefined, rundown)
-				expect(blueprint1).toBeTruthy()
-
-				jest.runTimersToTime(500)
-
-				rundown.showStyleBaseId = protectString('abc') // Not real
-				const blueprint2 = getBlueprintOfRundown(undefined, rundown)
-				expect(blueprint2).toBeTruthy()
-
-				// Should still be the same, as within cache window
-				expect(blueprint2.blueprintId).toEqual(blueprint1.blueprintId)
-			} finally {
-				// Restore timers after run
-				jest.useRealTimers()
-			}
-		})
-		testInFiber('Test caching with fed showStyle', () => {
-			jest.useFakeTimers()
-
-			try {
-				const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-				expect(showStyle).toBeTruthy()
-
-				const rundown = getRundown()
-				rundown.showStyleBaseId = showStyle._id
-
-				const blueprint1 = getBlueprintOfRundown(showStyle, rundown)
-				expect(blueprint1).toBeTruthy()
-
-				jest.runTimersToTime(500)
-
-				rundown.showStyleBaseId = protectString('abc') // Not real
-				const blueprint2 = getBlueprintOfRundown(showStyle, rundown)
-				expect(blueprint2).toBeTruthy()
-
-				// Should still be the same, as within cache window
-				expect(blueprint2.blueprintId).toEqual(blueprint1.blueprintId)
-			} finally {
-				// Restore timers after run
-				jest.useRealTimers()
-			}
 		})
 	})
 })
