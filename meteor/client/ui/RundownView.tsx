@@ -2397,7 +2397,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										this.state.selectedPiece &&
 										RundownUtils.isPieceInstance(this.state.selectedPiece) &&
 										this.props.studio &&
-										this.props.playlist && (
+										this.props.playlist &&
+										(selectedPieceRundown === undefined ? (
+											<ModalDialog
+												onAccept={() => this.setState({ selectedPiece: undefined })}
+												title={t('Rundown not found')}
+												acceptText={t('Close')}>
+												{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
+													pieceLabel: this.state.selectedPiece.name,
+												})}
+											</ModalDialog>
+										) : (
 											<ClipTrimDialog
 												studio={this.props.studio}
 												playlistId={this.props.playlist._id}
@@ -2405,7 +2415,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												selectedPiece={this.state.selectedPiece.instance.piece}
 												onClose={() => this.setState({ isClipTrimmerOpen: false })}
 											/>
-										)}
+										))}
 								</ErrorBoundary>
 								{this.renderSegmentsList()}
 								<ErrorBoundary>
