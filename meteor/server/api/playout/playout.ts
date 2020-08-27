@@ -1280,8 +1280,12 @@ export namespace ServerPlayoutAPI {
 		const activeRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id)
 
 		if (activeRundowns.length === 0) {
-			const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
-			const markerObject = cache.Timeline.findOne(markerId)
+			// const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
+			const studioTimeline = cache.Timeline.findOne(studioId)
+			if (!studioTimeline) return 'noBaseline'
+			const markerObject = studioTimeline.timeline.find(
+				(x) => x._id === protectString(`${studio._id}_baseline_version`)
+			)
 			if (!markerObject) return 'noBaseline'
 
 			const versionsContent = (markerObject.metaData || {}).versions || {}

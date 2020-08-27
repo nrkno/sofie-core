@@ -19,7 +19,7 @@ import { Piece, Pieces } from '../lib/collections/Pieces'
 import { PartInstances, DBPartInstance, PartInstance } from '../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../lib/collections/PieceInstances'
 import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineComplete } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
@@ -99,7 +99,7 @@ export class CacheForStudioBase extends Cache {
 	/** Contains contents in the Studio */
 	RundownPlaylists: DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>
 	// Studios: DbCacheWriteCollection<Studio, Studio>
-	Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
+	Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 	RecordedFiles: DbCacheWriteCollection<RecordedFile, RecordedFile>
 
 	constructor(studioId: StudioId) {
@@ -108,7 +108,7 @@ export class CacheForStudioBase extends Cache {
 
 		this.RundownPlaylists = new DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
 		// this.Studios = new DbCacheWriteCollection<Studio, Studio>(Studios)
-		this.Timeline = new DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
+		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
 		this.RecordedFiles = new DbCacheWriteCollection<RecordedFile, RecordedFile>(RecordedFiles)
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {

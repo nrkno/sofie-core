@@ -22,6 +22,7 @@ import {
 	TimelineObjPartAbstract,
 	getTimelineId,
 	TimelineObjGroupRundown,
+	TimelineComplete,
 } from '../../../lib/collections/Timeline'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -98,33 +99,43 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	}
 
 	let savedTimelineObjs: TimelineObjGeneric[] = []
-	saveIntoCache<TimelineObjGeneric, TimelineObjGeneric>(
+	saveIntoCache<TimelineComplete, TimelineComplete>(
 		cache.Timeline,
 		{
 			studioId: studio._id,
 			objectType: { $ne: TimelineObjType.STAT },
 		},
-		timelineObjs,
+		[
+			literal<TimelineComplete>({
+				_id: studio._id,
+				timeline: timelineObjs,
+			}),
+		],
 		{
-			beforeUpdate: (o: TimelineObjGeneric, oldO: TimelineObjGeneric): TimelineObjGeneric => {
+			beforeUpdate: (o: TimelineComplete, oldO: TimelineComplete): TimelineComplete => {
 				// do not overwrite enable when the enable has been denowified
-				if (o.enable.start === 'now' && oldO.enable.setFromNow) {
-					o.enable.start = oldO.enable.start
-					o.enable.setFromNow = true
-				}
-				savedTimelineObjs.push(o)
+				oldO.timeline.forEach((tloldo: TimelineObjGeneric) => {
+					// A timeline object is updated if found in both collections
+					let tlo: TimelineObjGeneric | undefined = o.timeline.find((x) => x._id === tloldo._id)
+					if (tlo && tlo.enable.start === 'now' && tloldo.enable.setFromNow) {
+						tlo.enable.start = tloldo.enable.start
+						tlo.enable.setFromNow = true
+					}
+				})
+				savedTimelineObjs = o.timeline
 				return o
 			},
-			afterInsert: (o: TimelineObjGeneric) => {
-				savedTimelineObjs.push(o)
+			afterInsert: (o: TimelineComplete) => {
+				savedTimelineObjs = o.timeline
 			},
-			unchanged: (o: TimelineObjGeneric) => {
-				savedTimelineObjs.push(o)
+			unchanged: (o: TimelineComplete) => {
+				savedTimelineObjs = o.timeline
 			},
 		}
 	)
 
-	afterUpdateTimeline(cache, studio._id, savedTimelineObjs)
+	// Not required for the single document model for timelines
+	// afterUpdateTimeline(cache, studio._id, savedTimelineObjs)
 
 	logger.debug('updateTimeline done!')
 	if (span) span.end()
@@ -136,7 +147,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
  * @param studioId id of the studio to update
  */
-export function afterUpdateTimeline(
+/* export function afterUpdateTimeline(
 	cache: CacheForStudioBase,
 	studioId: StudioId,
 	timelineObjs?: Array<TimelineObjGeneric>
@@ -180,7 +191,7 @@ export function afterUpdateTimeline(
 
 	cache.Timeline.upsert(statObj._id, statObj)
 	if (span) span.end()
-}
+} */
 export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({
 		studioId: studioId,
