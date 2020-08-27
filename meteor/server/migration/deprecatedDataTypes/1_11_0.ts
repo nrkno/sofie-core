@@ -1,10 +1,18 @@
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { PartNote } from '../../../lib/api/notes'
-import { PartEndState, Timeline, PieceLifespan, BaseContent } from 'tv-automation-sofie-blueprints-integration'
+import {
+	PartEndState,
+	Timeline as BPTimeline,
+	PieceLifespan,
+	BaseContent,
+} from 'tv-automation-sofie-blueprints-integration'
 import { PartId, PartTimings } from '../../../lib/collections/Parts'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
+import { TransformedCollection } from '../../../lib/typings/meteor'
+import { createMongoCollection } from '../../../lib/collections/lib'
 
 export interface Part {
 	// extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
@@ -59,7 +67,7 @@ export interface Piece extends RundownPieceGeneric {
 	// ProtectedStringProperties<Omit<IBlueprintPieceDB, '_id' | 'partId' | 'continuesRefId'>, 'infiniteId'> {
 
 	partId: PartId
-	userDuration?: Pick<Timeline.TimelineEnable, 'duration' | 'end'>
+	userDuration?: Pick<BPTimeline.TimelineEnable, 'duration' | 'end'>
 	infiniteMode?: PieceLifespan
 	definitelyEnded?: number
 	originalInfiniteMode?: PieceLifespan
@@ -69,3 +77,6 @@ export interface Piece extends RundownPieceGeneric {
 	stoppedPlayback?: number
 	overflows?: boolean
 }
+export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric> = createMongoCollection<
+	TimelineObjGeneric
+>('timeline')
