@@ -194,7 +194,8 @@ export class Part implements DBPart {
 
 		const pieces = this.getPieces()
 		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-		for (let piece of pieces) {
+		for (let i = 0; i < pieces.length; i++) {
+			const piece = pieces[i]
 			// TODO: check statuses (like media availability) here
 
 			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {

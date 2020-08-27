@@ -1379,8 +1379,8 @@ export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 export function equivalentArrays<T>(a: T[], b: T[]): boolean {
 	if (a === b) return true
 	if (a.length !== b.length) return false
-	for (let val of a) {
-		if (!b.includes(val)) return false
+	for (let i = 0; i < a.length; i++) {
+		if (!b.includes(a[i])) return false
 	}
 	return true
 }
