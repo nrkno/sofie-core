@@ -2404,7 +2404,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												title={t('Rundown not found')}
 												acceptText={t('Close')}>
 												{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
-													pieceLabel: this.state.selectedPiece.name,
+													pieceLabel: this.state.selectedPiece.instance.piece.name,
 												})}
 											</ModalDialog>
 										) : (
