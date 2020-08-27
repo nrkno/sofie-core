@@ -12,6 +12,7 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from './rundown/infinites'
+import { FindOptions } from './typings/meteor'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -93,7 +94,8 @@ export function getPieceInstancesForPartInstance(
 	orderedAllParts: PartId[],
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
-	currentPartInstancePieceInstances: PieceInstance[] | undefined
+	currentPartInstancePieceInstances: PieceInstance[] | undefined,
+	options?: FindOptions<PieceInstance>
 ) {
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
@@ -113,7 +115,7 @@ export function getPieceInstancesForPartInstance(
 			partInstance.isTemporary
 		)
 	} else {
-		return PieceInstances.find({ partInstanceId: partInstance._id }).fetch()
+		return PieceInstances.find({ partInstanceId: partInstance._id }, options).fetch()
 	}
 }
 

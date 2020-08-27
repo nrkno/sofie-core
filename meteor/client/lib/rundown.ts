@@ -282,9 +282,18 @@ export namespace RundownUtils {
 				segmentId: segment._id,
 			}
 		)
-		const activePartInstancesMap = playlist.getActivePartInstancesMap({
-			segmentId: segment._id,
-		})
+		const activePartInstancesMap = playlist.getActivePartInstancesMap(
+			{
+				segmentId: segment._id,
+			},
+			{
+				fields: {
+					isTaken: 0,
+					previousPartEndState: 0,
+					takeCount: 0,
+				},
+			}
+		)
 
 		const partsInSegment = segmentsAndParts.parts
 
@@ -375,7 +384,14 @@ export namespace RundownUtils {
 						? PieceInstances.find({
 								partInstanceId: currentPartInstance._id,
 						  }).fetch()
-						: undefined
+						: undefined,
+					{
+						fields: {
+							//@ts-ignore deep property
+							'piece.startedPlayback': 0,
+							'piece.timings': 0,
+						},
+					}
 				)
 				const nowInPart = 0 // TODO-INFINITE
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
