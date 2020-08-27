@@ -5,9 +5,8 @@ import { Blueprint } from '../../../../lib/collections/Blueprints'
 export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, codeFcn?: () => SomeBlueprintManifest) {
 	let codeFcnString = ''
 	if (!codeFcn) {
-		const TYPE = BlueprintManifestType.SYSTEM
 		codeFcn = () => ({
-			blueprintType: TYPE,
+			blueprintType: (18321 as any) as BlueprintManifestType.SYSTEM, // magic number, to be replaced later
 			blueprintVersion: '0.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
@@ -19,7 +18,7 @@ export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, 
 			getShowStyleId: () => null,
 		})
 		codeFcnString = codeFcn && codeFcn.toString()
-		codeFcnString = codeFcnString.replace(/TYPE/, type ? `"${type}"` : 'undefined')
+		codeFcnString = codeFcnString.replace(/18321/, type ? `"${type}"` : 'undefined')
 	} else {
 		codeFcnString = codeFcn && codeFcn.toString()
 	}
