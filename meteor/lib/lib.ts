@@ -1301,7 +1301,7 @@ export function waitTime(time: number) {
 	waitForPromise(sleep(time))
 }
 export function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => setTimeout(resolve, ms))
+	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
 }
 
 /** Runtime-wise, this is a string.
