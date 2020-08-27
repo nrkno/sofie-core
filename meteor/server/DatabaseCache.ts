@@ -15,6 +15,7 @@ import {
 	waitForPromise,
 	asyncCollectionBulkWrite,
 	PreparedChanges,
+	Changes,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
@@ -302,16 +303,16 @@ export class DbCacheWriteCollection<
 			return { numberAffected: 1, insertedId: this.insert(doc) }
 		}
 	}
-	async updateDatabaseWithData() {
+	async updateDatabaseWithData(): Promise<Changes> {
 		const span = Agent.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
-			insert: number
-			update: number
-			remove: number
+			added: number
+			updated: number
+			removed: number
 		} = {
-			insert: 0,
-			update: 0,
-			remove: 0,
+			added: 0,
+			updated: 0,
+			removed: 0,
 		}
 
 		const updates: BulkWriteOperation<DBInterface>[] = []
@@ -320,7 +321,7 @@ export class DbCacheWriteCollection<
 			const _id: DBInterface['_id'] = protectString(id)
 			if (doc.removed) {
 				removedDocs.push(_id)
-				changes.remove++
+				changes.removed++
 			} else if (doc.inserted) {
 				updates.push({
 					replaceOne: {
@@ -331,7 +332,7 @@ export class DbCacheWriteCollection<
 						upsert: true,
 					},
 				})
-				changes.insert++
+				changes.added++
 			} else if (doc.updated) {
 				updates.push({
 					replaceOne: {
@@ -341,7 +342,7 @@ export class DbCacheWriteCollection<
 						replacement: doc.document,
 					},
 				})
-				changes.update++
+				changes.updated++
 			}
 			delete doc.inserted
 			delete doc.updated
@@ -392,11 +393,6 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	afterUpdate?: (o: DBInterface) => void
 	afterRemove?: (o: DBInterface) => void
 	afterRemoveAll?: (o: Array<DBInterface>) => void
-}
-interface Changes {
-	added: number
-	updated: number
-	removed: number
 }
 export function saveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: DbCacheWriteCollection<DocClass, DBInterface>,

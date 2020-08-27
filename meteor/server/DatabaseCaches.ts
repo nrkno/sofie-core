@@ -23,7 +23,16 @@ import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime, sleep } from '../lib/lib'
+import {
+	protectString,
+	waitForPromiseAll,
+	waitForPromise,
+	makePromise,
+	getCurrentTime,
+	waitTime,
+	sumChanges,
+	anythingChanged,
+} from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -69,7 +78,7 @@ export class Cache {
 			}
 		})
 	}
-	async saveAllToDatabase(except?: string[]) {
+	async saveAllToDatabase() {
 		const span = Agent.startSpan('Cache.saveAllToDatabase')
 		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
@@ -78,13 +87,36 @@ export class Cache {
 		_.each(this._deferredFunctions, (fcn) => {
 			fcn(this)
 		})
-		await Promise.all(
-			_.map(_.values(this), async (db) => {
-				if (isDbCacheWriteCollection(db) && (!except || !except.includes(db.name || ''))) {
-					await db.updateDatabaseWithData()
+
+		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
+		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
+
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWriteCollection(db)) {
+				if (key.match(/timeline/i)) {
+					highPrioDBs.push(db)
+				} else {
+					lowPrioDBs.push(db)
 				}
-			})
-		)
+			}
+		})
+
+		if (highPrioDBs.length) {
+			const anyThingChanged = anythingChanged(
+				sumChanges(...(await Promise.all(highPrioDBs.map((db) => db.updateDatabaseWithData()))))
+			)
+			if (anyThingChanged) {
+				// Wait a little bit before saving the rest.
+				// The idea is that this allows for the high priority publications to update (such as the Timeline),
+				// sending the updated timeline to Playout-gateway
+				waitTime(2)
+			}
+		}
+
+		if (lowPrioDBs.length) {
+			await Promise.all(lowPrioDBs.map((db) => db.updateDatabaseWithData()))
+		}
 		logger.info(`Save all to database took: ${getCurrentTime() - startTime}ms`)
 		if (span) span.end()
 	}
@@ -113,17 +145,6 @@ export class CacheForStudioBase extends Cache {
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {
 		return super.defer(fcn)
-	}
-	async saveAllExceptTimelineToDatabase() {
-		return this.saveAllToDatabase(['timeline'])
-	}
-	async saveTimelineToDatabase() {
-		await this.Timeline.updateDatabaseWithData()
-	}
-	saveTimelineThenAllToDatabase() {
-		waitForPromise(this.Timeline.updateDatabaseWithData())
-		waitForPromise(sleep(2))
-		waitForPromise(this.saveAllExceptTimelineToDatabase())
 	}
 }
 export class CacheForStudio extends CacheForStudioBase {

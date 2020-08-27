@@ -236,7 +236,7 @@ export namespace ServerPeripheralDeviceAPI {
 			})
 			// After we've updated the timeline, we must call afterUpdateTimeline!
 			afterUpdateTimeline(cache, studioId)
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		}
 	},
 	'timelineTriggerTime$0,$1') // kz 'timelineTriggerTime$1' maybe?

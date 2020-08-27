@@ -119,7 +119,7 @@ export namespace ServerPlayoutAPI {
 
 			libActivateRundownPlaylist(cache, playlist, true) // Activate rundownPlaylist (rehearsal)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	/**
@@ -142,7 +142,7 @@ export namespace ServerPlayoutAPI {
 
 			updateTimeline(cache, playlist.studioId)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	/**
@@ -169,7 +169,7 @@ export namespace ServerPlayoutAPI {
 			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, !!rehearsal) // Activate rundown
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	/**
@@ -214,7 +214,7 @@ export namespace ServerPlayoutAPI {
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	/**
@@ -237,7 +237,7 @@ export namespace ServerPlayoutAPI {
 			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, rehearsal)
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	/**
@@ -254,7 +254,7 @@ export namespace ServerPlayoutAPI {
 			standDownStudio(cache, getStudioFromCache(cache, playlist), true)
 			libDeactivateRundownPlaylist(cache, playlist)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	/**
@@ -318,7 +318,7 @@ export namespace ServerPlayoutAPI {
 
 			setNextPartInner(cache, playlist, nextPartId, setManually, nextTimeOffset)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 			return ClientAPI.responseSuccess(undefined)
 		})
 	}
@@ -372,7 +372,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
 			const res = moveNextPartInner(cache, playlist, horizontalDelta, verticalDelta, setManually)
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 			return res
 		})
 	}
@@ -504,7 +504,7 @@ export namespace ServerPlayoutAPI {
 			// Update any future lookaheads
 			updateTimeline(cache, playlist.studioId)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 
 			return ClientAPI.responseSuccess(undefined)
 		})
@@ -550,7 +550,7 @@ export namespace ServerPlayoutAPI {
 
 			updateTimeline(cache, playlist.studioId)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	export function deactivateHold(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
@@ -571,7 +571,7 @@ export namespace ServerPlayoutAPI {
 			cache.RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.NONE } })
 
 			updateTimeline(cache, playlist.studioId)
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	export function disableNextPiece(context: MethodContext, rundownPlaylistId: RundownPlaylistId, undo?: boolean) {
@@ -682,7 +682,7 @@ export namespace ServerPlayoutAPI {
 
 				updateTimeline(cache, playlist.studioId)
 
-				cache.saveTimelineThenAllToDatabase()
+				waitForPromise(cache.saveAllToDatabase())
 			} else {
 				throw new Meteor.Error(500, 'Found no future pieces')
 			}
@@ -912,7 +912,7 @@ export namespace ServerPlayoutAPI {
 					// complete the take
 					afterTake(cache, rundown.studioId, playingPartInstance)
 
-					cache.saveTimelineThenAllToDatabase()
+					waitForPromise(cache.saveAllToDatabase())
 				}
 			} else {
 				throw new Meteor.Error(
@@ -1125,7 +1125,7 @@ export namespace ServerPlayoutAPI {
 					updateTimeline(cache, playlist.studioId)
 				}
 
-				cache.saveTimelineThenAllToDatabase()
+				waitForPromise(cache.saveAllToDatabase())
 			}
 		})
 	}
@@ -1190,7 +1190,7 @@ export namespace ServerPlayoutAPI {
 
 			updateTimeline(cache, playlist.studioId)
 
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	/**
@@ -1257,7 +1257,7 @@ export namespace ServerPlayoutAPI {
 			const cachePlayout = waitForPromise(initCacheForNoRundownPlaylist(studioId, cache))
 			updateTimeline(cachePlayout, studioId)
 			const result = shouldUpdateStudioBaselineInner(cache, studioId)
-			cachePlayout.saveTimelineThenAllToDatabase()
+			waitForPromise(cachePlayout.saveAllToDatabase())
 			return result
 		} else {
 			const result = shouldUpdateStudioBaselineInner(cache, studioId)
@@ -1342,7 +1342,7 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 					updateTimeline(cache, playlist.studioId)
 				}
 
-				cache.saveTimelineThenAllToDatabase()
+				waitForPromise(cache.saveAllToDatabase())
 			})
 		}
 	}, 1000)

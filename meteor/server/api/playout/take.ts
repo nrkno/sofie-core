@@ -11,6 +11,7 @@ import {
 	getRandomId,
 	omit,
 	asyncCollectionFindOne,
+	waitTime,
 } from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
@@ -122,7 +123,7 @@ export function takeNextPartInnerSync(
 	} else if (playlist.holdState === RundownHoldState.ACTIVE) {
 		completeHold(cache, playlist, currentPartInstance)
 
-		cache.saveTimelineThenAllToDatabase()
+		waitForPromise(cache.saveAllToDatabase())
 
 		return ClientAPI.responseSuccess(undefined)
 	}
@@ -313,7 +314,7 @@ export function takeNextPartInnerSync(
 			}
 		}
 	})
-	cache.saveTimelineThenAllToDatabase()
+	waitForPromise(cache.saveAllToDatabase())
 
 	if (span) span.end()
 	return ClientAPI.responseSuccess(undefined)

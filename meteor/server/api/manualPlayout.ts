@@ -53,14 +53,14 @@ class ServerManualPlayoutAPI extends MethodContextAPI implements NewManualPlayou
 		return makePromise(() => {
 			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 			insertTimelineObject(this, cache, studioId, timelineObject)
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 	removeTimelineObject(studioId: StudioId, id: string) {
 		return makePromise(() => {
 			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 			removeTimelineObject(this, cache, studioId, id)
-			cache.saveTimelineThenAllToDatabase()
+			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
 }
