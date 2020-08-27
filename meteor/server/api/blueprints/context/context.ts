@@ -61,7 +61,7 @@ import { unprotectPartInstance, PartInstance } from '../../../../lib/collections
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
-import { loadStudioBlueprints, loadShowStyleBlueprints } from '../cache'
+import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 
 /** Common */
@@ -182,7 +182,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 		}
 
 		logger.debug('Building Studio config')
-		const studioBlueprint = loadStudioBlueprints(this.studio)
+		const studioBlueprint = loadStudioBlueprint(this.studio)
 		if (studioBlueprint) {
 			const diffs = findMissingConfigs(
 				studioBlueprint.blueprint.studioConfigManifest,
@@ -267,7 +267,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
 		if (!showStyleCompound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
 
-		const showStyleBlueprint = loadShowStyleBlueprints(showStyleCompound)
+		const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
 		if (showStyleBlueprint) {
 			const diffs = findMissingConfigs(
 				showStyleBlueprint.blueprint.showStyleConfigManifest,
