@@ -380,7 +380,7 @@ export namespace ServerPlayoutAdLibAPI {
 				rundownId: rundown._id,
 				segmentId: currentPartInstance.segmentId,
 				'part.dynamicallyInsertedAfterPartId': afterPartId,
-				'part._rank': { $gte: currentPartInstance.part._rank },
+				'part._rank': { $gt: currentPartInstance.part._rank },
 			},
 			{
 				sort: { _id: -1 },
@@ -392,14 +392,11 @@ export namespace ServerPlayoutAdLibAPI {
 				cache.PartInstances.remove(alreadyQueuedPartInstance._id)
 				cache.PieceInstances.remove({ partInstanceId: alreadyQueuedPartInstance._id })
 				afterRemoveParts(cache, currentPartInstance.rundownId, [alreadyQueuedPartInstance.part])
-				// Ensure it is labelled as dynamic
-				newPartInstance.part.dynamicallyInsertedAfterPartId = afterPartId
-			} else {
-				newPartInstance.part.dynamicallyInsertedAfterPartId = alreadyQueuedPartInstance.part._id
 			}
-		} else {
-			newPartInstance.part.dynamicallyInsertedAfterPartId = currentPartInstance.part._id
 		}
+
+		// Ensure it is labelled as dynamic
+		newPartInstance.part.dynamicallyInsertedAfterPartId = afterPartId
 
 		cache.PartInstances.insert(newPartInstance)
 		// TODO-PartInstance - pending new data flow
