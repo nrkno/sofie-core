@@ -3,11 +3,31 @@ import { literal, protectString } from '../../../../lib/lib'
 import { Blueprint } from '../../../../lib/collections/Blueprints'
 
 export function generateFakeBlueprint(id: string, type?: BlueprintManifestType, codeFcn?: () => SomeBlueprintManifest) {
+	let codeFcnString = ''
+	if (!codeFcn) {
+		const TYPE = BlueprintManifestType.SYSTEM
+		codeFcn = () => ({
+			blueprintType: TYPE,
+			blueprintVersion: '0.0.0',
+			integrationVersion: '0.0.0',
+			TSRVersion: '0.0.0',
+			minimumCoreVersion: '0.0.0',
+
+			studioConfigManifest: [],
+			studioMigrations: [],
+			getBaseline: () => [],
+			getShowStyleId: () => null,
+		})
+		codeFcnString = codeFcn && codeFcn.toString()
+		codeFcnString = codeFcnString.replace(/TYPE/, type ? `"${type}"` : 'undefined')
+	} else {
+		codeFcnString = codeFcn && codeFcn.toString()
+	}
 	return literal<Blueprint>({
 		_id: protectString(id),
 		name: 'Fake blueprint',
 		organizationId: null,
-		code: `({default: (${(codeFcn && codeFcn.toString()) || '() => 5'})()})`,
+		code: `({default: (${codeFcnString || '() => 5'})()})`,
 		created: 0,
 		modified: 0,
 
