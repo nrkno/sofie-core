@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Parts } from '../../../lib/collections/Parts'
@@ -8,7 +7,7 @@ import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
 import {
 	setNextPart,
@@ -84,14 +83,11 @@ export function activateRundownPlaylist(
 
 	cache.defer(() => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const { blueprint } = getBlueprintOfRundown(
-			waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
-			rundown
-		)
+		const { blueprint } = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
+		const context = new RundownContext(rundown, cache, undefined)
+		context.wipeCache()
 		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, cache, undefined))).catch(
-				logger.error
-			)
+			Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
 		}
 	})
 }
@@ -102,9 +98,8 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 
 	cache.defer((cache) => {
 		if (rundown) {
-			const { blueprint } = getBlueprintOfRundown(
-				waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
-				rundown
+			const { blueprint } = loadShowStyleBlueprint(
+				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
 			)
 			if (blueprint.onRundownDeActivate) {
 				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(

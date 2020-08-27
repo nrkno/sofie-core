@@ -43,7 +43,7 @@ import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundow
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments, Segment } from '../../../../lib/collections/Segments'
-import { loadShowStyleBlueprints } from '../../blueprints/cache'
+import { loadShowStyleBlueprint } from '../../blueprints/cache'
 import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
@@ -207,7 +207,7 @@ export function handleMosRundownMetadata(
 				`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
 			)
 		}
-		const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
+		const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
 
 		// Load the cached RO Data
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)

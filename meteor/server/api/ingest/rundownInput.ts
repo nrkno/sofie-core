@@ -37,7 +37,7 @@ import {
 	updatePartRanks,
 	produceRundownPlaylistInfo,
 } from '../rundown'
-import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
@@ -439,7 +439,7 @@ function updateRundownFromIngestData(
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base).blueprint
+	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base).blueprint
 	const notesContext = new NotesContext(
 		`${showStyle.base.name}-${showStyle.variant.name}`,
 		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
@@ -640,7 +640,7 @@ function updateRundownFromIngestData(
 	const adlibPieces: AdLibPiece[] = []
 	const adlibActions: AdLibAction[] = []
 
-	const { blueprint, blueprintId } = getBlueprintOfRundown(showStyle.base, dbRundown)
+	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
 
 	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
@@ -1064,7 +1064,9 @@ function updateSegmentFromIngestData(
 	ingestSegment: IngestSegment
 ): SegmentId | null {
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-	const { blueprint, blueprintId } = getBlueprintOfRundown(undefined, rundown)
+	const { blueprint, blueprintId } = loadShowStyleBlueprint(
+		waitForPromise(cache.activationCache.getShowStyleBase(rundown))
+	)
 
 	const existingSegment = cache.Segments.findOne({
 		_id: segmentId,

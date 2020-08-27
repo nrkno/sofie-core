@@ -88,7 +88,8 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					onSelectPiece={props.onSelectPiece}
 					playlist={props.playlist}
 					showStyleBase={props.showStyleBase}
-					studioMode={props.studioMode}></AdLibPanel>
+					studioMode={props.studioMode}
+					hotkeyGroup={props.playlist.name.replace(/\W/, '') + 'AdLibPanel'}></AdLibPanel>
 				{rundownLayout &&
 					rundownLayout.filters.map((panel) =>
 						RundownLayoutsAPI.isFilter(panel) ? (
@@ -102,6 +103,7 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 								playlist={props.playlist}
 								showStyleBase={props.showStyleBase}
 								studioMode={props.studioMode}
+								hotkeyGroup={panel.name.replace(/\W/, '_')}
 							/>
 						) : RundownLayoutsAPI.isExternalFrame(panel) ? (
 							<ExternalFramePanel
@@ -121,7 +123,8 @@ export const ShelfRundownLayout = withTranslation()(function ShelfRundownLayout(
 					onSelectPiece={props.onSelectPiece}
 					playlist={props.playlist}
 					showStyleBase={props.showStyleBase}
-					studioMode={props.studioMode}></GlobalAdLibPanel>
+					studioMode={props.studioMode}
+					hotkeyGroup={props.playlist.name.replace(/\W/, '_') + 'GlobalAdLibPanel'}></GlobalAdLibPanel>
 				<HotkeyHelpPanel
 					visible={(props.selectedTab || SHELF_DEFAULT_TAB) === ShelfTabs.SYSTEM_HOTKEYS}
 					showStyleBase={props.showStyleBase}

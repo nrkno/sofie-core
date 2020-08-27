@@ -20,6 +20,7 @@ import {
 	ValidateFunctionCore,
 	ValidateFunctionShowStyle,
 	ValidateFunctionStudio,
+	SomeBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import {
@@ -42,7 +43,7 @@ import {
 import { SnapshotId } from '../../lib/collections/Snapshots'
 import { Studios } from '../../lib/collections/Studios'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
-import { evalBlueprints } from '../api/blueprints/cache'
+import { evalBlueprint } from '../api/blueprints/cache'
 import { MigrationContextShowStyle, MigrationContextStudio } from '../api/blueprints/migrationContext'
 
 /** The current database version, x.y.z
@@ -186,8 +187,9 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 	// Collect migration steps from blueprints:
 	Blueprints.find({}).forEach((blueprint) => {
+		// console.log('bp', blueprint._id)
 		if (blueprint.code) {
-			const rawBlueprint = evalBlueprints(blueprint)
+			const blueprintManifest = evalBlueprint(blueprint)
 
 			// @ts-ignore
 			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
@@ -195,7 +197,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
 			if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
-				const bp = rawBlueprint as ShowStyleBlueprintManifest
+				const bp = blueprintManifest as ShowStyleBlueprintManifest
 
 				// Find all showStyles that uses this blueprint:
 				ShowStyleBases.find({
@@ -234,7 +236,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					})
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
-				const bp = rawBlueprint as StudioBlueprintManifest
+				const bp = blueprintManifest as StudioBlueprintManifest
 				// Find all studios that use this blueprint
 				Studios.find({
 					blueprintId: blueprint._id,
@@ -274,6 +276,8 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			} else {
 				// No migrations for system blueprints
 			}
+		} else {
+			console.log(`blueprint ${blueprint._id} has no code`)
 		}
 	})
 
@@ -314,9 +318,16 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 	// Filter steps:
 	let migrationSteps: { [id: string]: MigrationStepInternal } = {}
 	let ignoredSteps: { [id: string]: true } = {}
+	let includesCoreStep = false
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
 		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length)))
 			throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
+
+		if (step.chunk.sourceType !== MigrationStepType.CORE && includesCoreStep) {
+			// stop here as core migrations need to be run before anything else can
+			partialMigration = true
+			return
+		}
 
 		if (partialMigration) return
 		if (
@@ -366,6 +377,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 			if (step._validateResult) {
 				migrationSteps[step.id] = step
+				includesCoreStep = includesCoreStep || step.chunk.sourceType === MigrationStepType.CORE
 			} else {
 				// No need to run step
 				ignoredSteps[step.id] = true

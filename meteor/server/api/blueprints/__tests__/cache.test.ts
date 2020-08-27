@@ -5,10 +5,10 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, protectString } from '../../../../lib/lib'
 import {
 	loadSystemBlueprints,
-	loadStudioBlueprints,
-	loadShowStyleBlueprints,
-	getBlueprintOfRundown,
+	loadStudioBlueprint,
+	loadShowStyleBlueprint,
 	WrappedStudioBlueprint,
+	BLUEPRINT_CACHE_CONTROL,
 } from '../cache'
 import { getCoreSystem, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
@@ -25,6 +25,12 @@ describe('Test blueprint cache', () => {
 	beforeAll(() => {
 		setupDefaultStudioEnvironment()
 	})
+	beforeEach(() => {
+		BLUEPRINT_CACHE_CONTROL.disable = true
+	})
+	afterEach(() => {
+		BLUEPRINT_CACHE_CONTROL.disable = false
+	})
 
 	describe('loadSystemBlueprints', () => {
 		function getCore(): ICoreSystem {
@@ -32,7 +38,6 @@ describe('Test blueprint cache', () => {
 			expect(core).toBeTruthy()
 			return core
 		}
-
 		testInFiber('Blueprint not specified', () => {
 			const core = getCore()
 			expect(core.blueprintId).toBeFalsy()
@@ -66,24 +71,32 @@ describe('Test blueprint cache', () => {
 				loadSystemBlueprints(core)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem (undefined)!`
+				)
 			}
 		})
+
 		testInFiber('Blueprint wrong type', () => {
 			const core = getCore()
 			core.blueprintId = protectString('fake_id')
 			expect(core.blueprintId).toBeTruthy()
 
 			Blueprints.remove(protectString('fake_id'))
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
+			const bp = generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE)
+			Blueprints.insert(bp)
 
+			expect(BLUEPRINT_CACHE_CONTROL.disable).toBeTruthy()
 			try {
 				loadSystemBlueprints(core)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
+				expect(e.message).toBe(
+					`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem (showstyle)!`
+				)
 			}
 		})
+
 		testInFiber('Blueprint wrong internal type', () => {
 			const core = getCore()
 			core.blueprintId = protectString('fake_id')
@@ -109,7 +122,9 @@ describe('Test blueprint cache', () => {
 				loadSystemBlueprints(core)
 				fail('expected to throw')
 			} catch (e) {
-				expect(e.message).toBe(`[500] Blueprint "${core.blueprintId}" is not valid for a CoreSystem!`)
+				expect(e.message).toBe(
+					`[500] Evaluated Blueprint-manifest and document does not have the same blueprintType ("studio", "system")!`
+				)
 			}
 		})
 		testInFiber('Blueprint correct type', () => {
@@ -146,7 +161,7 @@ describe('Test blueprint cache', () => {
 			studio.blueprintId = undefined
 			expect(studio.blueprintId).toBeFalsy()
 
-			const blueprint = loadStudioBlueprints(studio)
+			const blueprint = loadStudioBlueprint(studio)
 			expect(blueprint).toBeFalsy()
 		})
 		testInFiber('Blueprint does not exist', () => {
@@ -157,7 +172,7 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 
 			try {
-				loadStudioBlueprints(studio)
+				loadStudioBlueprint(studio)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
@@ -174,11 +189,11 @@ describe('Test blueprint cache', () => {
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
 			try {
-				loadStudioBlueprints(studio)
+				loadStudioBlueprint(studio)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\" (undefined)!`
 				)
 			}
 		})
@@ -191,11 +206,11 @@ describe('Test blueprint cache', () => {
 			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
 
 			try {
-				loadStudioBlueprints(studio)
+				loadStudioBlueprint(studio)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\" (showstyle)!`
 				)
 			}
 		})
@@ -214,14 +229,14 @@ describe('Test blueprint cache', () => {
 			})
 
 			Blueprints.remove(protectString('fake_id'))
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.STUDIO, manifest))
 
 			try {
-				loadStudioBlueprints(studio)
+				loadStudioBlueprint(studio)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[500] Blueprint "${studio.blueprintId}" is not valid for a Studio \"${studio._id}\"!`
+					`[500] Evaluated Blueprint-manifest and document does not have the same blueprintType ("system", "studio")!`
 				)
 			}
 		})
@@ -244,9 +259,9 @@ describe('Test blueprint cache', () => {
 			})
 
 			Blueprints.remove(protectString('fake_id'))
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.STUDIO, manifest))
 
-			const blueprint = loadStudioBlueprints(studio) as WrappedStudioBlueprint
+			const blueprint = loadStudioBlueprint(studio) as WrappedStudioBlueprint
 			expect(blueprint).toBeTruthy()
 
 			expect(blueprint.blueprint.blueprintType).toEqual('studio')
@@ -266,7 +281,7 @@ describe('Test blueprint cache', () => {
 			expect(showStyle.blueprintId).toBeFalsy()
 
 			try {
-				loadShowStyleBlueprints(showStyle)
+				loadShowStyleBlueprint(showStyle)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[500] ShowStyleBase "${showStyle._id}" has no defined blueprint!`)
@@ -280,7 +295,7 @@ describe('Test blueprint cache', () => {
 			Blueprints.remove(protectString('fake_id'))
 
 			try {
-				loadShowStyleBlueprints(showStyle)
+				loadShowStyleBlueprint(showStyle)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
@@ -297,11 +312,11 @@ describe('Test blueprint cache', () => {
 			Blueprints.insert(generateFakeBlueprint('fake_id'))
 
 			try {
-				loadShowStyleBlueprints(showStyle)
+				loadShowStyleBlueprint(showStyle)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\" (undefined)!`
 				)
 			}
 		})
@@ -311,14 +326,14 @@ describe('Test blueprint cache', () => {
 			expect(showStyle.blueprintId).toBeTruthy()
 
 			Blueprints.remove(protectString('fake_id'))
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM))
 
 			try {
-				loadShowStyleBlueprints(showStyle)
+				loadShowStyleBlueprint(showStyle)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\" (system)!`
 				)
 			}
 		})
@@ -337,14 +352,14 @@ describe('Test blueprint cache', () => {
 			})
 
 			Blueprints.remove(protectString('fake_id'))
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE, manifest))
 
 			try {
-				loadShowStyleBlueprints(showStyle)
+				loadShowStyleBlueprint(showStyle)
 				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
-					`[500] Blueprint "${showStyle.blueprintId}" is not valid for a ShowStyle \"${showStyle._id}\"!`
+					`[500] Evaluated Blueprint-manifest and document does not have the same blueprintType ("system", "showstyle")!`
 				)
 			}
 		})
@@ -369,9 +384,9 @@ describe('Test blueprint cache', () => {
 			})
 
 			Blueprints.remove(protectString('fake_id'))
-			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SYSTEM, manifest))
+			Blueprints.insert(generateFakeBlueprint('fake_id', BlueprintManifestType.SHOWSTYLE, manifest))
 
-			const blueprint = loadShowStyleBlueprints(showStyle)
+			const blueprint = loadShowStyleBlueprint(showStyle)
 			expect(blueprint).toBeTruthy()
 		})
 	})
@@ -397,30 +412,6 @@ describe('Test blueprint cache', () => {
 				})
 			)
 		}
-		testInFiber('Missing showStyleBaseId', () => {
-			const rundown = getRundown()
-			expect(rundown.showStyleBaseId).toBeFalsy()
-
-			try {
-				getBlueprintOfRundown(undefined, rundown, true)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(`[400] Rundown "${rundown._id}" is missing showStyleBaseId!`)
-			}
-		})
-		testInFiber('Missing showStyleBase', () => {
-			const rundown = getRundown()
-			rundown.showStyleBaseId = protectString('fake0')
-
-			try {
-				getBlueprintOfRundown(undefined, rundown, true)
-				fail('expected to throw')
-			} catch (e) {
-				expect(e.message).toBe(
-					`[404] ShowStyleBase "${rundown.showStyleBaseId}" not found! (referenced by Rundown "${rundown._id}")`
-				)
-			}
-		})
 		testInFiber('Valid showStyleBase', () => {
 			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
 			expect(showStyle).toBeTruthy()
@@ -428,71 +419,8 @@ describe('Test blueprint cache', () => {
 			const rundown = getRundown()
 			rundown.showStyleBaseId = showStyle._id
 
-			const blueprint = getBlueprintOfRundown(undefined, rundown, true)
+			const blueprint = loadShowStyleBlueprint(showStyle)
 			expect(blueprint).toBeTruthy()
-		})
-		testInFiber('Wrong showStyleBase', () => {
-			const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-			expect(showStyle).toBeTruthy()
-
-			const rundown = getRundown()
-			rundown.showStyleBaseId = protectString(showStyle._id + '1')
-
-			expect(() => getBlueprintOfRundown(showStyle, rundown, true)).toThrowError(
-				`ShowStyleBase "${rundown.showStyleBaseId}" not found!`
-			)
-		})
-		testInFiber('Test caching', () => {
-			jest.useFakeTimers()
-
-			try {
-				const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-				expect(showStyle).toBeTruthy()
-
-				const rundown = getRundown()
-				rundown.showStyleBaseId = showStyle._id
-
-				const blueprint1 = getBlueprintOfRundown(undefined, rundown)
-				expect(blueprint1).toBeTruthy()
-
-				jest.runTimersToTime(500)
-
-				rundown.showStyleBaseId = protectString('abc') // Not real
-				const blueprint2 = getBlueprintOfRundown(undefined, rundown)
-				expect(blueprint2).toBeTruthy()
-
-				// Should still be the same, as within cache window
-				expect(blueprint2.blueprintId).toEqual(blueprint1.blueprintId)
-			} finally {
-				// Restore timers after run
-				jest.useRealTimers()
-			}
-		})
-		testInFiber('Test caching with fed showStyle', () => {
-			jest.useFakeTimers()
-
-			try {
-				const showStyle = ShowStyleBases.findOne() as ShowStyleBase
-				expect(showStyle).toBeTruthy()
-
-				const rundown = getRundown()
-				rundown.showStyleBaseId = showStyle._id
-
-				const blueprint1 = getBlueprintOfRundown(showStyle, rundown)
-				expect(blueprint1).toBeTruthy()
-
-				jest.runTimersToTime(500)
-
-				rundown.showStyleBaseId = protectString('abc') // Not real
-				const blueprint2 = getBlueprintOfRundown(showStyle, rundown)
-				expect(blueprint2).toBeTruthy()
-
-				// Should still be the same, as within cache window
-				expect(blueprint2.blueprintId).toEqual(blueprint1.blueprintId)
-			} finally {
-				// Restore timers after run
-				jest.useRealTimers()
-			}
 		})
 	})
 })

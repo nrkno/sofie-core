@@ -91,17 +91,21 @@ describe('Playout API', () => {
 
 		testInFiber('invalid parameters', () => {
 			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction(9, '', '')).toThrowError('Match error: Expected string')
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, 9, '', '')).toThrowError(
+				'Match error: Expected string'
+			)
 			// @ts-ignore
-			expect(() => ServerPlayoutAPI.executeAction('', 9, '')).toThrowError('Match error: Expected string')
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, '', 9, '')).toThrowError(
+				'Match error: Expected string'
+			)
 		})
 
 		testInFiber('throws errors', () => {
 			const actionId = 'some-action'
 			const userData = { blobby: true }
 
-			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError(
-				'ShowStyle blueprint does not support executing actions'
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)).toThrowError(
+				/ShowStyle blueprint .* does not support executing actions/
 			)
 
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -125,7 +129,7 @@ describe('Playout API', () => {
 					),
 				},
 			})
-			expect(() => ServerPlayoutAPI.executeAction(playlistId, actionId, userData)).toThrowError(
+			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)).toThrowError(
 				'action execution threw'
 			)
 
@@ -165,7 +169,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)
@@ -205,7 +209,7 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
@@ -245,10 +249,90 @@ describe('Playout API', () => {
 
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			ServerPlayoutAPI.executeAction(playlistId, actionId, userData)
+			ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(1)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(1)
+		})
+
+		testInFiber('take after execute (true)', () => {
+			const api = ServerPlayoutAPI
+			const mockTake = jest.fn().mockReturnThis()
+			api.callTakeWithCache = mockTake
+
+			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
+			const STATE_NONE = ActionPartChange.NONE
+			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
+
+			Blueprints.update(blueprintId, {
+				$set: {
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									context.takeAfterExecuteAction(true)
+								},
+							}
+						}
+					),
+				},
+			})
+
+			const actionId = 'some-action'
+			const userData = { blobby: true }
+			api.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+
+			const timesTakeCalled = mockTake.mock.calls.length
+			mockTake.mockRestore()
+			expect(timesTakeCalled).toBe(1)
+		})
+
+		testInFiber('take after execute (false)', () => {
+			const api = ServerPlayoutAPI
+			const mockTake = jest.fn().mockReturnThis()
+			api.callTakeWithCache = mockTake
+
+			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
+			const STATE_NONE = ActionPartChange.NONE
+			const STATE_SAFE = ActionPartChange.SAFE_CHANGE
+
+			Blueprints.update(blueprintId, {
+				$set: {
+					code: packageBlueprint<ShowStyleBlueprintManifest>(
+						{
+							// Constants to into code:
+							BLUEPRINT_TYPE,
+							STATE_NONE,
+							STATE_SAFE,
+						},
+						function(): any {
+							return {
+								blueprintType: BLUEPRINT_TYPE,
+								executeAction: (context0) => {
+									const context = context0 as ActionExecutionContext
+									context.takeAfterExecuteAction(false)
+								},
+							}
+						}
+					),
+				},
+			})
+
+			const actionId = 'some-action'
+			const userData = { blobby: true }
+			api.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)
+
+			const timesTakeCalled = mockTake.mock.calls.length
+			mockTake.mockRestore()
+			expect(timesTakeCalled).toBe(0)
 		})
 	})
 })
