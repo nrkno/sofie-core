@@ -477,7 +477,9 @@ export namespace RundownUtils {
 				let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
-				for (let obj of Object.values(tlResolved.objects)) {
+				const objs = Object.values(tlResolved.objects)
+				for (let i = 0; i < objs.length; i++) {
+					const obj = objs[i]
 					const obj0 = (obj as unknown) as TimelineObjectCoreExt
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
