@@ -83,11 +83,6 @@ export class Cache {
 		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
 
-		// shouldn't the deferred functions be executed after updating the db?
-		_.each(this._deferredFunctions, (fcn) => {
-			fcn(this)
-		})
-
 		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
 		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
 
@@ -118,6 +113,12 @@ export class Cache {
 			await Promise.all(lowPrioDBs.map((db) => db.updateDatabaseWithData()))
 		}
 		logger.info(`Save all to database took: ${getCurrentTime() - startTime}ms`)
+
+		// Execute cache.defer()'s
+		_.each(this._deferredFunctions, (fcn) => {
+			fcn(this)
+		})
+
 		if (span) span.end()
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
