@@ -39,7 +39,7 @@ export function eventContextForLog(e: any): string {
 	}
 	if (!str) {
 		logger.error('Unknown event', e)
-		console.log(e)
+		console.error(e)
 		str = 'N/A'
 	}
 

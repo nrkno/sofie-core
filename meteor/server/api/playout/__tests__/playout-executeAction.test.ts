@@ -105,7 +105,7 @@ describe('Playout API', () => {
 			const userData = { blobby: true }
 
 			expect(() => ServerPlayoutAPI.executeAction(DEFAULT_CONTEXT, playlistId, actionId, userData)).toThrowError(
-				'ShowStyle blueprint does not support executing actions'
+				/ShowStyle blueprint .* does not support executing actions/
 			)
 
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE

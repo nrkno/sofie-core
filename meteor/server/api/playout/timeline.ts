@@ -48,7 +48,7 @@ import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs'
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
-import { loadStudioBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
+import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
 import { StudioContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { generateRecordingTimelineObjs } from '../testTools'
@@ -246,7 +246,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			// Fetch showstyle blueprint:
 			const activeRundown0 = activeRundown
 			const pShowStyle = cache.activationCache.getShowStyleBase(activeRundown)
-			const pshowStyleBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, activeRundown0))
+			const pshowStyleBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
 			// Fetch baseline
 			const baselineItems = cache.RundownBaselineObjs.findFetch({
@@ -315,7 +315,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 		} else {
 			let studioBaseline: TimelineObjRundown[] = []
 
-			const studioBlueprint = loadStudioBlueprints(studio)
+			const studioBlueprint = loadStudioBlueprint(studio)
 			if (studioBlueprint) {
 				const blueprint = studioBlueprint.blueprint
 				const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
@@ -705,7 +705,6 @@ function buildTimelineObjsForRundown(
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextPartInstance && currentPartInstance.part.autoNext) {
-			// console.log('This part will autonext')
 			let nextPartGroup = createPartGroup(nextPartInstance, {})
 			if (currentPartGroup) {
 				const overlapDuration = calcPartOverlapDuration(currentPartInstance.part, nextPartInstance.part)

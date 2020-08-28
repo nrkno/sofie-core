@@ -58,7 +58,6 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		}
 
 		onUpdateValue = (edit: any, newValue: any) => {
-			console.log('edit', edit, newValue)
 			let attr = edit.props.attribute
 
 			if (attr) {
@@ -185,7 +184,6 @@ const RecordingsList = translateWithTracker<IRecordingListProps, IRecordingListS
 		render() {
 			const { t } = this.props
 
-			// console.log('obj', obj)
 			return (
 				<div className="mtl gutter">
 					<header className="mvs">

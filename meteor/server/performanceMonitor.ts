@@ -55,21 +55,15 @@ function traceDebuggingData() {
 		debugData.connections.push(conn)
 		// named subscriptions
 
-		// console.log(_.keys(connection._meteorSession))
-		// console.log(connection._meteorSession)
-
 		let session = connection._meteorSession
 
 		if (session) {
-			// console.log(session.connectionHandle)
-
 			// if (session.clientAddress) conn.clientAddress = session.clientAddress()
 			if (session.connectionHandle) conn.clientAddress = session.connectionHandle.clientAddress
 
 			_.each(session._namedSubs, (sub: any) => {
 				debugData.namedSubscriptionCount++
 				// @ts-ignore
-				// console.log(sub._name)
 				if (!debugData.subscriptions[sub._name]) {
 					debugData.subscriptions[sub._name] = {
 						count: 0,

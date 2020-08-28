@@ -32,7 +32,6 @@ const TimelineView = translateWithTracker<ITimelineViewProps, ITimelineViewState
 		render() {
 			const { t } = this.props
 
-			// console.log('obj', obj)
 			return (
 				<div className="mtl gutter">
 					<header className="mvs">
@@ -242,8 +241,6 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 						return 0
 					})) ||
 				[]
-
-			// console.log('rerun')
 
 			// TODO - dont repeat unless changed
 			let tl = Resolver.resolveTimeline(timeline, { time: now })

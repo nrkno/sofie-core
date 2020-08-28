@@ -29,7 +29,7 @@ import {
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { NotesContext } from '../blueprints/context/context'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
@@ -1042,9 +1042,13 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 
 		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
-			const blueprint = getBlueprintOfRundown(undefined, rundown) // todo: database again
+			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
+			const blueprint = loadShowStyleBlueprint(showStyleBase)
 			if (!blueprint.blueprint.executeAction) {
-				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
+				throw new Meteor.Error(
+					400,
+					`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
+				)
 			}
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)

@@ -999,8 +999,6 @@ describe('Test recieved mos ingest payloads', () => {
 
 		const partExternalId = 'ro1;s1;p1'
 
-		// console.log(rundown.getParts())
-
 		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
 		expect(partToBeRemoved).toBeTruthy()
 

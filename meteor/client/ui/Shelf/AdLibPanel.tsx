@@ -1054,7 +1054,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		onSelectAdLib = (piece: IAdLibListItem) => {
-			// console.log(aSLine)
 			this.props.onSelectPiece && this.props.onSelectPiece(piece as AdLibPieceUi)
 		}
 
@@ -1129,7 +1128,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
-			// console.log(sourceLayer)
 			const { t } = this.props
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -1145,7 +1143,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		onSelectSegment = (segment: AdlibSegmentUi) => {
-			// console.log(segment)
 			this.setState({
 				selectedSegment: segment,
 				followLive: this.props.liveSegment ? segment._id === this.props.liveSegment._id : true,
@@ -1174,10 +1171,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		renderListView(withSegments?: boolean) {
-			// let a = new AdLibPanelToolbar({
-			// t: () => {},
-			// onFilterChange: () => { console.log('a') }
-			// })
 			return (
 				<React.Fragment>
 					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={!withSegments} />
