@@ -1,14 +1,21 @@
-// import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { Settings } from '../../lib/Settings'
 
 class Profiler {
-	startSpan(_name: string): { end: () => {}; addLabels: (str: any) => {} } | undefined {
-		return undefined
-		// return Agent.startSpan(_name)
+	private active: boolean = false
+
+	startSpan(_name: string) {
+		if (!this.active) return
+		return Agent.startSpan(_name)
 	}
 
-	startTransaction(_description: string, _name: string): { end: () => {} } | undefined {
-		return
-		// Agent.startTransaction(description, 'userAction')
+	startTransaction(description: string, name: string) {
+		if (!this.active) return
+		Agent.startTransaction(description, name)
+	}
+
+	setActive(active: boolean) {
+		this.active = active
 	}
 }
 
