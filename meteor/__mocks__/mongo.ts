@@ -265,6 +265,7 @@ export namespace MongoMock {
 						}
 					}
 				},
+				collectionName: this._name,
 			}
 		}
 		// observe () {
