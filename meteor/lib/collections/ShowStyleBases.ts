@@ -11,6 +11,7 @@ import {
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 export interface HotkeyDefinition {
 	_id: string
@@ -55,12 +56,12 @@ export const ShowStyleBases: TransformedCollection<ShowStyleBase, DBShowStyleBas
 >('showStyleBases', { transform: (doc) => applyClassToDocument(ShowStyleBase, doc) })
 registerCollection('ShowStyleBases', ShowStyleBases)
 
+registerIndex(ShowStyleBases, {
+	organizationId: 1,
+})
+
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ShowStyleBases._ensureIndex({
-			organizationId: 1,
-		})
-
 		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfig', 'blueprintId'])
 	}
 })

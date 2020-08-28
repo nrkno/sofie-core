@@ -18,6 +18,7 @@ import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstance, PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
@@ -122,11 +123,8 @@ export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance>
 	'pieceInstances'
 )
 registerCollection('PieceInstances', PieceInstances)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PieceInstances._ensureIndex({
-			rundownId: 1,
-			partInstanceId: 1,
-		})
-	}
+
+registerIndex(PieceInstances, {
+	rundownId: 1,
+	partInstanceId: 1,
 })

@@ -6,6 +6,7 @@ import { createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
 import { UserId } from './Users'
+import { registerIndex } from '../database'
 
 /**
  * The view targeted by this layout:
@@ -184,16 +185,13 @@ export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLay
 	RundownLayoutBase
 >('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		// RundownLayouts._ensureIndex({
-		// 	studioId: 1,
-		// 	collectionId: 1,
-		// 	objId: 1,
-		// 	mediaId: 1
-		// })
-		RundownLayouts._ensureIndex({
-			showStyleBaseId: 1,
-		})
-	}
+
+// addIndex(RundownLayouts, {
+// 	studioId: 1,
+// 	collectionId: 1,
+// 	objId: 1,
+// 	mediaId: 1
+// })
+registerIndex(RundownLayouts, {
+	showStyleBaseId: 1,
 })
