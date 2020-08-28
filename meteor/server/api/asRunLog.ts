@@ -30,8 +30,8 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../DatabaseCaches'
-import { profiler } from './api/profiler'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { profiler } from './profiler'
 
 const EVENT_WAIT_TIME = 500
 
