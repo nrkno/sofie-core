@@ -1,4 +1,5 @@
 import { Meteor } from 'meteor/meteor'
+import { check } from '../../lib/check'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import {
@@ -12,15 +13,7 @@ import {
 	IBlueprintExternalMessageQueueType,
 	ExternalMessageQueueObjRabbitMQ,
 } from 'tv-automation-sofie-blueprints-integration'
-import {
-	getCurrentTime,
-	removeNullyProperties,
-	getRandomId,
-	makePromise,
-	protectString,
-	omit,
-	check,
-} from '../../lib/lib'
+import { getCurrentTime, removeNullyProperties, getRandomId, makePromise, protectString, omit } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from '../../lib/api/ExternalMessageQueue'
@@ -28,6 +21,9 @@ import { sendSOAPMessage } from './integration/soap'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { StatusObject, StatusCode, setSystemStatus } from '../systemStatus/systemStatus'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { StudioContentWriteAccess } from '../security/studio'
+import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { MongoModifier } from '../../lib/typings/meteor'
 
 export function queueExternalMessages(rundown: Rundown, messages: Array<IBlueprintExternalMessageQueueObj>) {
@@ -267,24 +263,30 @@ Meteor.startup(() => {
 	updateExternalMessageQueueStatus()
 })
 
-function removeExternalMessage(messageId: ExternalMessageQueueObjId): void {
+function removeExternalMessage(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
+	StudioContentWriteAccess.externalMessage(context, messageId)
+
 	ExternalMessageQueue.remove(messageId)
 }
-function toggleHold(messageId: ExternalMessageQueueObjId): void {
+function toggleHold(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
-	let m = ExternalMessageQueue.findOne(messageId)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on toggleHold`)
+	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const m = access.message
+	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
+
 	ExternalMessageQueue.update(messageId, {
 		$set: {
 			hold: !m.hold,
 		},
 	})
 }
-function retry(messageId: ExternalMessageQueueObjId): void {
+function retry(context: MethodContext, messageId: ExternalMessageQueueObjId): void {
 	check(messageId, String)
-	let m = ExternalMessageQueue.findOne(messageId)
-	if (!m) throw new Meteor.Error(404, `ExternalMessageQueue "${messageId}" not found on retry`)
+	const access = StudioContentWriteAccess.externalMessage(context, messageId)
+	const m = access.message
+	if (!m) throw new Meteor.Error(404, `ExternalMessage "${messageId}" not found!`)
+
 	let tryGap = getCurrentTime() - 1 * 60 * 1000
 	ExternalMessageQueue.update(messageId, {
 		$set: {
@@ -296,8 +298,10 @@ function retry(messageId: ExternalMessageQueueObjId): void {
 	})
 	triggerdoMessageQueue(1000)
 }
-function setRunMessageQueue(value: boolean): void {
+function setRunMessageQueue(_context: MethodContext, value: boolean): void {
 	check(value, Boolean)
+	triggerWriteAccessBecauseNoCheckNecessary()
+
 	logger.info('setRunMessageQueue: set to ' + value)
 	runMessageQueue = value
 	if (runMessageQueue) {
@@ -305,18 +309,18 @@ function setRunMessageQueue(value: boolean): void {
 	}
 }
 
-class ServerExternalMessageQueueAPI implements NewExternalMessageQueueAPI {
+class ServerExternalMessageQueueAPI extends MethodContextAPI implements NewExternalMessageQueueAPI {
 	remove(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => removeExternalMessage(messageId))
+		return makePromise(() => removeExternalMessage(this, messageId))
 	}
 	toggleHold(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => toggleHold(messageId))
+		return makePromise(() => toggleHold(this, messageId))
 	}
 	retry(messageId: ExternalMessageQueueObjId) {
-		return makePromise(() => retry(messageId))
+		return makePromise(() => retry(this, messageId))
 	}
 	setRunMessageQueue(value: boolean) {
-		return makePromise(() => setRunMessageQueue(value))
+		return makePromise(() => setRunMessageQueue(this, value))
 	}
 }
 registerClassToMeteorMethods(ExternalMessageQueueAPIMethods, ServerExternalMessageQueueAPI, false)

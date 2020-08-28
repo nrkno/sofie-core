@@ -1,25 +1,23 @@
 import { Meteor } from 'meteor/meteor'
+import { check } from '../../lib/check'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 
-import {
-	literal,
-	getCurrentTime,
-	Time,
-	getRandomId,
-	makePromise,
-	isPromise,
-	waitForPromise,
-	check,
-} from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId, makePromise, isPromise, waitForPromise } from '../../lib/lib'
 
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
-import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { MethodContext } from '../../lib/api/methods'
+import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
+import { UserId } from '../../lib/typings/meteor'
+import { OrganizationId } from '../../lib/collections/Organization'
+import { Settings } from '../../lib/Settings'
+import { resolveCredentials } from '../security/lib/credentials'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
+import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 
 export namespace ServerClientAPI {
 	export function clientErrorReport(
@@ -29,9 +27,10 @@ export namespace ServerClientAPI {
 		location: string
 	): void {
 		check(timestamp, Number)
+		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
-				methodContext.connection ? methodContext.connection.clientAddress : ''
+				methodContext.connection ? methodContext.connection.clientAddress : 'N/A'
 			}"\n  at ${new Date(timestamp).toISOString()}:\n${JSON.stringify(errorObject)}`
 		)
 	}
@@ -47,13 +46,22 @@ export namespace ServerClientAPI {
 		// this is essentially the same as MeteorPromiseCall, but rejects the promise on exception to
 		// allow handling it in the client code
 
+		if (!methodContext.connection) {
+			// Called internally from server-side.
+			// Just run and return right away:
+			return waitForPromise(Promise.resolve(fcn()))
+		}
+
 		let actionId: UserActionsLogItemId = getRandomId()
+
+		const { userId, organizationId } = getLoggedInCredentials(methodContext)
 
 		UserActionsLog.insert(
 			literal<UserActionsLogItem>({
 				_id: actionId,
 				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
-				userId: methodContext.userId || undefined,
+				organizationId: organizationId,
+				userId: userId,
 				context: context,
 				method: methodName,
 				args: JSON.stringify(args),
@@ -120,11 +128,37 @@ export namespace ServerClientAPI {
 		let startTime = Date.now()
 
 		return new Promise((resolve, reject) => {
+			if (!methodContext.connection) {
+				// In this case, it was called internally from server-side.
+				// Just run and return right away:
+				try {
+					triggerWriteAccessBecauseNoCheckNecessary()
+					PeripheralDeviceAPI.executeFunction(
+						deviceId,
+						(err, result) => {
+							if (err) reject(err)
+							else resolve(result)
+						},
+						functionName,
+						...args
+					)
+				} catch (e) {
+					// allow the exception to be handled by the Client code
+					let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+					logger.error(errMsg)
+					reject(e)
+				}
+				return
+			}
+
+			const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+
 			UserActionsLog.insert(
 				literal<UserActionsLogItem>({
 					_id: actionId,
 					clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
-					userId: methodContext.userId || undefined,
+					organizationId: access.organizationId,
+					userId: access.userId,
 					context: context,
 					method: `${deviceId}: ${functionName}`,
 					args: JSON.stringify(args),
@@ -182,16 +216,41 @@ export namespace ServerClientAPI {
 			}
 		})
 	}
+	function getLoggedInCredentials(
+		methodContext: MethodContext
+	): {
+		userId: UserId | null
+		organizationId: OrganizationId | null
+	} {
+		let userId: UserId | null = null
+		let organizationId: OrganizationId | null = null
+		if (Settings.enableUserAccounts) {
+			const cred = resolveCredentials({ userId: methodContext.userId })
+			if (cred.user) userId = cred.user._id
+			if (cred.organization) organizationId = cred.organization._id
+		}
+		return { userId, organizationId }
+	}
 }
 
-class ServerClientAPIClass implements NewClientAPI {
+class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 	clientErrorReport(timestamp: Time, errorObject: any, location: string) {
-		return makePromise(() => ServerClientAPI.clientErrorReport(this as any, timestamp, errorObject, location))
+		return makePromise(() => ServerClientAPI.clientErrorReport(this, timestamp, errorObject, location))
 	}
 	callPeripheralDeviceFunction(context: string, deviceId: PeripheralDeviceId, functionName: string, ...args: any[]) {
-		return makePromise(() =>
-			ServerClientAPI.callPeripheralDeviceFunction(this as any, context, deviceId, functionName, ...args)
-		)
+		return makePromise(() => {
+			const methodContext: MethodContext = this
+			if (!Settings.enableUserAccounts) {
+				// Note: This is a temporary hack to keep backwards compatibility.
+				// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
+				const device = PeripheralDevices.findOne(deviceId)
+				if (device) {
+					// @ts-ignore hack
+					methodContext.token = device.token
+				}
+			}
+			return ServerClientAPI.callPeripheralDeviceFunction(methodContext, context, deviceId, functionName, ...args)
+		})
 	}
 }
 registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)

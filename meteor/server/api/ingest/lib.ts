@@ -13,8 +13,26 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId, Segment, Segments } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
+import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
+import { MethodContext } from '../../../lib/api/methods'
+import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { touchRundownPlaylistsInCache } from '../playout/lib'
+import { Credentials } from '../../security/lib/credentials'
 import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+
+/** Check Access and return PeripheralDevice, throws otherwise */
+export function checkAccessAndGetPeripheralDevice(
+	deviceId: PeripheralDeviceId,
+	token: string | undefined,
+	context: Credentials | MethodContext
+): PeripheralDevice {
+	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
+	const peripheralDevice = access.device
+	if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+
+	return peripheralDevice
+}
 
 export function getRundownId(studio: Studio, rundownExternalId: string): RundownId {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')

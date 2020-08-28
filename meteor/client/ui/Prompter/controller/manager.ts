@@ -43,22 +43,22 @@ export class PrompterControlManager {
 		window.removeEventListener('mousedown', this._onMouseKeyDown)
 		window.removeEventListener('mouseup', this._onMouseKeyUp)
 
-		_.each(this._controllers, (c) => c.destroy())
+		this._controllers.forEach((c) => c.destroy())
 		this._controllers = []
 	}
 	private _onKeyDown = (e: KeyboardEvent) => {
-		_.each(this._controllers, (c) => c.onKeyDown(e))
+		this._controllers.forEach((c) => c.onKeyDown(e))
 	}
 	private _onKeyUp = (e: KeyboardEvent) => {
-		_.each(this._controllers, (c) => c.onKeyUp(e))
+		this._controllers.forEach((c) => c.onKeyUp(e))
 	}
 	private _onMouseKeyDown = (e: MouseEvent) => {
-		_.each(this._controllers, (c) => c.onMouseKeyDown(e))
+		this._controllers.forEach((c) => c.onMouseKeyDown(e))
 	}
 	private _onMouseKeyUp = (e: MouseEvent) => {
-		_.each(this._controllers, (c) => c.onMouseKeyUp(e))
+		this._controllers.forEach((c) => c.onMouseKeyUp(e))
 	}
 	private _onWheel = (e: WheelEvent) => {
-		_.each(this._controllers, (c) => c.onWheel(e))
+		this._controllers.forEach((c) => c.onWheel(e))
 	}
 }

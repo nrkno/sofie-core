@@ -14,10 +14,26 @@ import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/R
 import { unprotectString, protectString } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { getSegmentId } from '../lib'
+
 import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../../playout/lib'
+import { MethodContext } from '../../../../lib/api/methods'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
+
+const DEFAULT_CONTEXT: MethodContext = {
+	userId: null,
+	isSimulation: false,
+	connection: {
+		id: 'mockConnectionId',
+		close: () => {},
+		onClose: () => {},
+		clientAddress: '127.0.0.1',
+		httpHeaders: {},
+	},
+	setUserId: () => {},
+	unblock: () => {},
+}
 
 describe('Test ingest actions for rundowns and segments', () => {
 	let device: PeripheralDevice
@@ -492,7 +508,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(Rundowns.findOne()).toBeFalsy()
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token, externalId)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -507,13 +523,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 				device.token,
 				externalId
 			)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[404] PeripheralDevice "mockDevice" not found')
 		}
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataRundownDelete, device._id, device.token.slice(0, -1), externalId)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe('[401] Not allowed access to peripheralDevice')
 		}
@@ -627,7 +643,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentUpdate, device._id, device.token, 'wibble', ingestSegment)
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -729,7 +745,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				externalId,
 				segExternalId
 			)
-			expect(true).toBe(false) // Should throw rather than run this test
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[404] handleRemovedSegment: Segment "${getSegmentId(rundown._id, segExternalId)}" not found`
@@ -745,7 +761,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentDelete, device._id, device.token, 'wibble', segExternalId)
-			expect(true).toBe(false) // Should throw rather than run this test
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -764,7 +780,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		try {
 			Meteor.call(PeripheralDeviceAPIMethods.dataSegmentCreate, device._id, device.token, 'wibble', ingestSegment)
-			expect(true).toBe(false)
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/not found/)
 		}
@@ -957,6 +973,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
 
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
@@ -971,14 +990,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: part._id,
+			dynamicallyInsertedAfterPartId: part._id,
 		})
 		expect(Parts.findOne(dynamicPartId)).toBeTruthy()
 
 		// Let the logic generate the correct rank first
 		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
-			updatePartRanks(cache, rundown)
+			updatePartRanks(cache, playlist, [part.segmentId])
 		})
 		let dynamicPart = Parts.findOne(dynamicPartId) as Part
 		expect(dynamicPart).toBeTruthy()
@@ -1037,6 +1055,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 		Meteor.call(PeripheralDeviceAPIMethods.dataRundownCreate, device._id, device.token, rundownData)
 
+		const playlist = RundownPlaylists.findOne() as RundownPlaylist
+		expect(playlist).toBeTruthy()
+
 		const rundown = Rundowns.findOne() as Rundown
 		expect(rundown).toBeTruthy()
 
@@ -1050,8 +1071,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: part._id,
+			dynamicallyInsertedAfterPartId: part._id,
 		})
 		Parts.insert({
 			_id: protectString('dynamic1'),
@@ -1060,8 +1080,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: protectString('dynamic0'),
+			dynamicallyInsertedAfterPartId: protectString('dynamic0'),
 		})
 		Parts.insert({
 			_id: protectString('dynamic2'),
@@ -1070,8 +1089,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentId: part.segmentId,
 			externalId: '',
 			title: 'Dynamic',
-			dynamicallyInserted: true,
-			afterPart: part._id,
+			dynamicallyInsertedAfterPartId: protectString('dynamic1'),
 		})
 		expect(Parts.findOne(protectString('dynamic0'))).toBeTruthy()
 		expect(Parts.findOne(protectString('dynamic1'))).toBeTruthy()
@@ -1079,7 +1097,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		// Let the logic generate the correct rank first
 		wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => {
-			updatePartRanks(cache, rundown)
+			updatePartRanks(cache, playlist, [part.segmentId])
 		})
 
 		let part1 = Parts.findOne({ externalId: 'part1' }) as Part
@@ -1194,7 +1212,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const getPlaylist = () => rundown.getRundownPlaylist() as RundownPlaylist
 		const resyncRundown = () => {
 			try {
-				ServerRundownAPI.resyncRundown(rundown._id)
+				ServerRundownAPI.resyncRundown(DEFAULT_CONTEXT, rundown._id)
 			} catch (e) {
 				if (e.toString().match(/does not support the method "reloadRundown"/)) {
 					// This is expected
@@ -1211,28 +1229,34 @@ describe('Test ingest actions for rundowns and segments', () => {
 		expect(parts).toHaveLength(3)
 
 		// Activate the rundown, make data updates and verify that it gets unsynced properly
-		ServerPlayoutAPI.activateRundownPlaylist(playlist._id, true)
+		ServerPlayoutAPI.activateRundownPlaylist(DEFAULT_CONTEXT, playlist._id, true)
 		expect(getRundown().unsynced).toEqual(false)
 
-		RundownInput.dataRundownDelete({}, device2._id, device2.token, rundownData.externalId)
+		RundownInput.dataRundownDelete(DEFAULT_CONTEXT, device2._id, device2.token, rundownData.externalId)
 		expect(getRundown().unsynced).toEqual(true)
 
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 
-		ServerPlayoutAPI.takeNextPart(playlist._id)
+		ServerPlayoutAPI.takeNextPart(DEFAULT_CONTEXT, playlist._id)
 		const partInstance = PartInstances.find({ 'part._id': parts[0]._id }).fetch()
 		expect(partInstance).toHaveLength(1)
 		expect(getPlaylist().currentPartInstanceId).toEqual(partInstance[0]._id)
 
-		RundownInput.dataSegmentDelete({}, device2._id, device2.token, rundownData.externalId, segments[0].externalId)
+		RundownInput.dataSegmentDelete(
+			DEFAULT_CONTEXT,
+			device2._id,
+			device2.token,
+			rundownData.externalId,
+			segments[0].externalId
+		)
 		expect(getRundown().unsynced).toEqual(true)
 
 		resyncRundown()
 		expect(getRundown().unsynced).toEqual(false)
 
 		RundownInput.dataPartDelete(
-			{},
+			DEFAULT_CONTEXT,
 			device2._id,
 			device2.token,
 			rundownData.externalId,

@@ -22,6 +22,14 @@
 			transition: 0.5s all linear;
 		}
 	}
+
+	&.status-bar__controls__button--open {
+		> svg {
+			> path {
+				fill: $ui-dark-color;
+			}
+		}
+	}
 }
 
 .support-pop-up-panel {

@@ -27,14 +27,19 @@ import { PieceInstance, PieceInstances } from './PieceInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
+import { OrganizationId } from './Organization'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
+/** A string, identifying an activation of a playlist */
+export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
 
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
 	externalId: string
+	/** ID of the organization that owns the playlist */
+	organizationId?: OrganizationId | null
 	/** Studio that this playlist is assigned to */
 	studioId: StudioId
 	/** The source of the playlist */
@@ -58,6 +63,8 @@ export interface DBRundownPlaylist {
 	holdState?: RundownHoldState
 	/** Is the playlist currently active in the studio */
 	active?: boolean
+	/** This is set to a random string when the rundown is activated */
+	activeInstanceId?: ActiveInstanceId
 	/** Should the playlist loop at the end */
 	loop?: boolean
 
@@ -86,28 +93,10 @@ export interface DBRundownPlaylist {
 	previousPersistentState?: TimelinePersistentState
 }
 
-export interface RundownPlaylistPlayoutData {
-	rundownPlaylist: RundownPlaylist
-	/** Ordered array of the Rundowns in a Playlist */
-	rundowns: Rundown[]
-	rundownsMap: { [key: string]: Rundown }
-	/** Ordered array of the Segments in a Playlist */
-	segments: Segment[]
-	segmentsMap: { [key: string]: Segment }
-	/** Ordered array of the Parts in a Playlist */
-	parts: Part[]
-	partsMap: { [key: string]: Part }
-	pieces: Piece[]
-
-	currentPartInstance: PartInstance | undefined
-	nextPartInstance: PartInstance | undefined
-	previousPartInstance: PartInstance | undefined
-	selectedInstancePieces: Array<PieceInstance>
-}
-
 export class RundownPlaylist implements DBRundownPlaylist {
 	public _id: RundownPlaylistId
 	public externalId: string
+	public organizationId: OrganizationId
 	public studioId: StudioId
 	public peripheralDeviceId: PeripheralDeviceId
 	public restoredFromSnapshotId?: RundownPlaylistId
@@ -119,11 +108,12 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public expectedStart?: Time
 	public expectedDuration?: number
 	public rehearsal?: boolean
+	public activeInstanceId?: ActiveInstanceId
 	public holdState?: RundownHoldState
 	public active?: boolean
 	public currentPartInstanceId: PartInstanceId | null
 	public nextPartInstanceId: PartInstanceId | null
-	public nextSegmentId: SegmentId
+	public nextSegmentId?: SegmentId
 	public nextTimeOffset?: number | null
 	public nextPartManual?: boolean
 	public previousPartInstanceId: PartInstanceId | null
@@ -133,9 +123,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPersistentState?: TimelinePersistentState
 
 	constructor(document: DBRundownPlaylist) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	/** Returns all Rundowns in the RundownPlaylist */
 	getRundowns(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): Rundown[] {
@@ -268,8 +258,8 @@ export class RundownPlaylist implements DBRundownPlaylist {
 		).fetch()
 		return RundownPlaylist._sortSegments(segments, rundowns)
 	}
-	getAllOrderedParts() {
-		const { parts } = this.getSegmentsAndPartsSync()
+	getAllOrderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
+		const { parts } = this.getSegmentsAndPartsSync(undefined, selector, undefined, options)
 		return parts
 	}
 	getUnorderedParts(selector?: MongoQuery<DBPart>, options?: FindOptions<DBPart>): Part[] {
@@ -352,7 +342,9 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	getSegmentsAndPartsSync(
 		segmentsQuery?: Mongo.Query<DBSegment> | Mongo.QueryWithModifiers<DBSegment>,
-		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>
+		partsQuery?: Mongo.Query<DBPart> | Mongo.QueryWithModifiers<DBPart>,
+		segmentsOptions?: FindOptions<DBSegment>,
+		partsOptions?: FindOptions<DBPart>
 	): { segments: Segment[]; parts: Part[] } {
 		const rundowns = this.getRundowns(undefined, {
 			fields: {
@@ -368,7 +360,17 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				...segmentsQuery,
 			},
 			{
+				...segmentsOptions,
+				//@ts-ignore
+				fields: segmentsOptions?.fields
+					? {
+							...segmentsOptions?.fields,
+							_rank: 1,
+							rundownId: 1,
+					  }
+					: undefined,
 				sort: {
+					...segmentsOptions?.sort,
 					rundownId: 1,
 					_rank: 1,
 				},
@@ -383,7 +385,18 @@ export class RundownPlaylist implements DBRundownPlaylist {
 				...partsQuery,
 			},
 			{
+				...partsOptions,
+				//@ts-ignore
+				fields: partsOptions?.fields
+					? {
+							...partsOptions?.fields,
+							rundownId: 1,
+							_rank: 1,
+					  }
+					: undefined,
+				//@ts-ignore
 				sort: {
+					...segmentsOptions?.sort,
 					rundownId: 1,
 					_rank: 1,
 				},
@@ -527,12 +540,23 @@ export class RundownPlaylist implements DBRundownPlaylist {
 export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part[]): Array<TrackedNote> {
 	let notes: Array<TrackedNote> = []
 
-	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number } }>(
+	const segmentNotes = _.object<{ [key: string]: { notes: TrackedNote[]; rank: number; name: string } }>(
 		segments.map((segment) => [
 			segment._id,
 			{
 				rank: segment._rank,
-				notes: segment.notes,
+				notes: segment.notes
+					? segment.notes.map((note) => ({
+							...note,
+							origin: {
+								...note.origin,
+								segmentId: segment._id,
+								rundownId: segment.rundownId,
+								name: note.origin.name || segment.name,
+							},
+					  }))
+					: undefined,
+				name: segment.name,
 			},
 		])
 	)
@@ -550,6 +574,8 @@ export function getAllNotesForSegmentAndParts(segments: DBSegment[], parts: Part
 							segmentId: part.segmentId,
 							partId: part._id,
 							rundownId: part.rundownId,
+							segmentName: segNotes.name,
+							name: n.origin.name || part.title,
 						},
 					}))
 				)

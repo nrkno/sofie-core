@@ -47,6 +47,9 @@ export function mappingIsHTTPWatcher(mapping: TSR.Mapping): mapping is TSR.Mappi
 export function mappingIsSisyfos(mapping: TSR.Mapping): mapping is TSR.MappingSisyfos {
 	return mapping.device === TSR.DeviceType.SISYFOS
 }
+export function mappingIsSisyfosChannel(mapping: TSR.MappingSisyfos): mapping is TSR.MappingSisyfosChannel {
+	return mapping.mappingType === TSR.MappingSisyfosType.CHANNEL
+}
 export function mappingIsQuantel(mapping: TSR.Mapping): mapping is TSR.MappingQuantel {
 	return mapping.device === TSR.DeviceType.QUANTEL
 }

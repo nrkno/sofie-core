@@ -5,9 +5,11 @@ import { ClientAPIMethods } from '../../../lib/api/client'
 import { protectString, makePromise } from '../../../lib/lib'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLoggerLevel } from '../logger'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
-import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 require('../client') // include in order to create the Meteor methods needed
 
@@ -16,6 +18,17 @@ setLoggerLevel('info')
 const orgSetTimeout = setTimeout
 
 describe('ClientAPI', () => {
+	let mockDeviceId: PeripheralDeviceId = protectString('not set yet')
+	let mockDeviceToken: string = 'Not set yet'
+	beforeAllInFiber(() => {
+		const mockDevice = setupMockPeripheralDevice(
+			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
+			PeripheralDeviceAPI.DeviceType.PLAYOUT,
+			PeripheralDeviceAPI.SUBTYPE_PROCESS
+		)
+		mockDeviceId = mockDevice._id
+		mockDeviceToken = mockDevice.token
+	})
 	describe('clientErrorReport', () => {
 		testInFiber('Exports a Meteor method to the client', () => {
 			expect(MeteorMock.mockMethods[ClientAPIMethods.clientErrorReport]).toBeTruthy()
@@ -27,7 +40,6 @@ describe('ClientAPI', () => {
 	})
 
 	describe('callPeripheralDeviceFunction', () => {
-		const mockDeviceId: PeripheralDeviceId = protectString('mockDeviceId')
 		const mockFunctionName = 'mockFunction'
 		const mockFailingFunctionName = 'mockFailFunction'
 		const mockContext = 'Context description'
@@ -38,9 +50,10 @@ describe('ClientAPI', () => {
 		})
 
 		describe('Call a method on the peripheralDevice', () => {
-			const logMethodName = `${mockDeviceId}: ${mockFunctionName}`
+			let logMethodName = `not set yet`
 			let promise: Promise<any>
-			beforeAll(async () => {
+			beforeAllInFiber(async () => {
+				logMethodName = `${mockDeviceId}: ${mockFunctionName}`
 				promise = makePromise(() =>
 					Meteor.call(
 						ClientAPIMethods.callPeripheralDeviceFunction,
@@ -52,7 +65,7 @@ describe('ClientAPI', () => {
 				)
 				await new Promise((resolve) => orgSetTimeout(resolve, 100))
 			})
-			it('Logs the call in UserActionsLog', () => {
+			testInFiber('Logs the call in UserActionsLog', async () => {
 				const log = UserActionsLog.findOne({
 					method: logMethodName,
 				})
@@ -64,6 +77,7 @@ describe('ClientAPI', () => {
 				expect(log.method).toBe(logMethodName)
 				expect(log.userId).toBeDefined()
 			})
+
 			testInFiber('Sends a call to the peripheralDevice', () => {
 				const pdc = PeripheralDeviceCommands.findOne({
 					deviceId: mockDeviceId,
@@ -108,9 +122,11 @@ describe('ClientAPI', () => {
 				})
 			})
 		})
-
 		describe('Call a failing method on the peripheralDevice', () => {
-			const logMethodName = `${mockDeviceId}: ${mockFailingFunctionName}`
+			let logMethodName = `not set yet`
+			beforeAllInFiber(() => {
+				logMethodName = `${mockDeviceId}: ${mockFailingFunctionName}`
+			})
 			const promise = makePromise(() => {
 				return Meteor.call(
 					ClientAPIMethods.callPeripheralDeviceFunction,

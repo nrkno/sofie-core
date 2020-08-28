@@ -12,11 +12,14 @@ import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
+import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { RundownId } from '../../../lib/collections/Rundowns'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
+	rundownId: RundownId
 	studio: Studio
-	selectedPiece: Piece
+	selectedPiece: PieceInstancePiece
 
 	onClose?: () => void
 }
@@ -55,7 +58,7 @@ export const ClipTrimDialog = withTranslation()(
 					MeteorCall.userAction.setInOutPoints(
 						e,
 						this.props.playlistId,
-						selectedPiece.partId,
+						selectedPiece.startPartId,
 						selectedPiece._id,
 						this.state.inPoint,
 						this.state.duration
@@ -149,8 +152,9 @@ export const ClipTrimDialog = withTranslation()(
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}
+						rundownId={this.props.rundownId}
 						pieceId={this.props.selectedPiece._id}
-						partId={this.props.selectedPiece.partId}
+						partId={this.props.selectedPiece.startPartId}
 						inPoint={this.state.inPoint}
 						duration={this.state.duration}
 						onChange={this.handleChange}

@@ -5,6 +5,7 @@ import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
+import { UserId } from './Users'
 
 /**
  * The view targeted by this layout:
@@ -133,10 +134,14 @@ export interface RundownLayoutBase {
 	_id: RundownLayoutId
 	showStyleBaseId: ShowStyleBaseId
 	blueprintId?: BlueprintId
-	userId?: string
+	userId?: UserId
 	name: string
 	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
+	exposeAsStandalone: boolean
+	exposeAsShelf: boolean
+	icon: string
+	iconColor: string
 }
 
 export interface RundownLayout extends RundownLayoutBase {

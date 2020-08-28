@@ -1,14 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { IConfigItem } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
 import { Parts } from '../../../lib/collections/Parts'
-import { Studio } from '../../../lib/collections/Studios'
+import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { getCurrentTime } from '../../../lib/lib'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
 import {
 	setNextPart,
@@ -24,6 +23,7 @@ import { getActiveRundownPlaylistsInStudio } from './studio'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export function activateRundownPlaylist(
 	cache: CacheForRundownPlaylist,
@@ -40,7 +40,7 @@ export function activateRundownPlaylist(
 	if (!newRundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylist._id}" not found!`)
 	rundownPlaylist = newRundown
 
-	let studio = getStudioFromCache(cache, rundownPlaylist)
+	let studio = cache.activationCache.getStudio()
 
 	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id, rundownPlaylist._id)
 
@@ -58,8 +58,13 @@ export function activateRundownPlaylist(
 		$set: {
 			active: true,
 			rehearsal: rehearsal,
+			activeInstanceId: getRandomId(),
 		},
 	})
+
+	// Re-Initialize the ActivationCache now when the rundownPlaylist is active
+	const rundownsInPlaylist = cache.Rundowns.findFetch()
+	cache.activationCache.initialize(rundownPlaylist, rundownsInPlaylist)
 
 	let rundown: Rundown | undefined
 
@@ -78,11 +83,11 @@ export function activateRundownPlaylist(
 
 	cache.defer(() => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const { blueprint } = getBlueprintOfRundown(rundown)
+		const { blueprint } = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
+		const context = new RundownContext(rundown, cache, undefined)
+		context.wipeCache()
 		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(new RundownContext(rundown, undefined, studio))).catch(
-				logger.error
-			)
+			Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
 		}
 	})
 }
@@ -91,11 +96,13 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 
 	updateTimeline(cache, rundownPlaylist.studioId)
 
-	cache.defer(() => {
+	cache.defer((cache) => {
 		if (rundown) {
-			const { blueprint } = getBlueprintOfRundown(rundown)
+			const { blueprint } = loadShowStyleBlueprint(
+				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
+			)
 			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, undefined))).catch(
+				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(
 					logger.error
 				)
 			}
@@ -106,6 +113,7 @@ export function deactivateRundownPlaylistInner(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist
 ): Rundown | undefined {
+	const span = Agent.startSpan('deactivateRundownPlaylistInner')
 	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
 
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
@@ -158,6 +166,7 @@ export function deactivateRundownPlaylistInner(
 			},
 		})
 	}
+	if (span) span.end()
 	return rundown
 }
 /**
@@ -166,17 +175,17 @@ export function deactivateRundownPlaylistInner(
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
 export function prepareStudioForBroadcast(
-	cache: CacheForRundownPlaylist,
-	studio: Studio,
 	okToDestoryStuff: boolean,
 	rundownPlaylistToBeActivated: RundownPlaylist
 ): void {
-	logger.info('prepareStudioForBroadcast ' + studio._id)
+	if (!rundownPlaylistToBeActivated.studioId)
+		throw new Meteor.Error(500, `Playlist "${rundownPlaylistToBeActivated._id}" has no studioId!`)
+	logger.info('prepareStudioForBroadcast ' + rundownPlaylistToBeActivated.studioId)
 
-	let playoutDevices = cache.PeripheralDevices.findFetch({
-		studioId: studio._id,
+	let playoutDevices = PeripheralDevices.find({
+		studioId: rundownPlaylistToBeActivated.studioId,
 		type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-	})
+	}).fetch()
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
 		PeripheralDeviceAPI.executeFunction(
@@ -202,10 +211,9 @@ export function prepareStudioForBroadcast(
 export function standDownStudio(cache: CacheForRundownPlaylist, studio: Studio, okToDestoryStuff: boolean): void {
 	logger.info('standDownStudio ' + studio._id)
 
-	let playoutDevices = cache.PeripheralDevices.findFetch({
-		studioId: studio._id,
-		type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-	})
+	let playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
+		(d) => d.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+	)
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
 		PeripheralDeviceAPI.executeFunction(
