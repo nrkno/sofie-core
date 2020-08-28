@@ -432,6 +432,7 @@ interface IRundownHeaderProps {
 	playlist: RundownPlaylist
 	studio: Studio
 	rundownIds: RundownId[]
+	firstRundown: Rundown | undefined
 	onActivate?: (isRehearsal: boolean) => void
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
@@ -584,10 +585,6 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			// $(document).on("keydown", function(e) {
-			// 	console.log(e)
-			// })
-
 			let preventDefault = (e: Event) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
@@ -802,7 +799,7 @@ const RundownHeader = withTranslation()(
 						warning: true,
 						yes: t('OK'),
 						onAccept: () => {
-							console.log()
+							// nothing
 						},
 					})
 				}
@@ -1165,7 +1162,7 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
-										{t('Reload {{nrcsName}} Data', { nrcsName: Settings.nrcsName })}
+										{t('Reload {{nrcsName}} Data', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
 									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
@@ -1221,6 +1218,7 @@ const RundownHeader = withTranslation()(
 									studio={this.props.studio}
 									playlist={this.props.playlist}
 									rundownIds={this.props.rundownIds}
+									firstRundown={this.props.firstRundown}
 								/>
 							</div>
 						</ContextMenuTrigger>
@@ -2347,6 +2345,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			if (this.state.subsReady) {
 				if (this.props.playlist && this.props.studio && this.props.showStyleBase && !this.props.onlyShelf) {
+					const selectedPiece = this.state.selectedPiece
+					const selectedPieceRundown: Rundown | undefined =
+						(selectedPiece &&
+							RundownUtils.isPieceInstance(selectedPiece) &&
+							this.props.rundowns.find((r) => r._id === selectedPiece?.instance.rundownId)) ||
+						undefined
+
 					return (
 						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<div
@@ -2452,6 +2457,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										playlist={this.props.playlist}
 										studio={this.props.studio}
 										rundownIds={this.props.rundowns.map((r) => r._id)}
+										firstRundown={this.props.rundowns[0]}
 										onActivate={this.onActivate}
 										studioMode={this.state.studioMode}
 										onRegisterHotkeys={this.onRegisterHotkeys}
@@ -2477,15 +2483,25 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										this.state.selectedPiece &&
 										RundownUtils.isPieceInstance(this.state.selectedPiece) &&
 										this.props.studio &&
-										this.props.playlist && (
+										this.props.playlist &&
+										(selectedPieceRundown === undefined ? (
+											<ModalDialog
+												onAccept={() => this.setState({ selectedPiece: undefined })}
+												title={t('Rundown not found')}
+												acceptText={t('Close')}>
+												{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
+													pieceLabel: this.state.selectedPiece.instance.piece.name,
+												})}
+											</ModalDialog>
+										) : (
 											<ClipTrimDialog
 												studio={this.props.studio}
 												playlistId={this.props.playlist._id}
-												rundownId={this.state.selectedPiece.instance.rundownId}
+												rundown={selectedPieceRundown}
 												selectedPiece={this.state.selectedPiece.instance.piece}
 												onClose={() => this.setState({ isClipTrimmerOpen: false })}
 											/>
-										)}
+										))}
 								</ErrorBoundary>
 								{this.renderSegmentsList()}
 								<ErrorBoundary>

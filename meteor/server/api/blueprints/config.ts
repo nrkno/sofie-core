@@ -12,8 +12,6 @@ import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import { getShowStyleCompound, ShowStyleVariantId, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
-import { Blueprint } from '../../../lib/collections/Blueprints'
-import { safeEvalBlueprints } from './cache'
 import { logger } from '../../../lib/logging'
 
 /**

@@ -95,3 +95,18 @@ export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): Studi
 	}
 	return undefined
 }
+export function getExternalNRCSName(device: PeripheralDevice | undefined): string {
+	if (device) {
+		if (device.category === PeripheralDeviceAPI.DeviceCategory.INGEST) {
+			if (device.type === PeripheralDeviceAPI.DeviceType.MOS) {
+				// This is a hack, to be replaced with something better later:
+				return 'ENPS'
+			} else if (device.type === PeripheralDeviceAPI.DeviceType.INEWS) {
+				return 'iNews'
+			} else if (device.type === PeripheralDeviceAPI.DeviceType.SPREADSHEET) {
+				return 'Google Sheet'
+			}
+		}
+	}
+	return 'NRCS'
+}

@@ -103,6 +103,7 @@ Object {
   "_rank": 0,
   "dataSource": "mock",
   "externalId": "MOCK_RUNDOWN",
+  "externalNRCSName": "mock",
   "importVersions": Object {
     "blueprint": "",
     "core": "",
@@ -187,6 +188,7 @@ Object {
   "_rank": 0,
   "dataSource": "mock",
   "externalId": "MOCK_RUNDOWN",
+  "externalNRCSName": "mock",
   "importVersions": Object {
     "blueprint": "",
     "core": "",

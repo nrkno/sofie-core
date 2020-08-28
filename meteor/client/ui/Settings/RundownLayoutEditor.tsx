@@ -1617,7 +1617,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								},
 							})
 								.then((res) => {
-									// console.log('Blueprint restore success')
 									NotificationCenter.push(
 										new Notification(
 											undefined,
@@ -1628,7 +1627,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									)
 								})
 								.catch((err) => {
-									// console.error('Blueprint restore failure: ', err)
 									NotificationCenter.push(
 										new Notification(
 											undefined,

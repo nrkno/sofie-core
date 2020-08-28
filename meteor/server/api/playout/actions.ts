@@ -7,7 +7,7 @@ import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
 import {
 	setNextPart,
@@ -82,10 +82,7 @@ export function activateRundownPlaylist(
 
 	cache.defer(() => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const { blueprint } = getBlueprintOfRundown(
-			waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
-			rundown
-		)
+		const { blueprint } = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 		const context = new RundownContext(rundown, cache, undefined)
 		context.wipeCache()
 		if (blueprint.onRundownActivate) {
@@ -100,9 +97,8 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 
 	cache.defer((cache) => {
 		if (rundown) {
-			const { blueprint } = getBlueprintOfRundown(
-				waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
-				rundown
+			const { blueprint } = loadShowStyleBlueprint(
+				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
 			)
 			if (blueprint.onRundownDeActivate) {
 				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(

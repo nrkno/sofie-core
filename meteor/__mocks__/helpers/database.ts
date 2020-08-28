@@ -340,7 +340,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 					const parts: BlueprintResultPart[] = []
 
 					_.each(ingestSegment.parts, (ingestPart) => {
-						// console.log(ingestPart.payload, ingestPart.externalId)
 						const part: IBlueprintPart = {
 							externalId: ingestPart.externalId,
 							title: ingestPart.name,
@@ -506,6 +505,7 @@ export function setupDefaultRundown(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 
@@ -722,6 +722,7 @@ export function setupRundownWithAutoplayPart0(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 

@@ -24,7 +24,7 @@ import {
 	checkAccessAndGetPlaylist,
 	triggerGarbageCollection,
 } from './lib'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
@@ -90,7 +90,7 @@ export function takeNextPartInnerSync(
 		throw new Meteor.Error(404, `Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`)
 
 	let pShowStyle = cache.activationCache.getShowStyleBase(currentRundown)
-	let pBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, currentRundown))
+	let pBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
 	const currentPart = currentPartInstance
 	if (currentPart) {

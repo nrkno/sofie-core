@@ -13,12 +13,12 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
 import { Settings } from '../../../lib/Settings'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { RundownId } from '../../../lib/collections/Rundowns'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
-	rundownId: RundownId
+	rundown: Rundown
 	studio: Studio
 	selectedPiece: PieceInstancePiece
 
@@ -77,7 +77,7 @@ export const ClipTrimDialog = withTranslation()(
 										<strong>{selectedPiece.name}</strong>:&ensp;
 										{t(
 											"Trimming this clip has timed out. It's possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.",
-											{ nrcsName: Settings.nrcsName }
+											{ nrcsName: this.props.rundown?.externalNRCSName || 'NRCS' }
 										)}
 									</>
 								),
@@ -129,7 +129,7 @@ export const ClipTrimDialog = withTranslation()(
 								<strong>{selectedPiece.name}</strong>:&ensp;
 								{t(
 									"Trimming this clip is taking longer than expected. It's possible that the story is locked for writing in {{nrcsName}}.",
-									{ nrcsName: Settings.nrcsName }
+									{ nrcsName: this.props.rundown?.externalNRCSName || 'NRCS' }
 								)}
 							</>
 						),
@@ -153,7 +153,7 @@ export const ClipTrimDialog = withTranslation()(
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}
-						rundownId={this.props.rundownId}
+						rundownId={this.props.rundown._id}
 						pieceId={this.props.selectedPiece._id}
 						partId={this.props.selectedPiece.startPartId}
 						inPoint={this.state.inPoint}

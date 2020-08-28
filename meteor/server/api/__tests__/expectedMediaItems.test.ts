@@ -76,6 +76,7 @@ describe('Expected Media Items', () => {
 				studioId: env.studio._id,
 				playlistId: rplId,
 				_rank: 0,
+				externalNRCSName: 'mockNRCS',
 				organizationId: protectString(''),
 			})
 		)

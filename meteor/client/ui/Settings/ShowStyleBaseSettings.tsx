@@ -671,9 +671,7 @@ const SourceLayerSettings = withTranslation()(
 				<div>
 					<h2 className="mhn">
 						<Tooltip
-							overlay={t('Add some source layers (e.g. Graphics) for your {{nrcsName}} data to appear in rundowns', {
-								nrcsName: Settings.nrcsName,
-							})}
+							overlay={t('Add some source layers (e.g. Graphics) for your data to appear in rundowns')}
 							visible={getHelpMode() && !this.props.showStyleBase.sourceLayers.length}
 							placement="bottom">
 							<span>{t('Source Layers')}</span>

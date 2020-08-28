@@ -64,7 +64,6 @@ export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: 
 	const fId = hashFncAndParams(functionName, params)
 	const parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
-		// console.log(`${fId}: Tracker.nonreactive`)
 		const dep = new Tracker.Dependency()
 		dep.depend()
 		const computation = Tracker.nonreactive(() => {
@@ -73,7 +72,6 @@ export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: 
 
 				if (!Tracker.currentComputation.firstRun) {
 					if (!_.isEqual(isolatedAutorunsMem[fId].value, result)) {
-						// console.log(`${fId}: Tracker.autorun, dependancy changed.`)
 						dep.changed()
 					}
 				}
@@ -82,10 +80,8 @@ export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: 
 					dependancy: dep,
 					value: result,
 				}
-				// console.log(`${fId}: Tracker.autorun`, params, result)
 			})
 			computation.onStop(() => {
-				// console.log(`${fId}: Tracker.autorun stopped`)
 				delete isolatedAutorunsMem[fId]
 			})
 			return computation
@@ -99,9 +95,7 @@ export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: 
 	} else {
 		result = isolatedAutorunsMem[fId].value
 		isolatedAutorunsMem[fId].dependancy.depend()
-		// console.log(`${fId}: Using memoized value`, result)
 	}
-	// console.log(`${fId}: Returning value`, result!)
 	return result!
 }
 

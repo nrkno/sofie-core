@@ -39,9 +39,11 @@ export namespace PeripheralDeviceContentWriteAccess {
 	// These functions throws if access is not allowed.
 
 	export function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId) {
+		backwardsCompatibilityfix(cred0, deviceId)
 		return anyContent(cred0, deviceId)
 	}
 	export function peripheralDevice(cred0: Credentials, deviceId: PeripheralDeviceId) {
+		backwardsCompatibilityfix(cred0, deviceId)
 		return anyContent(cred0, deviceId)
 	}
 	export function mediaWorkFlow(cred0: Credentials, existingWorkFlow: MediaWorkFlow | MediaWorkFlowId) {
@@ -52,11 +54,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 			if (!m) throw new Meteor.Error(404, `MediaWorkFlow "${workFlowId}" not found!`)
 			existingWorkFlow = m
 		}
-		if (!Settings.enableUserAccounts) {
-			// Note: This is a temporary hack to keep backwards compatibility:
-			const device = PeripheralDevices.findOne(existingWorkFlow.deviceId)
-			if (device) cred0.token = device.token
-		}
+		backwardsCompatibilityfix(cred0, existingWorkFlow.deviceId)
 		return { ...anyContent(cred0, existingWorkFlow.deviceId), mediaWorkFlow: existingWorkFlow }
 	}
 	/** Return credentials if writing is allowed, throw otherwise */
@@ -75,8 +73,14 @@ export namespace PeripheralDeviceContentWriteAccess {
 		const device = PeripheralDevices.findOne(deviceId)
 		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
+		// If the device has a parent, use that for access control:
+		const parentDevice = device.parentDeviceId ? PeripheralDevices.findOne(device.parentDeviceId) : device
+		if (!parentDevice)
+			throw new Meteor.Error(404, `PeripheralDevice parentDevice "${device.parentDeviceId}" not found`)
+
 		if (!Settings.enableUserAccounts) {
-			if (device.token !== cred0.token) {
+			// Note: this is kind of a hack to keep backwards compatibility..
+			if (!device.parentDeviceId && parentDevice.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
 			}
 			return {
@@ -87,11 +91,11 @@ export namespace PeripheralDeviceContentWriteAccess {
 				cred: cred0,
 			}
 		} else {
-			if (!cred0.userId && device.token !== cred0.token) {
+			if (!cred0.userId && parentDevice.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
 			}
 			const cred = resolveCredentials(cred0)
-			const access = allowAccessToPeripheralDeviceContent(cred, deviceId)
+			const access = allowAccessToPeripheralDeviceContent(cred, parentDevice._id)
 			if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 			if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
 
@@ -99,9 +103,16 @@ export namespace PeripheralDeviceContentWriteAccess {
 				userId: cred.user ? cred.user._id : null,
 				organizationId: cred.organization ? cred.organization._id : null,
 				deviceId: deviceId,
-				device: access.document,
+				device: device,
 				cred: cred,
 			}
 		}
+	}
+}
+function backwardsCompatibilityfix(cred0, deviceId) {
+	if (!Settings.enableUserAccounts) {
+		// Note: This is a temporary hack to keep backwards compatibility:
+		const device = PeripheralDevices.findOne(deviceId)
+		if (device) cred0.token = device.token
 	}
 }

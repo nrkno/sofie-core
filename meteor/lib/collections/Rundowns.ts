@@ -96,6 +96,8 @@ export interface DBRundown
 
 	/** External id of the Rundown Playlist to put this rundown in */
 	playlistExternalId?: string
+	/** Name (user-facing) of the external NCS this rundown came from */
+	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
@@ -133,6 +135,7 @@ export class Rundown implements DBRundown {
 	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
+	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
 	public _rank: number
 	public baselineModifyHash?: string
