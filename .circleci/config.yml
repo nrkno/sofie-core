@@ -11,7 +11,7 @@ jobs:
           no_output_timeout: 60m
       - run:
           name: Meteor Build
-          command: cd meteor && NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
+          command: cd meteor && NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --debug --allow-superuser --directory .
           no_output_timeout: 60m
       - run:
           name: Meteor Bundle NPM Build

@@ -12,7 +12,7 @@ RUN meteor --version --allow-superuser
 RUN meteor npm install
 # Restore the NODE_ENV variable:
 ENV NODE_ENV $NODE_ENV_TMP
-RUN --mount=type=cache,target=/opt/core/meteor/.meteor/local NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory /opt/
+RUN --mount=type=cache,target=/opt/core/meteor/.meteor/local NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --debug --allow-superuser --directory /opt/
 WORKDIR /opt/bundle/programs/server/
 RUN npm install
 
