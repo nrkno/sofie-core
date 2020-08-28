@@ -98,40 +98,63 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	let savedTimelineObjs: TimelineObjGeneric[] = []
-	saveIntoCache<TimelineComplete, TimelineComplete>(
-		cache.Timeline,
+	const oldTimelineObjsMap: { [objId: string]: TimelineObjGeneric } = {}
+	cache.Timeline.findOne({
+		_id: studio._id,
+	})?.timeline.forEach((obj) => {
+		oldTimelineObjsMap[unprotectString(obj._id)] = obj
+	})
+
+	timelineObjs.forEach((tlo: TimelineObjGeneric) => {
+		// A timeline object is updated if found in both collections
+
+		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[unprotectString(tlo._id)]
+		// let tlo: TimelineObjGeneric | undefined = timelineObjs.find((x) => x._id === tloldo._id)
+
+		if (tlo && tlo.enable.start === 'now' && tloldo && tloldo.enable.setFromNow) {
+			tlo.enable.start = tloldo.enable.start
+			tlo.enable.setFromNow = true
+		}
+	})
+
+	cache.Timeline.upsert(
 		{
 			_id: studio._id,
 		},
-		[
-			literal<TimelineComplete>({
-				_id: studio._id,
-				timeline: timelineObjs,
-			}),
-		],
 		{
-			beforeUpdate: (o: TimelineComplete, oldO: TimelineComplete): TimelineComplete => {
-				// do not overwrite enable when the enable has been denowified
-				oldO.timeline.forEach((tloldo: TimelineObjGeneric) => {
-					// A timeline object is updated if found in both collections
-					let tlo: TimelineObjGeneric | undefined = o.timeline.find((x) => x._id === tloldo._id)
-					if (tlo && tlo.enable.start === 'now' && tloldo.enable.setFromNow) {
-						tlo.enable.start = tloldo.enable.start
-						tlo.enable.setFromNow = true
-					}
-				})
-				savedTimelineObjs = o.timeline
-				return o
-			},
-			afterInsert: (o: TimelineComplete) => {
-				savedTimelineObjs = o.timeline
-			},
-			unchanged: (o: TimelineComplete) => {
-				savedTimelineObjs = o.timeline
-			},
-		}
+			_id: studio._id,
+			timeline: timelineObjs,
+		},
+		true
 	)
+
+	// let savedTimelineObjs: TimelineObjGeneric[] = []
+	// saveIntoCache<TimelineComplete, TimelineComplete>(
+	// 	cache.Timeline,
+	// 	{
+	// 		_id: studio._id,
+	// 	},
+	// 	[
+	// 		literal<TimelineComplete>({
+	// 			_id: studio._id,
+	// 			timeline: timelineObjs,
+	// 		}),
+	// 	],
+	// 	{
+	// beforeUpdate: (o: TimelineComplete, oldO: TimelineComplete): TimelineComplete => {
+	// 	// do not overwrite enable when the enable has been denowified
+
+	// 	savedTimelineObjs = o.timeline
+	// 	return o
+	// },
+	// afterInsert: (o: TimelineComplete) => {
+	// 	savedTimelineObjs = o.timeline
+	// },
+	// unchanged: (o: TimelineComplete) => {
+	// 	savedTimelineObjs = o.timeline
+	// },
+	// 	}
+	// )
 
 	// Not required for the single document model for timelines
 	// afterUpdateTimeline(cache, studio._id, savedTimelineObjs)

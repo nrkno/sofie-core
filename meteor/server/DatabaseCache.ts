@@ -207,7 +207,8 @@ export class DbCacheWriteCollection<
 	}
 	update(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
-		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>
+		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface> = {},
+		forceUpdate?: boolean
 	): number {
 		const span = Agent.startSpan(`DBCache.update.${this.name}`)
 		this._initialize()
@@ -232,7 +233,7 @@ export class DbCacheWriteCollection<
 				)
 			}
 
-			if (!_.isEqual(doc, newDoc)) {
+			if (forceUpdate || !_.isEqual(doc, newDoc)) {
 				newDoc = this._transform(newDoc)
 
 				_.each(_.uniq([..._.keys(newDoc), ..._.keys(doc)]), (key) => {
@@ -271,7 +272,8 @@ export class DbCacheWriteCollection<
 
 	upsert(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		doc: DBInterface
+		doc: DBInterface,
+		forceUpdate?: boolean
 	): {
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
@@ -283,7 +285,7 @@ export class DbCacheWriteCollection<
 			selector = { _id: selector } as any
 		}
 
-		const updatedCount = this.update(selector, doc)
+		const updatedCount = this.update(selector, doc, forceUpdate)
 		if (updatedCount > 0) {
 			if (span) span.end()
 			return { numberAffected: updatedCount }
@@ -363,7 +365,7 @@ export class DbCacheWriteCollection<
 			delete this._collection[unprotectString(_id)]
 		})
 
-		await pBulkWriteResult
+		const writeResult = await pBulkWriteResult
 
 		if (span) span.addLabels(changes)
 		if (span) span.end()

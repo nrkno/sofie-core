@@ -203,9 +203,9 @@ export namespace ServerPeripheralDeviceAPI {
 				? _.map(cache.Rundowns.findFetch({ playlistId: activePlaylist._id }), (r) => r._id)
 				: []
 
-			const timelineDoc = cache.Timeline.findOne({ _id: studioId })
+			let timelineObjs = cache.Timeline.findOne({ _id: studioId })?.timeline || []
 			let tlChanged = false
-			if (timelineDoc) {
+			if (timelineObjs) {
 				_.each(results, (o) => {
 					check(o.id, String)
 
@@ -213,7 +213,7 @@ export namespace ServerPeripheralDeviceAPI {
 					logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
 					const id = getTimelineId(studioId, o.id)
-					const obj = timelineDoc.timeline.find((tlo) => tlo._id === id)
+					const obj = timelineObjs.find((tlo) => tlo._id === id)
 					if (obj) {
 						// cache.Timeline.update(
 						// 	{
@@ -228,6 +228,8 @@ export namespace ServerPeripheralDeviceAPI {
 						// 	}
 						// )
 
+						// console.log('upodating', obj._id)
+
 						obj.enable.start = o.time
 						obj.enable.setFromNow = true
 
@@ -241,14 +243,18 @@ export namespace ServerPeripheralDeviceAPI {
 							o.time
 						)
 					}
-					if (tlChanged) {
-						cache.Timeline.update(studioId, {
-							$set: {
-								timeline: timelineDoc.timeline,
-							},
-						})
-					}
 				})
+				if (tlChanged) {
+					cache.Timeline.update(
+						studioId,
+						{
+							$set: {
+								timeline: timelineObjs,
+							},
+						},
+						true
+					)
+				}
 			}
 			// afterUpdateTimeline no longer required - stats object and has removed for single timeline objects
 			// afterUpdateTimeline(cache, studioId)
