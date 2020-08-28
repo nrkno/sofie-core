@@ -4,6 +4,8 @@ import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
+import { doModalDialog } from '../../lib/ModalDialog'
+import { MeteorCall } from '../../../lib/api/methods'
 
 interface IProps {}
 
@@ -19,6 +21,40 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
 		componentDidMount() {
 			meteorSubscribe(PubSub.coreSystem, null)
+		}
+		cleanUpOldDatabaseIndexes(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+			const { t } = this.props
+			MeteorCall.system
+				.cleanupIndexes(false)
+				.then((indexesToRemove) => {
+					console.log(indexesToRemove)
+					doModalDialog({
+						title: t('Remove indexes'),
+						message: t('This will remove {{indexCount}} old indexes, do you want to continue?', {
+							indexCount: indexesToRemove.length,
+						}),
+						yes: t('Yes'),
+						no: t('No'),
+						onAccept: () => {
+							MeteorCall.system
+								.cleanupIndexes(true)
+								.then((indexesRemoved) => {
+									doModalDialog({
+										title: t('Remove indexes'),
+										message: t('{{indexCount}} indexes was removed.', {
+											indexCount: indexesRemoved.length,
+										}),
+										acceptOnly: true,
+										onAccept: () => {
+											// nothing
+										},
+									})
+								})
+								.catch(console.error)
+						},
+					})
+				})
+				.catch(console.error)
 		}
 		render() {
 			const { t } = this.props
@@ -117,6 +153,13 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 							<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 						</label>
+
+						<h2 className="mhn">{t('Cleanup')}</h2>
+						<div>
+							<button className="btn btn-default" onClick={(e) => this.cleanUpOldDatabaseIndexes(e)}>
+								{t('Cleanup old database indexes')}
+							</button>
+						</div>
 					</div>
 				</div>
 			) : null
