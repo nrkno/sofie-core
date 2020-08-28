@@ -397,6 +397,7 @@ describe('test peripheralDevice general API methods', () => {
 		const studioTimeline = Timeline.findOne({
 			_id: env.studio._id,
 		})
+		expect(studioTimeline).toBeTruthy()
 		const timelineObjs =
 			(studioTimeline && studioTimeline.timeline.filter((x) => x.enable && x.enable.start === 'now')) || []
 		expect(timelineObjs.length).toBe(1)
