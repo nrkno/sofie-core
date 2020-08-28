@@ -75,8 +75,12 @@ export namespace PeripheralDeviceContentWriteAccess {
 		const device = PeripheralDevices.findOne(deviceId)
 		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
+		// If the device has a parent, use that for access control:
+		const parentDevice = device.parentDeviceId ? PeripheralDevices.findOne(device.parentDeviceId) : device
+		if (!parentDevice) throw new Meteor.Error(404, `PeripheralDevice parentDevice "${deviceId}" not found`)
+
 		if (!Settings.enableUserAccounts) {
-			if (device.token !== cred0.token) {
+			if (!device.parentDeviceId && parentDevice.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
 			}
 			return {
@@ -87,11 +91,11 @@ export namespace PeripheralDeviceContentWriteAccess {
 				cred: cred0,
 			}
 		} else {
-			if (!cred0.userId && device.token !== cred0.token) {
+			if (!cred0.userId && parentDevice.token !== cred0.token) {
 				throw new Meteor.Error(401, `Not allowed access to peripheralDevice`)
 			}
 			const cred = resolveCredentials(cred0)
-			const access = allowAccessToPeripheralDeviceContent(cred, deviceId)
+			const access = allowAccessToPeripheralDeviceContent(cred, parentDevice._id)
 			if (!access.update) throw new Meteor.Error(403, `Not allowed: ${access.reason}`)
 			if (!access.document) throw new Meteor.Error(500, `Internal error: access.document not set`)
 
@@ -99,7 +103,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 				userId: cred.user ? cred.user._id : null,
 				organizationId: cred.organization ? cred.organization._id : null,
 				deviceId: deviceId,
-				device: access.document,
+				device: device,
 				cred: cred,
 			}
 		}
