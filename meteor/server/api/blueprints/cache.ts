@@ -189,17 +189,19 @@ export function evalBlueprint(blueprint: Blueprint): SomeBlueprintManifest {
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		Blueprints.find(
-			{},
-			{
-				fields: {
-					_id: 1,
-				},
-			}
-		).observeChanges({
+		const triggerBlueprintChanged = (id) => {
+			delete blueprintManifestCache[unprotectString(id)]
+			delete blueprintDocCache[unprotectString(id)]
+		}
+		Blueprints.find({}).observeChanges({
+			added: (id: BlueprintId) => {
+				triggerBlueprintChanged(id)
+			},
 			changed: (id: BlueprintId) => {
-				delete blueprintManifestCache[unprotectString(id)]
-				delete blueprintDocCache[unprotectString(id)]
+				triggerBlueprintChanged(id)
+			},
+			removed: (id: BlueprintId) => {
+				triggerBlueprintChanged(id)
 			},
 		})
 	}
