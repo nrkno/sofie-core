@@ -144,7 +144,7 @@ describe('lib/lib', () => {
 		const changes = saveIntoDb(
 			Timeline,
 			{
-				studioId: protectString('myStudio'),
+				_id: protectString('myStudio'),
 			},
 			[
 				{
@@ -181,7 +181,7 @@ describe('lib/lib', () => {
 
 		expect(
 			Timeline.find({
-				studioId: protectString('myStudio'),
+				_id: protectString('myStudio'),
 			}).count()
 		).toEqual(1)
 		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
@@ -192,13 +192,13 @@ describe('lib/lib', () => {
 
 		expect(
 			Timeline.find({
-				studioId: protectString('myStudio2'),
+				_id: protectString('myStudio2'),
 			}).count()
 		).toEqual(1)
 
-		expect(options.beforeInsert).toHaveBeenCalledTimes(1)
+		// expect(options.beforeInsert).toHaveBeenCalledTimes(1) - overwrites with single timeline object
 		expect(options.beforeUpdate).toHaveBeenCalledTimes(1)
-		expect(options.beforeRemove).toHaveBeenCalledTimes(1)
+		// expect(options.beforeRemove).toHaveBeenCalledTimes(1) - overwrites with single timeline object
 		expect(options.beforeDiff).toHaveBeenCalledTimes(1)
 		// expect(options.insert).toHaveBeenCalledTimes(1)
 		// expect(options.update).toHaveBeenCalledTimes(1)
@@ -208,9 +208,7 @@ describe('lib/lib', () => {
 		// expect(options.afterRemove).toHaveBeenCalledTimes(1)
 
 		expect(changes).toMatchObject({
-			added: 1,
 			updated: 1,
-			removed: 1,
 		})
 		expect(
 			sumChanges(
@@ -222,9 +220,9 @@ describe('lib/lib', () => {
 				changes
 			)
 		).toMatchObject({
-			added: 2,
+			added: 1,
 			updated: 3,
-			removed: 4,
+			removed: 3,
 		})
 	})
 	testInFiber('anythingChanged', () => {

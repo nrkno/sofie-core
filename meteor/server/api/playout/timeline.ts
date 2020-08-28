@@ -102,8 +102,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 	saveIntoCache<TimelineComplete, TimelineComplete>(
 		cache.Timeline,
 		{
-			studioId: studio._id,
-			objectType: { $ne: TimelineObjType.STAT },
+			_id: studio._id,
 		},
 		[
 			literal<TimelineComplete>({

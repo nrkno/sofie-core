@@ -175,7 +175,7 @@ describe('Playout API', () => {
 			expect(nextPartInstance!.part._id).toEqual(parts[1]._id)
 		}
 
-		expect(Timeline.insert).toHaveBeenCalled()
+		// expect(Timeline.insert).toHaveBeenCalled() - complete replacement of timeline with single object
 		expect(Timeline.upsert).toHaveBeenCalled()
 		expect(Timeline.update).toHaveBeenCalled()
 		Timeline.mockClear()
@@ -199,7 +199,7 @@ describe('Playout API', () => {
 		expect(fixSnapshot(getPlaylist0())).toMatchSnapshot()
 		expect(fixSnapshot(getRundown0())).toMatchSnapshot()
 
-		expect(Timeline.insert).toHaveBeenCalled()
+		// expect(Timeline.insert).toHaveBeenCalled() - complete replacement of timeline with single object
 		expect(Timeline.upsert).toHaveBeenCalled()
 		expect(Timeline.update).toHaveBeenCalled()
 
