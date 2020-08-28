@@ -141,7 +141,6 @@ export namespace MongoMock {
 					docs = [docs[0]]
 				}
 
-				// console.log(query, docs)
 				_.each(docs, (doc) => {
 					const modifiedDoc = mongoModify(query, doc, modifier)
 					this.documents[unprotectString(doc._id)] = modifiedDoc
@@ -198,7 +197,6 @@ export namespace MongoMock {
 			const docs = this.find(id)._fetchRaw()
 
 			if (docs.length) {
-				// console.log(docs)
 				this.update(docs[0]._id, modifier, options, cb)
 			} else {
 				this.insert({

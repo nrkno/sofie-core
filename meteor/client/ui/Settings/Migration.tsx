@@ -96,7 +96,6 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				.getMigrationStatus()
 				.then((r: GetMigrationStatusResult) => {
 					if (this.cancelRequests) return
-					console.log(r)
 
 					let inputValues = this.state.inputValues
 					_.each(r.migration.manualInputs, (manualInput: MigrationStepInput) => {

@@ -505,7 +505,6 @@ describe('test peripheralDevice general API methods', () => {
 
 		Meteor.call(PeripheralDeviceAPIMethods.storeAccessToken, device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 		let deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
-		// console.log(deviceWithSecretToken)
 		expect(deviceWithSecretToken).toBeTruthy()
 		expect(deviceWithSecretToken.accessTokenUrl).toBe('')
 		expect((deviceWithSecretToken.secretSettings as IngestDeviceSecretSettings).accessToken).toBe(

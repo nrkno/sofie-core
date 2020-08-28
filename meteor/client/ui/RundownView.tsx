@@ -567,10 +567,6 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			// $(document).on("keydown", function(e) {
-			// 	console.log(e)
-			// })
-
 			let preventDefault = (e: Event) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
@@ -788,7 +784,7 @@ const RundownHeader = withTranslation()(
 						warning: true,
 						yes: t('OK'),
 						onAccept: () => {
-							console.log()
+							// nothing
 						},
 					})
 				}

@@ -672,7 +672,6 @@ function buildTimelineObjsForRundown(
 
 		// only add the next objects into the timeline if the next segment is autoNext
 		if (nextPartInstance && currentPartInstance.part.autoNext) {
-			// console.log('This part will autonext')
 			let nextPartGroup = createPartGroup(nextPartInstance, {})
 			if (currentPartGroup) {
 				const overlapDuration = calcPartOverlapDuration(currentPartInstance.part, nextPartInstance.part)

@@ -98,7 +98,6 @@ const Blueprint = wrapSettingsNavigation(
 							m['blueprintId'] = blueprintId
 							Studios.update(this.props.obj['_id'], { $set: m })
 						}
-						console.log(this.props.obj)
 						this.redirectUser('/settings/blueprint/' + blueprintId)
 					})
 					.catch(console.error)

@@ -410,7 +410,6 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		onDrop = (e: DragEvent) => {
-			// console.log(e)
 			if (e.dataTransfer) {
 				if (
 					e.dataTransfer
