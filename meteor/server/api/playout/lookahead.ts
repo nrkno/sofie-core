@@ -21,7 +21,7 @@ import {
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -53,7 +53,7 @@ function getOrderedPartsAfterPlayhead(
 	if (partCount <= 0) {
 		return []
 	}
-	const span = Agent.startSpan('getOrderedPartsAfterPlayhead')
+	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
@@ -116,7 +116,7 @@ export async function getLookeaheadObjects(
 	studio: Studio,
 	playlist: RundownPlaylist
 ): Promise<Array<TimelineObjGeneric>> {
-	const span = Agent.startSpan('getLookeaheadObjects')
+	const span = profiler.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
 		([id, map]) => map.lookahead !== LookaheadMode.NONE
 	)
@@ -296,7 +296,7 @@ function findLookaheadForlayer(
 	lookaheadTargetObjects: number,
 	lookaheadMaxSearchDistance: number
 ): LookaheadResult {
-	const span = Agent.startSpan('findLookaheadForlayer')
+	const span = profiler.startSpan('findLookaheadForlayer')
 	const res: LookaheadResult = {
 		timed: [],
 		future: [],
@@ -384,7 +384,7 @@ function findObjectsForPart(
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
-	const span = Agent.startSpan('findObjectsForPart')
+	const span = profiler.startSpan('findObjectsForPart')
 
 	let allObjs: TimelineObjRundown[] = []
 	for (const piece of partInfo.pieces) {

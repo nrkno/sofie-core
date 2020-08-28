@@ -31,7 +31,7 @@ import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 import { isInTestWrite } from './security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './api/profiler'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -70,7 +70,7 @@ export class Cache {
 		})
 	}
 	async saveAllToDatabase() {
-		const span = Agent.startSpan('Cache.saveAllToDatabase')
+		const span = profiler.startSpan('Cache.saveAllToDatabase')
 		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
 
@@ -234,7 +234,7 @@ async function fillCacheForRundownPlaylistWithData(
 	playlist: RundownPlaylist,
 	initializeImmediately: boolean
 ) {
-	const span = Agent.startSpan('Cache.fillCacheForRundownPlaylistWithData')
+	const span = profiler.startSpan('Cache.fillCacheForRundownPlaylistWithData')
 	const ps: Promise<any>[] = []
 	cache.Rundowns.prepareInit({ playlistId: playlist._id }, true)
 

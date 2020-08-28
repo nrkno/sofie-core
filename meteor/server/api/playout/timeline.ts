@@ -64,7 +64,7 @@ import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '.
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -74,7 +74,7 @@ import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 // export const updateTimeline: (cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) => void
 // = syncFunctionIgnore(function updateTimeline (cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
 export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioId, forceNowToTime?: Time) {
-	const span = Agent.startSpan('updateTimeline')
+	const span = profiler.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
 	const studio = cache.activationCache.getStudio()
 	const activePlaylist = getActiveRundownPlaylist(cache, studioId)
@@ -141,7 +141,7 @@ export function afterUpdateTimeline(
 	studioId: StudioId,
 	timelineObjs?: Array<TimelineObjGeneric>
 ) {
-	const span = Agent.startSpan('afterUpdateTimeline')
+	const span = profiler.startSpan('afterUpdateTimeline')
 	// logger.info('afterUpdateTimeline')
 	if (!timelineObjs) {
 		timelineObjs = cache.Timeline.findFetch({
@@ -191,7 +191,7 @@ export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: St
  * Returns timeline objects related to rundowns in a studio
  */
 function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): TimelineObjRundown[] {
-	const span = Agent.startSpan('getTimelineRundown')
+	const span = profiler.startSpan('getTimelineRundown')
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
 
@@ -362,7 +362,7 @@ function getTimelineRecording(
  * @param timelineObjs Array of timeline objects
  */
 function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjGeneric>): void {
-	const span = Agent.startSpan('processTimelineObjects')
+	const span = profiler.startSpan('processTimelineObjects')
 	// first, split out any grouped objects, to make the timeline shallow:
 	let fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
@@ -417,7 +417,7 @@ function buildTimelineObjsForRundown(
 	baselineItems: RundownBaselineObj[],
 	activePlaylist: RundownPlaylist
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
-	const span = Agent.startSpan('buildTimelineObjsForRundown')
+	const span = profiler.startSpan('buildTimelineObjsForRundown')
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 	let currentPartGroup: TimelineObjRundown | undefined
 	let previousPartGroup: TimelineObjRundown | undefined
@@ -834,7 +834,7 @@ function transformPartIntoTimeline(
 	holdState?: RundownHoldState,
 	showHoldExcept?: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObj> {
-	const span = Agent.startSpan('transformPartIntoTimeline')
+	const span = profiler.startSpan('transformPartIntoTimeline')
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
 
 	const isHold = holdState === RundownHoldState.ACTIVE

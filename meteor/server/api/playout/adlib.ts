@@ -37,7 +37,7 @@ import { MongoQuery } from '../../../lib/typings/meteor'
 import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -238,7 +238,7 @@ export namespace ServerPlayoutAdLibAPI {
 		currentPartInstance: PartInstance,
 		adLibPiece: AdLibPiece | BucketAdLib
 	) {
-		const span = Agent.startSpan('innerStartOrQueueAdLibPiece')
+		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
 				_id: getRandomId(),
@@ -330,7 +330,7 @@ export namespace ServerPlayoutAdLibAPI {
 		originalOnly: boolean,
 		customQuery?: MongoQuery<PieceInstance>
 	) {
-		const span = Agent.startSpan('innerFindLastPieceOnLayer')
+		const span = profiler.startSpan('innerFindLastPieceOnLayer')
 		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 
 		const query = {
@@ -369,7 +369,7 @@ export namespace ServerPlayoutAdLibAPI {
 		newPartInstance: PartInstance,
 		newPieceInstances: PieceInstance[]
 	) {
-		const span = Agent.startSpan('innerStartQueuedAdLib')
+		const span = profiler.startSpan('innerStartQueuedAdLib')
 		logger.info('adlibQueueInsertPartInstance')
 
 		// check if there's already a queued part after this:
@@ -427,7 +427,7 @@ export namespace ServerPlayoutAdLibAPI {
 		existingPartInstance: PartInstance,
 		newPieceInstance: PieceInstance
 	) {
-		const span = Agent.startSpan('innerStartAdLibPiece')
+		const span = profiler.startSpan('innerStartAdLibPiece')
 		// Ensure it is labelled as dynamic
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
@@ -446,7 +446,7 @@ export namespace ServerPlayoutAdLibAPI {
 		filter: (pieceInstance: PieceInstance) => boolean,
 		timeOffset: number | undefined
 	) {
-		const span = Agent.startSpan('innerStopPieces')
+		const span = profiler.startSpan('innerStopPieces')
 		const stoppedInstances: PieceInstanceId[] = []
 
 		const lastStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
