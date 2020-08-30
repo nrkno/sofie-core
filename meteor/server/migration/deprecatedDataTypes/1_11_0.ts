@@ -13,6 +13,7 @@ import { RundownAPI } from '../../../lib/api/rundown'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { createMongoCollection } from '../../../lib/collections/lib'
+import { Timeline as Timeline120 } from '../../../lib/collections/Timeline'
 
 export interface Part {
 	// extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
@@ -77,6 +78,4 @@ export interface Piece extends RundownPieceGeneric {
 	stoppedPlayback?: number
 	overflows?: boolean
 }
-export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric> = createMongoCollection<
-	TimelineObjGeneric
->('timeline')
+// export const Timeline: TransformedCollection<TimelineObjGeneric , TimelineObjGeneric> = Timeline120

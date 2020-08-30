@@ -5,12 +5,12 @@ import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Pieces } from '../../lib/collections/Pieces'
 import { Part, Parts } from '../../lib/collections/Parts'
-import { Piece as Piece_1_11_0, Timeline as Timeline_1_11_0 } from './deprecatedDataTypes/1_11_0'
+import { Piece as Piece_1_11_0 } from './deprecatedDataTypes/1_11_0'
 import { unprotectString, ProtectedString, objectPathSet } from '../../lib/lib'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Timeline, TimelineObjType, TimelineComplete } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 
 /*
  * **************************************************************************************
@@ -197,24 +197,18 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: 'Single timeline object',
 		canBeRunAutomatically: true,
 		validate: () => {
-			const tlos = Timeline_1_11_0.find().fetch()
+			const tlos = (Timeline.find().fetch() as unknown) as Array<TimelineObjGeneric>
 			const studios = tlos.map((x) => x.studioId).filter(onlyUnique)
 			if (tlos.length === 0 || studios.length === 0) {
 				return false
 			}
-			return `${tlos.length} timeline objects need to be moved into ${studios.length} studio timelines`
+			return `${tlos.length} timeline objects need to be deleted from ${studios.length} studio timelines`
 		},
 		migrate: () => {
-			const tlos = Timeline_1_11_0.find().fetch()
-			const studios = tlos.map((x) => x.studioId).filter(onlyUnique)
-			Timeline_1_11_0.remove({ _id: /.*/ })
-			for (let studio of studios) {
-				const timeline = tlos.filter((x) => x.studioId === studio && x.objectType !== TimelineObjType.STAT)
-				Timeline.insert({
-					_id: studio,
-					timeline,
-				})
-			}
+			Timeline.remove({
+				_id: /.*/,
+				studioId: { $exists: false },
+			})
 		},
 	},
 	//
