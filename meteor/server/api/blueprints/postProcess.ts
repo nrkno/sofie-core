@@ -26,6 +26,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 export function postProcessPieces(
 	innerContext: ShowStyleContext,
@@ -38,9 +39,11 @@ export function postProcessPieces(
 	prefixAllTimelineObjects?: boolean,
 	setInvalid?: boolean
 ): Piece[] {
+	const span = Agent.startSpan('blueprints.postProcess.postProcessPieces')
+
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
+	const processedPieces = _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
 		let piece: Piece = {
 			...(itemOrig as Omit<IBlueprintPiece, 'continuesRefId'>),
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)),
@@ -80,6 +83,9 @@ export function postProcessPieces(
 
 		return piece
 	})
+
+	span?.end()
+	return processedPieces
 }
 
 export function postProcessTimelineObjects(
@@ -133,10 +139,18 @@ export function postProcessAdLibPieces(
 	blueprintId: BlueprintId,
 	partId?: PartId
 ): AdLibPiece[] {
+	const span = Agent.startSpan('blueprints.postProcess.postProcessAdLibPieces')
+
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(adLibPieces), (itemOrig: IBlueprintAdLibPiece) => {
-		let piece: AdLibPiece = {
+
+	const processedPieces: AdLibPiece[] = []
+	for (const itemOrig of adLibPieces) {
+		if (!itemOrig) {
+			continue
+		}
+
+		const piece: AdLibPiece = {
 			...itemOrig,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
 			rundownId: protectString(innerContext.rundown._id),
@@ -163,8 +177,11 @@ export function postProcessAdLibPieces(
 			)
 		}
 
-		return piece
-	})
+		processedPieces.push(piece)
+	}
+
+	span?.end()
+	return processedPieces
 }
 
 export function postProcessGlobalAdLibActions(

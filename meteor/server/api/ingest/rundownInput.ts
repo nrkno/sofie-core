@@ -116,6 +116,7 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -304,6 +305,8 @@ function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 }
 
 export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
+	const span = Agent.startSpan('rundownInput.handleRemovedRundown')
+
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const rundownPlaylistId = getRundown(rundownId, rundownExternalId).playlistId
@@ -352,6 +355,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 		}
 
 		waitForPromise(cache.saveAllToDatabase())
+		span?.end()
 	})
 }
 /** Handle an updated (or inserted) Rundown */
@@ -410,6 +414,8 @@ export function updateRundownAndSaveCache(
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
 export function regenerateRundown(rundownId: RundownId) {
+	const span = Agent.startSpan('ingest.rundownInput.regenerateRundown')
+
 	logger.info(`Regenerating rundown ${rundownId}`)
 	const existingDbRundown = Rundowns.findOne(rundownId)
 	if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
@@ -422,6 +428,8 @@ export function regenerateRundown(rundownId: RundownId) {
 	const dataSource = 'regenerate'
 
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
+
+	span?.end()
 }
 function updateRundownFromIngestData(
 	studio: Studio,
@@ -430,6 +438,8 @@ function updateRundownFromIngestData(
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): boolean {
+	const span = Agent.startSpan('ingest.rundownInput.updateRundownFromIngestData')
+
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
@@ -718,6 +728,8 @@ function updateRundownFromIngestData(
 		) {
 			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
 			waitForPromise(cache.saveAllToDatabase())
+
+			span?.end()
 			return false
 		} else {
 			const segmentChanges: SegmentChanges[] = splitIntoSegments(
@@ -795,6 +807,8 @@ function updateRundownFromIngestData(
 		) {
 			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
 			waitForPromise(cache.saveAllToDatabase())
+
+			span?.end()
 			return false
 		}
 	}
@@ -925,6 +939,8 @@ function updateRundownFromIngestData(
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
 	waitForPromise(cache.saveAllToDatabase())
+
+	span?.end()
 	return didChange
 }
 
@@ -1063,6 +1079,8 @@ function updateSegmentFromIngestData(
 	rundown: Rundown,
 	ingestSegment: IngestSegment
 ): SegmentId | null {
+	const span = Agent.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
+
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 	const { blueprint, blueprintId } = getBlueprintOfRundown(undefined, rundown)
 
@@ -1206,7 +1224,9 @@ function updateSegmentFromIngestData(
 		})
 	)
 
-	return anythingChanged(changes) ? segmentId : null
+	const hasChanged = anythingChanged(changes) ? segmentId : null
+	span?.end()
+	return hasChanged
 }
 function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
@@ -1305,6 +1325,8 @@ export function handleUpdatedPartInner(
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ) {
+	const span = Agent.startSpan('ingest.rundownInput.handleUpdatedPartInner')
+
 	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
 	const partId = getPartId(rundown._id, ingestPart.externalId)
@@ -1341,6 +1363,8 @@ export function handleUpdatedPartInner(
 			afterIngestChangedData(cache, rundown, [updatedSegmentId])
 		}
 	}
+
+	span?.end()
 }
 
 function generateSegmentContents(
@@ -1351,6 +1375,8 @@ function generateSegmentContents(
 	existingParts: DBPart[],
 	blueprintRes: BlueprintResultSegment
 ) {
+	const span = Agent.startSpan('ingest.rundownInput.generateSegmentContents')
+
 	const rundownId = context._rundown._id
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 	const rawNotes = context.notesContext.getNotes()
@@ -1358,19 +1384,20 @@ function generateSegmentContents(
 	// Ensure all parts have a valid externalId set on them
 	const knownPartIds = blueprintRes.parts.map((p) => p.part.externalId)
 
-	const rawSegmentNotes = _.filter(
-		rawNotes,
-		(note) => !note.trackingId || knownPartIds.indexOf(note.trackingId) === -1
-	)
-	const segmentNotes = _.map(rawSegmentNotes, (note) =>
-		literal<SegmentNote>({
-			type: note.type,
-			message: note.message,
-			origin: {
-				name: '', // TODO
-			},
-		})
-	)
+	const segmentNotes: SegmentNote[] = []
+	for (const note of rawNotes) {
+		if (!note.trackingId || knownPartIds.indexOf(note.trackingId) === -1) {
+			segmentNotes.push(
+				literal<SegmentNote>({
+					type: note.type,
+					message: note.message,
+					origin: {
+						name: '', // TODO
+					},
+				})
+			)
+		}
+	}
 
 	const newSegment = literal<DBSegment>({
 		..._.omit(existingSegment || {}, 'isHidden'),
@@ -1391,16 +1418,21 @@ function generateSegmentContents(
 	blueprintRes.parts.forEach((blueprintPart, i) => {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
 
-		const partRawNotes = _.filter(rawNotes, (note) => note.trackingId === blueprintPart.part.externalId)
-		const notes = _.map(partRawNotes, (note) =>
-			literal<PartNote>({
-				type: note.type,
-				message: note.message,
-				origin: {
-					name: '', // TODO
-				},
-			})
-		)
+		const notes: PartNote[] = []
+
+		for (const note of rawNotes) {
+			if (note.trackingId === blueprintPart.part.externalId) {
+				notes.push(
+					literal<PartNote>({
+						type: note.type,
+						message: note.message,
+						origin: {
+							name: '', // TODO
+						},
+					})
+				)
+			}
+		}
 
 		const existingPart = _.find(existingParts, (p) => p._id === partId)
 		const part = literal<DBPart>({
@@ -1437,6 +1469,7 @@ function generateSegmentContents(
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
 
+	span?.end()
 	return {
 		newSegment,
 		parts,
@@ -1454,6 +1487,8 @@ export function isUpdateAllowed(
 	segmentChanges?: Partial<PreparedChanges<DBSegment>>,
 	partChanges?: Partial<PreparedChanges<DBPart>>
 ): boolean {
+	const span = Agent.startSpan('rundownInput.isUpdateAllowed')
+
 	let allowed: boolean = true
 
 	if (!rundown) return false
@@ -1548,6 +1583,8 @@ export function isUpdateAllowed(
 		if (segmentChanges) logger.debug(`segmentChanges: ${printChanges(segmentChanges)}`)
 		if (partChanges) logger.debug(`partChanges: ${printChanges(partChanges)}`)
 	}
+
+	span?.end()
 	return allowed
 }
 function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {

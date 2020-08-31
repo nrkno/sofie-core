@@ -1,11 +1,21 @@
 import { check as MeteorCheck, Match as orgMatch } from 'meteor/check'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 
 /* tslint:disable variable-name */
 
 export function check(value: any, pattern: Match.Pattern) {
+	const span = Agent.startSpan('lib.check')
 	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
-	if (checkDisabled) return
-	return MeteorCheck(value, pattern)
+	if (checkDisabled) {
+		span?.setLabel('checkDisabled', true)
+		span?.end()
+		return
+	}
+
+	const passed = MeteorCheck(value, pattern)
+
+	span?.end()
+	return passed
 }
 // todo: checkTOBEMOVED
 export namespace Match {

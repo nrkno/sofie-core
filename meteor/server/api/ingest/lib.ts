@@ -30,18 +30,15 @@ export function checkAccessAndGetPeripheralDevice(
 ): PeripheralDevice {
 	const span = Agent.startSpan('lib.checkAccessAndGetPeripheralDevice')
 
-	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
-	const peripheralDevice = access.device
+	const { device: peripheralDevice } = PeripheralDeviceContentWriteAccess.peripheralDevice(
+		{ userId: context.userId, token },
+		deviceId
+	)
 	if (!peripheralDevice) {
-		if (span) {
-			span.setLabel('exception', `PeripheralDevice "${deviceId}" not found`)
-			span.end()
-		}
 		throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 	}
 
 	span?.end()
-
 	return peripheralDevice
 }
 
@@ -62,6 +59,8 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 }
 
 export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio {
+	const span = Agent.startSpan('mosDevice.lib.getStudioFromDevice')
+
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
@@ -69,19 +68,29 @@ export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio 
 
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
+
+	span?.end()
 	return studio
 }
 export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
+	const span = Agent.startSpan('mosDevice.lib.getRundownPlaylist')
+
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)
 	if (!playlist)
 		throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
 	playlist.touch()
+
+	span?.end()
 	return playlist
 }
 export function getRundown(rundownId: RundownId, externalRundownId: string): Rundown {
+	const span = Agent.startSpan('mosDevice.lib.getRundown')
+
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${externalRundownId}") not found`)
 	rundown.touch()
+
+	span?.end()
 	return rundown
 }
 export function getSegment(segmentId: SegmentId): Segment {

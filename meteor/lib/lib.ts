@@ -17,6 +17,8 @@ import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints
 import * as crypto from 'crypto'
 import { DeepReadonly } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+
 const cloneOrg = require('fast-clone')
 
 export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
@@ -116,9 +118,13 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
+	const span = Agent.startSpan('lib.saveIntoDb')
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
-	return savePreparedChanges(preparedChanges, collection, options)
+	const changes = savePreparedChanges(preparedChanges, collection, options)
+
+	span?.end()
+	return changes
 }
 export interface PreparedChanges<T> {
 	inserted: T[]

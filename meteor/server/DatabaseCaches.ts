@@ -168,9 +168,12 @@ async function fillCacheForStudioWithData(cache: CacheForStudio, studioId: Studi
 	return cache
 }
 export async function initCacheForStudio(studioId: StudioId, initializeImmediately: boolean = true) {
+	const span = Agent.startSpan('Cache.initCacheForStudio')
+
 	const cache: CacheForStudio = emptyCacheForStudio(studioId)
 	await fillCacheForStudioWithData(cache, studioId, initializeImmediately)
 
+	span?.end()
 	return cache
 }
 
@@ -302,19 +305,23 @@ async function fillCacheForRundownPlaylistWithData(
 	ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
 
 	await Promise.all(ps)
-	if (span) span.end()
+	span?.end()
 }
 export async function initCacheForRundownPlaylist(
 	playlist: RundownPlaylist,
 	extendFromCache?: CacheForStudioBase,
 	initializeImmediately: boolean = true
 ): Promise<CacheForRundownPlaylist> {
+	const span = Agent.startSpan('Cache.initCacheForRundownPlaylist')
+
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(playlist.studioId, initializeImmediately)
 	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(playlist.studioId, playlist._id)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}
 	await fillCacheForRundownPlaylistWithData(cache, playlist, initializeImmediately)
+
+	span?.end()
 	return cache
 }
 /** Cache for playout, but there is no playlist playing */

@@ -285,7 +285,7 @@ export function selectNextPart(
 	previousPartInstance: PartInstance | null,
 	parts: Part[]
 ): SelectNextPartResult | undefined {
-	const span = Agent.startSpan('selectNextPart')
+	const span = Agent.startSpan('playout.selectNextPart')
 	const findFirstPlayablePart = (
 		offset: number,
 		condition?: (part: Part) => boolean
@@ -340,7 +340,7 @@ export function setNextPart(
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
-	const span = Agent.startSpan('setNextPart')
+	const span = Agent.startSpan('playout.setNextPart')
 	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 		cache,
@@ -511,7 +511,7 @@ export function setNextSegment(
 	rundownPlaylist: RundownPlaylist,
 	nextSegment: Segment | null
 ) {
-	const span = Agent.startSpan('setNextSegment')
+	const span = Agent.startSpan('playout.setNextSegment')
 	const acceptableRundowns = getRundownIDsFromCache(cache, rundownPlaylist)
 	if (nextSegment) {
 		if (acceptableRundowns.indexOf(nextSegment.rundownId) === -1) {
@@ -707,7 +707,12 @@ export function getRundownsFromCache(cache: CacheForRundownPlaylist, playlist: R
 	)
 }
 export function getRundownIDsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	return getRundownsFromCache(cache, playlist).map((r) => r._id)
+	const span = Agent.startSpan('playout.getRundownIDsFromCache')
+
+	const ids = getRundownsFromCache(cache, playlist).map((r) => r._id)
+
+	span?.end()
+	return ids
 }
 /** Get all pieces in a part */
 export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
@@ -749,6 +754,8 @@ export function getSelectedPartInstancesFromCache(
 	nextPartInstance: PartInstance | undefined
 	previousPartInstance: PartInstance | undefined
 } {
+	const span = Agent.startSpan('playout.getSelectedPartInstancesFromCache')
+
 	if (!rundownIds) {
 		rundownIds = getRundownIDsFromCache(cache, playlist)
 	}
@@ -757,16 +764,22 @@ export function getSelectedPartInstancesFromCache(
 		rundownId: { $in: rundownIds },
 		reset: { $ne: true },
 	}
+
+	const currentPartInstance = playlist.currentPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
+		: undefined
+	const nextPartInstance = playlist.nextPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
+		: undefined
+	const previousPartInstance = playlist.previousPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
+		: undefined
+
+	span?.end()
 	return {
-		currentPartInstance: playlist.currentPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
-			: undefined,
-		nextPartInstance: playlist.nextPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
-			: undefined,
-		previousPartInstance: playlist.previousPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
-			: undefined,
+		currentPartInstance,
+		nextPartInstance,
+		previousPartInstance,
 	}
 }
 
