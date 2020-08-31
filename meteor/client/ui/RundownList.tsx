@@ -10,7 +10,7 @@ import Moment from 'react-moment'
 import { RundownUtils } from '../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../lib/lib'
 import { MomentFromNow } from '../lib/Moment'
-import { faTrash, faSync } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faSync, IconName } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { doModalDialog } from '../lib/ModalDialog'
@@ -27,6 +27,10 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
+import { SplitDropdown } from '../lib/SplitDropdown'
+import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
+import { UIStateStorage } from '../lib/UIStateStorage'
+import ClassNames from 'classnames'
 
 const PackageInfo = require('../../package.json')
 
@@ -41,29 +45,58 @@ interface RundownPlaylistUi extends RundownPlaylist {
 interface IRundownListItemProps {
 	key: string
 	rundownPlaylist: RundownPlaylistUi
+	rundownLayouts: Array<RundownLayoutBase>
 }
 
-interface IRundownListItemStats {}
+interface IRundownListItemState {
+	selectedView: string
+}
 
-export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemStats> {
+export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemState> {
 	constructor(props) {
 		super(props)
+
+		this.state = {
+			selectedView: UIStateStorage.getItemString(
+				`rundownList.${this.props.rundownPlaylist.studioId}`,
+				'defaultView',
+				'default'
+			),
+		}
 	}
 
-	getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId) {
+	private getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId) {
 		// double encoding so that "/" are handled correctly
 		return '/rundown/' + encodeURIComponent(encodeURIComponent(unprotectString(rundownPlaylistId)))
 	}
-	getStudioLink(studioId: StudioId) {
+	private getStudioLink(studioId: StudioId) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(unprotectString(studioId)))
 	}
-	getshowStyleBaseLink(showStyleBaseId: ShowStyleBaseId) {
+	private getShowStyleBaseLink(showStyleBaseId: ShowStyleBaseId) {
 		// double encoding so that "/" are handled correctly
 		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(unprotectString(showStyleBaseId)))
 	}
+	private getShelfLink(rundownId, layoutId) {
+		// double encoding so that "/" are handled correctly
+		return (
+			'/rundown/' +
+			encodeURIComponent(encodeURIComponent(rundownId)) +
+			'/shelf/?layout=' +
+			encodeURIComponent(encodeURIComponent(layoutId))
+		)
+	}
+	private getRundownWithLayoutLink(rundownId, layoutId) {
+		// double encoding so that "/" are handled correctly
+		return (
+			'/rundown/' +
+			encodeURIComponent(encodeURIComponent(rundownId)) +
+			'?layout=' +
+			encodeURIComponent(encodeURIComponent(layoutId))
+		)
+	}
 
-	confirmDeleteRundownPlaylist(rundownPlaylist: RundownPlaylist) {
+	private confirmDeleteRundownPlaylist(rundownPlaylist: RundownPlaylist) {
 		const { t } = this.props
 
 		doModalDialog({
@@ -82,7 +115,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 		})
 	}
 
-	confirmReSyncRundownPlaylist(rundownPlaylist: RundownPlaylist) {
+	private confirmReSyncRundownPlaylist(rundownPlaylist: RundownPlaylist) {
 		const { t } = this.props
 		doModalDialog({
 			title: t('Re-Sync this rundownPlaylist?'),
@@ -97,6 +130,75 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 				name: rundownPlaylist.name,
 			}),
 		})
+	}
+
+	private saveViewChoice(key: string) {
+		UIStateStorage.setItem(`rundownList.${this.props.rundownPlaylist.studioId}`, 'defaultView', key)
+	}
+
+	private renderViewLinkItem(layout: RundownLayoutBase, link: string, key: string) {
+		return (
+			<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
+				<div className="action-btn expco-item">
+					<div
+						className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
+						style={{ color: layout.iconColor || 'transparent' }}>
+						<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
+					</div>
+					<span className="expco-text">{layout.name}</span>
+				</div>
+			</Link>
+		)
+	}
+
+	private renderViewLinks() {
+		const { t } = this.props
+		const standaloneLayouts = this.props.rundownLayouts
+			.filter(
+				(layout) =>
+					layout.exposeAsStandalone &&
+					this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
+			)
+			.map((layout) => {
+				return this.renderViewLinkItem(
+					layout,
+					this.getShelfLink(this.props.rundownPlaylist._id, layout._id),
+					`standalone${layout._id}`
+				)
+			})
+		const shelfLayouts = this.props.rundownLayouts
+			.filter(
+				(layout) =>
+					layout.exposeAsShelf && this.props.rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)
+			)
+			.map((layout) => {
+				return this.renderViewLinkItem(
+					layout,
+					this.getRundownWithLayoutLink(this.props.rundownPlaylist._id, layout._id),
+					`shelf${layout._id}`
+				)
+			})
+		const allElements = [
+			<div className="expco-header" key={`${this.props.rundownPlaylist._id}layoutsheader2`}>
+				{t('Standalone Shelf')}
+			</div>,
+			...standaloneLayouts,
+			<div className="expco-header" key={`${this.props.rundownPlaylist._id}layoutsheader1`}>
+				{t('Timeline views')}
+			</div>,
+			...shelfLayouts,
+			<Link
+				to={this.getRundownPlaylistLink(this.props.rundownPlaylist._id)}
+				onClick={() => this.saveViewChoice('default')}
+				key={'default'}>
+				<div className="action-btn expco-item">{t('Default')}</div>
+			</Link>,
+		]
+		return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
+			<React.Fragment>
+				<SplitDropdown selectedKey={this.state.selectedView}>{allElements}</SplitDropdown>
+			</React.Fragment>
+		) : null
 	}
 
 	render() {
@@ -132,7 +234,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 						{getAllowConfigure() ? (
 							this.props.rundownPlaylist.showStyles.length === 1 ? (
 								<Link
-									to={this.getshowStyleBaseLink(
+									to={this.getShowStyleBaseLink(
 										this.props.rundownPlaylist.showStyles[0].id
 									)}>{`${this.props.rundownPlaylist.showStyles[0].baseName} - ${this.props.rundownPlaylist.showStyles[0].variantName}`}</Link>
 							) : (
@@ -165,6 +267,7 @@ export class RundownListItem extends React.Component<Translated<IRundownListItem
 					</td>
 					<td className="rundown-list-item__status">{this.props.rundownPlaylist.rundownStatus}</td>
 					<td className="rundown-list-item__air-status">{this.props.rundownPlaylist.rundownAirStatus}</td>
+					<td className="rundown-list-item__views">{this.renderViewLinks()}</td>
 					<td className="rundown-list-item__actions">
 						{this.props.rundownPlaylist.unsyncedRundowns.length > 0 || getAllowConfigure() || getAllowService() ? (
 							<Tooltip overlay={t('Delete')} placement="top">
@@ -209,6 +312,7 @@ enum ToolTipStep {
 interface IRundownsListProps {
 	coreSystem: ICoreSystem
 	rundownPlaylists: Array<RundownPlaylistUi>
+	rundownLayouts: Array<RundownLayoutBase>
 }
 
 interface IRundownsListState {
@@ -223,6 +327,9 @@ export const RundownList = translateWithTracker(() => {
 	const studios = Studios.find().fetch()
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
+	const rundownLayouts = RundownLayouts.find({
+		$or: [{ exposeAsStandalone: true }, { exposeAsShelf: true }],
+	}).fetch()
 
 	return {
 		coreSystem: getCoreSystem(),
@@ -259,6 +366,7 @@ export const RundownList = translateWithTracker(() => {
 				)
 				return playlist
 			}),
+		rundownLayouts,
 	}
 })(
 	class RundownList extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
@@ -302,6 +410,7 @@ export const RundownList = translateWithTracker(() => {
 			// Subscribe to data:
 			this.subscribe(PubSub.rundownPlaylists, {})
 			this.subscribe(PubSub.studios, {})
+			this.subscribe(PubSub.rundownLayouts, {})
 
 			this.autorun(() => {
 				const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), (rundown) => rundown.showStyleBaseId))
@@ -408,6 +517,7 @@ export const RundownList = translateWithTracker(() => {
 					<RundownListItem
 						key={unprotectString(rundownPlaylist._id)}
 						rundownPlaylist={rundownPlaylist}
+						rundownLayouts={this.props.rundownLayouts}
 						{...{ t, i18n, tReady }}
 					/>
 				))
@@ -490,13 +600,14 @@ export const RundownList = translateWithTracker(() => {
 											<th className="c1">{t('Status')}</th>
 											<th className="c1">{t('Air Status')}</th>
 											<th className="c1">&nbsp;</th>
+											<th className="c1">&nbsp;</th>
 										</tr>
 									</thead>
 									<tbody>{this.renderRundowns(syncedRundownPlaylists)}</tbody>
 									{unsyncedRundownPlaylists.length > 0 && (
 										<tbody>
 											<tr className="hl">
-												<th colSpan={9} className="pvn phn">
+												<th colSpan={10} className="pvn phn">
 													<h2 className="mtm mbs mhn">{t('Unsynced from MOS')}</h2>
 												</th>
 											</tr>

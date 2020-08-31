@@ -98,6 +98,8 @@ import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
+const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
+
 type WrappedShelf = ShelfBase & { getWrappedInstance(): ShelfBase }
 
 interface ITimingWarningProps {
@@ -1204,11 +1206,6 @@ const RundownHeader = withTranslation()(
 									rundownIds={this.props.rundownIds}
 								/>
 							</div>
-							<div className="row dark">
-								<div className="col c12 rundown-overview">
-									<RundownOverview rundownPlaylistId={this.props.playlist._id} />
-								</div>
-							</div>
 						</ContextMenuTrigger>
 					</div>
 					<ModalDialog
@@ -1255,7 +1252,7 @@ interface IState {
 	manualSetAsNext: boolean
 	subsReady: boolean
 	usedHotkeys: Array<HotkeyDefinition>
-	isNotificationsCenterOpen: boolean
+	isNotificationsCenterOpen: NoticeLevel | undefined
 	isSupportPanelOpen: boolean
 	isInspectorShelfExpanded: boolean
 	isClipTrimmerOpen: boolean
@@ -1274,6 +1271,7 @@ export enum RundownViewEvents {
 	'goToPart' = 'sofie:goToPart',
 	'goToPartInstance' = 'sofie:goToPartInstance',
 	'selectPiece' = 'sofie:selectPiece',
+	'highlight' = 'sofie:highlight',
 }
 
 export interface IGoToPartEvent {
@@ -1301,6 +1299,12 @@ interface ITrackedProps {
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
 	rundownLayoutId?: RundownLayoutId
+	shelfDisplayOptions: {
+		buckets: boolean
+		layout: boolean
+		inspector: boolean
+	}
+	bucketDisplayFilter: number[] | undefined
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1319,6 +1323,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	}
 
 	const params = queryStringParse(location.search)
+
+	const displayOptions = ((params['display'] as string) || 'buckets,layout,inspector').split(',')
+	const bucketDisplayFilter = !(params['buckets'] as string)
+		? undefined
+		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1364,6 +1373,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}).fetch()) ||
 			undefined,
 		rundownLayoutId: protectString((params['layout'] as string) || ''),
+		shelfDisplayOptions: {
+			buckets: displayOptions.includes('buckets'),
+			layout: displayOptions.includes('layout'),
+			inspector: displayOptions.includes('inspector'),
+		},
+		bucketDisplayFilter,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1383,8 +1398,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			label: string
 			global?: boolean
 		}> = []
-		private _inspectorShelf: WrappedShelf | null
 		private _segmentZoomOn: boolean = false
+		private _hideNotificationsAfterMount: number | undefined
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
@@ -1437,7 +1452,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						label: t('Change to fullscreen mode'),
 					},
 				]),
-				isNotificationsCenterOpen: false,
+				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
 				isInspectorShelfExpanded: false,
 				isClipTrimmerOpen: false,
@@ -1600,6 +1615,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				themeColor.setAttribute('data-content', themeColor.getAttribute('content') || '')
 				themeColor.setAttribute('content', '#000000')
 			}
+
+			// Snooze notifications for a period after mounting the RundownView
+			if (HIDE_NOTIFICATIONS_AFTER_MOUNT) {
+				NotificationCenter.isOpen = true
+				this._hideNotificationsAfterMount = Meteor.setTimeout(() => {
+					NotificationCenter.isOpen = this.state.isNotificationsCenterOpen !== undefined
+					this._hideNotificationsAfterMount = undefined
+				}, HIDE_NOTIFICATIONS_AFTER_MOUNT)
+			}
+			NotificationCenter.isConcentrationMode = true
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps, prevState: IState) {
@@ -1788,6 +1813,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (themeColor) {
 				themeColor.setAttribute('content', themeColor.getAttribute('data-content') || '#ffffff')
 			}
+
+			if (this._hideNotificationsAfterMount) {
+				Meteor.clearTimeout(this._hideNotificationsAfterMount)
+			}
+			NotificationCenter.isConcentrationMode = false
 
 			window.removeEventListener(RundownViewEvents.goToLiveSegment, this.onGoToLiveSegment)
 			window.removeEventListener(RundownViewEvents.goToTop, this.onGoToTop)
@@ -1996,7 +2026,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					}
 				}
 				if (segmentId) {
-					scrollToSegment(segmentId).catch(console.error)
+					scrollToSegment(segmentId)
+						.then(() => {
+							window.dispatchEvent(
+								new CustomEvent(RundownViewEvents.highlight, {
+									detail: e.sourceLocator,
+								})
+							)
+						})
+						.catch(console.error)
 				}
 			}
 		}
@@ -2004,7 +2042,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			NotificationCenter.snoozeAll()
 			const isOpen = this.state.isNotificationsCenterOpen
 			this.setState({
-				isNotificationsCenterOpen: true,
+				isNotificationsCenterOpen: level === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 			})
 			setTimeout(
 				function() {
@@ -2123,15 +2161,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return false
 		}
 
-		onToggleNotifications = () => {
+		onToggleNotifications = (e: React.MouseEvent<HTMLElement>, filter: NoticeLevel) => {
 			if (!this.state.isNotificationsCenterOpen === true) {
 				NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 			}
 
-			NotificationCenter.isOpen = !this.state.isNotificationsCenterOpen
+			NotificationCenter.isOpen = !(this.state.isNotificationsCenterOpen === filter)
 
 			this.setState({
-				isNotificationsCenterOpen: !this.state.isNotificationsCenterOpen,
+				isNotificationsCenterOpen: this.state.isNotificationsCenterOpen === filter ? undefined : filter,
 			})
 		}
 
@@ -2258,10 +2296,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
-		setInspectorShelf = (isp: WrappedShelf | null) => {
-			this._inspectorShelf = isp
-		}
-
 		onTake = (e: any) => {
 			const { t } = this.props
 			if (this.state.studioMode && this.props.playlist) {
@@ -2285,7 +2319,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<div
 								className={ClassNames('rundown-view', {
-									'notification-center-open': this.state.isNotificationsCenterOpen,
+									'notification-center-open': this.state.isNotificationsCenterOpen !== undefined,
 									'rundown-view--studio-mode': this.state.studioMode,
 								})}
 								style={this.getStyle()}
@@ -2329,7 +2363,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 											easing: 'ease-in',
 											duration: 500,
 										}}>
-										{this.state.isNotificationsCenterOpen && <NotificationCenterPanel />}
+										{this.state.isNotificationsCenterOpen && (
+											<NotificationCenterPanel filter={this.state.isNotificationsCenterOpen} />
+										)}
 									</VelocityReact.VelocityTransitionGroup>
 									<VelocityReact.VelocityTransitionGroup
 										enter={{
@@ -2431,7 +2467,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								</ErrorBoundary>
 								<ErrorBoundary>
 									<Shelf
-										ref={this.setInspectorShelf}
 										buckets={this.props.buckets}
 										isExpanded={this.state.isInspectorShelfExpanded}
 										onChangeExpanded={this.onShelfChangeExpanded}
@@ -2442,6 +2477,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onChangeBottomMargin={this.onChangeBottomMargin}
 										onRegisterHotkeys={this.onRegisterHotkeys}
 										rundownLayout={this.state.rundownLayout}
+										shelfDisplayOptions={this.props.shelfDisplayOptions}
+										bucketDisplayFilter={this.props.bucketDisplayFilter}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2473,7 +2510,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					return (
 						<ErrorBoundary>
 							<Shelf
-								ref={this.setInspectorShelf}
 								buckets={this.props.buckets}
 								isExpanded={this.state.isInspectorShelfExpanded}
 								onChangeExpanded={this.onShelfChangeExpanded}
@@ -2485,6 +2521,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								onRegisterHotkeys={this.onRegisterHotkeys}
 								rundownLayout={this.state.rundownLayout}
 								fullViewport={true}
+								shelfDisplayOptions={this.props.shelfDisplayOptions}
+								bucketDisplayFilter={this.props.bucketDisplayFilter}
 							/>
 						</ErrorBoundary>
 					)

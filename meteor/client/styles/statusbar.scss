@@ -63,6 +63,12 @@
 			transition: 0.3s background-color;
 		}
 
+		&.status-bar__controls__button--open {
+			&::after {
+				background: #fff;
+			}
+		}
+
 		&.status-bar__controls__button--inactive {
 			cursor: default;
 		}
@@ -178,6 +184,9 @@
 			border: none !important;
 			margin-left: 0 !important;
 			background-color: #eee;
+			&.notifications__toggle-button {
+				background-color: #acacad;
+			}
 		}
 
 		&.status-bar__controls__button--route-set-panel {

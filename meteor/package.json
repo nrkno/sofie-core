@@ -1,6 +1,6 @@
 {
   "name": "automation-core",
-  "version": "1.11.0-in-development",
+  "version": "1.11.0-in-development.0",
   "private": true,
   "engines": {
     "node": "12.16"
@@ -94,7 +94,7 @@
     "soap": "^0.31.0",
     "superfly-timeline": "^7.3.1",
     "timecode": "0.0.4",
-    "tv-automation-sofie-blueprints-integration": "2.1.0-nightly-20200701-065943-079858b.0",
+    "tv-automation-sofie-blueprints-integration": "2.1.0-nightly-20200813-114228-0e4f14d0.0",
     "underscore": "^1.10.2",
     "velocity-animate": "^1.5.2",
     "velocity-react": "^1.4.3",
@@ -126,6 +126,7 @@
     "@types/xml2json": "^0.11.0",
     "@types/xmldom": "^0.1.29",
     "@welldone-software/why-did-you-render": "^4.2.5",
+    "conventional-changelog-conventionalcommits": "4.4.0",
     "codecov": "^3.7.0",
     "ejson": "^2.2.0",
     "fibers-npm": "npm:fibers@4.0.3",
@@ -143,7 +144,7 @@
     "prettier": "^1.19.1",
     "simple-git": "^2.7.0",
     "sinon": "^9.0.2",
-    "standard-version": "^8.0.2",
+    "standard-version": "^9.0.0",
     "ts-jest": "^26.1.0",
     "tslint": "^6.1.2",
     "tslint-config-prettier": "^1.18.0",
