@@ -348,22 +348,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						clearKeyboardHotkeySourceLayers[hotkey].push(sourceLayer)
 					})
 				}
-
-				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
-					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach((element) => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							element,
-							(e: ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleSticky(sourceLayer._id, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(element)
-					})
-				}
 			})
 
 			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
