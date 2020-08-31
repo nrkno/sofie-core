@@ -891,12 +891,12 @@ function transformPartIntoTimeline(
 			}
 		}
 
-		// create a piece group for the pieces and then place all of them there
-		const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
-		timelineObjs.push(pieceGroup)
-		timelineObjs.push(...capObjs)
-
 		if (!pieceInstance.piece.virtual && pieceInstance.piece.content?.timelineObjects && !hasDefinitelyEnded) {
+			// create a piece group for the pieces and then place all of them there
+			const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
+			timelineObjs.push(pieceGroup)
+			timelineObjs.push(...capObjs)
+
 			timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
 			for (const o of pieceInstance.piece.content.timelineObjects) {
