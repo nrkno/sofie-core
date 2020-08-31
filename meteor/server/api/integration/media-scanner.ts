@@ -65,4 +65,11 @@ export namespace MediaScannerIntegration {
 			throw new Meteor.Error(400, 'missing doc argument')
 		}
 	}
+	export function clearMediaObjectCollection(deviceId: PeripheralDeviceId, token: string, collectionId: string) {
+		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
+
+		const studioId = getStudioIdFromDevice(peripheralDevice)
+
+		MediaObjects.remove({ collectionId, studioId })
+	}
 }

@@ -237,6 +237,7 @@ export interface NewPeripheralDeviceAPI {
 		id: string,
 		doc: MediaObject | null
 	): Promise<void>
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string): Promise<void>
 
 	getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string): Promise<MediaWorkFlowRevision[]>
 	getMediaWorkFlowStepRevisions(
@@ -322,6 +323,7 @@ export enum PeripheralDeviceAPIMethods {
 
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
+	'clearMediaObjectCollection' = 'peripheralDevice.mediaScanner.clearMediaObjectCollection',
 
 	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
