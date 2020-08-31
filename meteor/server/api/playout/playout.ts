@@ -1193,60 +1193,7 @@ export namespace ServerPlayoutAPI {
 			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
-	/**
-	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
-	 * ( typically when using the "now"-feature )
-	 */
 
-	export function timelineTriggerTimeUpdateCallback(
-		context: MethodContext,
-		cache: CacheForRundownPlaylist,
-		activeRundownIds: RundownId[],
-		timelineObj: TimelineObjGeneric,
-		time: number
-	) {
-		check(timelineObj, Object)
-		check(time, Number)
-
-		triggerWriteAccessBecauseNoCheckNecessary() // tmp
-
-		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metaData && timelineObj.metaData.pieceId) {
-			logger.debug('Update PieceInstance: ', {
-				pieceId: timelineObj.metaData.pieceId,
-				time: new Date(time).toTimeString(),
-			})
-
-			cache.PieceInstances.update(
-				{
-					_id: timelineObj.metaData.pieceId,
-					rundownId: { $in: activeRundownIds },
-				},
-				{
-					$set: {
-						'piece.enable.start': time,
-					},
-				}
-			)
-
-			const pieceInstance = cache.PieceInstances.findOne({
-				_id: timelineObj.metaData.pieceId,
-				rundownId: { $in: activeRundownIds },
-			})
-			if (pieceInstance) {
-				cache.PieceInstances.update(
-					{
-						_id: pieceInstance._id,
-						rundownId: { $in: activeRundownIds },
-					},
-					{
-						$set: {
-							'piece.enable.start': time,
-						},
-					}
-				)
-			}
-		}
-	}
 	export function updateStudioBaseline(context: MethodContext, studioId: StudioId) {
 		// TODO - should there be a studio lock for activate/deactivate/this?
 		StudioContentWriteAccess.baseline(context, studioId)
