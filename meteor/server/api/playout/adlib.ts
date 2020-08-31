@@ -18,7 +18,13 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getAllPieceInstancesFromCache } from './lib'
+import {
+	prefixAllObjectIds,
+	setNextPart,
+	getRundownIDsFromCache,
+	getAllPieceInstancesFromCache,
+	getSelectedPartInstancesFromCache,
+} from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
@@ -373,30 +379,17 @@ export namespace ServerPlayoutAdLibAPI {
 		logger.info('adlibQueueInsertPartInstance')
 
 		// check if there's already a queued part after this:
-		// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
-		const afterPartId = currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id
-		const alreadyQueuedPartInstance = cache.PartInstances.findOne(
-			{
-				rundownId: rundown._id,
-				segmentId: currentPartInstance.segmentId,
-				'part.dynamicallyInsertedAfterPartId': afterPartId,
-				'part._rank': { $gt: currentPartInstance.part._rank },
-			},
-			{
-				sort: { _id: -1 },
-			}
-		)
-		if (alreadyQueuedPartInstance) {
-			if (rundownPlaylist.currentPartInstanceId !== alreadyQueuedPartInstance._id) {
-				cache.Parts.remove(alreadyQueuedPartInstance.part._id)
-				cache.PartInstances.remove(alreadyQueuedPartInstance._id)
-				cache.PieceInstances.remove({ partInstanceId: alreadyQueuedPartInstance._id })
-				afterRemoveParts(cache, currentPartInstance.rundownId, [alreadyQueuedPartInstance.part])
-			}
+		const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+		if (nextPartInstance && nextPartInstance.part.dynamicallyInsertedAfterPartId) {
+			// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
+			cache.Parts.remove(nextPartInstance.part._id)
+			cache.PartInstances.remove(nextPartInstance._id)
+			cache.PieceInstances.remove({ partInstanceId: nextPartInstance._id })
+			afterRemoveParts(cache, currentPartInstance.rundownId, [nextPartInstance.part])
 		}
 
 		// Ensure it is labelled as dynamic
-		newPartInstance.part.dynamicallyInsertedAfterPartId = afterPartId
+		newPartInstance.part.dynamicallyInsertedAfterPartId = currentPartInstance.part._id
 
 		cache.PartInstances.insert(newPartInstance)
 		// TODO-PartInstance - pending new data flow
