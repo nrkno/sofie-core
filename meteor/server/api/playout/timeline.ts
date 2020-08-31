@@ -798,7 +798,7 @@ interface TransformTransitionProps {
 	transitionKeepalive?: number | null
 }
 
-function hasPieceInstanceDefinitelyEnded(
+export function hasPieceInstanceDefinitelyEnded(
 	pieceInstance: DeepReadonly<PieceInstanceWithTimings>,
 	nowInPart: number
 ): boolean {
