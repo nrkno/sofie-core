@@ -11,7 +11,7 @@ class Profiler {
 
 	startTransaction(description: string, name: string) {
 		if (!this.active) return
-		Agent.startTransaction(description, name)
+		return Agent.startTransaction(description, name)
 	}
 
 	setActive(active: boolean) {
