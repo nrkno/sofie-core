@@ -39,8 +39,6 @@ import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 
-const HOTKEY_GROUP = 'BucketPanel'
-
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
 		let size = {
@@ -148,6 +146,7 @@ export interface IBucketPanelProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
+	hotkeyGroup: string
 	editableName?: boolean
 	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: BucketId, atIndex: number) => void
@@ -349,7 +348,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
-					// console.log(sourceLayer)
 					const { t } = this.props
 					if (this.props.playlist._id && this.props.playlist.currentPartInstanceId) {
 						const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -579,9 +577,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 											{this.state.bucketName}
 										</h4>
 									)}
-									{/* 
+									{/*
 						<FontAwesomeIcon icon={faBars} />&nbsp;
-						
+
 						{ filter.enableSearch &&
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />

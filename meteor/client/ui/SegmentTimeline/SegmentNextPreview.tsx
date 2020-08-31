@@ -92,13 +92,14 @@ export const SegmentNextPreview = withTranslation()(
 		}
 		renderOutputGroups() {
 			if (this.props.outputGroups) {
-				return _.map(
-					_.filter(this.props.outputGroups, (layer) => {
+				return Object.entries(this.props.outputGroups)
+					.filter(([key, layer]) => {
 						return layer.used ? true : false
-					}).sort((a, b) => {
+					})
+					.sort(([keyA, a], [keyB, b]) => {
 						return a._rank - b._rank
-					}),
-					(layer, id) => {
+					})
+					.map(([id, layer]) => {
 						return (
 							<div
 								className={ClassNames('segment-timeline__output-group', {
@@ -109,8 +110,7 @@ export const SegmentNextPreview = withTranslation()(
 								{this.renderSourceLayers(layer, layer.sourceLayers)}
 							</div>
 						)
-					}
-				)
+					})
 			} else {
 				return null
 			}

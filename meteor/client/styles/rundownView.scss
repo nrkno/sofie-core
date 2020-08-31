@@ -1791,6 +1791,10 @@ body.no-overflow {
 					border-left: 2px dotted $segment-layer-background-mic;
 					margin-left: -2px;
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
+
+					&.hidden {
+						display: none;
+					}
 				}
 			}
 

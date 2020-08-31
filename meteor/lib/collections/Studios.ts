@@ -1,11 +1,12 @@
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection, ProtectedString, omit } from '../lib'
 import * as _ from 'underscore'
-import { IConfigItem, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintConfig, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
+import { OrganizationId } from './Organization'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -37,6 +38,9 @@ export type StudioId = ProtectedString<'StudioId'>
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
 	_id: StudioId
+	/** If set, this studio is owned by that organization */
+	organizationId: OrganizationId | null
+
 	/** User-presentable name for the studio installation */
 	name: string
 	/** Id of the blueprint used by this studio-installation */
@@ -49,7 +53,7 @@ export interface DBStudio {
 	supportedShowStyleBase: Array<ShowStyleBaseId>
 
 	/** Config values are used by the Blueprints */
-	config: Array<IConfigItem>
+	blueprintConfig: IBlueprintConfig
 	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioSettings
@@ -151,11 +155,12 @@ export interface ITestToolsConfig {
 
 export class Studio implements DBStudio {
 	public _id: StudioId
+	public organizationId: OrganizationId | null
 	public name: string
 	public blueprintId?: BlueprintId
 	public mappings: MappingsExt
 	public supportedShowStyleBase: Array<ShowStyleBaseId>
-	public config: Array<IConfigItem> // TODO - migration to rename
+	public blueprintConfig: IBlueprintConfig
 	public settings: IStudioSettings
 	public testToolsConfig?: ITestToolsConfig
 
@@ -166,9 +171,9 @@ export class Studio implements DBStudio {
 	}
 
 	constructor(document: DBStudio) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 }
 
@@ -179,6 +184,6 @@ registerCollection('Studios', Studios)
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(Studios, '_rundownVersionHash', ['config'])
+		ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfig'])
 	}
 })

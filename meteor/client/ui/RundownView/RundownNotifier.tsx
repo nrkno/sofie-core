@@ -36,6 +36,7 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../l
 import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
+import { Settings } from '../../../lib/Settings'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -96,14 +97,11 @@ class RundownViewNotifier extends WithManagedTracker {
 		)
 
 		this.autorun(() => {
-			// console.log('RundownViewNotifier 1')
-
 			if (playlistId) {
 				this.reactiveRundownStatus(playlistId)
 				this.reactiveVersionAndConfigStatus(playlistId)
 
 				this.autorun(() => {
-					// console.log('RundownViewNotifier 1-1')
 					if (showStyleBase && studio) {
 						this.reactiveMediaStatus(playlistId, showStyleBase, studio)
 						this.reactivePartNotes(playlistId)
@@ -126,7 +124,6 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 
 		this.autorun((comp) => {
-			// console.log('RundownViewNotifier 2')
 			this._mediaStatusDep.depend()
 			this._deviceStatusDep.depend()
 			this._rundownStatusDep.depend()
@@ -134,18 +131,17 @@ class RundownViewNotifier extends WithManagedTracker {
 			this._rundownImportVersionStatusDep.depend()
 			this._unsentExternalMessageStatusDep.depend()
 
-			const notifications = _.compact(_.values(this._mediaStatus))
-				.concat(_.compact(_.values(this._deviceStatus)))
-				.concat(_.compact(_.values(this._notes)))
-				.concat(_.compact(_.values(this._rundownStatus)))
+			const notifications = _.compact(Object.values(this._mediaStatus))
+				.concat(_.compact(Object.values(this._deviceStatus)))
+				.concat(_.compact(Object.values(this._notes)))
+				.concat(_.compact(Object.values(this._rundownStatus)))
 				.concat(
 					_.compact([this._rundownImportVersionStatus, this._rundownStudioConfigStatus]),
-					_.compact(_.values(this._rundownShowStyleConfigStatuses))
+					_.compact(Object.values(this._rundownShowStyleConfigStatuses))
 				)
 				.concat(_.compact([this._unsentExternalMessagesStatus]))
 
 			this._notificationList.set(notifications)
-			// console.log(this._notificationList)
 		})
 	}
 
@@ -154,7 +150,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 		if (this._rundownImportVersionAndConfigInterval) Meteor.clearInterval(this._rundownImportVersionAndConfigInterval)
 
-		_.forEach(this._mediaStatusComps, (element, key) => element.stop())
+		Object.values(this._mediaStatusComps).forEach((element) => element.stop())
 		this._notifier.stop()
 	}
 
@@ -184,7 +180,9 @@ class RundownViewNotifier extends WithManagedTracker {
 						newNotification = new Notification(
 							unsyncedId,
 							NoticeLevel.CRITICAL,
-							t('The Rundown has been UNSYNCED from ENPS! No data updates will currently come through.'),
+							t('The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.', {
+								nrcsName: rundown.externalNRCSName || 'NRCS',
+							}),
 							'Rundown',
 							getCurrentTime(),
 							true,
@@ -284,7 +282,6 @@ class RundownViewNotifier extends WithManagedTracker {
 			})
 		}
 		this.autorun(() => {
-			// console.log('RundownViewNotifier 3')
 			const devices = reactivePeripheralDevices ? reactivePeripheralDevices.get() : []
 			const newDevItemIds = devices.map((item) => item._id)
 
@@ -412,7 +409,6 @@ class RundownViewNotifier extends WithManagedTracker {
 		})
 
 		this.autorun(() => {
-			// console.log('RundownViewNotifier 4')
 			const newNoteIds: Array<string> = []
 			const combined = fullNotes.get().concat(localNotes.get())
 			combined.forEach((item: TrackedNote & { rank: number }) => {
@@ -525,7 +521,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			pieces.forEach((piece) => {
 				const localStatus: IMediaObjectIssue[] = []
 				const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
-				const part = Parts.findOne(piece.partId, {
+				const part = Parts.findOne(piece.startPartId, {
 					fields: {
 						_rank: 1,
 					},
@@ -648,10 +644,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			? Meteor.setInterval(() => this.updateVersionAndConfigStatus(playlistId), updatePeriod)
 			: undefined
 
-		// const rundowns = reactiveData.getRRundowns()
 		this.autorun((comp: Tracker.Computation) => {
-			// console.log('RundownViewNotifier 5')
-
 			// Track the rundown as a dependency of this autorun
 			this.updateVersionAndConfigStatus(playlistId)
 		})
@@ -692,6 +685,9 @@ class RundownViewNotifier extends WithManagedTracker {
 			.then((versionMismatch: string[]) => {
 				let newNotification: Notification | undefined = undefined
 				if (versionMismatch && versionMismatch.length) {
+					const playlist = RundownPlaylists.findOne(playlistId)
+					const firstRundown = playlist ? _.first(playlist.getRundowns()) : undefined
+
 					newNotification = new Notification(
 						'rundown_importVersions',
 						NoticeLevel.WARNING,
@@ -701,7 +697,7 @@ class RundownViewNotifier extends WithManagedTracker {
 						true,
 						[
 							{
-								label: t('Reload ENPS Data'),
+								label: t('Reload {{nrcsName}} Data', { nrcsName: firstRundown?.externalNRCSName || 'NRCS' }),
 								type: 'primary',
 								action: (e) => {
 									const reloadFunc = reloadRundownPlaylistClick.get()
@@ -768,9 +764,9 @@ class RundownViewNotifier extends WithManagedTracker {
 				}
 
 				// Check show styles for changes
-				const oldShowStyleIds = _.keys(this._rundownShowStyleConfigStatuses)
+				const oldShowStyleIds = Object.keys(this._rundownShowStyleConfigStatuses)
 				const newShowStyleIds: string[] = []
-				_.each(configErrors.showStyles, (showStyleErrors) => {
+				configErrors.showStyles.forEach((showStyleErrors) => {
 					let newNotification: Notification | undefined
 					if (showStyleErrors.checkFailed) {
 						const message = t('The Show Style configuration "{{name}}" could not be validated', {
@@ -842,7 +838,7 @@ class RundownViewNotifier extends WithManagedTracker {
 					-1
 				)
 				if (
-					_.size(this._rundownShowStyleConfigStatuses) > 0 ||
+					Object.keys(this._rundownShowStyleConfigStatuses).length > 0 ||
 					!Notification.isEqual(this._rundownStudioConfigStatus, newNotification)
 				) {
 					this._rundownStudioConfigStatus = newNotification

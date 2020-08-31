@@ -13,7 +13,6 @@ import { IMediaObjectIssue } from './api/rundownNotifications'
 import { getAllNotesForSegmentAndParts } from './collections/RundownPlaylists'
 
 export function getSegmentPartNotes(rundownIds: RundownId[]): TrackedNote[] {
-	let notes: TrackedNote[] = []
 	const segments = Segments.find(
 		{
 			rundownId: {
@@ -103,9 +102,10 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 					}).map((piece) => {
 						// run these in parallel
 						const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)
-						const part = Parts.findOne(piece.partId, {
+						const part = Parts.findOne(piece.startPartId, {
 							fields: {
 								_rank: 1,
+								title: 1,
 								segmentId: 1,
 							},
 						})

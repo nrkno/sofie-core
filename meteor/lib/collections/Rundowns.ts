@@ -30,6 +30,7 @@ import { ExpectedPlayoutItems } from './ExpectedPlayoutItems'
 import { PartInstances, PartInstance, DBPartInstance } from './PartInstances'
 import { PieceInstances, PieceInstance } from './PieceInstances'
 import { PeripheralDeviceId } from './PeripheralDevices'
+import { OrganizationId } from './Organization'
 import { AdLibActions } from './AdLibActions'
 import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
 
@@ -54,6 +55,8 @@ export type RundownId = ProtectedString<'RundownId'>
 export interface DBRundown
 	extends ProtectedStringProperties<IBlueprintRundownDB, '_id' | 'playlistId' | 'showStyleVariantId'> {
 	_id: RundownId
+	/** ID of the organization that owns the rundown */
+	organizationId: OrganizationId | null
 	/** The id of the Studio this rundown is in */
 	studioId: StudioId
 
@@ -90,14 +93,19 @@ export interface DBRundown
 
 	/** External id of the Rundown Playlist to put this rundown in */
 	playlistExternalId?: string
+	/** Name (user-facing) of the external NCS this rundown came from */
+	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
 	_rank: number
+	/** Whenever the baseline (RundownBaselineObjs, RundownBaselineAdLibItems, RundownBaselineAdLibActions) changes, this is changed too */
+	baselineModifyHash?: string
 }
 export class Rundown implements DBRundown {
 	// From IBlueprintRundown:
 	public externalId: string
+	public organizationId: OrganizationId
 	public name: string
 	public expectedStart?: Time
 	public expectedDuration?: number
@@ -124,14 +132,16 @@ export class Rundown implements DBRundown {
 	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
+	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
 	public _rank: number
+	public baselineModifyHash?: string
 	_: any
 
 	constructor(document: DBRundown) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	getRundownPlaylist(): RundownPlaylist {
 		if (!this.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
@@ -140,13 +150,13 @@ export class Rundown implements DBRundown {
 			return pls
 		} else throw new Meteor.Error(404, `Rundown Playlist "${this.playlistId}" not found!`)
 	}
-	getShowStyleCompound(): ShowStyleCompound {
-		if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
-		let ss = getShowStyleCompound(this.showStyleVariantId)
-		if (ss) {
-			return ss
-		} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
-	}
+	// getShowStyleCompound(): ShowStyleCompound {
+	// 	if (!this.showStyleVariantId) throw new Meteor.Error(500, 'Rundown has no show style attached!')
+	// 	let ss = getShowStyleCompound(this.showStyleVariantId)
+	// 	if (ss) {
+	// 		return ss
+	// 	} else throw new Meteor.Error(404, `ShowStyle "${this.showStyleVariantId}" not found!`)
+	// }
 	getShowStyleBase(): ShowStyleBase {
 		let showStyleBase = ShowStyleBases.findOne(this.showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${this.showStyleBaseId}" not found!`)

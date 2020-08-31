@@ -1,4 +1,4 @@
-import { TransformedCollection } from '../typings/meteor'
+import { TransformedCollection, FindOptions } from '../typings/meteor'
 import { registerCollection, ProtectedString, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
@@ -75,6 +75,20 @@ export interface ICoreSystem {
 	serviceMessages: {
 		[index: string]: ServiceMessage
 	}
+
+	/** elastic APM (application performance monitoring) settings */
+	apm?: {
+		enabled?: boolean
+		/**
+		 * How many of the transactions to monitor.
+		 * Set to:
+		 * -1 to log nothing (max performance),
+		 * 0.5 to log 50% of the transactions,
+		 * 1 to log all transactions
+		 */
+		transactionSampleRate?: number
+	}
+	enableMonitorBlockedThread?: boolean
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
@@ -93,8 +107,8 @@ registerCollection('CoreSystem', CoreSystem)
 export function getCoreSystem(): ICoreSystem | undefined {
 	return CoreSystem.findOne(SYSTEM_ID)
 }
-export function getCoreSystemCursor() {
-	return CoreSystem.find(SYSTEM_ID)
+export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>) {
+	return CoreSystem.find(SYSTEM_ID, options)
 }
 export function setCoreSystemVersion(versionStr: string): string {
 	let system = getCoreSystem()

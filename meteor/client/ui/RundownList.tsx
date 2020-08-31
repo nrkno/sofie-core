@@ -27,10 +27,13 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
+import { Settings } from '../../lib/Settings'
+import { languageOr } from '../lib/language'
 import { SplitDropdown } from '../lib/SplitDropdown'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../lib/UIStateStorage'
 import ClassNames from 'classnames'
+import { getUser, User } from '../../lib/collections/Users'
 
 const PackageInfo = require('../../package.json')
 
@@ -321,9 +324,6 @@ interface IRundownsListState {
 }
 
 export const RundownList = translateWithTracker(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
 	const studios = Studios.find().fetch()
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
@@ -341,7 +341,7 @@ export const RundownList = translateWithTracker(() => {
 				playlist.rundownStatus = rundownsInPlaylist.map((rundown) => rundown.status).join(', ')
 				playlist.unsyncedRundowns = rundownsInPlaylist.filter((rundown) => rundown.unsynced)
 
-				const studio = _.find(studios, (s) => s._id === playlist.studioId)
+				const studio = studios.find((s) => s._id === playlist.studioId)
 
 				playlist.studioName = (studio && studio.name) || ''
 				playlist.showStyles = _.compact(
@@ -350,8 +350,8 @@ export const RundownList = translateWithTracker(() => {
 						false,
 						(ids) => ids[0] + '_' + ids[1]
 					).map((combo) => {
-						const showStyleBase = _.find(showStyleBases, (style) => style._id === combo[0])
-						const showStyleVariant = _.find(showStyleVariants, (variant) => variant._id === combo[1])
+						const showStyleBase = showStyleBases.find((style) => style._id === combo[0])
+						const showStyleVariant = showStyleVariants.find((variant) => variant._id === combo[1])
 
 						if (showStyleBase) {
 							return {
@@ -371,7 +371,6 @@ export const RundownList = translateWithTracker(() => {
 })(
 	class RundownList extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
 		// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-
 		constructor(props) {
 			super(props)
 
@@ -413,14 +412,21 @@ export const RundownList = translateWithTracker(() => {
 			this.subscribe(PubSub.rundownLayouts, {})
 
 			this.autorun(() => {
-				const showStyleBaseIds = _.uniq(_.map(Rundowns.find().fetch(), (rundown) => rundown.showStyleBaseId))
-				const showStyleVariantIds = _.uniq(_.map(Rundowns.find().fetch(), (rundown) => rundown.showStyleVariantId))
+				const showStyleBaseIds = _.uniq(
+					Rundowns.find()
+						.fetch()
+						.map((rundown) => rundown.showStyleBaseId)
+				)
+				const showStyleVariantIds = _.uniq(
+					Rundowns.find()
+						.fetch()
+						.map((rundown) => rundown.showStyleVariantId)
+				)
 				const playlistIds = _.uniq(
 					RundownPlaylists.find()
 						.fetch()
 						.map((i) => i._id)
 				)
-
 				this.subscribe(PubSub.showStyleBases, {
 					_id: { $in: showStyleBaseIds },
 				})
@@ -523,7 +529,7 @@ export const RundownList = translateWithTracker(() => {
 				))
 			) : (
 				<tr>
-					<td colSpan={9}>{t('There are no rundowns ingested into Sofie.')}</td>
+					<td colSpan={10}>{t('There are no rundowns ingested into Sofie.')}</td>
 				</tr>
 			)
 		}
@@ -608,7 +614,19 @@ export const RundownList = translateWithTracker(() => {
 										<tbody>
 											<tr className="hl">
 												<th colSpan={10} className="pvn phn">
-													<h2 className="mtm mbs mhn">{t('Unsynced from MOS')}</h2>
+													<h2 className="mtm mbs mhn">
+														{t('Unsynced from {{nrcsNames}}', {
+															nrcsNames:
+																languageOr(
+																	t,
+																	_.flatten(
+																		unsyncedRundownPlaylists.map((p) =>
+																			p.unsyncedRundowns.map((r) => r.externalNRCSName)
+																		)
+																	)
+																) || 'NRCS',
+														})}
+													</h2>
 												</th>
 											</tr>
 										</tbody>
@@ -644,8 +662,7 @@ export const RundownList = translateWithTracker(() => {
 											<div>
 												{t('Status Messages:')}
 												<ul>
-													{_.map(this.state.systemStatus._internal.messages, (message, i) => {
-														// console.log(message)
+													{this.state.systemStatus._internal.messages.map((message, i) => {
 														return <li key={i}>{message}</li>
 													})}
 												</ul>

@@ -6,9 +6,9 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { createMongoCollection } from './lib'
 import { StudioId, ResultingMappingRoutes } from './Studios'
-import { RundownId } from './Rundowns'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
+import { RundownPlaylistId } from './RundownPlaylists'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -87,7 +87,7 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 		callBack: 'partPlaybackStarted'
 		callBackStopped: 'partPlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			partInstanceId: PartInstanceId
 		}
 	}
@@ -100,7 +100,7 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown {
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			pieceInstanceId: PieceInstanceId
 			dynamicallyInserted?: boolean
 		}
@@ -132,16 +132,6 @@ export function setTimelineId<T extends TimelineObjGeneric>(objs: Array<T>): Arr
 		obj._id = getTimelineId(obj)
 		return obj
 	})
-}
-export function fixTimelineId(obj: TimelineObjectCoreExt) {
-	// Temporary workaround, to handle old _id:s in the db. We might want to add a warning in this, and later remove it.
-
-	const o: any = obj
-	if (o._id && !o.id) {
-		logger.warn(`Fixed id of timelineObject with _id ${o._id}`)
-		o.id = o._id
-		delete o._id
-	}
 }
 
 export function getRoutedTimeline(

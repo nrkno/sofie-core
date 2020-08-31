@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import { TransformedCollection, FindOptions, MongoQuery } from '../typings/meteor'
 import { Rundowns, Rundown, RundownId } from './Rundowns'
 import { Piece, Pieces } from './Pieces'
-import { AdLibPieces } from './AdLibPieces'
+import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { Segments, SegmentId } from './Segments'
 import {
 	applyClassToDocument,
@@ -18,7 +18,6 @@ import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPartDB,
 	PartHoldMode,
-	BlueprintRuntimeArguments,
 	IBlueprintPartDBTimings,
 	PartEndState,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -31,7 +30,8 @@ import { ShowStyleBase } from './ShowStyleBases'
 export type PartId = ProtectedString<'PartId'>
 
 /** A "Line" in NRK Lingo. */
-export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
+export interface DBPart
+	extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'> {
 	_id: PartId
 	/** Position inside the segment */
 	_rank: number
@@ -61,20 +61,17 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	 * This is set when Take:ing the next part
 	 */
 	duration?: number
-	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
-	previousPartEndState?: PartEndState
+	// /** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	// previousPartEndState?: PartEndState
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
 	/** if the part is inserted after another (for adlibbing) */
-	afterPart?: PartId
+	dynamicallyInsertedAfterPartId?: PartId
+	// afterPart?: PartId // TODO-ASAP combine with dynamicallyInserted (call dynamicallyAfterPart)
 	/** if the part was dunamically inserted (adlib) */
-	dynamicallyInserted?: boolean
+	// dynamicallyInserted?: boolean
 
-	/** Runtime blueprint arguments allows Sofie-side data to be injected into the blueprint for an part */
-	runtimeArguments?: BlueprintRuntimeArguments
-	/** An part should be marked as `dirty` if the part blueprint has been injected with runtimeArguments */
-	dirty?: boolean
 	/** Human readable unqiue identifier of the part */
 	identifier?: string
 }
@@ -124,18 +121,15 @@ export class Part implements DBPart {
 	public taken?: boolean
 	public stoppedPlayback?: boolean
 	public duration?: number
-	public previousPartEndState?: PartEndState
+	// public previousPartEndState?: PartEndState
 	public notes?: Array<PartNote>
-	public afterPart?: PartId
-	public dynamicallyInserted?: boolean
-	public runtimeArguments?: BlueprintRuntimeArguments
-	public dirty?: boolean
+	public dynamicallyInsertedAfterPartId?: PartId
 	public identifier?: string
 
 	constructor(document: DBPart) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 	getRundown() {
 		return Rundowns.findOne(this.rundownId)
@@ -147,42 +141,33 @@ export class Part implements DBPart {
 		selector = selector || {}
 		options = options || {}
 		return Pieces.find(
-			_.extend(
-				{
-					rundownId: this.rundownId,
-					partId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1 },
-				},
-				options
-			)
+			{
+				startRundownId: this.rundownId,
+				startPartId: this._id,
+				...selector,
+			},
+			{
+				...options,
+			}
 		).fetch()
 	}
 	getAllPieces() {
 		return this.getPieces()
 	}
 
-	getAdLibPieces(selector?: MongoQuery<Piece>, options?: FindOptions<Piece>) {
+	getAdLibPieces(selector?: MongoQuery<AdLibPiece>, options?: FindOptions<AdLibPiece>) {
 		selector = selector || {}
 		options = options || {}
 		return AdLibPieces.find(
-			_.extend(
-				{
-					rundownId: this.rundownId,
-					partId: this._id,
-				},
-				selector
-			),
-			_.extend(
-				{
-					sort: { _rank: 1, name: 1 },
-				},
-				options
-			)
+			{
+				rundownId: this.rundownId,
+				partId: this._id,
+				...selector,
+			},
+			{
+				...options,
+				sort: { _rank: 1, name: 1, ...options?.sort },
+			}
 		).fetch()
 	}
 	getAllAdLibPieces() {
@@ -209,7 +194,7 @@ export class Part implements DBPart {
 
 		const pieces = this.getPieces()
 		const partLookup = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
-		_.each(pieces, (piece) => {
+		for (let piece of pieces) {
 			// TODO: check statuses (like media availability) here
 
 			if (partLookup && piece.sourceLayerId && partLookup[piece.sourceLayerId]) {
@@ -226,7 +211,7 @@ export class Part implements DBPart {
 					})
 				}
 			}
-		})
+		}
 		return notes
 	}
 	getLastTake() {

@@ -1,30 +1,34 @@
 import { Meteor } from 'meteor/meteor'
 import { lazyIgnore, unprotectString } from '../../lib/lib'
-import { TimelineSecurity } from '../security/timeline'
 import { Timeline, TimelineObjGeneric, getRoutedTimeline, TimelineObjType } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { Studios, getActiveRoutes, StudioId } from '../../lib/collections/Studios'
 import { generateTimelineStatObj } from '../api/playout/timeline'
 import * as _ from 'underscore'
+import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
+import { StudioReadAccess } from '../security/studio'
 
 meteorPublish(PubSub.timeline, function(selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<TimelineObjGeneric> = {
 		fields: {},
 	}
-	if (TimelineSecurity.allowReadAccess(selector, token, this)) {
+	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
 		return Timeline.find(selector, modifier)
 	}
 	return null
 })
 
-meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', (pub, deviceId: PeripheralDeviceId, token) => {
-	if (PeripheralDeviceSecurity.allowReadAccess({ _id: deviceId }, token, this)) {
+meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', function(
+	pub,
+	deviceId: PeripheralDeviceId,
+	token
+) {
+	if (PeripheralDeviceReadAccess.peripheralDeviceContent({ deviceId: deviceId }, { userId: this.userId, token })) {
 		let peripheralDevice = PeripheralDevices.findOne(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')

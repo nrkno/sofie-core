@@ -1,18 +1,9 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { Timeline } from '../../../lib/collections/Timeline'
 import { SourceLayerItem } from './SourceLayerItem'
-import { getCurrentTime, unprotectObject } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import {
-	SourceLayerType,
-	VTContent,
-	LiveSpeakContent,
-	getPieceGroupId,
-} from 'tv-automation-sofie-blueprints-integration'
+import { SourceLayerType, VTContent, LiveSpeakContent } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-// @ts-ignore Meteor package not recognized by Typescript
-import { ComputedField } from 'meteor/peerlibrary:computed-field'
 import { Meteor } from 'meteor/meteor'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { ISourceLayerUi, IOutputLayerUi, SegmentUi, PartUi, PieceUi } from './SegmentTimelineContainer'
@@ -128,7 +119,9 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 						pieceCopy.instance.piece.content.sourceDuration = contentDuration
 					}
 
-					overrides.piece = _.extend(overrides.piece || {}, pieceCopy)
+					overrides.piece = {
+						...pieceCopy,
+					}
 				}
 			} else {
 				console.error(`Piece "${props.piece.instance.piece._id}" has no sourceLayer:`, props.piece)
@@ -139,10 +132,15 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 	}
 
 	componentDidMount() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-			this.updateDataTracker()
-		})
+		window.requestIdleCallback(
+			() => {
+				this.updateMediaObjectSubscription()
+				this.updateDataTracker()
+			},
+			{
+				timeout: 500,
+			}
+		)
 	}
 
 	componentDidUpdate(prevProps: IPropsHeader) {
@@ -150,7 +148,6 @@ export const SourceLayerItemContainer = class SourceLayerItemContainer extends M
 			this.updateMediaObjectSubscription()
 		})
 		if (this.shouldDataTrackerUpdate(prevProps)) {
-			// console.log('Invalidating computation!', this.statusComp.stopped, this.statusComp.invalidated)
 			if (this.statusComp) this.statusComp.invalidate()
 		}
 	}

@@ -16,6 +16,7 @@ import { scrollToSegment } from '../../lib/viewPort'
 import { PartNote, NoteType, GenericNote, TrackedNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
+import { Settings } from '../../../lib/Settings'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -63,6 +64,7 @@ interface IProps {
 	studio: Studio
 	playlist: RundownPlaylist
 	rundownIds: RundownId[]
+	firstRundown: Rundown | undefined
 }
 
 interface IState {
@@ -127,10 +129,10 @@ export const RundownSystemStatus = translateWithTracker(
 		)
 		let playoutDevices = attachedDevices.filter((i) => i.type === PeripheralDeviceAPI.DeviceType.PLAYOUT)
 
-		const [ingest, playout] = _.map([ingestDevices, playoutDevices], (devices) => {
-			const status = _.reduce(
-				devices.filter((i) => !i.ignore),
-				(memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
+		const [ingest, playout] = [ingestDevices, playoutDevices].map((devices) => {
+			const status = devices
+				.filter((i) => !i.ignore)
+				.reduce((memo: PeripheralDeviceAPI.StatusCode, device: PeripheralDevice) => {
 					if (device.connected && memo.valueOf() < device.status.statusCode.valueOf()) {
 						return device.status.statusCode
 					} else if (!device.connected) {
@@ -138,9 +140,7 @@ export const RundownSystemStatus = translateWithTracker(
 					} else {
 						return memo
 					}
-				},
-				PeripheralDeviceAPI.StatusCode.UNKNOWN
-			)
+				}, PeripheralDeviceAPI.StatusCode.UNKNOWN)
 			const onlineOffline: OnLineOffLineList = {
 				onLine: devices.filter(
 					(device) => device.connected && device.status.statusCode < PeripheralDeviceAPI.StatusCode.WARNING_MINOR
@@ -149,7 +149,7 @@ export const RundownSystemStatus = translateWithTracker(
 					(device) => !device.connected || device.status.statusCode >= PeripheralDeviceAPI.StatusCode.WARNING_MINOR
 				),
 			}
-			const lastUpdate = _.reduce(devices, (memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
+			const lastUpdate = devices.reduce((memo, device) => Math.max(device.lastDataReceived || 0, memo), 0)
 			return {
 				status: status,
 				lastUpdate: lastUpdate,
@@ -276,7 +276,9 @@ export const RundownSystemStatus = translateWithTracker(
 								fatal: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
 							})}>
 							<div className="indicator__tooltip">
-								<h4>{t('MOS Connection')}</h4>
+								<h4>
+									{t('{{nrcsName}} Connection', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+								</h4>
 								<div>
 									<h5>{t('Last update')}</h5>
 									<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />

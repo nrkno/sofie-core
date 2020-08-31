@@ -536,9 +536,6 @@ interface DeviceInHierarchy {
 }
 
 export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISystemStatusTrackedProps>(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
 	return {
 		coreSystem: CoreSystem.findOne(),
 		devices: PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(),

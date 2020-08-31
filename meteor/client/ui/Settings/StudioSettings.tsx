@@ -59,6 +59,7 @@ import { PlayoutAPIMethods } from '../../../lib/api/playout'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TransformedCollection } from '../../../lib/typings/meteor'
 import { doUserAction, UserAction } from '../../lib/userAction'
+import { Settings } from '../../../lib/Settings'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -1750,7 +1751,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								object={this.props.studio}
 								layerMappings={this.getLayerMappingsFlat()}
 								collection={Studios}
-								configPath={'config'}
+								configPath={'blueprintConfig'}
 							/>
 						</div>
 					</div>
@@ -1786,7 +1787,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 )
 
 export function setProperty(studio: Studio, property: string, value: any) {
-	// console.log(property, value)
 	let m = {}
 	if (value !== undefined) {
 		m[property] = value

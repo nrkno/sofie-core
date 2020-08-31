@@ -62,7 +62,7 @@ describe('Test sending mos actions', () => {
 
 		try {
 			MOSDeviceActions.reloadRundown(device, rundown)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e).toBe(`unknown annoying error`)
 		}
@@ -150,7 +150,7 @@ describe('Test sending mos actions', () => {
 
 		try {
 			MOSDeviceActions.reloadRundown(device, rundown)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[401] Expected triggerGetRunningOrder reply for SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa but got newId`

@@ -3,6 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
+import { StudioReadAccess } from '../security/studio'
 import { Buckets, Bucket } from '../../lib/collections/Buckets'
 import { FindOptions } from '../../lib/typings/meteor'
 
@@ -11,7 +12,10 @@ meteorPublish(PubSub.buckets, function(selector, token) {
 	const modifier: FindOptions<Bucket> = {
 		fields: {},
 	}
-	if (BucketSecurity.allowReadAccess(selector, token, this)) {
+	if (
+		(selector.studioId && StudioReadAccess.studioContent(selector, this)) ||
+		(selector._id && BucketSecurity.allowReadAccess(selector, token, this))
+	) {
 		return Buckets.find(selector, modifier)
 	}
 	return null
