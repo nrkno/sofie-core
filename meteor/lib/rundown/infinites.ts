@@ -395,7 +395,7 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
-		pieces,
+		pieces.filter((p) => !p.disabled),
 		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
 	for (const pieces of Object.values(groupedPieces)) {
@@ -455,6 +455,16 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 		if (!best.infinite?.fromPrevious && candidate.infinite?.fromPrevious) {
 			// Prefer the best as it is not from previous
 			return true
+		}
+
+		if (best.piece.enable.start === 'now') {
+			// If we are working for the 'now' time, then we are looking at adlibs
+			// All adlib pieces will have a take time, so prefer the later one
+			const take0 = best.piece.timings?.take[0]
+			const take1 = candidate.piece.timings?.take[0]
+			if (take0 !== undefined && take1 !== undefined) {
+				return take1 > take0
+			}
 		}
 
 		// Fallback to id, as we dont have any other criteria and this will be stable.

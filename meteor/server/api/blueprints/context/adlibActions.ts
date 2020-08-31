@@ -231,6 +231,15 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
+		piece.timings = {
+			take: [getCurrentTime()],
+			startedPlayback: [],
+			next: [],
+			stoppedPlayback: [],
+			playOffset: [],
+			takeDone: [],
+			takeOut: [],
+		}
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
