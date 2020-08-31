@@ -539,7 +539,7 @@ function startInstrumenting() {
 			transactionSampleRate: system.apm.transactionSampleRate,
 			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
 		})
-		profiler.setActive(system.apm.enabled || true)
+		profiler.setActive(system.apm.enabled || false)
 	} else {
 		logger.info(`APM agent inactive`)
 		Agent.start({
