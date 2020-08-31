@@ -71,7 +71,6 @@ export class Cache {
 	}
 	async saveAllToDatabase() {
 		const span = profiler.startSpan('Cache.saveAllToDatabase')
-		const startTime = getCurrentTime()
 		this._abortActiveTimeout()
 
 		// shouldn't the deferred functions be executed after updating the db?
@@ -85,7 +84,6 @@ export class Cache {
 				}
 			})
 		)
-		logger.info(`Save all to database took: ${getCurrentTime() - startTime}ms`)
 		if (span) span.end()
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */

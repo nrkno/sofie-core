@@ -1,5 +1,4 @@
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
-import { Settings } from '../../lib/Settings'
 
 class Profiler {
 	private active: boolean = false

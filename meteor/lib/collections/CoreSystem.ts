@@ -88,6 +88,7 @@ export interface ICoreSystem {
 		 */
 		transactionSampleRate?: number
 	}
+	enableMonitorBlockedThread?: boolean
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.
