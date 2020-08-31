@@ -30,7 +30,11 @@ import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInsta
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
 import { profiler } from '../profiler'
-import { hasPieceInstanceDefinitelyEnded } from './timeline'
+import {
+	hasPieceInstanceDefinitelyEnded,
+	SelectedPartInstancesTimelineInfo,
+	SelectedPartInstanceTimelineInfo,
+} from './timeline'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
@@ -124,7 +128,8 @@ function getOrderedPartsAfterPlayhead(
 export async function getLookeaheadObjects(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
-	playlist: RundownPlaylist
+	playlist: RundownPlaylist,
+	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjGeneric>> {
 	const span = profiler.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
@@ -186,59 +191,37 @@ export async function getLookeaheadObjects(
 		}
 	}
 
-	function getPartInstancePieces(partInstance: PartInstance) {
-		const pieceInstances = cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
-			return !!(pieceInstance.partInstanceId === partInstance._id && pieceInstance.piece.content?.timelineObjects)
-		})
-
-		const rundown = cache.Rundowns.findOne(partInstance.rundownId)
-		if (!rundown) {
-			return []
-		}
-
-		const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
-
-		const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
-		const nowInPart = lastStartedPlayback ? getCurrentTime() - lastStartedPlayback : 0
-
-		const resolvedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
-		return resolvedPieces.filter((p) => hasPieceInstanceDefinitelyEnded(p, nowInPart))
+	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
+		return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
 	}
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-		cache,
-		playlist
-	)
-	// Get the PieceInstances which are on the timeline
 	const partInstancesInfo: PartInstanceAndPieceInstances[] = _.compact([
-		currentPartInstance
+		partInstancesInfo0.current
 			? {
-					part: currentPartInstance,
+					part: partInstancesInfo0.current.partInstance,
 					onTimeline: true,
-					allPieces: getPartInstancePieces(currentPartInstance).filter((p) =>
-						hasPieceInstanceDefinitelyEnded(p, 0)
-					),
+					allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.current),
 			  }
 			: undefined,
-		nextPartInstance
+		partInstancesInfo0.next
 			? {
-					part: nextPartInstance,
-					onTimeline: !!currentPartInstance?.part?.autoNext,
-					allPieces: getPartInstancePieces(nextPartInstance),
+					part: partInstancesInfo0.next.partInstance,
+					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext,
+					allPieces: partInstancesInfo0.next.pieceInstances,
 			  }
 			: undefined,
 	])
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartInstanceAndPieceInstances | undefined
-	if (previousPartInstance) {
-		const previousPieces = getPartInstancePieces(previousPartInstance)
+	if (partInstancesInfo0.previous) {
 		previousPartInfo = {
-			part: previousPartInstance,
+			part: partInstancesInfo0.previous.partInstance,
 			onTimeline: true,
-			allPieces: previousPieces,
+			allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.previous),
 		}
 	}
 
-	// TODO: Do we need to use processAndPrunePieceInstanceTimings on these pieces? In theory yes, but that gets messy and expensive
+	// TODO: Do we need to use processAndPrunePieceInstanceTimings on these pieces? In theory yes, but that gets messy and expensive.
+	// In reality, there are not likely to be any/many conflicts if the blueprints are written well so it shouldnt be a problem
 	const piecesToSearch = await pPiecesToSearch
 
 	for (const [layerId, mapping] of mappingsToConsider) {
