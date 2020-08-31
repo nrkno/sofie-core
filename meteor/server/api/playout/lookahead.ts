@@ -22,7 +22,6 @@ import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInsta
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
 import { profiler } from '../profiler'
-import { hasPieceInstanceDefinitelyEnded } from './timeline'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -213,8 +212,7 @@ export async function getLookeaheadObjects(
 		}
 	}
 
-	let piecesToSearch = await pPiecesToSearch
-	piecesToSearch = piecesToSearch.filter((p) => !hasPieceInstanceDefinitelyEnded(p, 0))
+	const piecesToSearch = await pPiecesToSearch
 
 	for (const [layerId, mapping] of mappingsToConsider) {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
