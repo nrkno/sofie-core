@@ -1211,7 +1211,10 @@ export namespace ServerPlayoutAPI {
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
 		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metaData && timelineObj.metaData.pieceId) {
-			logger.debug('Update PieceInstance: ', timelineObj.metaData.pieceId, new Date(time).toTimeString())
+			logger.debug('Update PieceInstance: ', {
+				pieceId: timelineObj.metaData.pieceId,
+				time: new Date(time).toTimeString(),
+			})
 
 			cache.PieceInstances.update(
 				{

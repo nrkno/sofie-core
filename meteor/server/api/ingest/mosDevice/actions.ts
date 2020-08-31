@@ -92,7 +92,7 @@ export namespace MOSDeviceActions {
 		status: MOS.IMOSObjectStatus
 	): Promise<any> {
 		return new Promise((resolve, reject) => {
-			logger.debug('setStoryStatus', deviceId, rundown.externalId, storyId, status)
+			logger.debug('setStoryStatus', { deviceId, externalId: rundown.externalId, storyId, status })
 			PeripheralDeviceAPI.executeFunction(
 				deviceId,
 				(err, result) => {

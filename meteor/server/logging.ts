@@ -24,10 +24,13 @@ interface LoggerInstanceFixed extends Winston.Logger {
 	warning: LeveledLogMethodFixed
 	notice: LeveledLogMethodFixed
 }
+interface LogMeta {
+	[key: string]: any
+}
 interface LeveledLogMethodFixed {
 	(msg: any, callback: Winston.LogCallback): LoggerInstanceFixed
-	(msg: any, meta: any, callback: Winston.LogCallback): LoggerInstanceFixed
-	(msg: any, ...meta: any[]): LoggerInstanceFixed
+	(msg: any, meta: LogMeta, callback: Winston.LogCallback): LoggerInstanceFixed
+	(msg: any, ...meta: LogMeta[]): LoggerInstanceFixed
 }
 let leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
