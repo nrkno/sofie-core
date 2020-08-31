@@ -65,7 +65,7 @@ export namespace MediaScannerIntegration {
 		}
 	}
 	export function clearMediaObjectCollection(deviceId: PeripheralDeviceId, token: string, collectionId: string) {
-		let peripheralDevice = PeripheralDeviceSecurity.getPeripheralDevice(deviceId, token, this)
+		let peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, this)
 
 		const studioId = getStudioIdFromDevice(peripheralDevice)
 
