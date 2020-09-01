@@ -118,7 +118,7 @@ export function updateExpectedPlayoutItemsOnPart(
 	cache.defer(() => {
 		const intermediaryItems = extractExpectedPlayoutItems(part, [
 			...getAllPiecesFromCache(cache, part),
-			...part.getAllAdLibPieces(),
+			...getAllAdLibPiecesFromCache(cache, part),
 		])
 		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
 
