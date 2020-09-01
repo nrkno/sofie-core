@@ -75,9 +75,6 @@ export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id
 	 * This is set from a callback from the playout gateway
 	 */
 	stoppedPlayback?: number
-
-	/** This is set when the piece isn't infinite, but should overflow it's duration onto the adjacent (not just next) part on take */
-	overflows?: boolean
 }
 
 export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')
