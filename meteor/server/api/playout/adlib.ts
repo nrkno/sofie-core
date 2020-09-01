@@ -40,10 +40,15 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
-import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
+import {
+	syncPlayheadInfinitesForNextPartInstance,
+	DEFINITELY_ENDED_FUTURE_DURATION,
+	fetchPiecesThatMayBeActiveForPart,
+} from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
+import { getPieceInstancesForPart } from './infinites'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -273,12 +278,14 @@ export namespace ServerPlayoutAdLibAPI {
 			innerStartQueuedAdLib(cache, rundownPlaylist, rundown, currentPartInstance, newPartInstance, [
 				newPieceInstance,
 			])
+
+			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
 			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
-		}
 
-		syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
+			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
+		}
 
 		updateTimeline(cache, rundownPlaylist.studioId)
 
@@ -406,6 +413,22 @@ export namespace ServerPlayoutAdLibAPI {
 		updatePartRanks(cache, rundownPlaylist, [newPartInstance.part.segmentId])
 
 		setNextPart(cache, rundownPlaylist, newPartInstance)
+
+		// Find and insert any rundown defined infinites that we should inherit
+		const part = cache.Parts.findOne(newPartInstance.part._id)
+		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, part!))
+		const infinitePieceInstances = getPieceInstancesForPart(
+			cache,
+			rundownPlaylist,
+			currentPartInstance,
+			newPartInstance.part,
+			possiblePieces,
+			newPartInstance._id,
+			false
+		)
+		for (const pieceInstance of infinitePieceInstances) {
+			cache.PieceInstances.insert(pieceInstance)
+		}
 
 		if (span) span.end()
 	}

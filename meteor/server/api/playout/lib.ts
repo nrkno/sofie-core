@@ -496,6 +496,22 @@ export function setNextPart(
 		partInstanceId: { $in: instancesIdsToRemove },
 	})
 
+	const dynamicallyInsertedPartsToRemove = nonTakenPartInstances
+		.filter(
+			(p) =>
+				p.part.dynamicallyInsertedAfterPartId &&
+				p._id !== rundownPlaylist.nextPartInstanceId &&
+				p._id !== rundownPlaylist.currentPartInstanceId
+		)
+		.map((p) => p.part._id)
+	if (dynamicallyInsertedPartsToRemove.length > 0) {
+		// TODO-PartInstances - pending new data flow
+		cache.Parts.remove({
+			rundownId: { $in: rundownIds },
+			_id: { $in: dynamicallyInsertedPartsToRemove },
+		})
+	}
+
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
 		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
