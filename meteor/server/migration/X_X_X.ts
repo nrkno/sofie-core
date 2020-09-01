@@ -171,21 +171,20 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					}
 				}
 				if (part) {
-					Pieces.update(
-						piece._id,
-						{
-							$set: {
-								startRundownId: piece.rundownId,
-								startPartId: piece.partId,
-								startSegmentId: part.segmentId,
-							},
-							$unset: {
-								rundownId: 1,
-								partId: 1,
-							},
+					Pieces.update(piece._id, {
+						$set: {
+							startRundownId: piece.rundownId,
+							startPartId: piece.partId,
+							startSegmentId: part.segmentId,
 						},
-						{ multi: true }
-					)
+						$unset: {
+							rundownId: 1,
+							partId: 1,
+						},
+					})
+				} else {
+					// If the Piece has no part, it's an orphan and should be removed
+					Pieces.remove(piece._id)
 				}
 			})
 		},

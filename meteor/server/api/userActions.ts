@@ -53,7 +53,7 @@ import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './profiler'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -791,7 +791,7 @@ export function noop(context: MethodContext) {
 }
 
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
-	const transaction = Agent.startTransaction(description, 'userAction')
+	const transaction = profiler.startTransaction(description, 'userAction')
 	return makePromise(() => {
 		const res = fn(...args)
 		if (transaction) transaction.end()
