@@ -124,7 +124,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 			timeline: timelineObjs,
 		},
 		responseType: 'text',
-	}).then(console.log)
+	}).then(console.log, console.log)
 
 	cache.Timeline.upsert(
 		{
