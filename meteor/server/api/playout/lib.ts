@@ -735,8 +735,8 @@ export function getRundownIDsFromCache(cache: CacheForRundownPlaylist, playlist:
 /** Get all pieces in a part */
 export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
 	return cache.Pieces.findFetch({
-		rundownId: part.rundownId,
-		partId: part._id,
+		startRundownId: part.rundownId,
+		startPartId: part._id,
 	})
 }
 /** Get all adlib pieces in a part */
