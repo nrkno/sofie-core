@@ -1,17 +1,6 @@
-import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
-import {
-	getCurrentTime,
-	waitForPromise,
-	makePromise,
-	unprotectObjectArray,
-	protectString,
-	literal,
-	clone,
-	getRandomId,
-	omit,
-	asyncCollectionFindOne,
-} from '../../../lib/lib'
+import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -28,17 +17,16 @@ import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
-import { PartEndState, PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { getResolvedPieces } from './pieces'
 import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { StudioId } from '../../../lib/collections/Studios'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
@@ -138,7 +126,6 @@ export function takeNextPartInnerSync(
 	const nextPart = selectNextPart(playlist, takePartInstance, partsInOrder)
 
 	// beforeTake(rundown, previousPart || null, takePart)
-	copyOverflowingPieces(cache, partsInOrder, previousPartInstance || null, takePartInstance)
 
 	const { blueprint } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
@@ -317,67 +304,6 @@ export function takeNextPartInnerSync(
 
 	if (span) span.end()
 	return ClientAPI.responseSuccess(undefined)
-}
-
-function copyOverflowingPieces(
-	cache: CacheForRundownPlaylist,
-	partsInOrder: Part[],
-	currentPartInstance: PartInstance | null,
-	nextPartInstance: PartInstance
-) {
-	// TODO-PartInstance - is this going to work? It needs some work to handle part data changes
-	if (currentPartInstance) {
-		const adjacentPart = partsInOrder.find((part) => {
-			return part.segmentId === currentPartInstance.segmentId && part._rank > currentPartInstance.part._rank
-		})
-		if (!adjacentPart || adjacentPart._id !== nextPartInstance.part._id) {
-			// adjacent Part isn't the next part, do not overflow
-			return
-		}
-		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: currentPartInstance._id })
-		currentPieces.forEach((instance) => {
-			if (
-				instance.piece.overflows &&
-				typeof instance.piece.enable.duration === 'number' &&
-				instance.piece.enable.duration > 0 &&
-				instance.userDuration === undefined
-			) {
-				// Subtract the amount played from the duration
-				const remainingDuration = Math.max(
-					0,
-					instance.piece.enable.duration -
-						((instance.piece.startedPlayback ||
-							currentPartInstance.part.getLastStartedPlayback() ||
-							getCurrentTime()) -
-							getCurrentTime())
-				)
-
-				// TODO - won't this need some help seeking if a clip?
-
-				if (remainingDuration > 0) {
-					// Clone an overflowing piece
-					let overflowedItem = literal<PieceInstance>({
-						_id: getRandomId(),
-						rundownId: instance.rundownId,
-						partInstanceId: nextPartInstance._id,
-						dynamicallyInserted: getCurrentTime(),
-						piece: {
-							...omit(instance.piece, 'startedPlayback', 'overflows'),
-							_id: getRandomId(),
-							startPartId: nextPartInstance.part._id,
-							enable: {
-								start: 0,
-								duration: remainingDuration,
-							},
-							continuesRefId: instance.piece._id,
-						},
-					})
-
-					cache.PieceInstances.insert(overflowedItem)
-				}
-			}
-		})
-	}
 }
 
 export function afterTake(
