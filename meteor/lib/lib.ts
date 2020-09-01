@@ -17,7 +17,6 @@ import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints
 import * as crypto from 'crypto'
 import { DeepReadonly } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
-import { profiler } from '../server/api/profiler'
 
 const cloneOrg = require('fast-clone')
 
@@ -118,12 +117,10 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
-	const span = profiler.startSpan('lib.saveIntoDb')
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
 	const changes = savePreparedChanges(preparedChanges, collection, options)
 
-	span?.end()
 	return changes
 }
 export interface PreparedChanges<T> {
