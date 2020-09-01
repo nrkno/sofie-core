@@ -1,20 +1,15 @@
 import { check as MeteorCheck, Match as orgMatch } from 'meteor/check'
-import { profiler } from '../server/api/profiler'
 
 /* tslint:disable variable-name */
 
 export function check(value: any, pattern: Match.Pattern) {
-	const span = profiler.startSpan('lib.check')
 	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
 	if (checkDisabled) {
-		span?.setLabel('checkDisabled', true)
-		span?.end()
 		return
 	}
 
 	const passed = MeteorCheck(value, pattern)
 
-	span?.end()
 	return passed
 }
 // todo: checkTOBEMOVED
