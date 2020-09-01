@@ -10,10 +10,6 @@ import { PartId, PartTimings } from '../../../lib/collections/Parts'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
-import { TransformedCollection } from '../../../lib/typings/meteor'
-import { createMongoCollection } from '../../../lib/collections/lib'
-import { Timeline as Timeline120 } from '../../../lib/collections/Timeline'
 
 export interface Part {
 	// extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {
