@@ -98,7 +98,7 @@ export function createPieceGroupFirstObject(
 			callBackData: {
 				rundownPlaylistId: playlistId,
 				pieceInstanceId: pieceInstance._id,
-				dynamicallyInserted: pieceInstance.dynamicallyInserted,
+				dynamicallyInserted: pieceInstance.dynamicallyInserted !== undefined,
 			},
 			callBackStopped: 'piecePlaybackStopped', // Will cause a callback to be called, when the object stops playing:
 		},
@@ -342,7 +342,7 @@ export function convertAdLibToPieceInstance(
 		rundownId: partInstance.rundownId,
 		partInstanceId: partInstance._id,
 		adLibSourceId: adLibPiece._id,
-		dynamicallyInserted: !queue,
+		dynamicallyInserted: queue ? undefined : getCurrentTime(),
 		piece: literal<PieceInstancePiece>({
 			...(_.omit(
 				adLibPiece,

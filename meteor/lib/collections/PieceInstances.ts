@@ -51,8 +51,8 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId
-	/** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
-	dynamicallyInserted?: boolean
+	/** If this piece has been insterted during run of rundown (such as adLibs), then this is set to the timestamp it was inserted */
+	dynamicallyInserted?: Time
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: {

@@ -3,7 +3,7 @@ import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { PieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
-import { literal, protectString } from '../../../lib/lib'
+import { literal, protectString, getCurrentTime } from '../../../lib/lib'
 import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
 import { processAndPrunePieceInstanceTimings } from '../infinites'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -48,7 +48,7 @@ describe('Infinites', () => {
 				status: -1,
 				virtual: clear,
 			}),
-			dynamicallyInserted: clear,
+			dynamicallyInserted: clear ? getCurrentTime() : undefined,
 		})
 	}
 

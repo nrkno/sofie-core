@@ -417,8 +417,6 @@ describe('test peripheralDevice general API methods', () => {
 			expect(tlObj.enable.start).toBeGreaterThan(0)
 		})
 
-		expect(ServerPlayoutAPI.timelineTriggerTimeUpdateCallback).toHaveBeenCalled()
-
 		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)
 	})
 
