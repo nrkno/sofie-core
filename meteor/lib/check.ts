@@ -4,8 +4,13 @@ import { check as MeteorCheck, Match as orgMatch } from 'meteor/check'
 
 export function check(value: any, pattern: Match.Pattern) {
 	// This is a wrapper for Meteor.check, since that asserts the returned type too strictly
-	if (checkDisabled) return
-	return MeteorCheck(value, pattern)
+	if (checkDisabled) {
+		return
+	}
+
+	const passed = MeteorCheck(value, pattern)
+
+	return passed
 }
 // todo: checkTOBEMOVED
 export namespace Match {

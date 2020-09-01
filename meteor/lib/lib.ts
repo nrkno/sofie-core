@@ -17,6 +17,7 @@ import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints
 import * as crypto from 'crypto'
 import { DeepReadonly } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+
 const cloneOrg = require('fast-clone')
 
 export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
@@ -118,7 +119,9 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 ): Changes {
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
-	return savePreparedChanges(preparedChanges, collection, options)
+	const changes = savePreparedChanges(preparedChanges, collection, options)
+
+	return changes
 }
 export interface PreparedChanges<T> {
 	inserted: T[]

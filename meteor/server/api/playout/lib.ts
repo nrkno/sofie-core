@@ -725,7 +725,12 @@ export function getRundownsFromCache(cache: CacheForRundownPlaylist, playlist: R
 	)
 }
 export function getRundownIDsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	return getRundownsFromCache(cache, playlist).map((r) => r._id)
+	const span = profiler.startSpan('playout.getRundownIDsFromCache')
+
+	const ids = getRundownsFromCache(cache, playlist).map((r) => r._id)
+
+	span?.end()
+	return ids
 }
 /** Get all pieces in a part */
 export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
@@ -767,6 +772,8 @@ export function getSelectedPartInstancesFromCache(
 	nextPartInstance: PartInstance | undefined
 	previousPartInstance: PartInstance | undefined
 } {
+	const span = profiler.startSpan('playout.getSelectedPartInstancesFromCache')
+
 	if (!rundownIds) {
 		rundownIds = getRundownIDsFromCache(cache, playlist)
 	}
@@ -775,16 +782,22 @@ export function getSelectedPartInstancesFromCache(
 		rundownId: { $in: rundownIds },
 		reset: { $ne: true },
 	}
+
+	const currentPartInstance = playlist.currentPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
+		: undefined
+	const nextPartInstance = playlist.nextPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
+		: undefined
+	const previousPartInstance = playlist.previousPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
+		: undefined
+
+	span?.end()
 	return {
-		currentPartInstance: playlist.currentPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
-			: undefined,
-		nextPartInstance: playlist.nextPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
-			: undefined,
-		previousPartInstance: playlist.previousPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
-			: undefined,
+		currentPartInstance,
+		nextPartInstance,
+		previousPartInstance,
 	}
 }
 

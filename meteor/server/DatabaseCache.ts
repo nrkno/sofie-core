@@ -427,6 +427,8 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ): PreparedChanges<DBInterface> {
+	const span = profiler.startSpan(`DBCache.prepareSaveIntoCache.${collection.name}`)
+
 	let preparedChanges: PreparedChanges<DBInterface> = {
 		inserted: [],
 		changed: [],
@@ -488,6 +490,8 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 			preparedChanges.removed.push(oRemove)
 		}
 	})
+
+	span?.end()
 	return preparedChanges
 }
 export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
@@ -495,6 +499,8 @@ export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInt
 	collection: DbCacheWriteCollection<DocClass, DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ) {
+	const span = profiler.startSpan(`DBCache.savePreparedChangesIntoCache.${collection.name}`)
+
 	let change: Changes = {
 		added: 0,
 		updated: 0,
@@ -560,5 +566,6 @@ export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInt
 		}
 	}
 
+	span?.end()
 	return change
 }
