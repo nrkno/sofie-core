@@ -80,6 +80,11 @@ import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
 import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
+import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import {
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibAction,
+} from '../../lib/collections/RundownBaselineAdLibActions'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -116,6 +121,8 @@ interface RundownPlaylistSnapshot {
 	pieces: Array<Piece>
 	pieceInstances: Array<PieceInstance>
 	adLibPieces: Array<AdLibPiece>
+	adLibActions: Array<AdLibAction>
+	baselineAdLibActions: Array<RundownBaselineAdLibAction>
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
@@ -186,6 +193,8 @@ function createRundownPlaylistSnapshot(
 	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const adLibActions = AdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
+	const baselineAdLibActions = RundownBaselineAdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
 	const mediaObjectIds: Array<string> = [
 		...pieces
 			.filter((piece) => piece.content && piece.content.fileName)
@@ -228,6 +237,8 @@ function createRundownPlaylistSnapshot(
 		pieces,
 		pieceInstances,
 		adLibPieces,
+		adLibActions,
+		baselineAdLibActions,
 		mediaObjects,
 		expectedMediaItems,
 		expectedPlayoutItems,
@@ -746,12 +757,18 @@ export function restoreFromRundownPlaylistSnapshot(
 		{ rundownId: { $in: rundownIds } },
 		updateItemIds(snapshot.baselineAdlibs, true)
 	)
+	saveIntoDb(
+		RundownBaselineAdLibActions,
+		{ rundownId: { $in: rundownIds } },
+		updateItemIds(snapshot.baselineAdLibActions, true)
+	)
 	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
 	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
 	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
 	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
 	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
+	saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true))
 	saveIntoDb(
 		MediaObjects,
 		{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
