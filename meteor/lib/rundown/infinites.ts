@@ -460,8 +460,8 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 		if (best.piece.enable.start === 'now') {
 			// If we are working for the 'now' time, then we are looking at adlibs
 			// All adlib pieces will have a take time, so prefer the later one
-			const take0 = best.piece.timings?.take[0]
-			const take1 = candidate.piece.timings?.take[0]
+			const take0 = best.dynamicallyInserted
+			const take1 = candidate.dynamicallyInserted
 			if (take0 !== undefined && take1 !== undefined) {
 				return take1 > take0
 			}

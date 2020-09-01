@@ -351,7 +351,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (originalOnly) {
 			// Ignore adlibs if using original only
 			query.dynamicallyInserted = {
-				$ne: true,
+				$exists: false,
 			}
 		}
 
@@ -421,7 +421,7 @@ export namespace ServerPlayoutAdLibAPI {
 		// Ensure it is labelled as dynamic
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
-		newPieceInstance.dynamicallyInserted = true
+		newPieceInstance.dynamicallyInserted = getCurrentTime()
 
 		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
@@ -505,7 +505,7 @@ export namespace ServerPlayoutAdLibAPI {
 								currentPartInstance.rundownId,
 								currentPartInstance._id
 							),
-							dynamicallyInserted: true,
+							dynamicallyInserted: getCurrentTime(),
 							infinite: {
 								infinitePieceId: pieceId,
 							},
