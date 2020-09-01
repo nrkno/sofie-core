@@ -345,7 +345,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						'keyup',
 						this.props.hotkeyGroup
 					)
-					this.usedHotkeys.push(item.hotkey, this.props.hotkeyGroup)
+					this.usedHotkeys.push(item.hotkey)
 
 					registerHotkey(
 						item.hotkey,
