@@ -12,6 +12,8 @@ import {
 	isDbCacheReadCollection,
 	isDbCacheWriteCollection,
 	DbCacheWriteCollection,
+	DbCacheReadObject,
+	isDbCacheWriteObject,
 } from './DatabaseCache'
 import { Segment, Segments, DBSegment } from '../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../lib/collections/Parts'
@@ -36,7 +38,7 @@ import { profiler } from './api/profiler'
 type DeferredFunction<Cache> = (cache: Cache) => void
 
 /** This cache contains data relevant in a studio */
-export class Cache {
+export abstract class Cache {
 	private _deferredFunctions: DeferredFunction<Cache>[] = []
 	private _activeTimeout: number | null = null
 
@@ -82,6 +84,9 @@ export class Cache {
 				if (isDbCacheWriteCollection(db)) {
 					await db.updateDatabaseWithData()
 				}
+				if (isDbCacheWriteObject(db)) {
+					await db.savePendingUpdateToDatabase()
+				}
 			})
 		)
 		if (span) span.end()
@@ -91,6 +96,25 @@ export class Cache {
 		this._deferredFunctions.push(fcn)
 	}
 }
+
+export class CacheForPlayout extends Cache {
+	readonly studio: DbCacheReadObject<Studio, Studio>
+
+	private constructor() {
+		super()
+
+		this.studio = new DbCacheReadObject<Studio, Studio>(Studios)
+	}
+
+	async create(studioId: StudioId): Promise<CacheForPlayout> {
+		const res = new CacheForPlayout()
+
+		await res.studio._initialize(studioId)
+
+		return res
+	}
+}
+
 export class CacheForStudioBase extends Cache {
 	containsDataFromStudio: StudioId // Just to get the typings to alert on different cache types
 
@@ -224,6 +248,11 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		return super.defer(fcn)
 	}
 }
+
+export class CacheForRundownPlaylistIngest extends CacheForRundownPlaylist {
+	public readonly isIngest = true
+}
+
 function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
 	return new CacheForRundownPlaylist(studioId, playlistId)
 }

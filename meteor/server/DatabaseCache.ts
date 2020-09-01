@@ -15,11 +15,16 @@ import {
 	waitForPromise,
 	asyncCollectionBulkWrite,
 	PreparedChanges,
+	asyncCollectionFindOne,
+	asyncCollectionUpdate,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
 import { BulkWriteOperation } from 'mongodb'
 import { profiler } from './api/profiler'
+import { DeepReadonly } from 'utility-types'
+import { extname } from 'path'
+import { DBPartInstance } from '../lib/collections/PartInstances'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
@@ -27,6 +32,94 @@ export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any,
 export function isDbCacheWriteCollection(o: any): o is DbCacheWriteCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.updateDatabaseWithData)
 }
+export function isDbCacheWriteObject(o: any): o is DbCacheWriteObject<any, any> {
+	return !!(o && typeof o === 'object' && o.savePendingUpdateToDatabase)
+}
+
+export class DbCacheReadObject<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
+	protected _document: Class
+	private _initialized = false
+
+	constructor(protected _collection: TransformedCollection<Class, DBInterface>) {
+		//
+	}
+	get name(): string | undefined {
+		return this._collection['name']
+	}
+
+	async _initialize(id: DBInterface['_id']): Promise<void> {
+		if (!this._initialized) {
+			const doc = await asyncCollectionFindOne<Class, DBInterface>(this._collection, id)
+			if (!doc) {
+				throw new Meteor.Error(
+					404,
+					`DbCacheReadObject population for "${this.name}" failed. Document "${id}" was not found`
+				)
+			}
+			this._document = doc
+		}
+	}
+
+	get doc(): DeepReadonly<Class> {
+		return this._document as any
+	}
+}
+
+export class DbCacheWriteObject<
+	Class extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+> extends DbCacheReadObject<Class, DBInterface> {
+	private _updated = false
+
+	constructor(collection: TransformedCollection<Class, DBInterface>) {
+		super(collection)
+	}
+
+	update(modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>): void {
+		let newDoc: DBInterface = _.isFunction(modifier)
+			? modifier(clone(this.doc))
+			: mongoModify({}, clone(this.doc), modifier)
+
+		if (unprotectString(newDoc._id) !== unprotectString(this.doc._id)) {
+			throw new Meteor.Error(
+				500,
+				`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
+			)
+		}
+
+		if (!_.isEqual(this.doc, newDoc)) {
+			newDoc = this._transform(newDoc)
+
+			_.each(_.uniq([..._.keys(newDoc), ..._.keys(this.doc)]), (key) => {
+				this.doc[key] = newDoc[key]
+			})
+
+			this._updated = true
+		}
+	}
+
+	async savePendingUpdateToDatabase() {
+		if (this._updated) {
+			const span = profiler.startSpan(`DbCacheWriteObject.savePendingUpdateToDatabase.${this.name}`)
+
+			const pUpdate = await asyncCollectionUpdate(this._collection, this._document._id, this._document)
+			if (pUpdate < 1) {
+				throw new Meteor.Error(500, `Failed to update`)
+			}
+
+			if (span) span.end()
+		}
+	}
+
+	protected _transform(doc: DBInterface): Class {
+		// @ts-ignore hack: using internal function in collection
+		const transform = this._collection._transform
+		if (transform) {
+			return transform(doc)
+		} else return doc as Class
+	}
+}
+
 /** Caches data, allowing reads from cache, but not writes */
 export class DbCacheReadCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
 	documents: { [_id: string]: DbCacheCollectionDocument<Class> } = {}
