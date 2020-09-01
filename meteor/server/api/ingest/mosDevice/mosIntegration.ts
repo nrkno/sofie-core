@@ -19,7 +19,7 @@ import {
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../../lib/api/methods'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../../profiler'
 
 const apmNamespace = 'mosIntegration'
 
@@ -30,7 +30,7 @@ export namespace MosIntegration {
 		token: string,
 		rundown: MOS.IMOSRunningOrder
 	) {
-		const transaction = Agent.startTransaction('mosRoCreate', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoCreate', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -48,7 +48,7 @@ export namespace MosIntegration {
 		token: string,
 		rundown: MOS.IMOSRunningOrder
 	) {
-		const transaction = Agent.startTransaction('mosRoReplace', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoReplace', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -67,7 +67,7 @@ export namespace MosIntegration {
 		rundownId: MOS.MosString128,
 		force?: boolean
 	) {
-		const transaction = Agent.startTransaction('mosRoDelete', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoDelete', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -83,7 +83,7 @@ export namespace MosIntegration {
 		token: string,
 		rundownData: MOS.IMOSRunningOrderBase
 	) {
-		const transaction = Agent.startTransaction('mosRoMetadata', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoMetadata', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -101,7 +101,7 @@ export namespace MosIntegration {
 		token: string,
 		status: MOS.IMOSRunningOrderStatus
 	) {
-		const transaction = Agent.startTransaction('mosRoStatus', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoStatus', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -127,7 +127,7 @@ export namespace MosIntegration {
 		token: string,
 		status: MOS.IMOSStoryStatus
 	) {
-		const transaction = Agent.startTransaction('mosRoStoryStatus', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoStoryStatus', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -176,7 +176,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.IMOSROStory>
 	) {
-		const transaction = Agent.startTransaction('mosRoStoryInsert', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoStoryInsert', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -195,7 +195,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.IMOSROStory>
 	) {
-		const transaction = Agent.startTransaction('mosRoStoryReplace', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoStoryReplace', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -214,7 +214,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSStoryAction,
 		Stories: Array<MOS.MosString128>
 	) {
-		const transaction = Agent.startTransaction('mosRoStoryMove', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoStoryMove', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -232,7 +232,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSROAction,
 		Stories: Array<MOS.MosString128>
 	) {
-		const transaction = Agent.startTransaction('mosRoStoryDelete', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoStoryDelete', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -251,7 +251,7 @@ export namespace MosIntegration {
 		StoryID0: MOS.MosString128,
 		StoryID1: MOS.MosString128
 	) {
-		const transaction = Agent.startTransaction('mosRoStorySwap', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoStorySwap', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -268,7 +268,7 @@ export namespace MosIntegration {
 		token: string,
 		Action: MOS.IMOSROReadyToAir
 	) {
-		const transaction = Agent.startTransaction('mosRoReadyToAir', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoReadyToAir', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -298,7 +298,7 @@ export namespace MosIntegration {
 		token: string,
 		story: MOS.IMOSROFullStory
 	) {
-		const transaction = Agent.startTransaction('mosRoFullStory', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoFullStory', apmNamespace)
 
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -320,7 +320,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSStoryAction,
 		Items: Array<MOS.MosString128>
 	) {
-		const transaction = Agent.startTransaction('mosRoItemDelete', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoItemDelete', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -337,7 +337,7 @@ export namespace MosIntegration {
 		token: string,
 		status: MOS.IMOSItemStatus
 	) {
-		const transaction = Agent.startTransaction('mosRoItemStatus', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoItemStatus', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -355,7 +355,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
 	) {
-		const transaction = Agent.startTransaction('mosRoItemInsert', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoItemInsert', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -373,7 +373,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.IMOSItem>
 	) {
-		const transaction = Agent.startTransaction('mosRoItemReplace', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoItemReplace', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -391,7 +391,7 @@ export namespace MosIntegration {
 		Action: MOS.IMOSItemAction,
 		Items: Array<MOS.MosString128>
 	) {
-		const transaction = Agent.startTransaction('mosRoItemMove', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoItemMove', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
 
@@ -410,7 +410,7 @@ export namespace MosIntegration {
 		ItemID0: MOS.MosString128,
 		ItemID1: MOS.MosString128
 	) {
-		const transaction = Agent.startTransaction('mosRoItemSwap', apmNamespace)
+		const transaction = profiler.startTransaction('mosRoItemSwap', apmNamespace)
 
 		checkAccessAndGetPeripheralDevice(id, token, context)
 

@@ -12,7 +12,7 @@ import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../.
 import { User, UserId, Users } from '../../../lib/collections/Users'
 import { ShowStyleBaseId, ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../../api/profiler'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
@@ -196,7 +196,7 @@ export function allowAccessToPeripheralDeviceContent(
 	cred0: Credentials | ResolvedCredentials,
 	deviceId: MongoQueryKey<PeripheralDeviceId>
 ): Access<PeripheralDevice | null> {
-	const span = Agent.startSpan('security.lib.security.allowAccessToPeripheralDeviceContent')
+	const span = profiler.startSpan('security.lib.security.allowAccessToPeripheralDeviceContent')
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!deviceId) return noAccess('deviceId missing')
 	if (!isProtectedString(deviceId)) return noAccess('deviceId is not a string')

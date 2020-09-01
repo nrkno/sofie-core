@@ -27,6 +27,8 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
+import { Settings } from '../../lib/Settings'
+import { languageOr } from '../lib/language'
 import { SplitDropdown } from '../lib/SplitDropdown'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../lib/UIStateStorage'
@@ -322,9 +324,6 @@ interface IRundownsListState {
 }
 
 export const RundownList = translateWithTracker(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
 	const studios = Studios.find().fetch()
 	const showStyleBases = ShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
@@ -615,7 +614,19 @@ export const RundownList = translateWithTracker(() => {
 										<tbody>
 											<tr className="hl">
 												<th colSpan={10} className="pvn phn">
-													<h2 className="mtm mbs mhn">{t('Unsynced from MOS')}</h2>
+													<h2 className="mtm mbs mhn">
+														{t('Unsynced from {{nrcsNames}}', {
+															nrcsNames:
+																languageOr(
+																	t,
+																	_.flatten(
+																		unsyncedRundownPlaylists.map((p) =>
+																			p.unsyncedRundowns.map((r) => r.externalNRCSName)
+																		)
+																	)
+																) || 'NRCS',
+														})}
+													</h2>
 												</th>
 											</tr>
 										</tbody>
@@ -652,7 +663,6 @@ export const RundownList = translateWithTracker(() => {
 												{t('Status Messages:')}
 												<ul>
 													{this.state.systemStatus._internal.messages.map((message, i) => {
-														// console.log(message)
 														return <li key={i}>{message}</li>
 													})}
 												</ul>

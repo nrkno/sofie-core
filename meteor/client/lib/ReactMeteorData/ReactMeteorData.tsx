@@ -39,7 +39,6 @@ class MeteorDataManager {
 	}
 
 	static runUpdates() {
-		// console.log(`running ${globalTrackerQueue.length} queued updates`)
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined

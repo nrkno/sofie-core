@@ -444,6 +444,7 @@ export interface IAdLibPanelProps {
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 	registerHotkeys?: boolean
+	hotkeyGroup: string
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
@@ -863,8 +864,6 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 	}
 }
 
-const HOTKEY_GROUP = 'AdLibPanel'
-
 export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibPanelTrackedProps>(
 	(props: Translated<IAdLibPanelProps>) => {
 		const d = fetchAndFilter(props)
@@ -944,8 +943,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 			this.usedHotkeys.length = 0
 
 			if (this.props.liveSegment && this.props.liveSegment !== prevProps.liveSegment && this.state.followLive) {
@@ -959,8 +958,8 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 
 		componentWillUnmount() {
 			this._cleanUp()
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', HOTKEY_GROUP)
-			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', HOTKEY_GROUP)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
+			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 
 			this.usedHotkeys.length = 0
 
@@ -978,7 +977,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			if (this.props.liveSegment && this.props.liveSegment.pieces) {
 				this.props.liveSegment.pieces.forEach((item) => {
 					if (item.hotkey) {
-						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							item.hotkey,
 							(e: ExtendedKeyboardEvent) => {
@@ -986,14 +985,14 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 								this.onToggleAdLib(item, false, e)
 							},
 							'keyup',
-							HOTKEY_GROUP
+							this.props.hotkeyGroup
 						)
 						this.usedHotkeys.push(item.hotkey)
 
 						const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 						if (sourceLayer && sourceLayer.isQueueable) {
 							const queueHotkey = [RundownViewKbdShortcuts.ADLIB_QUEUE_MODIFIER, item.hotkey].join('+')
-							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', HOTKEY_GROUP)
+							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 							mousetrapHelper.bind(
 								queueHotkey,
 								(e: ExtendedKeyboardEvent) => {
@@ -1001,7 +1000,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 									this.onToggleAdLib(item, true, e)
 								},
 								'keyup',
-								HOTKEY_GROUP
+								this.props.hotkeyGroup
 							)
 							this.usedHotkeys.push(queueHotkey)
 						}
@@ -1055,7 +1054,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		onSelectAdLib = (piece: IAdLibListItem) => {
-			// console.log(aSLine)
 			this.props.onSelectPiece && this.props.onSelectPiece(piece as AdLibPieceUi)
 		}
 
@@ -1130,7 +1128,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
-			// console.log(sourceLayer)
 			const { t } = this.props
 			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -1146,7 +1143,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		onSelectSegment = (segment: AdlibSegmentUi) => {
-			// console.log(segment)
 			this.setState({
 				selectedSegment: segment,
 				followLive: this.props.liveSegment ? segment._id === this.props.liveSegment._id : true,
@@ -1175,10 +1171,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		renderListView(withSegments?: boolean) {
-			// let a = new AdLibPanelToolbar({
-			// t: () => {},
-			// onFilterChange: () => { console.log('a') }
-			// })
 			return (
 				<React.Fragment>
 					<AdLibPanelToolbar onFilterChange={this.onFilterChange} noSegments={!withSegments} />

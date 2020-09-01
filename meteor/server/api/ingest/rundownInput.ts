@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceId, getExternalNRCSName } from '../../../lib/collections/PeripheralDevices'
 import { Rundown, Rundowns, DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { Part, DBPart, PartId } from '../../../lib/collections/Parts'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -37,7 +37,7 @@ import {
 	updatePartRanks,
 	produceRundownPlaylistInfo,
 } from '../rundown'
-import { loadShowStyleBlueprints, getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
@@ -116,7 +116,7 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -305,7 +305,7 @@ function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 }
 
 export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
-	const span = Agent.startSpan('rundownInput.handleRemovedRundown')
+	const span = profiler.startSpan('rundownInput.handleRemovedRundown')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownId(studio, rundownExternalId)
@@ -414,7 +414,7 @@ export function updateRundownAndSaveCache(
 	updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, peripheralDevice)
 }
 export function regenerateRundown(rundownId: RundownId) {
-	const span = Agent.startSpan('ingest.rundownInput.regenerateRundown')
+	const span = profiler.startSpan('ingest.rundownInput.regenerateRundown')
 
 	logger.info(`Regenerating rundown ${rundownId}`)
 	const existingDbRundown = Rundowns.findOne(rundownId)
@@ -438,7 +438,7 @@ function updateRundownFromIngestData(
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): boolean {
-	const span = Agent.startSpan('ingest.rundownInput.updateRundownFromIngestData')
+	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
 
 	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, existingDbRundown)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
@@ -449,7 +449,7 @@ function updateRundownFromIngestData(
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprints(showStyle.base).blueprint
+	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base).blueprint
 	const notesContext = new NotesContext(
 		`${showStyle.base.name}-${showStyle.variant.name}`,
 		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
@@ -508,15 +508,21 @@ function updateRundownFromIngestData(
 				created: 0, // omitted, set later, below
 				modified: 0, // omitted, set later, below
 				peripheralDeviceId: protectString(''), // omitted, set later, below
+				externalNRCSName: '', // omitted, set later, below
 				dataSource: '', // omitted, set later, below
 				playlistId: protectString<RundownPlaylistId>(''), // omitted, set later, in produceRundownPlaylistInfo
 				_rank: 0, // omitted, set later, in produceRundownPlaylistInfo
 			}),
-			['created', 'modified', 'peripheralDeviceId', 'dataSource', 'playlistId', '_rank']
+			['created', 'modified', 'peripheralDeviceId', 'externalNRCSName', 'dataSource', 'playlistId', '_rank']
 		)
 	)
 	if (peripheralDevice) {
 		dbRundownData.peripheralDeviceId = peripheralDevice._id
+		dbRundownData.externalNRCSName = getExternalNRCSName(peripheralDevice)
+	} else {
+		if (!dbRundownData.externalNRCSName) {
+			dbRundownData.externalNRCSName = getExternalNRCSName(undefined)
+		}
 	}
 	if (dataSource) {
 		dbRundownData.dataSource = dataSource
@@ -650,7 +656,7 @@ function updateRundownFromIngestData(
 	const adlibPieces: AdLibPiece[] = []
 	const adlibActions: AdLibAction[] = []
 
-	const { blueprint, blueprintId } = getBlueprintOfRundown(showStyle.base, dbRundown)
+	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
 
 	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
@@ -1079,10 +1085,12 @@ function updateSegmentFromIngestData(
 	rundown: Rundown,
 	ingestSegment: IngestSegment
 ): SegmentId | null {
-	const span = Agent.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
+	const span = profiler.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
 
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
-	const { blueprint, blueprintId } = getBlueprintOfRundown(undefined, rundown)
+	const { blueprint, blueprintId } = loadShowStyleBlueprint(
+		waitForPromise(cache.activationCache.getShowStyleBase(rundown))
+	)
 
 	const existingSegment = cache.Segments.findOne({
 		_id: segmentId,
@@ -1325,7 +1333,7 @@ export function handleUpdatedPartInner(
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ) {
-	const span = Agent.startSpan('ingest.rundownInput.handleUpdatedPartInner')
+	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedPartInner')
 
 	// Updated OR created part
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
@@ -1375,7 +1383,7 @@ function generateSegmentContents(
 	existingParts: DBPart[],
 	blueprintRes: BlueprintResultSegment
 ) {
-	const span = Agent.startSpan('ingest.rundownInput.generateSegmentContents')
+	const span = profiler.startSpan('ingest.rundownInput.generateSegmentContents')
 
 	const rundownId = context._rundown._id
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
@@ -1487,7 +1495,7 @@ export function isUpdateAllowed(
 	segmentChanges?: Partial<PreparedChanges<DBSegment>>,
 	partChanges?: Partial<PreparedChanges<DBPart>>
 ): boolean {
-	const span = Agent.startSpan('rundownInput.isUpdateAllowed')
+	const span = profiler.startSpan('rundownInput.isUpdateAllowed')
 
 	let allowed: boolean = true
 

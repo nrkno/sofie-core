@@ -15,7 +15,7 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '../../../lib/rundown/infinites'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 // /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 10 * 1000
@@ -30,7 +30,7 @@ function canContinueAdlibOnEndInfinites(
 	part: DBPart
 ): boolean {
 	if (previousPartInstance && playlist) {
-		const span = Agent.startSpan('canContinueAdlibOnEndInfinites')
+		const span = profiler.startSpan('canContinueAdlibOnEndInfinites')
 		// TODO - if we don't have an index for previousPartInstance, what should we do?
 
 		const expectedNextPart = selectNextPart(playlist, previousPartInstance, orderedParts)
@@ -62,7 +62,7 @@ function canContinueAdlibOnEndInfinites(
 }
 
 function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) {
-	const span = Agent.startSpan('getIdsBeforeThisPart')
+	const span = profiler.startSpan('getIdsBeforeThisPart')
 	// Note: This makes the assumption that nextPart is a part found in this cache
 	const partsBeforeThisInSegment = cache.Parts.findFetch({
 		segmentId: nextPart.segmentId,
@@ -87,7 +87,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	cache: CacheForRundownPlaylist,
 	part: DBPart
 ): Promise<Piece[]> {
-	const span = Agent.startSpan('fetchPiecesThatMayBeActiveForPart')
+	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, buildPiecesStartingInThisPartQuery(part))
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
@@ -106,7 +106,7 @@ export function syncPlayheadInfinitesForNextPartInstance(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist
 ): void {
-	const span = Agent.startSpan('syncPlayheadInfinitesForNextPartInstance')
+	const span = profiler.startSpan('syncPlayheadInfinitesForNextPartInstance')
 	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
 	if (nextPartInstance && currentPartInstance) {
 		const infinites = getPlayheadTrackingInfinitesForPart(cache, playlist, currentPartInstance, nextPartInstance)
@@ -129,7 +129,7 @@ function getPlayheadTrackingInfinitesForPart(
 	playingPartInstance: PartInstance,
 	nextPartInstance: PartInstance
 ): PieceInstance[] {
-	const span = Agent.startSpan('getPlayheadTrackingInfinitesForPart')
+	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
@@ -165,7 +165,7 @@ export function getPieceInstancesForPart(
 	newInstanceId: PartInstanceId,
 	isTemporary: boolean
 ): PieceInstance[] {
-	const span = Agent.startSpan('getPieceInstancesForPart')
+	const span = profiler.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)

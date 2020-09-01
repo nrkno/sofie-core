@@ -16,10 +16,10 @@ import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
-	const span = Agent.startSpan('ingest.ingestCache.loadCachedRundownData')
+	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
 
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
@@ -135,7 +135,7 @@ export function saveRundownCache(rundownId: RundownId, ingestRundown: LocalInges
 	)
 }
 export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ingestSegment: LocalIngestSegment) {
-	const span = Agent.startSpan('ingest.ingestCache.saveSegmentCache')
+	const span = profiler.startSpan('ingest.ingestCache.saveSegmentCache')
 
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundownId, ingestSegment)

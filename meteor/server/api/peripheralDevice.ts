@@ -32,6 +32,7 @@ import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
 import { initCacheForNoRundownPlaylist, initCacheForStudio, initCacheForRundownPlaylist } from '../DatabaseCaches'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { PieceInstanceId } from '../../lib/collections/PieceInstances'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -170,6 +171,11 @@ export namespace ServerPeripheralDeviceAPI {
 
 		return peripheralDevice
 	}
+
+	/**
+	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
+	 * ( typically when using the "now"-feature )
+	 */
 	export const timelineTriggerTime = syncFunction(function timelineTriggerTime(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
@@ -199,9 +205,8 @@ export namespace ServerPeripheralDeviceAPI {
 			const cache = activePlaylist
 				? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
 				: waitForPromise(initCacheForNoRundownPlaylist(studioId))
-			const allowedRundownsIds = activePlaylist
-				? _.map(cache.Rundowns.findFetch({ playlistId: activePlaylist._id }), (r) => r._id)
-				: []
+
+			let lastTakeTime: number | undefined
 
 			_.each(results, (o) => {
 				check(o.id, String)
@@ -231,15 +236,57 @@ export namespace ServerPeripheralDeviceAPI {
 					obj.enable.start = o.time
 					obj.enable.setFromNow = true
 
-					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(context, cache, allowedRundownsIds, obj, o.time)
+					if (obj.metaData?.pieceId) {
+						logger.debug('Update PieceInstance: ', {
+							pieceId: obj.metaData.pieceId,
+							time: new Date(o.time).toTimeString(),
+						})
+
+						const pieceInstance = cache.PieceInstances.findOne(obj.metaData.pieceId)
+						if (pieceInstance) {
+							cache.PieceInstances.update(pieceInstance._id, {
+								$set: {
+									'piece.enable.start': o.time,
+								},
+							})
+
+							const takeTime = pieceInstance.dynamicallyInserted
+							if (pieceInstance.dynamicallyInserted && takeTime) {
+								lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+							}
+						}
+					}
 				}
 			})
+
+			if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId) {
+				// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+				const remainingNowPieces = cache.PieceInstances.findFetch({
+					partInstanceId: activePlaylist.currentPartInstanceId,
+					dynamicallyInserted: { $exists: true },
+					disabled: { $ne: true },
+				})
+				for (const piece of remainingNowPieces) {
+					const pieceTakeTime = piece.dynamicallyInserted
+					if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+						// Disable and hide the instance
+						cache.PieceInstances.update(piece._id, {
+							$set: {
+								disabled: true,
+								hidden: true,
+							},
+						})
+					}
+				}
+			}
+
 			// After we've updated the timeline, we must call afterUpdateTimeline!
 			afterUpdateTimeline(cache, studioId)
 			waitForPromise(cache.saveAllToDatabase())
 		}
 	},
-	'timelineTriggerTime$0,$1') // kz 'timelineTriggerTime$1' maybe?
+	'timelineTriggerTime$1')
+
 	export function partPlaybackStarted(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,

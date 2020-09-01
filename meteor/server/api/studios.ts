@@ -31,7 +31,7 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 			// blueprintId?: BlueprintId
 			mappings: {},
 			supportedShowStyleBase: [],
-			config: [],
+			blueprintConfig: {},
 			// testToolsConfig?: ITestToolsConfig
 			settings: {
 				mediaPreviewsUrl: '',

@@ -97,7 +97,6 @@ export namespace ServerClientAPI {
 
 			return result
 		} catch (e) {
-			// console.log('eeeeeeeeeeeeeee')
 			// allow the exception to be handled by the Client code
 			logger.error(`Error in ${methodName}`)
 			let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
@@ -201,7 +200,6 @@ export namespace ServerClientAPI {
 					...args
 				)
 			} catch (e) {
-				// console.log('eeeeeeeeeeeeeee')
 				// allow the exception to be handled by the Client code
 				let errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 				logger.error(errMsg)

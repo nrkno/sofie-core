@@ -36,11 +36,6 @@ export function rejectFields<T>(_doc: T, fieldNames: FieldNames<T>, rejectFields
 	return allow
 }
 
-// console.log(allowOnlyFields(['_id', 'name'], ['name', 'modified']) === false, '_id not allowed')
-// console.log(allowOnlyFields(['name'], ['name', 'modified']) === true, 'should be ok')
-// console.log(rejectFields(['_id', 'name'], ['_id']) === false, '_id not allowed')
-// console.log(rejectFields(['name'], ['_id']) === true, 'should be ok')
-
 export function logNotAllowed(area: string, reason: string): false {
 	logger.warn(`Not allowed access to ${area}: ${reason}`)
 	return false

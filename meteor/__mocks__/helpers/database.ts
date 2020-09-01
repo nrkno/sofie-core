@@ -152,7 +152,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 		// blueprintId?: BlueprintId
 		mappings: {},
 		supportedShowStyleBase: [],
-		config: [],
+		blueprintConfig: {},
 		// testToolsConfig?: ITestToolsConfig
 		settings: {
 			mediaPreviewsUrl: '',
@@ -195,7 +195,7 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 				exclusiveGroup: 'main',
 			}),
 		],
-		config: [],
+		blueprintConfig: {},
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
@@ -214,7 +214,7 @@ export function setupMockShowStyleVariant(
 		_id: protectString('mockShowStyleVariant' + dbI++),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,
-		config: [],
+		blueprintConfig: {},
 		_rundownVersionHash: '',
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
@@ -340,7 +340,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 					const parts: BlueprintResultPart[] = []
 
 					_.each(ingestSegment.parts, (ingestPart) => {
-						// console.log(ingestPart.payload, ingestPart.externalId)
 						const part: IBlueprintPart = {
 							externalId: ingestPart.externalId,
 							title: ingestPart.name,
@@ -506,6 +505,7 @@ export function setupDefaultRundown(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 
@@ -722,6 +722,7 @@ export function setupRundownWithAutoplayPart0(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 

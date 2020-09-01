@@ -26,6 +26,7 @@ import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './api/profiler'
 
 export { PackageInfo }
 
@@ -349,7 +350,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 		const blueprint = Blueprints.findOne(studio.blueprintId)
 		if (!blueprint) return
 
-		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.config)
+		const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
 		const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
 		setBlueprintConfigStatus(systemStatusId, diff, studio._id)
 		blueprintIds[systemStatusId] = true
@@ -370,7 +371,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 			const compound = createShowStyleCompound(showBase, variant)
 			if (!compound) return
 
-			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.config)
+			const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
 			if (diff && diff.length) {
 				allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 			}
@@ -538,6 +539,7 @@ function startInstrumenting() {
 			transactionSampleRate: system.apm.transactionSampleRate,
 			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
 		})
+		profiler.setActive(system.apm.enabled || false)
 	} else {
 		logger.info(`APM agent inactive`)
 		Agent.start({

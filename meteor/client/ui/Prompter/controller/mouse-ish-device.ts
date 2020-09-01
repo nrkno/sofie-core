@@ -206,7 +206,6 @@ export class MouseIshController extends ControllerAbstract {
 		const { t } = this._prompterView.props
 
 		this._mode = mode
-		// console.log('Mouse-control: Switching mode to ' + mode)
 		localStorage.setItem(LOCALSTORAGE_MODE, mode)
 
 		NotificationCenter.push(

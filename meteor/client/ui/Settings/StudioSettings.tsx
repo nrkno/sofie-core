@@ -1259,7 +1259,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 								object={this.props.studio}
 								layerMappings={this.getLayerMappingsFlat()}
 								collection={Studios}
-								configPath={'config'}
+								configPath={'blueprintConfig'}
 							/>
 						</div>
 					</div>
@@ -1290,7 +1290,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 )
 
 export function setProperty(studio: Studio, property: string, value: any) {
-	// console.log(property, value)
 	let m = {}
 	if (value !== undefined) {
 		m[property] = value

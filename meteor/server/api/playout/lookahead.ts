@@ -9,7 +9,15 @@ import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { literal, clone, unprotectString, protectString, asyncCollectionFindFetch } from '../../../lib/lib'
+import {
+	literal,
+	clone,
+	unprotectString,
+	protectString,
+	asyncCollectionFindFetch,
+	waitForPromise,
+	getCurrentTime,
+} from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import {
@@ -21,7 +29,13 @@ import {
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
+import {
+	hasPieceInstanceDefinitelyEnded,
+	SelectedPartInstancesTimelineInfo,
+	SelectedPartInstanceTimelineInfo,
+} from './timeline'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -53,7 +67,7 @@ function getOrderedPartsAfterPlayhead(
 	if (partCount <= 0) {
 		return []
 	}
-	const span = Agent.startSpan('getOrderedPartsAfterPlayhead')
+	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
 
 	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
@@ -114,9 +128,10 @@ function getOrderedPartsAfterPlayhead(
 export async function getLookeaheadObjects(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
-	playlist: RundownPlaylist
+	playlist: RundownPlaylist,
+	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjGeneric>> {
-	const span = Agent.startSpan('getLookeaheadObjects')
+	const span = profiler.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
 		([id, map]) => map.lookahead !== LookaheadMode.NONE
 	)
@@ -136,6 +151,7 @@ export async function getLookeaheadObjects(
 	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
 		startRundownId: { $in: rundownIds },
+		invalid: { $ne: true },
 	})
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
@@ -175,43 +191,37 @@ export async function getLookeaheadObjects(
 		}
 	}
 
-	function getPartInstancePieces(partInstanceId: PartInstanceId) {
-		return cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
-			return !!(pieceInstance.partInstanceId === partInstanceId && pieceInstance.piece.content?.timelineObjects)
-		})
+	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
+		return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
 	}
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-		cache,
-		playlist
-	)
-	// Get the PieceInstances which are on the timeline
 	const partInstancesInfo: PartInstanceAndPieceInstances[] = _.compact([
-		currentPartInstance
+		partInstancesInfo0.current
 			? {
-					part: currentPartInstance,
+					part: partInstancesInfo0.current.partInstance,
 					onTimeline: true,
-					allPieces: getPartInstancePieces(currentPartInstance._id),
+					allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.current),
 			  }
 			: undefined,
-		nextPartInstance
+		partInstancesInfo0.next
 			? {
-					part: nextPartInstance,
-					onTimeline: !!currentPartInstance?.part?.autoNext,
-					allPieces: getPartInstancePieces(nextPartInstance._id),
+					part: partInstancesInfo0.next.partInstance,
+					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext,
+					allPieces: partInstancesInfo0.next.pieceInstances,
 			  }
 			: undefined,
 	])
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartInstanceAndPieceInstances | undefined
-	if (previousPartInstance) {
-		const previousPieces = getPartInstancePieces(previousPartInstance._id)
+	if (partInstancesInfo0.previous) {
 		previousPartInfo = {
-			part: previousPartInstance,
+			part: partInstancesInfo0.previous.partInstance,
 			onTimeline: true,
-			allPieces: previousPieces,
+			allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.previous),
 		}
 	}
 
+	// TODO: Do we need to use processAndPrunePieceInstanceTimings on these pieces? In theory yes, but that gets messy and expensive.
+	// In reality, there are not likely to be any/many conflicts if the blueprints are written well so it shouldnt be a problem
 	const piecesToSearch = await pPiecesToSearch
 
 	for (const [layerId, mapping] of mappingsToConsider) {
@@ -296,7 +306,7 @@ function findLookaheadForlayer(
 	lookaheadTargetObjects: number,
 	lookaheadMaxSearchDistance: number
 ): LookaheadResult {
-	const span = Agent.startSpan('findLookaheadForlayer')
+	const span = profiler.startSpan('findLookaheadForlayer')
 	const res: LookaheadResult = {
 		timed: [],
 		future: [],
@@ -384,7 +394,7 @@ function findObjectsForPart(
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
-	const span = Agent.startSpan('findObjectsForPart')
+	const span = profiler.startSpan('findObjectsForPart')
 
 	let allObjs: TimelineObjRundown[] = []
 	for (const piece of partInfo.pieces) {

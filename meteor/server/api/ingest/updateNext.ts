@@ -11,11 +11,11 @@ import {
 	getAllOrderedPartsFromCache,
 } from '../playout/lib'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 export namespace UpdateNext {
 	export function ensureNextPartIsValid(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-		const span = Agent.startSpan('api.ingest.ensureNextPartIsValid')
+		const span = profiler.startSpan('api.ingest.ensureNextPartIsValid')
 
 		// Ensure the next-id is still valid
 		if (playlist && playlist.active && playlist.nextPartInstanceId) {

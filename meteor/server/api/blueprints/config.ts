@@ -1,9 +1,18 @@
 import * as _ from 'underscore'
-import { ConfigItemValue, ConfigManifestEntry, IConfigItem } from 'tv-automation-sofie-blueprints-integration'
+import {
+	ConfigItemValue,
+	ConfigManifestEntry,
+	IBlueprintConfig,
+	StudioBlueprintManifest,
+	ShowStyleBlueprintManifest,
+	BasicConfigItemValue,
+	TableConfigItemValue,
+} from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
-import { getShowStyleCompound, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { protectString } from '../../../lib/lib'
+import { getShowStyleCompound, ShowStyleVariantId, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
+import { logger } from '../../../lib/logging'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -44,12 +53,7 @@ export namespace ConfigRef {
 				const configId = m[3]
 				const studio = Studios.findOne(studioId)
 				if (studio) {
-					const config = _.find(studio.config, (config) => config._id === configId)
-					if (config) {
-						return config.value
-					} else {
-						return undefined
-					}
+					return objectPathGet(studio.blueprintConfig, configId)
 				} else if (bailOnError)
 					throw new Meteor.Error(404, `Ref "${reference}": Studio "${studioId}" not found`)
 			} else if (m[1] === 'showStyle' && _.isString(m[2]) && _.isString(m[3])) {
@@ -57,12 +61,7 @@ export namespace ConfigRef {
 				const configId = m[3]
 				const showStyleCompound = getShowStyleCompound(showStyleVariantId)
 				if (showStyleCompound) {
-					const config = _.find(showStyleCompound.config, (config) => config._id === configId)
-					if (config) {
-						return config.value
-					} else {
-						return undefined
-					}
+					return objectPathGet(showStyleCompound.blueprintConfig, configId)
 				} else if (bailOnError)
 					throw new Meteor.Error(
 						404,
@@ -74,30 +73,69 @@ export namespace ConfigRef {
 	}
 }
 
-export function compileStudioConfig(studio: Studio) {
-	const res: { [key: string]: ConfigItemValue } = {}
-	_.each(studio.config, (c) => {
-		res[c._id] = c.value
-	})
+export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBlueprintManifest) {
+	let res: any = {}
+	if (blueprint && blueprint.studioConfigManifest !== undefined) {
+		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
+	} else {
+		res = studio.blueprintConfig
+	}
 
 	// Expose special values as defined in the studio
 	res['SofieHostURL'] = studio.settings.sofieUrl
 
+	if (blueprint && blueprint.preprocessConfig) {
+		res = blueprint.preprocessConfig(res)
+	}
 	return res
 }
 
-export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, config: IConfigItem[]) {
+export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: ShowStyleBlueprintManifest) {
+	let res: any = {}
+	if (blueprint && blueprint.showStyleConfigManifest !== undefined) {
+		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)
+	} else {
+		res = showStyle.blueprintConfig
+	}
+	if (blueprint && blueprint.preprocessConfig) {
+		res = blueprint.preprocessConfig(res)
+	}
+	return res
+}
+
+export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, config: IBlueprintConfig) {
 	const missingKeys: string[] = []
 	if (manifest === undefined) {
 		return missingKeys
 	}
-
-	const configKeys = _.map(config, (c) => c._id)
 	_.each(manifest, (m) => {
-		if (m.required && configKeys.indexOf(m.id) === -1) {
+		if (m.required && config && objectPathGet(config, m.id) === undefined) {
 			missingKeys.push(m.name)
 		}
 	})
 
 	return missingKeys
+}
+
+export function applyToConfig(
+	res: any,
+	configManifest: ConfigManifestEntry[],
+	blueprintConfig: IBlueprintConfig,
+	source: string
+) {
+	for (const val of configManifest) {
+		let newVal = val.defaultVal
+
+		const overrideVal = objectPathGet(blueprintConfig, val.id) as
+			| BasicConfigItemValue
+			| TableConfigItemValue
+			| undefined
+		if (overrideVal !== undefined) {
+			newVal = overrideVal
+		} else if (val.required) {
+			logger.warning(`Required config not defined in ${source}: "${val.name}"`)
+		}
+
+		objectPathSet(res, val.id, newVal)
+	}
 }

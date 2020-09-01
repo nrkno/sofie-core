@@ -20,7 +20,7 @@ import { touchRundownPlaylistsInCache } from '../playout/lib'
 import { Credentials } from '../../security/lib/credentials'
 import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -28,7 +28,7 @@ export function checkAccessAndGetPeripheralDevice(
 	token: string | undefined,
 	context: Credentials | MethodContext
 ): PeripheralDevice {
-	const span = Agent.startSpan('lib.checkAccessAndGetPeripheralDevice')
+	const span = profiler.startSpan('lib.checkAccessAndGetPeripheralDevice')
 
 	const { device: peripheralDevice } = PeripheralDeviceContentWriteAccess.peripheralDevice(
 		{ userId: context.userId, token },
@@ -59,7 +59,7 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 }
 
 export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio {
-	const span = Agent.startSpan('mosDevice.lib.getStudioFromDevice')
+	const span = profiler.startSpan('mosDevice.lib.getStudioFromDevice')
 
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
@@ -73,7 +73,7 @@ export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio 
 	return studio
 }
 export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
-	const span = Agent.startSpan('mosDevice.lib.getRundownPlaylist')
+	const span = profiler.startSpan('mosDevice.lib.getRundownPlaylist')
 
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)
 	if (!playlist)
@@ -84,7 +84,7 @@ export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
 	return playlist
 }
 export function getRundown(rundownId: RundownId, externalRundownId: string): Rundown {
-	const span = Agent.startSpan('mosDevice.lib.getRundown')
+	const span = profiler.startSpan('mosDevice.lib.getRundown')
 
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${externalRundownId}") not found`)

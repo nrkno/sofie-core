@@ -142,8 +142,6 @@ export const SourceLayerItem = withTranslation()(
 								(this.props.scrollLeft - inPoint - this.props.partStartsAt - inTransitionDuration) *
 								this.props.timeScale
 
-							// console.log(this.state.itemElement)
-
 							// || (this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0)
 							let styleObj = {
 								maxWidth:
@@ -564,7 +562,6 @@ export const SourceLayerItem = withTranslation()(
 			this.setState({
 				showMiniInspector: v,
 			})
-			// console.log($(this.itemElement).offset())
 			const elementPos = getElementDocumentOffset(this.state.itemElement) || {
 				top: 0,
 				left: 0,

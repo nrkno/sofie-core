@@ -43,7 +43,7 @@ import { Rundown, RundownId, Rundowns } from '../../../../lib/collections/Rundow
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { Segments, Segment } from '../../../../lib/collections/Segments'
-import { loadShowStyleBlueprints } from '../../blueprints/cache'
+import { loadShowStyleBlueprint } from '../../blueprints/cache'
 import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
@@ -53,7 +53,7 @@ import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 import { Settings } from '../../../../lib/Settings'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../../profiler'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -67,7 +67,7 @@ function storiesToIngestParts(
 	undefinedPayload: boolean,
 	existingIngestParts: AnnotatedIngestPart[]
 ): (AnnotatedIngestPart | null)[] {
-	const span = Agent.startSpan('ingest.storiesToIngestParts')
+	const span = profiler.startSpan('ingest.storiesToIngestParts')
 
 	const existingIngestPartsMap = normalizeArray(existingIngestParts, 'externalId')
 
@@ -136,7 +136,7 @@ export function handleMosRundownData(
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	createFresh: boolean
 ) {
-	const span = Agent.startSpan('ingest.handleMosRundownData')
+	const span = profiler.startSpan('ingest.handleMosRundownData')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrder.ID)
@@ -200,7 +200,7 @@ export function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ) {
-	const span = Agent.startSpan('mosDevice.ingest.handleMosRundownMetadata')
+	const span = profiler.startSpan('mosDevice.ingest.handleMosRundownMetadata')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, mosRunningOrderBase.ID)
@@ -219,7 +219,7 @@ export function handleMosRundownMetadata(
 				`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
 			)
 		}
-		const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
+		const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
 
 		// Load the cached RO Data
 		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
@@ -235,7 +235,7 @@ export function handleMosRundownMetadata(
 }
 
 export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
-	const span = Agent.startSpan('mosDevice.ingest.handleMosFullStory')
+	const span = profiler.startSpan('mosDevice.ingest.handleMosFullStory')
 
 	fixIllegalObject(story)
 	// @ts-ignore
@@ -290,7 +290,7 @@ export function handleMosDeleteStory(
 	if (stories.length === 0) return
 
 	// no point in measuring a simple prop check => return
-	const span = Agent.startSpan('mosDevice.ingest.handleMosDeleteStory')
+	const span = profiler.startSpan('mosDevice.ingest.handleMosDeleteStory')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
@@ -340,7 +340,7 @@ export function handleMosDeleteStory(
 }
 
 function getAnnotatedIngestParts(ingestRundown: LocalIngestRundown): AnnotatedIngestPart[] {
-	const span = Agent.startSpan('mosDevice.ingest.getAnnotatedIngestParts')
+	const span = profiler.startSpan('mosDevice.ingest.getAnnotatedIngestParts')
 	const ingestParts: AnnotatedIngestPart[] = []
 	_.each(ingestRundown.segments, (s) => {
 		_.each(s.parts, (p) => {
@@ -365,7 +365,7 @@ export function handleInsertParts(
 ) {
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
-	const span = Agent.startSpan('mosDevice.ingest.handleInsertParts')
+	const span = profiler.startSpan('mosDevice.ingest.handleInsertParts')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
@@ -429,7 +429,7 @@ export function handleSwapStories(
 	story0: MOS.MosString128,
 	story1: MOS.MosString128
 ) {
-	const span = Agent.startSpan('mosDevice.ingest.handleSwapStories')
+	const span = profiler.startSpan('mosDevice.ingest.handleSwapStories')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
@@ -484,7 +484,7 @@ export function handleMoveStories(
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ) {
-	const span = Agent.startSpan('mosDevice.ingest.handleMoveStories')
+	const span = profiler.startSpan('mosDevice.ingest.handleMoveStories')
 
 	const studio = getStudioFromDevice(peripheralDevice)
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
@@ -552,7 +552,7 @@ function makeChangeToIngestParts(
 	ingestParts: AnnotatedIngestPart[],
 	modifyFunction: (ingestParts: AnnotatedIngestPart[]) => AnnotatedIngestPart[]
 ): LocalIngestSegment[] {
-	const span = Agent.startSpan('mosDevice.ingest.makeChangeToIngestParts')
+	const span = profiler.startSpan('mosDevice.ingest.makeChangeToIngestParts')
 
 	const referenceIngestSegments = groupPartsIntoIngestSegments(rundown, ingestParts)
 
@@ -600,7 +600,7 @@ function diffAndApplyChanges(
 	newIngestSegments: LocalIngestSegment[]
 	// newIngestParts: AnnotatedIngestPart[]
 ) {
-	const span = Agent.startSpan('mosDevice.ingest.diffAndApplyChanges')
+	const span = profiler.startSpan('mosDevice.ingest.diffAndApplyChanges')
 
 	// Fetch all existing segments:
 	const oldSegments = cache.Segments.findFetch({ rundownId: rundown._id })

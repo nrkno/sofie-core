@@ -26,7 +26,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 export function postProcessPieces(
 	innerContext: ShowStyleContext,
@@ -39,7 +39,7 @@ export function postProcessPieces(
 	prefixAllTimelineObjects?: boolean,
 	setInvalid?: boolean
 ): Piece[] {
-	const span = Agent.startSpan('blueprints.postProcess.postProcessPieces')
+	const span = profiler.startSpan('blueprints.postProcess.postProcessPieces')
 
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
@@ -139,7 +139,7 @@ export function postProcessAdLibPieces(
 	blueprintId: BlueprintId,
 	partId?: PartId
 ): AdLibPiece[] {
-	const span = Agent.startSpan('blueprints.postProcess.postProcessAdLibPieces')
+	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}

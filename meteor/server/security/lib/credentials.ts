@@ -3,7 +3,7 @@ import { Organization, Organizations } from '../../../lib/collections/Organizati
 import { PeripheralDevice, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { cacheResult, isProtectedString, clearCacheResult } from '../../../lib/lib'
 import { LIMIT_CACHE_TIME } from './security'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../../api/profiler'
 
 export interface Credentials {
 	userId: UserId | null
@@ -20,7 +20,7 @@ export interface ResolvedCredentialsWithUserAndOrganization {
 	device?: PeripheralDevice
 }
 export function resolveCredentials(cred: Credentials | ResolvedCredentials): ResolvedCredentials {
-	const span = Agent.startSpan('security.lib.credentials')
+	const span = profiler.startSpan('security.lib.credentials')
 
 	if (isResolvedCredentials(cred)) {
 		span?.end()
