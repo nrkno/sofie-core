@@ -360,7 +360,7 @@ function copyOverflowingPieces(
 						_id: getRandomId(),
 						rundownId: instance.rundownId,
 						partInstanceId: nextPartInstance._id,
-						dynamicallyInserted: true,
+						dynamicallyInserted: getCurrentTime(),
 						piece: {
 							...omit(instance.piece, 'startedPlayback', 'overflows'),
 							_id: getRandomId(),
@@ -447,7 +447,7 @@ function startHold(
 			_id: protectString<PieceInstanceId>(instance._id + '_hold'),
 			rundownId: instance.rundownId,
 			partInstanceId: holdToPartInstance._id,
-			dynamicallyInserted: true,
+			dynamicallyInserted: getCurrentTime(),
 			piece: {
 				...clone(instance.piece),
 				_id: protectString<PieceId>(instance.piece._id + '_hold'),

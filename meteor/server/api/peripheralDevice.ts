@@ -250,7 +250,7 @@ export namespace ServerPeripheralDeviceAPI {
 								},
 							})
 
-							const takeTime = pieceInstance.piece.timings?.take[0]
+							const takeTime = pieceInstance.dynamicallyInserted
 							if (pieceInstance.dynamicallyInserted && takeTime) {
 								lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
 							}
@@ -263,11 +263,11 @@ export namespace ServerPeripheralDeviceAPI {
 				// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
 				const remainingNowPieces = cache.PieceInstances.findFetch({
 					partInstanceId: activePlaylist.currentPartInstanceId,
-					dynamicallyInserted: true,
+					dynamicallyInserted: { $exists: true },
 					disabled: { $ne: true },
 				})
 				for (const piece of remainingNowPieces) {
-					const pieceTakeTime = piece.piece.timings?.take[0]
+					const pieceTakeTime = piece.dynamicallyInserted
 					if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
 						// Disable and hide the instance
 						cache.PieceInstances.update(piece._id, {
