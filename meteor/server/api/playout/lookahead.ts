@@ -9,7 +9,15 @@ import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { literal, clone, unprotectString, protectString, asyncCollectionFindFetch } from '../../../lib/lib'
+import {
+	literal,
+	clone,
+	unprotectString,
+	protectString,
+	asyncCollectionFindFetch,
+	waitForPromise,
+	getCurrentTime,
+} from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../../../lib/collections/PieceInstances'
 import {
@@ -22,7 +30,12 @@ import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInsta
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
 import { profiler } from '../profiler'
-import { hasPieceInstanceDefinitelyEnded } from './timeline'
+import {
+	hasPieceInstanceDefinitelyEnded,
+	SelectedPartInstancesTimelineInfo,
+	SelectedPartInstanceTimelineInfo,
+} from './timeline'
+import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -115,7 +128,8 @@ function getOrderedPartsAfterPlayhead(
 export async function getLookeaheadObjects(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
-	playlist: RundownPlaylist
+	playlist: RundownPlaylist,
+	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjGeneric>> {
 	const span = profiler.startSpan('getLookeaheadObjects')
 	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
@@ -137,6 +151,7 @@ export async function getLookeaheadObjects(
 	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
 		startRundownId: { $in: rundownIds },
+		invalid: { $ne: true },
 	})
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
@@ -176,45 +191,38 @@ export async function getLookeaheadObjects(
 		}
 	}
 
-	function getPartInstancePieces(partInstanceId: PartInstanceId) {
-		return cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
-			return !!(pieceInstance.partInstanceId === partInstanceId && pieceInstance.piece.content?.timelineObjects)
-		})
+	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
+		return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
 	}
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-		cache,
-		playlist
-	)
-	// Get the PieceInstances which are on the timeline
 	const partInstancesInfo: PartInstanceAndPieceInstances[] = _.compact([
-		currentPartInstance
+		partInstancesInfo0.current
 			? {
-					part: currentPartInstance,
+					part: partInstancesInfo0.current.partInstance,
 					onTimeline: true,
-					allPieces: getPartInstancePieces(currentPartInstance._id),
+					allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.current),
 			  }
 			: undefined,
-		nextPartInstance
+		partInstancesInfo0.next
 			? {
-					part: nextPartInstance,
-					onTimeline: !!currentPartInstance?.part?.autoNext,
-					allPieces: getPartInstancePieces(nextPartInstance._id),
+					part: partInstancesInfo0.next.partInstance,
+					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext,
+					allPieces: partInstancesInfo0.next.pieceInstances,
 			  }
 			: undefined,
 	])
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartInstanceAndPieceInstances | undefined
-	if (previousPartInstance) {
-		const previousPieces = getPartInstancePieces(previousPartInstance._id)
+	if (partInstancesInfo0.previous) {
 		previousPartInfo = {
-			part: previousPartInstance,
+			part: partInstancesInfo0.previous.partInstance,
 			onTimeline: true,
-			allPieces: previousPieces,
+			allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.previous),
 		}
 	}
 
-	let piecesToSearch = await pPiecesToSearch
-	piecesToSearch = piecesToSearch.filter((p) => !hasPieceInstanceDefinitelyEnded(p, 0))
+	// TODO: Do we need to use processAndPrunePieceInstanceTimings on these pieces? In theory yes, but that gets messy and expensive.
+	// In reality, there are not likely to be any/many conflicts if the blueprints are written well so it shouldnt be a problem
+	const piecesToSearch = await pPiecesToSearch
 
 	for (const [layerId, mapping] of mappingsToConsider) {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
