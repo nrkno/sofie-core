@@ -106,9 +106,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			const piecesByInfiniteMode = _.groupBy(pieceInstances, (p) => p.piece.lifespan)
 			for (const mode0 of [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnSegmentEnd]) {
 				const mode = mode0 as PieceLifespan.OutOnRundownEnd | PieceLifespan.OutOnSegmentEnd
-				const pieces = (piecesByInfiniteMode[mode] || []).filter(
-					(p) => p.infinite?.fromPrevious || p.dynamicallyInserted
-				)
+				const pieces = (piecesByInfiniteMode[mode] || []).filter((p) => !!p.infinite)
 				// This is the piece we may copy across
 				const candidatePiece =
 					pieces.find((p) => p.piece.enable.start === 'now') ?? max(pieces, (p) => p.piece.enable.start)
