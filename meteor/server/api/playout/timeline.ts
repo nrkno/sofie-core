@@ -66,6 +66,7 @@ import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
+import got from 'got'
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -116,6 +117,14 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 			tlo.enable.setFromNow = true
 		}
 	})
+
+	got.post('http://playout-gateway:4242/', {
+		json: {
+			_id: studio._id,
+			timeline: timelineObjs,
+		},
+		responseType: 'text',
+	}).then(console.log)
 
 	cache.Timeline.upsert(
 		{
