@@ -349,7 +349,7 @@ export function afterRemovePartsAuxiliary(
 	rundownId: RundownId,
 	removedParts: DBPart[]
 ) {
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
 			partId: { $in: _.map(removedParts, (p) => p._id) },
@@ -387,7 +387,7 @@ export function afterRemovePieces(
 	rundownId: RundownId,
 	removedPieces: Array<Piece | AdLibPiece>
 ) {
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
 			pieceId: { $in: _.map(removedPieces, (p) => p._id) },

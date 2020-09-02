@@ -9,6 +9,8 @@ import {
 	unprotectString,
 	getRandomId,
 	waitForPromise,
+	unprotectStringArray,
+	sleep,
 	assertNever,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
