@@ -17,6 +17,7 @@ import {
 	PreparedChanges,
 	asyncCollectionFindOne,
 	asyncCollectionUpdate,
+	protectStringArray,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
@@ -57,7 +58,17 @@ export class DbCacheReadObject<Class extends DBInterface, DBInterface extends { 
 				)
 			}
 			this._document = doc
+			this._initialized = true
 		}
+	}
+
+	_fromDoc(doc: Class) {
+		if (this._initialized) {
+			throw new Meteor.Error(500, `DbCacheReadObject population for "${this.name}" failed. Already initialized`)
+		}
+
+		this._document = doc
+		this._initialized = true
 	}
 
 	get doc(): DeepReadonly<Class> {
@@ -275,16 +286,19 @@ export class DbCacheWriteCollection<
 		if (span) span.end()
 		return doc._id
 	}
-	remove(selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>): number {
+	remove(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>
+	): Array<DBInterface['_id']> {
 		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
 		this._initialize()
 
-		let removed = 0
+		let removedIds: DBInterface['_id'][] = []
 		if (isProtectedString(selector)) {
 			const oldDoc = this.documents[unprotectString(selector)]
 			if (oldDoc && !oldDoc.removed) {
 				oldDoc.removed = true
 				delete oldDoc.document
+				removedIds.push(selector)
 			}
 		} else {
 			const idsToRemove = this.findFetch(selector).map((doc) => unprotectString(doc._id))
@@ -292,11 +306,11 @@ export class DbCacheWriteCollection<
 				this.documents[id].removed = true
 				delete this.documents[id].document
 			})
-			removed += idsToRemove.length
+			removedIds = protectStringArray(idsToRemove)
 		}
 
 		if (span) span.end()
-		return removed
+		return removedIds
 	}
 	update(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,

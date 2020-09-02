@@ -456,19 +456,14 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch({
+		const removedIds = this._cache.PieceInstances.remove({
 			partInstanceId: partInstanceId,
 			_id: { $in: protectStringArray(pieceInstanceIds) },
 		})
 
-		this._cache.PieceInstances.remove({
-			partInstanceId: partInstanceId,
-			_id: { $in: pieceInstances.map((p) => p._id) },
-		})
-
 		this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 
-		return unprotectStringArray(pieceInstances.map((p) => p._id))
+		return unprotectStringArray(removedIds)
 	}
 
 	takeAfterExecuteAction(take: boolean): boolean {

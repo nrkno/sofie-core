@@ -14,6 +14,7 @@ import {
 	DbCacheWriteCollection,
 	DbCacheReadObject,
 	isDbCacheWriteObject,
+	DbCacheWriteObject,
 } from './DatabaseCache'
 import { Segment, Segments, DBSegment } from '../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../lib/collections/Parts'
@@ -97,8 +98,10 @@ export abstract class Cache {
 	}
 }
 
-export class CacheForPlayout extends Cache {
-	readonly studio: DbCacheReadObject<Studio, Studio>
+export class CacheForIngest extends Cache {
+	public readonly isIngest = true
+
+	public readonly studio: DbCacheReadObject<Studio, Studio>
 
 	private constructor() {
 		super()
@@ -106,12 +109,159 @@ export class CacheForPlayout extends Cache {
 		this.studio = new DbCacheReadObject<Studio, Studio>(Studios)
 	}
 
-	async create(studioId: StudioId): Promise<CacheForPlayout> {
-		const res = new CacheForPlayout()
+	static async create(studioCache: CacheForStudio, playlistId: RundownPlaylistId): Promise<CacheForIngest> {
+		const res = new CacheForIngest()
 
-		await res.studio._initialize(studioId)
+		res.studio._fromDoc(studioCache.Studios.findOne()!) // TODO - simplify
 
 		return res
+	}
+}
+
+export abstract class CacheForPlayoutPreInit extends Cache {
+	public readonly isPlayout = true
+
+	public readonly activationCache: ActivationCache
+
+	public readonly Studio: DbCacheReadObject<Studio, Studio>
+	public readonly Playlist: DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>
+
+	public readonly Rundowns: DbCacheWriteCollection<Rundown, DBRundown> // TODO DbCacheReadCollection??
+
+	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
+		super()
+
+		this.activationCache = getActivationCache(studioId, playlistId)
+
+		this.Studio = new DbCacheReadObject<Studio, Studio>(Studios)
+		this.Playlist = new DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
+
+		this.Rundowns = new DbCacheWriteCollection<Rundown, DBRundown>(Rundowns)
+	}
+
+	protected async preInit(tmpPlaylist: RundownPlaylist) {
+		await Promise.all([
+			this.Playlist._initialize(tmpPlaylist._id),
+			makePromise(() => this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true)),
+		])
+
+		const rundowns = this.Rundowns.findFetch()
+		await this.activationCache.initialize(tmpPlaylist, rundowns)
+
+		this.Studio._fromDoc(this.activationCache.getStudio())
+	}
+}
+
+export class CacheForPlayout extends CacheForPlayoutPreInit {
+	public readonly Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
+
+	public readonly Segments: DbCacheReadCollection<Segment, DBSegment>
+	public readonly Parts: DbCacheWriteCollection<Part, DBPart> // TODO DbCacheReadCollection
+	public readonly PartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
+	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance, PieceInstance>
+	// RundownBaselineObjs: DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>
+
+	private constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
+		super(studioId, playlistId)
+
+		this.Timeline = new DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
+
+		this.Segments = new DbCacheReadCollection<Segment, DBSegment>(Segments)
+		this.Parts = new DbCacheWriteCollection<Part, DBPart>(Parts)
+
+		this.PartInstances = new DbCacheWriteCollection<PartInstance, DBPartInstance>(PartInstances)
+		this.PieceInstances = new DbCacheWriteCollection<PieceInstance, PieceInstance>(PieceInstances)
+
+		// this.RundownBaselineObjs = new DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>(
+		// 	RundownBaselineObjs
+		// )
+
+		// this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
+		// this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
+	}
+
+	static async create(tmpPlaylist: RundownPlaylist): Promise<CacheForPlayout> {
+		const res = new CacheForPlayout(tmpPlaylist.studioId, tmpPlaylist._id)
+
+		await res.preInit(tmpPlaylist)
+
+		return res
+	}
+
+	async initContent(): Promise<void> {
+		// TODO - initialise anything content that may be wanted]
+
+		const playlist = this.Playlist.doc
+
+		const ps: Promise<any>[] = []
+
+		const rundownIds = this.Rundowns.findFetch().map((r) => r._id)
+
+		const selectedPartInstanceIds = _.compact([
+			playlist.currentPartInstanceId,
+			playlist.nextPartInstanceId,
+			playlist.previousPartInstanceId,
+		])
+
+		ps.push(makePromise(() => this.Segments.prepareInit({ rundownId: { $in: rundownIds } }, true))) // TODO - omit if we cant or are unlikely to change the current part
+		ps.push(makePromise(() => this.Parts.prepareInit({ rundownId: { $in: rundownIds } }, true))) // TODO - omit if we cant or are unlikely to change the current part
+
+		ps.push(
+			makePromise(() => this.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, true))
+			// TODO - should this only load the non-reset?
+		)
+
+		ps.push(
+			makePromise(() =>
+				this.PieceInstances.prepareInit(
+					{
+						rundownId: { $in: rundownIds },
+						partInstanceId: { $in: selectedPartInstanceIds },
+					},
+					true
+				)
+			)
+		)
+
+		// ps.push(
+		// 	makePromise(() =>
+		// 		cache.RundownBaselineObjs.prepareInit(
+		// 			{
+		// 				rundownId: { $in: rundownIds },
+		// 			},
+		// 			initializeImmediately
+		// 		)
+		// 	)
+		// )
+
+		// ps.push(
+		// 	makePromise(() =>
+		// 		cache.AdLibPieces.prepareInit(
+		// 			{
+		// 				rundownId: { $in: rundownIds },
+		// 			},
+		// 			false
+		// 		)
+		// 	)
+		// )
+		// ps.push(
+		// 	makePromise(() =>
+		// 		cache.AdLibActions.prepareInit(
+		// 			{
+		// 				rundownId: { $in: rundownIds },
+		// 			},
+		// 			false
+		// 		)
+		// 	)
+		// )
+
+		// ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
+
+		await Promise.all(ps)
+
+		// This will be needed later, but we will do some other processing first
+		// TODO-CACHE what happens if this errors? where should that go?
+		makePromise(() => this.Timeline.prepareInit({ studioId: playlist.studioId }, true))
 	}
 }
 

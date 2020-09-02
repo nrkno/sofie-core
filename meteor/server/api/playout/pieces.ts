@@ -36,7 +36,7 @@ import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/Run
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../DatabaseCaches'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -196,7 +196,7 @@ function resolvePieceTimeline(
 }
 
 export function getResolvedPieces(
-	cache: CacheForRundownPlaylist,
+	cache: CacheForPlayout,
 	showStyleBase: ShowStyleBase,
 	partInstance: PartInstance
 ): ResolvedPieceInstance[] {
@@ -237,8 +237,7 @@ export function getResolvedPieces(
 	return resolvedPieces
 }
 export function getResolvedPiecesFromFullTimeline(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	allObjs: TimelineObjGeneric[]
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
@@ -248,12 +247,13 @@ export function getResolvedPiecesFromFullTimeline(
 
 	const now = getCurrentTime()
 
+	const playlist = cache.Playlist.doc
 	const partInstanceIds = _.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId])
 	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch(
 		(p) => partInstanceIds.indexOf(p.partInstanceId) !== -1
 	)
 
-	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist) // todo: should these be passed as a parameter from getTimelineRundown?
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
 		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))

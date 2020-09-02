@@ -27,7 +27,7 @@ import {
 	getRundownIDsFromCache,
 } from './lib'
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
 import { profiler } from '../profiler'
 import {
@@ -59,18 +59,15 @@ function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): nu
 /**
  * Excludes the previous, current and next part
  */
-function getOrderedPartsAfterPlayhead(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	partCount: number
-): Part[] {
+function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: number): Part[] {
 	if (partCount <= 0) {
 		return []
 	}
 	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
 
-	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+	const playlist = cache.Playlist.doc
+	const orderedParts = getAllOrderedPartsFromCache(cache)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the nextPartInstance consumes the
 	const alreadyConsumedNextSegmentId =
@@ -126,13 +123,11 @@ function getOrderedPartsAfterPlayhead(
 }
 
 export async function getLookeaheadObjects(
-	cache: CacheForRundownPlaylist,
-	studio: Studio,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjGeneric>> {
 	const span = profiler.startSpan('getLookeaheadObjects')
-	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
+	const mappingsToConsider = Object.entries(cache.Studio.doc.mappings ?? {}).filter(
 		([id, map]) => map.lookahead !== LookaheadMode.NONE
 	)
 	if (mappingsToConsider.length === 0) {
@@ -141,13 +136,14 @@ export async function getLookeaheadObjects(
 	}
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
-	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
+	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, maxLookaheadDistance)
 	if (orderedPartsFollowingPlayhead.length === 0) {
 		// Nothing to search through
 		return []
 	}
 
-	const rundownIds = getRundownIDsFromCache(cache, playlist)
+	const playlist = cache.Playlist.doc
+	const rundownIds = getRundownIDsFromCache(cache)
 	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
 		startRundownId: { $in: rundownIds },

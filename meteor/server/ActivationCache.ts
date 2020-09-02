@@ -153,10 +153,10 @@ export class ActivationCache {
 			this._initialized = true
 		}
 	}
-	getPlaylist(): RundownPlaylist {
-		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
-		return this._playlist
-	}
+	// getPlaylist(): RundownPlaylist { // TODO-CACHE when would this ever get updates synced to it?
+	// 	if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
+	// 	return this._playlist
+	// }
 	getStudio(): Studio {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._studio

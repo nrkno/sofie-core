@@ -9,6 +9,7 @@ import { StudioId } from '../../../lib/collections/Studios'
 import { Settings } from '../../../lib/Settings'
 import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { waitForPromise } from '../../../lib/lib'
+import { rundownPlaylistPlayoutSyncFunction } from '../playout/playout'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({

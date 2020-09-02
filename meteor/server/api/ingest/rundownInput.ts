@@ -27,7 +27,7 @@ import {
 	BlueprintResultSegment,
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import {
 	selectShowStyleVariant,
 	afterRemoveSegments,
@@ -106,7 +106,14 @@ import {
 } from '../playout/lib'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
-import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
+import {
+	CacheForRundownPlaylist,
+	initCacheForRundownPlaylist,
+	initCacheForStudio,
+	CacheForStudio,
+	CacheForIngest,
+	CacheForPlayout,
+} from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
@@ -116,6 +123,7 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
+import { getActivationCache } from '../../ActivationCache'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -128,12 +136,46 @@ export enum RundownSyncFunctionPriority {
 	/** Events initiated from playout-gateway callbacks */
 	CALLBACK_PLAYOUT = 20,
 }
-export function rundownPlaylistSyncFunction<T extends Function>(
+export function rundownPlaylistSyncFunction<T extends Function>( // TODO - remove this
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
 	fcn: T
 ): ReturnType<T> {
-	return syncFunction(fcn, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
+	return syncFunction(fcn, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
+}
+
+export function studioSyncFunction<T>(studioId: StudioId, fcn: (cache: CacheForStudio) => T): T {
+	return syncFunction(() => {
+		const cache = waitForPromise(initCacheForStudio(studioId))
+
+		const res = fcn(cache)
+
+		waitForPromise(cache.saveAllToDatabase())
+
+		return res
+	}, `studio_${studioId}`)()
+}
+
+export function rundownPlaylistFromStudioSyncFunction<T>(
+	rundownPlaylistId: RundownPlaylistId,
+	studioCache: CacheForStudio,
+	priority: RundownSyncFunctionPriority,
+	fcn: (cache: CacheForIngest) => T
+): T {
+	return syncFunction(
+		() => {
+			const cache = waitForPromise(CacheForIngest.create(studioCache, rundownPlaylistId))
+
+			const res = fcn(cache)
+
+			waitForPromise(cache.saveAllToDatabase())
+
+			return res
+		},
+		`rundown_playlist_${rundownPlaylistId}`,
+		undefined,
+		priority
+	)()
 }
 
 interface SegmentChanges {

@@ -1,16 +1,14 @@
 import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
-import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../DatabaseCaches'
 import {
 	setNextPart as libsetNextPart,
 	getSelectedPartInstancesFromCache,
 	isTooCloseToAutonext,
-	getSegmentsAndPartsFromCache,
 	selectNextPart,
-	checkAccessAndGetPlaylist,
+	getAllOrderedPartsFromCache,
 	triggerGarbageCollection,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
@@ -26,21 +24,20 @@ import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceIn
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
-import { StudioId } from '../../../lib/collections/Studios'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
+import { rundownPlaylistPlayoutSyncFunction } from './playout'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 export function takeNextPartInner(
 	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	existingCache?: CacheForRundownPlaylist
+	rundownPlaylistId: RundownPlaylistId
 ): ClientAPI.ClientResponse<void> {
 	let now = getCurrentTime()
 
-	return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-		return takeNextPartInnerSync(context, rundownPlaylistId, now, existingCache)
+	return rundownPlaylistPlayoutSyncFunction(context, rundownPlaylistId, null, (cache) => {
+		return takeNextPartInnerSync(cache, now)
 	})
 }
 
@@ -48,28 +45,17 @@ export function takeNextPartInner(
  * This *must* be run within a rundownPlaylistSyncFunction.
  * It is exposed to prevent nested sync functions where take is called as part of another action.
  */
-export function takeNextPartInnerSync(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId,
-	now: number,
-	existingCache?: CacheForRundownPlaylist
-) {
+export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	const span = profiler.startSpan('takeNextPartInner')
-	const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
-	if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
-	const cache = existingCache ?? waitForPromise(initCacheForRundownPlaylist(dbPlaylist, undefined, true))
 
-	let playlist = cache.RundownPlaylists.findOne(dbPlaylist._id)
-	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
+	const playlist = cache.Playlist.doc
+	if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
+	if (!playlist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
 
 	let timeOffset: number | null = playlist.nextTimeOffset || null
 	let firstTake = !playlist.startedPlayback
 
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-		cache,
-		playlist
-	)
+	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 	// const partInstance = nextPartInstance || currentPartInstance
 	const partInstance = nextPartInstance // todo: we should always take the next, so it's this one, right?
 	if (!partInstance) throw new Meteor.Error(404, `No partInstance could be found!`)
@@ -101,16 +87,14 @@ export function takeNextPartInnerSync(
 	}
 
 	if (playlist.holdState === RundownHoldState.COMPLETE) {
-		cache.RundownPlaylists.update(playlist._id, {
+		cache.Playlist.update({
 			$set: {
 				holdState: RundownHoldState.NONE,
 			},
 		})
 		// If hold is active, then this take is to clear it
 	} else if (playlist.holdState === RundownHoldState.ACTIVE) {
-		completeHold(cache, playlist, currentPartInstance)
-
-		waitForPromise(cache.saveAllToDatabase())
+		completeHold(cache, currentPartInstance)
 
 		return ClientAPI.responseSuccess(undefined)
 	}
@@ -121,8 +105,7 @@ export function takeNextPartInnerSync(
 	if (!takeRundown)
 		throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
-	const { segments, parts: partsInOrder } = getSegmentsAndPartsFromCache(cache, playlist)
-	// let takeSegment = rundownData.segmentsMap[takePart.segmentId]
+	const partsInOrder = getAllOrderedPartsFromCache(cache)
 	const nextPart = selectNextPart(playlist, takePartInstance, partsInOrder)
 
 	// beforeTake(rundown, previousPart || null, takePart)
@@ -172,7 +155,7 @@ export function takeNextPartInnerSync(
 				: playlist.holdState + 1,
 	}
 
-	cache.RundownPlaylists.update(playlist._id, {
+	cache.Playlist.update({
 		$set: m,
 	})
 
@@ -226,24 +209,17 @@ export function takeNextPartInnerSync(
 			})
 		}
 	}
-	playlist = _.extend(playlist, m) as RundownPlaylist
 
 	// Once everything is synced, we can choose the next part
-	libsetNextPart(cache, playlist, nextPart ? nextPart.part : null)
+	libsetNextPart(cache, nextPart?.part ?? null)
 
-	// update playoutData
-	// const newSelectedPartInstances = playlist.getSelectedPartInstances()
-	// rundownData = {
-	// 	...rundownData,
-	// 	...newSelectedPartInstances
-	// }
-	// rundownData = getAllOrderedPartsFromCache(cache, playlist) // this is not needed anymore
+	const updatedPlaylist = cache.Playlist.doc
 
 	// Setup the parts for the HOLD we are starting
-	if (playlist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {
+	if (updatedPlaylist.previousPartInstanceId && m.holdState === RundownHoldState.ACTIVE) {
 		startHold(cache, currentPartInstance, nextPartInstance)
 	}
-	afterTake(cache, playlist.studioId, takePartInstance, timeOffset)
+	afterTake(cache, takePartInstance, timeOffset)
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
@@ -300,18 +276,12 @@ export function takeNextPartInnerSync(
 			}
 		}
 	})
-	waitForPromise(cache.saveAllToDatabase())
 
 	if (span) span.end()
 	return ClientAPI.responseSuccess(undefined)
 }
 
-export function afterTake(
-	cache: CacheForRundownPlaylist,
-	studioId: StudioId,
-	takePartInstance: PartInstance,
-	timeOffset: number | null = null
-) {
+export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance, timeOffset: number | null = null) {
 	const span = profiler.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
 
@@ -320,7 +290,7 @@ export function afterTake(
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(cache, studioId, forceNowTime)
+	updateTimeline(cache, null, forceNowTime)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
@@ -341,7 +311,7 @@ export function afterTake(
 }
 
 function startHold(
-	cache: CacheForRundownPlaylist,
+	cache: CacheForPlayout,
 	holdFromPartInstance: PartInstance | undefined,
 	holdToPartInstance: PartInstance | undefined
 ) {
@@ -396,18 +366,14 @@ function startHold(
 	if (span) span.end()
 }
 
-function completeHold(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	currentPartInstance: PartInstance | undefined
-) {
-	cache.RundownPlaylists.update(playlist._id, {
+function completeHold(cache: CacheForPlayout, currentPartInstance: PartInstance | undefined) {
+	cache.Playlist.update({
 		$set: {
 			holdState: RundownHoldState.COMPLETE,
 		},
 	})
 
-	if (playlist.currentPartInstanceId) {
+	if (cache.Playlist.doc.currentPartInstanceId) {
 		if (!currentPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
 
 		// Clear the current extension line
@@ -431,5 +397,5 @@ function completeHold(
 		}
 	}
 
-	updateTimeline(cache, playlist.studioId)
+	updateTimeline(cache, null)
 }

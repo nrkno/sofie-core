@@ -2,8 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, Rundowns, RundownHoldState } from '../../../lib/collections/Rundowns'
-import { Parts } from '../../../lib/collections/Parts'
-import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
@@ -14,63 +13,57 @@ import {
 	onPartHasStoppedPlaying,
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
-	getStudioFromCache,
 	getAllOrderedPartsFromCache,
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { CacheForRundownPlaylist, CacheForPlayout } from '../../DatabaseCaches'
 import { profiler } from '../profiler'
 
-export function activateRundownPlaylist(
-	cache: CacheForRundownPlaylist,
-	rundownPlaylist: RundownPlaylist,
-	rehearsal: boolean
-): void {
-	logger.info('Activating rundown ' + rundownPlaylist._id + (rehearsal ? ' (Rehearsal)' : ''))
+export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): void {
+	{
+		const playlist = cache.Playlist.doc
+		logger.info('Activating rundown ' + playlist._id + (rehearsal ? ' (Rehearsal)' : ''))
 
-	rehearsal = !!rehearsal
-	// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
+		rehearsal = !!rehearsal
+		// if (rundown.active && !rundown.rehearsal) throw new Meteor.Error(403, `Rundown "${rundown._id}" is active and not in rehersal, cannot reactivate!`)
 
-	let newRundown = cache.RundownPlaylists.findOne(rundownPlaylist._id) // fetch new from db, to make sure its up to date
+		const studio = cache.Studio.doc
 
-	if (!newRundown) throw new Meteor.Error(404, `Rundown "${rundownPlaylist._id}" not found!`)
-	rundownPlaylist = newRundown
+		const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, studio._id, playlist._id)
 
-	let studio = cache.activationCache.getStudio()
+		if (anyOtherActiveRundowns.length) {
+			// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
+			throw new Meteor.Error(
+				409,
+				'Only one rundown can be active at the same time. Active rundown playlists: ' +
+					_.map(anyOtherActiveRundowns, (playlist) => playlist._id),
+				JSON.stringify(_.map(anyOtherActiveRundowns, (playlist) => playlist._id))
+			)
+		}
 
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id, rundownPlaylist._id)
-
-	if (anyOtherActiveRundowns.length) {
-		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
-		throw new Meteor.Error(
-			409,
-			'Only one rundown can be active at the same time. Active rundown playlists: ' +
-				_.map(anyOtherActiveRundowns, (playlist) => playlist._id),
-			JSON.stringify(_.map(anyOtherActiveRundowns, (playlist) => playlist._id))
-		)
+		cache.Playlist.update({
+			$set: {
+				active: true,
+				rehearsal: rehearsal,
+				activeInstanceId: getRandomId(),
+			},
+		})
 	}
 
-	cache.RundownPlaylists.update(rundownPlaylist._id, {
-		$set: {
-			active: true,
-			rehearsal: rehearsal,
-			activeInstanceId: getRandomId(),
-		},
-	})
+	const activePlaylist = cache.Playlist.doc
 
 	// Re-Initialize the ActivationCache now when the rundownPlaylist is active
 	const rundownsInPlaylist = cache.Rundowns.findFetch()
-	cache.activationCache.initialize(rundownPlaylist, rundownsInPlaylist)
+	cache.activationCache.initialize(activePlaylist, rundownsInPlaylist)
 
 	let rundown: Rundown | undefined
 
-	if (!rundownPlaylist.nextPartInstanceId) {
-		const firstPart = selectNextPart(rundownPlaylist, null, getAllOrderedPartsFromCache(cache, rundownPlaylist))
-		setNextPart(cache, rundownPlaylist, firstPart ? firstPart.part : null)
+	if (!activePlaylist.nextPartInstanceId) {
+		const firstPart = selectNextPart(activePlaylist, null, getAllOrderedPartsFromCache(cache))
+		setNextPart(cache, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
 		if (!nextPartInstance)
@@ -91,8 +84,8 @@ export function activateRundownPlaylist(
 		}
 	})
 }
-export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist): void {
-	const rundown = deactivateRundownPlaylistInner(cache, rundownPlaylist)
+export function deactivateRundownPlaylist(cache: CacheForPlayout): void {
+	const rundown = deactivateRundownPlaylistInner(cache)
 
 	updateTimeline(cache, rundownPlaylist.studioId)
 
@@ -109,14 +102,11 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 		}
 	})
 }
-export function deactivateRundownPlaylistInner(
-	cache: CacheForRundownPlaylist,
-	rundownPlaylist: RundownPlaylist
-): Rundown | undefined {
+export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown | undefined {
 	const span = profiler.startSpan('deactivateRundownPlaylistInner')
-	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
+	logger.info(`Deactivating rundown playlist "${cache.Playlist.doc._id}"`)
 
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	let rundown: Rundown | undefined
 	if (currentPartInstance) {
@@ -140,7 +130,7 @@ export function deactivateRundownPlaylistInner(
 
 	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
 
-	cache.RundownPlaylists.update(rundownPlaylist._id, {
+	cache.Playlist.update({
 		$set: {
 			active: false,
 			previousPartInstanceId: null,
@@ -148,9 +138,7 @@ export function deactivateRundownPlaylistInner(
 			holdState: RundownHoldState.NONE,
 		},
 	})
-	// rundownPlaylist.currentPartInstanceId = null
-	// rundownPlaylist.previousPartInstanceId = null
-	setNextPart(cache, rundownPlaylist, null)
+	setNextPart(cache, null)
 
 	if (currentPartInstance) {
 		cache.PartInstances.update(currentPartInstance._id, {

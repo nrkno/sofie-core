@@ -755,7 +755,7 @@ export function bucketAdlibStart(
 	}
 
 	return ClientAPI.responseSuccess(
-		ServerPlayoutAdLibAPI.startBucketAdlibPiece(rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
+		ServerPlayoutAdLibAPI.startBucketAdlibPiece(context, rundownPlaylistId, partInstanceId, bucketAdlibId, !!queue)
 	)
 }
 

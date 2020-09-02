@@ -261,14 +261,14 @@ export function produceRundownPlaylistInfo(
 export function removeSegments(cache: CacheForRundownPlaylist, rundownId: RundownId, segmentIds: SegmentId[]): number {
 	logger.debug('removeSegments', rundownId, segmentIds)
 
-	const count = cache.Segments.remove({
+	const removedIds = cache.Segments.remove({
 		_id: { $in: segmentIds },
 		rundownId: rundownId,
 	})
-	if (count > 0) {
-		afterRemoveSegments(cache, rundownId, segmentIds)
+	if (removedIds.length > 0) {
+		afterRemoveSegments(cache, rundownId, removedIds)
 	}
-	return count
+	return removedIds.length
 }
 /**
  * After Segments have been removed, handle the contents.
@@ -402,7 +402,7 @@ export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: Rundow
 	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe
 	// Make sure to rethink the sorting, especially with regards to reset vs non-reset (as reset may have outdated ranks etc)
 
-	const allOrderedParts = getAllOrderedPartsFromCache(cache, playlist)
+	const allOrderedParts = getAllOrderedPartsFromCache(cache)
 
 	let updatedParts = 0
 	for (const segmentId of segmentIds) {

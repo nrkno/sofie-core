@@ -89,7 +89,7 @@ if (!Settings.enableUserAccounts) {
 				if (!playlist) throw new Meteor.Error(404, 'not found')
 
 				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+				syncPlayheadInfinitesForNextPartInstance(cache)
 				waitForPromise(cache.saveAllToDatabase())
 			})
 		},

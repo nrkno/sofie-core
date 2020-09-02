@@ -7,7 +7,7 @@ import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInsta
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getAllOrderedPartsFromCache, selectNextPart, getSelectedPartInstancesFromCache } from './lib'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
@@ -61,7 +61,7 @@ function canContinueAdlibOnEndInfinites(
 	}
 }
 
-function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) {
+function getIdsBeforeThisPart(cache: CacheForPlayout, nextPart: DBPart) {
 	const span = profiler.startSpan('getIdsBeforeThisPart')
 	// Note: This makes the assumption that nextPart is a part found in this cache
 	const partsBeforeThisInSegment = cache.Parts.findFetch({
@@ -83,10 +83,7 @@ function getIdsBeforeThisPart(cache: CacheForRundownPlaylist, nextPart: DBPart) 
 	}
 }
 
-export async function fetchPiecesThatMayBeActiveForPart(
-	cache: CacheForRundownPlaylist,
-	part: DBPart
-): Promise<Piece[]> {
+export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, part: DBPart): Promise<Piece[]> {
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, buildPiecesStartingInThisPartQuery(part))
 
@@ -102,14 +99,11 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	return [...piecesStartingInPart, ...infinitePieces]
 }
 
-export function syncPlayheadInfinitesForNextPartInstance(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist
-): void {
+export function syncPlayheadInfinitesForNextPartInstance(cache: CacheForPlayout): void {
 	const span = profiler.startSpan('syncPlayheadInfinitesForNextPartInstance')
-	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+	const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (nextPartInstance && currentPartInstance) {
-		const infinites = getPlayheadTrackingInfinitesForPart(cache, playlist, currentPartInstance, nextPartInstance)
+		const infinites = getPlayheadTrackingInfinitesForPart(cache, currentPartInstance, nextPartInstance)
 
 		saveIntoCache(
 			cache.PieceInstances,
@@ -124,18 +118,17 @@ export function syncPlayheadInfinitesForNextPartInstance(
 }
 
 function getPlayheadTrackingInfinitesForPart(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	playingPartInstance: PartInstance,
 	nextPartInstance: PartInstance
 ): PieceInstance[] {
 	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
-	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
+	const orderedParts = getAllOrderedPartsFromCache(cache)
 
 	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
-		playlist,
+		cache.Playlist.doc,
 		orderedParts,
 		playingPartInstance,
 		nextPartInstance.part
@@ -157,8 +150,7 @@ function getPlayheadTrackingInfinitesForPart(
 }
 
 export function getPieceInstancesForPart(
-	cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
+	cache: CacheForPlayout,
 	playingPartInstance: PartInstance | undefined,
 	part: DBPart,
 	possiblePieces: Piece[],
@@ -168,12 +160,17 @@ export function getPieceInstancesForPart(
 	const span = profiler.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
-	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
+	const orderedParts = getAllOrderedPartsFromCache(cache)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 		: []
 
-	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(playlist, orderedParts, playingPartInstance, part)
+	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
+		cache.Playlist.doc,
+		orderedParts,
+		playingPartInstance,
+		part
+	)
 
 	const res = libgetPieceInstancesForPart(
 		playingPartInstance,

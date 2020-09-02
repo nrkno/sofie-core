@@ -301,7 +301,7 @@ export namespace ServerPeripheralDeviceAPI {
 		check(r.rundownPlaylistId, String)
 		check(r.partInstanceId, String)
 
-		ServerPlayoutAPI.onPartPlaybackStarted(context, r.rundownPlaylistId, r.partInstanceId, r.time)
+		ServerPlayoutAPI.onPartPlaybackStarted(peripheralDevice, r.rundownPlaylistId, r.partInstanceId, r.time)
 	}
 	export function partPlaybackStopped(
 		context: MethodContext,
