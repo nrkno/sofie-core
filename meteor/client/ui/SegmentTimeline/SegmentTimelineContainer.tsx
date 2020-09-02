@@ -74,7 +74,7 @@ interface IProps {
 	liveLineHistorySize: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onTimeScaleChange?: (timeScaleVal: number) => void
+	// onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
 	onHeaderNoteClick?: (level: NoteType) => void
@@ -92,6 +92,7 @@ interface IState {
 	livePosition: number
 	displayTimecode: number
 	autoExpandCurrentNextSegment: boolean
+	timeScale: number
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined
@@ -178,10 +179,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.liveLineHistorySize !== nextProps.liveLineHistorySize ||
 			props.onContextMenu !== nextProps.onContextMenu ||
 			props.onSegmentScroll !== nextProps.onSegmentScroll ||
-			props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
+			// props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
 			props.segmentId !== nextProps.segmentId ||
-			props.segmentRef !== nextProps.segmentRef ||
-			props.timeScale !== nextProps.timeScale
+			props.segmentRef !== nextProps.segmentRef
+			// props.timeScale !== nextProps.timeScale
 		) {
 			return true
 		}
@@ -257,6 +258,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				livePosition: 0,
 				displayTimecode: 0,
 				autoExpandCurrentNextSegment: !!Settings.autoExpandCurrentNextSegment,
+				timeScale: props.timeScale,
 			}
 
 			this.isLiveSegment = props.isLiveSegment || false
@@ -469,6 +471,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
 		}
 
+		onTimeScaleChange = (timeScaleVal: number) => {
+			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
+				this.setState({
+					timeScale: timeScaleVal,
+				})
+			}
+		}
+
 		onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
 			let collapsedOutputs = { ...this.state.collapsedOutputs }
 			collapsedOutputs[outputLayer._id] =
@@ -577,7 +587,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				this.setState({
 					livePosition: newLivePosition,
 					scrollLeft: this.state.followLiveLine
-						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.props.timeScale, 0)
+						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.state.timeScale, 0)
 						: this.state.scrollLeft,
 				})
 			}
@@ -617,7 +627,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		onFollowLiveLine = (state: boolean, event: any) => {
 			this.setState({
 				followLiveLine: state,
-				scrollLeft: Math.max(this.state.livePosition - this.props.liveLineHistorySize / this.props.timeScale, 0),
+				scrollLeft: Math.max(this.state.livePosition - this.props.liveLineHistorySize / this.state.timeScale, 0),
 			})
 
 			/* if (this.state.followLiveLine) {
@@ -634,8 +644,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				scrollLeft: 0,
 				followLiveLine: this.props.isLiveSegment ? false : this.state.followLiveLine,
 			})
-			if (typeof this.props.onTimeScaleChange === 'function') {
-				this.props.onTimeScaleChange(
+			if (typeof this.onTimeScaleChange === 'function') {
+				this.onTimeScaleChange(
 					(getElementWidth(this.timelineDiv) || 1) /
 						(computeSegmentDuration(
 							this.context.durations,
@@ -648,7 +658,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onZoomChange = (newScale: number, e: any) => {
-			this.props.onTimeScaleChange && this.props.onTimeScaleChange(newScale)
+			this.onTimeScaleChange && this.onTimeScaleChange(newScale)
 		}
 
 		render() {
@@ -662,7 +672,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						studio={this.props.studio}
 						parts={this.props.parts}
 						segmentNotes={this.props.segmentNotes}
-						timeScale={this.props.timeScale}
+						timeScale={this.state.timeScale}
 						onItemClick={this.props.onPieceClick}
 						onItemDoubleClick={this.props.onPieceDoubleClick}
 						onCollapseOutputToggle={this.onCollapseOutputToggle}
