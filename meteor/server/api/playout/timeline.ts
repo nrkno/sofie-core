@@ -124,7 +124,10 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 			timeline: timelineObjs,
 		},
 		responseType: 'text',
-	}).then(console.log, console.log)
+	}).then(
+		() => console.log('Sent timeline direct to playout gateway'),
+		(e) => console.log('Error sending timeline direct to playout gateway', e)
+	)
 
 	cache.Timeline.upsert(
 		{
