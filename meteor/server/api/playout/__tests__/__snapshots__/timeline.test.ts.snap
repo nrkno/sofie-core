@@ -90,48 +90,23 @@ Array [
 exports[`Timeline Basic rundown 2`] = `
 Array [
   Object {
-    "_id": "mockStudio11_playlist_randomId9002_status",
-    "classes": Array [
-      "rundown_active",
-    ],
-    "content": Object {
-      "deviceType": 0,
-    },
-    "enable": Object {
-      "while": 1,
-    },
-    "id": "playlist_randomId9002_status",
-    "layer": "rundown_status",
-    "objectType": "rundown",
-    "studioId": "mockStudio11",
-  },
-  Object {
-    "_id": "mockStudio10_part_group_randomId11002_part0_0_randomId11004",
-    "children": Array [],
-    "content": Object {
-      "deviceType": 0,
-      "type": "group",
-    },
-    "enable": Object {
-      "setFromNow": true,
-      "start": 100000,
-    },
-    "id": "part_group_randomId9002_part0_0_randomId9007",
-    "isGroup": true,
-    "isPartGroup": true,
-    "layer": "",
-    "objectType": "rundown",
-    "priority": 5,
-    "studioId": "mockStudio11",
-  },
-  Object {
-    "_id": "mockStudio11_part_group_firstobject_randomId9002_part0_0_randomId9007",
-    "classes": Array [],
-    "content": Object {
-      "callBack": "partPlaybackStarted",
-      "callBackData": Object {
-        "partInstanceId": "randomId9002_part0_0_randomId9007",
-        "rundownPlaylistId": "playlist_randomId9002",
+    "_id": "mockStudio11",
+    "timeline": Array [
+      Object {
+        "_id": "mockStudio11_playlist_randomId9002_status",
+        "classes": Array [
+          "rundown_active",
+        ],
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "while": 1,
+        },
+        "id": "playlist_randomId9002_status",
+        "layer": "rundown_status",
+        "objectType": "rundown",
+        "studioId": "mockStudio11",
       },
       Object {
         "_id": "mockStudio11_part_group_randomId9002_part0_0_randomId9007",
@@ -203,21 +178,28 @@ Array [
 exports[`Timeline Basic rundown 3`] = `
 Array [
   Object {
-    "_id": "mockStudio10_baseline_version",
-    "content": Object {
-      "deviceType": 0,
-    },
-    "enable": Object {
-      "start": 0,
-    },
-    "id": "baseline_version",
-    "layer": "baseline_version",
-    "metaData": Object {
-      "versions": Object {
-        "blueprintId": "mockBlueprint7",
-        "blueprintVersion": "0.0.0",
-        "core": "0.0.0-test",
-        "studio": "asdf",
+    "_id": "mockStudio11",
+    "timeline": Array [
+      Object {
+        "_id": "mockStudio11_baseline_version",
+        "content": Object {
+          "deviceType": 0,
+        },
+        "enable": Object {
+          "start": 0,
+        },
+        "id": "baseline_version",
+        "layer": "baseline_version",
+        "metaData": Object {
+          "versions": Object {
+            "blueprintId": "mockBlueprint7",
+            "blueprintVersion": "0.0.0",
+            "core": "1.12.0-in-development",
+            "studio": "asdf",
+          },
+        },
+        "objectType": "rundown",
+        "studioId": "mockStudio11",
       },
     ],
   },
