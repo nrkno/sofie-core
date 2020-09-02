@@ -17,6 +17,7 @@ import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints
 import * as crypto from 'crypto'
 import { DeepReadonly } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+import { _DeepReadonlyArray } from 'utility-types/dist/mapped-types'
 const cloneOrg = require('fast-clone')
 
 export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
@@ -1357,6 +1358,13 @@ export function unprotectObjectArray<T extends object>(obj: T[]): UnprotectedStr
 }
 export function isStringOrProtectedString<T extends ProtectedString<any>>(val: any): val is string | T {
 	return _.isString(val)
+}
+
+export function unReadOnlyProtectedString<T extends ProtectedString<any>>(val: DeepReadonly<T>): T {
+	return val as any
+}
+export function unReadOnlyProtectedStringArray<T extends ProtectedString<any>>(val: _DeepReadonlyArray<T>): T[] {
+	return val as any
 }
 
 export function isPromise<T extends any>(val: any): val is Promise<T> {

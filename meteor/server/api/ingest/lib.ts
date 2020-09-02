@@ -1,6 +1,16 @@
 import { Meteor } from 'meteor/meteor'
-import { getHash, getCurrentTime, protectString, unprotectObject } from '../../../lib/lib'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import {
+	getHash,
+	getCurrentTime,
+	protectString,
+	unprotectObject,
+	isProtectedString,
+	waitForPromise,
+	waitForPromiseAll,
+	asyncCollectionFindOne,
+	asyncCollectionFindFetch,
+} from '../../../lib/lib'
+import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
@@ -12,14 +22,18 @@ import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { SegmentId, Segment, Segments } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
+import { PartId, Part } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { CacheForRundownPlaylist, CacheForIngest, ReadOnlyCache } from '../../DatabaseCaches'
 import { touchRundownPlaylistsInCache } from '../playout/lib'
 import { Credentials } from '../../security/lib/credentials'
 import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { syncFunction } from '../../codeControl'
+import { DeepReadonly } from 'utility-types'
+import { rundownPlaylistCustomSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -34,10 +48,10 @@ export function checkAccessAndGetPeripheralDevice(
 	return peripheralDevice
 }
 
-export function getRundownId(studio: Studio, rundownExternalId: string): RundownId {
+export function getRundownId(studio: DeepReadonly<Studio> | StudioId, rundownExternalId: string): RundownId {
 	if (!studio) throw new Meteor.Error(500, 'getRundownId: studio not set!')
 	if (!rundownExternalId) throw new Meteor.Error(401, 'getRundownId: rundownExternalId must be set!')
-	return protectString<RundownId>(getHash(`${studio._id}_${rundownExternalId}`))
+	return protectString<RundownId>(getHash(`${isProtectedString(studio) ? studio : studio._id}_${rundownExternalId}`))
 }
 export function getSegmentId(rundownId: RundownId, segmentExternalId: string): SegmentId {
 	if (!rundownId) throw new Meteor.Error(401, 'getSegmentId: rundownId must be set!')
@@ -73,8 +87,22 @@ export function getRundown(rundownId: RundownId, externalRundownId: string): Run
 	rundown.touch()
 	return rundown
 }
+export function getRundown2(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): DeepReadonly<Rundown> {
+	const rundown = cache.Rundown.doc
+	if (!rundown) {
+		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
+		throw new Meteor.Error(404, `Rundown "${rundownId}" ("${cache.RundownExternalId}") not found`)
+	}
+	rundown.touch()
+	return rundown
+}
 export function getSegment(segmentId: SegmentId): Segment {
 	const segment = Segments.findOne(segmentId)
+	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
+	return segment
+}
+export function getSegment2(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest, segmentId: SegmentId): Segment {
+	const segment = cache.Segments.findOne(segmentId)
 	if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found`)
 	return segment
 }
@@ -95,6 +123,91 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 		)
 	return device
 }
+export function getShowStyleBaseIngest(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ShowStyleBase {
+	const rundown = getRundown2(cache)
+	const showStyle = ShowStyleBases.findOne(rundown.showStyleBaseId)
+	if (!showStyle) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found`)
+	return showStyle
+}
+
+export interface IngestPlayoutInfo {
+	readonly playlist: DeepReadonly<RundownPlaylist>
+	readonly rundowns: DeepReadonly<Array<Rundown>>
+	readonly currentPartInstance: DeepReadonly<PartInstance> | undefined
+	readonly nextPartInstance: DeepReadonly<PartInstance> | undefined
+}
+
+export function rundownIngestSyncFunction<T>(
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	fcn: (cache: ReadOnlyCache<CacheForIngest>) => T,
+	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null
+): void {
+	const studioId = getStudioIdFromDevice(peripheralDevice)
+	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
+
+	updateDeviceLastDataReceived(peripheralDevice._id)
+
+	return rundownIngestSyncFromStudioFunction(studioId, rundownExternalId, fcn, saveFcn)
+}
+
+export function rundownIngestSyncFromStudioFunction<T>(
+	studioId: StudioId,
+	rundownExternalId: string,
+	fcn: (cache: CacheForIngest) => T,
+	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null
+): void {
+	return syncFunction(() => {
+		const cache = waitForPromise(CacheForIngest.create(studioId, rundownExternalId))
+
+		const val = fcn(cache)
+
+		const rundown = getRundown2(cache)
+		rundownPlaylistCustomSyncFunction(rundown.playlistId, RundownSyncFunctionPriority.INGEST, () => {
+			if (saveFcn) {
+				const [playlist, rundowns] = waitForPromiseAll([
+					asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
+					asyncCollectionFindFetch(Rundowns, { playlistId: rundown.playlistId }),
+				])
+
+				if (!playlist)
+					throw new Meteor.Error(
+						404,
+						`RundownPlaylist "${rundown.playlistId}"  (for Rundown "${rundown._id}") not found`
+					)
+
+				const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(
+					rundowns.map((r) => r._id)
+				)
+
+				const playoutInfo: IngestPlayoutInfo = {
+					playlist,
+					rundowns,
+					currentPartInstance,
+					nextPartInstance,
+				}
+
+				saveFcn(cache, playoutInfo, val)
+			}
+
+			waitForPromise(cache.saveAllToDatabase())
+		})
+	}, `rundown_ingest_${rundownExternalId}`)()
+}
+
+// export function rundownPlaylistIngestSaveSyncFunction<T>(
+// 	ingestCache: CacheForIngest,
+// 	fcn: (cache: CacheForIngest) => T
+// ): T {
+// 	return const rundown = getRundown2(cache)
+// 	rundownPlaylistCustomSyncFunction(rundown.playlistId, RundownSyncFunctionPriority.INGEST, () => {
+// 		if (saveFcn) {
+// 			saveFcn(cache, cache)
+// 		}
+
+// 		waitForPromise(cache.saveAllToDatabase())
+// 	})
+// }
 
 function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 	PeripheralDevices.update(deviceId, {
@@ -104,7 +217,7 @@ function updateDeviceLastDataReceived(deviceId: PeripheralDeviceId) {
 	})
 }
 
-export function canBeUpdated(rundown: Rundown | undefined, segment?: Segment, _partId?: PartId) {
+export function canBeUpdated(rundown: DeepReadonly<Rundown> | undefined, segment?: Segment, _partId?: PartId) {
 	if (!rundown) return true
 	if (rundown.unsynced) {
 		logger.info(`Rundown "${rundown._id}" has been unsynced and needs to be synced before it can be updated.`)
@@ -122,7 +235,7 @@ export function canBeUpdated(rundown: Rundown | undefined, segment?: Segment, _p
 }
 export function extendIngestRundownCore(
 	ingestRundown: IngestRundown,
-	existingDbRundown: Rundown | undefined
+	existingDbRundown: DeepReadonly<Rundown> | undefined
 ): ExtendedIngestRundown {
 	const extendedIngestRundown: ExtendedIngestRundown = {
 		...ingestRundown,
@@ -133,4 +246,41 @@ export function extendIngestRundownCore(
 export function modifyPlaylistExternalId(playlistExternalId: string | undefined, showStyleBase: ShowStyleBase) {
 	if (playlistExternalId) return `${showStyleBase._id}_${playlistExternalId}`
 	else return undefined
+}
+
+export function getRundownSegmentsAndPartsFromIngestCache(
+	cache: CacheForIngest
+): { segments: Segment[]; parts: Part[] } {
+	const rundown = getRundown2(cache)
+
+	const segments = RundownPlaylist._sortSegments(
+		cache.Segments.findFetch(
+			{},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
+			}
+		),
+		[rundown]
+	)
+
+	const parts = RundownPlaylist._sortPartsInner(
+		cache.Parts.findFetch(
+			{},
+			{
+				sort: {
+					rundownId: 1,
+					_rank: 1,
+				},
+			}
+		),
+		segments
+	)
+
+	return {
+		segments: segments,
+		parts: parts,
+	}
 }

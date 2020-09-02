@@ -18,6 +18,7 @@ import {
 	asyncCollectionFindOne,
 	asyncCollectionUpdate,
 	protectStringArray,
+	asyncCollectionUpsert,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
@@ -37,7 +38,11 @@ export function isDbCacheWriteObject(o: any): o is DbCacheWriteObject<any, any> 
 	return !!(o && typeof o === 'object' && o.savePendingUpdateToDatabase)
 }
 
-export class DbCacheReadObject<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
+export class DbCacheReadObject<
+	Class extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> },
+	DocOptional extends boolean = false
+> {
 	protected _document: Class
 	private _initialized = false
 
@@ -71,27 +76,31 @@ export class DbCacheReadObject<Class extends DBInterface, DBInterface extends { 
 		this._initialized = true
 	}
 
-	get doc(): DeepReadonly<Class> {
+	get doc(): DocOptional extends true ? DeepReadonly<Class> | undefined : DeepReadonly<Class> {
 		return this._document as any
 	}
 }
 
 export class DbCacheWriteObject<
 	Class extends DBInterface,
-	DBInterface extends { _id: ProtectedString<any> }
-> extends DbCacheReadObject<Class, DBInterface> {
+	DBInterface extends { _id: ProtectedString<any> },
+	DocOptional extends boolean = false
+> extends DbCacheReadObject<Class, DBInterface, DocOptional> {
 	private _updated = false
 
 	constructor(collection: TransformedCollection<Class, DBInterface>) {
 		super(collection)
 	}
 
-	update(modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>): void {
-		let newDoc: DBInterface = _.isFunction(modifier)
-			? modifier(clone(this.doc))
-			: mongoModify({}, clone(this.doc), modifier)
+	update(modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>): boolean {
+		const localDoc: DeepReadonly<Class> | undefined = this.doc
+		if (!localDoc) throw new Meteor.Error(404, `Error: The document does not yet exist`)
 
-		if (unprotectString(newDoc._id) !== unprotectString(this.doc._id)) {
+		let newDoc: DBInterface = _.isFunction(modifier)
+			? modifier(clone(localDoc))
+			: mongoModify({}, clone(localDoc), modifier)
+
+		if (unprotectString(newDoc._id) !== unprotectString(localDoc._id)) {
 			throw new Meteor.Error(
 				500,
 				`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
@@ -102,11 +111,14 @@ export class DbCacheWriteObject<
 			newDoc = this._transform(newDoc)
 
 			_.each(_.uniq([..._.keys(newDoc), ..._.keys(this.doc)]), (key) => {
-				this.doc[key] = newDoc[key]
+				localDoc[key] = newDoc[key]
 			})
 
 			this._updated = true
+			return true
 		}
+
+		return false
 	}
 
 	async savePendingUpdateToDatabase() {
@@ -128,6 +140,39 @@ export class DbCacheWriteObject<
 		if (transform) {
 			return transform(doc)
 		} else return doc as Class
+	}
+}
+
+export class DbCacheWriteOptionalObject<
+	Class extends DBInterface,
+	DBInterface extends { _id: ProtectedString<any> }
+> extends DbCacheWriteObject<Class, DBInterface, true> {
+	private _inserted = false
+
+	constructor(collection: TransformedCollection<Class, DBInterface>) {
+		super(collection)
+	}
+
+	replace(doc: DBInterface): DeepReadonly<Class> {
+		this._inserted = true
+
+		if (!doc._id) doc._id = getRandomId()
+
+		this._document = this._transform(clone(doc))
+
+		return this._document as any
+	}
+
+	async savePendingUpdateToDatabase() {
+		if (this._inserted) {
+			const span = profiler.startSpan(`DbCacheWriteOptionalObject.savePendingUpdateToDatabase.${this.name}`)
+
+			await asyncCollectionUpsert(this._collection, this._document._id, this._document)
+
+			if (span) span.end()
+		} else {
+			await super.savePendingUpdateToDatabase()
+		}
 	}
 }
 

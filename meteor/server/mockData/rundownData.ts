@@ -11,7 +11,6 @@ import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/Rundo
 import { Settings } from '../../lib/Settings'
 import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../api/playout/lib'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 import { rundownPlaylistPlayoutSyncFunction } from '../api/playout/playout'
 

@@ -11,7 +11,9 @@ import { logger } from '../logging'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../lib/collections/Studios'
 import { BucketId } from '../../lib/collections/Buckets'
-import { CacheForRundownPlaylist } from '../DatabaseCaches'
+import { CacheForIngest } from '../DatabaseCaches'
+import { getRundownId } from './ingest/lib'
+import { saveIntoCache } from '../DatabaseCache'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -107,108 +109,88 @@ export const updateExpectedMediaItemForBucketAdLibPiece: (
 	}
 })
 
-export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-	check(rundownId, String)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
+export function updateExpectedMediaItemsOnRundown(cache: CacheForIngest): void {
+	const rundown = cache.Rundown.doc
 	if (!rundown) {
-		cache.defer(() => {
-			const removedItems = ExpectedMediaItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
-		})
+		const removedItems = cache.ExpectedMediaItems.remove({})
+		const rundownId = getRundownId(cache.Studio.doc, cache.RundownExternalId)
+		logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
 		return
 	}
 	const studioId = rundown.studioId
+	const rundownId = rundown._id
 
-	const pieces = cache.Pieces.findFetch({
-		startRundownId: rundown._id,
-	})
+	const eMIs: ExpectedMediaItem[] = []
 
-	cache.defer(() => {
-		const adlibs = AdLibPieces.find({
-			rundownId: rundown._id,
-		}).fetch()
-
-		const eMIs: ExpectedMediaItem[] = []
-
-		function iterateOnPieceLike(piece: PieceGeneric, partId: PartId | undefined, pieceType: string) {
-			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
-		}
-
-		pieces.forEach((doc) => iterateOnPieceLike(doc, doc.startPartId, PieceType.PIECE))
-		adlibs.forEach((doc) => iterateOnPieceLike(doc, doc.partId, PieceType.ADLIB))
-
-		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
-			ExpectedMediaItems,
-			{
-				rundownId: rundown._id,
-			},
-			eMIs
-		)
-	})
-}
-
-export function updateExpectedMediaItemsOnPart(
-	cache: CacheForRundownPlaylist,
-	rundownId: RundownId,
-	partId: PartId
-): void {
-	check(rundownId, String)
-	check(partId, String)
-
-	const rundown = cache.Rundowns.findOne(rundownId)
-	if (!rundown) {
-		cache.defer(() => {
-			const removedItems = ExpectedMediaItems.remove({
-				rundownId: rundownId,
-			})
-			logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
-		})
-		return
-	}
-	const studioId = rundown.studioId
-
-	const part = cache.Parts.findOne(partId)
-	if (!part) {
-		cache.defer(() => {
-			const removedItems = ExpectedMediaItems.remove({
-				rundownId: rundownId,
-				partId: partId,
-			})
-			logger.info(`Removed ${removedItems} expected media items for deleted part "${partId}"`)
-		})
-		return
+	function iterateOnPieceLike(piece: PieceGeneric, partId: PartId | undefined, pieceType: string) {
+		eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
 	}
 
-	const pieces = cache.Pieces.findFetch({
-		startRundownId: rundown._id,
-		startPartId: partId,
-	})
+	cache.Pieces.findFetch({}).forEach((doc) => iterateOnPieceLike(doc, doc.startPartId, PieceType.PIECE))
+	cache.AdLibPieces.findFetch({}).forEach((doc) => iterateOnPieceLike(doc, doc.partId, PieceType.ADLIB))
 
-	cache.defer(() => {
-		const eMIs: ExpectedMediaItem[] = []
-
-		const adlibs = AdLibPieces.find({
-			rundownId: rundown._id,
-			partId: partId,
-		}).fetch()
-
-		function iterateOnPieceLike(piece: PieceGeneric, pieceType: string) {
-			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
-		}
-
-		pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
-		adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
-
-		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
-			ExpectedMediaItems,
-			{
-				rundownId: rundown._id,
-				partId: partId,
-			},
-			eMIs
-		)
-	})
+	saveIntoCache<ExpectedMediaItem, ExpectedMediaItem>(cache.ExpectedMediaItems, {}, eMIs)
 }
+
+// export function updateExpectedMediaItemsOnPart(
+// 	cache: CacheForRundownPlaylist,
+// 	rundownId: RundownId,
+// 	partId: PartId
+// ): void {
+// 	check(rundownId, String)
+// 	check(partId, String)
+
+// 	const rundown = cache.Rundowns.findOne(rundownId)
+// 	if (!rundown) {
+// 		cache.defer(() => {
+// 			const removedItems = ExpectedMediaItems.remove({
+// 				rundownId: rundownId,
+// 			})
+// 			logger.info(`Removed ${removedItems} expected media items for deleted rundown "${rundownId}"`)
+// 		})
+// 		return
+// 	}
+// 	const studioId = rundown.studioId
+
+// 	const part = cache.Parts.findOne(partId)
+// 	if (!part) {
+// 		cache.defer(() => {
+// 			const removedItems = ExpectedMediaItems.remove({
+// 				rundownId: rundownId,
+// 				partId: partId,
+// 			})
+// 			logger.info(`Removed ${removedItems} expected media items for deleted part "${partId}"`)
+// 		})
+// 		return
+// 	}
+
+// 	const pieces = cache.Pieces.findFetch({
+// 		startRundownId: rundown._id,
+// 		startPartId: partId,
+// 	})
+
+// 	cache.defer(() => {
+// 		const eMIs: ExpectedMediaItem[] = []
+
+// 		const adlibs = AdLibPieces.find({
+// 			rundownId: rundown._id,
+// 			partId: partId,
+// 		}).fetch()
+
+// 		function iterateOnPieceLike(piece: PieceGeneric, pieceType: string) {
+// 			eMIs.push(...generateExpectedMediaItems(rundownId, studioId, partId, piece, pieceType))
+// 		}
+
+// 		pieces.forEach((doc) => iterateOnPieceLike(doc, PieceType.PIECE))
+// 		adlibs.forEach((doc) => iterateOnPieceLike(doc, PieceType.ADLIB))
+
+// 		saveIntoDb<ExpectedMediaItem, ExpectedMediaItem>(
+// 			ExpectedMediaItems,
+// 			{
+// 				rundownId: rundown._id,
+// 				partId: partId,
+// 			},
+// 			eMIs
+// 		)
+// 	})
+// }

@@ -223,7 +223,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	readonly notesContext: NotesContext
 
 	constructor(
-		studio: Studio,
+		studio: DeepReadonly<Studio>,
 		private readonly cache: CacheForRundownPlaylist | undefined,
 		readonly _rundown: Rundown | undefined,
 		readonly showStyleBaseId: ShowStyleBaseId,
@@ -327,10 +327,14 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 export class RundownContext extends ShowStyleContext implements IRundownContext, IEventContext {
 	readonly rundownId: string
 	readonly rundown: Readonly<IBlueprintRundownDB>
-	readonly _rundown: Rundown
+	readonly _rundown: DeepReadonly<Rundown>
 	readonly playlistId: RundownPlaylistId
 
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext | undefined) {
+	constructor(
+		rundown: DeepReadonly<Rundown>,
+		cache: CacheForRundownPlaylist,
+		notesContext: NotesContext | undefined
+	) {
 		super(
 			cache.activationCache.getStudio(),
 			cache,

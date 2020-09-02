@@ -15,6 +15,7 @@ import {
 	DbCacheReadObject,
 	isDbCacheWriteObject,
 	DbCacheWriteObject,
+	DbCacheWriteOptionalObject,
 } from './DatabaseCache'
 import { Segment, Segments, DBSegment } from '../lib/collections/Segments'
 import { Parts, DBPart, Part } from '../lib/collections/Parts'
@@ -26,7 +27,15 @@ import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime, clone } from '../lib/lib'
+import {
+	protectString,
+	waitForPromiseAll,
+	waitForPromise,
+	makePromise,
+	getCurrentTime,
+	clone,
+	unprotectString,
+} from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -35,6 +44,10 @@ import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/
 import { isInTestWrite } from './security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
 import { profiler } from './api/profiler'
+import { getRundownId } from './api/ingest/lib'
+import { run } from 'tslint/lib/runner'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../lib/collections/ExpectedPlayoutItems'
+import { ExpectedMediaItem, ExpectedMediaItems } from '../lib/collections/ExpectedMediaItems'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -98,21 +111,72 @@ export abstract class Cache {
 	}
 }
 
+export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T extends DbCacheWriteObject<infer A, infer B>
+	? DbCacheReadObject<A, B>
+	: T
+export type ReadOnlyCache<T extends Cache> = { [K in keyof T]: ReadOnlyCacheInner<T[K]> }
+
 export class CacheForIngest extends Cache {
 	public readonly isIngest = true
 
-	public readonly studio: DbCacheReadObject<Studio, Studio>
+	public readonly Studio: DbCacheReadObject<Studio, Studio>
+	public readonly Rundown: DbCacheWriteOptionalObject<Rundown, DBRundown>
+	public readonly RundownExternalId: string
 
-	private constructor() {
+	public readonly Segments: DbCacheWriteCollection<Segment, DBSegment>
+	public readonly Parts: DbCacheWriteCollection<Part, DBPart>
+	public readonly Pieces: DbCacheWriteCollection<Piece, Piece>
+
+	public readonly AdLibPieces: DbCacheWriteCollection<AdLibPiece, AdLibPiece>
+	public readonly AdLibActions: DbCacheWriteCollection<AdLibAction, AdLibAction>
+
+	public readonly ExpectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>
+	public readonly ExpectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
+
+	private constructor(rundownExternalId: string) {
 		super()
 
-		this.studio = new DbCacheReadObject<Studio, Studio>(Studios)
+		this.Studio = new DbCacheReadObject<Studio, Studio>(Studios)
+		this.Rundown = new DbCacheWriteOptionalObject<Rundown, DBRundown>(Rundowns)
+		this.RundownExternalId = rundownExternalId
+
+		this.Segments = new DbCacheWriteCollection<Segment, DBSegment>(Segments)
+		this.Parts = new DbCacheWriteCollection<Part, DBPart>(Parts)
+		this.Pieces = new DbCacheWriteCollection<Piece, Piece>(Pieces)
+
+		this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
+		this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
+
+		this.ExpectedMediaItems = new DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>(ExpectedMediaItems)
+		this.ExpectedPlayoutItems = new DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>(
+			ExpectedPlayoutItems
+		)
 	}
 
-	static async create(studioCache: CacheForStudio2, playlistId: RundownPlaylistId): Promise<CacheForIngest> {
-		const res = new CacheForIngest()
+	static async create(studioId: StudioId, rundownExternalId: string): Promise<CacheForIngest> {
+		const res = new CacheForIngest(rundownExternalId)
 
-		res.studio._fromDoc(clone<Studio>(studioCache.Studio.doc))
+		await Promise.all([
+			res.Studio._initialize(studioId),
+			res.Rundown._initialize(getRundownId(studioId, rundownExternalId)),
+		])
+
+		// TODO - we need to ensure to not wipe playout changes to Rundown when saving
+
+		const rundownId = res.Rundown.doc?._id ?? protectString('')
+		await Promise.all([
+			makePromise(() => res.Segments.prepareInit({ rundownId: rundownId }, true)),
+			makePromise(() => res.Parts.prepareInit({ rundownId: rundownId }, true)),
+			makePromise(() => res.Pieces.prepareInit({ startRundownId: rundownId }, true)),
+
+			makePromise(() => res.AdLibPieces.prepareInit({ rundownId: rundownId }, true)),
+			makePromise(() => res.AdLibActions.prepareInit({ rundownId: rundownId }, true)),
+
+			makePromise(() => res.ExpectedMediaItems.prepareInit({ rundownId: rundownId }, true)),
+			makePromise(() => res.ExpectedPlayoutItems.prepareInit({ rundownId: rundownId }, true)),
+		])
 
 		return res
 	}
@@ -159,7 +223,7 @@ export interface CacheForStudioBase2 {
 	readonly RecordedFiles: DbCacheReadCollection<RecordedFile, RecordedFile>
 }
 
-export class CacheForStudio2 implements CacheForStudioBase2 {
+export class CacheForStudio2 extends Cache implements CacheForStudioBase2 {
 	public readonly isStudio = true
 
 	public readonly Studio: DbCacheReadObject<Studio, Studio>
@@ -169,6 +233,8 @@ export class CacheForStudio2 implements CacheForStudioBase2 {
 	public readonly RecordedFiles: DbCacheReadCollection<RecordedFile, RecordedFile>
 
 	private constructor() {
+		super()
+
 		this.Studio = new DbCacheReadObject<Studio, Studio>(Studios)
 
 		this.RundownPlaylists = new DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)

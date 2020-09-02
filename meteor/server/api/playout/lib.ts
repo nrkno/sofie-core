@@ -31,6 +31,7 @@ import { isAnySyncFunctionsRunning } from '../../codeControl'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
+import { DeepReadonly } from 'utility-types'
 
 /**
  * Reset the rundown:
@@ -539,7 +540,7 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 const AUTOTAKE_UPDATE_DEBOUNCE = 5000
 const AUTOTAKE_TAKE_DEBOUNCE = 1000
 
-export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefined, isTake?: boolean) {
+export function isTooCloseToAutonext(currentPartInstance: DeepReadonly<PartInstance> | undefined, isTake?: boolean) {
 	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
@@ -710,11 +711,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 
 	const segments = RundownPlaylist._sortSegments(
 		cache.Segments.findFetch(
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
+			{},
 			{
 				sort: {
 					rundownId: 1,
@@ -727,11 +724,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 
 	const parts = RundownPlaylist._sortPartsInner(
 		cache.Parts.findFetch(
-			{
-				rundownId: {
-					$in: rundownIds,
-				},
-			},
+			{},
 			{
 				sort: {
 					rundownId: 1,
