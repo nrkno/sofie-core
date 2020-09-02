@@ -228,7 +228,7 @@ export enum RundownViewKbdShortcuts {
 	// RUNDOWN_DISABLE_NEXT_ELEMENT = 'g',
 	// RUNDOWN_UNDO_DISABLE_NEXT_ELEMENT = 'shift+g',
 	RUNDOWN_LOG_ERROR = 'shift+backspace',
-	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = '',
+	SHOW_CURRENT_SEGMENT_FULL_NONLATCH = 'z',
 }
 
 const TimingDisplay = withTranslation()(
