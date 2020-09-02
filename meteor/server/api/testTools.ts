@@ -23,6 +23,8 @@ import { updateTimeline } from './playout/timeline'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { initCacheForRundownPlaylistFromStudio } from '../DatabaseCaches'
+import { DeepReadonly } from 'utility-types'
+import { studioSyncFunction } from './ingest/rundownInput'
 
 const deleteRequest = promisify(request.delete)
 
@@ -34,13 +36,16 @@ const defaultConfig = {
 	channelFormat: TSR.ChannelFormat.HD_1080I5000,
 	prefix: '',
 }
-export function getStudioConfig(studio: Studio): ITestToolsConfig {
+export function getStudioConfig(studio: DeepReadonly<Studio>): ITestToolsConfig {
 	const config: ITestToolsConfig = studio.testToolsConfig || { recordings: defaultConfig }
 	if (!config.recordings) config.recordings = defaultConfig
 	return config
 }
 
-export function generateRecordingTimelineObjs(studio: Studio, recording: RecordedFile): TimelineObjRecording[] {
+export function generateRecordingTimelineObjs(
+	studio: DeepReadonly<Studio>,
+	recording: RecordedFile
+): TimelineObjRecording[] {
 	if (!studio) throw new Meteor.Error(404, `Studio was not defined!`)
 	if (!recording) throw new Meteor.Error(404, `Recording was not defined!`)
 
@@ -105,8 +110,7 @@ export namespace ServerTestToolsAPI {
 		check(studioId, String)
 		checkAccessAndGetStudio(context, studioId)
 
-		const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
-		const updated = cache.RecordedFiles.update(
+		const updated = RecordedFiles.update(
 			{
 				studioId: studioId,
 				stoppedAt: { $exists: false },
@@ -120,9 +124,9 @@ export namespace ServerTestToolsAPI {
 
 		if (updated === 0) throw new Meteor.Error(404, `No active recording for "${studioId}" was found!`)
 
-		updateTimeline(cache, studioId)
-
-		waitForPromise(cache.saveAllToDatabase())
+		studioSyncFunction(studioId, (cache) => {
+			updateTimeline(cache, studioId)
+		})
 	}
 
 	export function recordStart(context: MethodContext, studioId: StudioId, name: string) {
@@ -130,9 +134,8 @@ export namespace ServerTestToolsAPI {
 		check(name, String)
 
 		const studio = checkAccessAndGetStudio(context, studioId)
-		const cache = waitForPromise(initCacheForRundownPlaylistFromStudio(studioId))
 
-		const active = cache.RecordedFiles.findOne({
+		const active = RecordedFiles.findOne({
 			studioId: studioId,
 			stoppedAt: { $exists: false },
 		})
@@ -174,7 +177,7 @@ export namespace ServerTestToolsAPI {
 		const fileId: RecordedFileId = getRandomId(7)
 		const path = (config.recordings.filePrefix || defaultConfig.prefix) + fileId + '.mp4'
 
-		cache.RecordedFiles.insert({
+		RecordedFiles.insert({
 			_id: fileId,
 			studioId: studioId,
 			modified: getCurrentTime(),
@@ -183,9 +186,9 @@ export namespace ServerTestToolsAPI {
 			path: path,
 		})
 
-		updateTimeline(cache, studioId)
-
-		waitForPromise(cache.saveAllToDatabase())
+		studioSyncFunction(studioId, (cache) => {
+			updateTimeline(cache, studioId)
+		})
 	}
 
 	export function recordDelete(context: MethodContext, fileId: RecordedFileId) {
@@ -195,7 +198,7 @@ export namespace ServerTestToolsAPI {
 		const file = access.file
 		if (!file) throw new Meteor.Error(404, `Recording "${fileId}" was not found!`)
 
-		const studio = Studios.findOne(file.studioId)
+		const studio = access.studio
 		if (!studio) throw new Meteor.Error(404, `Studio "${file.studioId}" was not found!`)
 
 		const config = getStudioConfig(studio)

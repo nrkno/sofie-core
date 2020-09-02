@@ -2,14 +2,13 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../../lib/check'
 import { IngestActions } from './actions'
-import { updateTimeline, getActiveRundownPlaylist } from '../playout/timeline'
+import { updateTimeline } from '../playout/timeline'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
 
 import { Settings } from '../../../lib/Settings'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
-import { waitForPromise } from '../../../lib/lib'
-import { rundownPlaylistPlayoutSyncFunction } from '../playout/playout'
+import { studioSyncFunction } from './rundownInput'
+import { getActiveRundownPlaylistsInStudio2 } from '../playout/studio'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
@@ -20,17 +19,17 @@ if (!Settings.enableUserAccounts) {
 		debug_updateTimeline: (studioId: StudioId) => {
 			check(studioId, String)
 
-			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-
-			const activePlaylist = getActiveRundownPlaylist(cache, studioId)
-			if (activePlaylist) {
-				const cacheForPlaylist = waitForPromise(initCacheForRundownPlaylist(activePlaylist, cache))
-				updateTimeline(cacheForPlaylist, studioId)
-				waitForPromise(cacheForPlaylist.saveAllToDatabase())
-			} else {
-				updateTimeline(cache, studioId)
-				waitForPromise(cache.saveAllToDatabase())
-			}
+			return studioSyncFunction(studioId, (cache) => {
+				const activePlaylists = getActiveRundownPlaylistsInStudio2(cache)
+				if (activePlaylists.length === 0) {
+					updateStudioTimeline(cache)
+				} else if (activePlaylists.length === 1) {
+					// TODO
+					updateTimeline(cache, studioId)
+				} else {
+					throw new Meteor.Error(500, `Cannot updateTimeline of studio with multiple active timelines!`)
+				}
+			})
 		},
 	})
 }

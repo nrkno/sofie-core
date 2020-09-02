@@ -26,7 +26,7 @@ import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime } from '../lib/lib'
+import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime, clone } from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -109,10 +109,10 @@ export class CacheForIngest extends Cache {
 		this.studio = new DbCacheReadObject<Studio, Studio>(Studios)
 	}
 
-	static async create(studioCache: CacheForStudio, playlistId: RundownPlaylistId): Promise<CacheForIngest> {
+	static async create(studioCache: CacheForStudio2, playlistId: RundownPlaylistId): Promise<CacheForIngest> {
 		const res = new CacheForIngest()
 
-		res.studio._fromDoc(studioCache.Studios.findOne()!) // TODO - simplify
+		res.studio._fromDoc(clone<Studio>(studioCache.Studio.doc))
 
 		return res
 	}
@@ -152,32 +152,65 @@ export abstract class CacheForPlayoutPreInit extends Cache {
 	}
 }
 
-export class CacheForPlayout extends CacheForPlayoutPreInit {
+export interface CacheForStudioBase2 {
+	readonly Studio: DbCacheReadObject<Studio, Studio>
+
+	readonly Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
+	readonly RecordedFiles: DbCacheReadCollection<RecordedFile, RecordedFile>
+}
+
+export class CacheForStudio2 implements CacheForStudioBase2 {
+	public readonly isStudio = true
+
+	public readonly Studio: DbCacheReadObject<Studio, Studio>
+
+	public readonly RundownPlaylists: DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>
 	public readonly Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
+	public readonly RecordedFiles: DbCacheReadCollection<RecordedFile, RecordedFile>
+
+	private constructor() {
+		this.Studio = new DbCacheReadObject<Studio, Studio>(Studios)
+
+		this.RundownPlaylists = new DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
+		this.Timeline = new DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
+		this.RecordedFiles = new DbCacheReadCollection<RecordedFile, RecordedFile>(RecordedFiles)
+	}
+
+	static async create(studioId: StudioId): Promise<CacheForStudio2> {
+		const res = new CacheForStudio2()
+
+		res.Studio._initialize(studioId)
+
+		await Promise.all([
+			makePromise(() => res.RundownPlaylists.prepareInit({ studioId }, true)), // TODO - immediate?
+			makePromise(() => res.Timeline.prepareInit({ studioId }, true)), // TODO - immediate?
+			makePromise(() => res.RecordedFiles.prepareInit({ studioId }, true)), // TODO - immediate?
+		])
+
+		return res
+	}
+}
+
+export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForStudioBase2 {
+	public readonly Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
+	public readonly RecordedFiles: DbCacheReadCollection<RecordedFile, RecordedFile>
 
 	public readonly Segments: DbCacheReadCollection<Segment, DBSegment>
 	public readonly Parts: DbCacheWriteCollection<Part, DBPart> // TODO DbCacheReadCollection
 	public readonly PartInstances: DbCacheWriteCollection<PartInstance, DBPartInstance>
 	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance, PieceInstance>
-	// RundownBaselineObjs: DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>
 
 	private constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
 		super(studioId, playlistId)
 
 		this.Timeline = new DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
+		this.RecordedFiles = new DbCacheReadCollection<RecordedFile, RecordedFile>(RecordedFiles)
 
 		this.Segments = new DbCacheReadCollection<Segment, DBSegment>(Segments)
 		this.Parts = new DbCacheWriteCollection<Part, DBPart>(Parts)
 
 		this.PartInstances = new DbCacheWriteCollection<PartInstance, DBPartInstance>(PartInstances)
 		this.PieceInstances = new DbCacheWriteCollection<PieceInstance, PieceInstance>(PieceInstances)
-
-		// this.RundownBaselineObjs = new DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>(
-		// 	RundownBaselineObjs
-		// )
-
-		// this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
-		// this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
 	}
 
 	static async create(tmpPlaylist: RundownPlaylist): Promise<CacheForPlayout> {
@@ -189,8 +222,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit {
 	}
 
 	async initContent(): Promise<void> {
-		// TODO - initialise anything content that may be wanted]
-
 		const playlist = this.Playlist.doc
 
 		const ps: Promise<any>[] = []
@@ -223,45 +254,14 @@ export class CacheForPlayout extends CacheForPlayoutPreInit {
 			)
 		)
 
-		// ps.push(
-		// 	makePromise(() =>
-		// 		cache.RundownBaselineObjs.prepareInit(
-		// 			{
-		// 				rundownId: { $in: rundownIds },
-		// 			},
-		// 			initializeImmediately
-		// 		)
-		// 	)
-		// )
-
-		// ps.push(
-		// 	makePromise(() =>
-		// 		cache.AdLibPieces.prepareInit(
-		// 			{
-		// 				rundownId: { $in: rundownIds },
-		// 			},
-		// 			false
-		// 		)
-		// 	)
-		// )
-		// ps.push(
-		// 	makePromise(() =>
-		// 		cache.AdLibActions.prepareInit(
-		// 			{
-		// 				rundownId: { $in: rundownIds },
-		// 			},
-		// 			false
-		// 		)
-		// 	)
-		// )
-
-		// ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
-
 		await Promise.all(ps)
 
 		// This will be needed later, but we will do some other processing first
 		// TODO-CACHE what happens if this errors? where should that go?
-		makePromise(() => this.Timeline.prepareInit({ studioId: playlist.studioId }, true))
+		Promise.all([
+			makePromise(() => this.Timeline.prepareInit({ studioId: playlist.studioId }, true)),
+			makePromise(() => this.RecordedFiles.prepareInit({ studioId: playlist.studioId }, true)),
+		])
 	}
 }
 

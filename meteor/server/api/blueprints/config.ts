@@ -13,6 +13,7 @@ import { Meteor } from 'meteor/meteor'
 import { getShowStyleCompound, ShowStyleVariantId, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
+import { DeepReadonly } from 'utility-types'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -73,7 +74,7 @@ export namespace ConfigRef {
 	}
 }
 
-export function preprocessStudioConfig(studio: Studio, blueprint?: StudioBlueprintManifest) {
+export function preprocessStudioConfig(studio: DeepReadonly<Studio>, blueprint?: StudioBlueprintManifest) {
 	let res: any = {}
 	if (blueprint && blueprint.studioConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.studioConfigManifest, studio.blueprintConfig, `Studio ${studio._id}`)
@@ -103,7 +104,10 @@ export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprin
 	return res
 }
 
-export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, config: IBlueprintConfig) {
+export function findMissingConfigs(
+	manifest: ConfigManifestEntry[] | undefined,
+	config: DeepReadonly<IBlueprintConfig>
+) {
 	const missingKeys: string[] = []
 	if (manifest === undefined) {
 		return missingKeys
@@ -120,7 +124,7 @@ export function findMissingConfigs(manifest: ConfigManifestEntry[] | undefined, 
 export function applyToConfig(
 	res: any,
 	configManifest: ConfigManifestEntry[],
-	blueprintConfig: IBlueprintConfig,
+	blueprintConfig: DeepReadonly<IBlueprintConfig>,
 	source: string
 ) {
 	for (const val of configManifest) {

@@ -62,7 +62,8 @@ import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist, CacheForPlayout } from '../../../DatabaseCaches'
+import { DeepReadonly } from 'utility-types'
 
 /** Common */
 
@@ -163,8 +164,8 @@ interface Cache {
 /** Studio */
 
 export class StudioConfigContext implements IStudioConfigContext {
-	protected readonly studio: Studio
-	constructor(studio: Studio) {
+	protected readonly studio: DeepReadonly<Studio>
+	constructor(studio: DeepReadonly<Studio>) {
 		this.studio = studio
 	}
 
@@ -173,7 +174,7 @@ export class StudioConfigContext implements IStudioConfigContext {
 	}
 
 	getStudio(): Readonly<Studio> {
-		return this.studio
+		return this.studio as any // TODO-CACHE
 	}
 	getStudioConfig(): unknown {
 		const studioId = unprotectString(this.studio._id)
@@ -369,7 +370,7 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, partInstance: PartInstance) {
+	constructor(rundown: Rundown, cache: CacheForPlayout, partInstance: PartInstance) {
 		super(
 			rundown,
 			cache,

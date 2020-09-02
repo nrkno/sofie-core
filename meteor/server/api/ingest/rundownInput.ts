@@ -113,6 +113,7 @@ import {
 	CacheForStudio,
 	CacheForIngest,
 	CacheForPlayout,
+	CacheForStudio2,
 } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
@@ -144,9 +145,17 @@ export function rundownPlaylistSyncFunction<T extends Function>( // TODO - remov
 	return syncFunction(fcn, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
 }
 
-export function studioSyncFunction<T>(studioId: StudioId, fcn: (cache: CacheForStudio) => T): T {
+export function rundownPlaylistCustomSyncFunction<T>(
+	rundownPlaylistId: RundownPlaylistId,
+	priority: RundownSyncFunctionPriority,
+	fcn: () => T
+): T {
+	return syncFunction(fcn, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
+}
+
+export function studioSyncFunction<T>(studioId: StudioId, fcn: (cache: CacheForStudio2) => T): T {
 	return syncFunction(() => {
-		const cache = waitForPromise(initCacheForStudio(studioId))
+		const cache = waitForPromise(CacheForStudio2.create(studioId))
 
 		const res = fcn(cache)
 
@@ -156,9 +165,9 @@ export function studioSyncFunction<T>(studioId: StudioId, fcn: (cache: CacheForS
 	}, `studio_${studioId}`)()
 }
 
-export function rundownPlaylistFromStudioSyncFunction<T>(
+export function rundownPlaylistIngestFromStudioSyncFunction<T>(
 	rundownPlaylistId: RundownPlaylistId,
-	studioCache: CacheForStudio,
+	studioCache: CacheForStudio2,
 	priority: RundownSyncFunctionPriority,
 	fcn: (cache: CacheForIngest) => T
 ): T {

@@ -58,13 +58,62 @@ import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, CacheForStudio, CacheForStudioBase, CacheForPlayout } from '../../DatabaseCaches'
+import {
+	CacheForStudio,
+	CacheForStudioBase,
+	CacheForPlayout,
+	CacheForStudio2,
+	CacheForStudioBase2,
+} from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
+
+export function updateStudioTimeline(cache: CacheForStudio2) {
+	const span = profiler.startSpan('updateStudioTimeline')
+	logger.debug('updateStudioTimeline running...')
+	const studio = cache.Studio.doc
+
+	let studioBaseline: TimelineObjRundown[] = []
+
+	const studioBlueprint = loadStudioBlueprint(studio)
+	if (studioBlueprint) {
+		const blueprint = studioBlueprint.blueprint
+		const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
+		studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
+
+		const id = `baseline_version`
+		studioBaseline.push(
+			literal<TimelineObjRundown>({
+				id: id,
+				_id: protectString(''), // set later
+				studioId: protectString(''), // set later
+				objectType: TimelineObjType.RUNDOWN,
+				enable: { start: 0 },
+				layer: id,
+				metaData: {
+					versions: {
+						core: PackageInfo.versionExtended || PackageInfo.version,
+						blueprintId: studio.blueprintId,
+						blueprintVersion: blueprint.blueprintVersion,
+						studio: studio._rundownVersionHash,
+					},
+				},
+				content: {
+					deviceType: TSR.DeviceType.ABSTRACT,
+				},
+			})
+		)
+	}
+
+	processAndSaveTimelineObjects(cache, studioBaseline, undefined)
+
+	logger.debug('updateStudioTimeline done!')
+	if (span) span.end()
+}
 
 /**
  * Updates the Timeline to reflect the state in the Rundown, Segments, Parts etc...
@@ -74,10 +123,21 @@ import { profiler } from '../profiler'
 export function updateTimeline(cache: CacheForPlayout, studioId: StudioId | null, forceNowToTime?: Time) {
 	const span = profiler.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
-	const studio = cache.Studio.doc
 
 	const timelineObjs: Array<TimelineObjGeneric> = [...getTimelineRundown(cache), ...getTimelineRecording(cache)]
 
+	processAndSaveTimelineObjects(cache, timelineObjs, forceNowToTime)
+
+	logger.debug('updateTimeline done!')
+	if (span) span.end()
+}
+
+function processAndSaveTimelineObjects(
+	cache: CacheForStudioBase2,
+	timelineObjs: Array<TimelineObjGeneric>,
+	forceNowToTime: Time | undefined
+) {
+	const studio = cache.Studio.doc
 	processTimelineObjects(studio, timelineObjs)
 
 	if (forceNowToTime) {
@@ -112,19 +172,15 @@ export function updateTimeline(cache: CacheForPlayout, studioId: StudioId | null
 		}
 	)
 
-	afterUpdateTimeline(cache, studio._id, savedTimelineObjs)
-
-	logger.debug('updateTimeline done!')
-	if (span) span.end()
+	afterUpdateTimeline(cache, savedTimelineObjs)
 }
-// '$1') // This causes syncFunctionIgnore to only use the second argument (studioId) when ignoring
 
 /**
  * To be called after an update to the timeline has been made, will add/update the "statObj" - an object
  * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
  * @param studioId id of the studio to update
  */
-export function afterUpdateTimeline(cache: CacheForPlayout, timelineObjs?: Array<TimelineObjGeneric>) {
+export function afterUpdateTimeline(cache: CacheForStudioBase2, timelineObjs?: Array<TimelineObjGeneric>) {
 	const span = profiler.startSpan('afterUpdateTimeline')
 
 	const studio = cache.Studio.doc
@@ -166,12 +222,6 @@ export function afterUpdateTimeline(cache: CacheForPlayout, timelineObjs?: Array
 
 	cache.Timeline.upsert(statObj._id, statObj)
 	if (span) span.end()
-}
-export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
-	return cache.RundownPlaylists.findOne({
-		studioId: studioId,
-		active: true,
-	})
 }
 
 export interface SelectedPartInstancesTimelineInfo {
@@ -215,24 +265,16 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObj> = []
 
+		const studio = cache.Studio.doc
 		const playlist = cache.Playlist.doc
-		let activeRundown: Rundown | undefined
 
-		let currentPartInstance: PartInstance | undefined
-		let nextPartInstance: PartInstance | undefined
-		let previousPartInstance: PartInstance | undefined
+		const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-		if (playlist) {
-			;({ currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-				cache
-			))
+		const partForRundown = currentPartInstance || nextPartInstance
 
-			const partForRundown = currentPartInstance || nextPartInstance
+		const activeRundown = partForRundown && cache.Rundowns.findOne(partForRundown.rundownId)
 
-			activeRundown = partForRundown && cache.Rundowns.findOne(partForRundown.rundownId)
-		}
-
-		if (playlist && activeRundown) {
+		if (activeRundown) {
 			// Fetch showstyle blueprint:
 			const pShowStyle = cache.activationCache.getShowStyleBase(activeRundown)
 			const pshowStyleBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
@@ -304,40 +346,8 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 				}
 			})
 		} else {
-			let studioBaseline: TimelineObjRundown[] = []
-
-			const studioBlueprint = loadStudioBlueprint(studio)
-			if (studioBlueprint) {
-				const blueprint = studioBlueprint.blueprint
-				const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
-				studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
-
-				const id = `baseline_version`
-				studioBaseline.push(
-					literal<TimelineObjRundown>({
-						id: id,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
-						objectType: TimelineObjType.RUNDOWN,
-						enable: { start: 0 },
-						layer: id,
-						metaData: {
-							versions: {
-								core: PackageInfo.versionExtended || PackageInfo.version,
-								blueprintId: studio.blueprintId,
-								blueprintVersion: blueprint.blueprintVersion,
-								studio: studio._rundownVersionHash,
-							},
-						},
-						content: {
-							deviceType: TSR.DeviceType.ABSTRACT,
-						},
-					})
-				)
-			}
-
 			if (span) span.end()
-			return studioBaseline
+			return []
 		}
 	} catch (e) {
 		if (span) span.end()
@@ -348,10 +358,11 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 /**
  * Returns timeline objects related to Test Recordings in a studio
  */
-function getTimelineRecording(cache: CacheForStudio, studio: Studio, forceNowToTime?: Time): TimelineObjRecording[] {
+function getTimelineRecording(cache: CacheForStudioBase2): TimelineObjRecording[] {
 	try {
 		let recordingTimelineObjs: TimelineObjRecording[] = []
 
+		const studio = cache.Studio.doc
 		cache.RecordedFiles.findFetch(
 			{
 				// TODO: ask Julian if this is okay, having multiple recordings at the same time?

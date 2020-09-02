@@ -26,6 +26,7 @@ import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBase
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
+import { DeepReadonly } from 'utility-types'
 
 export function postProcessPieces(
 	innerContext: ShowStyleContext,
@@ -200,7 +201,10 @@ export function postProcessAdLibActions(
 	)
 }
 
-export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects(
+	studio: DeepReadonly<Studio>,
+	objs: TSR.TSRTimelineObjBase[]
+): TimelineObjRundown[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	const context = new NotesContext('studio', 'studio', false)
 	return postProcessTimelineObjects(

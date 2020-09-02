@@ -16,6 +16,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { unprotectString } from '../../../lib/lib'
+import { DeepReadonly } from 'utility-types'
 
 export const BLUEPRINT_CACHE_CONTROL = { disable: false }
 
@@ -52,7 +53,7 @@ export function loadSystemBlueprints(system: ICoreSystem): WrappedSystemBlueprin
 	}
 }
 
-export function loadStudioBlueprint(studio: Studio): WrappedStudioBlueprint | undefined {
+export function loadStudioBlueprint(studio: DeepReadonly<Studio>): WrappedStudioBlueprint | undefined {
 	if (!studio.blueprintId) return undefined
 
 	const blueprintManifest = loadBlueprintById(studio.blueprintId)

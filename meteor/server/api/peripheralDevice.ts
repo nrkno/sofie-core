@@ -15,7 +15,12 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
 import { afterUpdateTimeline } from './playout/timeline'
-import { RundownInput } from './ingest/rundownInput'
+import {
+	RundownInput,
+	studioSyncFunction,
+	rundownPlaylistCustomSyncFunction,
+	RundownSyncFunctionPriority,
+} from './ingest/rundownInput'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
@@ -30,9 +35,16 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { initCacheForNoRundownPlaylist, initCacheForStudio, initCacheForRundownPlaylist } from '../DatabaseCaches'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { PieceInstanceId } from '../../lib/collections/PieceInstances'
+import {
+	initCacheForNoRundownPlaylist,
+	initCacheForStudio,
+	initCacheForRundownPlaylist,
+	CacheForStudio2,
+} from '../DatabaseCaches'
+import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { PieceInstanceId, PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { getActiveRundownPlaylistsInStudio2 } from './playout/studio'
+import { DbCacheWriteCollection } from '../DatabaseCache'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -176,7 +188,7 @@ export namespace ServerPeripheralDeviceAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export const timelineTriggerTime = syncFunction(function timelineTriggerTime(
+	export function timelineTriggerTime(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
@@ -197,95 +209,106 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			const activePlaylist = RundownPlaylists.findOne({
-				studioId: studioId,
-				active: true,
-			})
-			// TODO - This cache usage NEEDS to be inside a rundownPlaylistSyncFunction. otherwise the cache.saveAllToDatabase() could fight with another
-			const cache = activePlaylist
-				? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
-				: waitForPromise(initCacheForNoRundownPlaylist(studioId))
+			return studioSyncFunction(studioId, (cache) => {
+				const activePlaylists = getActiveRundownPlaylistsInStudio2(cache)
 
-			let lastTakeTime: number | undefined
+				if (activePlaylists.length === 1) {
+					const activePlaylist = activePlaylists[0]
+					const playlistId = activePlaylist._id
+					rundownPlaylistCustomSyncFunction(playlistId, RundownSyncFunctionPriority.CALLBACK_PLAYOUT, () => {
+						const rundownIDs = Rundowns.find({ playlistId }).map((r) => r._id)
+						const pieceInstanceCache = new DbCacheWriteCollection<PieceInstance, PieceInstance>(
+							PieceInstances
+						)
+						waitForPromise(pieceInstanceCache.fillWithDataFromDatabase({ rundownId: { $in: rundownIDs } }))
 
-			_.each(results, (o) => {
-				check(o.id, String)
+						timelineTriggerTimeInner(cache, results, pieceInstanceCache, activePlaylist)
 
-				// check(o.time, Number)
-				logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
-
-				const id = getTimelineId(studioId, o.id)
-				const obj = cache.Timeline.findOne({
-					_id: id,
-					studioId: studioId,
-				})
-				if (obj) {
-					cache.Timeline.update(
-						{
-							_id: id,
-							studioId: studioId,
-						},
-						{
-							$set: {
-								'enable.start': o.time,
-								'enable.setFromNow': true,
-							},
-						}
-					)
-
-					obj.enable.start = o.time
-					obj.enable.setFromNow = true
-
-					if (obj.metaData?.pieceId) {
-						logger.debug('Update PieceInstance: ', {
-							pieceId: obj.metaData.pieceId,
-							time: new Date(o.time).toTimeString(),
-						})
-
-						const pieceInstance = cache.PieceInstances.findOne(obj.metaData.pieceId)
-						if (pieceInstance) {
-							cache.PieceInstances.update(pieceInstance._id, {
-								$set: {
-									'piece.enable.start': o.time,
-								},
-							})
-
-							const takeTime = pieceInstance.dynamicallyInserted
-							if (pieceInstance.dynamicallyInserted && takeTime) {
-								lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
-							}
-						}
-					}
+						waitForPromise(pieceInstanceCache.updateDatabaseWithData())
+					})
+				} else {
+					timelineTriggerTimeInner(cache, results, undefined, undefined)
 				}
 			})
+		}
+	}
 
-			if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId) {
-				// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-				const remainingNowPieces = cache.PieceInstances.findFetch({
-					partInstanceId: activePlaylist.currentPartInstanceId,
-					dynamicallyInserted: { $exists: true },
-					disabled: { $ne: true },
+	function timelineTriggerTimeInner(
+		cache: CacheForStudio2,
+		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
+		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
+		activePlaylist: RundownPlaylist | undefined
+	) {
+		const studio = cache.Studio.doc
+
+		let lastTakeTime: number | undefined
+
+		_.each(results, (o) => {
+			check(o.id, String)
+
+			// check(o.time, Number)
+			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
+
+			const id = getTimelineId(studio._id, o.id)
+			const obj = cache.Timeline.findOne(id)
+			if (obj) {
+				cache.Timeline.update(id, {
+					$set: {
+						'enable.start': o.time,
+						'enable.setFromNow': true,
+					},
 				})
-				for (const piece of remainingNowPieces) {
-					const pieceTakeTime = piece.dynamicallyInserted
-					if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-						// Disable and hide the instance
-						cache.PieceInstances.update(piece._id, {
+
+				obj.enable.start = o.time
+				obj.enable.setFromNow = true
+
+				if (obj.metaData?.pieceId && pieceInstanceCache) {
+					logger.debug('Update PieceInstance: ', {
+						pieceId: obj.metaData.pieceId,
+						time: new Date(o.time).toTimeString(),
+					})
+
+					const pieceInstance = pieceInstanceCache.findOne(obj.metaData.pieceId)
+					if (pieceInstance) {
+						pieceInstanceCache.update(pieceInstance._id, {
 							$set: {
-								disabled: true,
-								hidden: true,
+								'piece.enable.start': o.time,
 							},
 						})
+
+						const takeTime = pieceInstance.dynamicallyInserted
+						if (pieceInstance.dynamicallyInserted && takeTime) {
+							lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+						}
 					}
 				}
 			}
+		})
 
-			// After we've updated the timeline, we must call afterUpdateTimeline!
-			afterUpdateTimeline(cache, studioId)
-			waitForPromise(cache.saveAllToDatabase())
+		if (pieceInstanceCache && lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId) {
+			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+			const remainingNowPieces = pieceInstanceCache.findFetch({
+				partInstanceId: activePlaylist.currentPartInstanceId,
+				dynamicallyInserted: { $exists: true },
+				disabled: { $ne: true },
+			})
+			for (const piece of remainingNowPieces) {
+				const pieceTakeTime = piece.dynamicallyInserted
+				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+					// Disable and hide the instance
+					pieceInstanceCache.update(piece._id, {
+						$set: {
+							disabled: true,
+							hidden: true,
+						},
+					})
+				}
+			}
 		}
-	},
-	'timelineTriggerTime$1')
+
+		// After we've updated the timeline, we must call afterUpdateTimeline!
+		afterUpdateTimeline(cache)
+	}
 
 	export function partPlaybackStarted(
 		context: MethodContext,

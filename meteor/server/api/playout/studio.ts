@@ -6,7 +6,7 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
 import { protectString } from '../../../lib/lib'
-import { CacheForStudioBase } from '../../DatabaseCaches'
+import { CacheForStudioBase, CacheForStudio2 } from '../../DatabaseCaches'
 import { MongoQuery } from '../../../lib/typings/meteor'
 
 export function getActiveRundownPlaylistsInStudio(
@@ -26,4 +26,17 @@ export function getActiveRundownPlaylistsInStudio(
 	} else {
 		return cache.RundownPlaylists.findFetch(q)
 	}
+}
+
+export function getActiveRundownPlaylistsInStudio2(
+	cache: CacheForStudio2,
+	excludeRundownPlaylistId?: RundownPlaylistId
+): RundownPlaylist[] {
+	return cache.RundownPlaylists.findFetch({
+		// studioId: cache.Studio.doc._id,
+		active: true,
+		_id: {
+			$ne: excludeRundownPlaylistId || protectString(''),
+		},
+	})
 }

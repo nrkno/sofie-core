@@ -65,29 +65,31 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 		const firstPart = selectNextPart(activePlaylist, null, getAllOrderedPartsFromCache(cache))
 		setNextPart(cache, firstPart ? firstPart.part : null)
 	} else {
-		const nextPartInstance = cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
+		const nextPartInstance = cache.PartInstances.findOne(activePlaylist.nextPartInstanceId)
 		if (!nextPartInstance)
-			throw new Meteor.Error(404, `Could not find nextPartInstance "${rundownPlaylist.nextPartInstanceId}"`)
-		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
+			throw new Meteor.Error(404, `Could not find nextPartInstance "${activePlaylist.nextPartInstanceId}"`)
+		const rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 		if (!rundown) throw new Meteor.Error(404, `Could not find rundown "${nextPartInstance.rundownId}"`)
+
+		cache.defer(() => {
+			if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
+			const { blueprint } = loadShowStyleBlueprint(
+				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
+			)
+			const context = new RundownContext(rundown, cache, undefined)
+			context.wipeCache()
+			if (blueprint.onRundownActivate) {
+				Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
+			}
+		})
 	}
 
-	updateTimeline(cache, studio._id)
-
-	cache.defer(() => {
-		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const { blueprint } = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
-		const context = new RundownContext(rundown, cache, undefined)
-		context.wipeCache()
-		if (blueprint.onRundownActivate) {
-			Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
-		}
-	})
+	updateTimeline(cache, null)
 }
 export function deactivateRundownPlaylist(cache: CacheForPlayout): void {
 	const rundown = deactivateRundownPlaylistInner(cache)
 
-	updateTimeline(cache, rundownPlaylist.studioId)
+	updateTimeline(cache, null)
 
 	cache.defer((cache) => {
 		if (rundown) {

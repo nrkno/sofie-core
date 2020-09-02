@@ -56,32 +56,21 @@ import {
 } from './actions'
 import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { getActiveRundownPlaylistsInStudio } from './studio'
+import { getActiveRundownPlaylistsInStudio, getActiveRundownPlaylistsInStudio2 } from './studio'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority, studioSyncFunction } from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { ReloadRundownPlaylistResponse, UserActionAPIMethods } from '../../../lib/api/userActions'
+import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
-import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
-import {
-	initCacheForRundownPlaylist,
-	CacheForRundownPlaylist,
-	initCacheForStudio,
-	initCacheForNoRundownPlaylist,
-	CacheForStudio,
-	CacheForPlayout,
-	CacheForPlayoutPreInit,
-} from '../../DatabaseCaches'
+import { CacheForPlayout, CacheForPlayoutPreInit, CacheForStudio2 } from '../../DatabaseCaches'
 import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { UserAction } from '../../../client/lib/userAction'
 import { syncFunction } from '../../codeControl'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 
@@ -1178,43 +1167,34 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function updateStudioBaseline(context: MethodContext, studioId: StudioId) {
-		// TODO - should there be a studio lock for activate/deactivate/this?
 		StudioContentWriteAccess.baseline(context, studioId)
 
 		check(studioId, String)
 
-		let cache: CacheForStudio | CacheForRundownPlaylist = waitForPromise(initCacheForStudio(studioId))
-		const activeRundowns = getActiveRundownPlaylistsInStudio(cache, studioId)
-		if (activeRundowns.length === 0) {
-			// This is only run when there is no rundown active in the studio
-			const cachePlayout = waitForPromise(initCacheForNoRundownPlaylist(studioId, cache))
-			updateTimeline(cachePlayout, studioId)
-			const result = shouldUpdateStudioBaselineInner(cache, studioId)
-			waitForPromise(cachePlayout.saveAllToDatabase())
-			return result
-		} else {
-			const result = shouldUpdateStudioBaselineInner(cache, studioId)
-			// TODO - could this do a cache.discard() instead? as nothing will have changed
-			waitForPromise(cache.saveAllToDatabase())
-			return result
-		}
+		return studioSyncFunction(studioId, (cache) => {
+			const activeRundowns = getActiveRundownPlaylistsInStudio2(cache)
+
+			if (activeRundowns.length === 0) {
+				updateStudioTimeline(cache)
+				return shouldUpdateStudioBaselineInner(cache)
+			} else {
+				// TODO - could this do a cache.discard() instead? as nothing will have changed
+				return shouldUpdateStudioBaselineInner(cache)
+			}
+		})
 	}
 
 	export function shouldUpdateStudioBaseline(context: MethodContext, studioId: StudioId) {
 		StudioContentWriteAccess.baseline(context, studioId)
-		let cache: CacheForStudio | CacheForRundownPlaylist = waitForPromise(initCacheForStudio(studioId))
-		const result = shouldUpdateStudioBaselineInner(cache, studioId)
-		waitForPromise(cache.saveAllToDatabase())
-		return result
+		return studioSyncFunction(studioId, (cache) => {
+			// TODO - could this do a cache.discard() instead? as nothing will have changed
+			return shouldUpdateStudioBaselineInner(cache)
+		})
 	}
-	function shouldUpdateStudioBaselineInner(cache: CacheForStudio, studioId: StudioId): string | false {
-		check(studioId, String)
+	function shouldUpdateStudioBaselineInner(cache: CacheForStudio2): string | false {
+		const studio = cache.Studio.doc
 
-		const studio = cache.Studios.findOne(studioId)
-
-		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
-
-		const activeRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id)
+		const activeRundowns = getActiveRundownPlaylistsInStudio2(cache)
 
 		if (activeRundowns.length === 0) {
 			const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
@@ -1229,7 +1209,7 @@ export namespace ServerPlayoutAPI {
 
 			if (versionsContent.blueprintId !== studio.blueprintId) return 'blueprintId'
 			if (studio.blueprintId) {
-				const blueprint = Blueprints.findOne(studio.blueprintId)
+				const blueprint = Blueprints.findOne(studio.blueprintId, { fields: { _id: 1, blueprintVersion: 1 } })
 				if (!blueprint) return 'blueprintUnknown'
 				if (versionsContent.blueprintVersion !== (blueprint.blueprintVersion || 0)) return 'blueprintVersion'
 			}
