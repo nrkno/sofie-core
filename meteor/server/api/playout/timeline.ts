@@ -14,7 +14,6 @@ import { logger } from '../../../lib/logging'
 import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
-	TimelineObjStat,
 	TimelineObjType,
 	TimelineContentTypeOther,
 	TimelineObjRecording,
@@ -128,90 +127,11 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		true
 	)
 
-	// let savedTimelineObjs: TimelineObjGeneric[] = []
-	// saveIntoCache<TimelineComplete, TimelineComplete>(
-	// 	cache.Timeline,
-	// 	{
-	// 		_id: studio._id,
-	// 	},
-	// 	[
-	// 		literal<TimelineComplete>({
-	// 			_id: studio._id,
-	// 			timeline: timelineObjs,
-	// 		}),
-	// 	],
-	// 	{
-	// beforeUpdate: (o: TimelineComplete, oldO: TimelineComplete): TimelineComplete => {
-	// 	// do not overwrite enable when the enable has been denowified
-
-	// 	savedTimelineObjs = o.timeline
-	// 	return o
-	// },
-	// afterInsert: (o: TimelineComplete) => {
-	// 	savedTimelineObjs = o.timeline
-	// },
-	// unchanged: (o: TimelineComplete) => {
-	// 	savedTimelineObjs = o.timeline
-	// },
-	// 	}
-	// )
-
-	// Not required for the single document model for timelines
-	// afterUpdateTimeline(cache, studio._id, savedTimelineObjs)
-
 	logger.debug('updateTimeline done!')
 	if (span) span.end()
 }
 // '$1') // This causes syncFunctionIgnore to only use the second argument (studioId) when ignoring
 
-/**
- * To be called after an update to the timeline has been made, will add/update the "statObj" - an object
- * containing the hash of the timeline, used to determine if the timeline should be updated in the gateways
- * @param studioId id of the studio to update
- */
-/* export function afterUpdateTimeline(
-	cache: CacheForStudioBase,
-	studioId: StudioId,
-	timelineObjs?: Array<TimelineObjGeneric>
-) {
-	const span = profiler.startSpan('afterUpdateTimeline')
-	// logger.info('afterUpdateTimeline')
-	// Nothing here anymore, to be removed?
-}
-// Number of objects
-export function generateTimelineStatObj(studioId: StudioId, timelineObjs: Array<TimelineObjGeneric>) {
-	let objCount = timelineObjs.length
-	// Hash of all objects
-	timelineObjs.sort((a, b) => {
-		if (a._id < b._id) return 1
-		if (a._id > b._id) return -1
-		return 0
-	})
-	let objHash = getHash(stringifyObjects(timelineObjs))
-
-	// save into "magic object":
-	let statObj: TimelineObjStat = {
-		id: 'statObj',
-		_id: protectString(''), // set later
-		studioId: studioId,
-		objectType: TimelineObjType.STAT,
-		content: {
-			deviceType: TSR.DeviceType.ABSTRACT,
-			type: TimelineContentTypeOther.NOTHING,
-			modified: getCurrentTime(),
-			objCount: objCount,
-			objHash: objHash,
-		},
-		enable: { start: 0 },
-		layer: '__stat',
-	}
-	statObj._id = getTimelineId(statObj)
-
-	return statObj
-}
-	cache.Timeline.upsert(statObj._id, statObj)
-	if (span) span.end()
-} */
 export function getActiveRundownPlaylist(cache: CacheForStudioBase, studioId: StudioId): RundownPlaylist | undefined {
 	return cache.RundownPlaylists.findOne({
 		studioId: studioId,

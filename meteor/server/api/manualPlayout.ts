@@ -8,7 +8,6 @@ import {
 	TimelineObjId,
 } from '../../lib/collections/Timeline'
 import { Studios, StudioId } from '../../lib/collections/Studios'
-// import { afterUpdateTimeline } from './playout/timeline'
 import { check } from '../../lib/check'
 import { makePromise, waitForPromise, protectString } from '../../lib/lib'
 import { ServerClientAPI } from './client'
@@ -46,7 +45,6 @@ function insertTimelineObject(
 			studioTimeline.timeline.push(timelineObject)
 		}
 		cache.Timeline.update(studioId, studioTimeline)
-		// afterUpdateTimeline(cache, studioId)
 	}
 }
 function removeTimelineObject(context: MethodContext, cache: CacheForStudioBase, studioId: StudioId, id: string) {

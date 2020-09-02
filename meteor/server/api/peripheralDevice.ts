@@ -14,7 +14,6 @@ import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
-// import { afterUpdateTimeline } from './playout/timeline'
 import { RundownInput } from './ingest/rundownInput'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
@@ -256,8 +255,6 @@ export namespace ServerPeripheralDeviceAPI {
 					)
 				}
 			}
-			// afterUpdateTimeline no longer required - stats object and has removed for single timeline objects
-			// afterUpdateTimeline(cache, studioId)
 			waitForPromise(cache.saveAllToDatabase())
 		}
 	},
