@@ -254,6 +254,22 @@ body.tv2 {
 		.timing .timing-clock .timing-clock-label {
 		}
 	}
+	.header.rundown .timing {
+		.timing-clock.current-remaining {
+			left: calc(50% + 7em);
+		}
+	}
+	@media screen and (max-width: 1110px) {
+		.timing {
+			.timing-clock.plan-end:not(.countdown) {
+				display: none;
+			}
+
+			.timing-clock.countdown.plan-end {
+				margin-right: 0;
+			}
+		}
+	}
 	.header.rundown.active.rehearsal .first-row {
 		background-color: #cbcccd;
 
