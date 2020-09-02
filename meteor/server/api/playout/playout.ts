@@ -1311,12 +1311,15 @@ export namespace ServerPlayoutAPI {
 		return false
 	}
 
-	export function switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean) {
+	export function switchRouteSet(context: MethodContext, studioId: StudioId, routeSetId: string, state: boolean) {
 		check(studioId, String)
 		check(routeSetId, String)
 		check(state, Boolean)
 
-		const studio = Studios.findOne(studioId)
+		const allowed = StudioContentWriteAccess.routeSet(context, studioId)
+		if (!allowed) throw new Meteor.Error(403, `Not allowed to edit RouteSet on studio ${studioId}`)
+
+		const studio = allowed.studio
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 
 		if (studio.routeSets[routeSetId] === undefined)

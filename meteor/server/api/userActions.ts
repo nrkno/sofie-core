@@ -790,12 +790,17 @@ export function noop(context: MethodContext) {
 	return ClientAPI.responseSuccess(undefined)
 }
 
-export function switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean): ClientAPI.ClientResponse<void> {
+export function switchRouteSet(
+	context: MethodContext,
+	studioId: StudioId,
+	routeSetId: string,
+	state: boolean
+): ClientAPI.ClientResponse<void> {
 	check(studioId, String)
 	check(routeSetId, String)
 	check(state, Boolean)
 
-	return ServerPlayoutAPI.switchRouteSet(studioId, routeSetId, state)
+	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
 }
 
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
@@ -1073,7 +1078,7 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
-		return makePromise(() => switchRouteSet(studioId, routeSetId, state))
+		return makePromise(() => switchRouteSet(this, studioId, routeSetId, state))
 	}
 }
 registerClassToMeteorMethods(
