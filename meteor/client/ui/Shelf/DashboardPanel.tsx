@@ -643,28 +643,22 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 						},
 					],
 				},
-				// TODO-INFINITES is this ok?
-				// {
-				// 	definitelyEnded: {
-				// 		$exists: false,
-				// 	},
-				// },
 			],
 			adLibSourceId: {
 				$exists: true,
 			},
-			// $or: [
-			// 	{
-			// 		'userDuration': {
-			// 			$exists: false,
-			// 		},
-			// 	},
-			// 	{
-			// 		'userDuration.duration': {
-			// 			$exists: false,
-			// 		},
-			// 	},
-			// ],
+			$or: [
+				{
+					userDuration: {
+						$exists: false,
+					},
+				},
+				{
+					'userDuration.end': {
+						$exists: false,
+					},
+				},
+			],
 		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY
