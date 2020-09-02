@@ -14,7 +14,14 @@ import {
 	ShowStyleBaseId,
 } from '../../../lib/collections/ShowStyleBases'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { faTrash, faPencilAlt, faCheck, faPlus, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import {
+	faTrash,
+	faPencilAlt,
+	faCheck,
+	faPlus,
+	faExclamationTriangle,
+	faDownload,
+} from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
 import { literal, unprotectString, ProtectedString } from '../../../lib/lib'
@@ -1111,6 +1118,43 @@ const HotkeyLegendSettings = withTranslation()(
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Host Key')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'hotkeyLegend.' + index + '.platformKey'}
+													obj={this.props.showStyleBase}
+													type="text"
+													collection={ShowStyleBases}
+													className="input text-input input-l"></EditAttribute>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">{t('Source Layer type')}</label>
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
+												obj={this.props.showStyleBase}
+												type="checkbox"
+												options={SourceLayerType}
+												className="mod mas"
+												collection={ShowStyleBases}
+												mutateDisplayValue={(v) => (v === undefined ? false : true)}
+												mutateUpdateValue={(v) => undefined}
+											/>
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
+												obj={this.props.showStyleBase}
+												type="dropdown"
+												options={SourceLayerType}
+												optionsAreNumbers
+												collection={ShowStyleBases}
+												className="input text-input input-l dropdown"
+												mutateUpdateValue={(v) => (v ? v : undefined)}
+											/>
+										</div>
 									</div>
 									<div className="mod alright">
 										<button className="btn btn-primary" onClick={() => this.finishEditItem(item)}>
@@ -1136,6 +1180,9 @@ const HotkeyLegendSettings = withTranslation()(
 					<div className="mod mhs">
 						<button className="btn btn-primary" onClick={this.onAddHotkeyLegend}>
 							<FontAwesomeIcon icon={faPlus} />
+						</button>
+						<button className="btn btn-secondary" onClick={this.onDownloadAHKScript}>
+							<FontAwesomeIcon icon={faDownload} />
 						</button>
 					</div>
 				</div>
