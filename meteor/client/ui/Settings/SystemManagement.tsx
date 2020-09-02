@@ -117,33 +117,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 							<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 						</label>
-
-						<h2 className="mhn">{t('Cleanup')}</h2>
-						<div>
-							<button className="btn btn-default" onClick={(e) => this.cleanUpOldDatabaseIndexes(e)}>
-								{t('Clean up old database indexes')}
-							</button>
-						</div>
-						<div>
-							<button className="btn btn-default" onClick={(e) => this.cleanUpOldData(e)}>
-								{t('Clean up old data')}
-							</button>
-						</div>
-						<h2 className="mhn">{t('Monitor blocked thread')}</h2>
-						<div>
-							{t('Enable monitoring of blocked thread')}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="enableMonitorBlockedThread"
-									obj={this.props.coreSystem}
-									type="checkbox"
-									collection={CoreSystem}
-									className="mdinput"
-								/>
-								<span className="mdfx"></span>
-							</div>
-						</div>
 					</div>
 				</div>
 			) : null
