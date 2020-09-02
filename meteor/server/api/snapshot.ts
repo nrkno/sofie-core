@@ -40,7 +40,7 @@ import {
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineObjGeneric, TimelineObjRundown } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineObjRundown, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
@@ -138,7 +138,7 @@ interface DebugSnapshot {
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
 	activeRundownPlaylists: Array<RundownPlaylistSnapshot>
-	timeline: Array<TimelineObjGeneric>
+	timeline: TimelineComplete[]
 	userActionLog: Array<UserActionsLogItem>
 	deviceSnaphots: Array<DeviceSnapshot>
 }

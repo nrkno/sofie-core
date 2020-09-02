@@ -42,7 +42,7 @@ import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -66,7 +66,7 @@ export function takeNextPartInnerSync(
 	now: number,
 	existingCache?: CacheForRundownPlaylist
 ) {
-	const span = Agent.startSpan('takeNextPartInner')
+	const span = profiler.startSpan('takeNextPartInner')
 	const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
 	if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
@@ -142,7 +142,7 @@ export function takeNextPartInnerSync(
 
 	const { blueprint } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
-		const span = Agent.startSpan('blueprint.onPreTake')
+		const span = profiler.startSpan('blueprint.onPreTake')
 		try {
 			waitForPromise(
 				Promise.resolve(blueprint.onPreTake(new PartEventContext(takeRundown, cache, takePartInstance))).catch(
@@ -163,7 +163,7 @@ export function takeNextPartInnerSync(
 		if (showStyle) {
 			const resolvedPieces = getResolvedPieces(cache, showStyle, previousPartInstance)
 
-			const span = Agent.startSpan('blueprint.getEndStateForPart')
+			const span = profiler.startSpan('blueprint.getEndStateForPart')
 			const context = new RundownContext(takeRundown, cache, undefined)
 			previousPartEndState = blueprint.getEndStateForPart(
 				context,
@@ -292,7 +292,7 @@ export function takeNextPartInnerSync(
 			// let bp = getBlueprintOfRundown(rundown)
 			if (firstTake) {
 				if (blueprint.onRundownFirstTake) {
-					const span = Agent.startSpan('blueprint.onRundownFirstTake')
+					const span = profiler.startSpan('blueprint.onRundownFirstTake')
 					waitForPromise(
 						Promise.resolve(
 							blueprint.onRundownFirstTake(new PartEventContext(takeRundown, cache, takePartInstance))
@@ -303,7 +303,7 @@ export function takeNextPartInnerSync(
 			}
 
 			if (blueprint.onPostTake) {
-				const span = Agent.startSpan('blueprint.onPostTake')
+				const span = profiler.startSpan('blueprint.onPostTake')
 				waitForPromise(
 					Promise.resolve(
 						blueprint.onPostTake(new PartEventContext(takeRundown, cache, takePartInstance))
@@ -386,7 +386,7 @@ export function afterTake(
 	takePartInstance: PartInstance,
 	timeOffset: number | null = null
 ) {
-	const span = Agent.startSpan('afterTake')
+	const span = profiler.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
 
 	let forceNowTime: number | undefined = undefined
@@ -421,7 +421,7 @@ function startHold(
 ) {
 	if (!holdFromPartInstance) throw new Meteor.Error(404, 'previousPart not found!')
 	if (!holdToPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
-	const span = Agent.startSpan('startHold')
+	const span = profiler.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
 	const itemsToCopy = cache.PieceInstances.findFetch({ partInstanceId: holdFromPartInstance._id }).filter(

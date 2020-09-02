@@ -163,16 +163,20 @@ export function getRoutedTimeline(
 	})
 	return outputTimelineObjs
 }
+export interface TimelineComplete {
+	_id: StudioId
+	timeline: Array<TimelineObjGeneric>
+}
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric> = createMongoCollection<
-	TimelineObjGeneric
+export const Timeline: TransformedCollection<TimelineComplete, TimelineComplete> = createMongoCollection<
+	TimelineComplete
 >('timeline')
 registerCollection('Timeline', Timeline)
 Meteor.startup(() => {
 	if (Meteor.isServer) {
 		Timeline._ensureIndex({
-			studioId: 1,
+			_id: 1,
 		})
 	}
 })

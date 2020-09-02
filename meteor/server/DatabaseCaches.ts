@@ -19,7 +19,7 @@ import { Piece, Pieces } from '../lib/collections/Pieces'
 import { PartInstances, DBPartInstance, PartInstance } from '../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../lib/collections/PieceInstances'
 import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineComplete } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
@@ -31,7 +31,7 @@ import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 import { isInTestWrite } from './security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './api/profiler'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
@@ -70,7 +70,7 @@ export class Cache {
 		})
 	}
 	async saveAllToDatabase() {
-		const span = Agent.startSpan('Cache.saveAllToDatabase')
+		const span = profiler.startSpan('Cache.saveAllToDatabase')
 		this._abortActiveTimeout()
 
 		// shouldn't the deferred functions be executed after updating the db?
@@ -97,7 +97,7 @@ export class CacheForStudioBase extends Cache {
 	/** Contains contents in the Studio */
 	RundownPlaylists: DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>
 	// Studios: DbCacheWriteCollection<Studio, Studio>
-	Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
+	Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 	RecordedFiles: DbCacheWriteCollection<RecordedFile, RecordedFile>
 
 	constructor(studioId: StudioId) {
@@ -106,7 +106,7 @@ export class CacheForStudioBase extends Cache {
 
 		this.RundownPlaylists = new DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
 		// this.Studios = new DbCacheWriteCollection<Studio, Studio>(Studios)
-		this.Timeline = new DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
+		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
 		this.RecordedFiles = new DbCacheWriteCollection<RecordedFile, RecordedFile>(RecordedFiles)
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {
@@ -141,7 +141,7 @@ async function fillCacheForStudioBaseWithData(
 ) {
 	await Promise.all([
 		makePromise(() => cache.RundownPlaylists.prepareInit({ studioId: studioId }, initializeImmediately)),
-		makePromise(() => cache.Timeline.prepareInit({ studioId: studioId }, initializeImmediately)),
+		makePromise(() => cache.Timeline.prepareInit({ _id: studioId }, initializeImmediately)),
 		makePromise(() => cache.RecordedFiles.prepareInit({ studioId: studioId }, initializeImmediately)),
 	])
 
@@ -232,7 +232,7 @@ async function fillCacheForRundownPlaylistWithData(
 	playlist: RundownPlaylist,
 	initializeImmediately: boolean
 ) {
-	const span = Agent.startSpan('Cache.fillCacheForRundownPlaylistWithData')
+	const span = profiler.startSpan('Cache.fillCacheForRundownPlaylistWithData')
 	const ps: Promise<any>[] = []
 	cache.Rundowns.prepareInit({ playlistId: playlist._id }, true)
 

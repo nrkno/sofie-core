@@ -9,6 +9,7 @@ import { unprotectString, ProtectedString, objectPathSet } from '../../lib/lib'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 
 /*
  * **************************************************************************************
@@ -208,6 +209,24 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in Studios', Studios),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleBases', ShowStyleBases),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleVariants', ShowStyleVariants),
+	{
+		id: 'Single timeline object',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const tlos = (Timeline.find().fetch() as unknown) as Array<TimelineObjGeneric>
+			const studios = tlos.map((x) => x.studioId).filter(onlyUnique)
+			if (tlos.length === 0 || studios.length === 0) {
+				return false
+			}
+			return `${tlos.length} timeline objects need to be deleted from ${studios.length} studio timelines`
+		},
+		migrate: () => {
+			Timeline.remove({
+				_id: /.*/,
+				studioId: { $exists: false },
+			})
+		},
+	},
 	//
 	//
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
@@ -243,4 +262,8 @@ function migrateConfigToBlueprintConfig<
 			}
 		},
 	}
+}
+
+function onlyUnique<T>(value: T, index: number, self: Array<T>) {
+	return self.indexOf(value) === index
 }

@@ -121,5 +121,11 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 				</div>
 			) : null
 		}
+		cleanUpOldDatabaseIndexes(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+			throw new Error('Method not implemented.')
+		}
+		cleanUpOldData(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+			throw new Error('Method not implemented.')
+		}
 	}
 )

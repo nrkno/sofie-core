@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TimelineObjGeneric } from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineComplete } from '../../lib/collections/Timeline'
 import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { Part, DBPart } from '../../lib/collections/Parts'
@@ -10,7 +10,16 @@ const cloneOrg = require('fast-clone')
 
 // About snapshot testing: https://jestjs.io/docs/en/snapshot-testing
 
-type Data = undefined | TimelineObjGeneric | DBRundownPlaylist | DBRundown | DBSegment | DBPart | Piece | PieceInstance
+type Data =
+	| undefined
+	| TimelineObjGeneric
+	| TimelineComplete
+	| DBRundownPlaylist
+	| DBRundown
+	| DBSegment
+	| DBPart
+	| Piece
+	| PieceInstance
 /**
  * Remove certain fields from data that change often, so that it can be used in snapshots
  * @param data

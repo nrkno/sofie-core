@@ -1,15 +1,22 @@
 import { registerClassToMeteorMethods } from '../methods'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from '../../lib/api/manualPlayout'
-import { Timeline, TimelineObjGeneric, getTimelineId, TimelineObjType } from '../../lib/collections/Timeline'
+import {
+	Timeline,
+	TimelineObjGeneric,
+	getTimelineId,
+	TimelineObjType,
+	TimelineObjId,
+} from '../../lib/collections/Timeline'
 import { Studios, StudioId } from '../../lib/collections/Studios'
-import { afterUpdateTimeline } from './playout/timeline'
+// import { afterUpdateTimeline } from './playout/timeline'
 import { check } from '../../lib/check'
-import { makePromise, waitForPromise } from '../../lib/lib'
+import { makePromise, waitForPromise, protectString } from '../../lib/lib'
 import { ServerClientAPI } from './client'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
 import { StudioContentWriteAccess } from '../security/studio'
 import { CacheForStudio, initCacheForNoRundownPlaylist, CacheForStudioBase } from '../DatabaseCaches'
+import { time, timeline } from 'console'
 
 function insertTimelineObject(
 	context: MethodContext,
@@ -30,9 +37,16 @@ function insertTimelineObject(
 	}
 
 	const studio = Studios.findOne(studioId)
-	if (studio) {
-		cache.Timeline.upsert(timelineObject._id, timelineObject)
-		afterUpdateTimeline(cache, studioId)
+	const studioTimeline = cache.Timeline.findOne({ _id: studioId })
+	if (studio && studioTimeline) {
+		const indexOfExisting = studioTimeline.timeline.map((x) => x._id).indexOf(timelineObject._id)
+		if (indexOfExisting >= 0) {
+			studioTimeline.timeline[indexOfExisting] = timelineObject
+		} else {
+			studioTimeline.timeline.push(timelineObject)
+		}
+		cache.Timeline.update(studioId, studioTimeline)
+		// afterUpdateTimeline(cache, studioId)
 	}
 }
 function removeTimelineObject(context: MethodContext, cache: CacheForStudioBase, studioId: StudioId, id: string) {
@@ -42,9 +56,10 @@ function removeTimelineObject(context: MethodContext, cache: CacheForStudioBase,
 	StudioContentWriteAccess.timeline(context, studioId)
 
 	const studio = Studios.findOne(studioId)
-	if (studio) {
-		cache.Timeline.remove(getTimelineId(studio._id, id))
-		afterUpdateTimeline(cache, studio._id)
+	const studioTimeline = cache.Timeline.findOne({ _id: studioId })
+	if (studio && studioTimeline) {
+		studioTimeline.timeline = studioTimeline.timeline.filter((x, index) => x._id !== protectString(id))
+		cache.Timeline.update(studioId, studioTimeline)
 	}
 }
 

@@ -30,9 +30,9 @@ import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { isAnySyncFunctionsRunning } from '../../codeControl'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
+import { profiler } from '../profiler'
 
 /**
  * Reset the rundown:
@@ -287,7 +287,7 @@ export function selectNextPart(
 	previousPartInstance: PartInstance | null,
 	parts: Part[]
 ): SelectNextPartResult | undefined {
-	const span = Agent.startSpan('selectNextPart')
+	const span = profiler.startSpan('selectNextPart')
 	const findFirstPlayablePart = (
 		offset: number,
 		condition?: (part: Part) => boolean
@@ -342,7 +342,7 @@ export function setNextPart(
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
-	const span = Agent.startSpan('setNextPart')
+	const span = profiler.startSpan('setNextPart')
 	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 		cache,
@@ -513,7 +513,7 @@ export function setNextSegment(
 	rundownPlaylist: RundownPlaylist,
 	nextSegment: Segment | null
 ) {
-	const span = Agent.startSpan('setNextSegment')
+	const span = profiler.startSpan('setNextSegment')
 	const acceptableRundowns = getRundownIDsFromCache(cache, rundownPlaylist)
 	if (nextSegment) {
 		if (acceptableRundowns.indexOf(nextSegment.rundownId) === -1) {

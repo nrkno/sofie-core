@@ -30,7 +30,7 @@ import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../DatabaseCaches'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './profiler'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 const EVENT_WAIT_TIME = 500
@@ -173,7 +173,7 @@ export function reportRundownDataHasChanged(
 
 export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstance: PartInstance, timestamp: Time) {
 	if (partInstance) {
-		const span = Agent.startSpan('reportPartHasStarted')
+		const span = profiler.startSpan('reportPartHasStarted')
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
 				'part.startedPlayback': true,

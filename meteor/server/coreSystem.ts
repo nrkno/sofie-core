@@ -26,6 +26,7 @@ import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './api/profiler'
 
 export { PackageInfo }
 
@@ -538,6 +539,7 @@ function startInstrumenting() {
 			transactionSampleRate: system.apm.transactionSampleRate,
 			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
 		})
+		profiler.setActive(system.apm.enabled || false)
 	} else {
 		logger.info(`APM agent inactive`)
 		Agent.start({
