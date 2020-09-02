@@ -45,18 +45,6 @@ export enum TimelineObjType {
 	RECORDING = 'record',
 	/** Objects controlling manual playback */
 	MANUAL = 'manual',
-	/** "Magic object", used to calculate a hash of the timeline */
-	STAT = 'stat',
-}
-export interface TimelineObjStat extends TimelineObjGeneric {
-	objectType: TimelineObjType.STAT
-	content: {
-		deviceType: TSR.DeviceType.ABSTRACT
-		type: TimelineContentTypeOther.NOTHING
-		modified: Time
-		objCount: number
-		objHash: string
-	}
 }
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN

@@ -34,6 +34,7 @@ export interface IStudioSettings {
 }
 /** A string, identifying a Studio */
 export type StudioId = ProtectedString<'StudioId'>
+export type MappingsHash = ProtectedString<'MappingsHash'>
 
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
@@ -48,6 +49,12 @@ export interface DBStudio {
 
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
+
+	/**
+	 * A hash that is to be changed whenever there is a change to the mappings or routeSets
+	 * The reason for this to exist is to be able to sync the timeline to what set of mappings it was created (routed) from.
+	 */
+	mappingsHash?: MappingsHash
 
 	/** List of which ShowStyleBases this studio wants to support */
 	supportedShowStyleBase: Array<ShowStyleBaseId>
@@ -159,6 +166,7 @@ export class Studio implements DBStudio {
 	public name: string
 	public blueprintId?: BlueprintId
 	public mappings: MappingsExt
+	public mappingsHash?: MappingsHash
 	public supportedShowStyleBase: Array<ShowStyleBaseId>
 	public blueprintConfig: IBlueprintConfig
 	public settings: IStudioSettings

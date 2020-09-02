@@ -111,6 +111,7 @@ meteorCustomPublishArray(PubSub.mappingsForDevice, 'studioMappings', function(
 						pub.updatedDocs([
 							{
 								_id: studio._id,
+								mappingsHash: studio.mappingsHash,
 								mappings: routedMappings,
 							},
 						])
@@ -120,7 +121,18 @@ meteorCustomPublishArray(PubSub.mappingsForDevice, 'studioMappings', function(
 			)
 		}
 
-		const observer = Studios.find(studioId).observeChanges({
+		const observer = Studios.find(
+			{
+				_id: studioId,
+			},
+			{
+				fields: {
+					// It should be enough to watch the mappingsHash, since that should change whenever there is a
+					// change to the mappings or the routes
+					mappingsHash: 1,
+				},
+			}
+		).observeChanges({
 			added: triggerUpdate,
 			changed: triggerUpdate,
 			removed: triggerUpdate,

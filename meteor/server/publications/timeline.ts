@@ -1,13 +1,18 @@
 import { Meteor } from 'meteor/meteor'
 import { lazyIgnore, unprotectString } from '../../lib/lib'
-import { Timeline, TimelineObjGeneric, getRoutedTimeline, TimelineObjType } from '../../lib/collections/Timeline'
+import {
+	Timeline,
+	TimelineObjGeneric,
+	getRoutedTimeline,
+	TimelineObjType,
+	TimelineComplete,
+} from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Studios, getActiveRoutes, StudioId } from '../../lib/collections/Studios'
-import { generateTimelineStatObj } from '../api/playout/timeline'
 import * as _ from 'underscore'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
@@ -39,21 +44,23 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', function(
 		const observer = setUpPrepareObserver(
 			studioId,
 			() => {
-				const timeline = Timeline.find({
+				const timeline: TimelineComplete | undefined = Timeline.findOne({
 					studioId: studioId,
-					objectType: { $ne: TimelineObjType.STAT },
-				}).fetch()
+				})
 				const studio = Studios.findOne(studioId)
-				if (!studio) {
+				if (!studio || !timeline) {
 					return []
 				} else {
 					const routes = getActiveRoutes(studio)
-					const routedTimeline = getRoutedTimeline(timeline, routes)
+					const routedTimeline = getRoutedTimeline(timeline.timeline, routes)
 
-					const statObj = generateTimelineStatObj(studio._id, routedTimeline)
-					routedTimeline.push(statObj)
-
-					return routedTimeline
+					return [
+						{
+							_id: timeline._id,
+							mappingHash: studio.mappingsHash,
+							timeline: routedTimeline,
+						},
+					]
 				}
 			},
 			(routedTimeline) => {
@@ -67,7 +74,11 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', function(
 	}
 })
 const callbacks: { [studioId: string]: { stop: Function; callbacks: Function[] } } = {}
-function setUpPrepareObserver<T>(studioId: StudioId, prepareData: () => T, callback: (T) => void) {
+function setUpPrepareObserver<T extends any[]>(
+	studioId: StudioId,
+	prepareData: () => T,
+	callback: (preparedData: T) => void
+) {
 	const sid = unprotectString(studioId)
 	if (!callbacks[sid]) {
 		const triggerUpdate = () => {
@@ -85,7 +96,13 @@ function setUpPrepareObserver<T>(studioId: StudioId, prepareData: () => T, callb
 			)
 		}
 
-		const observeStudio = Studios.find(studioId).observeChanges({
+		const observeStudio = Studios.find(studioId, {
+			fields: {
+				// It should be enough to watch the mappingsHash, since that should change whenever there is a
+				// change to the mappings or the routes
+				mappingsHash: 1,
+			},
+		}).observeChanges({
 			added: triggerUpdate,
 			changed: triggerUpdate,
 			removed: triggerUpdate,
