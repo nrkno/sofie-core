@@ -57,7 +57,7 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', function(
 					return [
 						{
 							_id: timeline._id,
-							mappingHash: studio.mappingsHash,
+							mappingsHash: studio.mappingsHash,
 							timeline: routedTimeline,
 						},
 					]
