@@ -56,7 +56,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options.parentDeviceId, Match.Optional(String))
 		check(options.versions, Match.Optional(Object))
 
-		logger.debug('Initialize device ' + deviceId, options)
+		// Omitting some of the properties that tend to be rather large
+		logger.debug('Initialize device ' + deviceId, _.omit(options, 'versions', 'configManifest'))
 
 		if (peripheralDevice) {
 			PeripheralDevices.update(deviceId, {
