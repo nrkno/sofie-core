@@ -213,17 +213,17 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: 'Single timeline object',
 		canBeRunAutomatically: true,
 		validate: () => {
-			const tlos = (Timeline.find().fetch() as unknown) as Array<TimelineObjGeneric>
-			const studios = tlos.map((x) => x.studioId).filter(onlyUnique)
-			if (tlos.length === 0 || studios.length === 0) {
-				return false
+			const badCount = Timeline.find({
+				timeline: { $exists: false },
+			}).count()
+			if (badCount > 0) {
+				return `${badCount} timeline objects need to be deleted`
 			}
-			return `${tlos.length} timeline objects need to be deleted from ${studios.length} studio timelines`
+			return false
 		},
 		migrate: () => {
 			Timeline.remove({
-				_id: /.*/,
-				studioId: { $exists: false },
+				timeline: { $exists: false },
 			})
 		},
 	},
@@ -262,8 +262,4 @@ function migrateConfigToBlueprintConfig<
 			}
 		},
 	}
-}
-
-function onlyUnique<T>(value: T, index: number, self: Array<T>) {
-	return self.indexOf(value) === index
 }
