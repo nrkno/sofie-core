@@ -2,7 +2,6 @@ import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
 import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Pieces } from '../../lib/collections/Pieces'
 import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece as Piece_1_11_0 } from './deprecatedDataTypes/1_11_0'
@@ -10,6 +9,7 @@ import { unprotectString, ProtectedString, objectPathSet } from '../../lib/lib'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 
 /*
  * **************************************************************************************
@@ -34,6 +34,24 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// 		//
 	// 	}
 	// },
+	{
+		id: 'Add new routeSets property to studio where missing',
+		canBeRunAutomatically: true,
+		validate: () => {
+			return (
+				Studios.find({
+					routeSets: { $exists: false },
+				}).count() > 0
+			)
+		},
+		migrate: () => {
+			Studios.find({
+				routeSets: { $exists: false },
+			}).forEach((studio) => {
+				Studios.update(studio._id, { $set: { routeSets: {} } })
+			})
+		},
+	},
 	{
 		id: 'Studios: Default organizationId',
 		canBeRunAutomatically: true,
@@ -191,6 +209,24 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in Studios', Studios),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleBases', ShowStyleBases),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleVariants', ShowStyleVariants),
+	{
+		id: 'Single timeline object',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const badCount = Timeline.find({
+				timeline: { $exists: false },
+			}).count()
+			if (badCount > 0) {
+				return `${badCount} timeline objects need to be deleted`
+			}
+			return false
+		},
+		migrate: () => {
+			Timeline.remove({
+				timeline: { $exists: false },
+			})
+		},
+	},
 	//
 	//
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),

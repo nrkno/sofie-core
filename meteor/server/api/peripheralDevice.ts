@@ -14,7 +14,6 @@ import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
-import { afterUpdateTimeline } from './playout/timeline'
 import { RundownInput } from './ingest/rundownInput'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
@@ -58,7 +57,8 @@ export namespace ServerPeripheralDeviceAPI {
 		check(options.parentDeviceId, Match.Optional(String))
 		check(options.versions, Match.Optional(Object))
 
-		logger.debug('Initialize device ' + deviceId, options)
+		// Omitting some of the properties that tend to be rather large
+		logger.debug('Initialize device ' + deviceId, _.omit(options, 'versions', 'configManifest'))
 
 		if (peripheralDevice) {
 			PeripheralDevices.update(deviceId, {
@@ -208,33 +208,21 @@ export namespace ServerPeripheralDeviceAPI {
 
 			let lastTakeTime: number | undefined
 
+			// ------------------------------
+			let timelineObjs = cache.Timeline.findOne({ _id: studioId })?.timeline || []
+			let tlChanged = false
 			_.each(results, (o) => {
 				check(o.id, String)
 
-				// check(o.time, Number)
 				logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
 				const id = getTimelineId(studioId, o.id)
-				const obj = cache.Timeline.findOne({
-					_id: id,
-					studioId: studioId,
-				})
+				const obj = timelineObjs.find((tlo) => tlo._id === id)
 				if (obj) {
-					cache.Timeline.update(
-						{
-							_id: id,
-							studioId: studioId,
-						},
-						{
-							$set: {
-								'enable.start': o.time,
-								'enable.setFromNow': true,
-							},
-						}
-					)
-
 					obj.enable.start = o.time
 					obj.enable.setFromNow = true
+
+					tlChanged = true
 
 					if (obj.metaData?.pieceId) {
 						logger.debug('Update PieceInstance: ', {
@@ -279,9 +267,17 @@ export namespace ServerPeripheralDeviceAPI {
 					}
 				}
 			}
-
-			// After we've updated the timeline, we must call afterUpdateTimeline!
-			afterUpdateTimeline(cache, studioId)
+			if (tlChanged) {
+				cache.Timeline.update(
+					studioId,
+					{
+						$set: {
+							timeline: timelineObjs,
+						},
+					},
+					true
+				)
+			}
 			waitForPromise(cache.saveAllToDatabase())
 		}
 	},

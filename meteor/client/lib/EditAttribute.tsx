@@ -72,6 +72,7 @@ interface IEditAttributeBaseProps {
 	label?: string
 	mutateDisplayValue?: (v: any) => any
 	mutateUpdateValue?: (v: any) => any
+	disabled?: boolean
 }
 interface IEditAttributeBaseState {
 	value: any
@@ -239,6 +240,7 @@ const EditAttributeText = wrapEditAttribute(
 					onChange={this.handleChange}
 					onBlur={this.handleBlur}
 					onKeyUp={this.handleEscape}
+					disabled={this.props.disabled}
 				/>
 			)
 		}
@@ -288,6 +290,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 					onBlur={this.handleBlur}
 					onKeyUp={this.handleEscape}
 					onKeyPress={this.handleEnterKey}
+					disabled={this.props.disabled}
 				/>
 			)
 		}
@@ -334,6 +337,7 @@ const EditAttributeInt = wrapEditAttribute(
 					value={this.getEditAttributeNumber()}
 					onChange={this.handleChange}
 					onBlur={this.handleBlur}
+					disabled={this.props.disabled}
 				/>
 			)
 		}
@@ -380,6 +384,7 @@ const EditAttributeFloat = wrapEditAttribute(
 					value={this.getEditAttributeNumber()}
 					onChange={this.handleChange}
 					onBlur={this.handleBlur}
+					disabled={this.props.disabled}
 				/>
 			)
 		}
@@ -409,7 +414,13 @@ const EditAttributeCheckbox = wrapEditAttribute(
 							' ' +
 							(this.state.editing ? this.props.modifiedClassName || '' : '')
 						}>
-						<input type="checkbox" className="form-control" checked={this.isChecked()} onChange={this.handleChange} />
+						<input
+							type="checkbox"
+							className="form-control"
+							checked={this.isChecked()}
+							onChange={this.handleChange}
+							disabled={this.props.disabled}
+						/>
 						<span className="checkbox-checked">
 							<FontAwesomeIcon icon={faCheckSquare} />
 						</span>
@@ -447,7 +458,9 @@ const EditAttributeSwitch = wrapEditAttribute(
 						' ' +
 						(this.state.editing ? this.props.modifiedClassName || '' : '') +
 						' ' +
-						(this.isChecked() ? 'switch-active' : '')
+						(this.isChecked() ? 'switch-active' : '') +
+						' ' +
+						(this.props.disabled ? 'disabled' : '')
 					}
 					onClick={this.handleClick}>
 					{this.props.label}
@@ -561,7 +574,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 						(this.state.editing ? this.props.modifiedClassName || '' : '')
 					}
 					value={this.getAttributeText()}
-					onChange={this.handleChange}>
+					onChange={this.handleChange}
+					disabled={this.props.disabled}>
 					{this.getOptions(true).map((o, j) =>
 						Array.isArray(o.value) ? (
 							<optgroup key={j} label={o.name}>
@@ -715,6 +729,7 @@ const EditAttributeJson = wrapEditAttribute(
 					onChange={this.handleChange}
 					onBlur={this.handleBlur}
 					onKeyUp={this.handleEscape}
+					disabled={this.props.disabled}
 				/>
 			)
 		}

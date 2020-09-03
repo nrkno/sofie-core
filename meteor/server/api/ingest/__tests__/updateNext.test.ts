@@ -30,6 +30,7 @@ function createMockRO() {
 		organizationId: null,
 		name: 'mock studio',
 		mappings: {},
+		routeSets: {},
 		supportedShowStyleBase: [],
 		blueprintConfig: {},
 		settings: {

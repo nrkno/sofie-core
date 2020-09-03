@@ -99,6 +99,9 @@ class ServerPlayoutAPIClass extends MethodContextAPI implements NewPlayoutAPI {
 	shouldUpdateStudioBaseline(studioId: StudioId) {
 		return makePromise(() => ServerPlayoutAPI.shouldUpdateStudioBaseline(this, studioId))
 	}
+	switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean) {
+		return makePromise(() => ServerPlayoutAPI.switchRouteSet(this, studioId, routeSetId, state))
+	}
 }
 registerClassToMeteorMethods(PlayoutAPIMethods, ServerPlayoutAPIClass, false)
 

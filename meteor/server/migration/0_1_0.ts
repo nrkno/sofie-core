@@ -36,6 +36,7 @@ addMigrationSteps('0.1.0', [
 				mappings: {},
 				blueprintConfig: {},
 				_rundownVersionHash: '',
+				routeSets: {},
 			})
 		},
 	},

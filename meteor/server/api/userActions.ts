@@ -790,6 +790,19 @@ export function noop(context: MethodContext) {
 	return ClientAPI.responseSuccess(undefined)
 }
 
+export function switchRouteSet(
+	context: MethodContext,
+	studioId: StudioId,
+	routeSetId: string,
+	state: boolean
+): ClientAPI.ClientResponse<void> {
+	check(studioId, String)
+	check(routeSetId, String)
+	check(state, Boolean)
+
+	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
+}
+
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
 	const transaction = profiler.startTransaction(description, 'userAction')
 	return makePromise(() => {
@@ -1058,6 +1071,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
 		return traceAction('userAction.bucketsModifyBucketAdLib', bucketsModifyBucketAdLib, this, id, bucketAdlib)
+	}
+	switchRouteSet(
+		_userEvent: string,
+		studioId: StudioId,
+		routeSetId: string,
+		state: boolean
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => switchRouteSet(this, studioId, routeSetId, state))
 	}
 }
 registerClassToMeteorMethods(
