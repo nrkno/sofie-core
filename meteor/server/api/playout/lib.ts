@@ -317,7 +317,10 @@ export function selectNextPart(
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const nextPart2 = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
+			const nextPart2 = findFirstPlayablePart(
+				0,
+				(part) => part.segmentId === rundownPlaylist.nextSegmentId && !part.dynamicallyInsertedAfterPartId
+			)
 			if (nextPart2) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
