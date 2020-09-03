@@ -2,19 +2,18 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { Studios, DBStudio, getActiveRoutes, getRoutedMappings } from '../../lib/collections/Studios'
+import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, Studio } from '../../lib/collections/Studios'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
-import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
 import { NoSecurityReadAccess } from '../security/noSecurity'
-import { lazyIgnore } from '../../lib/lib'
 import { meteorCustomPublishArray } from '../lib/customPublication'
+import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 
 meteorPublish(PubSub.studios, function(selector0, token) {
 	const { cred, selector } = AutoFillSelector.organizationId(this.userId, selector0, token)
@@ -96,50 +95,56 @@ meteorCustomPublishArray(PubSub.mappingsForDevice, 'studioMappings', function(
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
 		const studioId = peripheralDevice.studioId
+		if (!studioId) return []
 
-		const triggerUpdate = () => {
-			lazyIgnore(
-				`studioMappings_${studioId}`,
-				() => {
-					const studio = Studios.findOne(studioId)
-					if (!studio) {
-						pub.updatedDocs([])
-					} else {
-						const routes = getActiveRoutes(studio)
-						const routedMappings = getRoutedMappings(studio.mappings, routes)
-
-						pub.updatedDocs([
-							{
-								_id: studio._id,
-								mappingsHash: studio.mappingsHash,
-								mappings: routedMappings,
-							},
-						])
-					}
-				},
-				3 // ms
-			)
-		}
-
-		const observer = Studios.find(
-			{
-				_id: studioId,
+		const observer = setUpOptimizedObserver(
+			`pub_${PubSub.mappingsForDevice}_${studioId}`,
+			(triggerUpdate) => {
+				// Set up observers:
+				return [
+					Studios.find(studioId, {
+						fields: {
+							// It should be enough to watch the mappingsHash, since that should change whenever there is a
+							// change to the mappings or the routes
+							mappingsHash: 1,
+						},
+					}).observe({
+						added: (studio) => triggerUpdate({ studio: studio }),
+						changed: (studio) => triggerUpdate({ studio: studio }),
+						removed: () => triggerUpdate({ studio: undefined }),
+					}),
+				]
 			},
-			{
-				fields: {
-					// It should be enough to watch the mappingsHash, since that should change whenever there is a
-					// change to the mappings or the routes
-					mappingsHash: 1,
-				},
+			() => {
+				// Initialize data
+				return {
+					studio: Studios.findOne(studioId),
+				}
+			},
+			(newData: { studio: Studio | undefined }) => {
+				// Prepare data for publication:
+
+				if (!newData.studio) {
+					return []
+				} else {
+					const routes = getActiveRoutes(newData.studio)
+					const routedMappings = getRoutedMappings(newData.studio.mappings, routes)
+
+					return [
+						{
+							_id: newData.studio._id,
+							mappingsHash: newData.studio.mappingsHash,
+							mappings: routedMappings,
+						},
+					]
+				}
+			},
+			(newData) => {
+				pub.updatedDocs(newData)
 			}
-		).observeChanges({
-			added: triggerUpdate,
-			changed: triggerUpdate,
-			removed: triggerUpdate,
-		})
+		)
 		pub.onStop(() => {
 			observer.stop()
 		})
-		triggerUpdate()
 	}
 })

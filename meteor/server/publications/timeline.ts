@@ -1,18 +1,12 @@
 import { Meteor } from 'meteor/meteor'
-import { lazyIgnore, unprotectString } from '../../lib/lib'
-import {
-	Timeline,
-	TimelineObjGeneric,
-	getRoutedTimeline,
-	TimelineObjType,
-	TimelineComplete,
-} from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, getRoutedTimeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/typings/meteor'
 import { meteorCustomPublishArray } from '../lib/customPublication'
+import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Studios, getActiveRoutes, StudioId } from '../../lib/collections/Studios'
+import { Studios, getActiveRoutes, Studio } from '../../lib/collections/Studios'
 import * as _ from 'underscore'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
@@ -41,103 +35,64 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', function(
 		const studioId = peripheralDevice.studioId
 		if (!studioId) return []
 
-		const observer = setUpPrepareObserver(
-			studioId,
+		const observer = setUpOptimizedObserver(
+			`pub_${PubSub.timelineForDevice}_${studioId}`,
+			(triggerUpdate) => {
+				// Set up observers:
+				return [
+					Studios.find(studioId, {
+						fields: {
+							// It should be enough to watch the mappingsHash, since that should change whenever there is a
+							// change to the mappings or the routes
+							mappingsHash: 1,
+						},
+					}).observe({
+						added: (studio) => triggerUpdate({ studio: studio }),
+						changed: (studio) => triggerUpdate({ studio: studio }),
+						removed: () => triggerUpdate({ studio: null }),
+					}),
+					Timeline.find({
+						_id: studioId,
+					}).observe({
+						added: (timeline) => triggerUpdate({ timeline: timeline }),
+						changed: (timeline) => triggerUpdate({ timeline: timeline }),
+						removed: () => triggerUpdate({ timeline: null }),
+					}),
+				]
+			},
 			() => {
-				const timeline: TimelineComplete | undefined = Timeline.findOne({
-					studioId: studioId,
-				})
-				const studio = Studios.findOne(studioId)
-				if (!studio || !timeline) {
+				// Initial data fetch
+				return {
+					timeline: Timeline.findOne({
+						_id: studioId,
+					}),
+					studio: Studios.findOne(studioId),
+				}
+			},
+			(newData: { studio: Studio | undefined; timeline: TimelineComplete | undefined }) => {
+				// Prepare data for publication:
+
+				if (!newData.studio || !newData.timeline) {
 					return []
 				} else {
-					const routes = getActiveRoutes(studio)
-					const routedTimeline = getRoutedTimeline(timeline.timeline, routes)
+					const routes = getActiveRoutes(newData.studio)
+					const routedTimeline = getRoutedTimeline(newData.timeline.timeline, routes)
 
 					return [
 						{
-							_id: timeline._id,
-							mappingsHash: studio.mappingsHash,
+							_id: newData.timeline._id,
+							mappingsHash: newData.studio.mappingsHash,
 							timeline: routedTimeline,
 						},
 					]
 				}
 			},
-			(routedTimeline) => {
-				pub.updatedDocs(routedTimeline)
+			(newData) => {
+				pub.updatedDocs(newData)
 			}
 		)
-
 		pub.onStop(() => {
 			observer.stop()
 		})
 	}
 })
-const callbacks: { [studioId: string]: { stop: Function; callbacks: Function[] } } = {}
-function setUpPrepareObserver<T extends any[]>(
-	studioId: StudioId,
-	prepareData: () => T,
-	callback: (preparedData: T) => void
-) {
-	const sid = unprotectString(studioId)
-	if (!callbacks[sid]) {
-		const triggerUpdate = () => {
-			lazyIgnore(
-				`studioTimeline_${studioId}`,
-				() => {
-					const o = callbacks[sid]
-					if (o) {
-						const result = prepareData()
-
-						_.each(o.callbacks, (cb) => cb(result))
-					}
-				},
-				3 // ms
-			)
-		}
-
-		const observeStudio = Studios.find(studioId, {
-			fields: {
-				// It should be enough to watch the mappingsHash, since that should change whenever there is a
-				// change to the mappings or the routes
-				mappingsHash: 1,
-			},
-		}).observeChanges({
-			added: triggerUpdate,
-			changed: triggerUpdate,
-			removed: triggerUpdate,
-		})
-		const observeTimeline = Timeline.find({
-			studioId: studioId,
-		}).observeChanges({
-			added: triggerUpdate,
-			changed: triggerUpdate,
-			removed: triggerUpdate,
-		})
-
-		callbacks[sid] = {
-			stop: () => {
-				observeStudio.stop()
-				observeTimeline.stop()
-			},
-			callbacks: [],
-		}
-	}
-	callbacks[sid].callbacks.push(callback)
-	return {
-		stop: () => {
-			const o = callbacks[sid]
-			if (o) {
-				const i = o.callbacks.indexOf(callback)
-				if (i != -1) {
-					o.callbacks.splice(i, 1)
-				}
-				// clean up if empty:
-				if (!o.callbacks.length) {
-					o.stop()
-					delete callbacks[sid]
-				}
-			}
-		},
-	}
-}
