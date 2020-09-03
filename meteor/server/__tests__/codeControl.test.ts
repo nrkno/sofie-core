@@ -18,7 +18,9 @@ describe('codeControl rundown', () => {
 	})
 	testInFiber('rundownSyncFunction', () => {
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return rundownPlaylistSyncFunction(protectString('ro1'), priority, () => takesALongTimeInner(name))
+			return rundownPlaylistSyncFunction(protectString('ro1'), priority, 'testRundownSyncFn', () =>
+				takesALongTimeInner(name)
+			)
 		}
 
 		let res: any[] = []

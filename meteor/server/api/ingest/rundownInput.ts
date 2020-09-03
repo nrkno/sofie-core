@@ -131,8 +131,12 @@ export enum RundownSyncFunctionPriority {
 export function rundownPlaylistSyncFunction<T extends Function>(
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
+	context: string,
 	fcn: T
 ): ReturnType<T> {
+	if (!fcn.name) {
+		Object.defineProperty(fcn, 'name', { value: context })
+	}
 	return syncFunction(fcn, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
 }
 
@@ -345,7 +349,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const rundownPlaylistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
+	rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedRundown', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 
@@ -414,7 +418,7 @@ export function handleUpdatedRundown(
 	// Lock behind a playlist if it exists
 	const existingRundown = Rundowns.findOne(rundownId)
 	const playlistId = existingRundown ? existingRundown.playlistId : protectString('newPlaylist')
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () =>
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedRundown', () =>
 		handleUpdatedRundownInner(studio, rundownId, makeNewIngestRundown(ingestRundown), dataSource, peripheralDevice)
 	)
 }
@@ -1008,7 +1012,7 @@ function handleRemovedSegment(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedSegment', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
@@ -1047,7 +1051,7 @@ export function handleUpdatedSegment(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedSegment', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
@@ -1278,7 +1282,7 @@ export function handleRemovedPart(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleRemovedPart', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 		const segmentId = getSegmentId(rundown._id, segmentExternalId)
@@ -1335,7 +1339,7 @@ export function handleUpdatedPart(
 	const rundownId = getRundownId(studio, rundownExternalId)
 	const playlistId = getRundown(rundownId, rundownExternalId).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleUpdatedPart', () => {
 		const rundown = getRundown(rundownId, rundownExternalId)
 		const playlist = getRundownPlaylist(rundown)
 

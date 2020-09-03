@@ -52,9 +52,14 @@ export function takeNextPartInner(
 ): ClientAPI.ClientResponse<void> {
 	let now = getCurrentTime()
 
-	return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-		return takeNextPartInnerSync(context, rundownPlaylistId, now, existingCache)
-	})
+	return rundownPlaylistSyncFunction(
+		rundownPlaylistId,
+		RundownSyncFunctionPriority.USER_PLAYOUT,
+		'takeNextPartInner',
+		() => {
+			return takeNextPartInnerSync(context, rundownPlaylistId, now, existingCache)
+		}
+	)
 }
 
 /**
