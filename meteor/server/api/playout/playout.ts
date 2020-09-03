@@ -886,9 +886,10 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return (
+		return rundownPlaylistSyncFunction(
 			rundownPlaylistId,
 			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+			'onPlaybackStarted',
 			() => {
 				// This method is called when a part starts playing (like when an auto-next event occurs, or a manual next)
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
@@ -1038,9 +1039,10 @@ export namespace ServerPlayoutAPI {
 
 		triggerWriteAccessBecauseNoCheckNecessary() // tmp
 
-		return (
+		return rundownPlaylistSyncFunction(
 			rundownPlaylistId,
 			RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+			'onPartPlaybackStopped',
 			() => {
 				// This method is called when a part stops playing (like when an auto-next event occurs, or a manual next)
 				const rundowns = Rundowns.find({ playlistId: rundownPlaylistId }).fetch()
@@ -1353,13 +1355,16 @@ export namespace ServerPlayoutAPI {
 		const activeRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id)
 
 		if (activeRundowns.length === 0) {
-			// const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
-			const studioTimeline = cache.Timeline.findOne(studioId)
-			if (!studioTimeline) return 'noBaseline'
-			const markerObject = studioTimeline.timeline.find(
-				(x) => x._id === protectString(`${studio._id}_baseline_version`)
-			)
+			const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
+			const markerObject = cache.Timeline.findOne(markerId)
 			if (!markerObject) return 'noBaseline'
+			// Accidental inclusion of one timeline code below - random ... don't know why
+			// const studioTimeline = cache.Timeline.findOne(studioId)
+			// if (!studioTimeline) return 'noBaseline'
+			// const markerObject = studioTimeline.timeline.find(
+			// 	(x) => x._id === protectString(`${studio._id}_baseline_version`)
+			// )
+			// if (!markerObject) return 'noBaseline'
 
 			const versionsContent = (markerObject.metaData || {}).versions || {}
 
