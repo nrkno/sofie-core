@@ -84,14 +84,19 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			rundownPlaylistSyncFunction(id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-				const playlist = RundownPlaylists.findOne(id)
-				if (!playlist) throw new Meteor.Error(404, 'not found')
+			rundownPlaylistSyncFunction(
+				id,
+				RundownSyncFunctionPriority.USER_PLAYOUT,
+				'debug_syncPlayheadInfinitesForNextPartInstance',
+				() => {
+					const playlist = RundownPlaylists.findOne(id)
+					if (!playlist) throw new Meteor.Error(404, 'not found')
 
-				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
-				waitForPromise(cache.saveAllToDatabase())
-			})
+					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+					waitForPromise(cache.saveAllToDatabase())
+				}
+			)
 		},
 	})
 }
