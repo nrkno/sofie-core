@@ -498,14 +498,18 @@ describe('Test blueprint api context', () => {
 				// Apply mocked notesContext:
 			;(context as any).notesContext = fakeNotes
 
-			context.error('this is an error', 'extid1')
+			context.error('this is an {{error}}', { error: 'embarrasing situation' }, 'extid1')
 
 			expect(fakeNotes.error).toHaveBeenCalledTimes(1)
-			expect(fakeNotes.error).toHaveBeenCalledWith('this is an error', 'extid1')
+			expect(fakeNotes.error).toHaveBeenCalledWith(
+				'this is an {{error}}',
+				{ error: 'embarrasing situation' },
+				'extid1'
+			)
 
-			context.warning('this is an warning', 'extid1')
+			context.warning('this is an warning', {}, 'extid1')
 			expect(fakeNotes.warning).toHaveBeenCalledTimes(1)
-			expect(fakeNotes.warning).toHaveBeenCalledWith('this is an warning', 'extid1')
+			expect(fakeNotes.warning).toHaveBeenCalledWith('this is an warning', {}, 'extid1')
 
 			const hash = context.getHashId('str 1', false)
 			expect(hash).toEqual('hashed')
