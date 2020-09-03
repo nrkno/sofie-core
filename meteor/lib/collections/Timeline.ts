@@ -9,6 +9,7 @@ import { StudioId } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
+import { registerIndex } from '../database'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -139,10 +140,7 @@ export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGene
 	TimelineObjGeneric
 >('timeline')
 registerCollection('Timeline', Timeline)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Timeline._ensureIndex({
-			studioId: 1,
-		})
-	}
+
+registerIndex(Timeline, {
+	studioId: 1,
 })

@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { UserId } from './Users'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 /** A string, identifying a UserActionsLogItem */
 export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>
@@ -31,11 +32,7 @@ export const UserActionsLog: TransformedCollection<UserActionsLogItem, UserActio
 >('userActionsLog')
 registerCollection('UserActionsLog', UserActionsLog)
 
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		UserActionsLog._ensureIndex({
-			organizationId: 1,
-			timestamp: 1,
-		})
-	}
+registerIndex(UserActionsLog, {
+	organizationId: 1,
+	timestamp: 1,
 })

@@ -7,6 +7,7 @@ import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -96,6 +97,10 @@ export const Studios: TransformedCollection<Studio, DBStudio> = createMongoColle
 	transform: (doc) => applyClassToDocument(Studio, doc),
 })
 registerCollection('Studios', Studios)
+
+registerIndex(Studios, {
+	organizationId: 1,
+})
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {

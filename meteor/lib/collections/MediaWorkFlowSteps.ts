@@ -6,6 +6,7 @@ import { PeripheralDeviceId } from './PeripheralDevices'
 import { StudioId } from './Studios'
 import { MediaWorkFlowId } from './MediaWorkFlows'
 import { MediaManagerAPI } from '../api/mediaManager'
+import { registerIndex } from '../database'
 
 /** A string, identifying a MediaWorkFlowStep */
 export type MediaWorkFlowStepId = ProtectedString<'MediaWorkFlowStepId'>
@@ -35,17 +36,14 @@ export const MediaWorkFlowSteps: TransformedCollection<MediaWorkFlowStep, MediaW
 	MediaWorkFlowStep
 >('mediaWorkFlowSteps')
 registerCollection('MediaWorkFlowSteps', MediaWorkFlowSteps)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		MediaWorkFlowSteps._ensureIndex({
-			deviceId: 1,
-		})
-		MediaWorkFlowSteps._ensureIndex({
-			workFlowId: 1,
-		})
-		MediaWorkFlowSteps._ensureIndex({
-			status: 1,
-			priority: 1,
-		})
-	}
+
+registerIndex(MediaWorkFlowSteps, {
+	deviceId: 1,
+})
+registerIndex(MediaWorkFlowSteps, {
+	workFlowId: 1,
+})
+registerIndex(MediaWorkFlowSteps, {
+	status: 1,
+	priority: 1,
 })

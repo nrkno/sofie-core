@@ -6,6 +6,7 @@ import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStr
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import deepmerge from 'deepmerge'
+import { registerIndex } from '../database'
 
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
@@ -68,12 +69,9 @@ export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowSt
 	ShowStyleVariant
 >('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		ShowStyleVariants._ensureIndex({
-			showStyleBaseId: 1,
-		})
-	}
+
+registerIndex(ShowStyleVariants, {
+	showStyleBaseId: 1,
 })
 
 Meteor.startup(() => {

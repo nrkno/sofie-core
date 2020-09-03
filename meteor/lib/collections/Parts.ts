@@ -25,6 +25,7 @@ import { PartNote, NoteType } from '../api/notes'
 import { createMongoCollection } from './lib'
 import { Studio } from './Studios'
 import { ShowStyleBase } from './ShowStyleBases'
+import { registerIndex } from '../database'
 
 /** A string, identifying a Part */
 export type PartId = ProtectedString<'PartId'>
@@ -248,16 +249,13 @@ export const Parts: TransformedCollection<Part, DBPart> = createMongoCollection<
 	transform: (doc) => applyClassToDocument(Part, doc),
 })
 registerCollection('Parts', Parts)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Parts._ensureIndex({
-			rundownId: 1,
-			segmentId: 1,
-			_rank: 1,
-		})
-		Parts._ensureIndex({
-			rundownId: 1,
-			_rank: 1,
-		})
-	}
+
+registerIndex(Parts, {
+	rundownId: 1,
+	segmentId: 1,
+	_rank: 1,
+})
+registerIndex(Parts, {
+	rundownId: 1,
+	_rank: 1,
 })

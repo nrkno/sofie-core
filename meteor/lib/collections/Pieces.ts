@@ -13,6 +13,7 @@ import {
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
+import { registerIndex } from '../database'
 
 /** A string, identifying a Piece */
 export type PieceId = ProtectedString<'PieceId'>
@@ -79,12 +80,9 @@ export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id
 
 export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')
 registerCollection('Pieces', Pieces)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Pieces._ensureIndex({
-			startRundownId: 1,
-			startSegmentId: 1,
-			startPartId: 1,
-		})
-	}
+
+registerIndex(Pieces, {
+	startRundownId: 1,
+	startSegmentId: 1,
+	startPartId: 1,
 })

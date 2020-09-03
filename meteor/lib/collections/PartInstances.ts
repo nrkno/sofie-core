@@ -19,6 +19,7 @@ import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
@@ -110,22 +111,18 @@ export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> 
 	{ transform: (doc) => applyClassToDocument(PartInstance, doc) }
 )
 registerCollection('PartInstances', PartInstances)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			segmentId: 1,
-			takeCount: 1,
-		})
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			takeCount: 1,
-		})
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			// @ts-ignore deep property
-			'part._id': 1,
-			takeCount: 1,
-		})
-	}
+registerIndex(PartInstances, {
+	rundownId: 1,
+	segmentId: 1,
+	takeCount: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	takeCount: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	// @ts-ignore deep property
+	'part._id': 1,
+	takeCount: 1,
 })

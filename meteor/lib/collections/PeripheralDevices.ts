@@ -9,6 +9,7 @@ import { createMongoCollection } from './lib'
 import { DeviceConfigManifest } from '../api/deviceConfig'
 import { StudioId } from './Studios'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PeripheralDevice */
 export type PeripheralDeviceId = ProtectedString<'PeripheralDeviceId'>
@@ -67,19 +68,16 @@ export const PeripheralDevices: TransformedCollection<PeripheralDevice, Peripher
 	PeripheralDevice
 >('peripheralDevices')
 registerCollection('PeripheralDevices', PeripheralDevices)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PeripheralDevices._ensureIndex({
-			organizationId: 1,
-			studioId: 1,
-		})
-		PeripheralDevices._ensureIndex({
-			studioId: 1,
-		})
-		PeripheralDevices._ensureIndex({
-			token: 1,
-		})
-	}
+
+registerIndex(PeripheralDevices, {
+	organizationId: 1,
+	studioId: 1,
+})
+registerIndex(PeripheralDevices, {
+	studioId: 1,
+})
+registerIndex(PeripheralDevices, {
+	token: 1,
 })
 
 export function getStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId | undefined {
