@@ -157,6 +157,7 @@ export function getPlayheadTrackingInfinitesForPart(
 				fromPreviousPart: true,
 				fromPreviousPlayhead: true,
 			}
+			instance.adLibSourceId = p.adLibSourceId
 		}
 
 		return instance
