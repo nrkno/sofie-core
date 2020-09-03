@@ -4,7 +4,6 @@ import * as MOS from 'mos-connection'
 
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
-import { PeripheralDeviceContentWriteAccess } from '../../../security/peripheralDevice'
 import { logger } from '../../../logging'
 import { getStudioFromDevice, canBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
 import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
@@ -19,7 +18,7 @@ import {
 	handleMosRundownMetadata,
 } from './ingest'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { PeripheralDeviceId, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../../lib/api/methods'
 
 export namespace MosIntegration {

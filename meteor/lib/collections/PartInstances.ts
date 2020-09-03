@@ -18,7 +18,6 @@ import { PieceInstance, PieceInstances } from './PieceInstances'
 import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
-import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>

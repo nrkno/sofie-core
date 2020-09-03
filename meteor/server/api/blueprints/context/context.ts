@@ -46,7 +46,6 @@ import { ConfigRef, preprocessStudioConfig, findMissingConfigs, preprocessShowSt
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
 import {
-	getShowStyleCompound,
 	ShowStyleVariantId,
 	ShowStyleVariants,
 	ShowStyleVariant,
@@ -58,11 +57,10 @@ import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ing
 import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
 import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
-import { CacheForRundownPlaylist, CacheForPlayout } from '../../../DatabaseCaches'
+import { CacheForIngest, CacheForPlayout } from '../../../DatabaseCaches'
 import { DeepReadonly } from 'utility-types'
 
 /** Common */
@@ -224,8 +222,8 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 	constructor(
 		studio: DeepReadonly<Studio>,
-		private readonly cache: CacheForRundownPlaylist | undefined,
-		readonly _rundown: Rundown | undefined,
+		private readonly cache: CacheForIngest | CacheForPlayout | undefined,
+		readonly _rundown: DeepReadonly<Rundown> | undefined,
 		readonly showStyleBaseId: ShowStyleBaseId,
 		readonly showStyleVariantId: ShowStyleVariantId,
 		notesContext: NotesContext
@@ -332,11 +330,11 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 
 	constructor(
 		rundown: DeepReadonly<Rundown>,
-		cache: CacheForRundownPlaylist,
+		cache: CacheForIngest | CacheForPlayout,
 		notesContext: NotesContext | undefined
 	) {
 		super(
-			cache.activationCache.getStudio(),
+			cache.Studio.doc,
 			cache,
 			rundown,
 			rundown.showStyleBaseId,
@@ -356,7 +354,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 }
 
 export class SegmentContext extends RundownContext implements ISegmentContext {
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext) {
+	constructor(rundown: Rundown, cache: CacheForIngest | CacheForPlayout, notesContext: NotesContext) {
 		super(rundown, cache, notesContext)
 	}
 }
@@ -392,7 +390,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
+	constructor(rundown: Rundown, cache: CacheForIngest | CacheForPlayout, asRunEvent: AsRunLogEvent) {
 		super(
 			rundown,
 			cache,

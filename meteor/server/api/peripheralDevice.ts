@@ -13,7 +13,6 @@ import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
-import { syncFunction } from '../codeControl'
 import { afterUpdateTimeline } from './playout/timeline'
 import {
 	RundownInput,
@@ -35,14 +34,9 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import {
-	initCacheForNoRundownPlaylist,
-	initCacheForStudio,
-	initCacheForRundownPlaylist,
-	CacheForStudio2,
-} from '../DatabaseCaches'
-import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { PieceInstanceId, PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { CacheForStudio2 } from '../DatabaseCaches'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { getActiveRundownPlaylistsInStudio2 } from './playout/studio'
 import { DbCacheWriteCollection } from '../DatabaseCache'
 

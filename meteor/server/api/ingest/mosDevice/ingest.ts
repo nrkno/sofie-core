@@ -2,18 +2,28 @@ import * as _ from 'underscore'
 import * as MOS from 'mos-connection'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { getSegmentId, canBeUpdated, getPartId, rundownIngestSyncFunction, getRundownId, getRundown2 } from '../lib'
+import {
+	getSegmentId,
+	canBeUpdated,
+	getPartId,
+	rundownIngestSyncFunction,
+	getRundownId,
+	getRundown2,
+	IngestPlayoutInfo,
+	getShowStyleBaseIngest,
+} from '../lib'
 import { getPartIdFromMosStory, getSegmentExternalId, fixIllegalObject, parseMosString } from './lib'
 import { literal, protectString, unprotectString, getCurrentTime, normalizeArray } from '../../../../lib/lib'
-import { IngestPart, IngestSegment, IngestRundown } from 'tv-automation-sofie-blueprints-integration'
+import { IngestPart, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
 import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	prepareUpdateRundownInner,
 	prepareUpdatePartInner,
-	updateSegmentsFromIngestData,
 	savePreparedRundownChanges,
 	savePreparedSegmentChanges,
 	afterIngestChangedData,
+	prepareUpdateSegmentFromIngestData,
+	PreparedSegmentChanges,
 } from '../rundownInput'
 import {
 	loadCachedRundownData,
@@ -26,17 +36,16 @@ import {
 	updateIngestRundownWithData,
 } from '../ingestCache'
 import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
-import { Studio } from '../../../../lib/collections/Studios'
-import { Segment } from '../../../../lib/collections/Segments'
+import { Segment, SegmentId } from '../../../../lib/collections/Segments'
 import { removeSegments, ServerRundownAPI } from '../../rundown'
 import { UpdateNext } from '../updateNext'
 import { logger } from '../../../../lib/logging'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PartId } from '../../../../lib/collections/Parts'
-import { CacheForIngest } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
+import { CacheForIngest, ReadOnlyCache } from '../../../DatabaseCaches'
 import { Settings } from '../../../../lib/Settings'
 import { DeepReadonly } from 'utility-types'
+import { PartInstances } from '../../../../lib/collections/PartInstances'
+import { loadShowStyleBlueprint } from '../../blueprints/cache'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -243,7 +252,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 			if (preparedChanges) {
 				const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
 				if (updatedSegmentId) {
-					afterIngestChangedData(cache, [updatedSegmentId])
+					afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
 				}
 			}
 		}
@@ -292,7 +301,7 @@ export function handleMosDeleteStory(
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
-				applyMosSegmentChanges(cache, preparedChanges)
+				applyMosSegmentChanges(cache, playoutInfo, preparedChanges)
 				UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
 			}
 		}
@@ -374,7 +383,7 @@ export function handleInsertParts(
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
-				applyMosSegmentChanges(cache, preparedChanges)
+				applyMosSegmentChanges(cache, playoutInfo, preparedChanges)
 				UpdateNext.afterInsertParts(cache, playoutInfo, newPartIds, removePrevious)
 			}
 		}
@@ -433,7 +442,7 @@ export function handleSwapStories(
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
-				applyMosSegmentChanges(cache, preparedChanges)
+				applyMosSegmentChanges(cache, playoutInfo, preparedChanges)
 				UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
 			}
 		}
@@ -499,7 +508,7 @@ export function handleMoveStories(
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
-				applyMosSegmentChanges(cache, preparedChanges)
+				applyMosSegmentChanges(cache, playoutInfo, preparedChanges)
 				UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
 			}
 		}
@@ -549,14 +558,13 @@ function groupPartsIntoIngestSegments(
 	return newIngestSegments
 }
 
-function diffAndApplyChanges(
-	cache: CacheForIngest,
-	playlist: RundownPlaylist,
-	rundown: Rundown,
+function prepareMosSegmentChanges(
+	cache: ReadOnlyCache<CacheForIngest>,
 	oldIngestRundown: LocalIngestRundown,
 	newIngestSegments: LocalIngestSegment[]
-	// newIngestParts: AnnotatedIngestPart[]
-) {
+): PreparedMosSegmentChanges {
+	const rundown = getRundown2(cache)
+
 	// Fetch all existing segments:
 	const oldSegments = cache.Segments.findFetch({ rundownId: rundown._id })
 
@@ -564,11 +572,48 @@ function diffAndApplyChanges(
 	const newSegmentEntries = compileSegmentEntries(newIngestSegments)
 	const segmentDiff = diffSegmentEntries(oldSegmentEntries, newSegmentEntries, oldSegments)
 
+	// Save new cache
+	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
+	saveRundownCache(rundown._id, newIngestRundown) // TODO-CACHE - defer
+
+	// Create/Update segments
+	const sortedIngestSegments = _.sortBy(
+		[..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)],
+		(se) => se.rank
+	)
+	let preparedSegmentChanges: PreparedSegmentChanges[] = []
+	if (sortedIngestSegments.length > 0) {
+		const blueprint = loadShowStyleBlueprint(getShowStyleBaseIngest(cache))
+		for (const ingestSegment of sortedIngestSegments) {
+			preparedSegmentChanges.push(prepareUpdateSegmentFromIngestData(cache, blueprint, ingestSegment))
+		}
+	}
+
+	return {
+		newIngestSegments,
+		segmentDiff,
+		preparedSegmentChanges,
+	}
+}
+
+interface PreparedMosSegmentChanges {
+	newIngestSegments: LocalIngestSegment[]
+	segmentDiff: DiffSegmentEntries
+	preparedSegmentChanges: PreparedSegmentChanges[]
+}
+
+function applyMosSegmentChanges(
+	cache: CacheForIngest,
+	playoutInfo: IngestPlayoutInfo,
+	preparedChanges: PreparedMosSegmentChanges
+): void {
+	const rundown = getRundown2(cache)
+
 	// Check if operation affect currently playing Part:
-	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-	if (playlist.active && currentPartInstance) {
+	if (playoutInfo.playlist.active && playoutInfo.currentPartInstance) {
+		const currentPartInstance = playoutInfo.currentPartInstance
 		let currentPart: LocalIngestPart | undefined = undefined
-		_.find(newIngestSegments, (ingestSegment) => {
+		_.find(preparedChanges.newIngestSegments, (ingestSegment) => {
 			currentPart = _.find(ingestSegment.parts, (ingestPart) => {
 				const partId = getPartId(rundown._id, ingestPart.externalId)
 				return partId === currentPartInstance.part._id
@@ -592,12 +637,8 @@ function diffAndApplyChanges(
 		}
 	}
 
-	// Save new cache
-	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
-	saveRundownCache(rundown._id, newIngestRundown)
-
 	// Update segment ranks:
-	_.each(segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
+	_.each(preparedChanges.segmentDiff.onlyRankChanged, (newRank, segmentExternalId) => {
 		cache.Segments.update(
 			{
 				rundownId: rundown._id,
@@ -611,7 +652,7 @@ function diffAndApplyChanges(
 		)
 	})
 	// Updated segments that has had their segment.externalId changed:
-	_.each(segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
+	_.each(preparedChanges.segmentDiff.onlyExternalIdChanged, (newSegmentExternalId, oldSegmentExternalId) => {
 		const oldSegmentId = getSegmentId(rundown._id, oldSegmentExternalId)
 		const newSegmentId = getSegmentId(rundown._id, newSegmentExternalId)
 
@@ -629,31 +670,40 @@ function diffAndApplyChanges(
 			}
 		)
 
-		cache.PartInstances.update(
-			{
-				rundownId: rundown._id,
-				segmentId: oldSegmentId,
-			},
-			{
-				$set: {
-					segmentId: newSegmentId,
-					'part.segmentId': newSegmentId,
+		cache.defer(() => {
+			// TODO-PartInstance - pending new data flow
+			PartInstances.update(
+				{
+					rundownId: rundown._id,
+					segmentId: oldSegmentId,
 				},
-			}
-		)
+				{
+					$set: {
+						segmentId: newSegmentId,
+						'part.segmentId': newSegmentId,
+					},
+				}
+			)
+		})
 	})
 
 	// Remove old segments
-	const removedSegmentIds = _.map(segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
+	const removedSegmentIds = _.map(preparedChanges.segmentDiff.removed, (_segmentEntry, segmentExternalId) =>
 		getSegmentId(rundown._id, segmentExternalId)
 	)
 	removeSegments(cache, removedSegmentIds)
 
-	// Create/Update segments
-	updateSegmentsFromIngestData(
-		cache,
-		_.sortBy([..._.values(segmentDiff.added), ..._.values(segmentDiff.changed)], (se) => se.rank)
-	)
+	// Store updated sgements
+	const changedSegmentIds: SegmentId[] = []
+	for (const segmentChanges of preparedChanges.preparedSegmentChanges) {
+		const segmentId = savePreparedSegmentChanges(cache, playoutInfo, segmentChanges)
+		if (segmentId !== null) {
+			changedSegmentIds.push(segmentId)
+		}
+	}
+	if (changedSegmentIds.length > 0) {
+		afterIngestChangedData(cache, playoutInfo, changedSegmentIds)
+	}
 }
 
 export interface SegmentEntries {

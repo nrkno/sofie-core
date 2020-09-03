@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { Random } from 'meteor/random'
 import {
 	unprotectString,
 	unprotectObject,
@@ -30,7 +29,7 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstance, wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
 import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartInstances'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForPlayout } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { NotesContext, ShowStyleContext, EventContext } from './context'
@@ -94,7 +93,7 @@ const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSam
 
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
-	private readonly _cache: CacheForRundownPlaylist
+	private readonly _cache: CacheForPlayout
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
 
@@ -107,7 +106,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	public takeAfterExecute: boolean
 
 	constructor(
-		cache: CacheForRundownPlaylist,
+		cache: CacheForPlayout,
 		notesContext: NotesContext,
 		studio: Studio,
 		rundownPlaylist: RundownPlaylist,
@@ -193,7 +192,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 
 		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(
 			this._cache,
-			this.rundownPlaylist,
 			sourceLayerId,
 			(options && options.originalOnly) || false,
 			query
@@ -241,13 +239,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
-		ServerPlayoutAdLibAPI.innerStartAdLibPiece(
-			this._cache,
-			this.rundownPlaylist,
-			rundown,
-			partInstance,
-			newPieceInstance
-		)
+		ServerPlayoutAdLibAPI.innerStartAdLibPiece(this._cache, rundown, partInstance, newPieceInstance)
 
 		if (part === 'current') {
 			this.currentPartState = Math.max(this.currentPartState, ActionPartChange.SAFE_CHANGE)
@@ -375,7 +367,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		// Do the work
 		ServerPlayoutAdLibAPI.innerStartQueuedAdLib(
 			this._cache,
-			this.rundownPlaylist,
 			this.rundown,
 			currentPartInstance,
 			newPartInstance,

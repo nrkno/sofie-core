@@ -4,20 +4,16 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
-import {
-	selectNextPart,
-	isTooCloseToAutonext,
-	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
-} from '../playout/lib'
-import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { selectNextPart, isTooCloseToAutonext, getAllOrderedPartsFromCache } from '../playout/lib'
+import { CacheForIngest } from '../../DatabaseCaches'
+import { IngestPlayoutInfo } from './lib'
 
 export namespace UpdateNext {
-	export function ensureNextPartIsValid(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
+	export function ensureNextPartIsValid(cache: CacheForIngest, playoutInfo: IngestPlayoutInfo) {
+		const { playlist, currentPartInstance, nextPartInstance } = playoutInfo
 		// Ensure the next-id is still valid
-		if (playlist && playlist.active && playlist.nextPartInstanceId) {
-			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-			const allParts = getAllOrderedPartsFromCache(cache, playlist)
+		if (playlist.active && playlist.nextPartInstanceId) {
+			const allParts = getAllOrderedPartsFromCache(cache)
 
 			if (currentPartInstance) {
 				// Leave the manually chosen part
@@ -49,27 +45,26 @@ export namespace UpdateNext {
 		}
 	}
 	export function afterInsertParts(
-		cache: CacheForRundownPlaylist,
-		playlist: RundownPlaylist,
+		cache: CacheForIngest,
+		playoutInfo: IngestPlayoutInfo,
 		newPartExternalIds: string[],
 		removePrevious: boolean
 	) {
-		if (playlist && playlist.active) {
+		const { playlist, currentPartInstance, nextPartInstance } = playoutInfo
+		if (playlist.active) {
 			// If manually chosen, and could have been removed then special case handling
 			if (!playlist.nextPartInstanceId && playlist.currentPartInstanceId) {
 				// The playhead is probably at the end of the rundown
 
 				// Try and choose something
-				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
 				const newNextPart = selectNextPart(
 					playlist,
 					currentPartInstance || null,
-					getAllOrderedPartsFromCache(cache, playlist)
+					getAllOrderedPartsFromCache(cache)
 				)
 				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
 			} else if (playlist.nextPartManual && removePrevious) {
-				const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-				const allParts = getAllOrderedPartsFromCache(cache, playlist)
+				const allParts = getAllOrderedPartsFromCache(cache)
 
 				// If the manually chosen part does not exist, assume it was the one that was removed
 				const currentNextPart = nextPartInstance
@@ -85,12 +80,12 @@ export namespace UpdateNext {
 						ServerPlayoutAPI.setNextPartInner(cache, playlist, firstNewPart)
 					} else {
 						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
-						UpdateNext.ensureNextPartIsValid(cache, playlist)
+						UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
 					}
 				}
 			} else {
 				// Ensure next is valid
-				UpdateNext.ensureNextPartIsValid(cache, playlist)
+				UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
 			}
 		}
 	}

@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
-import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
-import { Part, PartId } from '../../lib/collections/Parts'
+import { Rundowns, Rundown, RundownId, DBRundown } from '../../lib/collections/Rundowns'
+import { Part, PartId, DBPart } from '../../lib/collections/Parts'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
 	getCurrentTime,
@@ -16,6 +16,8 @@ import {
 	asyncCollectionFindFetch,
 	normalizeArray,
 	unReadOnlyProtectedStringArray,
+	waitForPromiseAll,
+	asyncCollectionUpdate,
 } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -57,6 +59,8 @@ import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { getRundown2 } from './ingest/lib'
 import { DeepReadonly } from 'utility-types'
+import { DbCacheWriteCollection } from '../DatabaseCache'
+import { PartInstance, DBPartInstance, PartInstances } from '../../lib/collections/PartInstances'
 
 export function selectShowStyleVariant(
 	studio: DeepReadonly<Studio>,
@@ -310,12 +314,19 @@ export function afterRemoveParts(cache: CacheForIngest, removedPartIds: PartId[]
  * Update the ranks of all dynamic parts in the given segments.
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
  */
-export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, segmentIds: SegmentId[]) {
+export function updatePartRanks(
+	partsCache: DbCacheWriteCollection<Part, DBPart>,
+	partInstancesCache: DbCacheWriteCollection<PartInstance, DBPartInstance> | undefined,
+	allOrderedParts: Part[],
+	segmentIds: SegmentId[]
+) {
 	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
 	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe
 	// Make sure to rethink the sorting, especially with regards to reset vs non-reset (as reset may have outdated ranks etc)
 
-	const allOrderedParts = getAllOrderedPartsFromCache(cache)
+	// const allOrderedParts = getAllOrderedPartsFromCache(cache)
+
+	const ps: Array<Promise<any>> = []
 
 	let updatedParts = 0
 	for (const segmentId of segmentIds) {
@@ -386,20 +397,36 @@ export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: Rundow
 
 					const dynamicPart = sortedParts[o]
 					if (dynamicPart._rank !== newRank) {
-						cache.Parts.update(dynamicPart._id, { $set: { _rank: newRank } })
-						cache.PartInstances.update(
-							{
-								'part._id': dynamicPart._id,
-								reset: { $ne: true },
-							},
-							{ $set: { 'part._rank': newRank } }
-						)
+						partsCache.update(dynamicPart._id, { $set: { _rank: newRank } })
+
+						if (partInstancesCache) {
+							partInstancesCache.update(
+								{
+									'part._id': dynamicPart._id,
+									reset: { $ne: true },
+								},
+								{ $set: { 'part._rank': newRank } }
+							)
+						} else {
+							ps.push(
+								asyncCollectionUpdate(
+									PartInstances,
+									{
+										'part._id': dynamicPart._id,
+										reset: { $ne: true },
+									},
+									{ $set: { 'part._rank': newRank } }
+								)
+							)
+						}
 						updatedParts++
 					}
 				}
 			}
 		}
 	}
+
+	if (ps.length > 0) waitForPromiseAll(ps)
 	logger.debug(`updatePartRanks: ${updatedParts} parts updated`)
 }
 

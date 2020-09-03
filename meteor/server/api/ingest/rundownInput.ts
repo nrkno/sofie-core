@@ -111,7 +111,12 @@ import {
 	RundownPlaylistId,
 } from '../../../lib/collections/RundownPlaylists'
 import { Mongo } from 'meteor/mongo'
-import { isTooCloseToAutonext, getRundownsSegmentsAndPartsFromCache, removeRundownFromCache } from '../playout/lib'
+import {
+	isTooCloseToAutonext,
+	getRundownsSegmentsAndPartsFromCache,
+	removeRundownFromCache,
+	getAllOrderedPartsFromCache,
+} from '../playout/lib'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
 import {
@@ -928,7 +933,7 @@ export function savePreparedRundownChanges(
 
 	const didChange = anythingChanged(allChanges)
 	if (didChange) {
-		afterIngestChangedData(cache, [
+		afterIngestChangedData(cache, playoutInfo, [
 			...preparedChanges.segments.changed.map((s) => s._id),
 			...preparedChanges.segments.inserted.map((s) => s._id),
 		])
@@ -1034,26 +1039,11 @@ export function handleUpdatedSegment(
 			if (preparedChanges) {
 				const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
 				if (updatedSegmentId) {
-					afterIngestChangedData(cache, [updatedSegmentId])
+					afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
 				}
 			}
 		}
 	)
-}
-export function updateSegmentsFromIngestData(cache: CacheForIngest, ingestSegments: IngestSegment[]) {
-	const changedSegmentIds: SegmentId[] = []
-	if (ingestSegments.length > 0) {
-		const blueprint = loadShowStyleBlueprint(getShowStyleBaseIngest(cache))
-		for (let ingestSegment of ingestSegments) {
-			const segmentId = prepareUpdateSegmentFromIngestData(cache, blueprint, ingestSegment)
-			if (segmentId !== null) {
-				changedSegmentIds.push(segmentId)
-			}
-		}
-		if (changedSegmentIds.length > 0) {
-			afterIngestChangedData(cache, changedSegmentIds)
-		}
-	}
 }
 /**
  * Run ingestData through blueprints and update the Segment
@@ -1061,7 +1051,7 @@ export function updateSegmentsFromIngestData(cache: CacheForIngest, ingestSegmen
  * @param ingestSegment
  * @returns a segmentId if data has changed, null otherwise
  */
-function prepareUpdateSegmentFromIngestData(
+export function prepareUpdateSegmentFromIngestData(
 	cache: ReadOnlyCache<CacheForIngest>,
 	wrappedBlueprint: WrappedShowStyleBlueprint,
 	ingestSegment: IngestSegment
@@ -1092,57 +1082,22 @@ function prepareUpdateSegmentFromIngestData(
 	)
 
 	return literal<PreparedSegmentChanges>({
-		//
 		segmentId,
 		segment: newSegment,
-		parts: prepareSaveIntoCache<Part, DBPart>(
-			cache.Parts,
-			{
-				$or: [
-					{
-						// The parts in this Segment:
-						segmentId: segmentId,
-					},
-					{
-						// Move over parts from other segments
-						_id: { $in: _.pluck(parts, '_id') },
-					},
-				],
-				dynamicallyInsertedAfterPartId: { $exists: false }, // do not affect dynamically inserted parts (such as adLib parts)
-			},
-			parts
-		),
-		pieces: prepareSaveIntoCache<Piece, Piece>(
-			cache.Pieces,
-			{
-				startPartId: { $in: parts.map((p) => p._id) },
-			},
-			segmentPieces
-		),
-		adlibPieces: prepareSaveIntoCache<AdLibPiece, AdLibPiece>(
-			cache.AdLibPieces,
-			{
-				partId: { $in: parts.map((p) => p._id) },
-			},
-			adlibPieces
-		),
-		adlibActions: prepareSaveIntoCache<AdLibAction, AdLibAction>(
-			cache.AdLibActions,
-			{
-				partId: { $in: parts.map((p) => p._id) },
-			},
-			adlibActions
-		),
+		parts,
+		pieces: segmentPieces,
+		adlibPieces,
+		adlibActions,
 	})
 }
 
 export interface PreparedSegmentChanges {
 	segmentId: SegmentId
 	segment: DBSegment
-	parts: PreparedChanges<DBPart>
-	pieces: PreparedChanges<Piece>
-	adlibPieces: PreparedChanges<AdLibPiece>
-	adlibActions: PreparedChanges<AdLibAction>
+	parts: DBPart[]
+	pieces: Piece[]
+	adlibPieces: AdLibPiece[]
+	adlibActions: AdLibAction[]
 }
 
 export function savePreparedSegmentChanges(
@@ -1152,8 +1107,48 @@ export function savePreparedSegmentChanges(
 ): SegmentId | null {
 	const rundown = getRundown2(cache)
 
+	const partIds = preparedChanges.parts.map((p) => p._id)
+	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
+		cache.Parts,
+		{
+			$or: [
+				{
+					// The parts in this Segment:
+					segmentId: preparedChanges.segmentId,
+				},
+				{
+					// Move over parts from other segments
+					_id: { $in: partIds },
+				},
+			],
+			dynamicallyInsertedAfterPartId: { $exists: false }, // do not affect dynamically inserted parts (such as adLib parts)
+		},
+		preparedChanges.parts
+	)
+	const prepareSavePieces = prepareSaveIntoCache<Piece, Piece>(
+		cache.Pieces,
+		{
+			startPartId: { $in: partIds },
+		},
+		preparedChanges.pieces
+	)
+	const prepareSaveAdlibPieces = prepareSaveIntoCache<AdLibPiece, AdLibPiece>(
+		cache.AdLibPieces,
+		{
+			partId: { $in: partIds },
+		},
+		preparedChanges.adlibPieces
+	)
+	const prepareSaveAdlibActions = prepareSaveIntoCache<AdLibAction, AdLibAction>(
+		cache.AdLibActions,
+		{
+			partId: { $in: partIds },
+		},
+		preparedChanges.adlibActions
+	)
+
 	// determine if update is allowed here
-	if (!isUpdateAllowed(playoutInfo, rundown, {}, { changed: [preparedChanges.segment] }, preparedChanges.parts)) {
+	if (!isUpdateAllowed(playoutInfo, rundown, {}, { changed: [preparedChanges.segment] }, prepareSaveParts)) {
 		ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
 		return null
 	}
@@ -1164,7 +1159,7 @@ export function savePreparedSegmentChanges(
 	const changes = sumChanges(
 		// These are done in this order to ensure that the afterRemoveAll don't delete anything that was simply moved
 
-		savePreparedChangesIntoCache<Piece, Piece>(preparedChanges.pieces, cache.Pieces, {
+		savePreparedChangesIntoCache<Piece, Piece>(prepareSavePieces, cache.Pieces, {
 			afterInsert(piece) {
 				logger.debug('inserted piece ' + piece._id)
 				logger.debug(piece)
@@ -1176,7 +1171,7 @@ export function savePreparedSegmentChanges(
 				logger.debug('deleted piece ' + piece._id)
 			},
 		}),
-		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(preparedChanges.adlibPieces, cache.AdLibPieces, {
+		savePreparedChangesIntoCache<AdLibPiece, AdLibPiece>(prepareSaveAdlibPieces, cache.AdLibPieces, {
 			afterInsert(adLibPiece) {
 				logger.debug('inserted adLibPiece ' + adLibPiece._id)
 				logger.debug(adLibPiece)
@@ -1188,7 +1183,7 @@ export function savePreparedSegmentChanges(
 				logger.debug('deleted adLibPiece ' + adLibPiece._id)
 			},
 		}),
-		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(preparedChanges.adlibActions, cache.AdLibActions, {
+		savePreparedChangesIntoCache<AdLibAction, AdLibAction>(prepareSaveAdlibActions, cache.AdLibActions, {
 			afterInsert(adLibAction) {
 				logger.debug('inserted adLibAction ' + adLibAction._id)
 				logger.debug(adLibAction)
@@ -1200,7 +1195,7 @@ export function savePreparedSegmentChanges(
 				logger.debug('deleted adLibAction ' + adLibAction._id)
 			},
 		}),
-		savePreparedChangesIntoCache<Part, DBPart>(preparedChanges.parts, cache.Parts, {
+		savePreparedChangesIntoCache<Part, DBPart>(prepareSaveParts, cache.Parts, {
 			afterInsert(part) {
 				logger.debug('inserted part ' + part._id)
 			},
@@ -1222,16 +1217,20 @@ export function savePreparedSegmentChanges(
 	return anythingChanged(changes) ? preparedChanges.segmentId : null
 }
 
-export function afterIngestChangedData(cache: CacheForIngest, changedSegmentIds: SegmentId[]) {
+export function afterIngestChangedData(
+	cache: CacheForIngest,
+	playoutInfo: IngestPlayoutInfo,
+	changedSegmentIds: SegmentId[]
+) {
 	// To be called after rundown has been changed
 	updateExpectedMediaItemsOnRundown(cache)
 	updateExpectedPlayoutItemsOnRundown(cache)
 
-	updatePartRanks(cache, playlist, changedSegmentIds)
+	updatePartRanks(cache.Parts, undefined, getAllOrderedPartsFromCache(cache), changedSegmentIds)
 
-	UpdateNext.ensureNextPartIsValid(cache, playlist)
-
-	triggerUpdateTimelineAfterIngestData(rundown.playlistId)
+	UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
+	// TODO - this timeline update stuff needs rethinking
+	triggerUpdateTimelineAfterIngestData(playoutInfo.playlist._id)
 }
 
 export function handleRemovedPart(
@@ -1279,7 +1278,7 @@ export function handleRemovedPart(
 				} else {
 					const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
 					if (updatedSegmentId) {
-						afterIngestChangedData(cache, [updatedSegmentId])
+						afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
 					}
 				}
 			}
@@ -1306,7 +1305,7 @@ export function handleUpdatedPart(
 				} else {
 					const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
 					if (updatedSegmentId) {
-						afterIngestChangedData(cache, [updatedSegmentId])
+						afterIngestChangedData(cache, playoutInfo, [updatedSegmentId])
 					}
 				}
 			}

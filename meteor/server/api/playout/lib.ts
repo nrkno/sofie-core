@@ -178,7 +178,7 @@ export interface SelectNextPartResult {
 
 export function selectNextPart(
 	rundownPlaylist: Pick<RundownPlaylist, 'nextSegmentId' | 'loop'>,
-	previousPartInstance: PartInstance | null,
+	previousPartInstance: DeepReadonly<PartInstance> | null,
 	parts: Part[]
 ): SelectNextPartResult | undefined {
 	const span = profiler.startSpan('selectNextPart')
