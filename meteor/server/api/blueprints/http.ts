@@ -3,37 +3,43 @@ import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
 import { BlueprintManifestSet } from 'tv-automation-sofie-blueprints-integration'
 import { ServerResponse, IncomingMessage } from 'http'
-import { Match } from 'meteor/check'
+import { check, Match } from '../../../lib/check'
 import { parse as parseUrl } from 'url'
 import { uploadBlueprint } from './api'
-import { protectString, check } from '../../../lib/lib'
+import { protectString } from '../../../lib/lib'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PickerPOST } from '../http'
 
 PickerPOST.route('/blueprints/restore/:blueprintId', (params, req: IncomingMessage, res: ServerResponse, next) => {
 	res.setHeader('Content-Type', 'text/plain')
-
-	const blueprintId = params.blueprintId
-	const url = parseUrl(req.url || '', true)
-	const force = url.query.force === '1' || url.query.force === 'true'
-
-	const blueprintNames = url.query['name'] || undefined
-	const blueprintName: string | undefined = _.isArray(blueprintNames) ? blueprintNames[0] : blueprintNames
-
-	check(blueprintId, String)
-	check(blueprintName, Match.Maybe(String))
-
-	logger.debug(`/blueprints/restore/:${blueprintId}`)
+	logger.debug(`/blueprints/restore/:${params?.blueprintId}`)
 
 	let content = ''
 	try {
-		const body = req.body
+		const blueprintId = params.blueprintId
+		const url = parseUrl(req.url || '', true)
+		const force = url.query.force === '1' || url.query.force === 'true'
+
+		const blueprintNames = url.query['name'] || undefined
+		const blueprintName: string | undefined = _.isArray(blueprintNames) ? blueprintNames[0] : blueprintNames
+
+		check(blueprintId, String)
+		check(blueprintName, Match.Maybe(String))
+
+		const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
+		const body = (req as any).body as string | undefined
 		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
 
 		if (!_.isString(body) || body.length < 10)
 			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		uploadBlueprint(protectString<BlueprintId>(blueprintId), body, blueprintName, force)
+		uploadBlueprint(
+			{ userId: protectString(userId) },
+			protectString<BlueprintId>(blueprintId),
+			body,
+			blueprintName,
+			force
+		)
 
 		res.statusCode = 200
 	} catch (e) {
@@ -69,7 +75,8 @@ PickerPOST.route('/blueprints/restore', (params, req: IncomingMessage, res: Serv
 		let errors: any[] = []
 		for (const id of _.keys(collection)) {
 			try {
-				uploadBlueprint(protectString<BlueprintId>(id), collection[id], id)
+				const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
+				uploadBlueprint({ userId: protectString(userId) }, protectString<BlueprintId>(id), collection[id], id)
 			} catch (e) {
 				logger.error('Blueprint restore failed: ' + e)
 				errors.push(e)

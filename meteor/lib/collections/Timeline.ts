@@ -6,9 +6,10 @@ import * as _ from 'underscore'
 import { logger } from '../logging'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
+import { RundownPlaylistId } from './RundownPlaylists'
+import { registerIndex } from '../database'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -87,7 +88,7 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 		callBack: 'partPlaybackStarted'
 		callBackStopped: 'partPlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			partInstanceId: PartInstanceId
 		}
 	}
@@ -100,7 +101,7 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown {
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			pieceInstanceId: PieceInstanceId
 			dynamicallyInserted?: boolean
 		}
@@ -133,26 +134,13 @@ export function setTimelineId<T extends TimelineObjGeneric>(objs: Array<T>): Arr
 		return obj
 	})
 }
-export function fixTimelineId(obj: TimelineObjectCoreExt) {
-	// Temporary workaround, to handle old _id:s in the db. We might want to add a warning in this, and later remove it.
-
-	const o: any = obj
-	if (o._id && !o.id) {
-		logger.warn(`Fixed id of timelineObject with _id ${o._id}`)
-		o.id = o._id
-		delete o._id
-	}
-}
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
 export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric> = createMongoCollection<
 	TimelineObjGeneric
 >('timeline')
 registerCollection('Timeline', Timeline)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Timeline._ensureIndex({
-			studioId: 1,
-		})
-	}
+
+registerIndex(Timeline, {
+	studioId: 1,
 })

@@ -1,6 +1,8 @@
 import * as Winston from 'winston'
 import * as fs from 'fs'
 import { getAbsolutePath } from './lib'
+import { Meteor } from 'meteor/meteor'
+import * as _ from 'underscore'
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
 // because there's an error in the typings logging.debug() takes any, not only string
@@ -22,10 +24,13 @@ interface LoggerInstanceFixed extends Winston.Logger {
 	warning: LeveledLogMethodFixed
 	notice: LeveledLogMethodFixed
 }
+interface LogMeta {
+	[key: string]: any
+}
 interface LeveledLogMethodFixed {
 	(msg: any, callback: Winston.LogCallback): LoggerInstanceFixed
-	(msg: any, meta: any, callback: Winston.LogCallback): LoggerInstanceFixed
-	(msg: any, ...meta: any[]): LoggerInstanceFixed
+	(msg: any, meta: LogMeta, callback: Winston.LogCallback): LoggerInstanceFixed
+	(msg: any, ...meta: LogMeta[]): LoggerInstanceFixed
 }
 let leadingZeros = (num: number | string, length: number) => {
 	num = num + ''
@@ -50,12 +55,7 @@ function safeStringify(o: any): string {
 		return 'ERROR in safeStringify: ' + (e || 'N/A').toString()
 	}
 }
-const customFormat = Winston.format.printf(({ timestamp, level, message, meta }) => {
-	return `${timestamp} [${level}] ${message} ${meta ? safeStringify(meta) : ''}` // kz: TODO make this format correct
-})
-
 if (logToFile || logPath !== '') {
-	// console.log(Meteor)
 	if (logPath === '') {
 		let time = new Date()
 		let startDate =
@@ -101,10 +101,22 @@ if (logToFile || logPath !== '') {
 			handleExceptions: true,
 		}),
 	}
-	logger = Winston.createLogger({
-		format: Winston.format.combine(Winston.format.timestamp(), customFormat),
-		transports: [transports.console],
-	})
+	if (Meteor.isProduction) {
+		logger = Winston.createLogger({
+			format: Winston.format.json(),
+			transports: [transports.console],
+		})
+	} else {
+		const customFormat = Winston.format.printf((o) => {
+			const meta = _.omit(o, 'level', 'message', 'timestamp')
+			return `[${o.level}] ${o.message} ${!_.isEmpty(meta) ? safeStringify(meta) : ''}`
+		})
+
+		logger = Winston.createLogger({
+			format: Winston.format.combine(Winston.format.timestamp(), customFormat),
+			transports: [transports.console],
+		})
+	}
 }
 
 export { logger, transports }

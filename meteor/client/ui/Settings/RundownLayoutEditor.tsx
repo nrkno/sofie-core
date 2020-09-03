@@ -37,6 +37,7 @@ import { fetchFrom } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
+import { defaultColorPickerPalette } from '../../lib/colorPicker'
 
 export interface IProps {
 	showStyleBase: ShowStyleBase
@@ -1080,6 +1081,57 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			return (
 				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Expose layout as a standalone page')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'exposeAsStandalone'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Expose as a layout for the shelf')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'exposeAsShelf'}
+								obj={item}
+								options={RundownLayoutType}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Icon')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'icon'}
+								obj={item}
+								type="iconpicker"
+								collection={RundownLayouts}
+								className="input text-input input-s"></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Icon color')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={'iconColor'}
+								obj={item}
+								options={defaultColorPickerPalette}
+								type="colorpicker"
+								collection={RundownLayouts}
+								className="input text-input input-s"></EditAttribute>
+						</label>
+					</div>
 					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>
 					{item.filters.map((tab, index) => (
 						<div className="rundown-layout-editor-filter mod pan mas" key={tab._id}>
@@ -1196,9 +1248,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										: null}
 								</div>
 								<div className="mod mls">
-									<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
-										<FontAwesomeIcon icon={faCheck} />
-									</button>
 									<button className="btn btn-secondary" onClick={(e) => this.onAddElement(item)}>
 										<FontAwesomeIcon icon={faPlus} />
 										&nbsp;
@@ -1209,6 +1258,29 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											: null}
 									</button>
 								</div>
+								{item.type === RundownLayoutType.DASHBOARD_LAYOUT ? (
+									<>
+										<div>{RundownLayoutsAPI.isDashboardLayout(item) ? this.renderActionButtons(item) : null}</div>
+										<div className="mod mls">
+											<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+												<FontAwesomeIcon icon={faCheck} />
+											</button>
+											<button className="btn btn-secondary" onClick={(e) => this.onAddButton(item)}>
+												<FontAwesomeIcon icon={faPlus} />
+												&nbsp;
+												{t('Add button')}
+											</button>
+										</div>
+									</>
+								) : (
+									<>
+										<div className="mod mls">
+											<button className="btn btn-primary right" onClick={(e) => this.finishEditItem(item)}>
+												<FontAwesomeIcon icon={faCheck} />
+											</button>
+										</div>
+									</>
+								)}
 							</td>
 						</tr>
 					)}
@@ -1258,7 +1330,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								},
 							})
 								.then((res) => {
-									// console.log('Blueprint restore success')
 									NotificationCenter.push(
 										new Notification(
 											undefined,
@@ -1269,7 +1340,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									)
 								})
 								.catch((err) => {
-									// console.error('Blueprint restore failure: ', err)
 									NotificationCenter.push(
 										new Notification(
 											undefined,

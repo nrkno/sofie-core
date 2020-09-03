@@ -1,49 +1,50 @@
-import {
-	parseVersion,
-	getCoreSystem,
-	setCoreSystemVersion,
-	Version,
-	GENESIS_SYSTEM_VERSION,
-} from '../../lib/collections/CoreSystem'
 import { Meteor } from 'meteor/meteor'
-import * as _ from 'underscore'
+import * as semver from 'semver'
 import {
-	RunMigrationResult,
-	MigrationChunk,
-	MigrationStepType,
-	GetMigrationStatusResult,
-} from '../../lib/api/migration'
-import {
-	MigrationStepInput,
-	MigrationStepInputResult,
-	MigrationStepInputFilteredResult,
+	BlueprintManifestType,
+	InputFunctionCore,
+	InputFunctionShowStyle,
+	InputFunctionStudio,
+	MigrateFunctionCore,
+	MigrateFunctionShowStyle,
+	MigrateFunctionStudio,
+	MigrationContextShowStyle as IMigrationContextShowStyle,
+	MigrationContextStudio as IMigrationContextStudio,
 	MigrationStep,
 	MigrationStepBase,
-	ValidateFunctionCore,
-	MigrateFunctionCore,
-	ValidateFunctionStudio,
-	ValidateFunctionShowStyle,
-	MigrateFunctionStudio,
-	MigrateFunctionShowStyle,
-	InputFunctionCore,
-	InputFunctionStudio,
-	InputFunctionShowStyle,
-	MigrationContextStudio as IMigrationContextStudio,
-	MigrationContextShowStyle as IMigrationContextShowStyle,
-	BlueprintManifestType,
+	MigrationStepInput,
+	MigrationStepInputFilteredResult,
+	MigrationStepInputResult,
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
+	ValidateFunctionCore,
+	ValidateFunctionShowStyle,
+	ValidateFunctionStudio,
+	SomeBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
+import * as _ from 'underscore'
+import {
+	GetMigrationStatusResult,
+	MigrationChunk,
+	MigrationStepType,
+	RunMigrationResult,
+} from '../../lib/api/migration'
 import { logger } from '../../lib/logging'
-import { storeSystemSnapshot } from '../api/snapshot'
+import { internalStoreSystemSnapshot } from '../api/snapshot'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
-import { Studios } from '../../lib/collections/Studios'
-import { MigrationContextStudio, MigrationContextShowStyle } from '../api/blueprints/migrationContext'
-import { getHash, unprotectString, protectString } from '../../lib/lib'
-import * as semver from 'semver'
-import { evalBlueprints } from '../api/blueprints/cache'
+import {
+	GENESIS_SYSTEM_VERSION,
+	getCoreSystem,
+	parseVersion,
+	setCoreSystemVersion,
+	Version,
+} from '../../lib/collections/CoreSystem'
 import { SnapshotId } from '../../lib/collections/Snapshots'
+import { Studios } from '../../lib/collections/Studios'
+import { getHash, protectString, unprotectString } from '../../lib/lib'
+import { evalBlueprint } from '../api/blueprints/cache'
+import { MigrationContextShowStyle, MigrationContextStudio } from '../api/blueprints/migrationContext'
 
 /** The current database version, x.y.z
  * 0.16.0: Release 3   (2018-10-26)
@@ -67,9 +68,11 @@ import { SnapshotId } from '../../lib/collections/Snapshots'
  * 1.7.0: Release 19  (2019-03-31)
  * 1.8.0: Release 20  (2019-05-12)
  * 1.9.0: Release 21  (never released)
- * 1.10.0: Release 22  (TBD)
+ * 1.10.0: Release 22  (2020-08-17)
+ * 1.11.0: Release 23  (TBD)
+ * 1.12.0: Release 24  (TBD)
  */
-export const CURRENT_SYSTEM_VERSION = '1.10.0'
+export const CURRENT_SYSTEM_VERSION = '1.12.0'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -184,8 +187,9 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 	// Collect migration steps from blueprints:
 	Blueprints.find({}).forEach((blueprint) => {
+		// console.log('bp', blueprint._id)
 		if (blueprint.code) {
-			const rawBlueprint = evalBlueprints(blueprint)
+			const blueprintManifest = evalBlueprint(blueprint)
 
 			// @ts-ignore
 			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
@@ -193,7 +197,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
 			if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
-				const bp = rawBlueprint as ShowStyleBlueprintManifest
+				const bp = blueprintManifest as ShowStyleBlueprintManifest
 
 				// Find all showStyles that uses this blueprint:
 				ShowStyleBases.find({
@@ -232,7 +236,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					})
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
-				const bp = rawBlueprint as StudioBlueprintManifest
+				const bp = blueprintManifest as StudioBlueprintManifest
 				// Find all studios that use this blueprint
 				Studios.find({
 					blueprintId: blueprint._id,
@@ -272,6 +276,8 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			} else {
 				// No migrations for system blueprints
 			}
+		} else {
+			console.log(`blueprint ${blueprint._id} has no code`)
 		}
 	})
 
@@ -312,9 +318,16 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 	// Filter steps:
 	let migrationSteps: { [id: string]: MigrationStepInternal } = {}
 	let ignoredSteps: { [id: string]: true } = {}
+	let includesCoreStep = false
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
 		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length)))
 			throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
+
+		if (step.chunk.sourceType !== MigrationStepType.CORE && includesCoreStep) {
+			// stop here as core migrations need to be run before anything else can
+			partialMigration = true
+			return
+		}
 
 		if (partialMigration) return
 		if (
@@ -364,6 +377,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 			if (step._validateResult) {
 				migrationSteps[step.id] = step
+				includesCoreStep = includesCoreStep || step.chunk.sourceType === MigrationStepType.CORE
 			} else {
 				// No need to run step
 				ignoredSteps[step.id] = true
@@ -530,7 +544,7 @@ export function runMigration(
 		let system = getCoreSystem()
 		if (system && system.storePath) {
 			try {
-				snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration`)
+				snapshotId = internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)
 			} catch (e) {
 				warningMessages.push(`Error when taking snapshot:${e.toString()}`)
 				logger.error(e)

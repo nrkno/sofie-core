@@ -5,6 +5,8 @@ import { SourceLayerType } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBaseId } from './ShowStyleBases'
+import { UserId } from './Users'
+import { registerIndex } from '../database'
 
 /**
  * The view targeted by this layout:
@@ -133,10 +135,14 @@ export interface RundownLayoutBase {
 	_id: RundownLayoutId
 	showStyleBaseId: ShowStyleBaseId
 	blueprintId?: BlueprintId
-	userId?: string
+	userId?: UserId
 	name: string
 	type: RundownLayoutType.RUNDOWN_LAYOUT | RundownLayoutType.DASHBOARD_LAYOUT
 	filters: RundownLayoutElementBase[]
+	exposeAsStandalone: boolean
+	exposeAsShelf: boolean
+	icon: string
+	iconColor: string
 }
 
 export interface RundownLayout extends RundownLayoutBase {
@@ -179,16 +185,13 @@ export const RundownLayouts: TransformedCollection<RundownLayoutBase, RundownLay
 	RundownLayoutBase
 >('rundownLayouts')
 registerCollection('RundownLayouts', RundownLayouts)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		// RundownLayouts._ensureIndex({
-		// 	studioId: 1,
-		// 	collectionId: 1,
-		// 	objId: 1,
-		// 	mediaId: 1
-		// })
-		RundownLayouts._ensureIndex({
-			showStyleBaseId: 1,
-		})
-	}
+
+// addIndex(RundownLayouts, {
+// 	studioId: 1,
+// 	collectionId: 1,
+// 	objId: 1,
+// 	mediaId: 1
+// })
+registerIndex(RundownLayouts, {
+	showStyleBaseId: 1,
 })

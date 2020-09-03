@@ -24,7 +24,7 @@ export interface NewRundownAPI {
 	): Promise<RundownPlaylistValidateBlueprintConfigResult>
 	removeRundown(rundownId: RundownId): Promise<void>
 	resyncRundown(rundownId: RundownId): Promise<TriggerReloadDataResponse>
-	resyncSegment(segmentId: SegmentId): Promise<TriggerReloadDataResponse>
+	resyncSegment(rundownId: RundownId, segmentId: SegmentId): Promise<TriggerReloadDataResponse>
 	unsyncRundown(rundownId: RundownId): Promise<void>
 	unsyncSegment(rundownId: RundownId, segmentId: SegmentId): Promise<void>
 }

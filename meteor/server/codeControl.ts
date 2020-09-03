@@ -52,6 +52,33 @@ function getFunctionName<T extends Function>(parent: Function, fcn: T): string {
 		return name
 	}
 }
+export function MeteorWrapAsync(func: Function, context?: Object): any {
+	// A variant of Meteor.wrapAsync to fix the bug
+	// https://github.com/meteor/meteor/issues/11120
+
+	return Meteor.wrapAsync((...args: any[]) => {
+		// Find the callback-function:
+		for (let i = args.length - 1; i >= 0; i--) {
+			if (typeof args[i] === 'function') {
+				if (i < args.length - 1) {
+					// The callback is not the last argument, make it so then:
+					const callback = args[i]
+					const fixedArgs = args
+					fixedArgs[i] = undefined
+					fixedArgs.push(callback)
+
+					func.apply(context, fixedArgs)
+					return
+				} else {
+					// The callback is the last argument, that's okay
+					func.apply(context, args)
+					return
+				}
+			}
+		}
+		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
+	})
+}
 
 /**
  * Only allow one instane of the function (and its arguments) to run at the same time
@@ -76,7 +103,7 @@ function syncFunctionInner<T extends Function>(
 	timeout: number = 10000,
 	priority: number = 1
 ): T {
-	return Meteor.wrapAsync((...args0: any[]) => {
+	return MeteorWrapAsync((...args0: any[]) => {
 		let args = args0.slice(0, -1)
 		// @ts-ignore
 		let cb: Callback = _.last(args0) // the callback is the last argument
@@ -170,6 +197,16 @@ function isFunctionQueued(id: string): boolean {
 		return fcn.id === id && fcn.status === syncFunctionFcnStatus.WAITING
 	})
 	return !!queued
+}
+export function isAnySyncFunctionsRunning(): boolean {
+	let found = false
+	for (const fcn of syncFunctionFcns) {
+		if (fcn.status === syncFunctionFcnStatus.RUNNING) {
+			found = true
+			break
+		}
+	}
+	return found
 }
 /**
  * like syncFunction, but ignores subsequent calls, if there is a function queued to be executed already

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
-import { getBlueprintOfRundown, loadShowStyleBlueprints } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleContext, NotesContext } from '../blueprints/context'
 import { postProcessAdLibPieces, postProcessBucketAdLib } from '../blueprints/postProcess'
 import { RundownImportVersions } from '../../../lib/collections/Rundowns'
@@ -23,10 +23,12 @@ export function updateBucketAdlibFromIngestData(
 	bucketId: BucketId,
 	ingestData: IngestAdlib
 ): PieceId | null {
-	const { blueprint, blueprintId } = loadShowStyleBlueprints(showStyle)
+	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle)
 
 	const context = new ShowStyleContext(
 		studio,
+		undefined,
+		undefined,
 		showStyle._id,
 		showStyle.showStyleVariantId,
 		new NotesContext(

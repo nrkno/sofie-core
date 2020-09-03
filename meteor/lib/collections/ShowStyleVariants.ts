@@ -1,10 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
-import { IConfigItem, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintConfig, IBlueprintShowStyleVariant } from 'tv-automation-sofie-blueprints-integration'
 import { registerCollection, applyClassToDocument, ProtectedString, ProtectedStringProperties } from '../lib'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from './ShowStyleBases'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
+import deepmerge from 'deepmerge'
+import { registerIndex } from '../database'
 
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
@@ -36,20 +38,15 @@ export function createShowStyleCompound(
 ): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
-	let configs: { [id: string]: IConfigItem } = {}
-	_.each(showStyleBase.config, (config: IConfigItem) => {
-		configs[config._id] = config
-	})
-	// Override base configs with variant configs:
-	_.each(showStyleVariant.config, (config: IConfigItem) => {
-		configs[config._id] = config
+	let configs = deepmerge(showStyleBase.blueprintConfig, showStyleVariant.blueprintConfig, {
+		arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
 	})
 
 	return {
 		...showStyleBase,
 		showStyleVariantId: showStyleVariant._id,
 		name: `${showStyleBase.name}-${showStyleVariant.name}`,
-		config: _.values(configs),
+		blueprintConfig: configs,
 		_rundownVersionHash: showStyleBase._rundownVersionHash,
 		_rundownVersionHashVariant: showStyleVariant._rundownVersionHash,
 	}
@@ -59,29 +56,26 @@ export class ShowStyleVariant implements DBShowStyleVariant {
 	public _id: ShowStyleVariantId
 	public name: string
 	public showStyleBaseId: ShowStyleBaseId
-	public config: Array<IConfigItem>
+	public blueprintConfig: IBlueprintConfig
 	public _rundownVersionHash: string
 
 	constructor(document: DBShowStyleVariant) {
-		_.each(_.keys(document), (key) => {
-			this[key] = document[key]
-		})
+		for (let [key, value] of Object.entries(document)) {
+			this[key] = value
+		}
 	}
 }
 export const ShowStyleVariants: TransformedCollection<ShowStyleVariant, DBShowStyleVariant> = createMongoCollection<
 	ShowStyleVariant
 >('showStyleVariants', { transform: (doc) => applyClassToDocument(ShowStyleVariant, doc) })
 registerCollection('ShowStyleVariants', ShowStyleVariants)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		ShowStyleVariants._ensureIndex({
-			showStyleBaseId: 1,
-		})
-	}
+
+registerIndex(ShowStyleVariants, {
+	showStyleBaseId: 1,
 })
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', ['config', 'showStyleBaseId'])
+		ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', ['blueprintConfig', 'showStyleBaseId'])
 	}
 })

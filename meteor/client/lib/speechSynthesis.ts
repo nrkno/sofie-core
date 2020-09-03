@@ -60,9 +60,7 @@ class SpeechSynthesisClass {
 			} else {
 				if (this._queue.length && textCommand.category) {
 					// filter out queued ones of the same category:
-					this._queue = _.reject(this._queue, (c) => {
-						return c.category === textCommand.category
-					})
+					this._queue = this._queue.filter((c) => !(c.category === textCommand.category))
 				}
 				this._queue.push(textCommand)
 			}
@@ -89,17 +87,20 @@ class SpeechSynthesisClass {
 		}
 	}
 	private selectVoice(): SpeechSynthesisVoice | undefined {
-		const voices = _.map(speechSynthesis.getVoices(), (voice) => {
-			const voiceName = voice.name + ` (${voice.lang})` + (voice.default ? ' -default' : '')
+		const voices = speechSynthesis
+			.getVoices()
+			.map((voice) => {
+				const voiceName = voice.name + ` (${voice.lang})` + (voice.default ? ' -default' : '')
 
-			let weight = 999
-			_.each(VOICE_PREFERENCE, (n, i) => {
-				if (voiceName.match(new RegExp(n, 'i'))) weight = i
+				let weight = 999
+				VOICE_PREFERENCE.forEach((n, i) => {
+					if (voiceName.match(new RegExp(n, 'i'))) weight = i
+				})
+				return { weight, voice }
 			})
-			return { weight, voice }
-		}).sort((a, b) => {
-			return a.weight - b.weight
-		})
+			.sort((a, b) => {
+				return a.weight - b.weight
+			})
 		return (voices[0] || {}).voice
 	}
 }

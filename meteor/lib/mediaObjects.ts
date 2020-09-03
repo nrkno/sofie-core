@@ -9,6 +9,7 @@ import { RundownAPI } from './api/rundown'
 import { MediaObjects, MediaInfo, MediaObject, FieldOrder, MediaStream, Anomaly } from './collections/MediaObjects'
 import * as i18next from 'i18next'
 import { IStudioSettings } from './collections/Studios'
+import { NoteType } from './api/notes'
 
 /**d
  * Take properties from the mediainfo / medistream and transform into a
@@ -134,7 +135,7 @@ export function checkPieceContentStatus(
 				// If the fileName is not set...
 				if (!fileName) {
 					newStatus = RundownAPI.PieceStatusCode.SOURCE_NOT_SET
-					messages.push(t('Source is not set'))
+					messages.push(t("Clip can't be played because the filename is missing"))
 				} else {
 					const mediaObject = MediaObjects.findOne({
 						mediaId: fileName,
@@ -142,7 +143,11 @@ export function checkPieceContentStatus(
 					// If media object not found, then...
 					if (!mediaObject) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
-						messages.push(t('Source is missing', { fileName: displayName }))
+						messages.push(
+							t("Clip can't be played because it isn't present on the playout system", {
+								fileName: displayName,
+							})
+						)
 						// All VT content should have at least two streams
 					} else {
 						newStatus = RundownAPI.PieceStatusCode.OK
@@ -152,7 +157,7 @@ export function checkPieceContentStatus(
 							if (mediaObject.mediainfo.streams) {
 								if (mediaObject.mediainfo.streams.length < 2) {
 									newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
-									messages.push(t("Source doesn't have audio & video", { fileName: displayName }))
+									messages.push(t("Clip doesn't have audio & video", { fileName: displayName }))
 								}
 								const formats = getAcceptedFormats(settings)
 								const audioConfig = settings ? settings.supportedAudioStreams : ''
@@ -178,7 +183,9 @@ export function checkPieceContentStatus(
 										const format = buildFormatString(mediaObject.mediainfo, stream)
 										if (!acceptFormat(format, formats)) {
 											messages.push(
-												t('Source format ({{format}}) is not in accepted formats', { format })
+												t('Clip format ({{format}}) is not in one of the accepted formats', {
+													format,
+												})
 											)
 										}
 									} else if (stream.codec.type === 'audio') {
@@ -197,7 +204,7 @@ export function checkPieceContentStatus(
 									(!expectedAudioStreams.has(audioStreams.toString()) ||
 										(isStereo && !expectedAudioStreams.has('stereo')))
 								) {
-									messages.push(t('Source has {{audioStreams}} audio streams', { audioStreams }))
+									messages.push(t('Clip has {{audioStreams}} audio streams', { audioStreams }))
 								}
 								if (timebase) {
 									// check for black/freeze frames
@@ -221,16 +228,17 @@ export function checkPieceContentStatus(
 												mediaObject.mediainfo.format &&
 												arr[0].end === Number(mediaObject.mediainfo.format.duration)
 											) {
+												const freezeStartsAt = Math.round(arr[0].start)
 												messages.push(
-													t('Clip ends with {{frames}} {{type}} frame', {
+													t('This clip ends with {{type}} frames after {{count}} second', {
 														frames,
 														type,
-														count: frames,
+														count: freezeStartsAt,
 													})
 												)
 											} else {
 												messages.push(
-													t('{{frames}} {{type}} frame detected in clip.', {
+													t('{{frames}} {{type}} frame detected within the clip', {
 														frames,
 														type,
 														count: frames,
@@ -241,7 +249,7 @@ export function checkPieceContentStatus(
 											const dur = arr.map((b) => b.duration).reduce((a, b) => a + b, 0)
 											const frames = Math.round((dur * 1000) / timebase)
 											messages.push(
-												t('{{frames}} {{type}} frame detected in clip.', {
+												t('{{frames}} {{type}} frame detected in clip', {
 													frames,
 													type,
 													count: frames,
@@ -270,10 +278,7 @@ export function checkPieceContentStatus(
 					if (newStatus === RundownAPI.PieceStatusCode.OK) {
 						newStatus = RundownAPI.PieceStatusCode.SOURCE_BROKEN
 					}
-					message = t('{{displayName}}: {{messages}}', {
-						displayName: displayName,
-						messages: messages.join(', '),
-					})
+					message = messages.join('; ') + '.'
 				}
 				break
 		}
@@ -285,4 +290,14 @@ export function checkPieceContentStatus(
 		message: message,
 		contentDuration: contentDuration,
 	}
+}
+
+export function getNoteTypeForPieceStatus(statusCode: RundownAPI.PieceStatusCode): NoteType | null {
+	return statusCode !== RundownAPI.PieceStatusCode.OK && statusCode !== RundownAPI.PieceStatusCode.UNKNOWN
+		? statusCode === RundownAPI.PieceStatusCode.SOURCE_NOT_SET
+			? NoteType.ERROR
+			: // : innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING ||
+			  // innerPiece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN
+			  NoteType.WARNING
+		: null
 }

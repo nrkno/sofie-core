@@ -18,6 +18,7 @@ export function testInFiber(testName: string, fcn: Function) {
 }
 
 export function testInFiberOnly(testName: string, fcn: Function) {
+	// tslint:disable-next-line:no-focused-test
 	test.only(testName, async () => {
 		await runInFiber(fcn)
 	})

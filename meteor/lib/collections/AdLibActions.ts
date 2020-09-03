@@ -6,6 +6,7 @@ import { IBlueprintActionManifest } from 'tv-automation-sofie-blueprints-integra
 import { createMongoCollection } from './lib'
 import { PartId } from './Parts'
 import { RundownId } from './Rundowns'
+import { registerIndex } from '../database'
 
 /** A string, identifying an AdLibActionId */
 export type AdLibActionId = ProtectedString<'AdLibActionId'>
@@ -23,11 +24,7 @@ export const AdLibActions: TransformedCollection<AdLibAction, AdLibAction> = cre
 	'adLibActions'
 )
 registerCollection('AdLibActions', AdLibActions)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		AdLibActions._ensureIndex({
-			rundownId: 1,
-			partId: 1,
-		})
-	}
+registerIndex(AdLibActions, {
+	rundownId: 1,
+	partId: 1,
 })
