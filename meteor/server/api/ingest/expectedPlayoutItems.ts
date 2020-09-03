@@ -45,6 +45,7 @@ function wrapExpectedPlayoutItems(
 			_id: protectString(item.pieceId + '_' + i),
 			studioId: rundown.studioId,
 			rundownId: rundown._id,
+			playlistId: rundown.playlistId,
 			...item,
 		}
 	})
