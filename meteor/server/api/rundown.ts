@@ -135,7 +135,7 @@ export interface RundownPlaylistAndOrder {
 
 export function produceRundownPlaylistInfo(
 	studio: DeepReadonly<Studio>,
-	currentRundown: DeepReadonly<Rundown>,
+	currentRundown: DeepReadonly<DBRundown>,
 	peripheralDevice: PeripheralDevice | undefined
 ): RundownPlaylistAndOrder {
 	const studioBlueprint = loadStudioBlueprint(studio)

@@ -574,7 +574,7 @@ export function saveIntoCache<DocClass extends DBInterface, DBInterface extends 
 	return changes
 }
 export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
-	collection: DbCacheWriteCollection<DocClass, DBInterface>,
+	collection: DbCacheReadCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>

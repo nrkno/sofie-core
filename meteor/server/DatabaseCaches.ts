@@ -115,6 +115,8 @@ export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, in
 	? DbCacheReadCollection<A, B>
 	: T extends DbCacheWriteObject<infer A, infer B>
 	? DbCacheReadObject<A, B>
+	: T extends DbCacheWriteOptionalObject<infer A, infer B>
+	? DbCacheReadObject<A, B, true>
 	: T
 export type ReadOnlyCache<T extends Cache> = { [K in keyof T]: ReadOnlyCacheInner<T[K]> }
 

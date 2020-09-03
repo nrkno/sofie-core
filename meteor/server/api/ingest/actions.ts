@@ -8,7 +8,7 @@ import { check } from '../../../lib/check'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { loadCachedRundownData } from './ingestCache'
 import { resetRundown, removeRundownFromCache } from '../playout/lib'
-import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction, handleUpdatedRundownInner } from './rundownInput'
+import { RundownSyncFunctionPriority, rundownPlaylistSyncFunction, prepareUpdateRundownInner } from './rundownInput'
 import { logger } from '../../logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
@@ -142,7 +142,8 @@ export namespace IngestActions {
 
 				waitForPromise(cache.saveAllToDatabase())
 
-				handleUpdatedRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
+				prepareUpdateRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
+				savePreparedRundownChanges(cache, playoutInfo, preparedChanges)
 			})
 
 			waitForPromise(cache.saveAllToDatabase())

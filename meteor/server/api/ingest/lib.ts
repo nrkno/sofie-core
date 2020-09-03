@@ -17,7 +17,7 @@ import {
 	getStudioIdFromDevice,
 	PeripheralDeviceId,
 } from '../../../lib/collections/PeripheralDevices'
-import { Rundowns, Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown, RundownId, DBRundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
@@ -148,7 +148,7 @@ export function rundownIngestSyncFunction<T>(
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	return rundownIngestSyncFromStudioFunction(studioId, rundownExternalId, fcn, saveFcn)
+	return rundownIngestSyncFromStudioFunction(studioId, rundownExternalId, (cache) => fcn(cache), saveFcn)
 }
 
 export function rundownIngestSyncFromStudioFunction<T>(
@@ -235,7 +235,7 @@ export function canBeUpdated(rundown: DeepReadonly<Rundown> | undefined, segment
 }
 export function extendIngestRundownCore(
 	ingestRundown: IngestRundown,
-	existingDbRundown: DeepReadonly<Rundown> | undefined
+	existingDbRundown: DeepReadonly<DBRundown> | undefined
 ): ExtendedIngestRundown {
 	const extendedIngestRundown: ExtendedIngestRundown = {
 		...ingestRundown,
@@ -249,7 +249,7 @@ export function modifyPlaylistExternalId(playlistExternalId: string | undefined,
 }
 
 export function getRundownSegmentsAndPartsFromIngestCache(
-	cache: CacheForIngest
+	cache: ReadOnlyCache<CacheForIngest>
 ): { segments: Segment[]; parts: Part[] } {
 	const rundown = getRundown2(cache)
 
