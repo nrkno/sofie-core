@@ -1,22 +1,22 @@
 import { TranslationsBundles, TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 
 export namespace TranslationsBundlesSecurity {
-	export function allowReadAccess(selector: object, token: string, context: any) {
+	export function allowReadAccess(selector: object, token: string, context: any): boolean {
 		return true
 	}
-	export function allowWriteAccess() {
+	export function allowWriteAccess(): boolean {
 		return false
 	}
 }
 
 TranslationsBundles.allow({
-	insert(userId: string, doc: TranslationsBundle): boolean {
+	insert(): boolean {
 		return false
 	},
-	update(userId, doc, fields, modifier) {
+	update(): boolean {
 		return false
 	},
-	remove(userId, doc) {
+	remove(): boolean {
 		return false
 	},
 })
