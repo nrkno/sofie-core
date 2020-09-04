@@ -62,14 +62,19 @@ class I18nContainer extends WithManagedTracker {
 			const bundles = TranslationsBundles.find().fetch()
 			console.debug(`Got ${bundles.length} bundles from database`)
 			for (const bundle of bundles) {
-				this.i18nInstance.addResourceBundle(
-					bundle.language,
-					bundle.namespace || i18nOptions.defaultNS,
-					bundle.data,
-					true,
-					true
-				)
-				console.debug('i18instance updated', { bundle: { lang: bundle.language, ns: bundle.namespace } })
+				if (Object.keys(bundle.data).length > 0) {
+					this.i18nInstance.addResourceBundle(
+						bundle.language,
+						bundle.namespace || i18nOptions.defaultNS,
+						bundle.data,
+						true,
+						true
+					)
+					console.debug('i18instance updated', { bundle: { lang: bundle.language, ns: bundle.namespace } })
+				} else {
+					//TODO: remove, debug use only
+					console.debug(`Skipped bundle, no translations`, { bundle })
+				}
 			}
 		})
 	}
@@ -109,15 +114,8 @@ class I18nContainer extends WithManagedTracker {
 }
 
 const container = new I18nContainer()
-const i18nTranslator: TFunction = (...args) => {
-	console.debug('i18nTranslator call', args)
-	// if (args[0] === `Device {{deviceName}} is disconnected`) {
-	// 	console.debug(`Got ${args[0]}, aborting`, args)
-	// 	return args[0]
-	// }
-	const result = container.i18nTranslator(args)
-	console.debug(`=> ${result}`)
-	return result
+const i18nTranslator: TFunction = (key, options) => {
+	return container.i18nTranslator(key, options)
 }
 
 export { i18nTranslator }
