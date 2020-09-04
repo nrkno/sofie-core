@@ -59,8 +59,6 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 	const rundownsInPlaylist = cache.Rundowns.findFetch()
 	cache.activationCache.initialize(activePlaylist, rundownsInPlaylist)
 
-	let rundown: Rundown | undefined
-
 	if (!activePlaylist.nextPartInstanceId) {
 		const firstPart = selectNextPart(activePlaylist, null, getAllOrderedPartsFromCache(cache))
 		setNextPart(cache, firstPart ? firstPart.part : null)
@@ -73,11 +71,12 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 
 		cache.defer(() => {
 			if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-			const { blueprint } = loadShowStyleBlueprint(
-				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
-			)
-			const context = new RundownContext(rundown, cache, undefined)
+			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
+			const { blueprint } = loadShowStyleBlueprint(showStyleBase)
+
+			const context = new RundownContext(cache.Studio.doc, rundown, showStyleBase, undefined)
 			context.wipeCache()
+
 			if (blueprint.onRundownActivate) {
 				Promise.resolve(blueprint.onRundownActivate(context)).catch(logger.error)
 			}
@@ -91,15 +90,14 @@ export function deactivateRundownPlaylist(cache: CacheForPlayout): void {
 
 	updateTimeline(cache)
 
-	cache.defer((cache) => {
+	cache.defer(() => {
 		if (rundown) {
-			const { blueprint } = loadShowStyleBlueprint(
-				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
-			)
+			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
+			const { blueprint } = loadShowStyleBlueprint(showStyleBase)
+
 			if (blueprint.onRundownDeActivate) {
-				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(
-					logger.error
-				)
+				const context = new RundownContext(cache.Studio.doc, rundown, showStyleBase, undefined)
+				Promise.resolve(blueprint.onRundownDeActivate(context)).catch(logger.error)
 			}
 		}
 	})

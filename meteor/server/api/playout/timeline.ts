@@ -281,7 +281,7 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 
 		if (activeRundown) {
 			// Fetch showstyle blueprint:
-			const pShowStyle = cache.activationCache.getShowStyleBase(activeRundown)
+			const pShowStyle = cache.activationCache.getShowStyleCompound(activeRundown)
 			const pshowStyleBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
 			const showStyle = waitForPromise(pShowStyle)
@@ -311,7 +311,7 @@ function getTimelineRundown(cache: CacheForPlayout): TimelineObjRundown[] {
 
 			if (showStyleBlueprintManifest.onTimelineGenerate && currentPartInstance) {
 				const currentPart = currentPartInstance
-				const context = new PartEventContext(activeRundown, cache, currentPart)
+				const context = new PartEventContext(studio, activeRundown, showStyle, currentPart)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, timelineObjs)
 				try {
 					const tlGenRes = waitForPromise(

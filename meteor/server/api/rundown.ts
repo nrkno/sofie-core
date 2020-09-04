@@ -27,6 +27,7 @@ import {
 	ShowStyleVariant,
 	ShowStyleVariantId,
 	createShowStyleCompound,
+	ShowStyleCompound,
 } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
@@ -66,7 +67,7 @@ import { studioSyncFunction } from './ingest/rundownInput'
 export function selectShowStyleVariant(
 	studio: DeepReadonly<Studio>,
 	ingestRundown: ExtendedIngestRundown
-): { variant: ShowStyleVariant; base: ShowStyleBase } | null {
+): { variant: ShowStyleVariant; base: ShowStyleBase; compound: ShowStyleCompound } | null {
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
@@ -126,9 +127,13 @@ export function selectShowStyleVariant(
 		if (!showStyleVariant)
 			throw new Meteor.Error(404, `Blueprint returned variantId "${variantId}", which was not found!`)
 
+		const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
+		if (!compound) throw new Meteor.Error(404, `no showStyleCompound for "${showStyleVariant._id}"`)
+
 		return {
 			variant: showStyleVariant,
 			base: showStyleBase,
+			compound,
 		}
 	}
 }

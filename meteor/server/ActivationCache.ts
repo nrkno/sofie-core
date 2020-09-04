@@ -10,7 +10,12 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Studio, Studios, StudioId } from '../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
+import {
+	ShowStyleVariant,
+	ShowStyleVariants,
+	ShowStyleCompound,
+	createShowStyleCompound,
+} from '../lib/collections/ShowStyleVariants'
 import { Rundown, Rundowns } from '../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -168,6 +173,16 @@ export class ActivationCache {
 	async getShowStyleVariant(rundown: Rundown): Promise<ShowStyleVariant> {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._getShowStyleVariant(rundown)
+	}
+	async getShowStyleCompound(rundown: Rundown): Promise<ShowStyleCompound> {
+		const [base, variant] = await Promise.all([this.getShowStyleBase(rundown), this.getShowStyleVariant(rundown)])
+		const compound = createShowStyleCompound(base, variant)
+		if (!compound)
+			throw new Meteor.Error(
+				404,
+				`Unable to compile ShowStyleCompound for variant "${rundown.showStyleVariantId}"`
+			)
+		return compound
 	}
 	async getRundownBaselineObjs(rundown: Rundown): Promise<RundownBaselineObj[]> {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)

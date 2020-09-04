@@ -9,6 +9,7 @@ import {
 	waitForPromiseAll,
 	asyncCollectionFindOne,
 	asyncCollectionFindFetch,
+	makePromise,
 } from '../../../lib/lib'
 import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
 import {
@@ -34,6 +35,14 @@ import { syncFunction } from '../../codeControl'
 import { DeepReadonly } from 'utility-types'
 import { rundownPlaylistCustomSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
 import { PartInstance } from '../../../lib/collections/PartInstances'
+import {
+	ShowStyleVariants,
+	getShowStyleCompound,
+	ShowStyleCompound,
+	createShowStyleCompound,
+} from '../../../lib/collections/ShowStyleVariants'
+import { IngestDataCacheObj, IngestDataCache } from '../../../lib/collections/IngestDataCache'
+import { DbCacheWriteCollection } from '../../DatabaseCache'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -123,12 +132,6 @@ export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevi
 		)
 	return device
 }
-export function getShowStyleBaseIngest(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): ShowStyleBase {
-	const rundown = getRundown2(cache)
-	const showStyle = ShowStyleBases.findOne(rundown.showStyleBaseId)
-	if (!showStyle) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found`)
-	return showStyle
-}
 
 export interface IngestPlayoutInfo {
 	readonly playlist: DeepReadonly<RundownPlaylist>
@@ -140,7 +143,10 @@ export interface IngestPlayoutInfo {
 export function rundownIngestSyncFunction<T>(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
-	fcn: (cache: ReadOnlyCache<CacheForIngest>) => T,
+	calcFcn: (
+		cache: ReadOnlyCache<CacheForIngest>,
+		ingestCache: DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
+	) => T,
 	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null
 ): void {
 	const studioId = getStudioIdFromDevice(peripheralDevice)
@@ -148,59 +154,87 @@ export function rundownIngestSyncFunction<T>(
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	return rundownIngestSyncFromStudioFunction(studioId, rundownExternalId, (cache) => fcn(cache), saveFcn)
+	return rundownIngestSyncFromStudioFunction(
+		studioId,
+		rundownExternalId,
+		(cache, ingestCache) => calcFcn(cache, ingestCache),
+		saveFcn
+	)
 }
 
 export function rundownIngestSyncFromStudioFunction<T>(
 	studioId: StudioId,
 	rundownExternalId: string,
-	fcn: (cache: CacheForIngest) => T,
+	calcFcn: (
+		cache: ReadOnlyCache<CacheForIngest>,
+		ingestCache: DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
+	) => T,
 	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null,
 	options?: { skipPlaylistLock?: boolean }
 ): void {
 	return syncFunction(() => {
-		const cache = waitForPromise(CacheForIngest.create(studioId, rundownExternalId))
+		const ingestObjCache = new DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache)
+		const [cache] = waitForPromiseAll([
+			CacheForIngest.create(studioId, rundownExternalId),
+			makePromise(() =>
+				ingestObjCache.prepareInit({ rundownId: getRundownId(studioId, rundownExternalId) }, true)
+			),
+		])
 
-		const val = fcn(cache)
+		let saveIngestChanges: Promise<any> | undefined
 
-		const rundown = getRundown2(cache)
+		try {
+			const val = calcFcn(cache, ingestObjCache)
 
-		function doPlaylistInner() {
-			if (saveFcn) {
-				// TODO-CACHE will this work?
-				const [playlist, rundowns] = waitForPromiseAll([
-					asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
-					asyncCollectionFindFetch(Rundowns, { playlistId: rundown.playlistId }),
-				])
+			// Start saving the ingest data
+			saveIngestChanges = ingestObjCache.updateDatabaseWithData()
 
-				if (!playlist)
-					throw new Meteor.Error(
-						404,
-						`RundownPlaylist "${rundown.playlistId}"  (for Rundown "${rundown._id}") not found`
+			const rundown = getRundown2(cache)
+
+			function doPlaylistInner() {
+				if (saveFcn) {
+					// TODO-CACHE will this work?
+					const [playlist, rundowns] = waitForPromiseAll([
+						asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
+						asyncCollectionFindFetch(Rundowns, { playlistId: rundown.playlistId }),
+					])
+
+					if (!playlist)
+						throw new Meteor.Error(
+							404,
+							`RundownPlaylist "${rundown.playlistId}"  (for Rundown "${rundown._id}") not found`
+						)
+
+					const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(
+						rundowns.map((r) => r._id)
 					)
 
-				const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(
-					rundowns.map((r) => r._id)
-				)
+					const playoutInfo: IngestPlayoutInfo = {
+						playlist,
+						rundowns,
+						currentPartInstance,
+						nextPartInstance,
+					}
 
-				const playoutInfo: IngestPlayoutInfo = {
-					playlist,
-					rundowns,
-					currentPartInstance,
-					nextPartInstance,
+					saveFcn(cache, playoutInfo, val)
 				}
 
-				saveFcn(cache, playoutInfo, val)
+				// TODO-CACHE - does this need to be inside the sync-function if there was no save step, as it cant touch anything playlisty?
+				waitForPromise(cache.saveAllToDatabase())
 			}
 
-			// TODO-CACHE - does this need to be inside the sync-function if there was no save step, as it cant touch anything playlisty?
-			waitForPromise(cache.saveAllToDatabase())
-		}
-
-		if (options?.skipPlaylistLock) {
-			doPlaylistInner()
-		} else {
-			rundownPlaylistCustomSyncFunction(rundown.playlistId, RundownSyncFunctionPriority.INGEST, doPlaylistInner)
+			if (options?.skipPlaylistLock) {
+				doPlaylistInner()
+			} else {
+				rundownPlaylistCustomSyncFunction(
+					rundown.playlistId,
+					RundownSyncFunctionPriority.INGEST,
+					doPlaylistInner
+				)
+			}
+		} finally {
+			// Ensure we save the ingest data
+			waitForPromise(saveIngestChanges ?? ingestObjCache.updateDatabaseWithData())
 		}
 	}, `rundown_ingest_${rundownExternalId}`)()
 }

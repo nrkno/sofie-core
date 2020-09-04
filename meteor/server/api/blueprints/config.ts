@@ -91,7 +91,10 @@ export function preprocessStudioConfig(studio: DeepReadonly<Studio>, blueprint?:
 	return res
 }
 
-export function preprocessShowStyleConfig(showStyle: ShowStyleCompound, blueprint?: ShowStyleBlueprintManifest) {
+export function preprocessShowStyleConfig(
+	showStyle: DeepReadonly<ShowStyleCompound>,
+	blueprint?: ShowStyleBlueprintManifest
+) {
 	let res: any = {}
 	if (blueprint && blueprint.showStyleConfigManifest !== undefined) {
 		applyToConfig(res, blueprint.showStyleConfigManifest, showStyle.blueprintConfig, `ShowStyle ${showStyle._id}`)

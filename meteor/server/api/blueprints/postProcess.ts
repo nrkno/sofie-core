@@ -9,14 +9,13 @@ import {
 	TimelineObjectCoreExt,
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
-	RundownContext,
 	TSR,
 	IBlueprintActionManifest,
 	NotesContext as INotesContext,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { ShowStyleContext, NotesContext } from './context'
+import { ShowStyleContext, NotesContext, RundownContext } from './context'
 import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PartId } from '../../../lib/collections/Parts'
@@ -29,7 +28,7 @@ import { SegmentId } from '../../../lib/collections/Segments'
 import { DeepReadonly } from 'utility-types'
 
 export function postProcessPieces(
-	innerContext: ShowStyleContext,
+	innerContext: INotesContext,
 	pieces: IBlueprintPiece[],
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -140,7 +139,7 @@ export function postProcessAdLibPieces(
 		let piece: AdLibPiece = {
 			...itemOrig,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
-			rundownId: protectString(innerContext.rundown._id),
+			rundownId: innerContext._rundown._id,
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
 		}

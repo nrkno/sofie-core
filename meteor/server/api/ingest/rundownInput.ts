@@ -90,7 +90,6 @@ import {
 	getRundown2,
 	IngestPlayoutInfo,
 	getRundownSegmentsAndPartsFromIngestCache,
-	getShowStyleBaseIngest,
 	getSegment2,
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
@@ -132,11 +131,15 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { DeepReadonly } from 'utility-types'
+import { ShowStyleCompound, getShowStyleCompound2 } from '../../../lib/collections/ShowStyleVariants'
+import { run } from 'tslint/lib/runner'
 
-/** Priority for handling of synchronous events. Lower means higher priority */
+/** Priority for handling of synchronous events. Higher value means higher priority */
 export enum RundownSyncFunctionPriority {
 	/** Events initiated from external (ingest) devices */
 	INGEST = 0,
+	/** */
+	AS_RUN_EVENT = 5,
 	/** Events initiated from user, for triggering ingest actions */
 	USER_INGEST = 9,
 	/** Events initiated from user, for playout */
@@ -466,14 +469,7 @@ function updateRundownFromIngestData(
 		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		true
 	)
-	const blueprintContext = new ShowStyleContext(
-		studio,
-		undefined,
-		undefined,
-		showStyle.base._id,
-		showStyle.variant._id,
-		notesContext
-	)
+	const blueprintContext = new ShowStyleContext(studio, showStyle.compound, notesContext)
 	const rundownRes = showStyleBlueprint.getRundown(blueprintContext, extendedIngestRundown)
 
 	// Ensure the ids in the notes are clean
@@ -568,7 +564,12 @@ function updateRundownFromIngestData(
 
 	// Save the baseline
 	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
-	const blueprintRundownContext = new RundownContext(dbRundown, cache, rundownNotesContext)
+	const blueprintRundownContext = new RundownContext(
+		cache.Studio.doc,
+		dbRundown,
+		showStyle.compound,
+		rundownNotesContext
+	)
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
 
@@ -617,7 +618,7 @@ function updateRundownFromIngestData(
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
 		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
-		const context = new SegmentContext(dbRundown, cache, notesContext)
+		const context = new SegmentContext(cache.Studio.doc, dbRundown, showStyle.compound, notesContext)
 		const res = showStyleBlueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(
@@ -1029,8 +1030,9 @@ export function handleUpdatedSegment(
 			// TODO-CACHE defer
 			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
 
-			const blueprint = loadShowStyleBlueprint(getShowStyleBaseIngest(cache))
-			return prepareUpdateSegmentFromIngestData(cache, blueprint, ingestSegment)
+			const showStyle = getShowStyleCompound2(rundown)
+			const blueprint = loadShowStyleBlueprint(showStyle)
+			return prepareUpdateSegmentFromIngestData(cache, showStyle, blueprint, ingestSegment)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -1050,6 +1052,7 @@ export function handleUpdatedSegment(
  */
 export function prepareUpdateSegmentFromIngestData(
 	cache: ReadOnlyCache<CacheForIngest>,
+	showStyle: DeepReadonly<ShowStyleCompound>,
 	wrappedBlueprint: WrappedShowStyleBlueprint,
 	ingestSegment: IngestSegment
 ): PreparedSegmentChanges {
@@ -1066,7 +1069,7 @@ export function prepareUpdateSegmentFromIngestData(
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
 	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
-	const context = new SegmentContext(rundown, cache, notesContext)
+	const context = new SegmentContext(cache.Studio.doc, rundown, showStyle, notesContext)
 	const res = wrappedBlueprint.blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
@@ -1255,8 +1258,9 @@ export function handleRemovedPart(
 			// TODO-CACHE defer
 			saveSegmentCache(rundown._id, segmentId, ingestSegment)
 
-			const blueprint = loadShowStyleBlueprint(getShowStyleBaseIngest(cache))
-			return prepareUpdateSegmentFromIngestData(cache, blueprint, ingestSegment)
+			const showStyle = getShowStyleCompound2(rundown)
+			const blueprint = loadShowStyleBlueprint(showStyle)
+			return prepareUpdateSegmentFromIngestData(cache, showStyle, blueprint, ingestSegment)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -1346,9 +1350,9 @@ export function prepareUpdatePartInner(
 
 	// TODO - defer
 	saveSegmentCache(rundown._id, segmentId, ingestSegment)
-
-	const blueprint = loadShowStyleBlueprint(getShowStyleBaseIngest(cache))
-	return prepareUpdateSegmentFromIngestData(cache, blueprint, ingestSegment)
+	const showStyle = getShowStyleCompound2(rundown)
+	const blueprint = loadShowStyleBlueprint(showStyle)
+	return prepareUpdateSegmentFromIngestData(cache, showStyle, blueprint, ingestSegment)
 	// }
 }
 

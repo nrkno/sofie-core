@@ -14,6 +14,7 @@ import {
 	getHash,
 	protectString,
 	isProtectedString,
+	makePromise,
 } from '../../lib/lib'
 import { Rundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
 import { Parts } from '../../lib/collections/Parts'
@@ -32,6 +33,17 @@ import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collec
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist, CacheForPlayout } from '../DatabaseCaches'
 import { profiler } from './profiler'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import {
+	studioSyncFunction,
+	rundownPlaylistCustomSyncFunction,
+	RundownSyncFunctionPriority,
+} from './ingest/rundownInput'
+import {
+	createShowStyleCompound,
+	getShowStyleCompound,
+	getShowStyleCompound2,
+} from '../../lib/collections/ShowStyleVariants'
+import { Studios } from '../../lib/collections/Studios'
 
 const EVENT_WAIT_TIME = 500
 
@@ -70,23 +82,24 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 	// might havent been reported yet
 	Meteor.setTimeout(() => {
 		try {
-			if (event.rundownId) {
+			if (event.rundownId && event.studioId) {
 				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
-				const pShowStyleBase = asyncCollectionFindOne(ShowStyleBases, rundown.showStyleBaseId)
+				const [showStyleCompound, studio, playlist] = waitForPromiseAll([
+					makePromise(() => getShowStyleCompound2(rundown)),
+					asyncCollectionFindOne(Studios, rundown.studioId),
+					asyncCollectionFindOne(RundownPlaylists, rundown.playlistId),
+				])
 
-				const playlist = RundownPlaylists.findOne(rundown.playlistId)
 				if (!playlist) throw new Meteor.Error(404, `Playlist "${rundown.playlistId}" not found!`)
+				if (!studio) throw new Meteor.Error(404, `Studio "${rundown.studioId}" not found!`)
 
-				const showStyleBase = waitForPromise(pShowStyleBase)
-				if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${rundown.showStyleBaseId}" not found!`)
-
-				const { blueprint } = loadShowStyleBlueprint(showStyleBase)
+				const { blueprint } = loadShowStyleBlueprint(showStyleCompound)
 
 				if (blueprint.onAsRunEvent) {
-					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-					const context = new AsRunEventContext(rundown, cache, event)
+					// TODO - this needs some real cache type? or should it not be using a cache?
+					const context = new AsRunEventContext(studio, rundown, showStyleCompound, event)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
 						.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {

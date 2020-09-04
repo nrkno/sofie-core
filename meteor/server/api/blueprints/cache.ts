@@ -77,7 +77,7 @@ export function loadStudioBlueprint(studio: DeepReadonly<Studio>): WrappedStudio
 	}
 }
 
-export function loadShowStyleBlueprint(showStyleBase: ShowStyleBase): WrappedShowStyleBlueprint {
+export function loadShowStyleBlueprint(showStyleBase: DeepReadonly<ShowStyleBase>): WrappedShowStyleBlueprint {
 	if (!showStyleBase.blueprintId) {
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)
 	}

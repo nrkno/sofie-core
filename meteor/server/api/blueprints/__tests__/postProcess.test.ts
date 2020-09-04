@@ -23,7 +23,7 @@ import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { initCacheForRundownPlaylist, CacheForIngest, ReadOnlyCache } from '../../../DatabaseCaches'
+import { CacheForIngest, ReadOnlyCache } from '../../../DatabaseCaches'
 
 describe('Test blueprint post-process', () => {
 	let env: DefaultEnvironment

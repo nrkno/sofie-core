@@ -23,14 +23,7 @@ export function updateBucketAdlibFromIngestData(
 ): PieceId | null {
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle)
 
-	const context = new ShowStyleContext(
-		studio,
-		undefined,
-		undefined,
-		showStyle._id,
-		showStyle.showStyleVariantId,
-		new NotesContext('Bucket Ad-Lib', 'bucket-adlib', false)
-	)
+	const context = new ShowStyleContext(studio, showStyle, new NotesContext('Bucket Ad-Lib', 'bucket-adlib', false))
 	if (!blueprint.getAdlibItem) throw new Meteor.Error(501, "This blueprint doesn't support ingest AdLibs")
 	const rawAdlib = blueprint.getAdlibItem(context, ingestData)
 

@@ -63,8 +63,8 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	if (!currentRundown)
 		throw new Meteor.Error(404, `Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`)
 
-	let pShowStyle = cache.activationCache.getShowStyleBase(currentRundown)
-	let pBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
+	const pShowStyle = cache.activationCache.getShowStyleCompound(currentRundown)
+	const pBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
 	const currentPart = currentPartInstance
 	if (currentPart) {
@@ -110,14 +110,17 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 
 	// beforeTake(rundown, previousPart || null, takePart)
 
+	const showStyle = waitForPromise(pShowStyle)
 	const { blueprint } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
 		const span = profiler.startSpan('blueprint.onPreTake')
 		try {
 			waitForPromise(
-				Promise.resolve(blueprint.onPreTake(new PartEventContext(takeRundown, cache, takePartInstance))).catch(
-					logger.error
-				)
+				Promise.resolve(
+					blueprint.onPreTake(
+						new PartEventContext(cache.Studio.doc, takeRundown, showStyle, takePartInstance)
+					)
+				).catch(logger.error)
 			)
 			if (span) span.end()
 		} catch (e) {
@@ -134,7 +137,7 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 			const resolvedPieces = getResolvedPieces(cache, showStyle, previousPartInstance)
 
 			const span = profiler.startSpan('blueprint.getEndStateForPart')
-			const context = new RundownContext(takeRundown, cache, undefined)
+			const context = new RundownContext(cache.Studio.doc, takeRundown, showStyle, undefined)
 			previousPartEndState = blueprint.getEndStateForPart(
 				context,
 				playlist.previousPersistentState,
@@ -258,7 +261,9 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 					const span = profiler.startSpan('blueprint.onRundownFirstTake')
 					waitForPromise(
 						Promise.resolve(
-							blueprint.onRundownFirstTake(new PartEventContext(takeRundown, cache, takePartInstance))
+							blueprint.onRundownFirstTake(
+								new PartEventContext(cache.Studio.doc, takeRundown, showStyle, takePartInstance)
+							)
 						).catch(logger.error)
 					)
 					if (span) span.end()
@@ -269,7 +274,9 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 				const span = profiler.startSpan('blueprint.onPostTake')
 				waitForPromise(
 					Promise.resolve(
-						blueprint.onPostTake(new PartEventContext(takeRundown, cache, takePartInstance))
+						blueprint.onPostTake(
+							new PartEventContext(cache.Studio.doc, takeRundown, showStyle, takePartInstance)
+						)
 					).catch(logger.error)
 				)
 				if (span) span.end()

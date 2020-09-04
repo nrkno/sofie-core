@@ -10,7 +10,6 @@ import {
 	getRundownId,
 	getRundown2,
 	IngestPlayoutInfo,
-	getShowStyleBaseIngest,
 } from '../lib'
 import { getPartIdFromMosStory, getSegmentExternalId, fixIllegalObject, parseMosString } from './lib'
 import { literal, protectString, unprotectString, getCurrentTime, normalizeArray } from '../../../../lib/lib'
@@ -46,6 +45,7 @@ import { Settings } from '../../../../lib/Settings'
 import { DeepReadonly } from 'utility-types'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { loadShowStyleBlueprint } from '../../blueprints/cache'
+import { getShowStyleCompound2 } from '../../../../lib/collections/ShowStyleVariants'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -584,9 +584,10 @@ function prepareMosSegmentChanges(
 	)
 	let preparedSegmentChanges: PreparedSegmentChanges[] = []
 	if (sortedIngestSegments.length > 0) {
-		const blueprint = loadShowStyleBlueprint(getShowStyleBaseIngest(cache))
+		const showStyle = getShowStyleCompound2(rundown)
+		const blueprint = loadShowStyleBlueprint(showStyle)
 		for (const ingestSegment of sortedIngestSegments) {
-			preparedSegmentChanges.push(prepareUpdateSegmentFromIngestData(cache, blueprint, ingestSegment))
+			preparedSegmentChanges.push(prepareUpdateSegmentFromIngestData(cache, showStyle, blueprint, ingestSegment))
 		}
 	}
 

@@ -8,6 +8,7 @@ import {
 	unprotectStringArray,
 	getRandomId,
 	protectStringArray,
+	waitForPromise,
 } from '../../../../lib/lib'
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -37,6 +38,7 @@ import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
+import { getShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -105,7 +107,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	public takeAfterExecute: boolean
 
 	constructor(cache: CacheForPlayout, notesContext: NotesContext, rundown: Rundown) {
-		super(cache.Studio.doc, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
+		super(cache.Studio.doc, getShowStyleCompound(rundown.showStyleVariantId), notesContext)
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -157,7 +159,14 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(this._cache, this.getShowStyleBase(), partInstance)
+		const rundown = this._cache.Rundowns.findOne(partInstance.rundownId)
+		if (!rundown) {
+			throw new Error('Failed to find rundown of partInstance')
+		}
+
+		const showStyleBase = waitForPromise(this._cache.activationCache.getShowStyleBase(rundown))
+
+		const resolvedInstances = getResolvedPieces(this._cache, showStyleBase, partInstance)
 		return resolvedInstances.map((piece) => clone(unprotectObject(piece)))
 	}
 
@@ -207,12 +216,14 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Failed to find rundown of partInstance')
 		}
 
+		const showStyleBase = waitForPromise(this._cache.activationCache.getShowStyleBase(rundown))
+
 		const trimmedPiece: IBlueprintPiece = _.pick(rawPiece, IBlueprintPieceSampleKeys)
 
 		const piece = postProcessPieces(
 			this,
 			[trimmedPiece],
-			this.getShowStyleBase().blueprintId,
+			showStyleBase.blueprintId,
 			partInstance.rundownId,
 			partInstance.segmentId,
 			partInstance.part._id,
@@ -253,6 +264,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PieceInstance could not be found')
 		}
 
+		const rundown = this._cache.Rundowns.findOne(pieceInstance.rundownId)
+		if (!rundown) {
+			throw new Error('Failed to find rundown of pieceInstance')
+		}
+
 		if (pieceInstance.infinite?.fromPrevious) {
 			throw new Error('Cannot update an infinite piece that is continued from a previous part')
 		}
@@ -270,10 +286,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		}
 
 		if (piece.content && piece.content.timelineObjects) {
+			const showStyleBase = waitForPromise(this._cache.activationCache.getShowStyleBase(rundown))
 			piece.content.timelineObjects = postProcessTimelineObjects(
 				this,
 				pieceInstance.piece._id,
-				this.getShowStyleBase().blueprintId,
+				showStyleBase.blueprintId,
 				piece.content.timelineObjects,
 				true,
 				{}
@@ -306,6 +323,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			: undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
+		}
+
+		const rundown = this._cache.Rundowns.findOne(currentPartInstance.rundownId)
+		if (!rundown) {
+			throw new Error('Failed to find rundown of currentPartInstance')
 		}
 
 		if (this.nextPartState !== ActionPartChange.NONE) {
@@ -346,10 +368,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot queue a part which is not playable')
 		}
 
+		const showStyleBase = waitForPromise(this._cache.activationCache.getShowStyleBase(rundown))
 		const pieces = postProcessPieces(
 			this,
 			rawPieces,
-			this.getShowStyleBase().blueprintId,
+			showStyleBase.blueprintId,
 			currentPartInstance.rundownId,
 			newPartInstance.segmentId,
 			newPartInstance.part._id
@@ -464,9 +487,15 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
 
+		const rundown = this._cache.Rundowns.findOne(partInstance.rundownId)
+		if (!rundown) {
+			throw new Error('Failed to find rundown of currentPartInstance')
+		}
+
+		const showStyleBase = waitForPromise(this._cache.activationCache.getShowStyleBase(rundown))
 		const stoppedIds = ServerPlayoutAdLibAPI.innerStopPieces(
 			this._cache,
-			this.getShowStyleBase(),
+			showStyleBase,
 			partInstance,
 			filter,
 			timeOffset
