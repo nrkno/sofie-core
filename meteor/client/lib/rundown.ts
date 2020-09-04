@@ -22,7 +22,7 @@ import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime } from '../../lib/lib'
-import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
+import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
@@ -228,7 +228,9 @@ export namespace RundownUtils {
 		playlist: RundownPlaylist,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
-		orderedAllPartIds: PartId[]
+		orderedAllPartIds: PartId[],
+		currentPartInstance: PartInstance | undefined,
+		nextPartInstance: PartInstance | undefined
 	): {
 		/** A Segment with some additional information */
 		segmentExtended: SegmentExtended
@@ -272,7 +274,6 @@ export namespace RundownUtils {
 		// fetch all the parts for the segment
 		let partsE: Array<PartExtended> = []
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const segmentsAndParts = playlist.getSegmentsAndPartsSync(
 			{
 				_id: segment._id,

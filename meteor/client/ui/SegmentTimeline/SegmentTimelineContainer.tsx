@@ -28,7 +28,7 @@ import { unprotectString, equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId } from '../../../lib/collections/Rundowns'
-import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -81,6 +81,8 @@ interface IProps {
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
+	ownCurrentPartInstance: PartInstance | undefined
+	ownNextPartInstance: PartInstance | undefined
 }
 interface IState {
 	scrollLeft: number
@@ -134,7 +136,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.playlist,
 			segment,
 			props.segmentsIdsBefore,
-			props.orderedAllPartIds
+			props.orderedAllPartIds,
+			props.ownCurrentPartInstance,
+			props.ownNextPartInstance
 		)
 		let notes: Array<SegmentNote> = []
 		o.parts.forEach((part) => {
