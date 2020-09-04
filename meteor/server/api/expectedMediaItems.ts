@@ -112,7 +112,7 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 
 	const rundown = cache.Rundowns.findOne(rundownId)
 	if (!rundown) {
-		cache.defer(() => {
+		cache.deferAfterSave(() => {
 			const removedItems = ExpectedMediaItems.remove({
 				rundownId: rundownId,
 			})
@@ -126,7 +126,7 @@ export function updateExpectedMediaItemsOnRundown(cache: CacheForRundownPlaylist
 		startRundownId: rundown._id,
 	})
 
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		const adlibs = AdLibPieces.find({
 			rundownId: rundown._id,
 		}).fetch()
@@ -160,7 +160,7 @@ export function updateExpectedMediaItemsOnPart(
 
 	const rundown = cache.Rundowns.findOne(rundownId)
 	if (!rundown) {
-		cache.defer(() => {
+		cache.deferAfterSave(() => {
 			const removedItems = ExpectedMediaItems.remove({
 				rundownId: rundownId,
 			})
@@ -172,7 +172,7 @@ export function updateExpectedMediaItemsOnPart(
 
 	const part = cache.Parts.findOne(partId)
 	if (!part) {
-		cache.defer(() => {
+		cache.deferAfterSave(() => {
 			const removedItems = ExpectedMediaItems.remove({
 				rundownId: rundownId,
 				partId: partId,
@@ -187,7 +187,7 @@ export function updateExpectedMediaItemsOnPart(
 		startPartId: partId,
 	})
 
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		const eMIs: ExpectedMediaItem[] = []
 
 		const adlibs = AdLibPieces.find({

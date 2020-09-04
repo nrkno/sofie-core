@@ -56,7 +56,7 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 
 	const rundown = cache.Rundowns.findOne(rundownId)
 	if (!rundown) {
-		cache.defer(() => {
+		cache.deferAfterSave(() => {
 			const removedItems = ExpectedPlayoutItems.remove({
 				rundownId: rundownId,
 			})
@@ -72,7 +72,7 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForRundownPlayli
 		intermediaryItems.push(...extractExpectedPlayoutItems(part, getAllAdLibPiecesFromCache(cache, part)))
 	}
 
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
 
 		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
@@ -95,7 +95,7 @@ export function updateExpectedPlayoutItemsOnPart(
 
 	const rundown = cache.Rundowns.findOne(rundownId)
 	if (!rundown) {
-		cache.defer(() => {
+		cache.deferAfterSave(() => {
 			const removedItems = ExpectedPlayoutItems.remove({
 				rundownId: rundownId,
 			})
@@ -106,7 +106,7 @@ export function updateExpectedPlayoutItemsOnPart(
 
 	const part = cache.Parts.findOne(partId)
 	if (!part) {
-		cache.defer(() => {
+		cache.deferAfterSave(() => {
 			const removedItems = ExpectedPlayoutItems.remove({
 				rundownId: rundownId,
 				partId: partId,
@@ -116,7 +116,7 @@ export function updateExpectedPlayoutItemsOnPart(
 		return
 	}
 
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		const intermediaryItems = extractExpectedPlayoutItems(part, [
 			...getAllPiecesFromCache(cache, part),
 			...getAllAdLibPiecesFromCache(cache, part),

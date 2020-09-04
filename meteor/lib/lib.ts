@@ -98,7 +98,7 @@ export interface SaveIntoDbOptions<DocClass, DBInterface> {
 	// afterRemove?: (o: DBInterface) => void
 	afterRemoveAll?: (o: Array<DBInterface>) => void
 }
-interface Changes {
+export interface Changes {
 	added: number
 	updated: number
 	removed: number
@@ -1298,10 +1298,10 @@ export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, res
  * @param time
  */
 export function waitTime(time: number) {
-	let p = new Promise((resolve) => {
-		Meteor.setTimeout(resolve, time)
-	})
-	waitForPromise(p)
+	waitForPromise(sleep(time))
+}
+export function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
 }
 
 /** Runtime-wise, this is a string.
