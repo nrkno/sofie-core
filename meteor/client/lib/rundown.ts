@@ -369,7 +369,7 @@ export namespace RundownUtils {
 				const partStarted = partE.instance.part.startedPlayback
 					? partE.instance.part.getLastStartedPlayback()
 					: undefined
-				const nowInPart = partStarted ? partStarted - getCurrentTime() : 0
+				const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
 					showStyleBase,
