@@ -19,6 +19,7 @@ export interface HotkeyDefinition {
 	label: string
 	platformKey?: string
 	sourceLayerType?: SourceLayerType
+	buttonColor?: string
 }
 /** A string, identifying a ShowStyleBase */
 export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>

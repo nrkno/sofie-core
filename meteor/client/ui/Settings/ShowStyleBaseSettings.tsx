@@ -46,6 +46,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Settings } from '../../../lib/Settings'
+import { defaultColorPickerPalette } from '../../lib/colorPicker'
 
 interface IProps {
 	match: {
@@ -1142,17 +1143,6 @@ const HotkeyLegendSettings = withTranslation()(
 												modifiedClassName="bghl"
 												attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
 												obj={this.props.showStyleBase}
-												type="checkbox"
-												options={SourceLayerType}
-												className="mod mas"
-												collection={ShowStyleBases}
-												mutateDisplayValue={(v) => (v === undefined ? false : true)}
-												mutateUpdateValue={(v) => undefined}
-											/>
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
-												obj={this.props.showStyleBase}
 												type="dropdown"
 												options={SourceLayerType}
 												optionsAreNumbers
@@ -1160,6 +1150,19 @@ const HotkeyLegendSettings = withTranslation()(
 												className="input text-input input-l dropdown"
 												mutateUpdateValue={(v) => (v ? v : undefined)}
 											/>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Key color')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'hotkeyLegend.' + index + '.buttonColor'}
+													obj={this.props.showStyleBase}
+													options={defaultColorPickerPalette}
+													type="colorpicker"
+													collection={ShowStyleBases}
+													className="input text-input input-s"></EditAttribute>
+											</label>
 										</div>
 									</div>
 									<div className="mod alright">

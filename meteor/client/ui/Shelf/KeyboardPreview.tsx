@@ -359,10 +359,12 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 
 							let customLabel: string | undefined = undefined
 							let customSourceLayer: SourceLayerType | undefined = undefined
+							let customColor: string | undefined = undefined
 
 							if (this.props.customLabels[thisCombo.toUpperCase()]) {
 								customLabel = this.props.customLabels[thisCombo.toUpperCase()].label
 								customSourceLayer = this.props.customLabels[thisCombo.toUpperCase()].sourceLayerType
+								customColor = this.props.customLabels[thisCombo.toUpperCase()].buttonColor
 							}
 
 							return (
@@ -370,17 +372,22 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 									key={key.code}
 									className={ClassNames(
 										'keyboard-preview__key',
-										customSourceLayer !== undefined
-											? RundownUtils.getSourceLayerClassName(customSourceLayer)
-											: func && func.sourceLayer
-											? RundownUtils.getSourceLayerClassName(func.sourceLayer.type)
+										customColor === undefined
+											? customSourceLayer !== undefined
+												? RundownUtils.getSourceLayerClassName(customSourceLayer)
+												: func && func.sourceLayer
+												? RundownUtils.getSourceLayerClassName(func.sourceLayer.type)
+												: undefined
 											: undefined,
 										{
 											'keyboard-preview__key--fill': key.width < 0,
 											'keyboard-preview__key--down': this.state.keyDown[key.code] === true,
 										}
 									)}
-									style={{ fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined }}
+									style={{
+										fontSize: key.width >= 0 ? (key.width || 1) + 'em' : undefined,
+										backgroundColor: customColor,
+									}}
 									onClick={(e) =>
 										func ? this.onKeyClick(e, allFuncs || []) : modifierKey && this.toggleModifierOnTouch(modifierKey)
 									}>
