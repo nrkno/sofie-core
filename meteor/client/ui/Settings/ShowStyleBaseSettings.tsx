@@ -1065,6 +1065,12 @@ const HotkeyLegendSettings = withTranslation()(
 						})
 				)
 			}
+
+			const blob = new Blob([ahkCommands.join('\r\n')], { type: 'text/plain' })
+			downloadBlob(
+				blob,
+				`${this.props.showStyleBase.name}_${new Date().toLocaleDateString()}_${new Date().toLocaleTimeString()}.ahk`
+			)
 		}
 
 		renderItems() {
