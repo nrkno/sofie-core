@@ -93,7 +93,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
@@ -1305,6 +1305,8 @@ interface ITrackedProps {
 		inspector: boolean
 	}
 	bucketDisplayFilter: number[] | undefined
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1318,6 +1320,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let rundowns: Rundown[] = []
 	let studio: Studio | undefined
 	let allParts: PartId[] = []
+	let currentPartInstance: PartInstance | undefined
+	let nextPartInstance: PartInstance | undefined
+
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = playlist.getRundowns()
@@ -1328,6 +1333,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				},
 			})
 			.map((part) => part._id)
+		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
 	const params = queryStringParse(location.search)
@@ -1388,6 +1394,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			inspector: displayOptions.includes('inspector'),
 		},
 		bucketDisplayFilter,
+		currentPartInstance,
+		nextPartInstance,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -2149,6 +2157,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onPieceClick={this.onSelectPiece}
 												onPieceDoubleClick={this.onPieceDoubleClick}
 												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+												ownCurrentPartInstance={
+													this.props.currentPartInstance && this.props.currentPartInstance.segmentId === segment._id
+														? this.props.currentPartInstance
+														: undefined
+												}
+												ownNextPartInstance={
+													this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
+														? this.props.nextPartInstance
+														: undefined
+												}
 											/>
 										</VirtualElement>
 									</ErrorBoundary>
