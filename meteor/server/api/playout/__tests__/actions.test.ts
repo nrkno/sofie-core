@@ -1,10 +1,8 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
-	setupDefaultRundown,
 	setupMockPeripheralDevice,
 	setupDefaultRundownPlaylist,
 } from '../../../../__mocks__/helpers/database'
@@ -19,11 +17,8 @@ import * as _ from 'underscore'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { protectString } from '../../../../lib/lib'
 import { removeRundownFromCache, removeRundownPlaylistFromCache } from '../lib'
-import {
-	wrapWithCacheForRundownPlaylistFromRundown,
-	wrapWithCacheForRundownPlaylist,
-	wrapWithCacheForRundownPlaylistFromStudio,
-} from '../../../DatabaseCaches'
+import { wrapWithCacheForRundownPlaylistFromRundown } from '../../../DatabaseCaches'
+import { rundownPlaylistPlayoutSyncFunction } from '../playout'
 
 // const Timeline = mockupCollection(OrgTimeline)
 
@@ -49,7 +44,8 @@ describe('Playout Actions', () => {
 		)
 
 		_.each(Rundowns.find().fetch(), (rundown) =>
-			wrapWithCacheForRundownPlaylistFromRundown(rundown._id, (cache) => removeRundownFromCache(cache, rundown))
+			// TODO-CACHE is this ok?
+			rundown.removeTOBEREMOVED()
 		)
 	})
 	testInFiber('activateRundown', () => {
@@ -66,38 +62,28 @@ describe('Playout Actions', () => {
 		const { playlistId: playlistId2 } = setupDefaultRundownPlaylist(env, protectString('ro2'))
 		expect(playlistId2).toBeTruthy()
 
-		const playlistRemoved = RundownPlaylists.findOne(playlistId2) as RundownPlaylist
-		wrapWithCacheForRundownPlaylist(playlistRemoved, (cache) =>
-			removeRundownPlaylistFromCache(cache, playlistRemoved)
-		)
-
-		// Activating a rundown that doesn't exist:
-		expect(() => {
-			wrapWithCacheForRundownPlaylist(playlistRemoved, (cache) =>
-				activateRundownPlaylist(cache, playlistRemoved, false)
-			)
-		}).toThrowError(/not found/)
-
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 		// Activating a rundown, to rehearsal
 		let playlist = getPlaylist0()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, true))
+		rundownPlaylistPlayoutSyncFunction(null, playlist._id, null, (cache) => activateRundownPlaylist(cache, true))
 		expect(getPlaylist0()).toMatchObject({ active: true, rehearsal: true })
 
 		// Activating a rundown
 		playlist = getPlaylist0()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, false))
+		rundownPlaylistPlayoutSyncFunction(null, playlist._id, null, (cache) => activateRundownPlaylist(cache, false))
 		expect(getPlaylist0()).toMatchObject({ active: true, rehearsal: false })
 
 		// Activating a rundown, back to rehearsal
 		playlist = getPlaylist0()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, true))
+		rundownPlaylistPlayoutSyncFunction(null, playlist._id, null, (cache) => activateRundownPlaylist(cache, true))
 		expect(getPlaylist0()).toMatchObject({ active: true, rehearsal: true })
 
 		// Activating another rundown
 		expect(() => {
 			const playlist = getPlaylist1()
-			wrapWithCacheForRundownPlaylist(playlist, (cache) => activateRundownPlaylist(cache, playlist, false))
+			rundownPlaylistPlayoutSyncFunction(null, playlist._id, null, (cache) =>
+				activateRundownPlaylist(cache, false)
+			)
 		}).toThrowError(/only one rundown can be active/i)
 	})
 	testInFiber('prepareStudioForBroadcast', () => {
@@ -109,9 +95,9 @@ describe('Playout Actions', () => {
 			studioId: env.studio._id,
 		} as RundownPlaylist
 		const okToDestroyStuff = true
-		wrapWithCacheForRundownPlaylistFromStudio(env.studio._id, (cache) =>
-			prepareStudioForBroadcast(okToDestroyStuff, playlist)
-		)
+		rundownPlaylistPlayoutSyncFunction(null, playlist._id, null, (cache) => {
+			prepareStudioForBroadcast(cache, okToDestroyStuff)
+		})
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)
 		expect(getPeripheralDeviceCommands(playoutDevice)[0]).toMatchObject({

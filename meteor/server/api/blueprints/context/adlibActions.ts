@@ -94,7 +94,6 @@ const IBlueprintMutatablePartSampleKeys = Object.keys(IBlueprintMutatablePartSam
 /** Actions */
 export class ActionExecutionContext extends ShowStyleContext implements IActionExecutionContext, IEventContext {
 	private readonly _cache: CacheForPlayout
-	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
 
 	private queuedPartInstance: PartInstance | undefined
@@ -105,16 +104,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	public nextPartState: ActionPartChange = ActionPartChange.NONE
 	public takeAfterExecute: boolean
 
-	constructor(
-		cache: CacheForPlayout,
-		notesContext: NotesContext,
-		studio: Studio,
-		rundownPlaylist: RundownPlaylist,
-		rundown: Rundown
-	) {
-		super(studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
+	constructor(cache: CacheForPlayout, notesContext: NotesContext, rundown: Rundown) {
+		super(cache.Studio.doc, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
 		this._cache = cache
-		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
 		this.takeAfterExecute = false
 	}
@@ -122,9 +114,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | null {
 		switch (part) {
 			case 'current':
-				return this.rundownPlaylist.currentPartInstanceId
+				return this._cache.Playlist.doc.currentPartInstanceId
 			case 'next':
-				return this.rundownPlaylist.nextPartInstanceId
+				return this._cache.Playlist.doc.nextPartInstanceId
 			default:
 				assertNever(part)
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
@@ -186,8 +178,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this.rundownPlaylist.currentPartInstanceId) {
-			query['partInstanceId'] = { $ne: this.rundownPlaylist.currentPartInstanceId }
+		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
+			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInstanceId }
 		}
 
 		const lastPieceInstance = ServerPlayoutAdLibAPI.innerFindLastPieceOnLayer(
@@ -266,11 +258,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		}
 
 		const updatesCurrentPart: ActionPartChange =
-			pieceInstance.partInstanceId === this.rundownPlaylist.currentPartInstanceId
+			pieceInstance.partInstanceId === this._cache.Playlist.doc.currentPartInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
-			pieceInstance.partInstanceId === this.rundownPlaylist.nextPartInstanceId
+			pieceInstance.partInstanceId === this._cache.Playlist.doc.nextPartInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
@@ -309,8 +301,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		return clone(unprotectObject(this._cache.PieceInstances.findOne(pieceInstance._id)!))
 	}
 	queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): IBlueprintPartInstance {
-		const currentPartInstance = this.rundownPlaylist.currentPartInstanceId
-			? this._cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId)
+		const currentPartInstance = this._cache.Playlist.doc.currentPartInstanceId
+			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
 			: undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
@@ -442,7 +434,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		)
 	}
 	removePieceInstances(_part: 'next', pieceInstanceIds: string[]): string[] {
-		const partInstanceId = this.rundownPlaylist.nextPartInstanceId // this._getPartInstanceId(part)
+		const partInstanceId = this._cache.Playlist.doc.nextPartInstanceId // this._getPartInstanceId(part)
 		if (!partInstanceId) {
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
@@ -464,10 +456,10 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
-		if (!this.rundownPlaylist.currentPartInstanceId) {
+		if (!this._cache.Playlist.doc.currentPartInstanceId) {
 			return []
 		}
-		const partInstance = this._cache.PartInstances.findOne(this.rundownPlaylist.currentPartInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}

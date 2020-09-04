@@ -19,10 +19,9 @@ import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
 import { check } from '../../lib/check'
-import { updateTimeline } from './playout/timeline'
+import { updateStudioOrPlaylistTimeline } from './playout/timeline'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
-import { initCacheForRundownPlaylistFromStudio } from '../DatabaseCaches'
 import { DeepReadonly } from 'utility-types'
 import { studioSyncFunction } from './ingest/rundownInput'
 
@@ -125,7 +124,7 @@ export namespace ServerTestToolsAPI {
 		if (updated === 0) throw new Meteor.Error(404, `No active recording for "${studioId}" was found!`)
 
 		studioSyncFunction(studioId, (cache) => {
-			updateTimeline(cache, studioId)
+			updateStudioOrPlaylistTimeline(cache)
 		})
 	}
 
@@ -187,7 +186,7 @@ export namespace ServerTestToolsAPI {
 		})
 
 		studioSyncFunction(studioId, (cache) => {
-			updateTimeline(cache, studioId)
+			updateStudioOrPlaylistTimeline(cache)
 		})
 	}
 

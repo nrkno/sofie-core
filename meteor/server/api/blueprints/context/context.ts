@@ -43,7 +43,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
 import { ConfigRef, preprocessStudioConfig, findMissingConfigs, preprocessShowStyleConfig } from '../config'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
 import {
 	ShowStyleVariantId,
@@ -60,7 +60,7 @@ import { unprotectPartInstance, PartInstance } from '../../../../lib/collections
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
-import { CacheForIngest, CacheForPlayout } from '../../../DatabaseCaches'
+import { CacheForIngest, CacheForPlayout, ReadOnlyCache } from '../../../DatabaseCaches'
 import { DeepReadonly } from 'utility-types'
 
 /** Common */
@@ -222,8 +222,8 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 	constructor(
 		studio: DeepReadonly<Studio>,
-		private readonly cache: CacheForIngest | CacheForPlayout | undefined,
-		readonly _rundown: DeepReadonly<Rundown> | undefined,
+		private readonly cache: ReadOnlyCache<CacheForIngest> | ReadOnlyCache<CacheForPlayout> | undefined,
+		readonly _rundown: DeepReadonly<DBRundown> | undefined,
 		readonly showStyleBaseId: ShowStyleBaseId,
 		readonly showStyleVariantId: ShowStyleVariantId,
 		notesContext: NotesContext
@@ -325,17 +325,17 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 export class RundownContext extends ShowStyleContext implements IRundownContext, IEventContext {
 	readonly rundownId: string
 	readonly rundown: Readonly<IBlueprintRundownDB>
-	readonly _rundown: DeepReadonly<Rundown>
+	readonly _rundown: DeepReadonly<DBRundown>
 	readonly playlistId: RundownPlaylistId
 
 	constructor(
-		rundown: DeepReadonly<Rundown>,
-		cache: CacheForIngest | CacheForPlayout,
+		rundown: DeepReadonly<DBRundown>,
+		protected readonly _cache: ReadOnlyCache<CacheForIngest> | ReadOnlyCache<CacheForPlayout>,
 		notesContext: NotesContext | undefined
 	) {
 		super(
-			cache.Studio.doc,
-			cache,
+			_cache.Studio.doc,
+			_cache,
 			rundown,
 			rundown.showStyleBaseId,
 			rundown.showStyleVariantId,
@@ -354,7 +354,11 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 }
 
 export class SegmentContext extends RundownContext implements ISegmentContext {
-	constructor(rundown: Rundown, cache: CacheForIngest | CacheForPlayout, notesContext: NotesContext) {
+	constructor(
+		rundown: DeepReadonly<DBRundown>,
+		cache: ReadOnlyCache<CacheForIngest> | ReadOnlyCache<CacheForPlayout>,
+		notesContext: NotesContext
+	) {
 		super(rundown, cache, notesContext)
 	}
 }
@@ -432,7 +436,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	}
 	/** Get all segments in this rundown */
 	getSegments(): Array<IBlueprintSegmentDB> {
-		return unprotectObjectArray(this._rundown.getSegments())
+		return unprotectObjectArray(this._cache.Segments.findFetch({ rundownId: this._rundown._id }))
 	}
 	/**
 	 * Returns a segment
@@ -443,15 +447,16 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		check(segmentId, String)
 		if (segmentId) {
 			return unprotectObject(
-				this._rundown.getSegments({
+				this._cache.Segments.findOne({
+					rundownId: this._rundown._id,
 					_id: protectString(segmentId),
-				})[0]
+				})
 			)
 		}
 	}
 	/** Get all parts in this rundown */
 	getParts(): Array<IBlueprintPartDB> {
-		return unprotectObjectArray(this._rundown.getParts())
+		return unprotectObjectArray(this._cache.Parts.findFetch({ rundownId: this._rundown._id }))
 	}
 	/** Get the part related to this AsRunEvent */
 	getPartInstance(partInstanceId?: string): IBlueprintPartInstance | undefined {

@@ -6,14 +6,13 @@ import { VTContent, PieceLifespan } from 'tv-automation-sofie-blueprints-integra
 import { Segments, DBSegment } from '../../../lib/collections/Segments'
 import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
+import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { runInFiber } from '../../../__mocks__/Fibers'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
-import { removeRundownFromCache } from '../playout/lib'
+import { rundownIngestSyncFromStudioFunction } from '../ingest/lib'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -21,6 +20,8 @@ describe('Expected Media Items', () => {
 	const rplId1: RundownPlaylistId = protectString('playlist1')
 	const rdId0: RundownId = protectString('rundown0')
 	const rdId1: RundownId = protectString('rundown1')
+	const rdExtId0 = 'rundown0_ext'
+	const rdExtId1 = 'rundown1_ext'
 	const mockPart0: PartId = protectString('mockPart0')
 	const mockPiece0: PieceId = protectString('mockPiece0')
 	const mockPart1: PartId = protectString('mockPart1')
@@ -37,7 +38,7 @@ describe('Expected Media Items', () => {
 	const mockFlow0 = 'mockFlow0'
 	const mockFlow1 = 'mockFlow1'
 
-	function setupRundown(rdId: RundownId, rplId: RundownPlaylistId) {
+	function setupRundown(rdId: RundownId, rdExtId: string, rplId: RundownPlaylistId) {
 		RundownPlaylists.insert({
 			_id: rplId,
 			externalId: 'mock_rpl',
@@ -59,7 +60,7 @@ describe('Expected Media Items', () => {
 				dataSource: '',
 				expectedDuration: 0,
 				expectedStart: 0,
-				externalId: '',
+				externalId: rdExtId,
 				importVersions: {
 					blueprint: '',
 					core: '',
@@ -213,16 +214,21 @@ describe('Expected Media Items', () => {
 
 	beforeAll(() =>
 		runInFiber(() => {
-			setupRundown(rdId0, rplId0)
-			setupRundown(rdId1, rplId1)
+			setupRundown(rdId0, rdExtId0, rplId0)
+			setupRundown(rdId1, rdExtId1, rplId1)
 		})
 	)
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
-			updateExpectedMediaItemsOnRundown(cache, rdId0)
-			waitForPromise(cache.saveAllToDatabase())
+			rundownIngestSyncFromStudioFunction(
+				env.studio._id,
+				rdExtId0,
+				() => {},
+				(cache) => {
+					updateExpectedMediaItemsOnRundown(cache)
+				}
+			)
 
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
@@ -236,11 +242,16 @@ describe('Expected Media Items', () => {
 				fail()
 				return
 			}
-			const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rdId0))
-			removeRundownFromCache(cache, rd)
-			updateExpectedMediaItemsOnRundown(cache, rdId0)
 
-			waitForPromise(cache.saveAllToDatabase())
+			rundownIngestSyncFromStudioFunction(
+				env.studio._id,
+				rd.externalId,
+				() => {},
+				(cache) => {
+					updateExpectedMediaItemsOnRundown(cache)
+				}
+			)
+
 			const items = ExpectedMediaItems.find({
 				rundownId: rdId0,
 				studioId: env.studio._id,

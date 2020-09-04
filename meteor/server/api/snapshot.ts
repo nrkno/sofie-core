@@ -502,7 +502,7 @@ function restoreFromSnapshot(snapshot: AnySnapshot) {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studio = Studios.findOne(Meteor.settings.manualSnapshotIngestStudioId || 'studio0')
 		if (studio) {
-			importIngestRundown(studio._id, snapshot)
+			importIngestRundown(studio._id, snapshot as any)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)

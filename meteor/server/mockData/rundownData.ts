@@ -9,10 +9,11 @@ import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
-import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../DatabaseCaches'
+import { initCacheForRundownPlaylist } from '../DatabaseCaches'
 import { removeRundownPlaylistFromCache } from '../api/playout/lib'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 import { rundownPlaylistPlayoutSyncFunction } from '../api/playout/playout'
+import { rundownIngestSyncFromStudioFunction } from '../api/ingest/lib'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -74,10 +75,15 @@ if (!Settings.enableUserAccounts) {
 		debug_recreateExpectedMediaItems() {
 			const rundowns = Rundowns.find().fetch()
 
-			rundowns.map((i) => {
-				const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(i._id))
-				updateExpectedMediaItemsOnRundown(cache, i._id)
-				waitForPromise(cache.saveAllToDatabase())
+			rundowns.map((r) => {
+				rundownIngestSyncFromStudioFunction(
+					r.studioId,
+					r.externalId,
+					(cache) => {
+						updateExpectedMediaItemsOnRundown(cache)
+					},
+					null
+				)
 			})
 		},
 

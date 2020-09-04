@@ -82,11 +82,7 @@ import {
 	getRundownId,
 	getSegmentId,
 	getPartId,
-	getStudioFromDevice,
-	getRundown,
 	canBeUpdated,
-	getRundownPlaylist,
-	getSegment,
 	checkAccessAndGetPeripheralDevice,
 	extendIngestRundownCore,
 	modifyPlaylistExternalId,
@@ -382,12 +378,12 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 					logger.warn(
 						`Not allowing removal of currently playing rundown "${rundown._id}", making it unsynced instead`
 					)
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+					ServerRundownAPI.unsyncRundownInner(cache)
 				}
 			} else {
 				logger.info(`Rundown "${rundown._id}" cannot be updated`)
 				if (!rundown.unsynced) {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+					ServerRundownAPI.unsyncRundownInner(cache)
 				}
 			}
 		}
@@ -403,7 +399,13 @@ export function handleUpdatedRundown(
 		peripheralDevice,
 		ingestRundown.externalId,
 		(cache) => {
-			return prepareUpdateRundownInner(cache, makeNewIngestRundown(ingestRundown), dataSource, peripheralDevice)
+			return prepareUpdateRundownInner(
+				cache,
+				makeNewIngestRundown(ingestRundown),
+				undefined,
+				dataSource,
+				peripheralDevice
+			)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -415,6 +417,7 @@ export function handleUpdatedRundown(
 export function prepareUpdateRundownInner(
 	cache: ReadOnlyCache<CacheForIngest>,
 	ingestRundown: IngestRundown | LocalIngestRundown,
+	pendingRundownChanges: Partial<DBRundown> | undefined,
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): PreparedRundownChanges | undefined {
@@ -430,31 +433,25 @@ export function prepareUpdateRundownInner(
 	// TODO-CACHE defer
 	saveRundownCache(rundownId, newIngestRundown)
 
-	return updateRundownFromIngestData(cache, ingestRundown, dataSource, peripheralDevice)
-}
-export function regenerateRundown(rundownId: RundownId) {
-	logger.info(`Regenerating rundown ${rundownId}`)
-	const existingDbRundown = Rundowns.findOne(rundownId)
-	if (!existingDbRundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found`)
-
-	const studio = Studios.findOne(existingDbRundown.studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio "${existingDbRundown.studioId}" not found`)
-
-	const ingestRundown = loadCachedRundownData(rundownId, existingDbRundown.externalId)
-
-	const dataSource = 'regenerate'
-
-	const preparedChanges = updateRundownFromIngestData(studio, existingDbRundown, ingestRundown, dataSource, undefined)
-	savePreparedRundownChanges(cache, playoutInfo, preparedChanges)
+	return updateRundownFromIngestData(cache, newIngestRundown, pendingRundownChanges, dataSource, peripheralDevice)
 }
 function updateRundownFromIngestData(
 	cache: ReadOnlyCache<CacheForIngest>,
 	ingestRundown: IngestRundown,
+	pendingRundownChanges: Partial<DBRundown> | undefined,
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): PreparedRundownChanges {
 	const studio = cache.Studio.doc
-	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
+	const extendedIngestRundown = extendIngestRundownCore(
+		ingestRundown,
+		cache.Rundown.doc
+			? {
+					...cache.Rundown.doc,
+					...pendingRundownChanges,
+			  }
+			: undefined
+	)
 	const rundownId = getRundownId(studio, ingestRundown.externalId)
 
 	const showStyle = selectShowStyleVariant(studio, extendedIngestRundown)
@@ -463,7 +460,7 @@ function updateRundownFromIngestData(
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
-	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base).blueprint
+	const { blueprint: showStyleBlueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
 	const notesContext = new NotesContext(
 		`${showStyle.base.name}-${showStyle.variant.name}`,
 		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
@@ -494,8 +491,6 @@ function updateRundownFromIngestData(
 		showStyle.base
 	)
 
-	const showStyleBlueprintDb = (Blueprints.findOne(showStyle.base.blueprintId) as Blueprint) || {}
-
 	const dbRundown: DBRundown = {
 		// Some defaults to be overridden
 		peripheralDeviceId: protectString(''),
@@ -506,6 +501,8 @@ function updateRundownFromIngestData(
 
 		// Persist old values in some old bits
 		...clone(cache.Rundown.doc),
+
+		...pendingRundownChanges,
 
 		// All the new stuff
 		...rundownRes.rundown,
@@ -522,7 +519,7 @@ function updateRundownFromIngestData(
 			studio: studio._rundownVersionHash,
 			showStyleBase: showStyle.base._rundownVersionHash,
 			showStyleVariant: showStyle.variant._rundownVersionHash,
-			blueprint: showStyleBlueprintDb.blueprintVersion,
+			blueprint: showStyleBlueprint.blueprintVersion,
 			core: PackageInfo.versionExtended || PackageInfo.version,
 		},
 
@@ -610,7 +607,7 @@ function updateRundownFromIngestData(
 	const adlibPieces: AdLibPiece[] = []
 	const adlibActions: AdLibAction[] = []
 
-	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
+	// const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
 
 	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
@@ -621,7 +618,7 @@ function updateRundownFromIngestData(
 
 		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
 		const context = new SegmentContext(dbRundown, cache, notesContext)
-		const res = blueprint.getSegment(context, ingestSegment)
+		const res = showStyleBlueprint.getSegment(context, ingestSegment)
 
 		const segmentContents = generateSegmentContents(
 			context,
@@ -726,7 +723,7 @@ export function savePreparedRundownChanges(
 				preparedChanges.parts
 			)
 		) {
-			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
+			ServerRundownAPI.unsyncRundownInner(cache)
 			waitForPromise(cache.saveAllToDatabase())
 			return false
 		} else {
@@ -750,7 +747,7 @@ export function savePreparedRundownChanges(
 				) {
 					approvedSegmentChanges.push(segmentChange)
 				} else {
-					ServerRundownAPI.unsyncSegmentInner(cache, rundownId, segmentChange.segmentId)
+					ServerRundownAPI.unsyncSegmentInner(cache, segmentChange.segmentId)
 				}
 			})
 
@@ -810,7 +807,7 @@ export function savePreparedRundownChanges(
 				preparedChanges.parts
 			)
 		) {
-			ServerRundownAPI.unsyncRundownInner(cache, dbRundown._id)
+			ServerRundownAPI.unsyncRundownInner(cache)
 			waitForPromise(cache.saveAllToDatabase())
 			return false
 		}
@@ -1001,7 +998,7 @@ function handleRemovedSegment(
 
 			if (canBeUpdated(rundown, segment)) {
 				if (!isUpdateAllowed(playoutInfo, rundown, {}, { removed: [segment] }, {})) {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+					ServerRundownAPI.unsyncRundownInner(cache)
 				} else {
 					if (removeSegments(cache, [segmentId]) === 0) {
 						throw new Meteor.Error(
@@ -1149,7 +1146,7 @@ export function savePreparedSegmentChanges(
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(playoutInfo, rundown, {}, { changed: [preparedChanges.segment] }, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		ServerRundownAPI.unsyncRundownInner(cache)
 		return null
 	}
 
@@ -1274,7 +1271,7 @@ export function handleRemovedPart(
 				if (!part) throw new Meteor.Error(404, 'Part not found')
 
 				if (!isUpdateAllowed(playoutInfo, rundown, {}, {}, { removed: [part] })) {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+					ServerRundownAPI.unsyncRundownInner(cache)
 				} else {
 					const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
 					if (updatedSegmentId) {
@@ -1301,7 +1298,7 @@ export function handleUpdatedPart(
 			if (preparedChanges) {
 				const rundown = getRundown2(cache)
 				if (!isUpdateAllowed(playoutInfo, rundown, {}, {}, {})) {
-					ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+					ServerRundownAPI.unsyncRundownInner(cache)
 				} else {
 					const updatedSegmentId = savePreparedSegmentChanges(cache, playoutInfo, preparedChanges)
 					if (updatedSegmentId) {

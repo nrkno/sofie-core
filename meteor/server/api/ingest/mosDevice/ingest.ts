@@ -172,6 +172,7 @@ export function handleMosRundownData(
 			return prepareUpdateRundownInner(
 				cache,
 				ingestRundown,
+				undefined,
 				createFresh ? 'mosCreate' : 'mosList',
 				peripheralDevice
 			)
@@ -202,7 +203,7 @@ export function handleMosRundownMetadata(
 			// TODO - verify this doesn't lose data, it was doing more work before
 
 			// TODO - make this more lightweight?
-			return prepareUpdateRundownInner(cache, ingestRundown, 'mosRoMetadata', peripheralDevice)
+			return prepareUpdateRundownInner(cache, ingestRundown, undefined, 'mosRoMetadata', peripheralDevice)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -626,9 +627,9 @@ function applyMosSegmentChanges(
 				`Currently playing part "${currentPartInstance.part._id}" was removed during ingestData. Unsyncing the rundown!`
 			)
 			if (Settings.allowUnsyncedSegments) {
-				ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, currentPartInstance.part.segmentId)
+				ServerRundownAPI.unsyncSegmentInner(cache, currentPartInstance.part.segmentId)
 			} else {
-				ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+				ServerRundownAPI.unsyncRundownInner(cache)
 			}
 			return
 		} else {

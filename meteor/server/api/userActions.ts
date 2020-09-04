@@ -434,7 +434,7 @@ export function executeAction(
 	rundownPlaylistId: RundownPlaylistId,
 	actionId: string,
 	userData: any
-) {
+): ClientAPI.ClientResponse<void> {
 	check(rundownPlaylistId, String)
 	check(actionId, String)
 	check(userData, Match.Any)
@@ -701,7 +701,7 @@ export function regenerateRundownPlaylist(context: MethodContext, rundownPlaylis
 		return ClientAPI.responseError(`Rundown Playlist is active, please deactivate it before regenerating it.`)
 	}
 
-	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(rundownPlaylistId))
+	return ClientAPI.responseSuccess(IngestActions.regenerateRundownPlaylist(context, rundownPlaylistId))
 }
 
 export function bucketAdlibImport(

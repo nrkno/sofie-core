@@ -1,13 +1,14 @@
 import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../../lib/logging'
 import { Meteor } from 'meteor/meteor'
-import { handleUpdatedRundown } from './rundownInput'
-import { Studios, StudioId } from '../../../lib/collections/Studios'
+import { prepareUpdateRundownInner, savePreparedRundownChanges } from './rundownInput'
+import { StudioId } from '../../../lib/collections/Studios'
 import { check } from '../../../lib/check'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { getRundownId } from './lib'
+import { rundownIngestSyncFromStudioFunction } from './lib'
 import { protectString } from '../../../lib/lib'
 import { PickerPOST } from '../http'
+import { makeNewIngestRundown } from './ingestCache'
+import { IngestRundown } from 'tv-automation-sofie-blueprints-integration'
 
 PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: ServerResponse, next) => {
 	check(params.studioId, String)
@@ -15,7 +16,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 
 	let content = ''
 	try {
-		let ingestRundown = req.body
+		let ingestRundown: any = req.body
 		if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')
 		if (typeof ingestRundown !== 'object') {
 			// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
@@ -36,19 +37,24 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 		}
 	}
 })
-export function importIngestRundown(studioId: StudioId, ingestRundown: any) {
-	const studio = Studios.findOne(studioId)
-	if (!studio) throw new Meteor.Error(404, `Studio ${studioId} does not exist`)
+export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRundown) {
+	return rundownIngestSyncFromStudioFunction(
+		studioId,
+		ingestRundown.externalId,
+		(cache) => {
+			const existingDbRundown = cache.Rundown.doc
+			if (existingDbRundown && existingDbRundown.dataSource !== 'http')
+				throw new Meteor.Error(
+					403,
+					`Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`
+				)
 
-	const rundownId = getRundownId(studio, ingestRundown.externalId)
-
-	const existingDbRundown = Rundowns.findOne(rundownId)
-	// If the RO exists and is not from http then don't replace it. Otherwise, it is free to be replaced
-	if (existingDbRundown && existingDbRundown.dataSource !== 'http')
-		throw new Meteor.Error(
-			403,
-			`Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`
-		)
-
-	handleUpdatedRundown(studio, undefined, ingestRundown, 'http')
+			return prepareUpdateRundownInner(cache, makeNewIngestRundown(ingestRundown), undefined, 'http')
+		},
+		(cache, playoutInfo, preparedChanges) => {
+			if (preparedChanges) {
+				savePreparedRundownChanges(cache, playoutInfo, preparedChanges)
+			}
+		}
+	)
 }

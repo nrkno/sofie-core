@@ -33,7 +33,7 @@ import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { NotesContext } from '../blueprints/context/context'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
-import { updateTimeline } from './timeline'
+import { updateTimeline, updateStudioTimeline } from './timeline'
 import {
 	resetRundownPlaylist as libResetRundownPlaylist,
 	setNextPart as libsetNextPart,
@@ -57,7 +57,12 @@ import {
 import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
 import { getActiveRundownPlaylistsInStudio, getActiveRundownPlaylistsInStudio2 } from './studio'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority, studioSyncFunction } from '../ingest/rundownInput'
+import {
+	rundownPlaylistSyncFunction,
+	RundownSyncFunctionPriority,
+	studioSyncFunction,
+	rundownPlaylistCustomSyncFunction,
+} from '../ingest/rundownInput'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
@@ -65,7 +70,7 @@ import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
-import { CacheForPlayout, CacheForPlayoutPreInit, CacheForStudio2 } from '../../DatabaseCaches'
+import { CacheForPlayout, CacheForPlayoutPreInit, CacheForStudio2, ReadOnlyCache } from '../../DatabaseCaches'
 import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { check, Match } from '../../../lib/check'
@@ -82,7 +87,7 @@ const INCORRECT_PLAYING_PART_DEBOUNCE = 5000
 export function rundownPlaylistPlayoutSyncFunction<T>(
 	context: MethodContext | null,
 	rundownPlaylistId: RundownPlaylistId,
-	preInitFcn: null | ((cache: CacheForPlayoutPreInit) => void),
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => void),
 	fcn: (cache: CacheForPlayout) => T
 ): T {
 	let tmpPlaylist: RundownPlaylist
@@ -95,27 +100,41 @@ export function rundownPlaylistPlayoutSyncFunction<T>(
 	}
 
 	return syncFunction(() => {
-		return syncFunction(
-			() => {
-				const cache = waitForPromise(CacheForPlayout.create(tmpPlaylist))
-
-				if (preInitFcn) {
-					preInitFcn(cache)
-				}
-
-				waitForPromise(cache.initContent())
-
-				const res = fcn(cache)
-
-				waitForPromise(cache.saveAllToDatabase())
-
-				return res
-			},
-			`rundown_playlist_${rundownPlaylistId}`,
-			undefined,
-			RundownSyncFunctionPriority.USER_PLAYOUT
-		)()
+		return rundownPlaylistPlayoutSyncFunctionInner(tmpPlaylist, preInitFcn, fcn)
 	}, `studio_${tmpPlaylist.studioId}`)()
+}
+
+export function rundownPlaylistFromStudioSyncFunction<T>(
+	studioCache: CacheForStudio2,
+	rundownPlaylistId: RundownPlaylistId,
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => void),
+	fcn: (cache: CacheForPlayout) => T
+): T {
+	const tmpPlaylist = studioCache.RundownPlaylists.findOne(rundownPlaylistId)
+	if (!tmpPlaylist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found!`)
+	return rundownPlaylistPlayoutSyncFunctionInner(tmpPlaylist, preInitFcn, fcn)
+}
+
+function rundownPlaylistPlayoutSyncFunctionInner<T>(
+	tmpPlaylist: RundownPlaylist,
+	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => void),
+	fcn: (cache: CacheForPlayout) => T
+): T {
+	return rundownPlaylistCustomSyncFunction(tmpPlaylist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+		const cache = waitForPromise(CacheForPlayout.create(tmpPlaylist))
+
+		if (preInitFcn) {
+			preInitFcn(cache)
+		}
+
+		waitForPromise(cache.initContent())
+
+		const res = fcn(cache)
+
+		waitForPromise(cache.saveAllToDatabase())
+
+		return res
+	})
 }
 
 export namespace ServerPlayoutAPI {
@@ -146,7 +165,7 @@ export namespace ServerPlayoutAPI {
 				const playlist = cache.Playlist.doc
 
 				libResetRundownPlaylist(cache)
-				prepareStudioForBroadcast(true, playlist)
+				prepareStudioForBroadcast(cache, true)
 
 				libActivateRundownPlaylist(cache, true) // Activate rundownPlaylist (rehearsal)
 			}
@@ -169,7 +188,7 @@ export namespace ServerPlayoutAPI {
 				const playlist = cache.Playlist.doc
 				libResetRundownPlaylist(cache)
 
-				updateTimeline(cache, playlist.studioId)
+				updateTimeline(cache)
 			}
 		)
 	}
@@ -193,7 +212,7 @@ export namespace ServerPlayoutAPI {
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				libResetRundownPlaylist(cache)
-				prepareStudioForBroadcast(true, playlist)
+				prepareStudioForBroadcast(cache, true)
 
 				libActivateRundownPlaylist(cache, !!rehearsal) // Activate rundown
 			}
@@ -239,7 +258,7 @@ export namespace ServerPlayoutAPI {
 			(cache) => {
 				const playlist = cache.Playlist.doc
 				libResetRundownPlaylist(cache)
-				prepareStudioForBroadcast(true, playlist)
+				prepareStudioForBroadcast(cache, true)
 
 				libActivateRundownPlaylist(cache, rehearsal)
 			}
@@ -257,7 +276,7 @@ export namespace ServerPlayoutAPI {
 		return rundownPlaylistPlayoutSyncFunction(context, rundownPlaylistId, null, (cache) => {
 			const playlist = cache.Playlist.doc
 
-			prepareStudioForBroadcast(true, playlist)
+			prepareStudioForBroadcast(cache, true)
 
 			libActivateRundownPlaylist(cache, rehearsal)
 		})
@@ -267,7 +286,7 @@ export namespace ServerPlayoutAPI {
 	 */
 	export function deactivateRundownPlaylist(context: MethodContext, rundownPlaylistId: RundownPlaylistId) {
 		return rundownPlaylistPlayoutSyncFunction(context, rundownPlaylistId, null, (cache) => {
-			standDownStudio(cache, cache.Studio.doc, true)
+			standDownStudio(cache, true)
 			libDeactivateRundownPlaylist(cache)
 		})
 	}
@@ -346,7 +365,7 @@ export namespace ServerPlayoutAPI {
 		libsetNextPart(cache, nextPart, setManually, nextTimeOffset)
 
 		// update lookahead and the next part when we have an auto-next
-		updateTimeline(cache, playlist.studioId)
+		updateTimeline(cache)
 	}
 	export function moveNextPart(
 		context: MethodContext,
@@ -487,7 +506,7 @@ export namespace ServerPlayoutAPI {
 				libSetNextSegment(cache, nextSegment)
 
 				// Update any future lookaheads
-				updateTimeline(cache, playlist.studioId)
+				updateTimeline(cache)
 
 				return ClientAPI.responseSuccess(undefined)
 			}
@@ -531,7 +550,7 @@ export namespace ServerPlayoutAPI {
 
 				cache.Playlist.update({ $set: { holdState: RundownHoldState.PENDING } })
 
-				updateTimeline(cache, playlist.studioId)
+				updateTimeline(cache)
 			}
 		)
 	}
@@ -553,7 +572,7 @@ export namespace ServerPlayoutAPI {
 
 				cache.Playlist.update({ $set: { holdState: RundownHoldState.NONE } })
 
-				updateTimeline(cache, playlist.studioId)
+				updateTimeline(cache)
 			}
 		)
 	}
@@ -663,7 +682,7 @@ export namespace ServerPlayoutAPI {
 						},
 					})
 
-					updateTimeline(cache, playlist.studioId)
+					updateTimeline(cache)
 				} else {
 					throw new Meteor.Error(500, 'Found no future pieces')
 				}
@@ -1014,7 +1033,7 @@ export namespace ServerPlayoutAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		actionId: string,
 		userData: any
-	) {
+	): void {
 		check(rundownPlaylistId, String)
 		check(actionId, String)
 		check(userData, Match.Any)
@@ -1081,7 +1100,7 @@ export namespace ServerPlayoutAPI {
 					},execution=${getRandomId()}`,
 					false
 				)
-				const actionContext = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+				const actionContext = new ActionExecutionContext(cache, notesContext, rundown)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context
 				func(actionContext, cache, rundown, currentPartInstance)
@@ -1094,13 +1113,16 @@ export namespace ServerPlayoutAPI {
 				}
 
 				if (actionContext.takeAfterExecute) {
-					return ServerPlayoutAPI.callTakeWithCache(cache, now)
+					const res = ServerPlayoutAPI.callTakeWithCache(cache, now)
+					if (ClientAPI.isClientResponseError(res)) {
+						throw new Meteor.Error(res.error, res.message, res.details)
+					}
 				} else {
 					if (
 						actionContext.currentPartState !== ActionPartChange.NONE ||
 						actionContext.nextPartState !== ActionPartChange.NONE
 					) {
-						updateTimeline(cache, playlist.studioId)
+						updateTimeline(cache)
 					}
 				}
 			}
@@ -1161,7 +1183,7 @@ export namespace ServerPlayoutAPI {
 
 				syncPlayheadInfinitesForNextPartInstance(cache)
 
-				updateTimeline(cache, playlist.studioId)
+				updateTimeline(cache)
 			}
 		)
 	}
@@ -1243,7 +1265,7 @@ export function triggerUpdateTimelineAfterIngestData(playlistId: RundownPlaylist
 
 				if (playlist.active && playlist.currentPartInstanceId) {
 					// If the playlist is active, then updateTimeline as lookahead could have been affected
-					updateTimeline(cache, playlist.studioId)
+					updateTimeline(cache)
 				}
 			})
 		}

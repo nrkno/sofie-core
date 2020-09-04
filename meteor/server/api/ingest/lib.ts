@@ -155,7 +155,8 @@ export function rundownIngestSyncFromStudioFunction<T>(
 	studioId: StudioId,
 	rundownExternalId: string,
 	fcn: (cache: CacheForIngest) => T,
-	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null
+	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null,
+	options?: { skipPlaylistLock?: boolean }
 ): void {
 	return syncFunction(() => {
 		const cache = waitForPromise(CacheForIngest.create(studioId, rundownExternalId))
@@ -163,8 +164,10 @@ export function rundownIngestSyncFromStudioFunction<T>(
 		const val = fcn(cache)
 
 		const rundown = getRundown2(cache)
-		rundownPlaylistCustomSyncFunction(rundown.playlistId, RundownSyncFunctionPriority.INGEST, () => {
+
+		function doPlaylistInner() {
 			if (saveFcn) {
+				// TODO-CACHE will this work?
 				const [playlist, rundowns] = waitForPromiseAll([
 					asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
 					asyncCollectionFindFetch(Rundowns, { playlistId: rundown.playlistId }),
@@ -190,8 +193,15 @@ export function rundownIngestSyncFromStudioFunction<T>(
 				saveFcn(cache, playoutInfo, val)
 			}
 
+			// TODO-CACHE - does this need to be inside the sync-function if there was no save step, as it cant touch anything playlisty?
 			waitForPromise(cache.saveAllToDatabase())
-		})
+		}
+
+		if (options?.skipPlaylistLock) {
+			doPlaylistInner()
+		} else {
+			rundownPlaylistCustomSyncFunction(rundown.playlistId, RundownSyncFunctionPriority.INGEST, doPlaylistInner)
+		}
 	}, `rundown_ingest_${rundownExternalId}`)()
 }
 

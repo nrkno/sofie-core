@@ -23,7 +23,7 @@ import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { initCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { initCacheForRundownPlaylist, CacheForIngest, ReadOnlyCache } from '../../../DatabaseCaches'
 
 describe('Test blueprint post-process', () => {
 	let env: DefaultEnvironment
@@ -73,7 +73,10 @@ describe('Test blueprint post-process', () => {
 			nextPartInstanceId: null,
 			previousPartInstanceId: null,
 		})
-		let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
+		const cache: ReadOnlyCache<CacheForIngest> = waitForPromise(
+			CacheForIngest.create(env.studio._id, rundown.externalId)
+		)
 
 		const rundownNotesContext = new NotesContext(rundown.name, `rundownId=${rundown._id}`, true)
 		return new RundownContext(rundown, cache, rundownNotesContext)

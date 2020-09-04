@@ -57,10 +57,11 @@ import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPa
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
-import { getRundown2 } from './ingest/lib'
+import { getRundown2, rundownIngestSyncFunction, rundownIngestSyncFromStudioFunction } from './ingest/lib'
 import { DeepReadonly } from 'utility-types'
 import { DbCacheWriteCollection } from '../DatabaseCache'
 import { PartInstance, DBPartInstance, PartInstances } from '../../lib/collections/PartInstances'
+import { studioSyncFunction } from './ingest/rundownInput'
 
 export function selectShowStyleVariant(
 	studio: DeepReadonly<Studio>,
@@ -454,7 +455,7 @@ export namespace ServerRundownAPI {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(access.rundown._id))
-		const result = unsyncRundownInner(cache, rundownId)
+		const result = unsyncRundownInner(cache)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
@@ -473,22 +474,20 @@ export namespace ServerRundownAPI {
 		return innerResyncRundown(access.rundown)
 	}
 
-	export function unsyncRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-		check(rundownId, String)
-		logger.info('unsyncRundown ' + rundownId)
-
-		let rundown = cache.Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-
-		if (!rundown.unsynced) {
-			cache.Rundowns.update(rundown._id, {
-				$set: {
-					unsynced: true,
-					unsyncedTime: getCurrentTime(),
-				},
-			})
-		} else {
-			logger.info(`Rundown "${rundownId}" was already unsynced`)
+	export function unsyncRundownInner(cache: CacheForIngest): void {
+		const rundown = cache.Rundown.doc
+		if (rundown) {
+			logger.info('unsyncRundown ' + rundown._id)
+			if (!rundown.unsynced) {
+				cache.Rundown.update({
+					$set: {
+						unsynced: true,
+						unsyncedTime: getCurrentTime(),
+					},
+				})
+			} else {
+				logger.info(`Rundown "${rundown._id}" was already unsynced`)
+			}
 		}
 	}
 	/** Remove a RundownPlaylist and all its contents */
@@ -567,7 +566,7 @@ export namespace ServerRundownAPI {
 	export function unsyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId): void {
 		rundownContentAllowWrite(context.userId, { rundownId })
 		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
-		const result = unsyncSegmentInner(cache, rundownId, segmentId)
+		const result = unsyncSegmentInner(cache, segmentId)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
@@ -586,33 +585,33 @@ export namespace ServerRundownAPI {
 		return IngestActions.reloadRundown(rundown)
 	}
 
-	export function unsyncSegmentInner(
-		cache: CacheForRundownPlaylist,
-		rundownId: RundownId,
-		segmentId: SegmentId
-	): void {
+	export function unsyncSegmentInner(cache: CacheForIngest, segmentId: SegmentId): void {
 		check(segmentId, String)
 		logger.info('unsyncSegment' + segmentId)
-		let segment = cache.Segments.findOne({
-			rundownId: rundownId,
-			_id: segmentId,
-		})
-		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found in rundown "${rundownId}"!`)
 
-		// Fallback to unsyncing rundown
-		if (!Settings.allowUnsyncedSegments) {
-			return unsyncRundownInner(cache, segment.rundownId)
-		}
-
-		if (!segment.unsynced) {
-			cache.Segments.update(segmentId, {
-				$set: {
-					unsynced: true,
-					unsyncedTime: getCurrentTime(),
-				},
+		const rundown = cache.Rundown.doc
+		if (rundown) {
+			const segment = cache.Segments.findOne({
+				rundownId: rundown._id,
+				_id: segmentId,
 			})
-		} else {
-			logger.info(`Segment "${segmentId}" was already unsynced`)
+			if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found in rundown "${rundown._id}"!`)
+
+			// Fallback to unsyncing rundown
+			if (!Settings.allowUnsyncedSegments) {
+				return unsyncRundownInner(cache)
+			}
+
+			if (!segment.unsynced) {
+				cache.Segments.update(segmentId, {
+					$set: {
+						unsynced: true,
+						unsyncedTime: getCurrentTime(),
+					},
+				})
+			} else {
+				logger.info(`Segment "${segmentId}" was already unsynced`)
+			}
 		}
 	}
 }

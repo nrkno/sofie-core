@@ -588,28 +588,28 @@ export function getRundownsFromCache(cache: CacheForPlayout) {
 export function getRundownIDsFromCache(cache: CacheForPlayout) {
 	return getRundownsFromCache(cache).map((r) => r._id)
 }
-/** Get all pieces in a part */
-export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
-	return cache.Pieces.findFetch({
-		rundownId: part.rundownId,
-		partId: part._id,
-	})
-}
-/** Get all adlib pieces in a part */
-export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
-	return cache.AdLibPieces.findFetch(
-		{
-			rundownId: part.rundownId,
-			partId: part._id,
-		},
-		{
-			sort: {
-				_rank: 1,
-				name: 1,
-			},
-		}
-	)
-}
+// /** Get all pieces in a part */
+// export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
+// 	return cache.Pieces.findFetch({
+// 		rundownId: part.rundownId,
+// 		partId: part._id,
+// 	})
+// }
+// /** Get all adlib pieces in a part */
+// export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
+// 	return cache.AdLibPieces.findFetch(
+// 		{
+// 			rundownId: part.rundownId,
+// 			partId: part._id,
+// 		},
+// 		{
+// 			sort: {
+// 				_rank: 1,
+// 				name: 1,
+// 			},
+// 		}
+// 	)
+// }
 // export function getStudioFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
 // 	if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
 // 	let studio = cache.activationCache.getStudio()

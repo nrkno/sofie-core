@@ -9,14 +9,9 @@ import { ServerClientAPI } from './client'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
 import { StudioContentWriteAccess } from '../security/studio'
-import { CacheForStudio, initCacheForNoRundownPlaylist, CacheForStudioBase } from '../DatabaseCaches'
+import { studioSyncFunction } from './ingest/rundownInput'
 
-function insertTimelineObject(
-	context: MethodContext,
-	cache: CacheForStudioBase,
-	studioId: StudioId,
-	timelineObjectOrg: TimelineObjectCoreExt
-) {
+function insertTimelineObject(context: MethodContext, studioId: StudioId, timelineObjectOrg: TimelineObjectCoreExt) {
 	check(studioId, String)
 
 	StudioContentWriteAccess.timeline(context, studioId)
@@ -29,38 +24,32 @@ function insertTimelineObject(
 		objectType: TimelineObjType.MANUAL,
 	}
 
-	const studio = Studios.findOne(studioId)
-	if (studio) {
+	studioSyncFunction(studioId, (cache) => {
 		cache.Timeline.upsert(timelineObject._id, timelineObject)
-		afterUpdateTimeline(cache, studioId)
-	}
+		afterUpdateTimeline(cache)
+	})
 }
-function removeTimelineObject(context: MethodContext, cache: CacheForStudioBase, studioId: StudioId, id: string) {
+function removeTimelineObject(context: MethodContext, studioId: StudioId, id: string) {
 	check(studioId, String)
 	check(id, String)
 
 	StudioContentWriteAccess.timeline(context, studioId)
 
-	const studio = Studios.findOne(studioId)
-	if (studio) {
-		cache.Timeline.remove(getTimelineId(studio._id, id))
-		afterUpdateTimeline(cache, studio._id)
-	}
+	studioSyncFunction(studioId, (cache) => {
+		cache.Timeline.remove(getTimelineId(studioId, id))
+		afterUpdateTimeline(cache)
+	})
 }
 
 class ServerManualPlayoutAPI extends MethodContextAPI implements NewManualPlayoutAPI {
 	insertTimelineObject(studioId: StudioId, timelineObject: TimelineObjectCoreExt) {
 		return makePromise(() => {
-			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-			insertTimelineObject(this, cache, studioId, timelineObject)
-			waitForPromise(cache.saveAllToDatabase())
+			insertTimelineObject(this, studioId, timelineObject)
 		})
 	}
 	removeTimelineObject(studioId: StudioId, id: string) {
 		return makePromise(() => {
-			const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
-			removeTimelineObject(this, cache, studioId, id)
-			waitForPromise(cache.saveAllToDatabase())
+			removeTimelineObject(this, studioId, id)
 		})
 	}
 }

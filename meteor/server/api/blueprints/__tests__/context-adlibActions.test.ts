@@ -16,7 +16,7 @@ import {
 	PieceInstanceId,
 	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForPlayout } from '../../../DatabaseCaches'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
 import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 
@@ -45,6 +45,9 @@ import { postProcessPieces } from '../postProcess'
 import { isTooCloseToAutonext, getRundownIDsFromCache } from '../../playout/lib'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { activateRundownPlaylist, deactivateRundownPlaylist } from '../../playout/actions'
+import { rundownPlaylistPlayoutSyncFunction } from '../../playout/playout'
+import { DndContext } from 'react-dnd'
+import { DeepReadonly } from 'utility-types'
 type TpostProcessPieces = jest.MockedFunction<typeof postProcessPieces>
 const postProcessPiecesMock = postProcessPieces as TpostProcessPieces
 postProcessPiecesMock.mockImplementation(() => [])
@@ -94,21 +97,20 @@ describe('Test blueprint api context', () => {
 		env = setupDefaultStudioEnvironment()
 	})
 
-	function getActionExecutionContext(cache: CacheForRundownPlaylist) {
-		const playlist = cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist) as RundownPlaylist
-		expect(playlist).toBeTruthy()
-		const rundown = cache.Rundowns.findOne({ playlistId: cache.containsDataFromPlaylist }) as Rundown
+	function getActionExecutionContext(cache: CacheForPlayout) {
+		const playlist = cache.Playlist.doc as RundownPlaylist
+		const rundown = cache.Rundowns.findOne({ playlistId: playlist._id }) as Rundown
 		expect(rundown).toBeTruthy()
 
 		const studio = Studios.findOne(playlist.studioId) as Studio
 		expect(studio).toBeTruthy()
 
 		// Load all the PieceInstances, as we set the selected instances later
-		const rundownIds = getRundownIDsFromCache(cache, playlist)
+		const rundownIds = getRundownIDsFromCache(cache)
 		waitForPromise(cache.PieceInstances.fillWithDataFromDatabase({ rundownId: { $in: rundownIds } }))
 
 		const notesContext = new NotesContext('fakeContext', `fakeContext`, true)
-		const context = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
+		const context = new ActionExecutionContext(cache, notesContext, rundown)
 		expect(context.getStudio()).toBeTruthy()
 
 		return {
@@ -119,7 +121,7 @@ describe('Test blueprint api context', () => {
 		}
 	}
 
-	function wrapWithCache<T>(fcn: (cache: CacheForRundownPlaylist, playlist: RundownPlaylist) => T) {
+	function wrapWithCache<T>(fcn: (cache: CacheForPlayout, playlist: DeepReadonly<RundownPlaylist>) => T) {
 		const defaultSetup = setupDefaultRundownPlaylist(env)
 		const tmpPlaylist = RundownPlaylists.findOne(defaultSetup.playlistId) as RundownPlaylist
 		expect(tmpPlaylist).toBeTruthy()
@@ -129,7 +131,9 @@ describe('Test blueprint api context', () => {
 
 		generateSparsePieceInstances(rundown)
 
-		return wrapWithCacheForRundownPlaylist(tmpPlaylist, (cache) => fcn(cache, tmpPlaylist))
+		return rundownPlaylistPlayoutSyncFunction(null, tmpPlaylist._id, null, (cache) =>
+			fcn(cache, cache.Playlist.doc)
+		)
 	}
 
 	describe('ActionExecutionContext', () => {
@@ -242,7 +246,7 @@ describe('Test blueprint api context', () => {
 
 					let mockCalledIds: PartInstanceId[] = []
 					getResolvedPiecesMock.mockImplementation(
-						(cache2: CacheForRundownPlaylist, showStyleBase: ShowStyleBase, partInstance: PartInstance) => {
+						(cache2: CacheForPlayout, showStyleBase: ShowStyleBase, partInstance: PartInstance) => {
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
 							mockCalledIds.push(partInstance._id)

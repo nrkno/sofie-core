@@ -19,7 +19,7 @@ import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { CacheForRundownPlaylist, CacheForPlayout } from '../../DatabaseCaches'
+import { CacheForRundownPlaylist, CacheForPlayout, CacheForStudio2 } from '../../DatabaseCaches'
 import { profiler } from '../profiler'
 
 export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): void {
@@ -84,12 +84,12 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 		})
 	}
 
-	updateTimeline(cache, null)
+	updateTimeline(cache)
 }
 export function deactivateRundownPlaylist(cache: CacheForPlayout): void {
 	const rundown = deactivateRundownPlaylistInner(cache)
 
-	updateTimeline(cache, null)
+	updateTimeline(cache)
 
 	cache.defer((cache) => {
 		if (rundown) {
@@ -164,18 +164,22 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function prepareStudioForBroadcast(
-	okToDestoryStuff: boolean,
-	rundownPlaylistToBeActivated: RundownPlaylist
-): void {
+export function prepareStudioForBroadcast(cache: CacheForPlayout, okToDestoryStuff: boolean): void {
+	const rundownPlaylistToBeActivated = cache.Playlist.doc
 	if (!rundownPlaylistToBeActivated.studioId)
 		throw new Meteor.Error(500, `Playlist "${rundownPlaylistToBeActivated._id}" has no studioId!`)
+
 	logger.info('prepareStudioForBroadcast ' + rundownPlaylistToBeActivated.studioId)
 
-	let playoutDevices = PeripheralDevices.find({
-		studioId: rundownPlaylistToBeActivated.studioId,
-		type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
-	}).fetch()
+	const playoutDevices: Array<Pick<PeripheralDevice, '_id'>> = PeripheralDevices.find(
+		{
+			studioId: rundownPlaylistToBeActivated.studioId,
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		},
+		{
+			fields: { _id: 1 },
+		}
+	).fetch()
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
 		PeripheralDeviceAPI.executeFunction(
@@ -198,12 +202,19 @@ export function prepareStudioForBroadcast(
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function standDownStudio(cache: CacheForRundownPlaylist, studio: Studio, okToDestoryStuff: boolean): void {
+export function standDownStudio(cache: CacheForPlayout | CacheForStudio2, okToDestoryStuff: boolean): void {
+	const studio = cache.Studio.doc
 	logger.info('standDownStudio ' + studio._id)
 
-	let playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
-		(d) => d.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
-	)
+	const playoutDevices: Array<Pick<PeripheralDevice, '_id'>> = PeripheralDevices.find(
+		{
+			studioId: studio._id,
+			type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
+		},
+		{
+			fields: { _id: 1 },
+		}
+	).fetch()
 
 	_.each(playoutDevices, (device: PeripheralDevice) => {
 		PeripheralDeviceAPI.executeFunction(

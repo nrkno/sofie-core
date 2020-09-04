@@ -290,7 +290,7 @@ export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance
 		forceNowTime = getCurrentTime() - timeOffset
 	}
 	// or after a new part has started playing
-	updateTimeline(cache, null, forceNowTime)
+	updateTimeline(cache, forceNowTime)
 
 	// defer these so that the playout gateway has the chance to learn about the changes
 	Meteor.setTimeout(() => {
@@ -397,5 +397,5 @@ function completeHold(cache: CacheForPlayout, currentPartInstance: PartInstance 
 		}
 	}
 
-	updateTimeline(cache, null)
+	updateTimeline(cache)
 }

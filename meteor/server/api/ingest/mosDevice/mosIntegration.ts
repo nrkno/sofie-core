@@ -5,8 +5,15 @@ import * as MOS from 'mos-connection'
 import { Rundowns } from '../../../../lib/collections/Rundowns'
 import { Parts } from '../../../../lib/collections/Parts'
 import { logger } from '../../../logging'
-import { getStudioFromDevice, canBeUpdated, checkAccessAndGetPeripheralDevice } from '../lib'
-import { handleRemovedRundown, regenerateRundown } from '../rundownInput'
+import {
+	getStudioFromDevice,
+	canBeUpdated,
+	checkAccessAndGetPeripheralDevice,
+	rundownIngestSyncFunction,
+	getRundownId,
+	getRundown2,
+} from '../lib'
+import { handleRemovedRundown, savePreparedRundownChanges, prepareUpdateRundownInner } from '../rundownInput'
 import { getPartIdFromMosStory, getRundownFromMosRO, parseMosString } from './lib'
 import {
 	handleMosRundownData,
@@ -20,6 +27,7 @@ import {
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { PeripheralDeviceId } from '../../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../../lib/api/methods'
+import { loadCachedRundownData } from '../ingestCache'
 
 export namespace MosIntegration {
 	export function mosRoCreate(
@@ -80,19 +88,28 @@ export namespace MosIntegration {
 		status: MOS.IMOSRunningOrderStatus
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
+		const rundownExternalId = parseMosString(status.ID)
 
-		logger.info(`mosRoStatus "${status.ID}"`)
+		logger.info(`mosRoStatus "${rundownExternalId}"`)
 		logger.debug(status)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, status.ID)
-		if (!canBeUpdated(rundown)) return
-
-		Rundowns.update(rundown._id, {
-			$set: {
-				status: status.Status,
+		return rundownIngestSyncFunction(
+			peripheralDevice,
+			rundownExternalId,
+			() => {
+				// Nothing to prepare
 			},
-		})
+			(cache) => {
+				const rundown = getRundown2(cache)
+
+				if (!canBeUpdated(rundown)) return
+				Rundowns.update(rundown._id, {
+					$set: {
+						status: status.Status,
+					},
+				})
+			}
+		)
 	}
 	export function mosRoStoryStatus(
 		context: MethodContext,
@@ -212,23 +229,31 @@ export namespace MosIntegration {
 		Action: MOS.IMOSROReadyToAir
 	) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(id, token, context)
+		const rundownExternalId = parseMosString(Action.ID)
 
-		logger.info(`mosRoReadyToAir "${Action.ID}"`)
+		logger.info(`mosRoReadyToAir "${rundownExternalId}"`)
 		logger.debug(Action)
 
-		const studio = getStudioFromDevice(peripheralDevice)
-		const rundown = getRundownFromMosRO(studio, Action.ID)
-		if (!canBeUpdated(rundown)) return
+		return rundownIngestSyncFunction(
+			peripheralDevice,
+			rundownExternalId,
+			(cache) => {
+				const rundown = getRundown2(cache)
 
-		// Set the ready to air status of a Rundown
-		if (rundown.airStatus !== Action.Status) {
-			Rundowns.update(rundown._id, {
-				$set: {
+				const ingestRundown = loadCachedRundownData(rundown._id, rundownExternalId)
+
+				const pendingChanges = {
 					airStatus: Action.Status,
-				},
-			})
-			regenerateRundown(rundown._id)
-		}
+				}
+
+				return prepareUpdateRundownInner(cache, ingestRundown, pendingChanges, 'mos', peripheralDevice)
+			},
+			(cache, playoutInfo, preparedChanges) => {
+				if (preparedChanges) {
+					savePreparedRundownChanges(cache, playoutInfo, preparedChanges)
+				}
+			}
+		)
 	}
 	export function mosRoFullStory(
 		context: MethodContext,

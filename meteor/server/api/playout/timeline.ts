@@ -39,8 +39,6 @@ import {
 	unprotectObject,
 	normalizeArrayFunc,
 	clone,
-	makePromise,
-	asyncCollectionFindOne,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -58,19 +56,26 @@ import { PackageInfo } from '../../coreSystem'
 import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import {
-	CacheForStudio,
-	CacheForStudioBase,
-	CacheForPlayout,
-	CacheForStudio2,
-	CacheForStudioBase2,
-} from '../../DatabaseCaches'
+import { CacheForPlayout, CacheForStudio2, CacheForStudioBase2 } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
+import { getActiveRundownPlaylistsInStudio2 } from './studio'
+import { rundownPlaylistFromStudioSyncFunction } from './playout'
+
+export function updateStudioOrPlaylistTimeline(cache: CacheForStudio2) {
+	const playlists = getActiveRundownPlaylistsInStudio2(cache)
+	if (playlists.length === 1) {
+		return rundownPlaylistFromStudioSyncFunction(cache, playlists[0]._id, null, (playlistCache) => {
+			updateTimeline(playlistCache)
+		})
+	} else {
+		return updateStudioTimeline(cache)
+	}
+}
 
 export function updateStudioTimeline(cache: CacheForStudio2) {
 	const span = profiler.startSpan('updateStudioTimeline')
@@ -120,7 +125,7 @@ export function updateStudioTimeline(cache: CacheForStudio2) {
  * @param studioId id of the studio to update
  * @param forceNowToTime if set, instantly forces all "now"-objects to that time (used in autoNext)
  */
-export function updateTimeline(cache: CacheForPlayout, studioId: StudioId | null, forceNowToTime?: Time) {
+export function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time) {
 	const span = profiler.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
 
