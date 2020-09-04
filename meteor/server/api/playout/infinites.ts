@@ -88,14 +88,22 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	part: DBPart
 ): Promise<Piece[]> {
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
-	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, buildPiecesStartingInThisPartQuery(part))
+
+	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
+	const pPiecesStartingInPart = cache.Pieces.initialized
+		? Promise.resolve(cache.Pieces.findFetch(thisPiecesQuery))
+		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
-	const pInfinitePieces = asyncCollectionFindFetch(
-		Pieces,
-		buildPastInfinitePiecesForThisPartQuery(part, partsBeforeThisInSegment, segmentsBeforeThisInRundown)
+	const infinitePiecesQuery = buildPastInfinitePiecesForThisPartQuery(
+		part,
+		partsBeforeThisInSegment,
+		segmentsBeforeThisInRundown
 	)
+	const pInfinitePieces = cache.Pieces.initialized
+		? Promise.resolve(cache.Pieces.findFetch(infinitePiecesQuery))
+		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 	if (span) span.end()

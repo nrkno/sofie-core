@@ -36,6 +36,7 @@ import {
 	SelectedPartInstanceTimelineInfo,
 } from './timeline'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
+import { Mongo } from 'meteor/mongo'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -147,12 +148,14 @@ export async function getLookeaheadObjects(
 		return []
 	}
 
-	const rundownIds = getRundownIDsFromCache(cache, playlist)
-	const pPiecesToSearch = asyncCollectionFindFetch(Pieces, {
+	const piecesToSearchQuery: Mongo.Query<Piece> = {
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
-		startRundownId: { $in: rundownIds },
+		startRundownId: { $in: getRundownIDsFromCache(cache, playlist) },
 		invalid: { $ne: true },
-	})
+	}
+	const pPiecesToSearch = cache.Pieces.initialized
+		? Promise.resolve(cache.Pieces.findFetch(piecesToSearchQuery))
+		: asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
 
 	const timelineObjs: Array<TimelineObjGeneric> = []
 	const mutateAndPushObject = (
