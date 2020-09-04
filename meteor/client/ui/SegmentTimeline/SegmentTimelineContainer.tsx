@@ -315,7 +315,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.pastInfinitesComp = this.autorun(() => {
 				const segment = Segments.findOne(this.props.segmentId)
 				segment &&
-					this.subscribe(PubSub.pieces, {
+					this.subscribe(PubSub.piecesSimple, {
 						invalid: {
 							$ne: true,
 						},
