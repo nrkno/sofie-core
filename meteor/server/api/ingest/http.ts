@@ -41,7 +41,7 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRun
 	return rundownIngestSyncFromStudioFunction(
 		studioId,
 		ingestRundown.externalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const existingDbRundown = cache.Rundown.doc
 			if (existingDbRundown && existingDbRundown.dataSource !== 'http')
 				throw new Meteor.Error(
@@ -49,7 +49,13 @@ export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRun
 					`Cannot replace existing rundown from '${existingDbRundown.dataSource}' with http data`
 				)
 
-			return prepareUpdateRundownInner(cache, makeNewIngestRundown(ingestRundown), undefined, 'http')
+			return prepareUpdateRundownInner(
+				cache,
+				ingestDataCache,
+				makeNewIngestRundown(ingestRundown),
+				undefined,
+				'http'
+			)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {

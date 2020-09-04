@@ -1,10 +1,9 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { saveIntoDb, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import {
 	IngestDataCacheObj,
-	IngestDataCache,
 	IngestCacheType,
 	IngestDataCacheObjPart,
 	IngestDataCacheObjRundown,
@@ -16,9 +15,18 @@ import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
+import { DbCacheWriteCollection, saveIntoCache } from '../../DatabaseCache'
 
-export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
-	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
+export type RundownIngestDataCacheCollection = DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
+
+/** TODO-CACHE the `_id`s used here are consistent and predictable, so this should be rewritten to operate more directly on the cache with the ids instead */
+
+export function loadCachedRundownData(
+	cache: RundownIngestDataCacheCollection,
+	rundownId: RundownId,
+	rundownExternalId: string
+): LocalIngestRundown {
+	const cacheEntries = cache.findFetch({})
 
 	const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
 	if (!cachedRundown)
@@ -53,15 +61,12 @@ export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: s
 	return ingestRundown
 }
 export function loadCachedIngestSegment(
-	rundownId: RundownId,
+	cache: RundownIngestDataCacheCollection,
 	rundownExternalId: string,
 	segmentId: SegmentId,
 	segmentExternalId: string
 ): LocalIngestSegment {
-	const cacheEntries = IngestDataCache.find({
-		rundownId: rundownId,
-		segmentId: segmentId,
-	}).fetch()
+	const cacheEntries = cache.findFetch({ segmentId: segmentId })
 
 	const segmentEntries = cacheEntries.filter((e) => e.type === IngestCacheType.SEGMENT)
 	if (segmentEntries.length > 1)
@@ -94,16 +99,15 @@ export function loadCachedIngestSegment(
 	return ingestSegment
 }
 export function loadIngestDataCachePart(
-	rundownId: RundownId,
+	cache: RundownIngestDataCacheCollection,
 	rundownExternalId: string,
 	partId: PartId,
 	partExternalId: string
 ): IngestDataCacheObjPart {
-	const cacheEntries = IngestDataCache.find({
-		rundownId: rundownId,
+	const cacheEntries = cache.findFetch({
 		partId: partId,
 		type: IngestCacheType.PART,
-	}).fetch()
+	})
 	if (cacheEntries.length > 1)
 		logger.warn(
 			`There are multiple parts (${cacheEntries.length}) in IngestDataCache for rundownId: "${rundownExternalId}", partId: "${partExternalId}"`
@@ -119,24 +123,26 @@ export function loadIngestDataCachePart(
 	return partEntry
 }
 
-export function saveRundownCache(rundownId: RundownId, ingestRundown: LocalIngestRundown) {
+export function saveRundownCache(
+	cache: RundownIngestDataCacheCollection,
+	rundownId: RundownId,
+	ingestRundown: LocalIngestRundown
+) {
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForRundown(rundownId, ingestRundown)
-	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(
-		IngestDataCache,
-		{
-			rundownId: rundownId,
-		},
-		cacheEntries
-	)
+	saveIntoCache<IngestDataCacheObj, IngestDataCacheObj>(cache, {}, cacheEntries)
 }
-export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ingestSegment: LocalIngestSegment) {
+export function saveSegmentCache(
+	cache: RundownIngestDataCacheCollection,
+	rundownId: RundownId,
+	segmentId: SegmentId,
+	ingestSegment: LocalIngestSegment
+) {
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundownId, ingestSegment)
-	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(
-		IngestDataCache,
+	saveIntoCache<IngestDataCacheObj, IngestDataCacheObj>(
+		cache,
 		{
-			rundownId: rundownId,
 			segmentId: segmentId,
 		},
 		cacheEntries

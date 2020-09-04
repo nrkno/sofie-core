@@ -77,6 +77,7 @@ import {
 	makeNewIngestPart,
 	makeNewIngestRundown,
 	isLocalIngestRundown,
+	RundownIngestDataCacheCollection,
 } from './ingestCache'
 import {
 	getRundownId,
@@ -333,7 +334,7 @@ function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId:
 		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
 	}
 
-	return loadCachedRundownData(rundown._id, rundown.externalId)
+	return loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 }
 function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 	const rundowns = Rundowns.find({
@@ -401,9 +402,10 @@ export function handleUpdatedRundown(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		ingestRundown.externalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			return prepareUpdateRundownInner(
 				cache,
+				ingestDataCache,
 				makeNewIngestRundown(ingestRundown),
 				undefined,
 				dataSource,
@@ -419,6 +421,7 @@ export function handleUpdatedRundown(
 }
 export function prepareUpdateRundownInner(
 	cache: ReadOnlyCache<CacheForIngest>,
+	ingestDataCache: RundownIngestDataCacheCollection,
 	ingestRundown: IngestRundown | LocalIngestRundown,
 	pendingRundownChanges: Partial<DBRundown> | undefined,
 	dataSource?: string,
@@ -433,8 +436,7 @@ export function prepareUpdateRundownInner(
 
 	const newIngestRundown = isLocalIngestRundown(ingestRundown) ? ingestRundown : makeNewIngestRundown(ingestRundown)
 
-	// TODO-CACHE defer
-	saveRundownCache(rundownId, newIngestRundown)
+	saveRundownCache(ingestDataCache, rundownId, newIngestRundown)
 
 	return updateRundownFromIngestData(cache, newIngestRundown, pendingRundownChanges, dataSource, peripheralDevice)
 }
@@ -1020,15 +1022,14 @@ export function handleUpdatedSegment(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 			const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 			const segment = cache.Segments.findOne(segmentId) // Note: undefined is valid here, as it means this is a new segment
 			// Nothing to precompute
 			if (!canBeUpdated(rundown, segment)) return
 
-			// TODO-CACHE defer
-			saveSegmentCache(rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
+			saveSegmentCache(ingestDataCache, rundown._id, segmentId, makeNewIngestSegment(ingestSegment))
 
 			const showStyle = getShowStyleCompound2(rundown)
 			const blueprint = loadShowStyleBlueprint(showStyle)
@@ -1242,7 +1243,7 @@ export function handleRemovedPart(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 			const segmentId = getSegmentId(rundown._id, segmentExternalId)
 			const partId = getPartId(rundown._id, partExternalId)
@@ -1251,12 +1252,16 @@ export function handleRemovedPart(
 			if (!canBeUpdated(rundown, segment, partId)) return undefined
 
 			// Blueprints will handle the deletion of the Part
-			const ingestSegment = loadCachedIngestSegment(rundown._id, rundownExternalId, segmentId, segmentExternalId)
+			const ingestSegment = loadCachedIngestSegment(
+				ingestDataCache,
+				rundownExternalId,
+				segmentId,
+				segmentExternalId
+			)
 			ingestSegment.parts = ingestSegment.parts.filter((p) => p.externalId !== partExternalId)
 			ingestSegment.modified = getCurrentTime()
 
-			// TODO-CACHE defer
-			saveSegmentCache(rundown._id, segmentId, ingestSegment)
+			saveSegmentCache(ingestDataCache, rundown._id, segmentId, ingestSegment)
 
 			const showStyle = getShowStyleCompound2(rundown)
 			const blueprint = loadShowStyleBlueprint(showStyle)
@@ -1315,6 +1320,7 @@ export function handleUpdatedPart(
 }
 export function prepareUpdatePartInner(
 	cache: ReadOnlyCache<CacheForIngest>,
+	ingestDataCache: RundownIngestDataCacheCollection,
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ): PreparedSegmentChanges | undefined {
@@ -1339,7 +1345,7 @@ export function prepareUpdatePartInner(
 	// } else {
 	// Blueprints will handle the creation of the Part
 	const ingestSegment: LocalIngestSegment = loadCachedIngestSegment(
-		rundown._id,
+		ingestDataCache,
 		rundown.externalId,
 		segmentId,
 		segmentExternalId
@@ -1348,8 +1354,8 @@ export function prepareUpdatePartInner(
 	ingestSegment.parts.push(makeNewIngestPart(ingestPart))
 	ingestSegment.modified = getCurrentTime()
 
-	// TODO - defer
-	saveSegmentCache(rundown._id, segmentId, ingestSegment)
+	saveSegmentCache(ingestDataCache, rundown._id, segmentId, ingestSegment)
+
 	const showStyle = getShowStyleCompound2(rundown)
 	const blueprint = loadShowStyleBlueprint(showStyle)
 	return prepareUpdateSegmentFromIngestData(cache, showStyle, blueprint, ingestSegment)

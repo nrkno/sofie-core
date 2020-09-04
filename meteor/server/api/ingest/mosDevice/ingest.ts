@@ -14,7 +14,7 @@ import {
 import { getPartIdFromMosStory, getSegmentExternalId, fixIllegalObject, parseMosString } from './lib'
 import { literal, protectString, unprotectString, getCurrentTime, normalizeArray } from '../../../../lib/lib'
 import { IngestPart, IngestSegment } from 'tv-automation-sofie-blueprints-integration'
-import { IngestDataCache, IngestCacheType } from '../../../../lib/collections/IngestDataCache'
+import { IngestCacheType } from '../../../../lib/collections/IngestDataCache'
 import {
 	prepareUpdateRundownInner,
 	prepareUpdatePartInner,
@@ -33,6 +33,7 @@ import {
 	LocalIngestSegment,
 	LocalIngestPart,
 	updateIngestRundownWithData,
+	RundownIngestDataCacheCollection,
 } from '../ingestCache'
 import { Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../../../lib/collections/Segments'
@@ -128,7 +129,7 @@ export function handleMosRundownData(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundownId = getRundownId(cache.Studio.doc, rundownExternalId)
 
 			const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh, []))
@@ -137,11 +138,10 @@ export function handleMosRundownData(
 			// If this is a reload of a RO, then use cached data to make the change more seamless
 			if (!createFresh) {
 				const partIds = _.map(parts, (p) => p.partId)
-				const partCache = IngestDataCache.find({
-					rundownId: rundownId,
+				const partCache = ingestDataCache.findFetch({
 					partId: { $in: partIds },
 					type: IngestCacheType.PART,
-				}).fetch()
+				})
 
 				const partCacheMap: { [id: string]: IngestPart } = {}
 				_.each(partCache, (p) => {
@@ -171,6 +171,7 @@ export function handleMosRundownData(
 
 			return prepareUpdateRundownInner(
 				cache,
+				ingestDataCache,
 				ingestRundown,
 				undefined,
 				createFresh ? 'mosCreate' : 'mosList',
@@ -193,17 +194,24 @@ export function handleMosRundownMetadata(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 
 			// Load the cached RO Data
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+			const ingestRundown = loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 			ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
 			ingestRundown.modified = getCurrentTime()
 			// TODO - verify this doesn't lose data, it was doing more work before
 
 			// TODO - make this more lightweight?
-			return prepareUpdateRundownInner(cache, ingestRundown, undefined, 'mosRoMetadata', peripheralDevice)
+			return prepareUpdateRundownInner(
+				cache,
+				ingestDataCache,
+				ingestRundown,
+				undefined,
+				'mosRoMetadata',
+				peripheralDevice
+			)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -221,12 +229,12 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 			const partId = getPartIdFromMosStory(rundown._id, story.ID)
 
 			const cachedPartData = loadIngestDataCachePart(
-				rundown._id,
+				ingestDataCache,
 				parseMosString(story.RunningOrderId),
 				partId,
 				parseMosString(story.ID)
@@ -235,7 +243,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 				throw new Meteor.Error(500, `SegmentId missing for part "${partId}" (MOSFullStory)`)
 
 			const ingestSegment: IngestSegment = loadCachedIngestSegment(
-				rundown._id,
+				ingestDataCache,
 				parseMosString(story.RunningOrderId),
 				cachedPartData.segmentId,
 				unprotectString(cachedPartData.segmentId)
@@ -247,7 +255,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 			ingestPart.payload = story
 
 			// Update db with the full story:
-			return prepareUpdatePartInner(cache, ingestSegment.externalId, ingestPart)
+			return prepareUpdatePartInner(cache, ingestDataCache, ingestSegment.externalId, ingestPart)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -271,11 +279,11 @@ export function handleMosDeleteStory(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 			if (!canBeUpdated(rundown)) return undefined
 
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+			const ingestRundown = loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 			const ingestParts = getAnnotatedIngestParts(ingestRundown)
 			const ingestPartIds = _.map(ingestParts, (part) => part.externalId)
 
@@ -298,7 +306,7 @@ export function handleMosDeleteStory(
 				return filteredParts
 			})
 
-			return prepareMosSegmentChanges(cache, ingestRundown, newIngestSegments)
+			return prepareMosSegmentChanges(cache, ingestDataCache, ingestRundown, newIngestSegments)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -338,11 +346,11 @@ export function handleInsertParts(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 			if (!canBeUpdated(rundown)) return undefined
 
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+			const ingestRundown = loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 			const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 			const insertBeforePartExternalId = insertBeforeStoryId ? parseMosString(insertBeforeStoryId) || '' : ''
@@ -380,7 +388,7 @@ export function handleInsertParts(
 				return ingestParts
 			})
 
-			return prepareMosSegmentChanges(cache, ingestRundown, newIngestSegments)
+			return prepareMosSegmentChanges(cache, ingestDataCache, ingestRundown, newIngestSegments)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -410,11 +418,11 @@ export function handleSwapStories(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 			if (!canBeUpdated(rundown)) return undefined
 
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+			const ingestRundown = loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 			const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
@@ -439,7 +447,7 @@ export function handleSwapStories(
 				return ingestParts
 			})
 
-			return prepareMosSegmentChanges(cache, ingestRundown, newIngestSegments)
+			return prepareMosSegmentChanges(cache, ingestDataCache, ingestRundown, newIngestSegments)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -460,10 +468,10 @@ export function handleMoveStories(
 	return rundownIngestSyncFunction(
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
+		(cache, ingestDataCache) => {
 			const rundown = getRundown2(cache)
 			if (!canBeUpdated(rundown)) return undefined
-			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+			const ingestRundown = loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 			const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 			// Get story data
@@ -505,7 +513,7 @@ export function handleMoveStories(
 				return filteredParts
 			})
 
-			return prepareMosSegmentChanges(cache, ingestRundown, newIngestSegments)
+			return prepareMosSegmentChanges(cache, ingestDataCache, ingestRundown, newIngestSegments)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -561,6 +569,7 @@ function groupPartsIntoIngestSegments(
 
 function prepareMosSegmentChanges(
 	cache: ReadOnlyCache<CacheForIngest>,
+	ingestDataCache: RundownIngestDataCacheCollection,
 	oldIngestRundown: LocalIngestRundown,
 	newIngestSegments: LocalIngestSegment[]
 ): PreparedMosSegmentChanges {
@@ -575,7 +584,7 @@ function prepareMosSegmentChanges(
 
 	// Save new cache
 	const newIngestRundown = updateIngestRundownWithData(oldIngestRundown, newIngestSegments)
-	saveRundownCache(rundown._id, newIngestRundown) // TODO-CACHE - defer
+	saveRundownCache(ingestDataCache, rundown._id, newIngestRundown) // TODO-CACHE - defer
 
 	// Create/Update segments
 	const sortedIngestSegments = _.sortBy(

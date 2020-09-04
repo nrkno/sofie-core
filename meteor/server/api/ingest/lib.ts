@@ -26,8 +26,7 @@ import { SegmentId, Segment, Segments } from '../../../lib/collections/Segments'
 import { PartId, Part } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
-import { CacheForRundownPlaylist, CacheForIngest, ReadOnlyCache } from '../../DatabaseCaches'
-import { touchRundownPlaylistsInCache } from '../playout/lib'
+import { CacheForIngest, ReadOnlyCache } from '../../DatabaseCaches'
 import { Credentials } from '../../security/lib/credentials'
 import { IngestRundown, ExtendedIngestRundown, IBlueprintRundown } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
@@ -35,14 +34,9 @@ import { syncFunction } from '../../codeControl'
 import { DeepReadonly } from 'utility-types'
 import { rundownPlaylistCustomSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import {
-	ShowStyleVariants,
-	getShowStyleCompound,
-	ShowStyleCompound,
-	createShowStyleCompound,
-} from '../../../lib/collections/ShowStyleVariants'
 import { IngestDataCacheObj, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { DbCacheWriteCollection } from '../../DatabaseCache'
+import { RundownIngestDataCacheCollection } from './ingestCache'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -143,10 +137,7 @@ export interface IngestPlayoutInfo {
 export function rundownIngestSyncFunction<T>(
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
-	calcFcn: (
-		cache: ReadOnlyCache<CacheForIngest>,
-		ingestCache: DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
-	) => T,
+	calcFcn: (cache: ReadOnlyCache<CacheForIngest>, ingestCache: RundownIngestDataCacheCollection) => T,
 	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null
 ): void {
 	const studioId = getStudioIdFromDevice(peripheralDevice)
@@ -165,10 +156,7 @@ export function rundownIngestSyncFunction<T>(
 export function rundownIngestSyncFromStudioFunction<T>(
 	studioId: StudioId,
 	rundownExternalId: string,
-	calcFcn: (
-		cache: ReadOnlyCache<CacheForIngest>,
-		ingestCache: DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
-	) => T,
+	calcFcn: (cache: ReadOnlyCache<CacheForIngest>, ingestCache: RundownIngestDataCacheCollection) => T,
 	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null,
 	options?: { skipPlaylistLock?: boolean }
 ): void {

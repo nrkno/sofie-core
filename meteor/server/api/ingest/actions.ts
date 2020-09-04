@@ -129,13 +129,17 @@ export namespace IngestActions {
 							return rundownIngestSyncFromStudioFunction(
 								rundown.studioId,
 								rundown.externalId,
-								(cache) => {
-									const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+								(cache, ingestDataCache) => {
+									const ingestRundown = loadCachedRundownData(
+										ingestDataCache,
+										rundown._id,
+										rundown.externalId
+									)
 									if (purgeExisting) {
 										removeRundownFromCache(cache, rundown)
 									}
 
-									return prepareUpdateRundownInner(cache, ingestRundown, undefined)
+									return prepareUpdateRundownInner(cache, ingestDataCache, ingestRundown, undefined)
 								},
 								(cache, playoutInfo, preparedChanges) => {
 									if (preparedChanges) {
