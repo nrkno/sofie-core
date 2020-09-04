@@ -203,6 +203,16 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 					parsedHotkey.finalKey = finalKey
 					parsedHotkey.normalizedCombo = mappedNormalizedCombo
 				}
+			} else {
+				customLabels[normalizedCombo] = {
+					_id: '',
+					key: finalKey,
+					label: hotkey.label,
+					platformKey: modifiers
+						.sort()
+						.concat(finalKey)
+						.join('+'),
+				}
 			}
 
 			const modifiersKey = modifiers.sort().join(' ')
@@ -361,10 +371,11 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 							let customSourceLayer: SourceLayerType | undefined = undefined
 							let customColor: string | undefined = undefined
 
-							if (this.props.customLabels[thisCombo.toUpperCase()]) {
-								customLabel = this.props.customLabels[thisCombo.toUpperCase()].label
-								customSourceLayer = this.props.customLabels[thisCombo.toUpperCase()].sourceLayerType
-								customColor = this.props.customLabels[thisCombo.toUpperCase()].buttonColor
+							const combo = thisCombo.toUpperCase().replace(/key|digit/i, '')
+							if (this.props.customLabels[combo]) {
+								customLabel = this.props.customLabels[combo].label
+								customSourceLayer = this.props.customLabels[combo].sourceLayerType
+								customColor = this.props.customLabels[combo].buttonColor
 							}
 
 							return (
