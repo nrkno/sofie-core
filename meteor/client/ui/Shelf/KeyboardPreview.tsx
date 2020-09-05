@@ -365,7 +365,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								modifierKey = key.code
 							}
 
-							const thisCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + thisKeyLabel : thisKeyLabel)
+							const thisCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + key.code : key.code)
 								.toLowerCase()
 								.trim()
 
