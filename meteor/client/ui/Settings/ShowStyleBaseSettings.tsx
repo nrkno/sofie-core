@@ -1274,7 +1274,8 @@ const HotkeyLegendSettings = withTranslation()(
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
 						<button className="btn mls btn-secondary" onClick={this.onDownloadAHKScript}>
-							AHK <FontAwesomeIcon icon={faDownload} />
+							<FontAwesomeIcon icon={faDownload} />
+							&nbsp;{t('AHK')}
 						</button>
 						<button className="btn mls btn-secondary" onClick={() => this.exportHotkeyJSON()}>
 							<FontAwesomeIcon icon={faDownload} />
