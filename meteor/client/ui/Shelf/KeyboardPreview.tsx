@@ -346,7 +346,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								this.props.hotkeys[modifiers] &&
 								this.props.hotkeys[modifiers].filter(
 									(hotkey) =>
-										hotkey.finalKey.toLowerCase() === key.code.toLowerCase() ||
+										hotkey.finalKey.toLowerCase() === key.code.toLowerCase().replace(/key|digit/i, '') ||
 										(this.state.layout
 											? hotkey.finalKey.toLowerCase() === (this.state.layout.get(key.code) || '').toLowerCase()
 											: false)
