@@ -283,6 +283,8 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 			hotkeys.forEach((hotkey) => {
 				if (hotkey.eventHandlerArguments) {
 					hotkey.eventHandler(...hotkey.eventHandlerArguments, e)
+				} else {
+					hotkey.eventHandler(e)
 				}
 			})
 		}
