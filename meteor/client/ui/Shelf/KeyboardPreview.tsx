@@ -203,6 +203,16 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 					parsedHotkey.finalKey = finalKey
 					parsedHotkey.normalizedCombo = mappedNormalizedCombo
 				}
+			} else {
+				customLabels[normalizedCombo] = {
+					_id: '',
+					key: finalKey,
+					label: hotkey.label,
+					platformKey: modifiers
+						.sort()
+						.concat(finalKey)
+						.join('+'),
+				}
 			}
 
 			const modifiersKey = modifiers.sort().join(' ')
@@ -273,6 +283,8 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 			hotkeys.forEach((hotkey) => {
 				if (hotkey.eventHandlerArguments) {
 					hotkey.eventHandler(...hotkey.eventHandlerArguments, e)
+				} else {
+					hotkey.eventHandler(e)
 				}
 			})
 		}
@@ -334,7 +346,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								this.props.hotkeys[modifiers] &&
 								this.props.hotkeys[modifiers].filter(
 									(hotkey) =>
-										hotkey.finalKey.toLowerCase() === key.code.toLowerCase() ||
+										hotkey.finalKey.toLowerCase() === key.code.toLowerCase().replace(/key|digit/i, '') ||
 										(this.state.layout
 											? hotkey.finalKey.toLowerCase() === (this.state.layout.get(key.code) || '').toLowerCase()
 											: false)
@@ -353,7 +365,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								modifierKey = key.code
 							}
 
-							const thisCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + thisKeyLabel : thisKeyLabel)
+							const thisCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + key.code : key.code)
 								.toLowerCase()
 								.trim()
 
@@ -361,10 +373,11 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 							let customSourceLayer: SourceLayerType | undefined = undefined
 							let customColor: string | undefined = undefined
 
-							if (this.props.customLabels[thisCombo.toUpperCase()]) {
-								customLabel = this.props.customLabels[thisCombo.toUpperCase()].label
-								customSourceLayer = this.props.customLabels[thisCombo.toUpperCase()].sourceLayerType
-								customColor = this.props.customLabels[thisCombo.toUpperCase()].buttonColor
+							const combo = thisCombo.toUpperCase().replace(/key|digit/i, '')
+							if (this.props.customLabels[combo]) {
+								customLabel = this.props.customLabels[combo].label
+								customSourceLayer = this.props.customLabels[combo].sourceLayerType
+								customColor = this.props.customLabels[combo].buttonColor
 							}
 
 							return (

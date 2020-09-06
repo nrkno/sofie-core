@@ -21,6 +21,7 @@ import {
 	faPlus,
 	faExclamationTriangle,
 	faDownload,
+	faUpload,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { findHighestRank } from './StudioSettings'
@@ -43,10 +44,13 @@ import {
 	ISourceLayer,
 	SourceLayerType,
 	IOutputLayer,
+	ConfigManifestEntryTable,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ConfigManifestSettings } from './ConfigManifestSettings'
 import { Settings } from '../../../lib/Settings'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
+import { UploadButton } from '../../lib/uploadButton'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 interface IProps {
 	match: {
@@ -969,6 +973,7 @@ interface IHotkeyLegendSettingsProps {
 }
 interface IHotkeyLegendSettingsState {
 	editedItems: Array<string>
+	uploadFileKey: number
 }
 
 const HotkeyLegendSettings = withTranslation()(
@@ -981,6 +986,7 @@ const HotkeyLegendSettings = withTranslation()(
 
 			this.state = {
 				editedItems: [],
+				uploadFileKey: Date.now(),
 			}
 		}
 
@@ -1071,6 +1077,77 @@ const HotkeyLegendSettings = withTranslation()(
 				blob,
 				`${this.props.showStyleBase.name}_${new Date().toLocaleDateString()}_${new Date().toLocaleTimeString()}.ahk`
 			)
+		}
+
+		exportHotkeyJSON() {
+			const jsonStr = JSON.stringify(this.props.showStyleBase.hotkeyLegend, undefined, 4)
+
+			const element = document.createElement('a')
+			element.href = URL.createObjectURL(new Blob([jsonStr], { type: 'application/json' }))
+			element.download = `${this.props.showStyleBase._id}_${this.props.showStyleBase.name.replace(
+				/\W/g,
+				'_'
+			)}_hotkeys.json`
+
+			document.body.appendChild(element) // Required for this to work in FireFox
+			element.click()
+			document.body.removeChild(element) // Required for this to work in FireFox
+		}
+
+		importHotKeyJSON(e: React.ChangeEvent<HTMLInputElement>) {
+			const { t } = this.props
+
+			const file = e.target.files ? e.target.files[0] : null
+			if (!file) {
+				return
+			}
+
+			const reader = new FileReader()
+			reader.onload = (e2) => {
+				// On file upload
+
+				this.setState({
+					uploadFileKey: Date.now(),
+				})
+
+				const uploadFileContents = (e2.target as any).result
+
+				// Parse the config
+				let newConfig: Array<HotkeyDefinition> = []
+				try {
+					newConfig = JSON.parse(uploadFileContents)
+					if (!_.isArray(newConfig)) {
+						throw new Error('Not an array')
+					}
+				} catch (err) {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.WARNING,
+							t('Failed to update config: {{errorMessage}}', { errorMessage: err + '' }),
+							'ConfigManifestSettings'
+						)
+					)
+					return
+				}
+
+				// Validate the config
+				const conformedConfig: Array<HotkeyDefinition> = []
+				_.forEach(newConfig, (entry) => {
+					const newEntry: HotkeyDefinition = {
+						_id: Random.id(),
+						key: entry.key || '',
+						label: entry.label || '',
+						sourceLayerType: entry.sourceLayerType,
+						platformKey: entry.platformKey,
+						buttonColor: entry.buttonColor,
+					}
+					conformedConfig.push(newEntry)
+				})
+
+				ShowStyleBases.update({ _id: this.props.showStyleBase._id }, { $set: { hotkeyLegend: conformedConfig } })
+			}
+			reader.readAsText(file)
 		}
 
 		renderItems() {
@@ -1196,9 +1273,22 @@ const HotkeyLegendSettings = withTranslation()(
 						<button className="btn btn-primary" onClick={this.onAddHotkeyLegend}>
 							<FontAwesomeIcon icon={faPlus} />
 						</button>
-						<button className="btn btn-secondary" onClick={this.onDownloadAHKScript}>
+						<button className="btn mls btn-secondary" onClick={this.onDownloadAHKScript}>
 							<FontAwesomeIcon icon={faDownload} />
+							&nbsp;{t('AHK')}
 						</button>
+						<button className="btn mls btn-secondary" onClick={() => this.exportHotkeyJSON()}>
+							<FontAwesomeIcon icon={faDownload} />
+							&nbsp;{t('Export')}
+						</button>
+						<UploadButton
+							className="btn mls btn-secondary"
+							accept="application/json,.json"
+							onChange={(e) => this.importHotKeyJSON(e)}
+							key={this.state.uploadFileKey}>
+							<FontAwesomeIcon icon={faUpload} />
+							&nbsp;{t('Import')}
+						</UploadButton>
 					</div>
 				</div>
 			)
