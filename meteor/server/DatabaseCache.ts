@@ -43,6 +43,11 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		return this._collection['name']
 	}
 
+	get initialized(): boolean {
+		// If we have either loaded data, or are loading it then we should make any potential consumers use us
+		return this._initialized || this._initializing !== undefined
+	}
+
 	prepareInit(initializer: MongoQuery<DBInterface> | (() => Promise<void>), initializeImmediately: boolean) {
 		this._initializer = initializer
 		if (initializeImmediately) {

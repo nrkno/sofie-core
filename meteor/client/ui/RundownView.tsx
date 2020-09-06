@@ -205,7 +205,7 @@ interface ITimingDisplayProps {
 
 export enum RundownViewKbdShortcuts {
 	RUNDOWN_TAKE = 'enter',
-	RUNDOWN_HOLD = 'h',
+	// RUNDOWN_HOLD = 'h',
 	RUNDOWN_UNDO_HOLD = 'shift+h',
 	RUNDOWN_ACTIVATE = '§',
 	RUNDOWN_ACTIVATE2 = '\\',
@@ -466,11 +466,11 @@ const RundownHeader = withTranslation()(
 						label: t('Take'),
 						global: true,
 					},
-					{
+					/*{
 						key: RundownViewKbdShortcuts.RUNDOWN_HOLD,
 						up: this.keyHold,
 						label: t('Hold'),
-					},
+					},*/
 					{
 						key: RundownViewKbdShortcuts.RUNDOWN_UNDO_HOLD,
 						up: this.keyHoldUndo,
