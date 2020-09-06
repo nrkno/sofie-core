@@ -11,6 +11,7 @@ import {
 	getRandomId,
 	omit,
 	asyncCollectionFindOne,
+	waitTime,
 } from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
@@ -260,7 +261,7 @@ export function takeNextPartInnerSync(
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
-	cache.defer(() => {
+	cache.defer((cache) => {
 		// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 		if (takePartInstance) {
 			cache.PartInstances.update(takePartInstance._id, {
