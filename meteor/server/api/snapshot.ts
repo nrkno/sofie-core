@@ -717,7 +717,7 @@ export function restoreFromRundownPlaylistSnapshot(
 			part?: T
 			piece?: T
 		}
-	>(objs: T[], updateId: boolean): T[] {
+	>(objs: undefined | T[], updateId: boolean): T[] {
 		const updateIds = (obj: T) => {
 			if (obj.rundownId) {
 				obj.rundownId = rundownIdMap[unprotectString(obj.rundownId)]
@@ -743,7 +743,7 @@ export function restoreFromRundownPlaylistSnapshot(
 
 			return obj
 		}
-		return objs.map((obj) => updateIds(obj))
+		return (objs || []).map((obj) => updateIds(obj))
 	}
 
 	saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist])
