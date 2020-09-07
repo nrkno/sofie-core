@@ -131,7 +131,6 @@ meteorCustomPublishArray(PubSub.mappingsForDevice, 'studioMappings', function(
 					if (!studio) return []
 
 					const routes = getActiveRoutes(studio)
-					console.log(studio)
 					const routedMappings = getRoutedMappings(studio.mappings, routes)
 
 					return [
@@ -152,5 +151,3 @@ meteorCustomPublishArray(PubSub.mappingsForDevice, 'studioMappings', function(
 		})
 	}
 })
-
-// Studio { mappingsHash: 'x4Gr67R5iEfX2N3xj', _id: 'studio0' }
