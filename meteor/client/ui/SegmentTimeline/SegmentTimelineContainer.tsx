@@ -539,6 +539,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (!this.state.isLiveSegment) {
 				this.setState({
 					scrollLeft: 0,
+					livePosition: 0,
 				})
 			}
 		}
