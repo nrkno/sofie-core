@@ -330,8 +330,9 @@ export const SourceLayerItem = withTranslation()(
 			)
 
 			if (
-				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
-					(innerPiece.enable.start !== undefined && innerPiece.enable.duration === undefined)) &&
+				innerPiece.enable.start !== undefined &&
+				innerPiece.enable.duration === undefined &&
+				piece.instance.userDuration?.end === undefined &&
 				!piece.cropped &&
 				piece.renderedDuration === null
 			) {
