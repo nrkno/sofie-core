@@ -44,7 +44,7 @@ export const SegmentContextMenu = withTranslation()(
 					<ContextMenu id="segment-timeline-context-menu">
 						{part && !part.instance.part.invalid && timecode !== null && (
 							<React.Fragment>
-								{startsAt !== null && (
+								{startsAt !== null && !part.instance.part.dynamicallyInsertedAfterPartId && (
 									<MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)} disabled={isCurrentPart}>
 										<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> (
 										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
