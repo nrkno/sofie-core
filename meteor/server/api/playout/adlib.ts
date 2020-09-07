@@ -483,7 +483,7 @@ export namespace ServerPlayoutAdLibAPI {
 						logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 						const up: Partial<PieceInstance> = {
 							userDuration: {
-								end: stopAt,
+								end: relativeStopAt,
 							},
 						}
 						if (pieceInstance.infinite) {
