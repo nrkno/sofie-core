@@ -1729,6 +1729,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					manualSetAsNext: false,
 					followLiveSegments: true,
 				})
+				if (this.props.playlist.currentPartInstanceId) {
+					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(() => console.error)
+				}
 			} else if (
 				this.props.playlist &&
 				prevProps.playlist &&
