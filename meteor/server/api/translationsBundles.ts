@@ -1,6 +1,6 @@
 import { TranslationsBundles, TranslationsBundleId } from '../../lib/collections/TranslationsBundles'
 import { TranslationsBundle, TranslationsBundleType } from 'tv-automation-sofie-blueprints-integration'
-import { getRandomId } from '../../lib/lib'
+import { getRandomId, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
 import { BlueprintId } from '../../lib/collections/Blueprints'
 
@@ -12,7 +12,7 @@ export function upsertBundles(bundles: TranslationsBundle[], parentBlueprintId: 
 			throw new Error(`Unknown bundle type ${type}`)
 		}
 
-		const namespace = (parentBlueprintId as any) as string //unwrap ProtectedString
+		const namespace = unprotectString(parentBlueprintId)
 		const _id = getExistingId(namespace, language) || getRandomId<'TranslationsBundleId'>()
 
 		TranslationsBundles.upsert(
