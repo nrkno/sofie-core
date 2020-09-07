@@ -184,7 +184,10 @@ export function setNextSegment(
 		}
 
 		const partsInSegment = nextSegment.getParts()
-		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
+		const firstValidPartInSegment = _.find(
+			partsInSegment,
+			(p) => p.isPlayable() && !p.dynamicallyInsertedAfterPartId
+		)
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 
