@@ -228,6 +228,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime: number
 		playbackSimulationPercentage: number = 0
+		nextPartDisplayStartsAt: number
 
 		private pastInfinitesComp: Tracker.Computation | undefined
 
@@ -425,20 +426,24 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				isNextSegment &&
 				currentNextPart &&
 				this.props.playlist.nextPartInstanceId &&
-				prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId
+				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
+					this.nextPartDisplayStartsAt !==
+						(this.context.durations?.partDisplayStartsAt &&
+							this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]))
 			) {
+				const nextPartDisplayStartsAt =
+					this.context.durations?.partDisplayStartsAt &&
+					this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
 				const partOffset =
-					(this.context.durations &&
-						this.context.durations.partDisplayStartsAt &&
-						this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)] -
-							this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]) ||
-					0
+					nextPartDisplayStartsAt -
+						this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] || 0
 
 				if (this.state.scrollLeft > partOffset) {
 					this.setState({
 						scrollLeft: partOffset,
 					})
 				}
+				this.nextPartDisplayStartsAt = nextPartDisplayStartsAt
 			}
 			// segment is becoming next
 			if (this.state.isNextSegment === false && isNextSegment === true) {
