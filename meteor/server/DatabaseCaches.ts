@@ -23,7 +23,16 @@ import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime } from '../lib/lib'
+import {
+	protectString,
+	waitForPromiseAll,
+	waitForPromise,
+	makePromise,
+	getCurrentTime,
+	waitTime,
+	sumChanges,
+	anythingChanged,
+} from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -38,6 +47,7 @@ type DeferredFunction<Cache> = (cache: Cache) => void
 /** This cache contains data relevant in a studio */
 export class Cache {
 	private _deferredFunctions: DeferredFunction<Cache>[] = []
+	private _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
 
 	constructor() {
@@ -73,22 +83,54 @@ export class Cache {
 		const span = profiler.startSpan('Cache.saveAllToDatabase')
 		this._abortActiveTimeout()
 
-		// shouldn't the deferred functions be executed after updating the db?
-		_.each(this._deferredFunctions, (fcn) => {
-			fcn(this)
-		})
-		await Promise.all(
-			_.map(_.values(this), async (db) => {
-				if (isDbCacheWriteCollection(db)) {
-					await db.updateDatabaseWithData()
+		// Execute cache.defer()'s
+		for (let i = 0; i < this._deferredFunctions.length; i++) {
+			this._deferredFunctions[i](this)
+		}
+
+		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
+		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
+
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWriteCollection(db)) {
+				if (key.match(/timeline/i)) {
+					highPrioDBs.push(db)
+				} else {
+					lowPrioDBs.push(db)
 				}
-			})
-		)
+			}
+		})
+
+		if (highPrioDBs.length) {
+			const anyThingChanged = anythingChanged(
+				sumChanges(...(await Promise.all(highPrioDBs.map((db) => db.updateDatabaseWithData()))))
+			)
+			if (anyThingChanged) {
+				// Wait a little bit before saving the rest.
+				// The idea is that this allows for the high priority publications to update (such as the Timeline),
+				// sending the updated timeline to Playout-gateway
+				waitTime(2)
+			}
+		}
+
+		if (lowPrioDBs.length) {
+			await Promise.all(lowPrioDBs.map((db) => db.updateDatabaseWithData()))
+		}
+
+		// Execute cache.deferAfterSave()'s
+		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
+			this._deferredAfterSaveFunctions[i]()
+		}
+
 		if (span) span.end()
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }
 export class CacheForStudioBase extends Cache {
@@ -111,6 +153,9 @@ export class CacheForStudioBase extends Cache {
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {
 		return super.defer(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		return super.deferAfterSave(fcn)
 	}
 }
 export class CacheForStudio extends CacheForStudioBase {
@@ -222,6 +267,9 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		return super.deferAfterSave(fcn)
 	}
 }
 function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
