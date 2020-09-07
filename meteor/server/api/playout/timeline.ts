@@ -588,8 +588,8 @@ function buildTimelineObjsForRundown(
 				isAbsoluteInfinitePartGroup = true
 
 				// If an absolute time has been set by a hotkey, then update the duration to be correct
-				if (piece.userDuration) {
-					infiniteGroup.enable.duration = piece.userDuration.end
+				if (piece.userDuration && piece.piece.enable.start !== 'now') {
+					infiniteGroup.enable.duration = piece.userDuration.end - piece.piece.enable.start
 				}
 			}
 
@@ -876,7 +876,14 @@ function transformPartIntoTimeline(
 			pieceEnable.duration = pieceInstance.piece.enable.duration
 		}
 
+		let resolvedEndCap = pieceInstance.resolvedEndCap
 		if (isAbsoluteInfinitePartGroup) {
+			if (typeof resolvedEndCap === 'number') {
+				// If we have a real end cap, then offset the end to compensate for the forced 0 start
+				resolvedEndCap -=
+					pieceInstance.piece.enable.start === 'now' ? nowInPart : pieceInstance.piece.enable.start
+			}
+
 			pieceEnable.start = 0
 		} else {
 			pieceEnable.start = pieceInstance.piece.enable.start
@@ -901,7 +908,11 @@ function transformPartIntoTimeline(
 		}
 
 		// create a piece group for the pieces and then place all of them there
-		const { pieceGroup, capObjs } = createPieceGroupAndCap(pieceInstance, partGroup, pieceEnable)
+		const { pieceGroup, capObjs } = createPieceGroupAndCap(
+			{ ...pieceInstance, resolvedEndCap },
+			partGroup,
+			pieceEnable
+		)
 		timelineObjs.push(pieceGroup)
 		timelineObjs.push(...capObjs)
 
