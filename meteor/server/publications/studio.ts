@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, Studio } from '../../lib/collections/Studios'
+import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, Studio, StudioId } from '../../lib/collections/Studios'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
@@ -109,31 +109,35 @@ meteorCustomPublishArray(PubSub.mappingsForDevice, 'studioMappings', function(
 							mappingsHash: 1,
 						},
 					}).observe({
-						added: (studio) => triggerUpdate({ studio: studio }),
-						changed: (studio) => triggerUpdate({ studio: studio }),
-						removed: () => triggerUpdate({ studio: undefined }),
+						added: () => triggerUpdate({ studioId: studioId }),
+						changed: () => triggerUpdate({ studioId: studioId }),
+						removed: () => triggerUpdate({ studioId: undefined }),
 					}),
 				]
 			},
 			() => {
 				// Initialize data
 				return {
-					studio: Studios.findOne(studioId),
+					studioId: studioId,
 				}
 			},
-			(newData: { studio: Studio | undefined }) => {
+			(newData: { studioId: StudioId | undefined }) => {
 				// Prepare data for publication:
 
-				if (!newData.studio) {
+				if (!newData.studioId) {
 					return []
 				} else {
-					const routes = getActiveRoutes(newData.studio)
-					const routedMappings = getRoutedMappings(newData.studio.mappings, routes)
+					const studio = Studios.findOne(newData.studioId)
+					if (!studio) return []
+
+					const routes = getActiveRoutes(studio)
+					console.log(studio)
+					const routedMappings = getRoutedMappings(studio.mappings, routes)
 
 					return [
 						{
-							_id: newData.studio._id,
-							mappingsHash: newData.studio.mappingsHash,
+							_id: studio._id,
+							mappingsHash: studio.mappingsHash,
 							mappings: routedMappings,
 						},
 					]
@@ -148,3 +152,5 @@ meteorCustomPublishArray(PubSub.mappingsForDevice, 'studioMappings', function(
 		})
 	}
 })
+
+// Studio { mappingsHash: 'x4Gr67R5iEfX2N3xj', _id: 'studio0' }

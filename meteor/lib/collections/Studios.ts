@@ -132,6 +132,8 @@ export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
 }
 export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: ResultingMappingRoutes): MappingsExt {
 	const outputMappings: MappingsExt = {}
+
+	console.log(inputMappings, mappingRoutes)
 	_.each(inputMappings, (inputMapping, inputLayer) => {
 		const routes = mappingRoutes[inputLayer]
 		if (routes) {

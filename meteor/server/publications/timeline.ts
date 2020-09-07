@@ -6,7 +6,7 @@ import { FindOptions } from '../../lib/typings/meteor'
 import { meteorCustomPublishArray } from '../lib/customPublication'
 import { setUpOptimizedObserver } from '../lib/optimizedObserver'
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Studios, getActiveRoutes, Studio } from '../../lib/collections/Studios'
+import { Studios, getActiveRoutes, Studio, StudioId } from '../../lib/collections/Studios'
 import * as _ from 'underscore'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
@@ -47,9 +47,9 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', function(
 							mappingsHash: 1,
 						},
 					}).observe({
-						added: (studio) => triggerUpdate({ studio: studio }),
-						changed: (studio) => triggerUpdate({ studio: studio }),
-						removed: () => triggerUpdate({ studio: null }),
+						added: () => triggerUpdate({ studioId: studioId }),
+						changed: () => triggerUpdate({ studioId: studioId }),
+						removed: () => triggerUpdate({ studioId: null }),
 					}),
 					Timeline.find({
 						_id: studioId,
@@ -66,22 +66,25 @@ meteorCustomPublishArray(PubSub.timelineForDevice, 'studioTimeline', function(
 					timeline: Timeline.findOne({
 						_id: studioId,
 					}),
-					studio: Studios.findOne(studioId),
+					studioId: studioId,
 				}
 			},
-			(newData: { studio: Studio | undefined; timeline: TimelineComplete | undefined }) => {
+			(newData: { studioId: StudioId | undefined; timeline: TimelineComplete | undefined }) => {
 				// Prepare data for publication:
 
-				if (!newData.studio || !newData.timeline) {
+				if (!newData.studioId || !newData.timeline) {
 					return []
 				} else {
-					const routes = getActiveRoutes(newData.studio)
+					const studio = Studios.findOne(newData.studioId)
+					if (!studio) return []
+
+					const routes = getActiveRoutes(studio)
 					const routedTimeline = getRoutedTimeline(newData.timeline.timeline, routes)
 
 					return [
 						{
 							_id: newData.timeline._id,
-							mappingsHash: newData.studio.mappingsHash,
+							mappingsHash: studio.mappingsHash,
 							timeline: routedTimeline,
 						},
 					]
