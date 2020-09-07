@@ -93,7 +93,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 		}
 		componentDidMount() {
 			this.subscribe(PubSub.timeline, {
-				studioId: this.props.studioId,
+				_id: this.props.studioId,
 			})
 
 			this.triggerLoadScript()
@@ -241,9 +241,10 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 						return 0
 					})) ||
 				[]
+			const transformed = transformTimeline(timeline)
 
 			// TODO - dont repeat unless changed
-			let tl = Resolver.resolveTimeline(timeline, { time: now })
+			let tl = Resolver.resolveTimeline(transformed, { time: now })
 			let allStates = Resolver.resolveAllStates(tl)
 
 			let state = Resolver.getState(allStates, now)
