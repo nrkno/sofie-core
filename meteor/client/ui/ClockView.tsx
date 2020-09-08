@@ -88,7 +88,7 @@ const ClockComponent = withTranslation()(
 								) {
 									displayDurationGroups[part.displayDurationGroup] =
 										(displayDurationGroups[part.displayDurationGroup] || 0) +
-										((part.expectedDuration || 0) - (part.duration || 0))
+										((part.expectedDuration || 0) - (instance.timings?.duration || 0))
 									displayDuration = Math.max(
 										0,
 										Math.min(part.displayDuration || part.expectedDuration || 0, part.expectedDuration || 0) ||
@@ -190,8 +190,8 @@ const ClockComponent = withTranslation()(
 						let currentSegmentDuration = 0
 						if (currentPart) {
 							currentSegmentDuration += currentPart.renderedDuration || currentPart.instance.part.expectedDuration || 0
-							currentSegmentDuration += -1 * (currentPart.instance.part.duration || 0)
-							if (!currentPart.instance.part.duration && currentPart.instance.timings?.startedPlayback) {
+							currentSegmentDuration += -1 * (currentPart.instance.timings?.duration || 0)
+							if (!currentPart.instance.timings?.duration && currentPart.instance.timings?.startedPlayback) {
 								currentSegmentDuration += -1 * (getCurrentTime() - currentPart.instance.timings.startedPlayback)
 							}
 						}

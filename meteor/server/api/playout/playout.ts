@@ -830,7 +830,7 @@ export namespace ServerPlayoutAPI {
 								logger.error(
 									`Previous PartInstance "${playlist.previousPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
 								)
-							} else if (!previousPartInstance.part.duration) {
+							} else if (!previousPartInstance.timings?.duration) {
 								onPartHasStoppedPlaying(cache, previousPartInstance, startedPlayback)
 							}
 						}
@@ -846,7 +846,7 @@ export namespace ServerPlayoutAPI {
 								logger.error(
 									`Previous PartInstance "${playlist.currentPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
 								)
-							} else if (!currentPartInstance.part.duration) {
+							} else if (!currentPartInstance.timings?.duration) {
 								onPartHasStoppedPlaying(cache, currentPartInstance, startedPlayback)
 							}
 						}

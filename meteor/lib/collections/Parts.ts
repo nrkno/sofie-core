@@ -6,7 +6,6 @@ import { AdLibPieces, AdLibPiece } from './AdLibPieces'
 import { Segments, SegmentId } from './Segments'
 import {
 	applyClassToDocument,
-	Time,
 	registerCollection,
 	normalizeArray,
 	ProtectedString,
@@ -36,11 +35,6 @@ export interface DBPart
 	segmentId: SegmentId
 
 	status?: string
-
-	/** The time the system played back this part, null if not yet finished playing, in milliseconds.
-	 * This is set when Take:ing the next part
-	 */
-	duration?: number
 
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
@@ -87,7 +81,6 @@ export class Part implements DBPart {
 	public _rank: number
 	public rundownId: RundownId
 	public status?: string
-	public duration?: number
 	public notes?: Array<PartNote>
 	public dynamicallyInsertedAfterPartId?: PartId
 	public identifier?: string

@@ -50,17 +50,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 		dynamicallyInsertedAfterPartId: { $exists: true },
 	})
 
-	cache.Parts.update(
-		{
-			rundownId: rundown._id,
-		},
-		{
-			$unset: {
-				duration: 1,
-			},
-		}
-	)
-
 	// Mask all instances as reset
 	cache.PartInstances.update(
 		{
@@ -138,19 +127,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		dynamicallyInsertedAfterPartId: { $exists: true },
 	})
 
-	cache.Parts.update(
-		{
-			rundownId: {
-				$in: rundownIDs,
-			},
-		},
-		{
-			$unset: {
-				duration: 1,
-			},
-		}
-	)
-
 	resetRundownPlaylistPlayhead(cache, rundownPlaylist)
 }
 function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPlaylist: RundownPlaylist) {
@@ -190,83 +166,6 @@ function resetRundownPlaylistPlayhead(cache: CacheForRundownPlaylist, rundownPla
 		setNextPart(cache, rundownPlaylist, null)
 	}
 }
-// export function getPartBeforeSegment(rundownId: RundownId, dbSegment: DBSegment): Part | undefined {
-// 	const prevSegment = Segments.findOne(
-// 		{
-// 			rundownId: rundownId,
-// 			_rank: { $lt: dbSegment._rank },
-// 		},
-// 		{ sort: { _rank: -1 } }
-// 	)
-// 	if (prevSegment) {
-// 		return Parts.findOne(
-// 			{
-// 				rundownId: rundownId,
-// 				segmentId: prevSegment._id,
-// 			},
-// 			{ sort: { _rank: -1 } }
-// 		)
-// 	}
-// 	return undefined
-// }
-// export function getPartsAfter(part: Part, partsInRundownInOrder: Part[]): Part[] {
-// 	let found = false
-// 	// Only process parts after part:
-// 	const partsAfter = partsInRundownInOrder.filter((p) => {
-// 		if (found) return true
-// 		if (p._id === part._id) found = true
-// 		return false
-// 	})
-// 	return partsAfter
-// }
-// export function getPreviousPart(cache: CacheForRundownPlaylist, partToCheck: Part, rundown: Rundown) {
-// 	const partsInRundown = cache.Parts.findFetch({ rundownId: rundown._id }, { sort: { _rank: 1 } })
-
-// 	let previousPart: Part | undefined = undefined
-// 	for (let part of partsInRundown) {
-// 		if (part._id === partToCheck._id) break
-// 		previousPart = part
-// 	}
-// 	return previousPart
-// }
-// export function refreshParts(cache: CacheForRundownPlaylist, parts: Part[]) {
-// 	const ps: Promise<any>[] = []
-// 	parts.forEach((part) => {
-// 		const rundown = cache.Rundowns.findOne(part.rundownId)
-// 		if (!rundown) throw new Meteor.Error(404, `Rundown "${part.rundownId}" not found in refreshParts`)
-// 		ps.push(
-// 			refreshPart(cache, rundown, part).then(() => {
-// 				cache.Parts.update(part._id, {
-// 					$unset: {
-// 						dirty: 1,
-// 					},
-// 				})
-// 			})
-// 		)
-// 	})
-// 	waitForPromiseAll(ps)
-// }
-// export async function refreshPart(cache: CacheForRundownPlaylist, rundown: Rundown, part: Part) {
-// 	// TODO:
-// 	const pIngestSegment = makePromise(() =>
-// 		loadCachedIngestSegment(rundown._id, rundown.externalId, part.segmentId, unprotectString(part.segmentId))
-// 	)
-
-// 	const studio = cache.Studios.findOne(rundown.studioId)
-// 	if (!studio) throw new Meteor.Error(404, `Studio ${rundown.studioId} was not found`)
-// 	const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
-// 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
-
-// 	const ingestSegment = await pIngestSegment
-// 	updateSegmentsFromIngestData(cache, studio, playlist, rundown, [ingestSegment])
-
-// 	// const segment = Segments.findOne(dbPart.segmentId)
-// 	// if (!segment) throw new Meteor.Error(404, `Segment ${dbPart.segmentId} was not found`)
-
-// 	// This is run on the whole rundown inside the update, IF anything was changed
-// 	// const prevPart = getPartBeforeSegment(dbRundown._id, segment)
-// 	// updateSourceLayerInfinitesAfterPart(rundown, prevPart)
-// }
 
 export interface SelectNextPartResult {
 	part: Part
@@ -556,17 +455,6 @@ export function setNextSegment(
 }
 
 function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
-	cache.Parts.update(
-		{
-			_id: part._id,
-		},
-		{
-			$unset: {
-				duration: 1,
-			},
-		}
-	)
-
 	// remove parts that have been dynamically queued for after this part (queued adLibs)
 	saveIntoCache(
 		cache.Parts,
@@ -590,14 +478,7 @@ export function onPartHasStoppedPlaying(
 	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
-				'part.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
-			},
-		})
-
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(partInstance.part._id, {
-			$set: {
-				duration: stoppedPlayingTime - partInstance.timings.startedPlayback,
+				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
 			},
 		})
 	} else {

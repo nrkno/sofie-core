@@ -432,7 +432,7 @@ export const SegmentTimelinePart = withTranslation()(
 				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active && !isLive && !!startedPlayback && !nextPartInner.duration
+					!!nextProps.playlist.active && !isLive && !!startedPlayback && !nextProps.part.instance.timings?.duration
 
 				const liveDuration =
 					(isLive || isDurationSettling) && !nextProps.autoNextPart && !nextPartInner.autoNext
@@ -484,8 +484,8 @@ export const SegmentTimelinePart = withTranslation()(
 
 			static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
 				if (part.instance.timings?.startedPlayback) {
-					if (part.instance.part.duration) {
-						return part.instance.part.duration
+					if (part.instance.timings?.duration) {
+						return part.instance.timings.duration
 					} else {
 						return currentTime - part.instance.timings.startedPlayback
 					}
@@ -583,11 +583,10 @@ export const SegmentTimelinePart = withTranslation()(
 
 			static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 				// const part = this.props.part
-				const innerPart = props.part.instance.part
 
 				return Math.max(
 					liveDuration,
-					innerPart.duration ||
+					props.part.instance.timings?.duration ||
 						(props.timingDurations.partDisplayDurations &&
 							props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
 						props.part.renderedDuration ||

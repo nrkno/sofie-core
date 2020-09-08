@@ -62,6 +62,11 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
 	/** The playback offset that was set for the last take */
 	playOffset?: Time
+	/**
+	 * The time the system played back this part, null if not yet finished playing, in milliseconds.
+	 * This is set when the next part has started playback
+	 */
+	duration?: Time
 }
 
 export class PartInstance implements DBPartInstance {

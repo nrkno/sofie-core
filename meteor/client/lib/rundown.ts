@@ -39,7 +39,7 @@ export namespace RundownUtils {
 		return parts.reduce((memo, part) => {
 			return (
 				memo +
-				(part.instance.part.duration ||
+				(part.instance.timings?.duration ||
 					part.instance.part.expectedDuration ||
 					part.renderedDuration ||
 					(display ? Settings.defaultDisplayDuration : 0))
@@ -190,12 +190,12 @@ export namespace RundownUtils {
 				(piece !== undefined
 					? (piece.renderedInPoint || 0) +
 					  (piece.renderedDuration ||
-							(part.instance.part.duration !== undefined
-								? part.instance.part.duration + (part.instance.timings?.playOffset || 0)
+							(part.instance.timings?.duration !== undefined
+								? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
 								: (partDuration || part.renderedDuration || part.instance.part.expectedDuration || 0) -
 								  (piece.renderedInPoint || 0)))
-					: part.instance.part.duration !== undefined
-					? part.instance.part.duration + (part.instance.timings?.playOffset || 0)
+					: part.instance.timings?.duration !== undefined
+					? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
 					: partDuration || part.renderedDuration || 0)
 		) {
 			return false
@@ -500,7 +500,7 @@ export namespace RundownUtils {
 							(partE.instance.part.expectedDuration || 0)
 					)
 					partE.renderedDuration =
-						partE.instance.part.duration ||
+						partE.instance.timings?.duration ||
 						Math.min(partE.instance.part.displayDuration || 0, partE.instance.part.expectedDuration || 0) ||
 						displayDurationGroups.get(partE.instance.part.displayDurationGroup) ||
 						0
@@ -509,7 +509,7 @@ export namespace RundownUtils {
 						Math.max(
 							0,
 							(displayDurationGroups.get(partE.instance.part.displayDurationGroup) || 0) -
-								(partE.instance.part.duration || partE.renderedDuration)
+								(partE.instance.timings?.duration || partE.renderedDuration)
 						)
 					)
 				}

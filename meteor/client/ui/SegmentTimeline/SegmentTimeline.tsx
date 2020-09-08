@@ -142,7 +142,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 			this.props.parts.forEach((item) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
 				const duration = Math.max(
-					item.instance.part.duration || item.renderedDuration || 0,
+					item.instance.timings?.duration || item.renderedDuration || 0,
 					(durations.partDisplayDurations && durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
 						Settings.defaultDisplayDuration
 				)
@@ -846,7 +846,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
 								partIds={this.props.parts
-									.filter((item) => item.instance.part.duration === undefined)
+									.filter((item) => item.instance.timings?.duration === undefined)
 									.map((item) => item.instance.part._id)}
 							/>
 						)}

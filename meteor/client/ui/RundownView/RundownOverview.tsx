@@ -78,7 +78,6 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							title: 1,
 							rundownId: 1,
 							segmentId: 1,
-							duration: 1,
 							expectedDuration: 1,
 						},
 					}
@@ -130,13 +129,14 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							live: isLive,
 							next: isNext,
 
-							'has-played': (part.instance.timings?.startedPlayback || 0) > 0 && (innerPart.duration || 0) > 0,
+							'has-played':
+								(part.instance.timings?.startedPlayback || 0) > 0 && (part.instance.timings?.duration || 0) > 0,
 						})}
 						style={{
 							width:
 								(Math.max(
 									(timingDurations && timingDurations[unprotectString(innerPart._id)]) || 0,
-									innerPart.duration || innerPart.expectedDuration || 0
+									part.instance.timings?.duration || innerPart.expectedDuration || 0
 								) /
 									(segmentDuration || 0)) *
 									100 +
@@ -151,7 +151,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 										((getCurrentTime() - (part.instance.timings?.startedPlayback || 0)) /
 											Math.max(
 												(timingDurations && timingDurations[unprotectString(innerPart._id)]) || 0,
-												innerPart.duration || innerPart.expectedDuration || 0
+												part.instance.timings?.duration || innerPart.expectedDuration || 0
 											)) *
 											100 +
 										'%',
