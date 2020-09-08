@@ -551,6 +551,19 @@ export namespace ServerPeripheralDeviceAPI {
 							}
 						}
 
+						// Also store the result to userActions, if possible.
+						UserActionsLog.update(
+							{
+								success: true,
+								doneTime: { $gt: startTime },
+							},
+							{
+								$push: {
+									gatewayDuration: totalLatency,
+									timelineResolveDuration: resolveDuration,
+								},
+							},
+							{ multi: false }
 						)
 					}
 				}
