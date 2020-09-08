@@ -49,6 +49,7 @@ import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 
 function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
+	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
 	const indexes = getAllIndexes()
 	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
 
@@ -83,6 +84,17 @@ function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
 		})
 	})
 	return removeIndexes
+}
+function ensureIndexes(): void {
+	const indexes = getAllIndexes()
+	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
+
+	// Ensure new indexes:
+	_.each(indexes, (i) => {
+		_.each(i.indexes, (index) => {
+			i.collection._ensureIndex(index)
+		})
+	})
 }
 
 function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult[] | string {
@@ -410,7 +422,11 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	}
 	// Timeline
 	{
-		results.push(ownedByStudioId('Timeline', Timeline))
+		results.push(
+			removeByQuery('Timeline', Timeline, {
+				_id: { $nin: studioIds },
+			})
+		)
 	}
 	// UserActionsLog
 	{
@@ -447,7 +463,7 @@ const getCollectionIndexes: (collection: TransformedCollection<any, any>) => Ind
 
 Meteor.startup(() => {
 	// Ensure indexes are created on startup:
-	setupIndexes(false)
+	ensureIndexes()
 })
 
 export function cleanupIndexes(context: MethodContext, actuallyRemoveOldIndexes: boolean): IndexSpecification[] {

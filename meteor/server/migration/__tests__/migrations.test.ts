@@ -164,6 +164,7 @@ describe('Migrations', () => {
 						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
@@ -190,6 +191,7 @@ describe('Migrations', () => {
 						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
@@ -216,6 +218,7 @@ describe('Migrations', () => {
 						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},

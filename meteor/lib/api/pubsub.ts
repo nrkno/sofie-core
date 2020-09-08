@@ -43,6 +43,9 @@ export enum PubSub {
 	buckets = 'buckets',
 	bucketAdLibPieces = 'bucketAdLibPieces',
 	translationsBundles = 'translationsBundles',
+	// custom publications:
+	mappingsForDevice = 'mappingsForDevice',
+	timelineForDevice = 'timelineForDevice',
 }
 
 export function meteorSubscribe(name: PubSub, ...args: any[]): Meteor.SubscriptionHandle {

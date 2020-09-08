@@ -212,7 +212,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 				info = (
 					<div>
 						<b>Fatal error: </b>
-						<i>{msg.errorMessage}</i>
+						<span className="text-s vsubtle">{msg.errorMessage}</span>
 					</div>
 				)
 			} else if (msg.errorMessage) {
@@ -220,7 +220,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 				info = (
 					<div>
 						<b>Error: </b>
-						<i>{msg.errorMessage}</i>
+						<span className="text-s vsubtle">{msg.errorMessage}</span>
 						<div>
 							<MomentFromNow>{msg.errorMessageTime}</MomentFromNow>
 						</div>

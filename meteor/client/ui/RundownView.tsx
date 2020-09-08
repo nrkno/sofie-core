@@ -18,7 +18,7 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, SegmentId } from '../../lib/collections/Segments'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
 import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
@@ -54,7 +54,7 @@ import {
 } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
-import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
+import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
@@ -2002,6 +2002,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
+		onStudioRouteSetSwitch = (
+			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+			routeSetId: string,
+			state: boolean
+		) => {
+			const { t } = this.props
+			if (this.props.studio) {
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				)
+			}
+		}
+
 		renderSegments() {
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
@@ -2280,7 +2293,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									)}
 								</ErrorBoundary>
 								<ErrorBoundary>
-									<RundownFullscreenControls
+									<RundownRightHandControls
 										isFollowingOnAir={this.state.followLiveSegments}
 										onFollowOnAir={this.onGoToLiveSegment}
 										onRewindSegments={this.onRewindSegments}
@@ -2290,6 +2303,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onToggleSupportPanel={this.onToggleSupportPanel}
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
+										studioRouteSets={this.props.studio.routeSets}
+										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>

@@ -40,6 +40,15 @@
 		padding: 0;
 		cursor: pointer;
 
+		&.notifications-text {
+			> .notification {
+				position: absolute;
+				top: 15%;
+				right: 15%;
+				left: auto;
+			}
+		}
+
 		&::after {
 			content: ' ';
 			position: absolute;
@@ -117,6 +126,14 @@
 				display: inline !important;
 			}
 		}
+
+		&.status-bar__controls__button--route-set {
+			display: inline;
+			opacity: 1;
+			font-size: 0.7em;
+			text-transform: uppercase;
+			font-weight: 600;
+		}
 	}
 
 	.status-bar__controls__label {
@@ -170,6 +187,10 @@
 			&.notifications__toggle-button {
 				background-color: #acacad;
 			}
+		}
+
+		&.status-bar__controls__button--route-set-panel {
+			z-index: 310;
 		}
 	}
 }
