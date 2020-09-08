@@ -106,7 +106,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 			(device) => device.studioId === studioId && device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
 		)
 		if (
-			playoutDevices.length >= 1 || // if we have several playout devices, we can't use the Now feature
+			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
 			studio.settings.forceSettingNowTime
 		) {
 			let worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
