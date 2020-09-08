@@ -2,13 +2,8 @@ import * as _ from 'underscore'
 import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
-import {
-	CURRENT_SYSTEM_VERSION,
-	clearMigrationSteps,
-	addMigrationSteps,
-	prepareMigration,
-	PreparedMigration,
-} from '../databaseMigration'
+import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
 import { literal, protectString, waitForPromise } from '../../../lib/lib'
 import {

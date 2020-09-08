@@ -1,4 +1,5 @@
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { addMigrationSteps } from './databaseMigration'
 import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
@@ -21,7 +22,7 @@ import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
  * **************************************************************************************
  */
 // Release X
-addMigrationSteps(CURRENT_SYSTEM_VERSION, [
+export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	//                     ^--- To be set to an absolute version number when doing the release
 	// add steps here:
 	// {

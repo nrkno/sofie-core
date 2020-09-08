@@ -37,7 +37,7 @@ import { Rundown as Rundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
 import { TransformedCollection } from '../../lib/typings/meteor'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
-addMigrationSteps('0.25.0', [
+export const addSteps = addMigrationSteps('0.25.0', [
 	{
 		id: 'migrateDatabaseCollections',
 		canBeRunAutomatically: true,
