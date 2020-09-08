@@ -11,7 +11,6 @@ import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts
 import { NewShowStylesAPI, ShowStylesAPIMethods } from './showStyles'
 import { NewSnapshotAPI, SnapshotAPIMethods } from './shapshot'
 import { NewSystemStatusAPI, SystemStatusAPIMethods } from './systemStatus'
-import { NewTestToolsAPI, TestToolsAPIMethods } from './testTools'
 import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
@@ -40,7 +39,6 @@ interface IMeteorCall {
 	showstyles: NewShowStylesAPI
 	studio: NewStudiosAPI
 	systemStatus: NewSystemStatusAPI
-	testTools: NewTestToolsAPI
 	user: NewUserAPI
 	userAction: NewUserActionAPI
 	organization: NewOrganizationAPI
@@ -61,7 +59,6 @@ export const MeteorCall: IMeteorCall = {
 	showstyles: makeMethods(ShowStylesAPIMethods),
 	studio: makeMethods(StudiosAPIMethods),
 	systemStatus: makeMethods(SystemStatusAPIMethods),
-	testTools: makeMethods(TestToolsAPIMethods),
 	user: makeMethods(UserAPIMethods),
 	userAction: makeMethods(UserActionAPIMethods),
 	organization: makeMethods(OrganizationAPIMethods),

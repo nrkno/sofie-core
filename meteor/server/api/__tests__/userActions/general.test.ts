@@ -58,10 +58,6 @@ namespace UserActionAPI {
 		'resyncRundown' = 'userAction.resyncRundown',
 		'resyncSegment' = 'userAction.resyncSegment',
 
-		'recordStop' = 'userAction.recordStop',
-		'recordStart' = 'userAction.recordStart',
-		'recordDelete' = 'userAction.recordDelete',
-
 		'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 		'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
 		'mediaRestartAllWorkflows' = 'userAction.mediamanager.restartAllWorkflows',

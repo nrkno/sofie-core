@@ -21,7 +21,6 @@ import { Parts } from '../../lib/collections/Parts'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
-import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { Rundowns } from '../../lib/collections/Rundowns'
@@ -90,8 +89,6 @@ describe('Basic test of test environment', () => {
 		expect(PeripheralDevices._isMock).toBeTruthy()
 		// @ts-ignore
 		expect(Pieces._isMock).toBeTruthy()
-		// @ts-ignore
-		expect(RecordedFiles._isMock).toBeTruthy()
 		// @ts-ignore
 		expect(RundownBaselineAdLibPieces._isMock).toBeTruthy()
 		// @ts-ignore

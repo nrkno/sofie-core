@@ -10,6 +10,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
+import { ensureCollectionProperty } from './lib'
 
 /*
  * **************************************************************************************
@@ -232,6 +233,32 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
+
+	{
+		id: 'Drop Studio Recording config',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const badCount = Studios.find({
+				'testToolsConfig.recording': { $exists: true },
+			}).count()
+			if (badCount > 0) {
+				return `${badCount} studio need to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			Timeline.update(
+				{
+					'testToolsConfig.recording': { $exists: true },
+				},
+				{
+					$unset: {
+						'testToolsConfig.recording': 1,
+					},
+				}
+			)
+		},
+	},
 ])
 
 function migrateConfigToBlueprintConfig<
