@@ -254,13 +254,27 @@ function migrateConfigToBlueprintConfig<
 				T & { config: Array<{ _id: string; value: any }> }
 			>
 			for (const document of documents) {
-				document.blueprintConfig = {}
-				for (const item of document.config) {
-					objectPathSet(document.blueprintConfig, item._id, item.value)
-				}
-				delete document.config
-				collection.update(document._id, document)
+				const newDocument = migrateConfigToBlueprintConfigOnObject(document)
+				collection.update(document._id, newDocument)
 			}
 		},
 	}
+}
+export function migrateConfigToBlueprintConfigOnObject<
+	DBInterface extends {
+		_id: ProtectedString<any>
+		blueprintConfig?: IBlueprintConfig
+	}
+>(document: DBInterface): DBInterface {
+	document.blueprintConfig = {}
+	// @ts-ignore old typing
+	const oldConfig = document.config as any
+	if (oldConfig) {
+		for (const item of oldConfig) {
+			objectPathSet(document.blueprintConfig, item._id, item.value)
+		}
+	}
+	// @ts-ignore old typing
+	delete document.config
+	return document
 }

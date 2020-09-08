@@ -86,6 +86,7 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../lib/collections/RundownBaselineAdLibActions'
+import { migrateConfigToBlueprintConfigOnObject } from '../migration/X_X_X'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -794,6 +795,19 @@ function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
+	// Migrate data changes:
+	snapshot.studios = _.map(snapshot.studios, (studio) => {
+		if (!studio.routeSets) studio.routeSets = {}
+		return migrateConfigToBlueprintConfigOnObject(studio)
+	})
+	snapshot.showStyleBases = _.map(snapshot.showStyleBases, (showStyleBase) => {
+		// delete showStyleBase.runtimeArguments // todo: add this?
+		return migrateConfigToBlueprintConfigOnObject(showStyleBase)
+	})
+	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
+		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
+	})
+
 	let changes = sumChanges(
 		saveIntoDb(Studios, studioId ? { _id: studioId } : {}, snapshot.studios),
 		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),
