@@ -1478,10 +1478,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						key: 'Esc',
 						label: t('Cancel currently pressed hotkey'),
 					},
-					{
-						key: 'F11',
-						label: t('Change to fullscreen mode'),
-					},
 				]),
 				isNotificationsCenterOpen: undefined,
 				isSupportPanelOpen: false,
