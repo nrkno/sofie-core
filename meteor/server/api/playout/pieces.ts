@@ -375,6 +375,7 @@ export function convertAdLibToPieceInstance(
 		// Set it up as an infinite
 		newPieceInstance.infinite = {
 			infinitePieceId: newPieceInstance.piece._id,
+			fromPreviousPart: false,
 		}
 	}
 

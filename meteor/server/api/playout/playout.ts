@@ -17,8 +17,8 @@ import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Time
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
+import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
 import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
-import { StudioId } from '../../../lib/collections/Studios'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -1220,6 +1220,7 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function shouldUpdateStudioBaseline(context: MethodContext, studioId: StudioId) {
+		check(studioId, String)
 		StudioContentWriteAccess.baseline(context, studioId)
 		let cache: CacheForStudio | CacheForRundownPlaylist = waitForPromise(initCacheForStudio(studioId))
 		const result = shouldUpdateStudioBaselineInner(cache, studioId)
@@ -1227,8 +1228,6 @@ export namespace ServerPlayoutAPI {
 		return result
 	}
 	function shouldUpdateStudioBaselineInner(cache: CacheForStudio, studioId: StudioId): string | false {
-		check(studioId, String)
-
 		const studio = cache.Studios.findOne(studioId)
 
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
@@ -1236,8 +1235,12 @@ export namespace ServerPlayoutAPI {
 		const activeRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id)
 
 		if (activeRundowns.length === 0) {
-			const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
-			const markerObject = cache.Timeline.findOne(markerId)
+			// const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
+			const studioTimeline = cache.Timeline.findOne(studioId)
+			if (!studioTimeline) return 'noBaseline'
+			const markerObject = studioTimeline.timeline.find(
+				(x) => x._id === protectString(`${studio._id}_baseline_version`)
+			)
 			if (!markerObject) return 'noBaseline'
 
 			const versionsContent = (markerObject.metaData || {}).versions || {}
@@ -1255,6 +1258,44 @@ export namespace ServerPlayoutAPI {
 		}
 
 		return false
+	}
+
+	export function switchRouteSet(context: MethodContext, studioId: StudioId, routeSetId: string, state: boolean) {
+		check(studioId, String)
+		check(routeSetId, String)
+		check(state, Boolean)
+
+		const allowed = StudioContentWriteAccess.routeSet(context, studioId)
+		if (!allowed) throw new Meteor.Error(403, `Not allowed to edit RouteSet on studio ${studioId}`)
+
+		const studio = allowed.studio
+		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+
+		if (studio.routeSets[routeSetId] === undefined)
+			throw new Meteor.Error(404, `RouteSet "${routeSetId}" not found!`)
+		const routeSet = studio.routeSets[routeSetId]
+		if (routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && state === false)
+			throw new Meteor.Error(400, `RouteSet "${routeSetId}" is ACTIVATE_ONLY`)
+
+		const modification = {}
+		modification[`routeSets.${routeSetId}.active`] = state
+
+		if (studio.routeSets[routeSetId].exclusivityGroup && state === true) {
+			_.each(studio.routeSets, (otherRouteSet, otherRouteSetId) => {
+				if (otherRouteSetId === routeSetId) return
+				if (otherRouteSet.exclusivityGroup === routeSet.exclusivityGroup) {
+					modification[`routeSets.${otherRouteSetId}.active`] = false
+				}
+			})
+		}
+
+		Studios.update(studioId, {
+			$set: modification,
+		})
+
+		// TODO: Run update timeline here
+
+		return ClientAPI.responseSuccess(undefined)
 	}
 }
 

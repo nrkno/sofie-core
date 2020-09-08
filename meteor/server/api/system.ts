@@ -422,7 +422,11 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	}
 	// Timeline
 	{
-		results.push(ownedByStudioId('Timeline', Timeline))
+		results.push(
+			removeByQuery('Timeline', Timeline, {
+				_id: { $nin: studioIds },
+			})
+		)
 	}
 	// UserActionsLog
 	{

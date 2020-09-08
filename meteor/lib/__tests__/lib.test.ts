@@ -32,7 +32,7 @@ import {
 	ProtectedString,
 	SaveIntoDbOptions,
 } from '../lib'
-import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
+import { Timeline, TimelineObjType, TimelineObjGeneric, TimelineComplete } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { FindOptions } from '../typings/meteor'
 
@@ -74,39 +74,52 @@ describe('lib/lib', () => {
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
 	})
 	testInFiber('saveIntoDb', () => {
-		Timeline.insert({
-			_id: protectString('abc'),
-			id: 'abc',
-			enable: {
-				start: 0,
+		const mystudioObjs: Array<TimelineObjGeneric> = [
+			{
+				_id: protectString('abc'),
+				id: 'abc',
+				enable: {
+					start: 0,
+				},
+				layer: 'L1',
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
+				objectType: TimelineObjType.MANUAL,
+				studioId: protectString('myStudio'),
+				classes: ['abc'], // to be removed
 			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
-			classes: ['abc'], // to be removed
+			{
+				_id: protectString('abc2'),
+				id: 'abc2',
+				enable: {
+					start: 0,
+				},
+				layer: 'L1',
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
+				objectType: TimelineObjType.MANUAL,
+				studioId: protectString('myStudio'),
+			},
+		]
+		Timeline.insert({
+			_id: protectString('myStudio'),
+			timeline: mystudioObjs,
 		})
-		Timeline.insert({
-			_id: protectString('abc2'),
-			id: 'abc2',
-			enable: {
-				start: 0,
+
+		const mystudio2Objs: Array<TimelineObjGeneric> = [
+			{
+				_id: protectString('abc10'),
+				id: 'abc10',
+				enable: {
+					start: 0,
+				},
+				layer: 'L1',
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
+				objectType: TimelineObjType.MANUAL,
+				studioId: protectString('myStudio2'),
 			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
-		})
+		]
 		Timeline.insert({
-			_id: protectString('abc10'),
-			id: 'abc10',
-			enable: {
-				start: 0,
-			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio2'),
+			_id: protectString('myStudio2'),
+			timeline: mystudio2Objs,
 		})
 
 		const options: SaveIntoDbOptions<any, any> = {
@@ -131,56 +144,61 @@ describe('lib/lib', () => {
 		const changes = saveIntoDb(
 			Timeline,
 			{
-				studioId: protectString('myStudio'),
+				_id: protectString('myStudio'),
 			},
 			[
 				{
-					_id: protectString('abc'),
-					id: 'abc',
-					enable: {
-						start: 0,
-					},
-					layer: 'L2', // changed property
-					content: { deviceType: TSR.DeviceType.ABSTRACT },
-					objectType: TimelineObjType.MANUAL,
-					studioId: protectString('myStudio'),
+					_id: protectString('myStudio'),
+					timeline: [
+						{
+							_id: protectString('abc'),
+							id: 'abc',
+							enable: {
+								start: 0,
+							},
+							layer: 'L2', // changed property
+							content: { deviceType: TSR.DeviceType.ABSTRACT },
+							objectType: TimelineObjType.MANUAL,
+							studioId: protectString('myStudio'),
+						},
+						{
+							// insert object
+							_id: protectString('abc3'),
+							id: 'abc3',
+							enable: {
+								start: 0,
+							},
+							layer: 'L1',
+							content: { deviceType: TSR.DeviceType.ABSTRACT },
+							objectType: TimelineObjType.MANUAL,
+							studioId: protectString('myStudio'),
+						}, // remove abc2
+					],
 				},
-				{
-					// insert object
-					_id: protectString('abc3'),
-					id: 'abc3',
-					enable: {
-						start: 0,
-					},
-					layer: 'L1',
-					content: { deviceType: TSR.DeviceType.ABSTRACT },
-					objectType: TimelineObjType.MANUAL,
-					studioId: protectString('myStudio'),
-				},
-				// remove abc2
 			],
 			options
 		)
 
 		expect(
 			Timeline.find({
-				studioId: protectString('myStudio'),
+				_id: protectString('myStudio'),
 			}).count()
-		).toEqual(2)
-		const abc = Timeline.findOne(protectString('abc')) as TimelineObjGeneric
+		).toEqual(1)
+		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
 		expect(abc).toBeTruthy()
-		expect(abc.classes).toEqual(undefined)
-		expect(abc.layer).toEqual('L2')
+		expect(abc.timeline).toHaveLength(2)
+		expect(abc.timeline[0].classes).toEqual(undefined)
+		expect(abc.timeline[0].layer).toEqual('L2')
 
 		expect(
 			Timeline.find({
-				studioId: protectString('myStudio2'),
+				_id: protectString('myStudio2'),
 			}).count()
 		).toEqual(1)
 
-		expect(options.beforeInsert).toHaveBeenCalledTimes(1)
+		// expect(options.beforeInsert).toHaveBeenCalledTimes(1) - overwrites with single timeline object
 		expect(options.beforeUpdate).toHaveBeenCalledTimes(1)
-		expect(options.beforeRemove).toHaveBeenCalledTimes(1)
+		// expect(options.beforeRemove).toHaveBeenCalledTimes(1) - overwrites with single timeline object
 		expect(options.beforeDiff).toHaveBeenCalledTimes(1)
 		// expect(options.insert).toHaveBeenCalledTimes(1)
 		// expect(options.update).toHaveBeenCalledTimes(1)
@@ -190,9 +208,7 @@ describe('lib/lib', () => {
 		// expect(options.afterRemove).toHaveBeenCalledTimes(1)
 
 		expect(changes).toMatchObject({
-			added: 1,
 			updated: 1,
-			removed: 1,
 		})
 		expect(
 			sumChanges(
@@ -204,9 +220,9 @@ describe('lib/lib', () => {
 				changes
 			)
 		).toMatchObject({
-			added: 2,
+			added: 1,
 			updated: 3,
-			removed: 4,
+			removed: 3,
 		})
 	})
 	testInFiber('anythingChanged', () => {
