@@ -133,95 +133,85 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 
 	const customLabels: {
 		[key: string]: HotkeyDefinition
-	} =
-		props.showStyleBase && props.showStyleBase.hotkeyLegend
-			? _.object(
-					props.showStyleBase.hotkeyLegend.map((hotkey) => {
-						let allKeys = parseHotKey(hotkey.key)
-						const lastKey = allKeys.pop()!
-						allKeys = allKeys.sort()
-						allKeys.push(lastKey)
-						const normalizedCombo = allKeys.join('+')
+	} = {}
 
-						return [normalizedCombo, hotkey]
-					})
-			  )
-			: {}
+	if (props.showStyleBase && props.showStyleBase.hotkeyLegend) {
+		props.showStyleBase.hotkeyLegend.forEach((hotkey) => {
+			customLabels[normalizeHotKey(hotkey.key)] = hotkey
+		})
+	}
 
 	registered.forEach((hotkey) => {
-		const modifiers: string[] = []
+		const modifiersOriginal: string[] = []
+		const modifiersMapped: string[] = []
 
-		const allKeys = parseHotKey(hotkey.combo)
-		while (allKeys.length > 1) {
-			let modifier = allKeys.shift()!
-			modifiers.push(modifier)
+		const originalKey = normalizeHotKey(hotkey.combo)
+		let mappedKey = originalKey
+
+		if (customLabels[originalKey]) {
+			mappedKey = normalizeHotKey(customLabels[originalKey].platformKey || customLabels[originalKey].key)
 		}
 
-		const finalKey = allKeys.shift()
+		const allKeysOriginal = parseHotKey(normalizeHotKey(originalKey))
+		while (allKeysOriginal.length > 1) {
+			let modifier = allKeysOriginal.shift()!
+			modifiersOriginal.push(modifier)
+		}
 
-		if (finalKey) {
-			const normalizedCombo = modifiers
+		const allKeysMapped = parseHotKey(normalizeHotKey(mappedKey))
+		while (allKeysMapped.length > 1) {
+			let modifier = allKeysMapped.shift()!
+			modifiersMapped.push(modifier)
+		}
+
+		const finalKeyMapped = allKeysMapped.shift()
+
+		if (finalKeyMapped) {
+			const normalizedModifiers = modifiersMapped.sort().join('+')
+			const normalizedCombo = modifiersMapped
 				.sort()
-				.concat(finalKey)
+				.concat(finalKeyMapped)
 				.join('+')
 
+			if (parsed[normalizedModifiers] === undefined) {
+				parsed[normalizedModifiers] = []
+			}
+
 			const parsedHotkey: IHotkeyAssignmentExtended = Object.assign({}, hotkey, {
-				finalKey,
+				finalKey: finalKeyMapped,
 				normalizedCombo,
 			})
 
-			if (customLabels[normalizedCombo] !== undefined && customLabels[normalizedCombo].platformKey) {
-				const platformKey = customLabels[normalizedCombo].platformKey!
-				modifiers.length = 0
-				const allKeys = parseHotKey(platformKey)
-				while (allKeys.length > 1) {
-					let modifier = allKeys.shift()!
-					modifiers.push(modifier)
-				}
+			if (customLabels[originalKey]) {
+				const sourceLayerType = customLabels[originalKey].sourceLayerType
 
-				const finalKey = allKeys.shift()
-
-				if (finalKey) {
-					const mappedNormalizedCombo = modifiers
-						.sort()
-						.concat(finalKey)
-						.join('+')
-					customLabels[normalizedCombo].platformKey = mappedNormalizedCombo
-					const sourceLayerType = customLabels[normalizedCombo].sourceLayerType
-
-					parsedHotkey.sourceLayer =
-						sourceLayerType !== undefined
-							? {
-									_id: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer._id : '',
-									type: sourceLayerType,
-									_rank: 0,
-									name: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer.name : '',
-							  }
-							: parsedHotkey.sourceLayer
-					parsedHotkey.combo = mappedNormalizedCombo
-					parsedHotkey.type = HotkeyAssignmentType.CUSTOM_LABEL
-					parsedHotkey.finalKey = finalKey
-					parsedHotkey.normalizedCombo = mappedNormalizedCombo
-				}
+				parsedHotkey.sourceLayer =
+					sourceLayerType !== undefined
+						? {
+								_id: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer._id : '',
+								type: sourceLayerType,
+								_rank: 0,
+								name: parsedHotkey.sourceLayer ? parsedHotkey.sourceLayer.name : '',
+						  }
+						: parsedHotkey.sourceLayer
+				parsedHotkey.combo = originalKey
+				parsedHotkey.type = HotkeyAssignmentType.CUSTOM_LABEL
+				parsedHotkey.finalKey = finalKeyMapped
+				parsedHotkey.normalizedCombo = normalizedCombo
+				parsed[normalizedModifiers].push(parsedHotkey)
 			} else {
 				customLabels[normalizedCombo] = {
 					_id: '',
-					key: finalKey,
+					key: finalKeyMapped,
 					label: hotkey.label,
-					platformKey: modifiers
+					platformKey: modifiersMapped
 						.sort()
-						.concat(finalKey)
+						.concat(finalKeyMapped)
 						.join('+'),
 				}
+
+				parsed[normalizedModifiers].push(parsedHotkey)
 			}
-
-			const modifiersKey = modifiers.sort().join(' ')
-
-			if (parsed[modifiersKey] === undefined) {
-				parsed[modifiersKey] = []
-			}
-
-			parsed[modifiersKey].push(parsedHotkey)
 		}
 	})
 
@@ -441,7 +431,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 				knownModifiers
 			)
 				.sort()
-				.join(' ')
+				.join('+')
 				.toLowerCase()
 
 			return (
