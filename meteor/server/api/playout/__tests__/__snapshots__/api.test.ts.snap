@@ -51,6 +51,7 @@ Array [
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
+      "fromPreviousPart": false,
       "infinitePieceId": "randomId9012",
     },
     "partInstanceId": "randomId9002_part0_0_randomId9007",
@@ -134,6 +135,7 @@ Array [
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
+      "fromPreviousPart": false,
       "infinitePieceId": "randomId9012",
     },
     "partInstanceId": "randomId9002_part0_0_randomId9007",
