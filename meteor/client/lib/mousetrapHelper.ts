@@ -149,6 +149,7 @@ export namespace mousetrapHelper {
 // Add mousetrap keycodes for special keys
 mousetrap.addKeycodes({
 	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
+	222: '\\', // on 101 keyboards, this is the key with single quote
 	223: '|', // this key is not present on 101 keyboards
 
 	// TODO: These keys have temporarly been prefixed by 9x so that thye don't actually register as hotkeys,
@@ -156,12 +157,11 @@ mousetrap.addKeycodes({
 	90220: '\\', // on ANSI-based keyboards, this is the key with single quote
 	91220: '|', // this key is not present on ANSI-based keyboards
 
-	187: 'nbPlus', // this is also listed as 'add' below
+	// 187: 'nbPlus', // this is also listed as 'add' below
 	219: 'nbBackslash',
 	221: 'å',
 	186: '¨',
 	192: 'ø',
-	222: 'æ',
 	191: "'",
 	189: 'nbMinus',
 
@@ -180,6 +180,6 @@ mousetrap.addKeycodes({
 	109: 'numSub',
 	110: 'numDot',
 	111: 'numDiv',
-	// 187: 'add',
+	187: 'add',
 	188: 'comma',
 })
