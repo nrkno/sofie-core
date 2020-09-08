@@ -3,7 +3,7 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Parts, Part } from '../../../lib/collections/Parts'
+import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
 import { getCurrentTime, Time, clone, literal, waitForPromise, protectString } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
@@ -272,21 +272,12 @@ export function setNextPart(
 		}
 
 		if (newNextPart) {
-			if (currentPartInstance && newNextPart._id === currentPartInstance.part._id) {
-				throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
-			}
-
-			// If this is a part being copied, then reset and reload it (so that we copy the new, not old data)
 			// TODO-PartInstances - pending new data flow
-			resetPart(cache, newNextPart)
+			removeFollowingDynamicallyInsertedParts(cache, newNextPart)
 			const partId = newNextPart._id
 			newNextPart = cache.Parts.findOne(partId) as Part
 			if (!newNextPart) {
-				throw new Meteor.Error(409, `Part "${partId}" could not be reloaded after reset`)
-			}
-		} else if (newNextPartInstance) {
-			if (currentPartInstance && newNextPartInstance._id === currentPartInstance._id) {
-				throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
+				throw new Meteor.Error(409, `Part "${partId}" is missing after the reset`)
 			}
 		}
 
@@ -329,10 +320,15 @@ export function setNextPart(
 			}
 		}
 
+		const selectedPartInstanceIds = _.compact([
+			newInstanceId,
+			rundownPlaylist.currentPartInstanceId,
+			rundownPlaylist.previousPartInstanceId,
+		])
 		// reset any previous instances of this part
 		cache.PartInstances.update(
 			{
-				_id: { $ne: newInstanceId },
+				_id: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
 				'part._id': nextPart._id,
 				reset: { $ne: true },
@@ -345,7 +341,7 @@ export function setNextPart(
 		)
 		cache.PieceInstances.update(
 			{
-				partInstanceId: { $ne: newInstanceId },
+				partInstanceId: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
 				'piece.partId': nextPart._id,
 				reset: { $ne: true },
@@ -454,7 +450,7 @@ export function setNextSegment(
 	if (span) span.end()
 }
 
-function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
+function removeFollowingDynamicallyInsertedParts(cache: CacheForRundownPlaylist, part: DBPart): void {
 	// remove parts that have been dynamically queued for after this part (queued adLibs)
 	saveIntoCache(
 		cache.Parts,
@@ -465,7 +461,9 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 		[],
 		{
 			afterRemoveAll(removedParts) {
-				afterRemoveParts(cache, part.rundownId, removedParts)
+				for (const removedPart of removedParts) {
+					removeFollowingDynamicallyInsertedParts(cache, removedPart)
+				}
 			},
 		}
 	)

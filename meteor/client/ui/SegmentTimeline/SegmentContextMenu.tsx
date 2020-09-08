@@ -45,7 +45,7 @@ export const SegmentContextMenu = withTranslation()(
 						{part && !part.instance.part.invalid && timecode !== null && (
 							<React.Fragment>
 								{startsAt !== null && !part.instance.part.dynamicallyInsertedAfterPartId && (
-									<MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)} disabled={isCurrentPart}>
+									<MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)}>
 										<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> (
 										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 									</MenuItem>
