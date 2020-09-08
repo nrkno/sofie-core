@@ -9,14 +9,14 @@ import { PeripheralDeviceSecurity } from '../security/peripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
-import { Studios } from '../../lib/collections/Studios'
+import { Studios, StudioId } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
 import { parse as parseUrl } from 'url'
 import { syncFunction } from '../codeControl'
 import { afterUpdateTimeline } from './playout/timeline'
-import { RundownInput } from './ingest/rundownInput'
+import { RundownInput, rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from './ingest/rundownInput'
 import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
@@ -27,8 +27,9 @@ import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/Me
 import * as MOS from 'mos-connection'
 import { determineDiffTime, getTimeDiff } from './systemTime/systemTime'
 import { PickerPOST } from './http'
-import { initCacheForNoRundownPlaylist, initCacheForStudio, initCacheForRundownPlaylist } from '../DatabaseCaches'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../DatabaseCaches'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -184,54 +185,71 @@ export namespace ServerPeripheralDeviceAPI {
 		})
 
 		if (results.length > 0) {
-			const activePlaylist = RundownPlaylists.findOne({
-				studioId: studioId,
-				active: true,
-			})
-			const cache = activePlaylist
-				? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
-				: waitForPromise(initCacheForNoRundownPlaylist(studioId))
-			const allowedRundownsIds = activePlaylist
-				? _.map(cache.Rundowns.findFetch({ playlistId: activePlaylist._id }), (r) => r._id)
-				: []
+			const activePlaylists = getActiveRundownPlaylistsInStudio(null, studioId)
 
-			_.each(results, (o) => {
-				check(o.id, String)
-
-				// check(o.time, Number)
-				logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
-
-				const id = getTimelineId(studioId, o.id)
-				const obj = cache.Timeline.findOne({
-					_id: id,
-					studioId: studioId,
+			if (activePlaylists.length === 1) {
+				const activePlaylist = activePlaylists[0]
+				const playlistId = activePlaylist._id
+				rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.CALLBACK_PLAYOUT, () => {
+					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
+					const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
+					timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
 				})
-				if (obj) {
-					cache.Timeline.update(
-						{
-							_id: id,
-							studioId: studioId,
-						},
-						{
-							$set: {
-								'enable.start': o.time,
-								'enable.setFromNow': true,
-							},
-						}
-					)
-
-					obj.enable.start = o.time
-					obj.enable.setFromNow = true
-
-					ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(cache, allowedRundownsIds, obj, o.time)
-				}
-			})
-			// After we've updated the timeline, we must call afterUpdateTimeline!
-			afterUpdateTimeline(cache, studioId)
-			waitForPromise(cache.saveAllToDatabase())
+			} else {
+				// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
+				// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird
+				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
+				timelineTriggerTimeInner(cache, studioId, results, undefined)
+			}
 		}
 	},
 	'timelineTriggerTime$0,$1')
+
+	function timelineTriggerTimeInner(
+		cache: CacheForRundownPlaylist,
+		studioId: StudioId,
+		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
+		activePlaylist: RundownPlaylist | undefined
+	) {
+		const allowedRundownsIds = activePlaylist
+			? _.map(cache.Rundowns.findFetch({ playlistId: activePlaylist._id }), (r) => r._id)
+			: []
+
+		_.each(results, (o) => {
+			check(o.id, String)
+
+			// check(o.time, Number)
+			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
+
+			const id = getTimelineId(studioId, o.id)
+			const obj = cache.Timeline.findOne({
+				_id: id,
+				studioId: studioId,
+			})
+			if (obj) {
+				cache.Timeline.update(
+					{
+						_id: id,
+						studioId: studioId,
+					},
+					{
+						$set: {
+							'enable.start': o.time,
+							'enable.setFromNow': true,
+						},
+					}
+				)
+
+				obj.enable.start = o.time
+				obj.enable.setFromNow = true
+
+				ServerPlayoutAPI.timelineTriggerTimeUpdateCallback(cache, allowedRundownsIds, obj, o.time)
+			}
+		})
+		// After we've updated the timeline, we must call afterUpdateTimeline!
+		afterUpdateTimeline(cache, studioId)
+		waitForPromise(cache.saveAllToDatabase())
+	}
 	export function partPlaybackStarted(
 		deviceId: PeripheralDeviceId,
 		token: string,
