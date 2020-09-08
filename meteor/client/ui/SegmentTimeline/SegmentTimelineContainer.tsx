@@ -682,12 +682,14 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		startLive = () => {
 			window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
-			// calculate the browser viewport zoom factor. Works perfectly in Chrome on Windows.
-			const zoomFactor = window.outerWidth / window.innerWidth
+			// In Chrome 76 there used to be a bug that caused some problems with IntersectionObserver.
+			// As of Chrome 85 this seems to be resoved.
+			//
+			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
+			// is viewport. This seems like an implementation bug and IntersectionObserver is
+			// an Experimental Feature in Chrome, so this might change in the future.
+			const zoomFactor = 1 // window.outerWidth / window.innerWidth
 			this.intersectionObserver = new IntersectionObserver(this.visibleChanged, {
-				// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
-				// is viewport. This seems like an implementation bug and IntersectionObserver is
-				// an Experimental Feature in Chrome, so this might change in the future.
 				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
