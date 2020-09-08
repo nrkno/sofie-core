@@ -529,6 +529,7 @@ export namespace ServerPlayoutAdLibAPI {
 							dynamicallyInserted: getCurrentTime(),
 							infinite: {
 								infinitePieceId: pieceId,
+								fromPreviousPart: false,
 							},
 						})
 

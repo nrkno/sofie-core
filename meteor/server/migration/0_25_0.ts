@@ -23,7 +23,7 @@ import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
-import { Timeline } from '../../lib/collections/Timeline'
+import { Timeline as Timeline120, TimelineObjGeneric, TimelineObjType } from '../../lib/collections/Timeline'
 import { AdLibPieces } from '../../lib/collections/AdLibPieces'
 import { Pieces } from '../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
@@ -34,6 +34,7 @@ import { Studios } from '../../lib/collections/Studios'
 import { logger } from '../../lib/logging'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Rundown as Rundown_1_0_0 } from './deprecatedDataTypes/1_0_1'
+import { TransformedCollection } from '../../lib/typings/meteor'
 
 // 0.25.0 (Release 10) // This is a big refactoring, with a LOT of renamings
 addMigrationSteps('0.25.0', [
@@ -216,7 +217,7 @@ addMigrationSteps('0.25.0', [
 	),
 	renamePropertiesInCollection(
 		'Timeline',
-		Timeline,
+		(Timeline120 as unknown) as TransformedCollection<TimelineObjGeneric, TimelineObjGeneric>,
 		'Timeline',
 		{
 			studioId: 'siId',

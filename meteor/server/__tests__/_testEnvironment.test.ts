@@ -126,6 +126,7 @@ describe('Basic test of test environment', () => {
 				blueprintConfig: {},
 				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'abc',
+				routeSets: {},
 			},
 			{
 				_id: protectString('def'),
@@ -136,6 +137,7 @@ describe('Basic test of test environment', () => {
 				blueprintConfig: {},
 				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'def',
+				routeSets: {},
 			},
 		])
 
@@ -178,6 +180,7 @@ describe('Basic test of test environment', () => {
 			blueprintConfig: {},
 			settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 			_rundownVersionHash: 'xyz',
+			routeSets: {},
 		})
 		expect(Studios.find().fetch()).toHaveLength(2)
 

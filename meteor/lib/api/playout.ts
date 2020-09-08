@@ -58,6 +58,7 @@ export interface NewPlayoutAPI {
 	sourceLayerStickyPieceStart(playlistId: RundownPlaylistId, sourceLayerId: string): Promise<void>
 	updateStudioBaseline(studioId: StudioId): Promise<string | false>
 	shouldUpdateStudioBaseline(studioId: StudioId): Promise<string | false>
+	switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum PlayoutAPIMethods {
@@ -83,4 +84,6 @@ export enum PlayoutAPIMethods {
 	'rundownBaselineAdLibPieceStart' = 'playout.rundownBaselineAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'playout.sourceLayerOnPartStop',
 	'sourceLayerStickyPieceStart' = 'playout.sourceLayerStickyPieceStart',
+
+	'switchRouteSet' = 'playout.switchRouteSet',
 }

@@ -725,7 +725,7 @@ export const PeripheralDeviceStatus = reacti18next.withTranslation()(
 						<span className="pill device-status__label">{this.statusCodeString()}</span>
 					</div>
 					<div className="device-item__device-status-message">
-						<i>{this.statusMessages()}</i>
+						<span className="text-s dimmed">{this.statusMessages()}</span>
 					</div>
 				</div>
 			)
