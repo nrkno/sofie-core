@@ -21,7 +21,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { IContextMenuContext } from '../RundownView'
+import { IContextMenuContext, RundownViewEvents } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
@@ -94,19 +94,16 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 					// filter only pieces belonging to this part
 					return piece.instance.partInstanceId === this.props.part.instance._id
 						? // filter only pieces, that have not been hidden from the UI
-						  piece.instance.piece.hidden !== true && piece.instance.piece.virtual !== true
+						  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
 						: false
 				})
 			)
 				.sortBy((it) => it.renderedInPoint)
-				.sortBy((it) => it.instance.piece.infiniteMode)
 				.sortBy((it) => it.cropped)
 				.map((piece) => {
 					return (
 						<SourceLayerItemContainer
-							key={piece.instance._id}
-							{..._.omit(this.props, 'key')} // kz: TODO two keys is to many but which one to choose?
-							// The following code is fine, just withTracker HOC messing with available props
+							key={unprotectString(piece.instance._id)}
 							onClick={this.props.onPieceClick}
 							onDoubleClick={this.props.onPieceDoubleClick}
 							mediaPreviewUrl={this.props.mediaPreviewUrl}
@@ -122,6 +119,14 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							liveLinePadding={this.props.liveLinePadding}
 							scrollLeft={this.props.scrollLeft}
 							scrollWidth={this.props.scrollWidth}
+							playlist={this.props.playlist}
+							followLiveLine={this.props.followLiveLine}
+							isLiveLine={this.props.isLiveLine}
+							isNextLine={this.props.isNextLine}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							livePosition={this.props.livePosition}
+							outputGroupCollapsed={this.props.outputGroupCollapsed}
+							onFollowLiveLine={this.props.onFollowLiveLine}
 						/>
 					)
 				})
@@ -157,12 +162,11 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 						// filter only pieces belonging to this part
 						return piece.instance.partInstanceId === this.props.part.instance._id
 							? // filter only pieces, that have not been hidden from the UI
-							  piece.instance.piece.hidden !== true && piece.instance.piece.virtual !== true
+							  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
 							: false
 					})
 				)
 					.sortBy((it) => it.renderedInPoint)
-					.sortBy((it) => it.instance.piece.infiniteMode)
 					.sortBy((it) => it.cropped)
 					.map((piece) => {
 						return (
@@ -347,6 +351,7 @@ interface IState {
 	liveDuration: number
 
 	isInsideViewport: boolean
+	highlight: boolean
 }
 
 const LIVE_LINE_TIME_PADDING = 150
@@ -399,6 +404,7 @@ export const SegmentTimelinePart = withTranslation()(
 					isNext,
 					isDurationSettling: false,
 					isInsideViewport: false,
+					highlight: false,
 					liveDuration: isLive
 						? Math.max(
 								(startedPlayback &&
@@ -488,6 +494,33 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
+			private highlightTimeout: NodeJS.Timer
+
+			private onHighlight = (e: any) => {
+				if (e.detail && e.detail.partId === this.props.part.partId && !e.detail.pieceId) {
+					this.setState({
+						highlight: true,
+					})
+					clearTimeout(this.highlightTimeout)
+					this.highlightTimeout = setTimeout(() => {
+						this.setState({
+							highlight: false,
+						})
+					}, 5000)
+				}
+			}
+
+			componentDidMount() {
+				super.componentDidMount && super.componentDidMount()
+				window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+			}
+
+			componentWillUnmount() {
+				super.componentWillUnmount && super.componentWillUnmount()
+				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+				clearTimeout(this.highlightTimeout)
+			}
+
 			queueDelayedUpdate() {
 				this.delayedInstanceUpdate = setTimeout(() => {
 					this.delayedInstanceUpdate = undefined
@@ -496,8 +529,8 @@ export const SegmentTimelinePart = withTranslation()(
 			}
 
 			shouldComponentUpdate(nextProps: WithTiming<IProps>, nextState: IState) {
-				if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
 				if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
+					if (this.delayedInstanceUpdate) clearTimeout(this.delayedInstanceUpdate)
 					if (
 						this.props.part.instance.isTemporary === true &&
 						nextProps.part.instance.isTemporary === false &&
@@ -579,13 +612,14 @@ export const SegmentTimelinePart = withTranslation()(
 
 			renderTimelineOutputGroups(part: PartUi) {
 				if (this.props.segment.outputLayers !== undefined) {
-					return _.map(
-						_.filter(this.props.segment.outputLayers, (layer) => {
+					return Object.values(this.props.segment.outputLayers)
+						.filter((layer) => {
 							return layer.used ? true : false
-						}).sort((a, b) => {
+						})
+						.sort((a, b) => {
 							return a._rank - b._rank
-						}),
-						(layer, id) => {
+						})
+						.map((layer) => {
 							// Only render output layers used by the segment
 							if (layer.used) {
 								return (
@@ -619,8 +653,7 @@ export const SegmentTimelinePart = withTranslation()(
 									/>
 								)
 							}
-						}
-					)
+						})
 				}
 			}
 
@@ -681,12 +714,13 @@ export const SegmentTimelinePart = withTranslation()(
 								invalid: innerPart.invalid && !innerPart.gap,
 								floated: innerPart.floated,
 								gap: innerPart.gap,
+								'invert-flash': this.state.highlight,
 
 								'duration-settling': this.state.isDurationSettling,
 							})}
 							data-obj-id={this.props.part.instance._id}
 							id={SegmentTimelinePartElementId + this.props.part.instance._id}
-							style={_.extend(this.getLayerStyle(), invalidReasonColorVars)}>
+							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}>
 							{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 							{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 

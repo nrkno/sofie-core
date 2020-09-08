@@ -1,31 +1,25 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { check } from '../../lib/check'
 import { Rundowns, Rundown, DBRundown, RundownId } from '../../lib/collections/Rundowns'
-import { Part, Parts, DBPart, PartId } from '../../lib/collections/Parts'
-import { Pieces, Piece } from '../../lib/collections/Pieces'
+import { Part, DBPart } from '../../lib/collections/Parts'
+import { Piece } from '../../lib/collections/Pieces'
 import { AdLibPieces, AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { Segments, SegmentId } from '../../lib/collections/Segments'
 import {
 	saveIntoDb,
-	getRank,
 	getCurrentTime,
-	asyncCollectionUpdate,
-	waitForPromiseAll,
 	getHash,
-	literal,
 	waitForPromise,
 	unprotectObjectArray,
 	protectString,
 	unprotectString,
 	makePromise,
-	Omit,
 	waitForPromiseObj,
 	asyncCollectionFindFetch,
 	normalizeArray,
-	check,
 } from '../../lib/lib'
 import { logger } from '../logging'
-import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
 import { updateExpectedMediaItemsOnPart } from './expectedMediaItems'
@@ -40,30 +34,36 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { BlueprintResultOrderedRundowns, ExtendedIngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
-import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
+import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import {
+	DBRundownPlaylist,
+	RundownPlaylists,
+	RundownPlaylistId,
+	RundownPlaylist,
+} from '../../lib/collections/RundownPlaylists'
 import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
 import { updateExpectedPlayoutItemsOnPart } from './ingest/expectedPlayoutItems'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PartInstances } from '../../lib/collections/PartInstances'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
+import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
+import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
+import { RundownPlaylistContentWriteAccess, RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import {
 	CacheForRundownPlaylist,
 	initCacheForRundownPlaylist,
 	initCacheForRundownPlaylistFromRundown,
 } from '../DatabaseCaches'
 import { saveIntoCache } from '../DatabaseCache'
-import {
-	removeRundownFromCache,
-	removeRundownPlaylistFromCache,
-	getRundownsSegmentsAndPartsFromCache,
-} from './playout/lib'
-import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
+import { AdLibActions } from '../../lib/collections/AdLibActions'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
+import { rundownContentAllowWrite } from '../security/rundown'
 import { modifyPlaylistExternalId } from './ingest/lib'
+import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { profiler } from './profiler'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -84,7 +84,7 @@ export function selectShowStyleVariant(
 
 	const context = new StudioConfigContext(studio)
 
-	const studioBlueprint = loadStudioBlueprints(studio)
+	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	if (!studioBlueprint.blueprint.getShowStyleId)
@@ -107,7 +107,7 @@ export function selectShowStyleVariant(
 	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
 	if (!showStyleVariants.length) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no variants`)
 
-	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
+	const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
 	if (!showStyleBlueprint)
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
@@ -143,7 +143,7 @@ export function produceRundownPlaylistInfo(
 	currentRundown: DBRundown,
 	peripheralDevice: PeripheralDevice | undefined
 ): RundownPlaylistAndOrder {
-	const studioBlueprint = loadStudioBlueprints(studio)
+	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	const playlistExternalId = currentRundown.playlistExternalId
@@ -178,6 +178,7 @@ export function produceRundownPlaylistInfo(
 
 			_id: playlistId,
 			externalId: playlistExternalId,
+			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: playlistInfo.playlist.name,
 			expectedStart: playlistInfo.playlist.expectedStart,
@@ -235,6 +236,7 @@ export function produceRundownPlaylistInfo(
 
 			_id: playlistId,
 			externalId: tmpPlaylistExternalId,
+			organizationId: studio.organizationId,
 			studioId: studio._id,
 			name: currentRundown.name,
 			expectedStart: currentRundown.expectedStart,
@@ -291,7 +293,7 @@ export function afterRemoveSegments(cache: CacheForRundownPlaylist, rundownId: R
 		}
 	)
 
-	triggerUpdateTimelineAfterIngestData(cache, rundownId, segmentIds)
+	triggerUpdateTimelineAfterIngestData(cache.containsDataFromPlaylist)
 }
 
 /**
@@ -305,8 +307,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		cache.Parts,
 		{
 			rundownId: rundownId,
-			dynamicallyInserted: true,
-			afterPart: { $in: _.map(removedParts, (p) => p._id) },
+			dynamicallyInsertedAfterPartId: { $in: _.map(removedParts, (p) => p._id) },
 		},
 		[],
 		{
@@ -324,7 +325,7 @@ export function afterRemoveParts(cache: CacheForRundownPlaylist, rundownId: Rund
 		cache.Pieces,
 		{
 			rundownId: rundownId,
-			partId: { $in: _.map(removedParts, (p) => p._id) },
+			startPartId: { $in: _.map(removedParts, (p) => p._id) },
 		},
 		[],
 		{
@@ -348,7 +349,7 @@ export function afterRemovePartsAuxiliary(
 	rundownId: RundownId,
 	removedParts: DBPart[]
 ) {
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
 			partId: { $in: _.map(removedParts, (p) => p._id) },
@@ -386,7 +387,7 @@ export function afterRemovePieces(
 	rundownId: RundownId,
 	removedPieces: Array<Piece | AdLibPiece>
 ) {
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
 			pieceId: { $in: _.map(removedPieces, (p) => p._id) },
@@ -394,132 +395,167 @@ export function afterRemovePieces(
 	})
 }
 /**
- * Update the ranks of all parts.
- * Uses the ranks to determine order within segments, and then updates part ranks based on segment ranks.
+ * Update the ranks of all dynamic parts in the given segments.
  * Adlib/dynamic parts get assigned ranks based on the rank of what they are told to be after
- * @param rundownId
  */
-export function updatePartRanks(cache: CacheForRundownPlaylist, rundown: Rundown): Array<Part> {
-	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point, or do we not care about their rank?
+export function updatePartRanks(cache: CacheForRundownPlaylist, playlist: RundownPlaylist, segmentIds: SegmentId[]) {
+	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
+	// It should be a simple toggle to work on instances instead though. As it only changes the dynamic inserted ones it should be nice and safe
+	// Make sure to rethink the sorting, especially with regards to reset vs non-reset (as reset may have outdated ranks etc)
 
-	const { segments, parts: orgParts } = getRundownsSegmentsAndPartsFromCache(cache, [rundown])
+	const allOrderedParts = getAllOrderedPartsFromCache(cache, playlist)
 
-	logger.debug(`updatePartRanks (${orgParts.length} parts, ${segments.length} segments)`)
+	let updatedParts = 0
+	for (const segmentId of segmentIds) {
+		const parts = allOrderedParts.filter((p) => p.segmentId === segmentId)
+		const [dynamicParts, sortedParts] = _.partition(parts, (p) => !!p.dynamicallyInsertedAfterPartId)
+		logger.debug(
+			`updatePartRanks (${parts.length} parts with ${dynamicParts.length} dynamic in segment "${segmentId}")`
+		)
 
-	const parts: Array<Part> = []
-	const partsToPutAfter: { [partId: string]: Array<Part> } = {}
+		// We have parts that need updating
+		if (dynamicParts.length) {
+			// Build the parts into an sorted array
+			let remainingParts = dynamicParts
+			let hasAddedAnything = true
+			while (hasAddedAnything) {
+				hasAddedAnything = false
 
-	_.each(orgParts, (part) => {
-		const afterPart: string | undefined = unprotectString(part.afterPart)
-		if (afterPart) {
-			if (!partsToPutAfter[afterPart]) partsToPutAfter[afterPart] = []
-			partsToPutAfter[afterPart].push(part)
-		} else {
-			parts.push(part)
-		}
-	})
-
-	// Update _rank and save to database:
-	let updatedPartsCount = 0
-	let newRank = 0
-	let prevSegmentId: SegmentId = protectString('')
-	_.each(parts, (part) => {
-		if (part.segmentId !== prevSegmentId) {
-			newRank = 0
-			prevSegmentId = part.segmentId
-		}
-		if (part._rank !== newRank) {
-			cache.Parts.update(part._id, { $set: { _rank: newRank } })
-			updatedPartsCount++
-			// Update in place, for the upcoming algorithm
-			part._rank = newRank
-		}
-		newRank++
-	})
-	logger.debug(`updatePartRanks: ${updatedPartsCount} parts updated`)
-
-	// Insert the parts that are to be put after other parts:
-	let hasAddedAnything = true
-	while (hasAddedAnything) {
-		hasAddedAnything = false
-
-		_.each(partsToPutAfter, (dynamicParts, insertAfterPartId0) => {
-			const insertAfterPartId: PartId = protectString(insertAfterPartId0)
-
-			let partBefore: Part | null = null
-			let partAfter: Part | null = null
-			let insertI = -1
-			_.each(parts, (part, i) => {
-				if (part._id === insertAfterPartId) {
-					partBefore = part
-
-					insertI = i + 1
-				} else if (partBefore && part.segmentId === partBefore.segmentId && !partAfter) {
-					partAfter = part
-				}
-			})
-
-			if (partBefore) {
-				if (insertI !== -1) {
-					_.each(dynamicParts, (dynamicPart, i) => {
-						const newRank = getRank(partBefore, partAfter, i, dynamicParts.length)
-
-						if (dynamicPart._rank !== newRank) {
-							dynamicPart._rank = newRank
-							cache.Parts.update(dynamicPart._id, { $set: { _rank: dynamicPart._rank } })
-							cache.PartInstances.update(
-								{
-									'part._id': dynamicPart._id,
-									reset: { $ne: true },
-								},
-								{ $set: { 'part._rank': dynamicPart._rank } }
-							)
-						}
-
-						parts.splice(insertI, 0, dynamicPart)
-						insertI++
+				const newRemainingParts: Part[] = []
+				_.each(remainingParts, (possiblePart) => {
+					const afterIndex = sortedParts.findIndex(
+						(p) => p._id === possiblePart.dynamicallyInsertedAfterPartId
+					)
+					if (afterIndex !== -1) {
+						// We found the one before
+						sortedParts.splice(afterIndex + 1, 0, possiblePart)
 						hasAddedAnything = true
-					})
-				}
-				delete partsToPutAfter[insertAfterPartId0]
-			} else {
-				// TODO - part is invalid and should be deleted/warned about
+					} else {
+						newRemainingParts.push(possiblePart)
+					}
+				})
+				remainingParts = newRemainingParts
 			}
-		})
-	}
 
-	return parts
+			if (remainingParts.length) {
+				// TODO - remainingParts are invalid and should be deleted/warned about
+			}
+
+			// Now go through and update their ranks
+			for (let i = 0; i < sortedParts.length - 1; ) {
+				// Find the range to process this iteration
+				const beforePartIndex = i
+				const afterPartIndex = sortedParts.findIndex((p, o) => o > i && !p.dynamicallyInsertedAfterPartId)
+
+				if (afterPartIndex === beforePartIndex + 1) {
+					// no dynamic parts in between
+					i++
+					continue
+				} else if (afterPartIndex === -1) {
+					// We will reach the end, so make sure we stop
+					i = sortedParts.length
+				} else {
+					// next iteration should look from the next fixed point
+					i = afterPartIndex
+				}
+
+				const firstDynamicIndex = beforePartIndex + 1
+				const lastDynamicIndex = afterPartIndex === -1 ? sortedParts.length - 1 : afterPartIndex - 1
+
+				// Calculate the rank change per part
+				const dynamicPartCount = lastDynamicIndex - firstDynamicIndex + 1
+				const basePartRank = sortedParts[beforePartIndex]._rank
+				const afterPartRank = afterPartIndex === -1 ? basePartRank + 1 : sortedParts[afterPartIndex]._rank
+				const delta = (afterPartRank - basePartRank) / (dynamicPartCount + 1)
+
+				let prevRank = basePartRank
+				for (let o = firstDynamicIndex; o <= lastDynamicIndex; o++) {
+					const newRank = (prevRank = prevRank + delta)
+
+					const dynamicPart = sortedParts[o]
+					if (dynamicPart._rank !== newRank) {
+						cache.Parts.update(dynamicPart._id, { $set: { _rank: newRank } })
+						cache.PartInstances.update(
+							{
+								'part._id': dynamicPart._id,
+								reset: { $ne: true },
+							},
+							{ $set: { 'part._rank': newRank } }
+						)
+						updatedParts++
+					}
+				}
+			}
+		}
+	}
+	logger.debug(`updatePartRanks: ${updatedParts} parts updated`)
 }
 
 export namespace ServerRundownAPI {
-	export function removeRundownPlaylist(playlistId: RundownPlaylistId) {
-		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-		const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+	/** Remove a RundownPlaylist and all its contents */
+	export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
+		check(playlistId, String)
+		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const cache = waitForPromise(initCacheForRundownPlaylist(access.playlist))
 		const result = removeRundownPlaylistInner(cache, playlistId)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
-	export function removeRundown(rundownId: RundownId) {
-		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
+	/** Remove an individual rundown */
+	export function removeRundown(context: MethodContext, rundownId: RundownId) {
+		check(rundownId, String)
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(access.rundown._id))
 		const result = removeRundownInner(cache, rundownId)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
 
-	export function unsyncRundown(rundownId: RundownId): void {
-		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
+	export function unsyncRundown(context: MethodContext, rundownId: RundownId): void {
+		check(rundownId, String)
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(access.rundown._id))
 		const result = unsyncRundownInner(cache, rundownId)
 		waitForPromise(cache.saveAllToDatabase())
 		return result
 	}
-	export function unsyncSegment(rundownId: RundownId, segmentId: SegmentId): void {
-		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
-		const result = unsyncSegmentInner(cache, rundownId, segmentId)
-		waitForPromise(cache.saveAllToDatabase())
-		return result
+	/** Resync all rundowns in a rundownPlaylist */
+	export function resyncRundownPlaylist(
+		context: MethodContext,
+		playlistId: RundownPlaylistId
+	): ReloadRundownPlaylistResponse {
+		check(playlistId, String)
+		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		return innerResyncRundownPlaylist(access.playlist)
+	}
+	export function resyncRundown(context: MethodContext, rundownId: RundownId): TriggerReloadDataResponse {
+		check(rundownId, String)
+		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
+		return innerResyncRundown(access.rundown)
 	}
 
+	export function unsyncRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
+		const span = profiler.startSpan('api.rundown.unsyncRundownInner')
+
+		check(rundownId, String)
+		logger.info('unsyncRundown ' + rundownId)
+
+		let rundown = cache.Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+		if (!rundown.unsynced) {
+			cache.Rundowns.update(rundown._id, {
+				$set: {
+					unsynced: true,
+					unsyncedTime: getCurrentTime(),
+				},
+			})
+		} else {
+			logger.info(`Rundown "${rundownId}" was already unsynced`)
+		}
+
+		span?.end()
+	}
 	/** Remove a RundownPlaylist and all its contents */
 	export function removeRundownPlaylistInner(cache: CacheForRundownPlaylist, playlistId: RundownPlaylistId) {
 		check(playlistId, String)
@@ -555,12 +591,8 @@ export namespace ServerRundownAPI {
 		removeRundownFromCache(cache, rundown)
 	}
 	/** Resync all rundowns in a rundownPlaylist */
-	export function resyncRundownPlaylist(playlistId: RundownPlaylistId): ReloadRundownPlaylistResponse {
-		check(playlistId, String)
-		logger.info('resyncRundownPlaylist ' + playlistId)
-
-		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+	export function innerResyncRundownPlaylist(playlist: RundownPlaylist): ReloadRundownPlaylistResponse {
+		logger.info('resyncRundownPlaylist ' + playlist._id)
 
 		const response: ReloadRundownPlaylistResponse = {
 			rundownsResponses: Rundowns.find({ playlistId: playlist._id })
@@ -568,33 +600,20 @@ export namespace ServerRundownAPI {
 				.map((rundown) => {
 					return {
 						rundownId: rundown._id,
-						response: resyncRundown(rundown._id),
+						response: innerResyncRundown(rundown),
 					}
 				}),
 		}
 		return response
 	}
-
-	export function resyncRundown(rundownId: RundownId): TriggerReloadDataResponse {
-		check(rundownId, String)
-		logger.info('resyncRundown ' + rundownId)
-
-		const rundown = Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
-
-		Rundowns.update(rundown._id, {
-			$set: {
-				unsynced: false,
-			},
-		})
-
-		return IngestActions.reloadRundown(rundown)
-	}
-	export function resyncSegment(segmentId: SegmentId): TriggerReloadDataResponse {
+	export function resyncSegment(
+		context: MethodContext,
+		rundownId: RundownId,
+		segmentId: SegmentId
+	): TriggerReloadDataResponse {
 		check(segmentId, String)
 		logger.info('resyncSegment ' + segmentId)
-
+		rundownContentAllowWrite(context.userId, { rundownId })
 		const segment = Segments.findOne(segmentId)
 		if (!segment) throw new Meteor.Error(404, `Segment "${segmentId}" not found!`)
 
@@ -610,23 +629,26 @@ export namespace ServerRundownAPI {
 
 		return IngestActions.reloadSegment(rundown, segment)
 	}
-	export function unsyncRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
-		check(rundownId, String)
-		logger.info('unsyncRundown ' + rundownId)
+	export function unsyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId): void {
+		rundownContentAllowWrite(context.userId, { rundownId })
+		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
+		const result = unsyncSegmentInner(cache, rundownId, segmentId)
+		waitForPromise(cache.saveAllToDatabase())
+		return result
+	}
 
-		let rundown = cache.Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {
+		logger.info('resyncRundown ' + rundown._id)
 
-		if (!rundown.unsynced) {
-			cache.Rundowns.update(rundown._id, {
-				$set: {
-					unsynced: true,
-					unsyncedTime: getCurrentTime(),
-				},
-			})
-		} else {
-			logger.info(`Rundown "${rundownId}" was already unsynced`)
-		}
+		// if (rundown.active) throw new Meteor.Error(400,`Not allowed to resync an active Rundown "${rundownId}".`)
+
+		Rundowns.update(rundown._id, {
+			$set: {
+				unsynced: false,
+			},
+		})
+
+		return IngestActions.reloadRundown(rundown)
 	}
 
 	export function unsyncSegmentInner(
@@ -660,12 +682,10 @@ export namespace ServerRundownAPI {
 	}
 }
 export namespace ClientRundownAPI {
-	export function rundownPlaylistNeedsResync(playlistId: RundownPlaylistId): string[] {
+	export function rundownPlaylistNeedsResync(context: MethodContext, playlistId: RundownPlaylistId): string[] {
 		check(playlistId, String)
-		// logger.info('rundownPlaylistNeedsResync ' + playlistId)
-
-		const playlist = RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const playlist = access.playlist
 
 		const rundowns = playlist.getRundowns()
 		const errors = rundowns.map((rundown) => {
@@ -697,12 +717,13 @@ export namespace ClientRundownAPI {
 	}
 	// Validate the blueprint config used for this rundown, to ensure that all the required fields are specified
 	export function rundownPlaylistValidateBlueprintConfig(
+		context: MethodContext,
 		playlistId: RundownPlaylistId
 	): RundownPlaylistValidateBlueprintConfigResult {
 		check(playlistId, String)
 
-		const rundownPlaylist = RundownPlaylists.findOne(playlistId)
-		if (!rundownPlaylist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
+		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
+		const rundownPlaylist = access.playlist
 
 		const studio = rundownPlaylist.getStudio()
 		const studioBlueprint = Blueprints.findOne(studio.blueprintId)
@@ -773,46 +794,46 @@ export namespace ClientRundownAPI {
 						id: id,
 						name: compound.name,
 						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.config),
+						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
 					}
 				}
 			}
 		)
 
 		return {
-			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.config),
+			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),
 			showStyles: showStyleWarnings,
 		}
 	}
 }
 
-class ServerRundownAPIClass implements NewRundownAPI {
+class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	removeRundownPlaylist(playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(playlistId))
+		return makePromise(() => ServerRundownAPI.removeRundownPlaylist(this, playlistId))
 	}
 	resyncRundownPlaylist(playlistId: RundownPlaylistId) {
-		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(playlistId))
+		return makePromise(() => ServerRundownAPI.resyncRundownPlaylist(this, playlistId))
 	}
 	rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
-		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(playlistId))
+		return makePromise(() => ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId))
 	}
 	rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
-		return makePromise(() => ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(playlistId))
+		return makePromise(() => ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId))
 	}
 	removeRundown(rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.removeRundown(rundownId))
+		return makePromise(() => ServerRundownAPI.removeRundown(this, rundownId))
 	}
 	resyncRundown(rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.resyncRundown(rundownId))
+		return makePromise(() => ServerRundownAPI.resyncRundown(this, rundownId))
 	}
-	resyncSegment(segmentId: SegmentId) {
-		return makePromise(() => ServerRundownAPI.resyncSegment(segmentId))
+	resyncSegment(rundownId: RundownId, segmentId: SegmentId) {
+		return makePromise(() => ServerRundownAPI.resyncSegment(this, rundownId, segmentId))
 	}
 	unsyncRundown(rundownId: RundownId) {
-		return makePromise(() => ServerRundownAPI.unsyncRundown(rundownId))
+		return makePromise(() => ServerRundownAPI.unsyncRundown(this, rundownId))
 	}
 	unsyncSegment(rundownId: RundownId, segmentId: SegmentId) {
-		return makePromise(() => ServerRundownAPI.unsyncSegment(rundownId, segmentId))
+		return makePromise(() => ServerRundownAPI.unsyncSegment(this, rundownId, segmentId))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

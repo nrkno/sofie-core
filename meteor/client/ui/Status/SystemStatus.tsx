@@ -536,9 +536,6 @@ interface DeviceInHierarchy {
 }
 
 export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISystemStatusTrackedProps>(() => {
-	// console.log('PeripheralDevices',PeripheralDevices);
-	// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
-
 	return {
 		coreSystem: CoreSystem.findOne(),
 		devices: PeripheralDevices.find({}, { sort: { lastConnected: -1 } }).fetch(),
@@ -728,7 +725,7 @@ export const PeripheralDeviceStatus = reacti18next.withTranslation()(
 						<span className="pill device-status__label">{this.statusCodeString()}</span>
 					</div>
 					<div className="device-item__device-status-message">
-						<i>{this.statusMessages()}</i>
+						<span className="text-s dimmed">{this.statusMessages()}</span>
 					</div>
 				</div>
 			)

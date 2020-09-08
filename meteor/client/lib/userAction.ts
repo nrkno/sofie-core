@@ -51,6 +51,7 @@ export enum UserAction {
 	INGEST_BUCKET_ADLIB,
 	REMOVE_BUCKET_ADLIB,
 	MODIFY_BUCKET_ADLIB,
+	SWITCH_ROUTE_SET,
 }
 
 function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
@@ -145,6 +146,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Removing Bucket AdLib')
 		case UserAction.START_BUCKET_ADLIB:
 			return t('Starting Bucket AdLib')
+		case UserAction.SWITCH_ROUTE_SET:
+			return t('Switching routing')
 		case UserAction.UNKNOWN_ACTION:
 		default:
 			return t('Unknown action')
@@ -234,10 +237,12 @@ export function doUserAction<Result>(
 		})
 		.catch((err) => {
 			clearMethodTimeout()
-			// console.error(err) - this is a result of an error server-side. Will be logged, no reason to print it out to console
 			let doDefault: boolean | void = true
 			if (callback) {
 				doDefault = callback(err)
+			} else {
+				// If no callback has been defined, we should at least trace the error to console
+				console.error(err)
 			}
 			if (doDefault !== false) {
 				NotificationCenter.push(

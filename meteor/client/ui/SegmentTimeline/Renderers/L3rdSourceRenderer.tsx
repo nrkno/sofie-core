@@ -161,15 +161,21 @@ export const L3rdSourceRenderer = withTranslation()(
 												<span className="mini-inspector__in-point">
 													{RundownUtils.formatTimeToShortTime(this.props.piece.renderedInPoint || 0)}
 												</span>
-												{innerPiece.infiniteMode ? (
-													(innerPiece.infiniteMode === PieceLifespan.OutOnNextPart && (
+												{innerPiece.lifespan ? (
+													(innerPiece.lifespan === PieceLifespan.WithinPart && (
 														<span className="mini-inspector__duration">{t('Until next take')}</span>
 													)) ||
-													(innerPiece.infiniteMode === PieceLifespan.OutOnNextSegment && (
+													(innerPiece.lifespan === PieceLifespan.OutOnSegmentChange && (
 														<span className="mini-inspector__duration">{t('Until next segment')}</span>
 													)) ||
-													(innerPiece.infiniteMode === PieceLifespan.Infinite && (
-														<span className="mini-inspector__duration">{t('Infinite')}</span>
+													(innerPiece.lifespan === PieceLifespan.OutOnSegmentEnd && (
+														<span className="mini-inspector__duration">{t('Until end of segment')}</span>
+													)) ||
+													(innerPiece.lifespan === PieceLifespan.OutOnRundownChange && (
+														<span className="mini-inspector__duration">{t('Until next rundown')}</span>
+													)) ||
+													(innerPiece.lifespan === PieceLifespan.OutOnRundownEnd && (
+														<span className="mini-inspector__duration">{t('Until end of rundown')}</span>
 													))
 												) : (
 													<span className="mini-inspector__duration">

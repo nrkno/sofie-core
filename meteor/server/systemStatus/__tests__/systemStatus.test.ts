@@ -124,7 +124,8 @@ describe('systemStatus', () => {
 			_status: expectedStatus0,
 		})
 		const component =
-			result0.components && result0.components.find((c) => c.instanceId === unprotectString(env.ingestDevice._id))
+			result0.components &&
+			result0.components.find((c) => unprotectString(c.instanceId) === unprotectString(env.ingestDevice._id))
 		expect(component).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
 		})
@@ -149,7 +150,8 @@ describe('systemStatus', () => {
 			_status: expectedStatus0,
 		})
 		const component =
-			result0.components && result0.components.find((c) => c.instanceId === unprotectString(env.ingestDevice._id))
+			result0.components &&
+			result0.components.find((c) => unprotectString(c.instanceId) === unprotectString(env.ingestDevice._id))
 		expect(component).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
 		})

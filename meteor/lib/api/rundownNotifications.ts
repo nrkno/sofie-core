@@ -13,6 +13,7 @@ export interface IMediaObjectIssue {
 	segmentId: SegmentId
 	pieceId: PieceId
 	name: string
+	segmentName: string
 	status: RundownAPI.PieceStatusCode
 	message: string | null
 }
@@ -27,6 +28,6 @@ export type RankedNote = (PartNote | SegmentNote | RundownNote) & {
 }
 
 export interface RundownNotificationsAPI {
-	getSegmentPartNotes(rRundownIds: RundownId[]): Promise<RankedNote[]>
+	getSegmentPartNotes(rundownIds: RundownId[]): Promise<RankedNote[]>
 	getMediaObjectIssues(rundownIds: RundownId[]): Promise<IMediaObjectIssue[]>
 }

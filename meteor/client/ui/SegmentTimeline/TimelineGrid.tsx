@@ -295,7 +295,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 					gridFont.load()
 					gridFont.loaded
 						.then((fontFace) => {
-							// console.log('Grid font loaded: ' + fontFace.status)
 							gridFontAvailable = true
 							window.requestAnimationFrame(() => {
 								this.repaint()
@@ -339,9 +338,6 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	}
 
 	componentWillUnmount() {
-		// console.log('Detach resize notifiers')
-
-		// $(window).off('resize', this.onCanvasResize)
 		this._resizeObserver.disconnect()
 	}
 }

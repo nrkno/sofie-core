@@ -40,6 +40,15 @@
 		padding: 0;
 		cursor: pointer;
 
+		&.notifications-text {
+			> .notification {
+				position: absolute;
+				top: 15%;
+				right: 15%;
+				left: auto;
+			}
+		}
+
 		&::after {
 			content: ' ';
 			position: absolute;
@@ -52,6 +61,12 @@
 			height: $fullscreen-controls__button--radius;
 			background: transparentize(#4b4b4b, 0.45);
 			transition: 0.3s background-color;
+		}
+
+		&.status-bar__controls__button--open {
+			&::after {
+				background: #fff;
+			}
 		}
 
 		&.status-bar__controls__button--inactive {
@@ -111,6 +126,14 @@
 				display: inline !important;
 			}
 		}
+
+		&.status-bar__controls__button--route-set {
+			display: inline;
+			opacity: 1;
+			font-size: 0.7em;
+			text-transform: uppercase;
+			font-weight: 600;
+		}
 	}
 
 	.status-bar__controls__label {
@@ -161,6 +184,13 @@
 			border: none !important;
 			margin-left: 0 !important;
 			background-color: #eee;
+			&.notifications__toggle-button {
+				background-color: #acacad;
+			}
+		}
+
+		&.status-bar__controls__button--route-set-panel {
+			z-index: 310;
 		}
 	}
 }

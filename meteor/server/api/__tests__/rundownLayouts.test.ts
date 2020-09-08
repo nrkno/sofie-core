@@ -1,16 +1,17 @@
+import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
+import { Random } from 'meteor/random'
 import '../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 } from '../../../__mocks__/helpers/database'
-import { getHash, waitForPromise, protectString } from '../../../lib/lib'
-import { ClientAPI } from '../../../lib/api/client'
-import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
-import { MeteorCall } from '../../../lib/api/methods'
-import { RundownLayoutType, RundownLayouts } from '../../../lib/collections/RundownLayouts'
+import { protectString, literal, unprotectString } from '../../../lib/lib'
+import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
+import { Response as MockResponse, Request as MockRequest } from 'mock-http'
+import { RundownLayoutType, RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed
@@ -22,7 +23,7 @@ enum RundownLayoutsAPIMethods { // Using our own method definition, to catch ext
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment
-	beforeEach(() => {
+	beforeAll(() => {
 		env = setupDefaultStudioEnvironment()
 	})
 	let rundownLayoutId: string
@@ -51,5 +52,195 @@ describe('Rundown Layouts', () => {
 
 		const item1 = RundownLayouts.findOne(protectString(rundownLayoutId))
 		expect(item1).toBeUndefined()
+	})
+
+	describe('HTTP API', () => {
+		function makeMockLayout(env: DefaultEnvironment) {
+			const rundownLayoutId = Random.id()
+			const mockLayout = literal<RundownLayout>({
+				_id: protectString(rundownLayoutId),
+				name: 'MOCK LAYOUT',
+				filters: [],
+				showStyleBaseId: env.showStyleBaseId,
+				type: RundownLayoutType.RUNDOWN_LAYOUT,
+				exposeAsShelf: false,
+				exposeAsStandalone: false,
+				icon: '',
+				iconColor: '',
+			})
+			return { rundownLayout: mockLayout, rundownLayoutId }
+		}
+
+		testInFiber('download shelf layout', () => {
+			const { rundownLayout: mockLayout, rundownLayoutId } = makeMockLayout(env)
+			RundownLayouts.insert(mockLayout)
+
+			const routeName = '/shelfLayouts/download/:id'
+			const route = PickerMock.mockRoutes[routeName]
+			expect(route).toBeTruthy()
+
+			{
+				const fakeId = 'FAKE_ID'
+				const res = new MockResponse()
+				const req = new MockRequest({
+					method: 'GET',
+					url: `/shelfLayouts/download/${fakeId}`,
+				})
+
+				route.handler({ id: fakeId }, req, res, jest.fn())
+
+				const resStr = parseResponseBuffer(res)
+				expect(resStr).toMatchObject(
+					literal<Partial<MockResponseDataString>>({
+						statusCode: 404,
+						timedout: false,
+						ended: true,
+					})
+				)
+				expect(resStr.bufferStr).toContain('not found')
+			}
+
+			{
+				const res = new MockResponse()
+				const req = new MockRequest({
+					method: 'GET',
+					url: `/shelfLayouts/download/${rundownLayoutId}`,
+				})
+
+				route.handler({ id: rundownLayoutId }, req, res, jest.fn())
+
+				const resStr = parseResponseBuffer(res)
+				expect(resStr).toMatchObject(
+					literal<Partial<MockResponseDataString>>({
+						statusCode: 200,
+						headers: {
+							'content-type': 'application/json',
+						},
+						timedout: false,
+						ended: true,
+					})
+				)
+
+				const layout = JSON.parse(resStr.bufferStr)
+				expect(layout).toMatchObject(mockLayout)
+			}
+		})
+
+		testInFiber('upload shelf layout', () => {
+			const { rundownLayout: mockLayout, rundownLayoutId } = makeMockLayout(env)
+			const routeName = '/shelfLayouts/upload/:showStyleBaseId'
+			const route = PickerMock.mockRoutes[routeName]
+			expect(route).toBeTruthy()
+
+			{
+				// try to upload to a non-existent showStyleBase
+				const fakeId = 'FAKE_ID'
+				const res = new MockResponse()
+				const req = new MockRequest({
+					method: 'POST',
+					url: `/shelfLayouts/upload/${fakeId}`,
+				})
+				req.body = JSON.stringify(mockLayout)
+
+				route.handler({ showStyleBaseId: fakeId }, req, res, jest.fn())
+
+				const resStr = parseResponseBuffer(res)
+				expect(resStr).toMatchObject(
+					literal<Partial<MockResponseDataString>>({
+						statusCode: 500,
+						timedout: false,
+						ended: true,
+					})
+				)
+				expect(resStr.bufferStr).toContain('not found')
+			}
+
+			{
+				// try not to send a request body
+				const res = new MockResponse()
+				const req = new MockRequest({
+					method: 'POST',
+					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
+				})
+
+				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+
+				const resStr = parseResponseBuffer(res)
+				expect(resStr).toMatchObject(
+					literal<Partial<MockResponseDataString>>({
+						statusCode: 500,
+						timedout: false,
+						ended: true,
+					})
+				)
+				expect(resStr.bufferStr).toContain('body')
+			}
+
+			{
+				// try to send too short a body
+				const res = new MockResponse()
+				const req = new MockRequest({
+					method: 'POST',
+					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
+				})
+				req.body = 'sdf'
+
+				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+
+				const resStr = parseResponseBuffer(res)
+				expect(resStr).toMatchObject(
+					literal<Partial<MockResponseDataString>>({
+						statusCode: 500,
+						timedout: false,
+						ended: true,
+					})
+				)
+				expect(resStr.bufferStr).toContain('body')
+			}
+
+			{
+				// try to send a malformed body
+				const res = new MockResponse()
+				const req = new MockRequest({
+					method: 'POST',
+					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
+				})
+				req.body = '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }'
+
+				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+
+				const resStr = parseResponseBuffer(res)
+				expect(resStr).toMatchObject(
+					literal<Partial<MockResponseDataString>>({
+						statusCode: 500,
+						timedout: false,
+						ended: true,
+					})
+				)
+				expect(resStr.bufferStr).toContain('SyntaxError')
+			}
+
+			{
+				const res = new MockResponse()
+				const req = new MockRequest({
+					method: 'POST',
+					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
+				})
+				req.body = JSON.stringify(mockLayout)
+
+				route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+
+				const resStr = parseResponseBuffer(res)
+				expect(resStr).toMatchObject(
+					literal<Partial<MockResponseDataString>>({
+						statusCode: 200,
+						timedout: false,
+						ended: true,
+					})
+				)
+
+				expect(RundownLayouts.findOne(mockLayout._id)).toBeTruthy()
+			}
+		})
 	})
 })

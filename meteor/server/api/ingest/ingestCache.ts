@@ -16,8 +16,11 @@ import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
+import { profiler } from '../profiler'
 
 export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: string): LocalIngestRundown {
+	const span = profiler.startSpan('ingest.ingestCache.loadCachedRundownData')
+
 	const cacheEntries = IngestDataCache.find({ rundownId: rundownId }).fetch()
 
 	const cachedRundown = cacheEntries.find((e) => e.type === IngestCacheType.RUNDOWN)
@@ -50,6 +53,7 @@ export function loadCachedRundownData(rundownId: RundownId, rundownExternalId: s
 
 	ingestRundown.segments = _.sortBy(ingestRundown.segments, (s) => s.rank)
 
+	span?.end()
 	return ingestRundown
 }
 export function loadCachedIngestSegment(
@@ -131,6 +135,8 @@ export function saveRundownCache(rundownId: RundownId, ingestRundown: LocalInges
 	)
 }
 export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ingestSegment: LocalIngestSegment) {
+	const span = profiler.startSpan('ingest.ingestCache.saveSegmentCache')
+
 	// cache the Data:
 	const cacheEntries: IngestDataCacheObj[] = generateCacheForSegment(rundownId, ingestSegment)
 	saveIntoDb<IngestDataCacheObj, IngestDataCacheObj>(
@@ -141,6 +147,8 @@ export function saveSegmentCache(rundownId: RundownId, segmentId: SegmentId, ing
 		},
 		cacheEntries
 	)
+
+	span?.end()
 }
 interface LocalIngestBase {
 	modified: number

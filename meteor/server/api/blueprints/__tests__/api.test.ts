@@ -8,8 +8,23 @@ import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/
 import { BlueprintAPIMethods } from '../../../../lib/api/blueprint'
 import { Meteor } from 'meteor/meteor'
 import { insertBlueprint, uploadBlueprint } from '../api'
+import { MethodContext } from '../../../../lib/api/methods'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
+
+const DEFAULT_CONTEXT: MethodContext = {
+	userId: null,
+	isSimulation: false,
+	connection: {
+		id: 'mockConnectionId',
+		close: () => {},
+		onClose: () => {},
+		clientAddress: '127.0.0.1',
+		httpHeaders: {},
+	},
+	setUserId: () => {},
+	unblock: () => {},
+}
 
 describe('Test blueprint management api', () => {
 	beforeAll(() => {
@@ -27,6 +42,7 @@ describe('Test blueprint management api', () => {
 			const blueprint: Blueprint = {
 				_id: getRandomId(),
 				name: 'Fake blueprint',
+				organizationId: null,
 				code: `({default: (() => 5)()})`,
 				created: 0,
 				modified: 0,
@@ -64,7 +80,7 @@ describe('Test blueprint management api', () => {
 
 			try {
 				Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, '')
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint not found`)
 			}
@@ -77,7 +93,7 @@ describe('Test blueprint management api', () => {
 
 			try {
 				Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id + '_no')
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint not found`)
 			}
@@ -114,7 +130,7 @@ describe('Test blueprint management api', () => {
 
 			try {
 				Meteor.call(BlueprintAPIMethods.assignSystemBlueprint, blueprint._id)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint not of type SYSTEM`)
 			}
@@ -128,7 +144,7 @@ describe('Test blueprint management api', () => {
 		testInFiber('undefined id', () => {
 			try {
 				Meteor.call(BlueprintAPIMethods.removeBlueprint)
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`Match error: Expected string, got undefined`)
 			}
@@ -137,7 +153,7 @@ describe('Test blueprint management api', () => {
 		testInFiber('empty id', () => {
 			try {
 				Meteor.call(BlueprintAPIMethods.removeBlueprint, '')
-				expect(true).toBe(false) // Please throw and don't get here
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[404] Blueprint id "" was not found`)
 			}
@@ -176,7 +192,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('with name', () => {
 			const rawName = 'some_fake_name'
-			const newId = insertBlueprint(undefined, rawName)
+			const newId = insertBlueprint(DEFAULT_CONTEXT, undefined, rawName)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -187,7 +203,7 @@ describe('Test blueprint management api', () => {
 		})
 		testInFiber('with type', () => {
 			const type = BlueprintManifestType.STUDIO
-			const newId = insertBlueprint(type, undefined)
+			const newId = insertBlueprint(DEFAULT_CONTEXT, type, undefined)
 			expect(newId).toBeTruthy()
 
 			// Check some props
@@ -201,24 +217,24 @@ describe('Test blueprint management api', () => {
 	describe('uploadBlueprint', () => {
 		testInFiber('empty id', () => {
 			try {
-				uploadBlueprint(protectString(''), '0')
-				expect(true).toBe(false) // Please throw and don't get here
+				uploadBlueprint(DEFAULT_CONTEXT, protectString(''), '0')
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint id "" is not valid`)
 			}
 		})
 		testInFiber('empty body', () => {
 			try {
-				uploadBlueprint(protectString('blueprint99'), '')
-				expect(true).toBe(false) // Please throw and don't get here
+				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), '')
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 failed to parse`)
 			}
 		})
 		testInFiber('body not a manifest', () => {
 			try {
-				uploadBlueprint(protectString('blueprint99'), `({default: (() => 5)()})`)
-				expect(true).toBe(false) // Please throw and don't get here
+				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), `({default: (() => 5)()})`)
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(`[400] Blueprint blueprint99 returned a manifest of type number`)
 			}
@@ -243,8 +259,8 @@ describe('Test blueprint management api', () => {
 				}
 			})
 			try {
-				uploadBlueprint(protectString('blueprint99'), blueprintStr)
-				expect(true).toBe(false) // Please throw and don't get here
+				uploadBlueprint(DEFAULT_CONTEXT, protectString('blueprint99'), blueprintStr)
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[400] Blueprint blueprint99 returned a manifest of unknown blueprintType "undefined"`
@@ -274,8 +290,8 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 
 			try {
-				uploadBlueprint(existingBlueprint._id, blueprintStr)
-				expect(true).toBe(false) // Please throw and don't get here
+				uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[400] Cannot replace old blueprint (of type \"showstyle\") with new blueprint of type \"studio\"`
@@ -302,12 +318,13 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint(protectString('tmp_showstyle'), blueprintStr)
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_showstyle'), blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: protectString('tmp_showstyle'),
 					name: 'tmp_showstyle',
+					organizationId: null,
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintId: protectString('ss1'),
 					blueprintVersion: '0.1.0',
@@ -339,12 +356,13 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint(protectString('tmp_studio'), blueprintStr, 'tmp name')
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_studio'), blueprintStr, 'tmp name')
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: protectString('tmp_studio'),
 					name: 'tmp name',
+					organizationId: null,
 					blueprintId: protectString(''),
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
@@ -377,12 +395,13 @@ describe('Test blueprint management api', () => {
 				}
 			)
 
-			const blueprint = uploadBlueprint(protectString('tmp_system'), blueprintStr, 'tmp name')
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, protectString('tmp_system'), blueprintStr, 'tmp name')
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: protectString('tmp_system'),
 					name: 'tmp name',
+					organizationId: null,
 					blueprintId: protectString('sys'),
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
@@ -418,12 +437,13 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeFalsy()
 
-			const blueprint = uploadBlueprint(existingBlueprint._id, blueprintStr)
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
+					organizationId: null,
 					blueprintId: protectString(''),
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
@@ -463,12 +483,13 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint).toBeTruthy()
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
-			const blueprint = uploadBlueprint(existingBlueprint._id, blueprintStr)
+			const blueprint = uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
 			expect(blueprint).toBeTruthy()
 			expect(blueprint).toMatchObject(
 				literal<Omit<Blueprint, 'created' | 'modified' | 'databaseVersion'>>({
 					_id: existingBlueprint._id,
 					name: existingBlueprint.name,
+					organizationId: null,
 					blueprintId: protectString('ss1'),
 					blueprintType: BLUEPRINT_TYPE,
 					blueprintVersion: '0.1.0',
@@ -509,8 +530,8 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
 			try {
-				uploadBlueprint(existingBlueprint._id, blueprintStr)
-				expect(true).toBe(false) // Please throw and don't get here
+				uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[422] Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"show2\"`
@@ -544,8 +565,8 @@ describe('Test blueprint management api', () => {
 			expect(existingBlueprint.blueprintId).toBeTruthy()
 
 			try {
-				uploadBlueprint(existingBlueprint._id, blueprintStr)
-				expect(true).toBe(false) // Please throw and don't get here
+				uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)
+				fail('expected to throw')
 			} catch (e) {
 				expect(e.message).toBe(
 					`[422] Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"\"`

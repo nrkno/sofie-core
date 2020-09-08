@@ -4,14 +4,13 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../../__mocks__/helpers/jest'
 import { Rundowns, Rundown, DBRundown } from '../../../../../lib/collections/Rundowns'
-import { Segments as _Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
-import { Parts as _Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
+import { Segments, DBSegment, Segment, SegmentId } from '../../../../../lib/collections/Segments'
+import { Parts, DBPart, Part } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { literal, waitForPromise, protectString } from '../../../../../lib/lib'
 
 import { mockRO } from './mock-mos-data'
 import { UpdateNext } from '../../updateNext'
-import { mockupCollection } from '../../../../../__mocks__/helpers/lib'
 import { fixSnapshot } from '../../../../../__mocks__/helpers/snapshot'
 import { Pieces } from '../../../../../lib/collections/Pieces'
 import { RundownPlaylists, RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
@@ -21,9 +20,6 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 jest.mock('../../updateNext')
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
-
-const Segments = mockupCollection(_Segments)
-const Parts = mockupCollection(_Parts)
 
 function getPartIdMap(segments: DBSegment[], parts: DBPart[]) {
 	const sortedParts = RundownPlaylist._sortPartsInner(parts, segments)
@@ -112,7 +108,6 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(fixSnapshot(Segments.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 		expect(fixSnapshot(Parts.find({ rundownId: rundown._id }).fetch(), true)).toMatchSnapshot()
 	})
-
 	testInFiber('mosRoDelete', () => {
 		const roData = mockRO.roCreate()
 		const rundown = Rundowns.findOne({ externalId: roData.ID.toString() }) as DBRundown
@@ -138,7 +133,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoDelete(device._id, device.token, roData.ID))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -186,7 +181,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStatus(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -229,7 +224,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoReadyToAir(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -283,7 +278,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/Rundown.*not found/i)
 		}
@@ -306,7 +301,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryStatus(device._id, device.token, payload))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${partExternalId} in rundown ${rundown.externalId} not found`)
 		}
@@ -418,7 +413,7 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(
 				MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
 			)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 		}
@@ -443,7 +438,7 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(
 				MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData])
 			)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[500] Parts ${newPartData.ID.toString()} already exist in rundown ${rundown.externalId}`
@@ -467,7 +462,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 	// 	// try {
 	// waitForPromise(MeteorCall.peripheralDevice.mosRoStoryInsert(device._id, device.token, action, [newPartData]))
-	// 	// 	expect(true).toBe(false) // Please throw and don't get here
+	// 	// 	fail('expected to throw')
 	// 	// } catch (e) {
 	// 	// 	expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 	// 	// }
@@ -533,7 +528,7 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(
 				MeteorCall.peripheralDevice.mosRoStoryReplace(device._id, device.token, action, [newPartData])
 			)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Part ${action.StoryID.toString()} in rundown ${rundown.externalId} not found`)
 		}
@@ -592,7 +587,7 @@ describe('Test recieved mos ingest payloads', () => {
 			waitForPromise(
 				MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, partExternalIds)
 			)
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Parts fakeId in rundown ${rundown.externalId} were not found`)
 		}
@@ -638,7 +633,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[404] Part "${story.ID.toString()}" in rundown "${rundown.externalId}" is missing cached ingest data`
@@ -658,7 +653,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoFullStory(device._id, device.token, story))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toMatch(/not found/)
 		}
@@ -746,7 +741,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story0))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[400] Cannot swap part ${story0} with itself in rundown ${action.RunningOrderID.toString()}`
@@ -766,14 +761,14 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story0, story1))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
 		}
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStorySwap(device._id, device.token, action, story1, story0))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(`[404] Story ${story1} not found in rundown ${action.RunningOrderID.toString()}`)
 		}
@@ -936,7 +931,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
@@ -960,7 +955,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[404] Part ${action.StoryID.toString()} was not found in rundown ${action.RunningOrderID.toString()}`
@@ -987,7 +982,7 @@ describe('Test recieved mos ingest payloads', () => {
 
 		try {
 			waitForPromise(MeteorCall.peripheralDevice.mosRoStoryMove(device._id, device.token, action, stories))
-			expect(true).toBe(false) // Please throw and don't get here
+			fail('expected to throw')
 		} catch (e) {
 			expect(e.message).toBe(
 				`[404] Parts ro1;s1;p999 were not found in rundown ${action.RunningOrderID.toString()}`
@@ -1003,8 +998,6 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 
 		const partExternalId = 'ro1;s1;p1'
-
-		// console.log(rundown.getParts())
 
 		const partToBeRemoved = rundown.getParts({ externalId: partExternalId })[0]
 		expect(partToBeRemoved).toBeTruthy()
@@ -1033,13 +1026,9 @@ describe('Test recieved mos ingest payloads', () => {
 			RunningOrderID: new MOS.MosString128(rundown.externalId),
 		})
 
-		Segments.mockClear()
-		Parts.mockClear()
-
 		// This should only remove the first part in the segment. No other parts should be affected
 		waitForPromise(MeteorCall.peripheralDevice.mosRoStoryDelete(device._id, device.token, action, [partExternalId]))
 
-		expect(Segments.remove).toHaveBeenCalled()
 		expect(Segments.findOne(partToBeRemoved.segmentId)).toBeFalsy()
 
 		const partAfter = Parts.findOne(partsInSegmentBefore[2]._id) as Part

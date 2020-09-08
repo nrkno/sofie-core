@@ -75,7 +75,6 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 				onAccept: (e: any) => {
 					PeripheralDevicesAPI.restartDevice(device, e)
 						.then((res) => {
-							// console.log(res)
 							NotificationCenter.push(
 								new Notification(
 									undefined,

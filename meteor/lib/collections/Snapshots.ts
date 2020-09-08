@@ -5,6 +5,8 @@ import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { RundownId } from './Rundowns'
 import { RundownPlaylistId } from './RundownPlaylists'
+import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 export enum SnapshotType {
 	RUNDOWN = 'rundown', // to be deprecated?
@@ -17,6 +19,9 @@ export type SnapshotId = ProtectedString<'SnapshotId'>
 
 export interface SnapshotBase {
 	_id: SnapshotId
+	/** If set, the organization the owns this Snapshot */
+	organizationId: OrganizationId | null
+
 	type: SnapshotType
 	created: Time
 	name: string
@@ -57,10 +62,9 @@ export const Snapshots: TransformedCollection<SnapshotItem, SnapshotItem> = crea
 )
 registerCollection('Snapshots', Snapshots)
 
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Snapshots._ensureIndex({
-			timestamp: 1,
-		})
-	}
+registerIndex(Snapshots, {
+	organizationId: 1,
+})
+registerIndex(Snapshots, {
+	created: 1,
 })

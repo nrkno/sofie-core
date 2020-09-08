@@ -1,12 +1,12 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: i18next-conv\n"
-"MIME-Version: 1.0\n"
+"mime-version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2020-06-23T09:53:07.760Z\n"
-"PO-Revision-Date: 2020-06-23T09:53:07.760Z\n"
+"POT-Creation-Date: 2020-07-23T12:05:07.470Z\n"
+"PO-Revision-Date: 2020-07-23T12:05:07.471Z\n"
 
 msgid "Return to list"
 msgstr ""
@@ -29,6 +29,11 @@ msgstr ""
 msgid "Did you have any problems with the broadcast?"
 msgstr ""
 
+msgid ""
+"Please explain the problems you experienced (what happened and when, what "
+"should have happened, what could have triggered the problems, etcetera...)"
+msgstr ""
+
 msgid "Your name"
 msgstr ""
 
@@ -44,10 +49,21 @@ msgstr ""
 msgid "Something went wrong, and it affected the output"
 msgstr ""
 
+msgid ""
+"Trimming this clip has timed out. It's possible that the story is currently "
+"locked for writing in {{nrcsName}} and will eventually be updated. Make "
+"sure that the story is not being edited by other users."
+msgstr ""
+
 msgid "Trimming this clip has failed due to an error: {{error}}."
 msgstr ""
 
 msgid "Trimmed succesfully."
+msgstr ""
+
+msgid ""
+"Trimming this clip is taking longer than expected. It's possible that the "
+"story is locked for writing in {{nrcsName}}."
 msgstr ""
 
 msgid "Trim \"{{name}}\""
@@ -229,7 +245,7 @@ msgstr ""
 msgid "Air Status"
 msgstr ""
 
-msgid "Unsynced from MOS"
+msgid "Unsynced from {{nrcsName}}"
 msgstr ""
 
 msgid "Sofie Automation"
@@ -254,6 +270,11 @@ msgid "Yes"
 msgstr ""
 
 msgid "No"
+msgstr ""
+
+msgid ""
+"You are in rehearsal mode, the broadcast starts in less than 1 minute. Do "
+"you want to reset the rundown and go into playout mode?"
 msgstr ""
 
 msgid "Started"
@@ -324,6 +345,13 @@ msgstr ""
 msgid "Another Rundown is Already Active!"
 msgstr ""
 
+msgid ""
+"The rundown \"{{rundownName}}\" will need to be deactivated in order to "
+"activate this one.\n"
+"\n"
+"Are you sure you want to activate this one anyway?"
+msgstr ""
+
 msgid "Activate Anyway"
 msgstr ""
 
@@ -357,7 +385,7 @@ msgstr ""
 msgid "Prepare Studio and Activate (Rehearsal)"
 msgstr ""
 
-msgid "Reload ENPS Data"
+msgid "Reload {{nrcsName}} Data"
 msgstr ""
 
 msgid "Store Snapshot"
@@ -388,6 +416,11 @@ msgid "Change to fullscreen mode"
 msgstr ""
 
 msgid "This rundown is now active. Are you sure you want to exit this screen?"
+msgstr ""
+
+msgid ""
+"There are no Playout Gateways connected and attached to this studio. Please "
+"contact the system administrator to start the Playout Gateway."
 msgstr ""
 
 msgid "Playout Gateway \"{{playoutDeviceName}}\" is now restarting."
@@ -426,6 +459,9 @@ msgstr ""
 msgid "Error: The studio of this Rundown was not found."
 msgstr ""
 
+msgid "This playlist is empty"
+msgstr ""
+
 msgid "Error: The ShowStyle of this Rundown was not found."
 msgstr ""
 
@@ -443,12 +479,22 @@ msgstr ""
 msgid "Remove just the rundown"
 msgstr ""
 
+msgid ""
+"Do you really want to remove just the rundown \"{{rundownName}}\" in the "
+"playlist {{playlistName}}? This cannot be undone!"
+msgstr ""
+
 msgid "Remove rundown playlist"
 msgstr ""
 
 msgid ""
-"The Rundown has been UNSYNCED from ENPS! No data updates will currently "
-"come through."
+"Do you really want to remove the rundownPlaylist \"{{rundownName}}\"? This "
+"cannot be undone!"
+msgstr ""
+
+msgid ""
+"The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will "
+"currently come through."
 msgstr ""
 
 msgid "Re-sync"
@@ -457,16 +503,35 @@ msgstr ""
 msgid "Re-sync Rundown"
 msgstr ""
 
+msgid ""
+"Are you sure you want to re-sync the Rundown?\n"
+"(If the currently playing Part has been changed, this can affect the output)"
+msgstr ""
+
 msgid "Restart"
 msgstr ""
 
+msgid ""
+"Fixing this problem requires a restart to the host device. Are you sure you "
+"want to restart {{device}}?\n"
+"(This might affect output)"
+msgstr ""
+
 msgid "Device \"{{deviceName}}\" restarting..."
+msgstr ""
+
+msgid "Failed to restart device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Show issue"
 msgstr ""
 
 msgid "External message queue has unsent messages."
+msgstr ""
+
+msgid ""
+"The system configuration has been changed since importing this rundown. It "
+"might not run correctly"
 msgstr ""
 
 msgid "Unable to check the system configuration for changes"
@@ -514,7 +579,7 @@ msgstr ""
 msgid "More than a day ago"
 msgstr ""
 
-msgid "MOS Connection"
+msgid "{{nrcsName}} Connection"
 msgstr ""
 
 msgid "Last update"
@@ -870,13 +935,15 @@ msgstr ""
 msgid "Peripheral Device is outdated"
 msgstr ""
 
+msgid ""
+"The config UI is now driven by manifests fed by the device. This device "
+"needs updating to provide the configManifest to be configurable"
+msgstr ""
+
 msgid "Are you sure you want to restart this device?"
 msgstr ""
 
 msgid "Restart this Device?"
-msgstr ""
-
-msgid "Failed to restart device: \"{{deviceName}}\": {{errorMessage}}"
 msgstr ""
 
 msgid "Generic Properties"
@@ -889,6 +956,11 @@ msgid "Restart Device"
 msgstr ""
 
 msgid "Reset Database Version"
+msgstr ""
+
+msgid ""
+"Are you sure you want to reset the database version?\n"
+"Only do this if you plan on running the migration right after."
 msgstr ""
 
 msgid "Version for {{name}}: From {{fromVersion}} to {{toVersion}}"
@@ -907,6 +979,11 @@ msgid "Migrate database"
 msgstr ""
 
 msgid "All steps"
+msgstr ""
+
+msgid ""
+"The migration consists of several phases, you will get more options after "
+"you've this migration"
 msgstr ""
 
 msgid "The migration can be completed automatically."
@@ -938,6 +1015,12 @@ msgid ""
 msgstr ""
 
 msgid "Force Migration"
+msgstr ""
+
+msgid ""
+"Are you sure you want to force the migration? This will bypass the "
+"migration checks, so be sure to verify that the values in the settings are "
+"correct!"
 msgstr ""
 
 msgid "Force Migration (unsafe)"
@@ -1009,9 +1092,6 @@ msgstr ""
 msgid "Display Rank"
 msgstr ""
 
-msgid "Enable search toolbar"
-msgstr ""
-
 msgid "Only Display AdLibs from Current Segment"
 msgstr ""
 
@@ -1043,6 +1123,9 @@ msgid "Hide Panel from view"
 msgstr ""
 
 msgid "Show panel as a timeline"
+msgstr ""
+
+msgid "Enable search toolbar"
 msgstr ""
 
 msgid "Overflow horizontally"
@@ -1082,9 +1165,6 @@ msgid "Add tab"
 msgstr ""
 
 msgid "Add panel"
-msgstr ""
-
-msgid "Add button"
 msgstr ""
 
 msgid "Upload Layout?"
@@ -1239,8 +1319,8 @@ msgid "Exclusivity group"
 msgstr ""
 
 msgid ""
-"Add some source layers (e.g. Graphics) for your ENPS data to appear in "
-"rundowns"
+"Add some source layers (e.g. Graphics) for your {{nrcsName}} data to appear "
+"in rundowns"
 msgstr ""
 
 msgid "No source layers set"
@@ -1315,6 +1395,11 @@ msgid "Snapshot restore failed: {{errorMessage}}"
 msgstr ""
 
 msgid "Full System Snapshot"
+msgstr ""
+
+msgid ""
+"A Full System Snapshot contains all system settings (studios, showstyles, "
+"blueprints, devices, etc.)"
 msgstr ""
 
 msgid "Take a Full System Snapshot"
@@ -1503,6 +1588,9 @@ msgid "Show style not set"
 msgstr ""
 
 msgid "Click to show available Show Styles"
+msgstr ""
+
+msgid "Enable Play from Anywhere™"
 msgstr ""
 
 msgid "Media Preview URL"

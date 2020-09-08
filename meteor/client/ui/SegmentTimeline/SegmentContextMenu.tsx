@@ -14,7 +14,7 @@ import { Settings } from '../../../lib/Settings'
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
 	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
-	onResyncSegment: (segmentId: SegmentId, e: any) => void
+	onResyncSegment: (segment: SegmentUi, e: any) => void
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
@@ -44,7 +44,7 @@ export const SegmentContextMenu = withTranslation()(
 					<ContextMenu id="segment-timeline-context-menu">
 						{part && !part.instance.part.invalid && timecode !== null && (
 							<React.Fragment>
-								{startsAt !== null && (
+								{startsAt !== null && !part.instance.part.dynamicallyInsertedAfterPartId && (
 									<MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)} disabled={isCurrentPart}>
 										<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> (
 										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
@@ -98,7 +98,7 @@ export const SegmentContextMenu = withTranslation()(
 		) => {
 			if (segment && segment.unsynced) {
 				return (
-					<MenuItem onClick={(e) => this.props.onResyncSegment(segment._id, e)}>
+					<MenuItem onClick={(e) => this.props.onResyncSegment(segment, e)}>
 						<span>{t('Resync Segment')}</span>
 					</MenuItem>
 				)

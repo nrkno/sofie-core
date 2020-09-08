@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber, beforeEachInFiber } from '../../../../__mocks__/helpers/jest'
-import { mockupCollection } from '../../../../__mocks__/helpers/lib'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
@@ -105,16 +104,19 @@ describe('Playout Actions', () => {
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(0)
 
 		// prepareStudioForBroadcast
-		const playlistId = { _id: protectString<RundownPlaylistId>('some-id') } as RundownPlaylist
+		const playlist = {
+			_id: protectString<RundownPlaylistId>('some-id'),
+			studioId: env.studio._id,
+		} as RundownPlaylist
 		const okToDestroyStuff = true
 		wrapWithCacheForRundownPlaylistFromStudio(env.studio._id, (cache) =>
-			prepareStudioForBroadcast(cache, env.studio, okToDestroyStuff, playlistId)
+			prepareStudioForBroadcast(okToDestroyStuff, playlist)
 		)
 
 		expect(getPeripheralDeviceCommands(playoutDevice)).toHaveLength(1)
 		expect(getPeripheralDeviceCommands(playoutDevice)[0]).toMatchObject({
 			functionName: 'devicesMakeReady',
-			args: [okToDestroyStuff, playlistId._id],
+			args: [okToDestroyStuff, playlist._id],
 		})
 	})
 })
