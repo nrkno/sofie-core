@@ -204,7 +204,7 @@ export function getResolvedPieces(
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	const now = getCurrentTime()
-	const partStarted = partInstance.part.getLastStartedPlayback()
+	const partStarted = partInstance.timings?.startedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
 	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)

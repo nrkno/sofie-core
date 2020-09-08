@@ -57,10 +57,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 		{
 			$unset: {
 				duration: 1,
-				startedPlayback: 1,
-				taken: 1,
-				timings: 1,
-				stoppedPlayback: 1,
 			},
 		}
 	)
@@ -151,10 +147,6 @@ export function resetRundownPlaylist(cache: CacheForRundownPlaylist, rundownPlay
 		{
 			$unset: {
 				duration: 1,
-				startedPlayback: 1,
-				timings: 1,
-				stoppedPlayback: 1,
-				taken: 1,
 			},
 		}
 	)
@@ -571,9 +563,6 @@ function resetPart(cache: CacheForRundownPlaylist, part: Part): void {
 		{
 			$unset: {
 				duration: 1,
-				startedPlayback: 1,
-				taken: 1,
-				stoppedPlayback: 1,
 			},
 		}
 	)
@@ -598,18 +587,17 @@ export function onPartHasStoppedPlaying(
 	partInstance: PartInstance,
 	stoppedPlayingTime: Time
 ) {
-	const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
-	if (partInstance.part.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
+	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
-				'part.duration': stoppedPlayingTime - lastStartedPlayback,
+				'part.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
 			},
 		})
 
 		// TODO-PartInstance - pending new data flow
 		cache.Parts.update(partInstance.part._id, {
 			$set: {
-				duration: stoppedPlayingTime - lastStartedPlayback,
+				duration: stoppedPlayingTime - partInstance.timings.startedPlayback,
 			},
 		})
 	} else {
@@ -684,8 +672,8 @@ export function isTooCloseToAutonext(currentPartInstance: PartInstance | undefin
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
 
-	const start = currentPartInstance.part.getLastStartedPlayback()
-	const offset = currentPartInstance.part.getLastPlayOffset()
+	const start = currentPartInstance.timings?.startedPlayback
+	const offset = currentPartInstance.timings?.playOffset
 	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
 		// date.now - start = playback duration, duration + offset gives position in part
 		const playbackDuration = getCurrentTime() - start + offset

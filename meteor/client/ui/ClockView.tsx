@@ -191,9 +191,8 @@ const ClockComponent = withTranslation()(
 						if (currentPart) {
 							currentSegmentDuration += currentPart.renderedDuration || currentPart.instance.part.expectedDuration || 0
 							currentSegmentDuration += -1 * (currentPart.instance.part.duration || 0)
-							if (!currentPart.instance.part.duration && currentPart.instance.part.startedPlayback) {
-								currentSegmentDuration +=
-									-1 * (getCurrentTime() - (currentPart.instance.part.getLastStartedPlayback() || 0))
+							if (!currentPart.instance.part.duration && currentPart.instance.timings?.startedPlayback) {
+								currentSegmentDuration += -1 * (getCurrentTime() - currentPart.instance.timings.startedPlayback)
 							}
 						}
 

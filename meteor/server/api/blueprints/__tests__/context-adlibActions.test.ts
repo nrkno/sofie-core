@@ -759,15 +759,14 @@ describe('Test blueprint api context', () => {
 
 					partInstance.part.autoNext = true
 					partInstance.part.expectedDuration = 4000
-					partInstance.part.startedPlayback = true
-					partInstance.part.timings = {
-						startedPlayback: [getCurrentTime()],
-						stoppedPlayback: [],
-						playOffset: [0],
-						take: [],
-						takeDone: [],
-						takeOut: [],
-						next: [],
+					partInstance.timings = {
+						startedPlayback: getCurrentTime(),
+						stoppedPlayback: undefined,
+						playOffset: 0,
+						take: undefined,
+						takeDone: undefined,
+						takeOut: undefined,
+						next: undefined,
 					}
 					expect(isTooCloseToAutonext(partInstance, false)).toBeTruthy()
 					expect(() => context.queuePart({} as any, [{}] as any)).toThrowError(

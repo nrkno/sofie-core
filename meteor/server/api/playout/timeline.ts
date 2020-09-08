@@ -144,7 +144,7 @@ function getPartInstanceTimelineInfo(
 	partInstance: PartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
-		const partLastStarted = partInstance.part.getLastStartedPlayback()
+		const partLastStarted = partInstance.timings?.startedPlayback
 		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
 		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
@@ -407,7 +407,6 @@ function buildTimelineObjsForRundown(
 
 	// Currently playing:
 	if (partInstancesInfo.current) {
-		const partLastStarted = partInstancesInfo.current.partInstance.part.getLastStartedPlayback()
 		const [currentInfinitePieces, currentNormalItems] = _.partition(
 			partInstancesInfo.current.pieceInstances,
 			(l) => !!l.infinite && l.piece.lifespan !== PieceLifespan.WithinPart
@@ -419,7 +418,7 @@ function buildTimelineObjsForRundown(
 		if (partInstancesInfo.previous) {
 			allowTransition = !partInstancesInfo.previous.partInstance.part.disableOutTransition
 
-			const previousPartLastStarted = partInstancesInfo.previous.partInstance.part.getLastStartedPlayback() ?? 0
+			const previousPartLastStarted = partInstancesInfo.previous.partInstance.timings?.startedPlayback
 			if (previousPartLastStarted) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(
 					partInstancesInfo.previous.partInstance.part,
@@ -479,9 +478,9 @@ function buildTimelineObjsForRundown(
 						partInstancesInfo.current.partInstance.part
 				  ),
 		})
-		if (partInstancesInfo.current.partInstance.part.startedPlayback && partLastStarted) {
+		if (partInstancesInfo.current.partInstance.timings?.startedPlayback) {
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
-			currentPartEnable.start = partLastStarted
+			currentPartEnable.start = partInstancesInfo.current.partInstance.timings.startedPlayback
 		}
 		currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 

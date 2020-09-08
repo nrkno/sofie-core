@@ -178,10 +178,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					autoNextPart={this.props.autoNextPart}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={
-						part.instance._id === this.props.playlist.currentPartInstanceId &&
-						part.instance.part.startedPlayback &&
-						part.instance.part.getLastStartedPlayback()
-							? this.props.livePosition - (part.instance.part.getLastStartedPlayback() || 0)
+						part.instance._id === this.props.playlist.currentPartInstanceId && part.instance.timings?.startedPlayback
+							? this.props.livePosition - part.instance.timings.startedPlayback
 							: null
 					}
 					isLastInSegment={false}

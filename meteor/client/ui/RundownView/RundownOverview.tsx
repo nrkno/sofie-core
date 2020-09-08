@@ -80,10 +80,6 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							segmentId: 1,
 							duration: 1,
 							expectedDuration: 1,
-							timings: 1,
-							startedPlayback: 1,
-							stoppedPlayback: 1,
-							taken: 1,
 						},
 					}
 				)
@@ -134,10 +130,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 							live: isLive,
 							next: isNext,
 
-							'has-played':
-								innerPart.startedPlayback &&
-								(innerPart.getLastStartedPlayback() || 0) > 0 &&
-								(innerPart.duration || 0) > 0,
+							'has-played': (part.instance.timings?.startedPlayback || 0) > 0 && (innerPart.duration || 0) > 0,
 						})}
 						style={{
 							width:
@@ -155,7 +148,7 @@ export const RundownOverview = withTracker<RundownOverviewProps, RundownOverview
 								className="rundown__overview__segment__part__live-line"
 								style={{
 									left:
-										((getCurrentTime() - (innerPart.getLastStartedPlayback() || 0)) /
+										((getCurrentTime() - (part.instance.timings?.startedPlayback || 0)) /
 											Math.max(
 												(timingDurations && timingDurations[unprotectString(innerPart._id)]) || 0,
 												innerPart.duration || innerPart.expectedDuration || 0

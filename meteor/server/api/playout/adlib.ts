@@ -456,7 +456,7 @@ export namespace ServerPlayoutAdLibAPI {
 		const span = profiler.startSpan('innerStopPieces')
 		const stoppedInstances: PieceInstanceId[] = []
 
-		const lastStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
+		const lastStartedPlayback = currentPartInstance.timings?.startedPlayback
 		if (lastStartedPlayback === undefined) {
 			throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 		}

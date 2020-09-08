@@ -99,9 +99,9 @@ export const take = syncFunction(function take(
 	}
 	if (playlist.currentPartInstanceId) {
 		const currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId)
-		if (currentPartInstance && currentPartInstance.part.timings) {
-			const lastStartedPlayback = _.last(currentPartInstance.part.timings.startedPlayback || []) || 0
-			const lastTake = _.last(currentPartInstance.part.timings.take || []) || 0
+		if (currentPartInstance && currentPartInstance.timings) {
+			const lastStartedPlayback = currentPartInstance.timings.startedPlayback || 0
+			const lastTake = currentPartInstance.timings.take || 0
 			const lastChange = Math.max(lastTake, lastStartedPlayback)
 			if (now - lastChange < MINIMUM_TAKE_SPAN) {
 				logger.debug(

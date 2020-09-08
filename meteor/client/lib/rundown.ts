@@ -191,11 +191,11 @@ export namespace RundownUtils {
 					? (piece.renderedInPoint || 0) +
 					  (piece.renderedDuration ||
 							(part.instance.part.duration !== undefined
-								? part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)
+								? part.instance.part.duration + (part.instance.timings?.playOffset || 0)
 								: (partDuration || part.renderedDuration || part.instance.part.expectedDuration || 0) -
 								  (piece.renderedInPoint || 0)))
 					: part.instance.part.duration !== undefined
-					? part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)
+					? part.instance.part.duration + (part.instance.timings?.playOffset || 0)
 					: partDuration || part.renderedDuration || 0)
 		) {
 			return false
@@ -353,7 +353,7 @@ export namespace RundownUtils {
 					currentLivePart.instance.part.autoNext &&
 					currentLivePart.instance.part.expectedDuration
 				)
-				if (partE.instance.part.startedPlayback !== undefined) {
+				if (partE.instance.timings?.startedPlayback !== undefined) {
 					hasAlreadyPlayed = true
 				}
 
@@ -365,9 +365,7 @@ export namespace RundownUtils {
 					false
 				)
 
-				const partStarted = partE.instance.part.startedPlayback
-					? partE.instance.part.getLastStartedPlayback()
-					: undefined
+				const partStarted = partE.instance.timings?.startedPlayback
 				const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(

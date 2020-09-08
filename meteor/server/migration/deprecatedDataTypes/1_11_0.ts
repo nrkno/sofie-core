@@ -5,11 +5,31 @@ import {
 	Timeline as BPTimeline,
 	PieceLifespan,
 	BaseContent,
+	Time,
 } from 'tv-automation-sofie-blueprints-integration'
-import { PartId, PartTimings } from '../../../lib/collections/Parts'
+import { PartId } from '../../../lib/collections/Parts'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
+
+export interface IBlueprintPartDBTimings {
+	/** Point in time the Part was taken, (ie the time of the user action) */
+	take: Time[]
+	/** Point in time the "take" action has finished executing */
+	takeDone: Time[]
+	/** Point in time the Part started playing (ie the time of the playout) */
+	startedPlayback: Time[]
+	/** Point in time the Part stopped playing (ie the time of the user action) */
+	takeOut: Time[]
+	/** Point in time the Part stopped playing (ie the time of the playout) */
+	stoppedPlayback: Time[]
+	/** Point in time the Part was set as Next (ie the time of the user action) */
+	next: Time[]
+}
+export interface PartTimings extends IBlueprintPartDBTimings {
+	/** The playback offset that was set for the last take */
+	playOffset: Array<Time>
+}
 
 export interface Part {
 	// extends ProtectedStringProperties<IBlueprintPartDB, '_id' | 'segmentId'> {

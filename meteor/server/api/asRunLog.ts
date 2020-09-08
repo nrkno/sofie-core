@@ -176,22 +176,7 @@ export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstanc
 		const span = profiler.startSpan('reportPartHasStarted')
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
-				'part.startedPlayback': true,
-				'part.stoppedPlayback': false,
 				isTaken: true,
-			},
-			$push: {
-				'part.timings.startedPlayback': timestamp,
-			},
-		})
-
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(partInstance.part._id, {
-			$set: {
-				startedPlayback: true,
-				stoppedPlayback: false,
-			},
-			$push: {
 				'timings.startedPlayback': timestamp,
 			},
 		})
@@ -225,26 +210,13 @@ export function reportPartHasStopped(playlistId: RundownPlaylistId, partInstance
 
 		asyncCollectionUpdate(PartInstances, partInstance._id, {
 			$set: {
-				'part.stoppedPlayback': true,
-			},
-			$push: {
-				'part.timings.stoppedPlayback': timestamp,
-			},
-		}),
-
-		// TODO-PartInstance - pending new data flow
-		asyncCollectionUpdate(Parts, partInstance.part._id, {
-			$set: {
-				stoppedPlayback: true,
-			},
-			$push: {
 				'timings.stoppedPlayback': timestamp,
 			},
 		}),
 	])
 	// also update local object:
-	partInstance.part.stoppedPlayback = true
-	pushOntoPath(partInstance.part, 'timings.stoppedPlayback', timestamp)
+	if (!partInstance.timings) partInstance.timings = {}
+	partInstance.timings.stoppedPlayback = timestamp
 
 	if (playlist) {
 		let event = pushAsRunLog(

@@ -397,7 +397,7 @@ export const SegmentTimelinePart = withTranslation()(
 
 				const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
 				const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-				const startedPlayback = partInstance.part.startedPlayback
+				const startedPlayback = partInstance.timings?.startedPlayback
 
 				this.state = {
 					isLive,
@@ -429,7 +429,7 @@ export const SegmentTimelinePart = withTranslation()(
 
 				const nextPartInner = nextProps.part.instance.part
 
-				const startedPlayback = nextPartInner.startedPlayback
+				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
 					!!nextProps.playlist.active && !isLive && !!startedPlayback && !nextPartInner.duration
@@ -483,11 +483,11 @@ export const SegmentTimelinePart = withTranslation()(
 			}
 
 			static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
-				if (part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback()) {
+				if (part.instance.timings?.startedPlayback) {
 					if (part.instance.part.duration) {
 						return part.instance.part.duration
 					} else {
-						return currentTime - (part.instance.part.getLastStartedPlayback() || 0)
+						return currentTime - part.instance.timings.startedPlayback
 					}
 				} else {
 					return 0
