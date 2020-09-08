@@ -37,24 +37,18 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** The id of the group object this object is in  */
 	inGroup?: string
 }
-// export type TimelineObj = TimelineObjRundown | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 
 export enum TimelineObjType {
 	/** Objects played in a rundown */
 	RUNDOWN = 'rundown',
 	/** Objects controlling recording */
 	RECORDING = 'record',
-	/** Objects controlling manual playback */
-	MANUAL = 'manual',
 }
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
 }
 export interface TimelineObjRecording extends TimelineObjGeneric {
 	objectType: TimelineObjType.RECORDING
-}
-export interface TimelineObjManual extends TimelineObjGeneric {
-	objectType: TimelineObjType.MANUAL
 }
 export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 	content: {

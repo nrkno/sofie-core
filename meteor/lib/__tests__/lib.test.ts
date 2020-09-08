@@ -83,7 +83,7 @@ describe('lib/lib', () => {
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
+				objectType: TimelineObjType.RUNDOWN,
 				studioId: protectString('myStudio'),
 				classes: ['abc'], // to be removed
 			},
@@ -95,7 +95,7 @@ describe('lib/lib', () => {
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
+				objectType: TimelineObjType.RUNDOWN,
 				studioId: protectString('myStudio'),
 			},
 		]
@@ -113,7 +113,7 @@ describe('lib/lib', () => {
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
+				objectType: TimelineObjType.RUNDOWN,
 				studioId: protectString('myStudio2'),
 			},
 		]
@@ -158,7 +158,7 @@ describe('lib/lib', () => {
 							},
 							layer: 'L2', // changed property
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							objectType: TimelineObjType.MANUAL,
+							objectType: TimelineObjType.RUNDOWN,
 							studioId: protectString('myStudio'),
 						},
 						{
@@ -170,7 +170,7 @@ describe('lib/lib', () => {
 							},
 							layer: 'L1',
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							objectType: TimelineObjType.MANUAL,
+							objectType: TimelineObjType.RUNDOWN,
 							studioId: protectString('myStudio'),
 						}, // remove abc2
 					],
@@ -264,7 +264,7 @@ describe('lib/lib', () => {
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
+			objectType: TimelineObjType.RUNDOWN,
 			studioId: protectString('myStudio'),
 		})
 		expect(obj).toEqual({
@@ -275,7 +275,7 @@ describe('lib/lib', () => {
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
+			objectType: TimelineObjType.RUNDOWN,
 			studioId: protectString('myStudio'),
 		})
 		const layer: string | number = obj.layer // just to check typings
