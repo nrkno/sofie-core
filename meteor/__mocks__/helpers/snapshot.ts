@@ -50,16 +50,15 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 	} else {
 		let o = cloneOrg(data)
 		if (!o) return o
-		if (isTimelineObj(o)) {
-			delete o['modified']
-			if (o.content) {
-				delete o.content['modified']
-				delete o.content['objHash']
-			}
-			if (o.metaData && o.metaData.versions && o.metaData.versions.core) {
-				// re-write the core version so something static, so tests won't fail just because the version has changed
-				o.metaData.versions.core = '0.0.0-test'
-			}
+		if (isTimelineComplete(o)) {
+			if (o.generated) o.generated = 12345
+
+			_.each(o.timeline, (obj) => {
+				if (obj.metaData && obj.metaData.versions && obj.metaData.versions.core) {
+					// re-write the core version to something static, so tests won't fail just because the version has changed
+					obj.metaData.versions.core = '0.0.0-test'
+				}
+			})
 		} else if (isPlaylist(o)) {
 			delete o['created']
 			delete o['modified']
@@ -78,8 +77,8 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 		return o
 	}
 }
-function isTimelineObj(o): o is TimelineObjGeneric {
-	return o.enable && o._id && o.id && o.studioId
+function isTimelineComplete(o): o is TimelineComplete {
+	return o.timeline && o._id
 }
 function isPlaylist(o): o is DBRundownPlaylist {
 	return o._id && _.has(o, 'currentPartInstanceId')
