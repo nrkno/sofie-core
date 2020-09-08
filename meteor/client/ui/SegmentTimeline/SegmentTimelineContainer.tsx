@@ -587,7 +587,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onRewindSegment = () => {
-			if (!this.state.isLiveSegment) {
+			if (!this.isLiveSegment) {
 				this.setState({
 					scrollLeft: 0,
 					livePosition: 0,
