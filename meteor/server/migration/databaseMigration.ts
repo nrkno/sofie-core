@@ -93,7 +93,6 @@ export function addMigrationStep(step: MigrationStep) {
 export function addMigrationSteps(version: string, steps: Array<MigrationStepBase>) {
 	return () => {
 		_.each(steps, (step) => {
-			console.log('add migrationstep', version, step.id)
 			addMigrationStep(
 				_.extend(step, {
 					version: version,
