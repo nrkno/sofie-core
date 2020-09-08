@@ -38,6 +38,8 @@ import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
+import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
+import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -500,5 +502,18 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		this.takeAfterExecute = take
 
 		return this.takeAfterExecute
+	}
+	/** Temporary hack: to allow adlib actions to call a function on PeripheralDevices */
+	hackCallPeripheralDeviceFunction(selector: any, functionName, args: any[]) {
+		PeripheralDevices.find(selector).forEach((device) => {
+			PeripheralDeviceAPI.executeFunction(
+				device._id,
+				(err, _result) => {
+					if (err) logger.error(err)
+				},
+				functionName,
+				...args
+			)
+		})
 	}
 }
