@@ -272,11 +272,8 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 
 		asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
 			$set: {
-				'piece.startedPlayback': timestamp,
-				'piece.stoppedPlayback': 0,
-			},
-			$push: {
-				'piece.timings.startedPlayback': timestamp,
+				startedPlayback: timestamp,
+				stoppedPlayback: 0,
 			},
 		}),
 
@@ -291,32 +288,17 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 					},
 					{
 						$set: {
-							'piece.startedPlayback': timestamp,
-							'piece.stoppedPlayback': 0,
-						},
-						$push: {
-							'piece.timings.startedPlayback': timestamp,
+							startedPlayback: timestamp,
+							stoppedPlayback: 0,
 						},
 					}
 			  )
 			: (Promise.resolve() as Promise<any>),
-
-		// TODO-PartInstance - pending new data flow
-		asyncCollectionUpdate(Pieces, pieceInstance.piece._id, {
-			$set: {
-				startedPlayback: timestamp,
-				stoppedPlayback: 0,
-			},
-			$push: {
-				'timings.startedPlayback': timestamp,
-			},
-		}),
 	])
 
 	// also update local object:
-	pieceInstance.piece.startedPlayback = timestamp
-	pieceInstance.piece.stoppedPlayback = 0
-	pushOntoPath(pieceInstance.piece, 'timings.startedPlayback', timestamp)
+	pieceInstance.startedPlayback = timestamp
+	pieceInstance.stoppedPlayback = 0
 
 	if (!partInstance) {
 		logger.error(
@@ -349,27 +331,13 @@ export function reportPieceHasStopped(playlistId: RundownPlaylistId, pieceInstan
 
 		asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
 			$set: {
-				'piece.stoppedPlayback': timestamp,
-			},
-			$push: {
-				'piece.timings.stoppedPlayback': timestamp,
-			},
-		}),
-
-		// TODO-PartInstance - pending new data flow
-		asyncCollectionUpdate(Pieces, pieceInstance.piece._id, {
-			$set: {
 				stoppedPlayback: timestamp,
-			},
-			$push: {
-				'timings.stoppedPlayback': timestamp,
 			},
 		}),
 	])
 
 	// also update local object:
-	pieceInstance.piece.stoppedPlayback = timestamp
-	pushOntoPath(pieceInstance.piece, 'timings.stoppedPlayback', timestamp)
+	pieceInstance.stoppedPlayback = timestamp
 
 	if (!partInstance) {
 		logger.error(

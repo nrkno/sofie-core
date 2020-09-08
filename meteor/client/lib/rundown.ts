@@ -533,8 +533,8 @@ export namespace RundownUtils {
 				const userDurationNumber =
 					item.instance.userDuration &&
 					typeof item.instance.userDuration.end === 'number' &&
-					item.instance.piece.startedPlayback
-						? item.instance.userDuration.end - item.instance.piece.startedPlayback
+					item.instance.startedPlayback
+						? item.instance.userDuration.end - item.instance.startedPlayback
 						: 0
 				return userDurationNumber || item.renderedDuration || expectedDurationNumber
 			}

@@ -522,10 +522,10 @@ function buildTimelineObjsForRundown(
 
 			let nowInParent = partInstancesInfo.current.nowInPart
 			let isAbsoluteInfinitePartGroup = false
-			if (piece.piece.startedPlayback) {
+			if (piece.startedPlayback) {
 				// Make the start time stick
-				infiniteGroup.enable = { start: piece.piece.startedPlayback }
-				nowInParent = currentTime - piece.piece.startedPlayback
+				infiniteGroup.enable = { start: piece.startedPlayback }
+				nowInParent = currentTime - piece.startedPlayback
 				isAbsoluteInfinitePartGroup = true
 
 				// If an absolute time has been set by a hotkey, then update the duration to be correct

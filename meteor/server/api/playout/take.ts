@@ -389,8 +389,8 @@ function startHold(
 			},
 		})
 		const content = newInstance.piece.content as VTContent | undefined
-		if (content && content.fileName && content.sourceDuration && instance.piece.startedPlayback) {
-			content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.piece.startedPlayback)
+		if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
+			content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.startedPlayback)
 		}
 
 		// This gets deleted once the nextpart is activated, so it doesnt linger for long

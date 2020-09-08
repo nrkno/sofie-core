@@ -554,11 +554,8 @@ describe('Playout API', () => {
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance?._id!)
 				expect(pieceInstances).toHaveLength(2)
 				pieceInstances.forEach((pieceInstance) => {
-					expect(pieceInstance.piece.timings?.startedPlayback).toBeTruthy()
-					expect(_.last(pieceInstance.piece.timings?.startedPlayback!)).toBeWithinRange(
-						now,
-						now + TIME_RANDOM
-					)
+					expect(pieceInstance.startedPlayback).toBeTruthy()
+					expect(pieceInstance.startedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 				})
 			}
 

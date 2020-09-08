@@ -721,7 +721,7 @@ export namespace ServerPlayoutAPI {
 					`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
 				)
 
-			const isPlaying: boolean = !!(pieceInstance.piece.startedPlayback && !pieceInstance.piece.stoppedPlayback)
+			const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 			if (!isPlaying) {
 				logger.info(
 					`Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
@@ -766,7 +766,7 @@ export namespace ServerPlayoutAPI {
 					`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
 				)
 
-			const isPlaying: boolean = !!(pieceInstance.piece.startedPlayback && !pieceInstance.piece.stoppedPlayback)
+			const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 			if (isPlaying) {
 				logger.info(
 					`Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(

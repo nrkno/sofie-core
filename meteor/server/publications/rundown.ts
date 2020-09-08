@@ -98,7 +98,7 @@ meteorPublish(PubSub.piecesSimple, function(selector: MongoQuery<Piece>, token?:
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Piece> = {
 		fields: {
-			timings: 0,
+			// timings: 0,
 			// we kind-of need to know the contents, unfortunately
 			// content: 0
 		},

@@ -625,19 +625,19 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
-			'piece.startedPlayback': {
+			startedPlayback: {
 				$exists: true,
 			},
 			$and: [
 				{
 					$or: [
 						{
-							'piece.stoppedPlayback': {
+							stoppedPlayback: {
 								$eq: 0,
 							},
 						},
 						{
-							'piece.stoppedPlayback': {
+							stoppedPlayback: {
 								$exists: false,
 							},
 						},
@@ -668,7 +668,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
 					? pieceInstance.userDuration.end
 					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + piece.startedPlayback!
+					? piece.enable.duration + pieceInstance.startedPlayback!
 					: undefined
 
 			if (end !== undefined) {
