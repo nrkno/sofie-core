@@ -7,7 +7,7 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, waitForPromise } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
+import { Timeline, getTimelineId, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
 import { Studios } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
@@ -32,6 +32,8 @@ import { PickerPOST } from './http'
 import { initCacheForNoRundownPlaylist, initCacheForStudio, initCacheForRundownPlaylist } from '../DatabaseCaches'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { PieceInstanceId } from '../../lib/collections/PieceInstances'
+import { getValidActivationCache } from '../ActivationCache'
+import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -485,28 +487,36 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		objHash: string,
+		timelineHash: TimelineHash,
+		/** Resolve duration, as reported by playout-gateway/TSR */
 		resolveDuration: number
 	) {
 		// Device (playout gateway) reports that it has finished resolving a timeline
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
-		check(objHash, String)
+		check(timelineHash, String)
 		check(resolveDuration, Number)
 
 		if (peripheralDevice.studioId) {
-			const statObj = Timeline.findOne({
-				id: 'statObj',
-				studioId: peripheralDevice.studioId,
-			}) as TimelineObjStat | undefined
+			const timeline = Timeline.findOne(
+				{
+					_id: peripheralDevice.studioId,
+				},
+				{
+					fields: {
+						timelineHash: 1,
+						generated: 1,
+					},
+				}
+			) as Pick<TimelineComplete, 'timelineHash' | 'generated'>
 
-			// Compare the objHash with the one we have in the timeline.
+			// Compare the timelineHash with the one we have in the timeline.
 			// We're using that to determine when the timeline was generated (in Core)
 			// In order to determine the total latency (roundtrip from timeline-generation => resolving done in playout-gateway)
-			if (statObj) {
-				if (statObj.content.objHash === objHash) {
+			if (timeline) {
+				if (timeline.timelineHash === timelineHash) {
 					/** Time when timeline was generated in Core */
-					const startTime = statObj.content.modified
+					const startTime = timeline.generated
 					const endTime = getCurrentTime()
 
 					const totalLatency = endTime - startTime
@@ -530,6 +540,18 @@ export namespace ServerPeripheralDeviceAPI {
 								latencies: peripheralDevice.latencies,
 							},
 						})
+						// Because the ActivationCache is used during playout, we need to update that as well:
+						const activationCache = getValidActivationCache(peripheralDevice.studioId)
+						if (activationCache) {
+							const device = waitForPromise(activationCache.getPeripheralDevices()).find(
+								(device) => device._id === peripheralDevice._id
+							)
+							if (device) {
+								device.latencies = peripheralDevice.latencies
+							}
+						}
+
+						)
 					}
 				}
 			}
@@ -708,9 +730,14 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		return makePromise(() => ServerPeripheralDeviceAPI.piecePlaybackStarted(this, deviceId, deviceToken, r))
 	}
-	reportResolveDone(deviceId: PeripheralDeviceId, deviceToken: string, objHash: string, resolveDuration: number) {
+	reportResolveDone(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		timelineHash: TimelineHash,
+		resolveDuration: number
+	) {
 		return makePromise(() =>
-			ServerPeripheralDeviceAPI.reportResolveDone(this, deviceId, deviceToken, objHash, resolveDuration)
+			ServerPeripheralDeviceAPI.reportResolveDone(this, deviceId, deviceToken, timelineHash, resolveDuration)
 		)
 	}
 

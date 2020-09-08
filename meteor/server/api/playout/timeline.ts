@@ -41,6 +41,7 @@ import {
 	clone,
 	makePromise,
 	asyncCollectionFindOne,
+	getRandomId,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -144,6 +145,8 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		},
 		{
 			_id: studio._id,
+			timelineHash: getRandomId(), // randomized on every timeline change
+			generated: getCurrentTime(),
 			timeline: timelineObjs,
 		},
 		true
