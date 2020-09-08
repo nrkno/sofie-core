@@ -1683,6 +1683,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
 				this.state.manualSetAsNext
 			) {
+				// reset followLiveSegments after a manual set as next
 				this.setState({
 					manualSetAsNext: false,
 					followLiveSegments: true,
@@ -1696,6 +1697,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				prevProps.playlist.active &&
 				!this.props.playlist.active
 			) {
+				// reset followLiveSegments after deactivating a rundown
 				this.setState({
 					followLiveSegments: true,
 				})
@@ -1706,6 +1708,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.props.playlist.active &&
 				this.props.playlist.nextPartInstanceId
 			) {
+				// scroll to next after activation
 				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
 			} else if (
 				// after take

@@ -17,7 +17,7 @@ import { SegmentDuration, PartCountdown, RundownTiming, CurrentPartRemaining } f
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { scrollToSegment, scrollToPart } from '../../lib/viewPort'
+import { scrollToPart } from '../../lib/viewPort'
 
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
