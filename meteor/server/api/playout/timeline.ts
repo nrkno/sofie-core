@@ -19,16 +19,11 @@ import {
 	TimelineObjRecording,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
-	getTimelineId,
-	TimelineObjGroupRundown,
-	TimelineComplete,
 } from '../../../lib/collections/Timeline'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
 	waitForPromise,
-	getHash,
-	stringifyObjects,
 	getCurrentTime,
 	extendMandadory,
 	literal,
@@ -39,8 +34,7 @@ import {
 	unprotectObject,
 	normalizeArrayFunc,
 	clone,
-	makePromise,
-	asyncCollectionFindOne,
+	normalizeArray,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -55,14 +49,12 @@ import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
-import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, CacheForStudio, CacheForStudioBase } from '../../DatabaseCaches'
-import { saveIntoCache } from '../../DatabaseCache'
+import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCaches'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
 
@@ -97,17 +89,17 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		setNowToTimeInObjects(timelineObjs, forceNowToTime)
 	}
 
-	const oldTimelineObjsMap: { [objId: string]: TimelineObjGeneric } = {}
-	cache.Timeline.findOne({
-		_id: studio._id,
-	})?.timeline.forEach((obj) => {
-		oldTimelineObjsMap[unprotectString(obj._id)] = obj
-	})
+	const oldTimelineObjsMap = normalizeArray(
+		cache.Timeline.findOne({
+			_id: studio._id,
+		})?.timeline ?? [],
+		'id'
+	)
 
 	timelineObjs.forEach((tlo: TimelineObjGeneric) => {
 		// A timeline object is updated if found in both collections
 
-		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[unprotectString(tlo._id)]
+		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[tlo.id]
 		// let tlo: TimelineObjGeneric | undefined = timelineObjs.find((x) => x._id === tloldo._id)
 
 		if (tlo && tlo.enable.start === 'now' && tloldo && tloldo.enable.setFromNow) {
@@ -252,9 +244,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
 							...object,
-							_id: protectString(''), // set later
 							objectType: TimelineObjType.RUNDOWN,
-							studioId: studio._id,
 						})
 					})
 					if (tlGenRes.persistentState) {
@@ -289,8 +279,6 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 				studioBaseline.push(
 					literal<TimelineObjRundown>({
 						id: id,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 						enable: { start: 0 },
 						layer: id,
@@ -367,13 +355,10 @@ function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjG
 			_.each(o.children, (child: TSR.TSRTimelineObjBase) => {
 				let childFixed: TimelineObjGeneric = {
 					...child,
-					_id: protectString(''), // set later
-					studioId: o.studioId,
 					objectType: o.objectType,
 					inGroup: o.id,
 				}
-				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o._id})`, childFixed)
-				childFixed._id = getTimelineId(childFixed)
+				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o.id})`, childFixed)
 				timelineObjs.push(childFixed)
 
 				fixObjectChildren(childFixed)
@@ -388,8 +373,6 @@ function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjG
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObjGeneric) => {
-		o.studioId = studio._id
-		o._id = getTimelineId(o)
 		fixObjectChildren(o)
 	})
 	if (span) span.end()
@@ -431,8 +414,6 @@ function buildTimelineObjsForRundown(
 	timelineObjs.push(
 		literal<TimelineObjRundown>({
 			id: activePlaylist._id + '_status',
-			_id: protectString(''), // set later
-			studioId: protectString(''), // set later
 			objectType: TimelineObjType.RUNDOWN,
 			enable: { while: 1 },
 			layer: 'rundown_status',
@@ -739,8 +720,6 @@ function createPartGroup(
 	}
 	let partGrp = literal<TimelineObjGroupPart>({
 		id: getPartGroupId(unprotectObject(partInstance)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
 		priority: 5,
@@ -764,8 +743,6 @@ function createPartGroupFirstObject(
 ): TimelineObjPartAbstract {
 	return literal<TimelineObjPartAbstract>({
 		id: getPartFirstObjectId(unprotectObject(partInstance)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: 'group_first_object',
@@ -931,8 +908,6 @@ function transformPartIntoTimeline(
 
 				timelineObjs.push({
 					...clone<TimelineObjectCoreExt>(o),
-					_id: protectString(''), // set later
-					studioId: protectString(''), // set later
 					inGroup: pieceGroup.id,
 					objectType: TimelineObjType.RUNDOWN,
 					pieceInstanceId: unprotectString(pieceInstance._id),

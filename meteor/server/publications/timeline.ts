@@ -13,7 +13,7 @@ import { StudioReadAccess } from '../security/studio'
 
 meteorPublish(PubSub.timeline, function(selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<TimelineObjGeneric> = {
+	const modifier: FindOptions<TimelineComplete> = {
 		fields: {},
 	}
 	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {

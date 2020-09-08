@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { RecordedFiles, RecordedFile, RecordedFileId } from '../../lib/collections/RecordedFiles'
-import { Studios, Studio, ITestToolsConfig, MappingExt, StudioId } from '../../lib/collections/Studios'
+import { Studios, Studio, ITestToolsConfig, StudioId } from '../../lib/collections/Studios'
 import {
 	getCurrentTime,
 	literal,
@@ -14,8 +14,8 @@ import {
 import { NewTestToolsAPI, TestToolsAPIMethods } from '../../lib/api/testTools'
 import { registerClassToMeteorMethods } from '../methods'
 import moment from 'moment'
-import { TimelineObjRecording, TimelineObjType, setTimelineId } from '../../lib/collections/Timeline'
-import { LookaheadMode, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { TimelineObjRecording, TimelineObjType } from '../../lib/collections/Timeline'
+import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as request from 'request'
 import { promisify } from 'util'
 import { check } from '../../lib/check'
@@ -57,11 +57,9 @@ export function generateRecordingTimelineObjs(studio: Studio, recording: Recorde
 		input: getHash(recording._id + layerInput),
 	}
 
-	return setTimelineId([
+	return [
 		literal<TSR.TimelineObjCCGRecord & TimelineObjRecording>({
 			id: IDs.record,
-			_id: protectString(''),
-			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			enable: {
 				start: recording.startedAt,
@@ -80,8 +78,6 @@ export function generateRecordingTimelineObjs(studio: Studio, recording: Recorde
 		}),
 		literal<TSR.TimelineObjCCGInput & TimelineObjRecording>({
 			id: IDs.input,
-			_id: protectString(''), // set later,
-			studioId: studio._id,
 			objectType: TimelineObjType.RECORDING,
 			enable: { while: 1 },
 			priority: 0,
@@ -94,7 +90,7 @@ export function generateRecordingTimelineObjs(studio: Studio, recording: Recorde
 				deviceFormat: config.recordings.channelFormat,
 			},
 		}),
-	])
+	]
 }
 
 export namespace ServerTestToolsAPI {

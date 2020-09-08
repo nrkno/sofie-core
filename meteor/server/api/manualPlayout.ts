@@ -1,21 +1,14 @@
 import { registerClassToMeteorMethods } from '../methods'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from '../../lib/api/manualPlayout'
-import {
-	Timeline,
-	TimelineObjGeneric,
-	getTimelineId,
-	TimelineObjType,
-	TimelineObjId,
-} from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineObjType } from '../../lib/collections/Timeline'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { check } from '../../lib/check'
-import { makePromise, waitForPromise, protectString } from '../../lib/lib'
+import { makePromise, waitForPromise } from '../../lib/lib'
 import { ServerClientAPI } from './client'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { TimelineObjectCoreExt } from 'tv-automation-sofie-blueprints-integration'
 import { StudioContentWriteAccess } from '../security/studio'
-import { CacheForStudio, initCacheForNoRundownPlaylist, CacheForStudioBase } from '../DatabaseCaches'
-import { time, timeline } from 'console'
+import { initCacheForNoRundownPlaylist, CacheForStudioBase } from '../DatabaseCaches'
 
 function insertTimelineObject(
 	context: MethodContext,
@@ -30,15 +23,13 @@ function insertTimelineObject(
 	const timelineObject: TimelineObjGeneric = {
 		...timelineObjectOrg,
 
-		_id: getTimelineId(studioId, timelineObjectOrg.id),
-		studioId: studioId,
 		objectType: TimelineObjType.MANUAL,
 	}
 
 	const studio = Studios.findOne(studioId)
 	const studioTimeline = cache.Timeline.findOne({ _id: studioId })
 	if (studio && studioTimeline) {
-		const indexOfExisting = studioTimeline.timeline.map((x) => x._id).indexOf(timelineObject._id)
+		const indexOfExisting = studioTimeline.timeline.map((x) => x.id).indexOf(timelineObject.id)
 		if (indexOfExisting >= 0) {
 			studioTimeline.timeline[indexOfExisting] = timelineObject
 		} else {
@@ -56,7 +47,7 @@ function removeTimelineObject(context: MethodContext, cache: CacheForStudioBase,
 	const studio = Studios.findOne(studioId)
 	const studioTimeline = cache.Timeline.findOne({ _id: studioId })
 	if (studio && studioTimeline) {
-		studioTimeline.timeline = studioTimeline.timeline.filter((x, index) => x._id !== protectString(id))
+		studioTimeline.timeline = studioTimeline.timeline.filter((x) => x.id !== id)
 		cache.Timeline.update(studioId, studioTimeline)
 	}
 }

@@ -167,7 +167,6 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 			let timeline = _.compact(
 				_.map(this.props.timeline, (obj) => {
 					let o = _.clone(obj)
-					delete o._id
 
 					if (o.enable.start === 'now') o.enable.start = getCurrentTime() // tmp
 
@@ -232,10 +231,10 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 			const timeline =
 				(tlComplete &&
 					tlComplete.timeline.sort((a, b) => {
-						if (a._id > b._id) {
+						if (a.id > b.id) {
 							return 1
 						}
-						if (a._id < b._id) {
+						if (a.id < b.id) {
 							return -1
 						}
 						return 0

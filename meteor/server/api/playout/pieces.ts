@@ -84,8 +84,6 @@ export function createPieceGroupFirstObject(
 ): TimelineObjPieceAbstract & OnGenerateTimelineObj {
 	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
 		id: getPieceFirstObjectId(unprotectString(pieceInstance.piece._id)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
@@ -308,8 +306,6 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 					})
 				})
@@ -385,8 +381,6 @@ export function convertAdLibToPieceInstance(
 			_.compact(
 				_.map(contentObjects, (obj) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 					})
 				})

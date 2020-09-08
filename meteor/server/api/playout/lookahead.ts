@@ -407,8 +407,6 @@ function findObjectsForPart(
 				allObjs.push(
 					literal<TimelineObjRundown>({
 						...obj,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 					})
 				)
@@ -482,8 +480,6 @@ function findObjectsForPart(
 				res.push(
 					literal<TimelineObjRundown & OnGenerateTimelineObj>({
 						...obj,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 						pieceInstanceId: unprotectString(pieceInstanceId),
 						infinitePieceId: unprotectString(piece._id),

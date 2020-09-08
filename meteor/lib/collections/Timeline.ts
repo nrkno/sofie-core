@@ -1,15 +1,12 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time, Omit, ProtectedString, protectString, isProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
+import { registerCollection, Omit, ProtectedString } from '../lib'
 import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { logger } from '../logging'
 import { createMongoCollection } from './lib'
 import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
-import { registerIndex } from '../database'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -20,15 +17,10 @@ export enum TimelineContentTypeOther {
 export type TimelineObjId = ProtectedString<'TimelineObjId'>
 
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
-	/** Unique _id (generally obj.studioId + '_' + obj.id) */
-	_id: TimelineObjId
 	/** Unique within a timeline (ie within a studio) */
 	id: string
 	/** Set when the id of the object is prefixed */
 	originalId?: string
-
-	/** Studio installation Id */
-	studioId: StudioId
 
 	objectType: TimelineObjType
 
@@ -96,33 +88,6 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown {
 	}
 }
 
-export function getTimelineId(obj: TimelineObjGeneric): TimelineObjId
-export function getTimelineId(studioId: StudioId, id: string): TimelineObjId
-export function getTimelineId(objOrStudioId: TimelineObjGeneric | StudioId, id?: string): TimelineObjId {
-	if (isProtectedString(objOrStudioId)) {
-		if (!objOrStudioId) throw new Meteor.Error(500, `Parameter studioId missing`)
-		if (!id) throw new Meteor.Error(500, `Parameter id missing`)
-		return protectString(objOrStudioId + '_' + id)
-	} else {
-		const obj: TimelineObjGeneric = objOrStudioId
-		if (!obj.id) {
-			logger.debug(obj)
-			throw new Meteor.Error(500, `TimelineObj missing id attribute`)
-		}
-		if (!obj.studioId) {
-			logger.debug(obj)
-			throw new Meteor.Error(500, `TimelineObj missing studioId attribute, id: "${obj.id}")`)
-		}
-		return protectString(obj.studioId + '_' + obj.id)
-	}
-}
-export function setTimelineId<T extends TimelineObjGeneric>(objs: Array<T>): Array<T> {
-	return _.map(objs, (obj) => {
-		obj._id = getTimelineId(obj)
-		return obj
-	})
-}
-
 export function getRoutedTimeline(
 	inputTimelineObjs: TimelineObjGeneric[],
 	mappingRoutes: ResultingMappingRoutes
@@ -141,7 +106,6 @@ export function getRoutedTimeline(
 				if (i > 0) {
 					// If there are multiple routes we must rename the ids, so that they stay unique.
 					routedObj.id = `_${i}_${routedObj.id}`
-					routedObj._id = getTimelineId(routedObj)
 				}
 				outputTimelineObjs.push(routedObj)
 			})

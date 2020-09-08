@@ -411,9 +411,9 @@ describe('test peripheralDevice general API methods', () => {
 		const updatedStudioTimeline = Timeline.findOne({
 			_id: env.studio._id,
 		})
-		const prevIds = timelineObjs.map((x) => x._id)
+		const prevIds = timelineObjs.map((x) => x.id)
 		const timelineUpdatedObjs =
-			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x._id) >= 0)) || []
+			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
 		console.log('>>>', timelineUpdatedObjs)
 		timelineUpdatedObjs.forEach((tlObj) => {
 			expect(tlObj.enable.setFromNow).toBe(true)

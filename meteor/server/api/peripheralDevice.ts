@@ -7,8 +7,6 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { getCurrentTime, protectString, makePromise, waitForPromise } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
-import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
-import { Studios, StudioId } from '../../lib/collections/Studios'
 import { ServerPlayoutAPI } from './playout/playout'
 import { registerClassToMeteorMethods } from '../methods'
 import { IncomingMessage, ServerResponse } from 'http'
@@ -30,8 +28,9 @@ import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '.
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
 import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../DatabaseCaches'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { getActiveRundownPlaylistsInStudio } from './playout/studio'
+import { StudioId } from '../../lib/collections/Studios'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -234,8 +233,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 			logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
 
-			const id = getTimelineId(studioId, o.id)
-			const obj = timelineObjs.find((tlo) => tlo._id === id)
+			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
 			if (obj) {
 				obj.enable.start = o.time
 				obj.enable.setFromNow = true
