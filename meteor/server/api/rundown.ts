@@ -34,7 +34,7 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { BlueprintResultOrderedRundowns, ExtendedIngestRundown } from 'tv-automation-sofie-blueprints-integration'
 import { StudioConfigContext } from './blueprints/context'
-import { loadStudioBlueprints, loadShowStyleBlueprints } from './blueprints/cache'
+import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
 import {
@@ -63,6 +63,7 @@ import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { modifyPlaylistExternalId } from './ingest/lib'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { profiler } from './profiler'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -83,7 +84,7 @@ export function selectShowStyleVariant(
 
 	const context = new StudioConfigContext(studio)
 
-	const studioBlueprint = loadStudioBlueprints(studio)
+	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	if (!studioBlueprint.blueprint.getShowStyleId)
@@ -106,7 +107,7 @@ export function selectShowStyleVariant(
 	const showStyleVariants = ShowStyleVariants.find({ showStyleBaseId: showStyleBase._id }).fetch()
 	if (!showStyleVariants.length) throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" has no variants`)
 
-	const showStyleBlueprint = loadShowStyleBlueprints(showStyleBase)
+	const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
 	if (!showStyleBlueprint)
 		throw new Meteor.Error(500, `ShowStyleBase "${showStyleBase._id}" does not have a valid blueprint`)
 
@@ -142,7 +143,7 @@ export function produceRundownPlaylistInfo(
 	currentRundown: DBRundown,
 	peripheralDevice: PeripheralDevice | undefined
 ): RundownPlaylistAndOrder {
-	const studioBlueprint = loadStudioBlueprints(studio)
+	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
 	const playlistExternalId = currentRundown.playlistExternalId
@@ -348,7 +349,7 @@ export function afterRemovePartsAuxiliary(
 	rundownId: RundownId,
 	removedParts: DBPart[]
 ) {
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
 			partId: { $in: _.map(removedParts, (p) => p._id) },
@@ -386,7 +387,7 @@ export function afterRemovePieces(
 	rundownId: RundownId,
 	removedPieces: Array<Piece | AdLibPiece>
 ) {
-	cache.defer(() => {
+	cache.deferAfterSave(() => {
 		ExpectedPlayoutItems.remove({
 			rundownId: rundownId,
 			pieceId: { $in: _.map(removedPieces, (p) => p._id) },
@@ -534,6 +535,8 @@ export namespace ServerRundownAPI {
 	}
 
 	export function unsyncRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId): void {
+		const span = profiler.startSpan('api.rundown.unsyncRundownInner')
+
 		check(rundownId, String)
 		logger.info('unsyncRundown ' + rundownId)
 
@@ -550,6 +553,8 @@ export namespace ServerRundownAPI {
 		} else {
 			logger.info(`Rundown "${rundownId}" was already unsynced`)
 		}
+
+		span?.end()
 	}
 	/** Remove a RundownPlaylist and all its contents */
 	export function removeRundownPlaylistInner(cache: CacheForRundownPlaylist, playlistId: RundownPlaylistId) {

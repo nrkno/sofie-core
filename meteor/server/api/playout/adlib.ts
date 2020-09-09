@@ -9,6 +9,8 @@ import {
 	unprotectString,
 	getRandomId,
 	waitForPromise,
+	unprotectStringArray,
+	sleep,
 	assertNever,
 } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
@@ -18,7 +20,13 @@ import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Piece, PieceId, Pieces } from '../../../lib/collections/Pieces'
 import { Part } from '../../../lib/collections/Parts'
-import { prefixAllObjectIds, setNextPart, getRundownIDsFromCache, getAllPieceInstancesFromCache } from './lib'
+import {
+	prefixAllObjectIds,
+	setNextPart,
+	getRundownIDsFromCache,
+	getAllPieceInstancesFromCache,
+	getSelectedPartInstancesFromCache,
+} from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
 import { updatePartRanks, afterRemoveParts } from '../rundown'
@@ -34,10 +42,15 @@ import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collec
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
-import { syncPlayheadInfinitesForNextPartInstance, DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
+import {
+	syncPlayheadInfinitesForNextPartInstance,
+	DEFINITELY_ENDED_FUTURE_DURATION,
+	fetchPiecesThatMayBeActiveForPart,
+} from './infinites'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
+import { getPieceInstancesForPart } from './infinites'
 
 export namespace ServerPlayoutAdLibAPI {
 	export function pieceTakeNow(
@@ -238,7 +251,7 @@ export namespace ServerPlayoutAdLibAPI {
 		currentPartInstance: PartInstance,
 		adLibPiece: AdLibPiece | BucketAdLib
 	) {
-		const span = Agent.startSpan('innerStartOrQueueAdLibPiece')
+		const span = profiler.startSpan('innerStartOrQueueAdLibPiece')
 		if (queue || adLibPiece.toBeQueued) {
 			const newPartInstance = new PartInstance({
 				_id: getRandomId(),
@@ -263,12 +276,14 @@ export namespace ServerPlayoutAdLibAPI {
 			innerStartQueuedAdLib(cache, rundownPlaylist, rundown, currentPartInstance, newPartInstance, [
 				newPieceInstance,
 			])
+
+			// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 		} else {
 			const newPieceInstance = convertAdLibToPieceInstance(adLibPiece, currentPartInstance, queue)
 			innerStartAdLibPiece(cache, rundownPlaylist, rundown, currentPartInstance, newPieceInstance)
-		}
 
-		syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
+			syncPlayheadInfinitesForNextPartInstance(cache, rundownPlaylist)
+		}
 
 		updateTimeline(cache, rundownPlaylist.studioId)
 
@@ -326,7 +341,7 @@ export namespace ServerPlayoutAdLibAPI {
 		originalOnly: boolean,
 		customQuery?: MongoQuery<PieceInstance>
 	) {
-		const span = Agent.startSpan('innerFindLastPieceOnLayer')
+		const span = profiler.startSpan('innerFindLastPieceOnLayer')
 		const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 
 		const query = {
@@ -341,7 +356,7 @@ export namespace ServerPlayoutAdLibAPI {
 		if (originalOnly) {
 			// Ignore adlibs if using original only
 			query.dynamicallyInserted = {
-				$ne: true,
+				$exists: false,
 			}
 		}
 
@@ -365,34 +380,21 @@ export namespace ServerPlayoutAdLibAPI {
 		newPartInstance: PartInstance,
 		newPieceInstances: PieceInstance[]
 	) {
-		const span = Agent.startSpan('innerStartQueuedAdLib')
+		const span = profiler.startSpan('innerStartQueuedAdLib')
 		logger.info('adlibQueueInsertPartInstance')
 
 		// check if there's already a queued part after this:
-		// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
-		const afterPartId = currentPartInstance.part.dynamicallyInsertedAfterPartId ?? currentPartInstance.part._id
-		const alreadyQueuedPartInstance = cache.PartInstances.findOne(
-			{
-				rundownId: rundown._id,
-				segmentId: currentPartInstance.segmentId,
-				'part.dynamicallyInsertedAfterPartId': afterPartId,
-				'part._rank': { $gt: currentPartInstance.part._rank },
-			},
-			{
-				sort: { _id: -1 },
-			}
-		)
-		if (alreadyQueuedPartInstance) {
-			if (rundownPlaylist.currentPartInstanceId !== alreadyQueuedPartInstance._id) {
-				cache.Parts.remove(alreadyQueuedPartInstance.part._id)
-				cache.PartInstances.remove(alreadyQueuedPartInstance._id)
-				cache.PieceInstances.remove({ partInstanceId: alreadyQueuedPartInstance._id })
-				afterRemoveParts(cache, currentPartInstance.rundownId, [alreadyQueuedPartInstance.part])
-			}
+		const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)
+		if (nextPartInstance && nextPartInstance.part.dynamicallyInsertedAfterPartId) {
+			// TODO-PartInstance - pending new data flow - the call to setNextPart will prune the partInstance, so this will not be needed
+			cache.Parts.remove(nextPartInstance.part._id)
+			cache.PartInstances.remove(nextPartInstance._id)
+			cache.PieceInstances.remove({ partInstanceId: nextPartInstance._id })
+			afterRemoveParts(cache, currentPartInstance.rundownId, [nextPartInstance.part])
 		}
 
 		// Ensure it is labelled as dynamic
-		newPartInstance.part.dynamicallyInsertedAfterPartId = afterPartId
+		newPartInstance.part.dynamicallyInsertedAfterPartId = currentPartInstance.part._id
 
 		cache.PartInstances.insert(newPartInstance)
 		// TODO-PartInstance - pending new data flow
@@ -410,6 +412,22 @@ export namespace ServerPlayoutAdLibAPI {
 
 		setNextPart(cache, rundownPlaylist, newPartInstance)
 
+		// Find and insert any rundown defined infinites that we should inherit
+		const part = cache.Parts.findOne(newPartInstance.part._id)
+		const possiblePieces = waitForPromise(fetchPiecesThatMayBeActiveForPart(cache, part!))
+		const infinitePieceInstances = getPieceInstancesForPart(
+			cache,
+			rundownPlaylist,
+			currentPartInstance,
+			newPartInstance.part,
+			possiblePieces,
+			newPartInstance._id,
+			false
+		)
+		for (const pieceInstance of infinitePieceInstances) {
+			cache.PieceInstances.insert(pieceInstance)
+		}
+
 		if (span) span.end()
 	}
 
@@ -420,11 +438,11 @@ export namespace ServerPlayoutAdLibAPI {
 		existingPartInstance: PartInstance,
 		newPieceInstance: PieceInstance
 	) {
-		const span = Agent.startSpan('innerStartAdLibPiece')
+		const span = profiler.startSpan('innerStartAdLibPiece')
 		// Ensure it is labelled as dynamic
 		newPieceInstance.partInstanceId = existingPartInstance._id
 		newPieceInstance.piece.startPartId = existingPartInstance.part._id
-		newPieceInstance.dynamicallyInserted = true
+		newPieceInstance.dynamicallyInserted = getCurrentTime()
 
 		// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
 
@@ -439,7 +457,7 @@ export namespace ServerPlayoutAdLibAPI {
 		filter: (pieceInstance: PieceInstance) => boolean,
 		timeOffset: number | undefined
 	) {
-		const span = Agent.startSpan('innerStopPieces')
+		const span = profiler.startSpan('innerStopPieces')
 		const stoppedInstances: PieceInstanceId[] = []
 
 		const lastStartedPlayback = currentPartInstance.part.getLastStartedPlayback()
@@ -508,9 +526,10 @@ export namespace ServerPlayoutAdLibAPI {
 								currentPartInstance.rundownId,
 								currentPartInstance._id
 							),
-							dynamicallyInserted: true,
+							dynamicallyInserted: getCurrentTime(),
 							infinite: {
 								infinitePieceId: pieceId,
+								fromPreviousPart: false,
 							},
 						})
 

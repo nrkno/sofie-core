@@ -21,7 +21,7 @@ import {
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray } from '../../lib/lib'
+import { literal, normalizeArray, getCurrentTime } from '../../lib/lib'
 import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
@@ -393,7 +393,12 @@ export namespace RundownUtils {
 						},
 					}
 				)
-				const nowInPart = 0 // TODO-INFINITE
+
+				const partStarted = partE.instance.part.startedPlayback
+					? partE.instance.part.getLastStartedPlayback()
+					: undefined
+				const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
+
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
 					showStyleBase,
 					rawPieceInstances,

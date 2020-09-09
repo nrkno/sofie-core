@@ -7,7 +7,7 @@ import { Studio, StudioId, Studios } from '../../../lib/collections/Studios'
 import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { getCurrentTime, getRandomId, waitForPromise } from '../../../lib/lib'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownContext } from '../blueprints/context'
 import {
 	setNextPart,
@@ -23,7 +23,7 @@ import { getActiveRundownPlaylistsInStudio } from './studio'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 export function activateRundownPlaylist(
 	cache: CacheForRundownPlaylist,
@@ -81,12 +81,9 @@ export function activateRundownPlaylist(
 
 	updateTimeline(cache, studio._id)
 
-	cache.defer(() => {
+	cache.defer((cache) => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-		const { blueprint } = getBlueprintOfRundown(
-			waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
-			rundown
-		)
+		const { blueprint } = loadShowStyleBlueprint(waitForPromise(cache.activationCache.getShowStyleBase(rundown)))
 		const context = new RundownContext(rundown, cache, undefined)
 		context.wipeCache()
 		if (blueprint.onRundownActivate) {
@@ -101,9 +98,8 @@ export function deactivateRundownPlaylist(cache: CacheForRundownPlaylist, rundow
 
 	cache.defer((cache) => {
 		if (rundown) {
-			const { blueprint } = getBlueprintOfRundown(
-				waitForPromise(cache.activationCache.getShowStyleBase(rundown)),
-				rundown
+			const { blueprint } = loadShowStyleBlueprint(
+				waitForPromise(cache.activationCache.getShowStyleBase(rundown))
 			)
 			if (blueprint.onRundownDeActivate) {
 				Promise.resolve(blueprint.onRundownDeActivate(new RundownContext(rundown, cache, undefined))).catch(
@@ -117,7 +113,7 @@ export function deactivateRundownPlaylistInner(
 	cache: CacheForRundownPlaylist,
 	rundownPlaylist: RundownPlaylist
 ): Rundown | undefined {
-	const span = Agent.startSpan('deactivateRundownPlaylistInner')
+	const span = profiler.startSpan('deactivateRundownPlaylistInner')
 	logger.info(`Deactivating rundown playlist "${rundownPlaylist._id}"`)
 
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, rundownPlaylist)

@@ -40,7 +40,7 @@ import {
 import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineObjGeneric, TimelineObjRundown } from '../../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineObjRundown, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
@@ -48,7 +48,8 @@ import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { fsWriteFile, fsReadFile, fsUnlinkFile } from '../lib'
-import { CURRENT_SYSTEM_VERSION, isVersionSupported } from '../migration/databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
+import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { AudioContent, getPieceGroupId, getPieceFirstObjectId, TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -80,6 +81,12 @@ import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { getPartId, getSegmentId } from './ingest/lib'
 import { Piece as Piece_1_11_0 } from '../migration/deprecatedDataTypes/1_11_0'
+import { AdLibActions, AdLibAction } from '../../lib/collections/AdLibActions'
+import {
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibAction,
+} from '../../lib/collections/RundownBaselineAdLibActions'
+import { migrateConfigToBlueprintConfigOnObject } from '../migration/X_X_X'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
@@ -115,6 +122,8 @@ interface RundownPlaylistSnapshot {
 	pieces: Array<Piece>
 	pieceInstances: Array<PieceInstance>
 	adLibPieces: Array<AdLibPiece>
+	adLibActions: Array<AdLibAction>
+	baselineAdLibActions: Array<RundownBaselineAdLibAction>
 	mediaObjects: Array<MediaObject>
 	expectedMediaItems: Array<ExpectedMediaItem>
 	expectedPlayoutItems: Array<ExpectedPlayoutItem>
@@ -138,7 +147,7 @@ interface DebugSnapshot {
 	snapshot: SnapshotDebug
 	system: SystemSnapshot
 	activeRundownPlaylists: Array<RundownPlaylistSnapshot>
-	timeline: Array<TimelineObjGeneric>
+	timeline: TimelineComplete[]
 	userActionLog: Array<UserActionsLogItem>
 	deviceSnaphots: Array<DeviceSnapshot>
 }
@@ -185,6 +194,8 @@ function createRundownPlaylistSnapshot(
 	const pieceInstances = PieceInstances.find({ rundownId: { $in: rundownIds } }).fetch()
 	const adLibPieces = AdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
 	const baselineAdlibs = RundownBaselineAdLibPieces.find({ rundownId: { $in: rundownIds } }).fetch()
+	const adLibActions = AdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
+	const baselineAdLibActions = RundownBaselineAdLibActions.find({ rundownId: { $in: rundownIds } }).fetch()
 	const mediaObjectIds: Array<string> = [
 		...pieces
 			.filter((piece) => piece.content && piece.content.fileName)
@@ -227,6 +238,8 @@ function createRundownPlaylistSnapshot(
 		pieces,
 		pieceInstances,
 		adLibPieces,
+		adLibActions,
+		baselineAdLibActions,
 		mediaObjects,
 		expectedMediaItems,
 		expectedPlayoutItems,
@@ -706,7 +719,7 @@ export function restoreFromRundownPlaylistSnapshot(
 			part?: T
 			piece?: T
 		}
-	>(objs: T[], updateId: boolean): T[] {
+	>(objs: undefined | T[], updateId: boolean): T[] {
 		const updateIds = (obj: T) => {
 			if (obj.rundownId) {
 				obj.rundownId = rundownIdMap[unprotectString(obj.rundownId)]
@@ -732,7 +745,7 @@ export function restoreFromRundownPlaylistSnapshot(
 
 			return obj
 		}
-		return objs.map((obj) => updateIds(obj))
+		return (objs || []).map((obj) => updateIds(obj))
 	}
 
 	saveIntoDb(RundownPlaylists, { _id: playlistId }, [snapshot.playlist])
@@ -745,12 +758,18 @@ export function restoreFromRundownPlaylistSnapshot(
 		{ rundownId: { $in: rundownIds } },
 		updateItemIds(snapshot.baselineAdlibs, true)
 	)
+	saveIntoDb(
+		RundownBaselineAdLibActions,
+		{ rundownId: { $in: rundownIds } },
+		updateItemIds(snapshot.baselineAdLibActions, true)
+	)
 	saveIntoDb(Segments, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.segments, false))
 	saveIntoDb(Parts, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.parts, false))
 	saveIntoDb(PartInstances, { rundownId: { $in: rundownIds } }, snapshot.partInstances)
 	saveIntoDb(Pieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.pieces, false))
 	saveIntoDb(PieceInstances, { rundownId: { $in: rundownIds } }, snapshot.pieceInstances)
 	saveIntoDb(AdLibPieces, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibPieces, true))
+	saveIntoDb(AdLibActions, { rundownId: { $in: rundownIds } }, updateItemIds(snapshot.adLibActions, true))
 	saveIntoDb(
 		MediaObjects,
 		{ _id: { $in: _.map(snapshot.mediaObjects, (mediaObject) => mediaObject._id) } },
@@ -776,6 +795,19 @@ function restoreFromSystemSnapshot(snapshot: SystemSnapshot) {
 	if (!isVersionSupported(parseVersion(snapshot.version || '0.18.0'))) {
 		throw new Meteor.Error(400, `Cannot restore, the snapshot comes from an older, unsupported version of Sofie`)
 	}
+	// Migrate data changes:
+	snapshot.studios = _.map(snapshot.studios, (studio) => {
+		if (!studio.routeSets) studio.routeSets = {}
+		return migrateConfigToBlueprintConfigOnObject(studio)
+	})
+	snapshot.showStyleBases = _.map(snapshot.showStyleBases, (showStyleBase) => {
+		// delete showStyleBase.runtimeArguments // todo: add this?
+		return migrateConfigToBlueprintConfigOnObject(showStyleBase)
+	})
+	snapshot.showStyleVariants = _.map(snapshot.showStyleVariants, (showStyleVariant) => {
+		return migrateConfigToBlueprintConfigOnObject(showStyleVariant)
+	})
+
 	let changes = sumChanges(
 		saveIntoDb(Studios, studioId ? { _id: studioId } : {}, snapshot.studios),
 		saveIntoDb(ShowStyleBases, {}, snapshot.showStyleBases),

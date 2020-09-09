@@ -192,7 +192,6 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
 		if (prevProps.isExpanded !== this.props.isExpanded || prevState.shelfHeight !== this.state.shelfHeight) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
-				// console.log(this.state.expanded, this.getHeight())
 				this.props.onChangeBottomMargin(this.getHeight() || '0px')
 			}
 		}

@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { applyClassToDocument, registerCollection, ProtectedString } from '../lib'
+import { applyClassToDocument, registerCollection, ProtectedString, omit } from '../lib'
 import * as _ from 'underscore'
 import { IBlueprintConfig, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
@@ -7,6 +7,7 @@ import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
 import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
+import { registerIndex } from '../database'
 
 export interface MappingsExt extends BlueprintMappings {
 	[layerName: string]: MappingExt
@@ -34,6 +35,7 @@ export interface IStudioSettings {
 }
 /** A string, identifying a Studio */
 export type StudioId = ProtectedString<'StudioId'>
+export type MappingsHash = ProtectedString<'MappingsHash'>
 
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
@@ -49,6 +51,12 @@ export interface DBStudio {
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
 
+	/**
+	 * A hash that is to be changed whenever there is a change to the mappings or routeSets
+	 * The reason for this to exist is to be able to sync the timeline to what set of mappings it was created (routed) from.
+	 */
+	mappingsHash?: MappingsHash
+
 	/** List of which ShowStyleBases this studio wants to support */
 	supportedShowStyleBase: Array<ShowStyleBaseId>
 
@@ -59,6 +67,87 @@ export interface DBStudio {
 	settings: IStudioSettings
 
 	_rundownVersionHash: string
+
+	routeSets: {
+		[id: string]: StudioRouteSet
+	}
+}
+
+export interface StudioRouteSet {
+	/** User-presentable name */
+	name: string
+	/** Whether this group is active or not */
+	active: boolean
+	/** Only one Route can be active at the same time in the exclusivity-group */
+	exclusivityGroup?: string
+	/** If true, should be displayed and toggleable by user */
+	behavior: StudioRouteBehavior
+
+	routes: RouteMapping[]
+}
+export enum StudioRouteBehavior {
+	HIDDEN = 0,
+	TOGGLE = 1,
+	ACTIVATE_ONLY = 2,
+}
+export interface RouteMapping extends ResultingMappingRoute {
+	mappedLayer: string
+}
+export interface ResultingMappingRoutes {
+	[mappedLayer: string]: ResultingMappingRoute[]
+}
+export interface ResultingMappingRoute {
+	outputMappedLayer: string
+	remapping?: Partial<BlueprintMapping>
+}
+
+export function getActiveRoutes(studio: Studio): ResultingMappingRoutes {
+	const routes: ResultingMappingRoutes = {}
+
+	const exclusivityGroups: { [groupId: string]: true } = {}
+	_.each(studio.routeSets, (routeSet) => {
+		if (routeSet.active) {
+			let useRoute: boolean = true
+			if (routeSet.exclusivityGroup) {
+				// Fail-safe: To really make sure we're not using more than one route in the same exclusivity group:
+				if (exclusivityGroups[routeSet.exclusivityGroup]) {
+					useRoute = false
+				}
+				exclusivityGroups[routeSet.exclusivityGroup] = true
+			}
+			if (useRoute) {
+				_.each(routeSet.routes, (routeMapping) => {
+					if (routeMapping.mappedLayer && routeMapping.outputMappedLayer) {
+						if (!routes[routeMapping.mappedLayer]) {
+							routes[routeMapping.mappedLayer] = []
+						}
+						routes[routeMapping.mappedLayer].push(omit(routeMapping, 'mappedLayer'))
+					}
+				})
+			}
+		}
+	})
+
+	return routes
+}
+export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: ResultingMappingRoutes): MappingsExt {
+	const outputMappings: MappingsExt = {}
+	_.each(inputMappings, (inputMapping, inputLayer) => {
+		const routes = mappingRoutes[inputLayer]
+		if (routes) {
+			_.each(routes, (route) => {
+				const routedMapping: MappingExt = {
+					...inputMapping,
+					...(route.remapping || {}),
+				}
+				outputMappings[route.outputMappedLayer] = routedMapping
+			})
+		} else {
+			// If no route is found at all, pass it through (backwards compatibility)
+			outputMappings[inputLayer] = inputMapping
+		}
+	})
+	return outputMappings
 }
 
 export interface ITestToolsConfig {
@@ -78,12 +167,17 @@ export class Studio implements DBStudio {
 	public name: string
 	public blueprintId?: BlueprintId
 	public mappings: MappingsExt
+	public mappingsHash?: MappingsHash
 	public supportedShowStyleBase: Array<ShowStyleBaseId>
 	public blueprintConfig: IBlueprintConfig
 	public settings: IStudioSettings
 	public testToolsConfig?: ITestToolsConfig
 
 	public _rundownVersionHash: string
+
+	public routeSets: {
+		[id: string]: StudioRouteSet
+	}
 
 	constructor(document: DBStudio) {
 		for (let [key, value] of Object.entries(document)) {
@@ -96,6 +190,10 @@ export const Studios: TransformedCollection<Studio, DBStudio> = createMongoColle
 	transform: (doc) => applyClassToDocument(Studio, doc),
 })
 registerCollection('Studios', Studios)
+
+registerIndex(Studios, {
+	organizationId: 1,
+})
 
 Meteor.startup(() => {
 	if (Meteor.isServer) {

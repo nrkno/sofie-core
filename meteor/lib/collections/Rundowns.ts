@@ -33,6 +33,7 @@ import { PeripheralDeviceId } from './PeripheralDevices'
 import { OrganizationId } from './Organization'
 import { AdLibActions } from './AdLibActions'
 import { RundownBaselineAdLibActions } from './RundownBaselineAdLibActions'
+import { registerIndex } from '../database'
 
 export enum RundownHoldState {
 	NONE = 0,
@@ -93,6 +94,8 @@ export interface DBRundown
 
 	/** External id of the Rundown Playlist to put this rundown in */
 	playlistExternalId?: string
+	/** Name (user-facing) of the external NCS this rundown came from */
+	externalNRCSName: string
 	/** The id of the Rundown Playlist this rundown is in */
 	playlistId: RundownPlaylistId
 	/** Rank of the Rundown inside of its Rundown Playlist */
@@ -130,6 +133,7 @@ export class Rundown implements DBRundown {
 	public dataSource: string
 	public notes?: Array<RundownNote>
 	public playlistExternalId?: string
+	public externalNRCSName: string
 	public playlistId: RundownPlaylistId
 	public _rank: number
 	public baselineModifyHash?: string
@@ -324,13 +328,10 @@ export const Rundowns: TransformedCollection<Rundown, DBRundown> = createMongoCo
 	transform: (doc) => applyClassToDocument(Rundown, doc),
 })
 registerCollection('Rundowns', Rundowns)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Rundowns._ensureIndex({
-			playlistId: 1,
-		})
-		Rundowns._ensureIndex({
-			playlistExternalId: 1,
-		})
-	}
+
+registerIndex(Rundowns, {
+	playlistId: 1,
+})
+registerIndex(Rundowns, {
+	playlistExternalId: 1,
 })

@@ -229,6 +229,15 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
+		piece.timings = {
+			take: [getCurrentTime()],
+			startedPlayback: [],
+			next: [],
+			stoppedPlayback: [],
+			playOffset: [],
+			takeDone: [],
+			takeOut: [],
+		}
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
@@ -260,7 +269,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PieceInstance could not be found')
 		}
 
-		if (pieceInstance.infinite?.fromPrevious) {
+		if (pieceInstance.infinite?.fromPreviousPart) {
 			throw new Error('Cannot update an infinite piece that is continued from a previous part')
 		}
 

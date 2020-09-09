@@ -1,17 +1,6 @@
-import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
-import {
-	getCurrentTime,
-	waitForPromise,
-	makePromise,
-	unprotectObjectArray,
-	protectString,
-	literal,
-	clone,
-	getRandomId,
-	omit,
-	asyncCollectionFindOne,
-} from '../../../lib/lib'
+import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -24,25 +13,24 @@ import {
 	checkAccessAndGetPlaylist,
 	triggerGarbageCollection,
 } from './lib'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
 import { updateTimeline } from './timeline'
 import { logger } from '../../logging'
-import { PartEndState, PieceLifespan, VTContent } from 'tv-automation-sofie-blueprints-integration'
+import { PartEndState, VTContent } from 'tv-automation-sofie-blueprints-integration'
 import { getResolvedPieces } from './pieces'
 import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { StudioId } from '../../../lib/collections/Studios'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from '../profiler'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -66,7 +54,7 @@ export function takeNextPartInnerSync(
 	now: number,
 	existingCache?: CacheForRundownPlaylist
 ) {
-	const span = Agent.startSpan('takeNextPartInner')
+	const span = profiler.startSpan('takeNextPartInner')
 	const dbPlaylist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 	if (!dbPlaylist.active) throw new Meteor.Error(501, `RundownPlaylist "${rundownPlaylistId}" is not active!`)
 	if (!dbPlaylist.nextPartInstanceId) throw new Meteor.Error(500, 'nextPartInstanceId is not set!')
@@ -90,7 +78,7 @@ export function takeNextPartInnerSync(
 		throw new Meteor.Error(404, `Rundown "${(partInstance && partInstance.rundownId) || ''}" could not be found!`)
 
 	let pShowStyle = cache.activationCache.getShowStyleBase(currentRundown)
-	let pBlueprint = pShowStyle.then((showStyle) => getBlueprintOfRundown(showStyle, currentRundown))
+	let pBlueprint = pShowStyle.then((showStyle) => loadShowStyleBlueprint(showStyle))
 
 	const currentPart = currentPartInstance
 	if (currentPart) {
@@ -138,11 +126,10 @@ export function takeNextPartInnerSync(
 	const nextPart = selectNextPart(playlist, takePartInstance, partsInOrder)
 
 	// beforeTake(rundown, previousPart || null, takePart)
-	copyOverflowingPieces(cache, partsInOrder, previousPartInstance || null, takePartInstance)
 
 	const { blueprint } = waitForPromise(pBlueprint)
 	if (blueprint.onPreTake) {
-		const span = Agent.startSpan('blueprint.onPreTake')
+		const span = profiler.startSpan('blueprint.onPreTake')
 		try {
 			waitForPromise(
 				Promise.resolve(blueprint.onPreTake(new PartEventContext(takeRundown, cache, takePartInstance))).catch(
@@ -163,7 +150,7 @@ export function takeNextPartInnerSync(
 		if (showStyle) {
 			const resolvedPieces = getResolvedPieces(cache, showStyle, previousPartInstance)
 
-			const span = Agent.startSpan('blueprint.getEndStateForPart')
+			const span = profiler.startSpan('blueprint.getEndStateForPart')
 			const context = new RundownContext(takeRundown, cache, undefined)
 			previousPartEndState = blueprint.getEndStateForPart(
 				context,
@@ -260,7 +247,7 @@ export function takeNextPartInnerSync(
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
-	cache.defer(() => {
+	cache.defer((cache) => {
 		// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 		if (takePartInstance) {
 			cache.PartInstances.update(takePartInstance._id, {
@@ -292,7 +279,7 @@ export function takeNextPartInnerSync(
 			// let bp = getBlueprintOfRundown(rundown)
 			if (firstTake) {
 				if (blueprint.onRundownFirstTake) {
-					const span = Agent.startSpan('blueprint.onRundownFirstTake')
+					const span = profiler.startSpan('blueprint.onRundownFirstTake')
 					waitForPromise(
 						Promise.resolve(
 							blueprint.onRundownFirstTake(new PartEventContext(takeRundown, cache, takePartInstance))
@@ -303,7 +290,7 @@ export function takeNextPartInnerSync(
 			}
 
 			if (blueprint.onPostTake) {
-				const span = Agent.startSpan('blueprint.onPostTake')
+				const span = profiler.startSpan('blueprint.onPostTake')
 				waitForPromise(
 					Promise.resolve(
 						blueprint.onPostTake(new PartEventContext(takeRundown, cache, takePartInstance))
@@ -319,74 +306,13 @@ export function takeNextPartInnerSync(
 	return ClientAPI.responseSuccess(undefined)
 }
 
-function copyOverflowingPieces(
-	cache: CacheForRundownPlaylist,
-	partsInOrder: Part[],
-	currentPartInstance: PartInstance | null,
-	nextPartInstance: PartInstance
-) {
-	// TODO-PartInstance - is this going to work? It needs some work to handle part data changes
-	if (currentPartInstance) {
-		const adjacentPart = partsInOrder.find((part) => {
-			return part.segmentId === currentPartInstance.segmentId && part._rank > currentPartInstance.part._rank
-		})
-		if (!adjacentPart || adjacentPart._id !== nextPartInstance.part._id) {
-			// adjacent Part isn't the next part, do not overflow
-			return
-		}
-		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: currentPartInstance._id })
-		currentPieces.forEach((instance) => {
-			if (
-				instance.piece.overflows &&
-				typeof instance.piece.enable.duration === 'number' &&
-				instance.piece.enable.duration > 0 &&
-				instance.userDuration === undefined
-			) {
-				// Subtract the amount played from the duration
-				const remainingDuration = Math.max(
-					0,
-					instance.piece.enable.duration -
-						((instance.piece.startedPlayback ||
-							currentPartInstance.part.getLastStartedPlayback() ||
-							getCurrentTime()) -
-							getCurrentTime())
-				)
-
-				// TODO - won't this need some help seeking if a clip?
-
-				if (remainingDuration > 0) {
-					// Clone an overflowing piece
-					let overflowedItem = literal<PieceInstance>({
-						_id: getRandomId(),
-						rundownId: instance.rundownId,
-						partInstanceId: nextPartInstance._id,
-						dynamicallyInserted: true,
-						piece: {
-							...omit(instance.piece, 'startedPlayback', 'overflows'),
-							_id: getRandomId(),
-							startPartId: nextPartInstance.part._id,
-							enable: {
-								start: 0,
-								duration: remainingDuration,
-							},
-							continuesRefId: instance.piece._id,
-						},
-					})
-
-					cache.PieceInstances.insert(overflowedItem)
-				}
-			}
-		})
-	}
-}
-
 export function afterTake(
 	cache: CacheForRundownPlaylist,
 	studioId: StudioId,
 	takePartInstance: PartInstance,
 	timeOffset: number | null = null
 ) {
-	const span = Agent.startSpan('afterTake')
+	const span = profiler.startSpan('afterTake')
 	// This function should be called at the end of a "take" event (when the Parts have been updated)
 
 	let forceNowTime: number | undefined = undefined
@@ -421,7 +347,7 @@ function startHold(
 ) {
 	if (!holdFromPartInstance) throw new Meteor.Error(404, 'previousPart not found!')
 	if (!holdToPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
-	const span = Agent.startSpan('startHold')
+	const span = profiler.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
 	const itemsToCopy = cache.PieceInstances.findFetch({ partInstanceId: holdFromPartInstance._id }).filter(
@@ -431,12 +357,14 @@ function startHold(
 		// mark current one as infinite
 		instance.infinite = {
 			infinitePieceId: instance.piece._id,
+			fromPreviousPart: false,
 			fromHold: true,
 		}
 		cache.PieceInstances.update(instance._id, {
 			$set: {
 				infinite: {
 					infinitePieceId: instance.piece._id,
+					fromPreviousPart: false,
 					fromHold: true,
 				},
 			},
@@ -447,7 +375,7 @@ function startHold(
 			_id: protectString<PieceInstanceId>(instance._id + '_hold'),
 			rundownId: instance.rundownId,
 			partInstanceId: holdToPartInstance._id,
-			dynamicallyInserted: true,
+			dynamicallyInserted: getCurrentTime(),
 			piece: {
 				...clone(instance.piece),
 				_id: protectString<PieceId>(instance.piece._id + '_hold'),
@@ -456,6 +384,7 @@ function startHold(
 			},
 			infinite: {
 				infinitePieceId: instance.piece._id,
+				fromPreviousPart: true,
 				fromHold: true,
 			},
 		})

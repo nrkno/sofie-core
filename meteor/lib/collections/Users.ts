@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import { registerCollection, ProtectedString, protectString, unprotectString } from '../lib'
 import { OrganizationId, UserRoles, Organizations, Organization } from './Organization'
+import { registerIndex } from '../database'
 
 /** A string, identifying a User */
 export type UserId = ProtectedString<'UserId'>
@@ -39,12 +40,8 @@ export type User = DBUser // to be replaced by a class somet ime later?
 export const Users: TransformedCollection<User, DBUser> = Meteor.users as any
 registerCollection('Users', Users)
 
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Users._ensureIndex({
-			organizationId: 1,
-		})
-	}
+registerIndex(Users, {
+	organizationId: 1,
 })
 
 /** Returns the currently logged in user, or null if not logged in */

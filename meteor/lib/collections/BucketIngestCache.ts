@@ -5,6 +5,7 @@ import { IngestRundown, IngestSegment, IngestPart, IngestAdlib } from 'tv-automa
 import { createMongoCollection } from './lib'
 import { ShowStyleVariantId } from './ShowStyleVariants'
 import { StudioId } from './Studios'
+import { registerIndex } from '../database'
 
 export type BucketIngestCacheObjId = ProtectedString<'BucketIngestCacheObjId'>
 
@@ -23,11 +24,8 @@ export const BucketIngestCache: TransformedCollection<
 	BucketIngestCacheObj
 > = createMongoCollection<BucketIngestCacheObj>('bucketIngestCache')
 registerCollection('BucketIngestCache', BucketIngestCache)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		BucketIngestCache._ensureIndex({
-			showStyleVariantId: 1,
-			studioId: 1,
-		})
-	}
+
+registerIndex(BucketIngestCache, {
+	showStyleVariantId: 1,
+	studioId: 1,
 })

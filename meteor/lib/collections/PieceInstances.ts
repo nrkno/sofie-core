@@ -18,6 +18,7 @@ import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstance, PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
@@ -51,8 +52,8 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId
-	/** If this piece has been insterted during run of rundown (such as adLibs). Df set, this won't be affected by updates from MOS */
-	dynamicallyInserted?: boolean
+	/** If this piece has been insterted during run of rundown (such as adLibs), then this is set to the timestamp it was inserted */
+	dynamicallyInserted?: Time
 
 	/** Only set when this pieceInstance is an infinite. It contains info about the infinite */
 	infinite?: {
@@ -61,8 +62,10 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		/** When the instance was a copy made from hold */
 		fromHold?: boolean
 
-		/** Whether this was 'copied' from the previous PartInstance, rather than from a Part */
-		fromPrevious?: boolean
+		/** Whether this was 'copied' from the previous PartInstance or Part */
+		fromPreviousPart: boolean
+		/** Whether this was 'copied' from the previous PartInstance via the playhead, rather than from a Part */
+		fromPreviousPlayhead?: boolean
 
 		// /** The first partInstance this existed in */
 		// firstPartInsanceId: PartInstanceId
@@ -122,12 +125,9 @@ export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance>
 	'pieceInstances'
 )
 registerCollection('PieceInstances', PieceInstances)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PieceInstances._ensureIndex({
-			rundownId: 1,
-			partInstanceId: 1,
-			reset: -1,
-		})
-	}
+
+registerIndex(PieceInstances, {
+	rundownId: 1,
+	partInstanceId: 1,
+	reset: -1,
 })

@@ -38,7 +38,7 @@ import {
 	ShowStyleVariants,
 	ShowStyleVariantId,
 } from '../../lib/collections/ShowStyleVariants'
-import { CURRENT_SYSTEM_VERSION } from '../../server/migration/databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from '../../server/migration/currentSystemVersion'
 import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
@@ -159,6 +159,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 			sofieUrl: '',
 		},
 		_rundownVersionHash: 'asdf',
+		routeSets: {},
 	}
 	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
@@ -340,7 +341,6 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 					const parts: BlueprintResultPart[] = []
 
 					_.each(ingestSegment.parts, (ingestPart) => {
-						// console.log(ingestPart.payload, ingestPart.externalId)
 						const part: IBlueprintPart = {
 							externalId: ingestPart.externalId,
 							title: ingestPart.name,
@@ -506,6 +506,7 @@ export function setupDefaultRundown(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 
@@ -722,6 +723,7 @@ export function setupRundownWithAutoplayPart0(
 		},
 
 		dataSource: 'mock',
+		externalNRCSName: 'mock',
 	}
 	Rundowns.insert(rundown)
 

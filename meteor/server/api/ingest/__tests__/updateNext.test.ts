@@ -30,6 +30,7 @@ function createMockRO() {
 		organizationId: null,
 		name: 'mock studio',
 		mappings: {},
+		routeSets: {},
 		supportedShowStyleBase: [],
 		blueprintConfig: {},
 		settings: {
@@ -67,6 +68,7 @@ function createMockRO() {
 		importVersions: {} as any,
 		playlistId: rundownPlaylistId,
 		_rank: 0,
+		externalNRCSName: 'mockNRCS',
 		organizationId: protectString(''),
 	})
 

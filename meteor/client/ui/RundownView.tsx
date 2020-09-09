@@ -18,7 +18,7 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
 import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
 import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
@@ -54,7 +54,7 @@ import {
 } from '../lib/viewPort'
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
-import { RundownFullscreenControls } from './RundownView/RundownFullscreenControls'
+import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
 import { mousetrapHelper } from '../lib/mousetrapHelper'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
@@ -426,6 +426,7 @@ interface IRundownHeaderProps {
 	playlist: RundownPlaylist
 	studio: Studio
 	rundownIds: RundownId[]
+	firstRundown: Rundown | undefined
 	onActivate?: (isRehearsal: boolean) => void
 	onRegisterHotkeys?: (hotkeys: Array<HotkeyDefinition>) => void
 	studioMode: boolean
@@ -566,10 +567,6 @@ const RundownHeader = withTranslation()(
 			}
 		}
 		componentDidMount() {
-			// $(document).on("keydown", function(e) {
-			// 	console.log(e)
-			// })
-
 			let preventDefault = (e: Event) => {
 				e.preventDefault()
 				e.stopImmediatePropagation()
@@ -787,7 +784,7 @@ const RundownHeader = withTranslation()(
 						warning: true,
 						yes: t('OK'),
 						onAccept: () => {
-							console.log()
+							// nothing
 						},
 					})
 				}
@@ -1149,7 +1146,9 @@ const RundownHeader = withTranslation()(
 									) ? (
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
-									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>{t('Reload ENPS Data')}</MenuItem>
+									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
+										{t('Reload {{nrcsName}} Data', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
 							) : (
@@ -1163,7 +1162,6 @@ const RundownHeader = withTranslation()(
 						className={ClassNames('header rundown', {
 							active: this.props.playlist.active,
 							'not-active': !this.props.playlist.active,
-
 							rehearsal: this.props.playlist.rehearsal,
 						})}>
 						<ContextMenuTrigger
@@ -1204,6 +1202,7 @@ const RundownHeader = withTranslation()(
 									studio={this.props.studio}
 									playlist={this.props.playlist}
 									rundownIds={this.props.rundownIds}
+									firstRundown={this.props.firstRundown}
 								/>
 							</div>
 						</ContextMenuTrigger>
@@ -2093,6 +2092,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
+		onStudioRouteSetSwitch = (
+			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+			routeSetId: string,
+			state: boolean
+		) => {
+			const { t } = this.props
+			if (this.props.studio) {
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				)
+			}
+		}
+
 		renderSegments() {
 			if (this.props.matchedSegments) {
 				let globalIndex = 0
@@ -2346,6 +2358,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			if (this.state.subsReady) {
 				if (this.props.playlist && this.props.studio && this.props.showStyleBase && !this.props.onlyShelf) {
+					const selectedPiece = this.state.selectedPiece
+					const selectedPieceRundown: Rundown | undefined =
+						(selectedPiece &&
+							RundownUtils.isPieceInstance(selectedPiece) &&
+							this.props.rundowns.find((r) => r._id === selectedPiece?.instance.rundownId)) ||
+						undefined
+
 					return (
 						<RundownTimingProvider playlist={this.props.playlist} defaultDuration={Settings.defaultDisplayDuration}>
 							<div
@@ -2364,7 +2383,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									)}
 								</ErrorBoundary>
 								<ErrorBoundary>
-									<RundownFullscreenControls
+									<RundownRightHandControls
 										isFollowingOnAir={this.state.followLiveSegments}
 										onFollowOnAir={this.onGoToLiveSegment}
 										onRewindSegments={this.onRewindSegments}
@@ -2374,6 +2393,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										onToggleSupportPanel={this.onToggleSupportPanel}
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
+										studioRouteSets={this.props.studio.routeSets}
+										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
 								<ErrorBoundary>
@@ -2451,6 +2472,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										playlist={this.props.playlist}
 										studio={this.props.studio}
 										rundownIds={this.props.rundowns.map((r) => r._id)}
+										firstRundown={this.props.rundowns[0]}
 										onActivate={this.onActivate}
 										studioMode={this.state.studioMode}
 										onRegisterHotkeys={this.onRegisterHotkeys}
@@ -2476,15 +2498,25 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										this.state.selectedPiece &&
 										RundownUtils.isPieceInstance(this.state.selectedPiece) &&
 										this.props.studio &&
-										this.props.playlist && (
+										this.props.playlist &&
+										(selectedPieceRundown === undefined ? (
+											<ModalDialog
+												onAccept={() => this.setState({ selectedPiece: undefined })}
+												title={t('Rundown not found')}
+												acceptText={t('Close')}>
+												{t('Rundown for piece "{{pieceLabel}}" could not be found.', {
+													pieceLabel: this.state.selectedPiece.instance.piece.name,
+												})}
+											</ModalDialog>
+										) : (
 											<ClipTrimDialog
 												studio={this.props.studio}
 												playlistId={this.props.playlist._id}
-												rundownId={this.state.selectedPiece.instance.rundownId}
+												rundown={selectedPieceRundown}
 												selectedPiece={this.state.selectedPiece.instance.piece}
 												onClose={() => this.setState({ isClipTrimmerOpen: false })}
 											/>
-										)}
+										))}
 								</ErrorBoundary>
 								{this.renderSegmentsList()}
 								<ErrorBoundary>

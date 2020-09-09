@@ -107,7 +107,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			for (const mode0 of [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnSegmentEnd]) {
 				const mode = mode0 as PieceLifespan.OutOnRundownEnd | PieceLifespan.OutOnSegmentEnd
 				const pieces = (piecesByInfiniteMode[mode] || []).filter(
-					(p) => p.infinite?.fromPrevious || p.dynamicallyInserted
+					(p) => p.infinite?.fromPreviousPlayhead || p.dynamicallyInserted
 				)
 				// This is the piece we may copy across
 				const candidatePiece =
@@ -154,7 +154,8 @@ export function getPlayheadTrackingInfinitesForPart(
 			}
 			instance.infinite = {
 				...p.infinite,
-				fromPrevious: true,
+				fromPreviousPart: true,
+				fromPreviousPlayhead: true,
 			}
 		}
 
@@ -308,10 +309,12 @@ export function getPieceInstancesForPart(
 		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
 			instance.infinite = {
 				infinitePieceId: instance.piece._id,
+				fromPreviousPart: instance.piece.startPartId !== part._id,
 			}
 		}
-		if (instance.infinite && instance.piece.startPartId !== part._id) {
+		if (instance.infinite?.fromPreviousPart) {
 			// If this is not the start point, it should start at 0
+			// Note: this should not be setitng fromPreviousPlayhead, as it is not from the playhead
 			instance.piece = {
 				...instance.piece,
 				enable: {
@@ -395,7 +398,7 @@ export function processAndPrunePieceInstanceTimings(
 	}
 
 	const groupedPieces = _.groupBy(
-		pieces,
+		pieces.filter((p) => !p.disabled),
 		(p) => exclusiveGroupMap.get(p.piece.sourceLayerId) || p.piece.sourceLayerId
 	)
 	for (const pieces of Object.values(groupedPieces)) {
@@ -448,13 +451,23 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 	const res: PieceInstanceOnInfiniteLayers = {}
 
 	const isCandidateBetter = (best: PieceInstance, candidate: PieceInstance): boolean => {
-		if (best.infinite?.fromPrevious && !candidate.infinite?.fromPrevious) {
+		if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
 			// Prefer the candidate as it is not from previous
 			return false
 		}
-		if (!best.infinite?.fromPrevious && candidate.infinite?.fromPrevious) {
+		if (!best.infinite?.fromPreviousPart && candidate.infinite?.fromPreviousPart) {
 			// Prefer the best as it is not from previous
 			return true
+		}
+
+		if (best.piece.enable.start === 'now') {
+			// If we are working for the 'now' time, then we are looking at adlibs
+			// All adlib pieces will have a take time, so prefer the later one
+			const take0 = best.dynamicallyInserted
+			const take1 = candidate.dynamicallyInserted
+			if (take0 !== undefined && take1 !== undefined) {
+				return take1 > take0
+			}
 		}
 
 		// Fallback to id, as we dont have any other criteria and this will be stable.

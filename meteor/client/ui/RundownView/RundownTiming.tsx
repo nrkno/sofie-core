@@ -488,7 +488,6 @@ export const RundownTimingProvider = withTracker<
 					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
 					// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 					// always add the full duration, in case by some manual intervention this segment should play twice
-					// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
 					if (memberOfDisplayDurationGroup) {
 						waitAccumulator +=
 							partInstance.part.duration || partDisplayDuration || partInstance.part.expectedDuration || 0
@@ -509,7 +508,6 @@ export const RundownTimingProvider = withTracker<
 						playlist.currentPartInstanceId === partInstance._id &&
 						lastStartedPlayback + (partInstance.part.expectedDuration || 0) > now
 					) {
-						// console.log((now - item.startedPlayback))
 						remainingRundownDuration += (partInstance.part.expectedDuration || 0) - (now - lastStartedPlayback)
 					}
 				})
@@ -574,8 +572,6 @@ export const RundownTimingProvider = withTracker<
 					(currentLivePart.expectedDuration !== undefined ? currentLivePart.expectedDuration !== 0 : false)
 				)
 			}
-
-			// console.log(linearSegLines.map((value) => value[1]))
 
 			this.durations = Object.assign(
 				this.durations,

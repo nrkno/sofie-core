@@ -30,9 +30,9 @@ import { MethodContext } from '../../../lib/api/methods'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { isAnySyncFunctionsRunning } from '../../codeControl'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
 import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
+import { profiler } from '../profiler'
 
 /**
  * Reset the rundown:
@@ -287,7 +287,7 @@ export function selectNextPart(
 	previousPartInstance: PartInstance | null,
 	parts: Part[]
 ): SelectNextPartResult | undefined {
-	const span = Agent.startSpan('selectNextPart')
+	const span = profiler.startSpan('selectNextPart')
 	const findFirstPlayablePart = (
 		offset: number,
 		condition?: (part: Part) => boolean
@@ -317,7 +317,10 @@ export function selectNextPart(
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const nextPart2 = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
+			const nextPart2 = findFirstPlayablePart(
+				0,
+				(part) => part.segmentId === rundownPlaylist.nextSegmentId && !part.dynamicallyInsertedAfterPartId
+			)
 			if (nextPart2) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
@@ -342,7 +345,7 @@ export function setNextPart(
 	setManually?: boolean,
 	nextTimeOffset?: number | undefined
 ) {
-	const span = Agent.startSpan('setNextPart')
+	const span = profiler.startSpan('setNextPart')
 	const rundownIds = getRundownIDsFromCache(cache, rundownPlaylist)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(
 		cache,
@@ -496,6 +499,22 @@ export function setNextPart(
 		partInstanceId: { $in: instancesIdsToRemove },
 	})
 
+	const dynamicallyInsertedPartsToRemove = nonTakenPartInstances
+		.filter(
+			(p) =>
+				p.part.dynamicallyInsertedAfterPartId &&
+				p._id !== rundownPlaylist.nextPartInstanceId &&
+				p._id !== rundownPlaylist.currentPartInstanceId
+		)
+		.map((p) => p.part._id)
+	if (dynamicallyInsertedPartsToRemove.length > 0) {
+		// TODO-PartInstances - pending new data flow
+		cache.Parts.remove({
+			rundownId: { $in: rundownIds },
+			_id: { $in: dynamicallyInsertedPartsToRemove },
+		})
+	}
+
 	if (movingToNewSegment && rundownPlaylist.nextSegmentId) {
 		// TODO - shouldnt this be done on take? this will have a bug where once the segment is set as next, another call to ensure the next is correct will change it
 		cache.RundownPlaylists.update(rundownPlaylist._id, {
@@ -513,7 +532,7 @@ export function setNextSegment(
 	rundownPlaylist: RundownPlaylist,
 	nextSegment: Segment | null
 ) {
-	const span = Agent.startSpan('setNextSegment')
+	const span = profiler.startSpan('setNextSegment')
 	const acceptableRundowns = getRundownIDsFromCache(cache, rundownPlaylist)
 	if (nextSegment) {
 		if (acceptableRundowns.indexOf(nextSegment.rundownId) === -1) {
@@ -709,13 +728,18 @@ export function getRundownsFromCache(cache: CacheForRundownPlaylist, playlist: R
 	)
 }
 export function getRundownIDsFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	return getRundownsFromCache(cache, playlist).map((r) => r._id)
+	const span = profiler.startSpan('playout.getRundownIDsFromCache')
+
+	const ids = getRundownsFromCache(cache, playlist).map((r) => r._id)
+
+	span?.end()
+	return ids
 }
 /** Get all pieces in a part */
 export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
 	return cache.Pieces.findFetch({
-		rundownId: part.rundownId,
-		partId: part._id,
+		startRundownId: part.rundownId,
+		startPartId: part._id,
 	})
 }
 /** Get all adlib pieces in a part */
@@ -751,6 +775,8 @@ export function getSelectedPartInstancesFromCache(
 	nextPartInstance: PartInstance | undefined
 	previousPartInstance: PartInstance | undefined
 } {
+	const span = profiler.startSpan('playout.getSelectedPartInstancesFromCache')
+
 	if (!rundownIds) {
 		rundownIds = getRundownIDsFromCache(cache, playlist)
 	}
@@ -759,16 +785,22 @@ export function getSelectedPartInstancesFromCache(
 		rundownId: { $in: rundownIds },
 		reset: { $ne: true },
 	}
+
+	const currentPartInstance = playlist.currentPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
+		: undefined
+	const nextPartInstance = playlist.nextPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
+		: undefined
+	const previousPartInstance = playlist.previousPartInstanceId
+		? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
+		: undefined
+
+	span?.end()
 	return {
-		currentPartInstance: playlist.currentPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.currentPartInstanceId, ...selector })
-			: undefined,
-		nextPartInstance: playlist.nextPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.nextPartInstanceId, ...selector })
-			: undefined,
-		previousPartInstance: playlist.previousPartInstanceId
-			? cache.PartInstances.findOne({ _id: playlist.previousPartInstanceId, ...selector })
-			: undefined,
+		currentPartInstance,
+		nextPartInstance,
+		previousPartInstance,
 	}
 }
 

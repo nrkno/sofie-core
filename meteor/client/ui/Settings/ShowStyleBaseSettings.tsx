@@ -36,6 +36,7 @@ import RundownLayoutEditor from './RundownLayoutEditor'
 import { getHelpMode } from '../../lib/localStorage'
 import { SettingsNavigation } from '../../lib/SettingsNavigation'
 import { MeteorCall } from '../../../lib/api/methods'
+import { Settings } from '../../../lib/Settings'
 
 interface IProps {
 	match: {
@@ -668,7 +669,7 @@ const SourceLayerSettings = withTranslation()(
 				<div>
 					<h2 className="mhn">
 						<Tooltip
-							overlay={t('Add some source layers (e.g. Graphics) for your ENPS data to appear in rundowns')}
+							overlay={t('Add some source layers (e.g. Graphics) for your data to appear in rundowns')}
 							visible={getHelpMode() && !this.props.showStyleBase.sourceLayers.length}
 							placement="bottom">
 							<span>{t('Source Layers')}</span>

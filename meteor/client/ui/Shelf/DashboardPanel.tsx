@@ -427,7 +427,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
-		// console.log(sourceLayer)
 		const { t } = this.props
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
 			const playlistId = this.props.playlist._id
@@ -606,28 +605,22 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 						},
 					],
 				},
-				// TODO-INFINITES is this ok?
-				// {
-				// 	definitelyEnded: {
-				// 		$exists: false,
-				// 	},
-				// },
 			],
 			adLibSourceId: {
 				$exists: true,
 			},
-			// $or: [
-			// 	{
-			// 		'userDuration': {
-			// 			$exists: false,
-			// 		},
-			// 	},
-			// 	{
-			// 		'userDuration.duration': {
-			// 			$exists: false,
-			// 		},
-			// 	},
-			// ],
+			$or: [
+				{
+					userDuration: {
+						$exists: false,
+					},
+				},
+				{
+					'userDuration.end': {
+						$exists: false,
+					},
+				},
+			],
 		}).fetch()
 
 		let nearestEnd = Number.POSITIVE_INFINITY

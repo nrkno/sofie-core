@@ -17,8 +17,8 @@ import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Time
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
+import { Studios, StudioId, StudioRouteBehavior } from '../../../lib/collections/Studios'
 import { PartHoldMode } from 'tv-automation-sofie-blueprints-integration'
-import { StudioId } from '../../../lib/collections/Studios'
 import { ClientAPI } from '../../../lib/api/client'
 import {
 	reportRundownHasStarted,
@@ -29,7 +29,7 @@ import {
 } from '../asRunLog'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { getBlueprintOfRundown } from '../blueprints/cache'
+import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { NotesContext } from '../blueprints/context/context'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
@@ -342,6 +342,8 @@ export namespace ServerPlayoutAPI {
 				nextPart = nextPartId
 			}
 			if (!nextPart) throw new Meteor.Error(404, `Part "${nextPartId}" not found!`)
+			if (nextPart.dynamicallyInsertedAfterPartId)
+				throw new Meteor.Error(500, `Part "${nextPartId}" cannot be set as next!`)
 		}
 
 		libsetNextPart(cache, playlist, nextPart, setManually, nextTimeOffset)
@@ -1042,9 +1044,13 @@ export namespace ServerPlayoutAPI {
 		check(userData, Match.Any)
 
 		return executeActionInner(context, rundownPlaylistId, (actionContext, cache, rundown) => {
-			const blueprint = getBlueprintOfRundown(undefined, rundown) // todo: database again
+			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleBase(rundown))
+			const blueprint = loadShowStyleBlueprint(showStyleBase)
 			if (!blueprint.blueprint.executeAction) {
-				throw new Meteor.Error(400, 'ShowStyle blueprint does not support executing actions')
+				throw new Meteor.Error(
+					400,
+					`ShowStyle blueprint "${blueprint.blueprintId}" does not support executing actions`
+				)
 			}
 
 			logger.info(`Executing AdlibAction "${actionId}": ${JSON.stringify(userData)}`)
@@ -1189,57 +1195,7 @@ export namespace ServerPlayoutAPI {
 			waitForPromise(cache.saveAllToDatabase())
 		})
 	}
-	/**
-	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
-	 * ( typically when using the "now"-feature )
-	 */
 
-	export function timelineTriggerTimeUpdateCallback(
-		context: MethodContext,
-		cache: CacheForRundownPlaylist,
-		activeRundownIds: RundownId[],
-		timelineObj: TimelineObjGeneric,
-		time: number
-	) {
-		check(timelineObj, Object)
-		check(time, Number)
-
-		triggerWriteAccessBecauseNoCheckNecessary() // tmp
-
-		if (activeRundownIds && activeRundownIds.length > 0 && timelineObj.metaData && timelineObj.metaData.pieceId) {
-			logger.debug('Update PieceInstance: ', timelineObj.metaData.pieceId, new Date(time).toTimeString())
-
-			cache.PieceInstances.update(
-				{
-					_id: timelineObj.metaData.pieceId,
-					rundownId: { $in: activeRundownIds },
-				},
-				{
-					$set: {
-						'piece.enable.start': time,
-					},
-				}
-			)
-
-			const pieceInstance = cache.PieceInstances.findOne({
-				_id: timelineObj.metaData.pieceId,
-				rundownId: { $in: activeRundownIds },
-			})
-			if (pieceInstance) {
-				cache.PieceInstances.update(
-					{
-						_id: pieceInstance._id,
-						rundownId: { $in: activeRundownIds },
-					},
-					{
-						$set: {
-							'piece.enable.start': time,
-						},
-					}
-				)
-			}
-		}
-	}
 	export function updateStudioBaseline(context: MethodContext, studioId: StudioId) {
 		// TODO - should there be a studio lock for activate/deactivate/this?
 		StudioContentWriteAccess.baseline(context, studioId)
@@ -1264,6 +1220,7 @@ export namespace ServerPlayoutAPI {
 	}
 
 	export function shouldUpdateStudioBaseline(context: MethodContext, studioId: StudioId) {
+		check(studioId, String)
 		StudioContentWriteAccess.baseline(context, studioId)
 		let cache: CacheForStudio | CacheForRundownPlaylist = waitForPromise(initCacheForStudio(studioId))
 		const result = shouldUpdateStudioBaselineInner(cache, studioId)
@@ -1271,8 +1228,6 @@ export namespace ServerPlayoutAPI {
 		return result
 	}
 	function shouldUpdateStudioBaselineInner(cache: CacheForStudio, studioId: StudioId): string | false {
-		check(studioId, String)
-
 		const studio = cache.Studios.findOne(studioId)
 
 		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
@@ -1280,8 +1235,12 @@ export namespace ServerPlayoutAPI {
 		const activeRundowns = getActiveRundownPlaylistsInStudio(cache, studio._id)
 
 		if (activeRundowns.length === 0) {
-			const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
-			const markerObject = cache.Timeline.findOne(markerId)
+			// const markerId: TimelineObjId = protectString(`${studio._id}_baseline_version`)
+			const studioTimeline = cache.Timeline.findOne(studioId)
+			if (!studioTimeline) return 'noBaseline'
+			const markerObject = studioTimeline.timeline.find(
+				(x) => x._id === protectString(`${studio._id}_baseline_version`)
+			)
 			if (!markerObject) return 'noBaseline'
 
 			const versionsContent = (markerObject.metaData || {}).versions || {}
@@ -1299,6 +1258,44 @@ export namespace ServerPlayoutAPI {
 		}
 
 		return false
+	}
+
+	export function switchRouteSet(context: MethodContext, studioId: StudioId, routeSetId: string, state: boolean) {
+		check(studioId, String)
+		check(routeSetId, String)
+		check(state, Boolean)
+
+		const allowed = StudioContentWriteAccess.routeSet(context, studioId)
+		if (!allowed) throw new Meteor.Error(403, `Not allowed to edit RouteSet on studio ${studioId}`)
+
+		const studio = allowed.studio
+		if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+
+		if (studio.routeSets[routeSetId] === undefined)
+			throw new Meteor.Error(404, `RouteSet "${routeSetId}" not found!`)
+		const routeSet = studio.routeSets[routeSetId]
+		if (routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && state === false)
+			throw new Meteor.Error(400, `RouteSet "${routeSetId}" is ACTIVATE_ONLY`)
+
+		const modification = {}
+		modification[`routeSets.${routeSetId}.active`] = state
+
+		if (studio.routeSets[routeSetId].exclusivityGroup && state === true) {
+			_.each(studio.routeSets, (otherRouteSet, otherRouteSetId) => {
+				if (otherRouteSetId === routeSetId) return
+				if (otherRouteSet.exclusivityGroup === routeSet.exclusivityGroup) {
+					modification[`routeSets.${otherRouteSetId}.active`] = false
+				}
+			})
+		}
+
+		Studios.update(studioId, {
+			$set: modification,
+		})
+
+		// TODO: Run update timeline here
+
+		return ClientAPI.responseSuccess(undefined)
 	}
 }
 

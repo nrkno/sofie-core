@@ -15,11 +15,12 @@ import {
 	waitForPromise,
 	asyncCollectionBulkWrite,
 	PreparedChanges,
+	Changes,
 } from '../lib/lib'
 import * as _ from 'underscore'
 import { TransformedCollection, MongoModifier, FindOptions, MongoQuery } from '../lib/typings/meteor'
 import { BulkWriteOperation } from 'mongodb'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './api/profiler'
 
 export function isDbCacheReadCollection(o: any): o is DbCacheReadCollection<any, any> {
 	return !!(o && typeof o === 'object' && o.fillWithDataFromDatabase)
@@ -40,6 +41,11 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	}
 	get name(): string | undefined {
 		return this._collection['name']
+	}
+
+	get initialized(): boolean {
+		// If we have either loaded data, or are loading it then we should make any potential consumers use us
+		return this._initialized || this._initializing !== undefined
 	}
 
 	prepareInit(initializer: MongoQuery<DBInterface> | (() => Promise<void>), initializeImmediately: boolean) {
@@ -80,7 +86,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class[] {
-		const span = Agent.startSpan(`DBCache.findFetch.${this.name}`)
+		const span = profiler.startSpan(`DBCache.findFetch.${this.name}`)
 		this._initialize()
 
 		selector = selector || {}
@@ -167,7 +173,7 @@ export class DbCacheWriteCollection<
 	DBInterface extends { _id: ProtectedString<any> }
 > extends DbCacheReadCollection<Class, DBInterface> {
 	insert(doc: DBInterface): DBInterface['_id'] {
-		const span = Agent.startSpan(`DBCache.insert.${this.name}`)
+		const span = profiler.startSpan(`DBCache.insert.${this.name}`)
 		this._initialize()
 
 		const existing = doc._id && this.documents[unprotectString(doc._id)]
@@ -183,7 +189,7 @@ export class DbCacheWriteCollection<
 		return doc._id
 	}
 	remove(selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>): number {
-		const span = Agent.startSpan(`DBCache.remove.${this.name}`)
+		const span = profiler.startSpan(`DBCache.remove.${this.name}`)
 		this._initialize()
 
 		let removed = 0
@@ -207,9 +213,10 @@ export class DbCacheWriteCollection<
 	}
 	update(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
-		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>
+		modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface> = {},
+		forceUpdate?: boolean
 	): number {
-		const span = Agent.startSpan(`DBCache.update.${this.name}`)
+		const span = profiler.startSpan(`DBCache.update.${this.name}`)
 		this._initialize()
 
 		const selectorInModify: MongoQuery<DBInterface> = _.isFunction(selector)
@@ -232,7 +239,7 @@ export class DbCacheWriteCollection<
 				)
 			}
 
-			if (!_.isEqual(doc, newDoc)) {
+			if (forceUpdate || !_.isEqual(doc, newDoc)) {
 				newDoc = this._transform(newDoc)
 
 				_.each(_.uniq([..._.keys(newDoc), ..._.keys(doc)]), (key) => {
@@ -248,7 +255,7 @@ export class DbCacheWriteCollection<
 
 	/** Returns true if a doc was replace, false if inserted */
 	replace(doc: DBInterface): boolean {
-		const span = Agent.startSpan(`DBCache.replace.${this.name}`)
+		const span = profiler.startSpan(`DBCache.replace.${this.name}`)
 		this._initialize()
 
 		if (!doc._id) throw new Meteor.Error(500, `Error: The (immutable) field '_id' must be defined: "${doc._id}"`)
@@ -271,19 +278,20 @@ export class DbCacheWriteCollection<
 
 	upsert(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		doc: DBInterface
+		doc: DBInterface,
+		forceUpdate?: boolean
 	): {
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	} {
-		const span = Agent.startSpan(`DBCache.upsert.${this.name}`)
+		const span = profiler.startSpan(`DBCache.upsert.${this.name}`)
 		this._initialize()
 
 		if (isProtectedString(selector)) {
 			selector = { _id: selector } as any
 		}
 
-		const updatedCount = this.update(selector, doc)
+		const updatedCount = this.update(selector, doc, forceUpdate)
 		if (updatedCount > 0) {
 			if (span) span.end()
 			return { numberAffected: updatedCount }
@@ -302,16 +310,16 @@ export class DbCacheWriteCollection<
 			return { numberAffected: 1, insertedId: this.insert(doc) }
 		}
 	}
-	async updateDatabaseWithData() {
-		const span = Agent.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
+	async updateDatabaseWithData(): Promise<Changes> {
+		const span = profiler.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
-			insert: number
-			update: number
-			remove: number
+			added: number
+			updated: number
+			removed: number
 		} = {
-			insert: 0,
-			update: 0,
-			remove: 0,
+			added: 0,
+			updated: 0,
+			removed: 0,
 		}
 
 		const updates: BulkWriteOperation<DBInterface>[] = []
@@ -320,7 +328,7 @@ export class DbCacheWriteCollection<
 			const _id: DBInterface['_id'] = protectString(id)
 			if (doc.removed) {
 				removedDocs.push(_id)
-				changes.remove++
+				changes.removed++
 			} else if (doc.inserted) {
 				updates.push({
 					replaceOne: {
@@ -331,7 +339,7 @@ export class DbCacheWriteCollection<
 						upsert: true,
 					},
 				})
-				changes.insert++
+				changes.added++
 			} else if (doc.updated) {
 				updates.push({
 					replaceOne: {
@@ -341,7 +349,7 @@ export class DbCacheWriteCollection<
 						replacement: doc.document,
 					},
 				})
-				changes.update++
+				changes.updated++
 			}
 			delete doc.inserted
 			delete doc.updated
@@ -363,7 +371,7 @@ export class DbCacheWriteCollection<
 			delete this._collection[unprotectString(_id)]
 		})
 
-		await pBulkWriteResult
+		const writeResult = await pBulkWriteResult
 
 		if (span) span.addLabels(changes)
 		if (span) span.end()
@@ -393,18 +401,13 @@ interface SaveIntoDbOptions<DocClass, DBInterface> {
 	afterRemove?: (o: DBInterface) => void
 	afterRemoveAll?: (o: Array<DBInterface>) => void
 }
-interface Changes {
-	added: number
-	updated: number
-	removed: number
-}
 export function saveIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
 	collection: DbCacheWriteCollection<DocClass, DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbOptions<DocClass, DBInterface>
 ): Changes {
-	const span = Agent.startSpan(`DBCache.saveIntoCache.${collection.name}`)
+	const span = profiler.startSpan(`DBCache.saveIntoCache.${collection.name}`)
 	const preparedChanges = prepareSaveIntoCache(collection, filter, newData, options)
 
 	if (span)
@@ -427,6 +430,8 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ): PreparedChanges<DBInterface> {
+	const span = profiler.startSpan(`DBCache.prepareSaveIntoCache.${collection.name}`)
+
 	let preparedChanges: PreparedChanges<DBInterface> = {
 		inserted: [],
 		changed: [],
@@ -488,6 +493,8 @@ export function prepareSaveIntoCache<DocClass extends DBInterface, DBInterface e
 			preparedChanges.removed.push(oRemove)
 		}
 	})
+
+	span?.end()
 	return preparedChanges
 }
 export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInterface extends DBObj>(
@@ -495,6 +502,8 @@ export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInt
 	collection: DbCacheWriteCollection<DocClass, DBInterface>,
 	optionsOrg?: SaveIntoDbOptions<DocClass, DBInterface>
 ) {
+	const span = profiler.startSpan(`DBCache.savePreparedChangesIntoCache.${collection.name}`)
+
 	let change: Changes = {
 		added: 0,
 		updated: 0,
@@ -560,5 +569,6 @@ export function savePreparedChangesIntoCache<DocClass extends DBInterface, DBInt
 		}
 	}
 
+	span?.end()
 	return change
 }

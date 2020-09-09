@@ -19,7 +19,6 @@ export namespace mousetrapHelper {
 		if (_boundHotkeys[keys] === undefined) {
 			return
 		}
-		// console.log(`Handling key combo "${keys}"`)
 		_boundHotkeys[keys].forEach((handler) => {
 			if (!handler.isGlobal && isEventInInputField(e)) return
 			e.preventDefault()
@@ -52,7 +51,6 @@ export namespace mousetrapHelper {
 				action
 			)
 		}
-		// console.log(`Registering callback for key combo "${keys}"`)
 
 		_boundHotkeys[index].push({
 			isGlobal: true,
@@ -81,7 +79,6 @@ export namespace mousetrapHelper {
 				action
 			)
 		}
-		// console.log(`Registering callback for key combo "${keys}"`)
 
 		_boundHotkeys[index].push({
 			isGlobal: false,

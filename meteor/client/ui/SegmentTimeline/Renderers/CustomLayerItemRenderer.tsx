@@ -38,8 +38,6 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	overflowsTime: boolean
-
 	getItemLabelOffsetLeft(): { [key: string]: string } {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()

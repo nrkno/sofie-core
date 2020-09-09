@@ -107,7 +107,6 @@ Meteor.startup(() => {
 	triggerdoMessageQueue(5000)
 })
 function doMessageQueue() {
-	// console.log('doMessageQueue', ExternalMessageQueue.find().fetch())
 	let tryInterval = 1 * 60 * 1000 // 1 minute
 	let limit = errorOnLastRunCount === 0 ? 100 : 5 // if there were errors on last send, don't run too many next time
 	let probablyHasMoreToSend = false
@@ -135,11 +134,11 @@ function doMessageQueue() {
 		errorOnLastRunCount = 0
 
 		let ps: Array<Promise<any>> = []
-		// console.log('>>>', now, messagesToSend)
+
 		messagesToSend = _.filter(messagesToSend, (msg: ExternalMessageQueueObj): boolean => {
 			return msg.retryUntil === undefined || msg.manualRetry || now < msg.retryUntil
 		})
-		// console.log('<<<', now, messagesToSend)
+
 		_.each(messagesToSend, (msg) => {
 			try {
 				logger.debug(`Trying to send externalMessage, id: ${msg._id}, type: "${msg.type}"`)

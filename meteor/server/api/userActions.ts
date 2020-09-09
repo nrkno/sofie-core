@@ -53,7 +53,7 @@ import { ServerPlayoutAdLibAPI } from './playout/adlib'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
 import { rundownContentAllowWrite } from '../security/rundown'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './profiler'
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number) {
@@ -184,7 +184,10 @@ export function setNextSegment(
 		}
 
 		const partsInSegment = nextSegment.getParts()
-		const firstValidPartInSegment = _.find(partsInSegment, (p) => p.isPlayable())
+		const firstValidPartInSegment = _.find(
+			partsInSegment,
+			(p) => p.isPlayable() && !p.dynamicallyInsertedAfterPartId
+		)
 
 		if (!firstValidPartInSegment) return ClientAPI.responseError('Segment contains no valid parts')
 
@@ -790,8 +793,21 @@ export function noop(context: MethodContext) {
 	return ClientAPI.responseSuccess(undefined)
 }
 
+export function switchRouteSet(
+	context: MethodContext,
+	studioId: StudioId,
+	routeSetId: string,
+	state: boolean
+): ClientAPI.ClientResponse<void> {
+	check(studioId, String)
+	check(routeSetId, String)
+	check(state, Boolean)
+
+	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
+}
+
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
-	const transaction = Agent.startTransaction(description, 'userAction')
+	const transaction = profiler.startTransaction(description, 'userAction')
 	return makePromise(() => {
 		const res = fn(...args)
 		if (transaction) transaction.end()
@@ -1058,6 +1074,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 	}
 	bucketsModifyBucketAdLib(_userEvent: string, id: PieceId, bucketAdlib: Partial<Omit<BucketAdLib, '_id'>>) {
 		return traceAction('userAction.bucketsModifyBucketAdLib', bucketsModifyBucketAdLib, this, id, bucketAdlib)
+	}
+	switchRouteSet(
+		_userEvent: string,
+		studioId: StudioId,
+		routeSetId: string,
+		state: boolean
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => switchRouteSet(this, studioId, routeSetId, state))
 	}
 }
 registerClassToMeteorMethods(

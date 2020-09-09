@@ -1133,6 +1133,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						</label>
 					</div>
 					<h4 className="mod mhs">{isRundownLayout ? t('Tabs') : isDashboardLayout ? t('Panels') : null}</h4>
+					{item.filters.length === 0 ? (
+						<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
+					) : null}
 					{item.filters.map((tab, index) => (
 						<div className="rundown-layout-editor-filter mod pan mas" key={tab._id}>
 							<button className="action-btn right mod man pas" onClick={(e) => this.onRemoveElement(item, tab)}>
@@ -1330,7 +1333,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								},
 							})
 								.then((res) => {
-									// console.log('Blueprint restore success')
 									NotificationCenter.push(
 										new Notification(
 											undefined,
@@ -1341,7 +1343,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									)
 								})
 								.catch((err) => {
-									// console.error('Blueprint restore failure: ', err)
 									NotificationCenter.push(
 										new Notification(
 											undefined,

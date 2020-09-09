@@ -187,6 +187,12 @@ export interface NewUserActionAPI extends MethodContext {
 		id: PieceId,
 		bucket: Partial<Omit<BucketAdLib, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
+	switchRouteSet(
+		userEvent: string,
+		studioId: StudioId,
+		routeSetId: string,
+		state: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -255,6 +261,8 @@ export enum UserActionAPIMethods {
 
 	'guiFocused' = 'userAction.focused',
 	'guiBlurred' = 'userAction.blurred',
+
+	'switchRouteSet' = 'userAction.switchRouteSet',
 }
 
 export interface ReloadRundownPlaylistResponse {

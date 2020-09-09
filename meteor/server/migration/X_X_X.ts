@@ -1,8 +1,8 @@
-import { addMigrationSteps, CURRENT_SYSTEM_VERSION } from './databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { addMigrationSteps } from './databaseMigration'
 import { Studios } from '../../lib/collections/Studios'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Pieces } from '../../lib/collections/Pieces'
 import { Part, Parts } from '../../lib/collections/Parts'
 import { Piece as Piece_1_11_0 } from './deprecatedDataTypes/1_11_0'
@@ -10,6 +10,7 @@ import { unprotectString, ProtectedString, objectPathSet } from '../../lib/lib'
 import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 
 /*
  * **************************************************************************************
@@ -21,7 +22,7 @@ import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
  * **************************************************************************************
  */
 // Release X
-addMigrationSteps(CURRENT_SYSTEM_VERSION, [
+export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	//                     ^--- To be set to an absolute version number when doing the release
 	// add steps here:
 	// {
@@ -34,6 +35,24 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// 		//
 	// 	}
 	// },
+	{
+		id: 'Add new routeSets property to studio where missing',
+		canBeRunAutomatically: true,
+		validate: () => {
+			return (
+				Studios.find({
+					routeSets: { $exists: false },
+				}).count() > 0
+			)
+		},
+		migrate: () => {
+			Studios.find({
+				routeSets: { $exists: false },
+			}).forEach((studio) => {
+				Studios.update(studio._id, { $set: { routeSets: {} } })
+			})
+		},
+	},
 	{
 		id: 'Studios: Default organizationId',
 		canBeRunAutomatically: true,
@@ -170,21 +189,20 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					}
 				}
 				if (part) {
-					Pieces.update(
-						piece._id,
-						{
-							$set: {
-								startRundownId: piece.rundownId,
-								startPartId: piece.partId,
-								startSegmentId: part.segmentId,
-							},
-							$unset: {
-								rundownId: 1,
-								partId: 1,
-							},
+					Pieces.update(piece._id, {
+						$set: {
+							startRundownId: piece.rundownId,
+							startPartId: piece.partId,
+							startSegmentId: part.segmentId,
 						},
-						{ multi: true }
-					)
+						$unset: {
+							rundownId: 1,
+							partId: 1,
+						},
+					})
+				} else {
+					// If the Piece has no part, it's an orphan and should be removed
+					Pieces.remove(piece._id)
 				}
 			})
 		},
@@ -192,6 +210,24 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in Studios', Studios),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleBases', ShowStyleBases),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleVariants', ShowStyleVariants),
+	{
+		id: 'Single timeline object',
+		canBeRunAutomatically: true,
+		validate: () => {
+			const badCount = Timeline.find({
+				timeline: { $exists: false },
+			}).count()
+			if (badCount > 0) {
+				return `${badCount} timeline objects need to be deleted`
+			}
+			return false
+		},
+		migrate: () => {
+			Timeline.remove({
+				timeline: { $exists: false },
+			})
+		},
+	},
 	//
 	//
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
@@ -218,13 +254,27 @@ function migrateConfigToBlueprintConfig<
 				T & { config: Array<{ _id: string; value: any }> }
 			>
 			for (const document of documents) {
-				document.blueprintConfig = {}
-				for (const item of document.config) {
-					objectPathSet(document.blueprintConfig, item._id, item.value)
-				}
-				delete document.config
-				collection.update(document._id, document)
+				const newDocument = migrateConfigToBlueprintConfigOnObject(document)
+				collection.update(document._id, newDocument)
 			}
 		},
 	}
+}
+export function migrateConfigToBlueprintConfigOnObject<
+	DBInterface extends {
+		_id: ProtectedString<any>
+		blueprintConfig?: IBlueprintConfig
+	}
+>(document: DBInterface): DBInterface {
+	document.blueprintConfig = {}
+	// @ts-ignore old typing
+	const oldConfig = document.config as any
+	if (oldConfig) {
+		for (const item of oldConfig) {
+			objectPathSet(document.blueprintConfig, item._id, item.value)
+		}
+	}
+	// @ts-ignore old typing
+	delete document.config
+	return document
 }

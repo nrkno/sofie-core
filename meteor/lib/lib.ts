@@ -17,6 +17,7 @@ import { iterateDeeply, iterateDeeplyEnum } from 'tv-automation-sofie-blueprints
 import * as crypto from 'crypto'
 import { DeepReadonly } from 'utility-types'
 import { BulkWriteOperation } from 'mongodb'
+
 const cloneOrg = require('fast-clone')
 
 export function clone<T>(o: DeepReadonly<T> | Readonly<T> | T): T {
@@ -98,7 +99,7 @@ export interface SaveIntoDbOptions<DocClass, DBInterface> {
 	// afterRemove?: (o: DBInterface) => void
 	afterRemoveAll?: (o: Array<DBInterface>) => void
 }
-interface Changes {
+export interface Changes {
 	added: number
 	updated: number
 	removed: number
@@ -118,7 +119,9 @@ export function saveIntoDb<DocClass extends DBInterface, DBInterface extends DBO
 ): Changes {
 	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
 
-	return savePreparedChanges(preparedChanges, collection, options)
+	const changes = savePreparedChanges(preparedChanges, collection, options)
+
+	return changes
 }
 export interface PreparedChanges<T> {
 	inserted: T[]
@@ -653,6 +656,19 @@ function cleanOldCacheResult() {
 	_.each(cacheResultCache, (cache, name) => {
 		if (cache.ttl < Date.now()) clearCacheResult(name)
 	})
+}
+const lazyIgnoreCache: { [name: string]: number } = {}
+export function lazyIgnore(name: string, f1: () => void, t: number): void {
+	// Don't execute the function f1 until the time t has passed.
+	// Subsequent calls will extend the lazyness and ignore the previous call
+
+	if (lazyIgnoreCache[name]) {
+		Meteor.clearTimeout(lazyIgnoreCache[name])
+	}
+	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
+		delete lazyIgnoreCache[name]
+		f1()
+	}, t)
 }
 
 export function escapeHtml(text: string): string {
@@ -1298,10 +1314,10 @@ export type WrapAsyncCallback<T> = ((error: Error) => void) & ((error: null, res
  * @param time
  */
 export function waitTime(time: number) {
-	let p = new Promise((resolve) => {
-		Meteor.setTimeout(resolve, time)
-	})
-	waitForPromise(p)
+	waitForPromise(sleep(time))
+}
+export function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
 }
 
 /** Runtime-wise, this is a string.

@@ -98,7 +98,7 @@ export function getMediaObjectIssues(rundownIds: RundownId[]): IMediaObjectIssue
 					const showStyleBase = showStyle
 					const studio = rundownStudio
 					const pieceStatus = Pieces.find({
-						rundownId: rundown._id,
+						startRundownId: rundown._id,
 					}).map((piece) => {
 						// run these in parallel
 						const sourceLayer = showStyleBase.sourceLayers.find((i) => i._id === piece.sourceLayerId)

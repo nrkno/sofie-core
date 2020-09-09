@@ -110,11 +110,7 @@ interface ITrackedProps {
 }
 export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITrackedProps>(
 	(props: IProps) => {
-		// console.log('PeripheralDevices',PeripheralDevices);
-		// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 		const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
-
-		// console.log(`${props.segmentId}: running tracker`)
 
 		// We need the segment to do anything
 		if (!segment) {
@@ -609,13 +605,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						: undefined
 				if (currentLivePart.taken && lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
 					isExpectedToPlay = true
-					// console.log('Simulated playback')
 
 					// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
 					if (lastStartedPlayback && lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime) {
-						// console.log('Within crossfade range', virtualStartedPlayback, lastStartedPlayback, simulationPercentage)
 						if (lastTake < lastStartedPlayback && simulationPercentage < 1) {
-							// console.log(simulationPercentage)
 							virtualStartedPlayback =
 								simulationPercentage * lastStartedPlayback + (1 - simulationPercentage) * lastTake
 						}
@@ -643,7 +636,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		visibleChanged = (entries: IntersectionObserverEntry[]) => {
 			if (entries[0].intersectionRatio < 0.99 && !isMaintainingFocus() && Date.now() - this.mountedTime > 2000) {
-				// console.log("onSegmentScroll", entries[0].intersectionRatio, isMaintainingFocus())
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 				this.isVisible = false
 			} else {

@@ -19,11 +19,20 @@ import { Piece, Pieces } from '../lib/collections/Pieces'
 import { PartInstances, DBPartInstance, PartInstance } from '../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../lib/collections/PieceInstances'
 import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { Timeline, TimelineObjGeneric } from '../lib/collections/Timeline'
+import { Timeline, TimelineObjGeneric, TimelineComplete } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
-import { protectString, waitForPromiseAll, waitForPromise, makePromise, getCurrentTime } from '../lib/lib'
+import {
+	protectString,
+	waitForPromiseAll,
+	waitForPromise,
+	makePromise,
+	getCurrentTime,
+	waitTime,
+	sumChanges,
+	anythingChanged,
+} from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
@@ -31,13 +40,14 @@ import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
 import { isInTestWrite } from './security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './api/profiler'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
 /** This cache contains data relevant in a studio */
 export class Cache {
 	private _deferredFunctions: DeferredFunction<Cache>[] = []
+	private _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
 
 	constructor() {
@@ -70,27 +80,57 @@ export class Cache {
 		})
 	}
 	async saveAllToDatabase() {
-		const span = Agent.startSpan('Cache.saveAllToDatabase')
-		const startTime = getCurrentTime()
+		const span = profiler.startSpan('Cache.saveAllToDatabase')
 		this._abortActiveTimeout()
 
-		// shouldn't the deferred functions be executed after updating the db?
-		_.each(this._deferredFunctions, (fcn) => {
-			fcn(this)
-		})
-		await Promise.all(
-			_.map(_.values(this), async (db) => {
-				if (isDbCacheWriteCollection(db)) {
-					await db.updateDatabaseWithData()
+		// Execute cache.defer()'s
+		for (let i = 0; i < this._deferredFunctions.length; i++) {
+			this._deferredFunctions[i](this)
+		}
+
+		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
+		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
+
+		_.map(_.keys(this), (key) => {
+			const db = this[key]
+			if (isDbCacheWriteCollection(db)) {
+				if (key.match(/timeline/i)) {
+					highPrioDBs.push(db)
+				} else {
+					lowPrioDBs.push(db)
 				}
-			})
-		)
-		logger.info(`Save all to database took: ${getCurrentTime() - startTime}ms`)
+			}
+		})
+
+		if (highPrioDBs.length) {
+			const anyThingChanged = anythingChanged(
+				sumChanges(...(await Promise.all(highPrioDBs.map((db) => db.updateDatabaseWithData()))))
+			)
+			if (anyThingChanged) {
+				// Wait a little bit before saving the rest.
+				// The idea is that this allows for the high priority publications to update (such as the Timeline),
+				// sending the updated timeline to Playout-gateway
+				waitTime(2)
+			}
+		}
+
+		if (lowPrioDBs.length) {
+			await Promise.all(lowPrioDBs.map((db) => db.updateDatabaseWithData()))
+		}
+
+		// Execute cache.deferAfterSave()'s
+		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
+			this._deferredAfterSaveFunctions[i]()
+		}
+
 		if (span) span.end()
 	}
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		this._deferredAfterSaveFunctions.push(fcn)
 	}
 }
 export class CacheForStudioBase extends Cache {
@@ -99,7 +139,7 @@ export class CacheForStudioBase extends Cache {
 	/** Contains contents in the Studio */
 	RundownPlaylists: DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>
 	// Studios: DbCacheWriteCollection<Studio, Studio>
-	Timeline: DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>
+	Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 	RecordedFiles: DbCacheWriteCollection<RecordedFile, RecordedFile>
 
 	constructor(studioId: StudioId) {
@@ -108,11 +148,14 @@ export class CacheForStudioBase extends Cache {
 
 		this.RundownPlaylists = new DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
 		// this.Studios = new DbCacheWriteCollection<Studio, Studio>(Studios)
-		this.Timeline = new DbCacheWriteCollection<TimelineObjGeneric, TimelineObjGeneric>(Timeline)
+		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
 		this.RecordedFiles = new DbCacheWriteCollection<RecordedFile, RecordedFile>(RecordedFiles)
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {
 		return super.defer(fcn)
+	}
+	deferAfterSave(fcn: () => void) {
+		return super.deferAfterSave(fcn)
 	}
 }
 export class CacheForStudio extends CacheForStudioBase {
@@ -143,7 +186,7 @@ async function fillCacheForStudioBaseWithData(
 ) {
 	await Promise.all([
 		makePromise(() => cache.RundownPlaylists.prepareInit({ studioId: studioId }, initializeImmediately)),
-		makePromise(() => cache.Timeline.prepareInit({ studioId: studioId }, initializeImmediately)),
+		makePromise(() => cache.Timeline.prepareInit({ _id: studioId }, initializeImmediately)),
 		makePromise(() => cache.RecordedFiles.prepareInit({ studioId: studioId }, initializeImmediately)),
 	])
 
@@ -168,9 +211,12 @@ async function fillCacheForStudioWithData(cache: CacheForStudio, studioId: Studi
 	return cache
 }
 export async function initCacheForStudio(studioId: StudioId, initializeImmediately: boolean = true) {
+	const span = profiler.startSpan('Cache.initCacheForStudio')
+
 	const cache: CacheForStudio = emptyCacheForStudio(studioId)
 	await fillCacheForStudioWithData(cache, studioId, initializeImmediately)
 
+	span?.end()
 	return cache
 }
 
@@ -225,6 +271,9 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
 	}
+	deferAfterSave(fcn: () => void) {
+		return super.deferAfterSave(fcn)
+	}
 }
 function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
 	return new CacheForRundownPlaylist(studioId, playlistId)
@@ -234,7 +283,7 @@ async function fillCacheForRundownPlaylistWithData(
 	playlist: RundownPlaylist,
 	initializeImmediately: boolean
 ) {
-	const span = Agent.startSpan('Cache.fillCacheForRundownPlaylistWithData')
+	const span = profiler.startSpan('Cache.fillCacheForRundownPlaylistWithData')
 	const ps: Promise<any>[] = []
 	cache.Rundowns.prepareInit({ playlistId: playlist._id }, true)
 
@@ -302,19 +351,23 @@ async function fillCacheForRundownPlaylistWithData(
 	ps.push(cache.activationCache.initialize(playlist, rundownsInPlaylist))
 
 	await Promise.all(ps)
-	if (span) span.end()
+	span?.end()
 }
 export async function initCacheForRundownPlaylist(
 	playlist: RundownPlaylist,
 	extendFromCache?: CacheForStudioBase,
 	initializeImmediately: boolean = true
 ): Promise<CacheForRundownPlaylist> {
+	const span = profiler.startSpan('Cache.initCacheForRundownPlaylist')
+
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(playlist.studioId, initializeImmediately)
 	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(playlist.studioId, playlist._id)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}
 	await fillCacheForRundownPlaylistWithData(cache, playlist, initializeImmediately)
+
+	span?.end()
 	return cache
 }
 /** Cache for playout, but there is no playlist playing */

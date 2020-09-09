@@ -6,7 +6,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
 
 // 1.0.0 (Release 12)
-addMigrationSteps('1.0.0', [
+export const addSteps = addMigrationSteps('1.0.0', [
 	// renamePropertiesInCollection('Studios rename config',
 	// 	Studios,
 	// 	'Studios',

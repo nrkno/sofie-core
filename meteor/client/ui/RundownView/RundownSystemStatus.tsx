@@ -16,6 +16,7 @@ import { scrollToSegment } from '../../lib/viewPort'
 import { PartNote, NoteType, GenericNote, TrackedNote } from '../../../lib/api/notes'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PubSub } from '../../../lib/api/pubsub'
+import { Settings } from '../../../lib/Settings'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -63,6 +64,7 @@ interface IProps {
 	studio: Studio
 	playlist: RundownPlaylist
 	rundownIds: RundownId[]
+	firstRundown: Rundown | undefined
 }
 
 interface IState {
@@ -274,7 +276,9 @@ export const RundownSystemStatus = translateWithTracker(
 								fatal: this.props.mosStatus === PeripheralDeviceAPI.StatusCode.FATAL,
 							})}>
 							<div className="indicator__tooltip">
-								<h4>{t('MOS Connection')}</h4>
+								<h4>
+									{t('{{nrcsName}} Connection', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+								</h4>
 								<div>
 									<h5>{t('Last update')}</h5>
 									<MOSLastUpdateStatus lastUpdate={this.props.mosLastUpdate} />

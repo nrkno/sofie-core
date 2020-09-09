@@ -12,7 +12,8 @@ import {
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime, unprotectString } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CURRENT_SYSTEM_VERSION, prepareMigration, runMigration } from './migration/databaseMigration'
+import { prepareMigration, runMigration } from './migration/databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
 import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
@@ -26,6 +27,7 @@ import { syncFunction } from './codeControl'
 const PackageInfo = require('../package.json')
 const BlueprintIntegrationPackageInfo = require('../node_modules/tv-automation-sofie-blueprints-integration/package.json')
 import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './api/profiler'
 
 export { PackageInfo }
 
@@ -538,6 +540,7 @@ function startInstrumenting() {
 			transactionSampleRate: system.apm.transactionSampleRate,
 			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
 		})
+		profiler.setActive(system.apm.enabled || false)
 	} else {
 		logger.info(`APM agent inactive`)
 		Agent.start({

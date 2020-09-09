@@ -24,13 +24,14 @@ import {
 	IBlueprintAsRunLogEventContent,
 } from 'tv-automation-sofie-blueprints-integration'
 import { queueExternalMessages } from './ExternalMessageQueue'
-import { getBlueprintOfRundown } from './blueprints/cache'
+import { loadShowStyleBlueprint } from './blueprints/cache'
 import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../DatabaseCaches'
-import Agent from 'meteor/kschingiz:meteor-elastic-apm'
+import { profiler } from './profiler'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
 const EVENT_WAIT_TIME = 500
 
@@ -73,10 +74,15 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const rundown = Rundowns.findOne(event.rundownId)
 				if (!rundown) throw new Meteor.Error(404, `Rundown "${event.rundownId}" not found!`)
 
+				const pShowStyleBase = asyncCollectionFindOne(ShowStyleBases, rundown.showStyleBaseId)
+
 				const playlist = RundownPlaylists.findOne(rundown.playlistId)
 				if (!playlist) throw new Meteor.Error(404, `Playlist "${rundown.playlistId}" not found!`)
 
-				const { blueprint } = getBlueprintOfRundown(undefined, rundown)
+				const showStyleBase = waitForPromise(pShowStyleBase)
+				if (!showStyleBase) throw new Meteor.Error(404, `showStyleBase "${rundown.showStyleBaseId}" not found!`)
+
+				const { blueprint } = loadShowStyleBlueprint(showStyleBase)
 
 				if (blueprint.onAsRunEvent) {
 					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
@@ -167,7 +173,7 @@ export function reportRundownDataHasChanged(
 
 export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstance: PartInstance, timestamp: Time) {
 	if (partInstance) {
-		const span = Agent.startSpan('reportPartHasStarted')
+		const span = profiler.startSpan('reportPartHasStarted')
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
 				'part.startedPlayback': true,

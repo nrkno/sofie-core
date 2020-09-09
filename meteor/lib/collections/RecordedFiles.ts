@@ -3,6 +3,7 @@ import { registerCollection, Time, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
+import { registerIndex } from '../database'
 
 /** A string, identifying a RecordedFile */
 export type RecordedFileId = ProtectedString<'RecordedFileId'>
@@ -22,10 +23,7 @@ export const RecordedFiles: TransformedCollection<RecordedFile, RecordedFile> = 
 	'recordedFiles'
 )
 registerCollection('RecordedFiles', RecordedFiles)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		RecordedFiles._ensureIndex({
-			studioId: 1,
-		})
-	}
+
+registerIndex(RecordedFiles, {
+	studioId: 1,
 })

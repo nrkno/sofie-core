@@ -4,7 +4,7 @@ import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 
 // Release 21
-addMigrationSteps('1.9.0', [
+export const addSteps = addMigrationSteps('1.9.0', [
 	{
 		id: 'migrateScannersToWatchers',
 		canBeRunAutomatically: true,
