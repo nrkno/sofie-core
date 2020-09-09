@@ -687,7 +687,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			// an Experimental Feature in Chrome, so this might change in the future.
 			// Additionally, it seems that the screen scale factor needs to be taken into account as well
 			const zoomFactor = window.outerWidth / window.innerWidth / window.devicePixelRatio
-			console.log(zoomFactor, window.outerWidth / window.innerWidth, window.devicePixelRatio)
 			this.intersectionObserver = new IntersectionObserver(this.visibleChanged, {
 				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
