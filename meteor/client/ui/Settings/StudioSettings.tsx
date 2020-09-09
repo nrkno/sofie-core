@@ -1243,103 +1243,6 @@ const StudioRoutings = withTranslation()(
 	}
 )
 
-interface ITestToolsRecordingsSettingsProps {
-	studio: Studio
-}
-interface ITestToolsRecordingsSettingsState {}
-
-const TestToolsRecordingsSettings = withTranslation()(
-	class TestToolsRecordingsSettings extends React.Component<
-		Translated<ITestToolsRecordingsSettingsProps>,
-		ITestToolsRecordingsSettingsState
-	> {
-		render() {
-			const { t } = this.props
-			return (
-				<div>
-					<h2 className="mhn">{t('Test Tools – Recordings')}</h2>
-					<div className="mod mvs mhn">
-						<label className="field">
-							{t('Device ID')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="testToolsConfig.recordings.deviceId"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhn">
-						<label className="field">
-							{t('CasparCG Channel')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="testToolsConfig.recordings.channelIndex"
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhn">
-						<label className="field">
-							{t('Path Prefix')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="testToolsConfig.recordings.filePrefix"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhn">
-						<label className="field">
-							{t('URL Prefix')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="testToolsConfig.recordings.urlPrefix"
-								obj={this.props.studio}
-								type="text"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhn">
-						<label className="field">
-							{t('Decklink Input Index')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="testToolsConfig.recordings.decklinkDevice"
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="input text-input input-l"></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhn">
-						<label className="field">
-							{t('Decklink Input Format')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="testToolsConfig.recordings.channelFormat"
-								obj={this.props.studio}
-								type="dropdown"
-								options={_.keys(TSR.ChannelFormat).map((k) => ({
-									name: k,
-									value: TSR.ChannelFormat[k],
-								}))}
-								collection={Studios}
-								className="input text-input input-l "></EditAttribute>
-						</label>
-					</div>
-				</div>
-			)
-		}
-	}
-)
-
 interface IStudioSettingsProps {
 	match: {
 		params: {
@@ -1786,11 +1689,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					<div className="row">
 						<div className="col c12 r1-c12">
 							<StudioRoutings studio={this.props.studio} />
-						</div>
-					</div>
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<TestToolsRecordingsSettings studio={this.props.studio} />
 						</div>
 					</div>
 				</div>

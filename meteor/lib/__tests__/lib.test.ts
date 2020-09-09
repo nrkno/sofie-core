@@ -82,7 +82,7 @@ describe('lib/lib', () => {
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
+				objectType: TimelineObjType.RUNDOWN,
 				classes: ['abc'], // to be removed
 			},
 			{
@@ -92,7 +92,7 @@ describe('lib/lib', () => {
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
+				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
 		Timeline.insert({
@@ -110,7 +110,7 @@ describe('lib/lib', () => {
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
+				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
 		Timeline.insert({
@@ -155,7 +155,7 @@ describe('lib/lib', () => {
 							},
 							layer: 'L2', // changed property
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							objectType: TimelineObjType.MANUAL,
+							studioId: protectString('myStudio'),
 						},
 						{
 							// insert object
@@ -165,7 +165,7 @@ describe('lib/lib', () => {
 							},
 							layer: 'L1',
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							objectType: TimelineObjType.MANUAL,
+							objectType: TimelineObjType.RUNDOWN,
 						}, // remove abc2
 					],
 				},
@@ -257,7 +257,7 @@ describe('lib/lib', () => {
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
+			objectType: TimelineObjType.RUNDOWN,
 		})
 		expect(obj).toEqual({
 			id: 'abc',
@@ -266,7 +266,7 @@ describe('lib/lib', () => {
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
+			objectType: TimelineObjType.RUNDOWN,
 		})
 		const layer: string | number = obj.layer // just to check typings
 		expect(layer).toBeTruthy()

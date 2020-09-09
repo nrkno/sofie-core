@@ -16,7 +16,6 @@ import {
 	TimelineObjRundown,
 	TimelineObjType,
 	TimelineContentTypeOther,
-	TimelineObjRecording,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
 } from '../../../lib/collections/Timeline'
@@ -47,7 +46,6 @@ import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
 import { StudioContext, PartEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
-import { generateRecordingTimelineObjs } from '../testTools'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
@@ -82,10 +80,7 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
 
-	const timelineObjs: Array<TimelineObjGeneric> = [
-		...getTimelineRundown(cache, studio),
-		...getTimelineRecording(cache, studio),
-	]
+	const timelineObjs: Array<TimelineObjGeneric> = [...getTimelineRundown(cache, studio)]
 
 	processTimelineObjects(studio, timelineObjs)
 
@@ -332,41 +327,6 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 		logger.error(e)
 		return []
 	}
-}
-/**
- * Returns timeline objects related to Test Recordings in a studio
- */
-function getTimelineRecording(
-	cache: CacheForRundownPlaylist,
-	studio: Studio,
-	forceNowToTime?: Time
-): TimelineObjRecording[] {
-	try {
-		let recordingTimelineObjs: TimelineObjRecording[] = []
-
-		cache.RecordedFiles.findFetch(
-			{
-				// TODO: ask Julian if this is okay, having multiple recordings at the same time?
-				studioId: studio._id,
-				stoppedAt: { $exists: false },
-			},
-			{
-				sort: {
-					startedAt: 1, // TODO - is order correct?
-				},
-			}
-		).forEach((activeRecording) => {
-			recordingTimelineObjs = recordingTimelineObjs.concat(generateRecordingTimelineObjs(studio, activeRecording))
-		})
-
-		return recordingTimelineObjs
-	} catch (e) {
-		return []
-	}
-	// Timeline.remove({
-	// 	siId: studioId,
-	// 	recordingObject: true
-	// })
 }
 /**
  * Fix the timeline objects, adds properties like deviceId and studioId to the timeline objects
