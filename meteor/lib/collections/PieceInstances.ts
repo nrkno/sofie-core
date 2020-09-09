@@ -129,4 +129,5 @@ registerCollection('PieceInstances', PieceInstances)
 registerIndex(PieceInstances, {
 	rundownId: 1,
 	partInstanceId: 1,
+	reset: -1,
 })

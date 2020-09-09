@@ -560,7 +560,8 @@ function buildTimelineObjsForRundown(
 			: {}
 
 		// any continued infinite lines need to skip the group, as they need a different start trigger
-		for (let piece of currentInfinitePieces) {
+		for (let i = 0; i < currentInfinitePieces.length; i++) {
+			const piece = currentInfinitePieces[i]
 			if (!piece.infinite) {
 				// Type guard, should never be hit
 				continue

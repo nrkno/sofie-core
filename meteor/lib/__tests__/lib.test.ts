@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber } from '../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
 import { setLoggerLevel } from '../../server/api/logger'
 import {
 	getHash,
@@ -31,6 +31,8 @@ import {
 	mongoFindOptions,
 	ProtectedString,
 	SaveIntoDbOptions,
+	equalSets,
+	equivalentArrays,
 } from '../lib'
 import { Timeline, TimelineObjType, TimelineObjGeneric, TimelineComplete } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -719,5 +721,13 @@ describe('lib/lib', () => {
 				},
 			])
 		})
+	})
+	testInFiber('equalSets', () => {
+		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['c', 'b', 'a']))).toBe(true)
+		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['d', 'b', 'a']))).toBe(false)
+	})
+	testInFiber('equivalentArrays', () => {
+		expect(equivalentArrays(['a', 'b', 'c'], ['c', 'a', 'b'])).toBe(true)
+		expect(equivalentArrays(['a', 'b', 'c'], ['b', 'g', 'a'])).toBe(false)
 	})
 })

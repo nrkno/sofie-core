@@ -99,11 +99,11 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 	)
 }
 
-export function findPartInstanceOrWrapToTemporary(
-	partInstances: { [partId: string]: PartInstance | undefined },
+export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
+	partInstances: { [partId: string]: T | undefined },
 	part: DBPart
-): PartInstance {
-	return partInstances[unprotectString(part._id)] || wrapPartToTemporaryInstance(part)
+): T {
+	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(part) as T)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(

@@ -518,7 +518,8 @@ export const SegmentTimelinePart = withTranslation()(
 			componentWillUnmount() {
 				super.componentWillUnmount && super.componentWillUnmount()
 				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
-				clearTimeout(this.highlightTimeout)
+				this.highlightTimeout && clearTimeout(this.highlightTimeout)
+				this.delayedInstanceUpdate && clearTimeout(this.delayedInstanceUpdate)
 			}
 
 			queueDelayedUpdate() {

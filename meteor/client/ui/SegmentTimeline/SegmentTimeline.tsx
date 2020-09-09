@@ -713,28 +713,29 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 									}>
 									{outputLayer.name}
 								</div>
-								{outputLayer.sourceLayers !== undefined && !outputLayer.isFlattened ? (
-									outputLayer.sourceLayers
-										.filter((i) => !i.isHidden)
-										.sort((a, b) => a._rank - b._rank)
-										.map((sourceLayer, index, array) => {
-											return (
-												<div
-													key={sourceLayer._id}
-													className="segment-timeline__output-layer-control__layer"
-													data-source-id={sourceLayer._id}>
-													{array.length === 1 || sourceLayer.name === outputLayer.name ? ' ' : sourceLayer.name}
-												</div>
-											)
-										})
-								) : (
-									<div
-										key={outputLayer._id + '_flattened'}
-										className="segment-timeline__output-layer-control__layer"
-										data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}>
-										&nbsp;
-									</div>
-								)}
+								{outputLayer.sourceLayers !== undefined &&
+									(!outputLayer.isFlattened ? (
+										outputLayer.sourceLayers
+											.filter((i) => !i.isHidden)
+											.sort((a, b) => a._rank - b._rank)
+											.map((sourceLayer, index, array) => {
+												return (
+													<div
+														key={sourceLayer._id}
+														className="segment-timeline__output-layer-control__layer"
+														data-source-id={sourceLayer._id}>
+														{array.length === 1 || sourceLayer.name === outputLayer.name ? '\xa0' : sourceLayer.name}
+													</div>
+												)
+											})
+									) : (
+										<div
+											key={outputLayer._id + '_flattened'}
+											className="segment-timeline__output-layer-control__layer"
+											data-source-id={outputLayer.sourceLayers.map((i) => i._id).join(',')}>
+											&nbsp;
+										</div>
+									))}
 							</div>
 						)
 					}
