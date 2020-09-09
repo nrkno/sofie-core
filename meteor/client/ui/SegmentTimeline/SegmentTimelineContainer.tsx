@@ -682,13 +682,12 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		startLive = () => {
 			window.addEventListener(RundownTiming.Events.timeupdateHR, this.onAirLineRefresh)
-			// In Chrome 76 there used to be a bug that caused some problems with IntersectionObserver.
-			// As of Chrome 85 this seems to be resoved.
-			//
 			// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 			// is viewport. This seems like an implementation bug and IntersectionObserver is
 			// an Experimental Feature in Chrome, so this might change in the future.
-			const zoomFactor = 1 // window.outerWidth / window.innerWidth
+			// Additionally, it seems that the screen scale factor needs to be taken into account as well
+			const zoomFactor = window.outerWidth / window.innerWidth / window.devicePixelRatio
+			console.log(zoomFactor, window.outerWidth / window.innerWidth, window.devicePixelRatio)
 			this.intersectionObserver = new IntersectionObserver(this.visibleChanged, {
 				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],

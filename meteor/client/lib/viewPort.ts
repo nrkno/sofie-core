@@ -105,6 +105,7 @@ export function getHeaderHeight(): number {
 }
 
 let pendingSecondStageScroll: number | undefined
+let currentScrollingElement: HTMLElement | undefined
 
 export function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
@@ -120,6 +121,12 @@ export function scrollToSegment(
 		return Promise.reject('Could not find segment element')
 	}
 
+	if (!secondStage) {
+		currentScrollingElement = elementToScrollTo
+	} else if (secondStage && elementToScrollTo !== currentScrollingElement) {
+		return Promise.reject('Scroll overriden by a new scroll')
+	}
+
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
 	top = Math.floor(top)
 	bottom = Math.floor(bottom)
@@ -130,43 +137,53 @@ export function scrollToSegment(
 	if (forceScroll || bottom > Math.floor(window.innerHeight) || top < headerHeight) {
 		if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
 
-		return scrollToPosition(top + window.scrollY, noAnimation).then(() => {
-			// retry scroll in case we have to load some data
-			return new Promise<boolean>((resolve, reject) => {
-				// scrollToPosition will resolve after some time, at which point a new pendingSecondStageScroll may have been created
+		return scrollToPosition(top + window.scrollY, noAnimation).then(
+			() => {
+				// retry scroll in case we have to load some data
 				if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
+				return new Promise<boolean>((resolve, reject) => {
+					// scrollToPosition will resolve after some time, at which point a new pendingSecondStageScroll may have been created
 
-				pendingSecondStageScroll = window.requestIdleCallback(
-					() => {
-						let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
-						top = Math.floor(top)
-						bottom = Math.floor(bottom)
-
-						if (!secondStage) {
+					pendingSecondStageScroll = window.requestIdleCallback(
+						() => {
 							let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
 							top = Math.floor(top)
 							bottom = Math.floor(bottom)
 
-							if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
-								return scrollToSegment(elementToScrollToOrSegmentId, forceScroll, true, true).then(
-									resolve,
-									reject
-								)
+							if (!secondStage) {
+								let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
+								top = Math.floor(top)
+								bottom = Math.floor(bottom)
+
+								if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
+									return scrollToSegment(elementToScrollToOrSegmentId, forceScroll, true, true).then(
+										resolve,
+										reject
+									)
+								} else {
+									resolve(true)
+								}
 							} else {
+								currentScrollingElement = undefined
 								resolve(true)
 							}
-						} else {
-							resolve(true)
-						}
-					},
-					{ timeout: 250 }
-				)
-			})
-		})
+						},
+						{ timeout: 250 }
+					)
+				})
+			},
+			(error) => {
+				if (!error.toString().match(/another scroll/)) console.error(error)
+				return false
+			}
+		)
 	}
 
 	return Promise.resolve(false)
 }
+
+let scrollToPositionRequest: number | undefined
+let scrollToPositionRequestReject: ((reason?: any) => void) | undefined
 
 export function scrollToPosition(scrollPosition: number, noAnimation?: boolean): Promise<void> {
 	if (noAnimation) {
@@ -179,7 +196,12 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 		})
 	} else {
 		return new Promise((resolve, reject) => {
-			window.requestIdleCallback(
+			if (scrollToPositionRequest !== undefined) window.cancelIdleCallback(scrollToPositionRequest)
+			if (scrollToPositionRequestReject !== undefined)
+				scrollToPositionRequestReject('Prevented by another scroll')
+
+			scrollToPositionRequestReject = reject
+			scrollToPositionRequest = window.requestIdleCallback(
 				() => {
 					window.scroll({
 						top: Math.max(0, scrollPosition - getHeaderHeight() - HEADER_MARGIN),
@@ -188,6 +210,7 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 					})
 					setTimeout(() => {
 						resolve()
+						scrollToPositionRequestReject = undefined
 					}, 3000)
 				},
 				{ timeout: 250 }
