@@ -463,8 +463,6 @@ function buildTimelineObjsForRundown(
 						activePlaylist.holdState
 					)
 				)
-				prevObjs = prefixAllObjectIds(prevObjs, 'previous_', true)
-
 				timelineObjs = timelineObjs.concat(prevObjs)
 			}
 		}
@@ -855,6 +853,8 @@ function transformPartIntoTimeline(
 		if (!pieceInstance.piece.virtual && pieceInstance.piece.content?.timelineObjects && !hasDefinitelyEnded) {
 			timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
+			const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
+
 			for (const o of pieceInstance.piece.content.timelineObjects) {
 				if (o.holdMode) {
 					if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
@@ -865,7 +865,7 @@ function transformPartIntoTimeline(
 					}
 				}
 
-				timelineObjs.push({
+				pieceObjects.push({
 					...clone<TimelineObjectCoreExt>(o),
 					inGroup: pieceGroup.id,
 					objectType: TimelineObjType.RUNDOWN,
@@ -873,6 +873,9 @@ function transformPartIntoTimeline(
 					infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 				})
 			}
+
+			// TODO - should this be ignoreOriginal? this used to be setting that for the previousPartInstance
+			timelineObjs.push(...prefixAllObjectIds(pieceObjects, unprotectString(pieceInstance._id)))
 		}
 	}
 	if (span) span.end()

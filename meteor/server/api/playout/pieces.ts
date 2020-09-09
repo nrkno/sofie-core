@@ -83,7 +83,7 @@ export function createPieceGroupFirstObject(
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObj {
 	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
-		id: getPieceFirstObjectId(unprotectString(pieceInstance.piece._id)),
+		id: getPieceFirstObjectId(unprotectString(pieceInstance._id)),
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
