@@ -13,7 +13,6 @@ import { NewSnapshotAPI, SnapshotAPIMethods } from './shapshot'
 import { NewSystemStatusAPI, SystemStatusAPIMethods } from './systemStatus'
 import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
-import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
 import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { NewUserAPI, UserAPIMethods } from './user'
 import { SystemAPIMethods, NewSystemAPI } from './system'
@@ -29,7 +28,6 @@ interface IMeteorCall {
 	blueprint: NewBlueprintAPI
 	client: NewClientAPI
 	externalMessages: NewExternalMessageQueueAPI
-	manualPlayout: NewManualPlayoutAPI
 	migration: NewMigrationAPI
 	peripheralDevice: NewPeripheralDeviceAPI
 	playout: NewPlayoutAPI
@@ -49,7 +47,6 @@ export const MeteorCall: IMeteorCall = {
 	blueprint: makeMethods(BlueprintAPIMethods),
 	client: makeMethods(ClientAPIMethods),
 	externalMessages: makeMethods(ExternalMessageQueueAPIMethods),
-	manualPlayout: makeMethods(ManualPlayoutAPIMethods),
 	migration: makeMethods(MigrationAPIMethods),
 	peripheralDevice: makeMethods(PeripheralDeviceAPIMethods),
 	playout: makeMethods(PlayoutAPIMethods),
