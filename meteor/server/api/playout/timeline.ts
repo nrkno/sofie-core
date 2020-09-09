@@ -35,6 +35,9 @@ import {
 	normalizeArrayFunc,
 	clone,
 	normalizeArray,
+	makePromise,
+	asyncCollectionFindOne,
+	getRandomId,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -51,7 +54,9 @@ import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from '
 import { PackageInfo } from '../../coreSystem'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, CacheForStudioBase } from '../../DatabaseCaches'
+import { CacheForRundownPlaylist, CacheForStudio, CacheForStudioBase } from '../../DatabaseCaches'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -84,9 +89,29 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 
 	processTimelineObjects(studio, timelineObjs)
 
+	/** The timestamp that "now" was set to */
+	let theNowTime: number = 0
+
 	if (forceNowToTime) {
 		// used when autoNexting
-		setNowToTimeInObjects(timelineObjs, forceNowToTime)
+		theNowTime = forceNowToTime
+	} else {
+		const playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
+			(device) => device.studioId === studioId && device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+		)
+		if (
+			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
+			studio.settings.forceSettingNowTime
+		) {
+			let worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
+
+			/** Add a little more latency, to account for network latency variability */
+			const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30
+			theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
+		}
+	}
+	if (theNowTime) {
+		setNowToTimeInObjects(timelineObjs, theNowTime)
 	}
 
 	const oldTimelineObjsMap = normalizeArray(
@@ -114,6 +139,8 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		},
 		{
 			_id: studio._id,
+			timelineHash: getRandomId(), // randomized on every timeline change
+			generated: getCurrentTime(),
 			timeline: timelineObjs,
 		},
 		true

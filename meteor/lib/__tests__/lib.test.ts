@@ -97,6 +97,8 @@ describe('lib/lib', () => {
 		]
 		Timeline.insert({
 			_id: protectString('myStudio'),
+			timelineHash: protectString('abc'),
+			generated: 1234,
 			timeline: mystudioObjs,
 		})
 
@@ -113,6 +115,8 @@ describe('lib/lib', () => {
 		]
 		Timeline.insert({
 			_id: protectString('myStudio2'),
+			timelineHash: protectString('abc'),
+			generated: 1234,
 			timeline: mystudio2Objs,
 		})
 

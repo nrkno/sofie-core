@@ -4,6 +4,7 @@ exports[`Playout API Basic rundown control 1`] = `
 Array [
   Object {
     "_id": "mockStudio4",
+    "generated": 12345,
     "timeline": Array [
       Object {
         "classes": Array [
@@ -28,7 +29,7 @@ Array [
         "enable": Object {
           "start": "now",
         },
-        "id": "part_group_randomId9002_part0_0_randomId9008",
+        "id": "part_group_randomId9002_part0_0_randomId9009",
         "isGroup": true,
         "isPartGroup": true,
         "layer": "",
@@ -40,7 +41,7 @@ Array [
         "content": Object {
           "callBack": "partPlaybackStarted",
           "callBackData": Object {
-            "partInstanceId": "randomId9002_part0_0_randomId9008",
+            "partInstanceId": "randomId9002_part0_0_randomId9009",
             "rundownPlaylistId": "playlist_randomId9002",
           },
           "callBackStopped": "partPlaybackStopped",
@@ -50,8 +51,8 @@ Array [
         "enable": Object {
           "start": 0,
         },
-        "id": "part_group_firstobject_randomId9002_part0_0_randomId9008",
-        "inGroup": "part_group_randomId9002_part0_0_randomId9008",
+        "id": "part_group_firstobject_randomId9002_part0_0_randomId9009",
+        "inGroup": "part_group_randomId9002_part0_0_randomId9009",
         "layer": "group_first_object",
         "objectType": "rundown",
       },
@@ -64,17 +65,18 @@ Array [
         "enable": Object {
           "start": 0,
         },
-        "id": "piece_group_randomId9002_part0_0_randomId9008_randomId9002_piece001",
-        "inGroup": "part_group_randomId9002_part0_0_randomId9008",
+        "id": "piece_group_randomId9002_part0_0_randomId9009_randomId9002_piece001",
+        "inGroup": "part_group_randomId9002_part0_0_randomId9009",
         "isGroup": true,
         "layer": "vt0",
         "metaData": Object {
-          "pieceId": "randomId9002_part0_0_randomId9008_randomId9002_piece001",
+          "pieceId": "randomId9002_part0_0_randomId9009_randomId9002_piece001",
         },
         "objectType": "rundown",
         "priority": 5,
       },
     ],
+    "timelineHash": "randomId9014",
   },
 ]
 `;
@@ -107,6 +109,7 @@ exports[`Playout API Basic rundown control 3`] = `
 Array [
   Object {
     "_id": "mockStudio4",
+    "generated": 12345,
     "timeline": Array [
       Object {
         "content": Object {
@@ -121,13 +124,14 @@ Array [
           "versions": Object {
             "blueprintId": "mockBlueprint0",
             "blueprintVersion": "0.0.0",
-            "core": "1.12.0-in-development-R25",
+            "core": "0.0.0-test",
             "studio": "asdf",
           },
         },
         "objectType": "rundown",
       },
     ],
+    "timelineHash": "randomId9019",
   },
 ]
 `;
@@ -136,7 +140,7 @@ exports[`Playout API Basic rundown control 4`] = `
 Object {
   "_id": "playlist_randomId9002",
   "active": false,
-  "activeInstanceId": "randomId9007",
+  "activeInstanceId": "randomId9008",
   "currentPartInstanceId": null,
   "externalId": "MOCK_RUNDOWNPLAYLIST",
   "holdState": 0,

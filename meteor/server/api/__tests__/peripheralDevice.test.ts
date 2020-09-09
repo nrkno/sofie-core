@@ -414,7 +414,6 @@ describe('test peripheralDevice general API methods', () => {
 		const prevIds = timelineObjs.map((x) => x.id)
 		const timelineUpdatedObjs =
 			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
-		console.log('>>>', timelineUpdatedObjs)
 		timelineUpdatedObjs.forEach((tlObj) => {
 			expect(tlObj.enable.setFromNow).toBe(true)
 			expect(tlObj.enable.start).toBeGreaterThan(0)

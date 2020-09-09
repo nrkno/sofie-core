@@ -32,6 +32,14 @@ export interface IStudioSettings {
 
 	/** Should the play from anywhere feature be enabled in this studio */
 	enablePlayFromAnywhere?: boolean
+
+	/** If set, forces the "now"-time to be set right away (aka the "multi-playout-gateway" feature).
+	 * even for single playout-gateways */
+	forceSettingNowTime?: boolean
+
+	/** How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature) .
+	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
+	nowSafeLatency?: number
 }
 /** A string, identifying a Studio */
 export type StudioId = ProtectedString<'StudioId'>

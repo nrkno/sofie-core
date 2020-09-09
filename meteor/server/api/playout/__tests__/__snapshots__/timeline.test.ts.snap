@@ -4,6 +4,7 @@ exports[`Timeline Basic rundown 1`] = `
 Array [
   Object {
     "_id": "mockStudio11",
+    "generated": 12345,
     "timeline": Array [
       Object {
         "classes": Array [
@@ -75,6 +76,7 @@ Array [
         "priority": 5,
       },
     ],
+    "timelineHash": "randomId9012",
   },
 ]
 `;
@@ -83,6 +85,7 @@ exports[`Timeline Basic rundown 2`] = `
 Array [
   Object {
     "_id": "mockStudio11",
+    "generated": 12345,
     "timeline": Array [
       Object {
         "classes": Array [
@@ -155,6 +158,7 @@ Array [
         "priority": 5,
       },
     ],
+    "timelineHash": "randomId9013",
   },
 ]
 `;
@@ -163,6 +167,7 @@ exports[`Timeline Basic rundown 3`] = `
 Array [
   Object {
     "_id": "mockStudio11",
+    "generated": 12345,
     "timeline": Array [
       Object {
         "content": Object {
@@ -177,13 +182,14 @@ Array [
           "versions": Object {
             "blueprintId": "mockBlueprint7",
             "blueprintVersion": "0.0.0",
-            "core": "1.12.0-in-development-R25",
+            "core": "0.0.0-test",
             "studio": "asdf",
           },
         },
         "objectType": "rundown",
       },
     ],
+    "timelineHash": "randomId9017",
   },
 ]
 `;

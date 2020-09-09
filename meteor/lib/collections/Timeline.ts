@@ -1,5 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Omit, ProtectedString } from '../lib'
+import { registerCollection, Omit, ProtectedString, Time } from '../lib'
 import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import { createMongoCollection } from './lib'
@@ -15,6 +15,7 @@ export enum TimelineContentTypeOther {
 
 /** A string, identifying a TimelineObj */
 export type TimelineObjId = ProtectedString<'TimelineObjId'>
+export type TimelineHash = ProtectedString<'TimelineHash'>
 
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Unique within a timeline (ie within a studio) */
@@ -117,7 +118,16 @@ export function getRoutedTimeline(
 	return outputTimelineObjs
 }
 export interface TimelineComplete {
+	/** The id of the timeline. Since there is one (1) timeline in a studio, we can use that id here. */
 	_id: StudioId
+	/**
+	 * The TimelineHash is a random string, which is modified whenever the timeline has changed.
+	 * It is used in the playout-gateway to be able to report back resolve-times
+	 */
+	timelineHash: TimelineHash
+	/** Timestamp when the timeline is generated */
+	generated: Time
+	/** Array containing all timeline-objects */
 	timeline: Array<TimelineObjGeneric>
 }
 
