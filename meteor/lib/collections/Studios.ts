@@ -62,7 +62,6 @@ export interface DBStudio {
 
 	/** Config values are used by the Blueprints */
 	blueprintConfig: IBlueprintConfig
-	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioSettings
 
@@ -150,17 +149,6 @@ export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: Res
 	return outputMappings
 }
 
-export interface ITestToolsConfig {
-	recordings: {
-		deviceId?: string
-		channelIndex?: number
-		channelFormat: TSR.ChannelFormat
-		decklinkDevice?: number
-		filePrefix?: string
-		urlPrefix?: string
-	}
-}
-
 export class Studio implements DBStudio {
 	public _id: StudioId
 	public organizationId: OrganizationId | null
@@ -171,7 +159,6 @@ export class Studio implements DBStudio {
 	public supportedShowStyleBase: Array<ShowStyleBaseId>
 	public blueprintConfig: IBlueprintConfig
 	public settings: IStudioSettings
-	public testToolsConfig?: ITestToolsConfig
 
 	public _rundownVersionHash: string
 

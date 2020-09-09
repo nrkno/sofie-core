@@ -12,7 +12,6 @@ export enum PubSub {
 	peripheralDeviceCommands = 'peripheralDeviceCommands',
 	peripheralDevices = 'peripheralDevices',
 	peripheralDevicesAndSubDevices = ' peripheralDevicesAndSubDevices',
-	recordedFiles = 'recordedFiles',
 	rundownBaselineAdLibPieces = 'rundownBaselineAdLibPieces',
 	rundownBaselineAdLibActions = 'rundownBaselineAdLibActions',
 	ingestDataCache = 'ingestDataCache',

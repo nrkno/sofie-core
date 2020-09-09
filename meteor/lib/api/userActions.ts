@@ -9,7 +9,6 @@ import { PieceInstanceId } from '../collections/PieceInstances'
 import { PieceId } from '../collections/Pieces'
 import { EvaluationBase } from '../collections/Evaluations'
 import { StudioId } from '../collections/Studios'
-import { RecordedFileId } from '../collections/RecordedFiles'
 import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
@@ -155,9 +154,6 @@ export interface NewUserActionAPI extends MethodContext {
 		rundownId: RundownId,
 		segmentId: SegmentId
 	): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
-	recordStop(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
-	recordStart(userEvent: string, studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<void>>
-	recordDelete(userEvent: string, id: RecordedFileId): Promise<ClientAPI.ClientResponse<void>>
 	mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
@@ -243,10 +239,6 @@ export enum UserActionAPIMethods {
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
 	'resyncSegment' = 'userAction.resyncSegment',
-
-	'recordStop' = 'userAction.recordStop',
-	'recordStart' = 'userAction.recordStart',
-	'recordDelete' = 'userAction.recordDelete',
 
 	'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 	'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
