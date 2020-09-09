@@ -76,7 +76,6 @@ describe('lib/lib', () => {
 	testInFiber('saveIntoDb', () => {
 		const mystudioObjs: Array<TimelineObjGeneric> = [
 			{
-				_id: protectString('abc'),
 				id: 'abc',
 				enable: {
 					start: 0,
@@ -84,11 +83,9 @@ describe('lib/lib', () => {
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio'),
 				classes: ['abc'], // to be removed
 			},
 			{
-				_id: protectString('abc2'),
 				id: 'abc2',
 				enable: {
 					start: 0,
@@ -96,7 +93,6 @@ describe('lib/lib', () => {
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio'),
 			},
 		]
 		Timeline.insert({
@@ -106,7 +102,6 @@ describe('lib/lib', () => {
 
 		const mystudio2Objs: Array<TimelineObjGeneric> = [
 			{
-				_id: protectString('abc10'),
 				id: 'abc10',
 				enable: {
 					start: 0,
@@ -114,7 +109,6 @@ describe('lib/lib', () => {
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio2'),
 			},
 		]
 		Timeline.insert({
@@ -151,7 +145,6 @@ describe('lib/lib', () => {
 					_id: protectString('myStudio'),
 					timeline: [
 						{
-							_id: protectString('abc'),
 							id: 'abc',
 							enable: {
 								start: 0,
@@ -159,11 +152,9 @@ describe('lib/lib', () => {
 							layer: 'L2', // changed property
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
 							objectType: TimelineObjType.MANUAL,
-							studioId: protectString('myStudio'),
 						},
 						{
 							// insert object
-							_id: protectString('abc3'),
 							id: 'abc3',
 							enable: {
 								start: 0,
@@ -171,7 +162,6 @@ describe('lib/lib', () => {
 							layer: 'L1',
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
 							objectType: TimelineObjType.MANUAL,
-							studioId: protectString('myStudio'),
 						}, // remove abc2
 					],
 				},
@@ -257,7 +247,6 @@ describe('lib/lib', () => {
 	})
 	testInFiber('literal', () => {
 		const obj = literal<TimelineObjGeneric>({
-			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
 				start: 0,
@@ -265,10 +254,8 @@ describe('lib/lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
 		})
 		expect(obj).toEqual({
-			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
 				start: 0,
@@ -276,7 +263,6 @@ describe('lib/lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
 		})
 		const layer: string | number = obj.layer // just to check typings
 		expect(layer).toBeTruthy()

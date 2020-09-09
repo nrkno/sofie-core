@@ -24,8 +24,6 @@ export function createPieceGroupAndCap(
 } {
 	const pieceGroup = literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
 		id: getPieceGroupId(unprotectString(pieceInstance._id)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
 		content: {
 			deviceType: TSR.DeviceType.ABSTRACT,
 			type: TimelineContentTypeOther.GROUP,
@@ -51,8 +49,6 @@ export function createPieceGroupAndCap(
 		// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
 		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
 		nowObj = literal<TimelineObjRundown>({
-			_id: protectString(''), // set later
-			studioId: protectString(''), // set later
 			objectType: TimelineObjType.RUNDOWN,
 			id: `${pieceGroup.id}_cap_now`,
 			enable: {
@@ -82,8 +78,6 @@ export function createPieceGroupAndCap(
 		if (!updatedPieceGroup && pieceInstance.resolvedEndCap !== undefined) {
 			// Create a wrapper group to apply the end cap
 			const pieceEndCapGroup = literal<TimelineObjGroupRundown>({
-				_id: protectString(''), // set later
-				studioId: protectString(''), // set later
 				objectType: TimelineObjType.RUNDOWN,
 				id: `${pieceGroup.id}_cap`,
 				enable: {

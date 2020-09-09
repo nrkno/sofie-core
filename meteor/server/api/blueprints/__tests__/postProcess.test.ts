@@ -15,7 +15,6 @@ import {
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
 	TimelineObjectCoreExt,
-	IBlueprintPieceDB,
 	TSR,
 	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -284,13 +283,11 @@ describe('Test blueprint post-process', () => {
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<TimelineObjGeneric>({
-				_id: protectString(''),
 				id: '',
 				layer: '',
 				enable: {},
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
-				studioId: protectString(''),
 			})
 			ensureAllKeysDefined(tmpObj, res)
 		})

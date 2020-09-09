@@ -8,9 +8,7 @@ describe('lib/timeline', () => {
 	testInFiber('transformTimeline', () => {
 		const timeline: TimelineObjRundown[] = [
 			{
-				_id: protectString('0'),
 				id: '0',
-				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0,
@@ -21,9 +19,7 @@ describe('lib/timeline', () => {
 				layer: 'L1',
 			},
 			{
-				_id: protectString('child0'),
 				id: 'child0',
-				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0,
@@ -35,9 +31,7 @@ describe('lib/timeline', () => {
 				inGroup: 'group0',
 			},
 			{
-				_id: protectString('child1'),
 				id: 'child1',
-				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0,
@@ -49,9 +43,7 @@ describe('lib/timeline', () => {
 				inGroup: 'group0',
 			},
 			{
-				_id: protectString('group0'),
 				id: 'group0',
-				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0,
@@ -63,9 +55,7 @@ describe('lib/timeline', () => {
 				isGroup: true,
 			},
 			{
-				_id: protectString('2'),
 				id: '2',
-				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0,
@@ -84,9 +74,7 @@ describe('lib/timeline', () => {
 				partId: 'myPart0',
 			},
 			{
-				_id: protectString('3'),
 				id: '3',
-				studioId: protectString('studio0'),
 				objectType: TimelineObjType.RUNDOWN,
 				enable: {
 					start: 0,
@@ -145,8 +133,6 @@ describe('lib/timeline', () => {
 			transformTimeline([
 				// @ts-ignore missing: id
 				{
-					_id: protectString('0'),
-					studioId: protectString('studio0'),
 					objectType: TimelineObjType.RUNDOWN,
 					enable: { start: 0 },
 					content: { deviceType: TSR.DeviceType.ABSTRACT },
