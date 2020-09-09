@@ -37,6 +37,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { getSegmentPartNotes } from '../../../lib/rundownNotifications'
 import { RankedNote, IMediaObjectIssue } from '../../../lib/api/rundownNotifications'
 import { Settings } from '../../../lib/Settings'
+import { isTranslatableMessage, translateMessage } from '../../../lib/api/TranslatableMessage'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -407,30 +408,29 @@ class RundownViewNotifier extends WithManagedTracker {
 		this.autorun(() => {
 			const newNoteIds: Array<string> = []
 			const combined = fullNotes.get().concat(localNotes.get())
-			combined.forEach((item: TrackedNote & { rank: number }) => {
-				const id =
-					item.message +
-					'-' +
-					(item.origin.pieceId || item.origin.partId || item.origin.segmentId || item.origin.rundownId) +
-					'-' +
-					item.origin.name +
-					'-' +
-					item.type
+			combined.forEach((item: TrackedNote) => {
+				const { origin, message, type: itemType, rank } = item
+				const { pieceId, partId, segmentId, rundownId, name, segmentName } = origin
+
+				const translatedMessage = isTranslatableMessage(message) ? translateMessage(message, t) : message
+
+				const notificationId = `${translatedMessage}-${pieceId || partId || segmentId || rundownId}-${name}-${itemType}`
+
 				let newNotification = new Notification(
-					id,
-					item.type === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
+					notificationId,
+					itemType === NoteType.ERROR ? NoticeLevel.CRITICAL : NoticeLevel.WARNING,
 					(
 						<>
-							{item.origin.name || item.origin.segmentName ? (
+							{name || segmentName ? (
 								<h5>
-									{item.origin.segmentName || item.origin.name}
-									{item.origin.segmentName && item.origin.name ? `${SEGMENT_DELIMITER}${item.origin.name}` : null}
+									{segmentName || name}
+									{segmentName && name ? `${SEGMENT_DELIMITER}${name}` : null}
 								</h5>
 							) : null}
-							<div>{item.message || t('There is an unknown problem with the part.')}</div>
+							<div>{translatedMessage || t('There is an unknown problem with the part.')}</div>
 						</>
 					),
-					item.origin.segmentId || 'unknown',
+					segmentId || 'unknown',
 					getCurrentTime(),
 					true,
 					[
@@ -439,7 +439,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							type: 'default',
 						},
 					],
-					item.rank * 1000
+					rank * 1000
 				)
 				newNotification.on('action', (notification, type, e) => {
 					switch (type) {
@@ -447,15 +447,15 @@ class RundownViewNotifier extends WithManagedTracker {
 							const handler = onRONotificationClick.get()
 							if (handler && typeof handler === 'function') {
 								handler({
-									sourceLocator: item.origin,
+									sourceLocator: origin,
 								})
 							}
 					}
 				})
-				newNoteIds.push(id)
+				newNoteIds.push(notificationId)
 
-				if (!this._notes[id] || !Notification.isEqual(newNotification, this._notes[id])) {
-					this._notes[id] = newNotification
+				if (!this._notes[notificationId] || !Notification.isEqual(newNotification, this._notes[notificationId])) {
+					this._notes[notificationId] = newNotification
 					this._notesDep.changed()
 				}
 			})
@@ -561,6 +561,7 @@ class RundownViewNotifier extends WithManagedTracker {
 
 			allIssues.forEach((issue) => {
 				const { status, message } = issue
+
 				let newNotification: Notification | undefined = undefined
 				if (
 					status !== RundownAPI.PieceStatusCode.OK &&
