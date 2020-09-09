@@ -1,4 +1,4 @@
-import { i18nTranslator } from '../../client/ui/i18n'
+import { TFunction } from 'i18next'
 
 /**
  * @enum - A translatable message (i18next)
@@ -13,13 +13,15 @@ export interface ITranslatableMessage {
 }
 
 /**
- * Translates a message with arguments applied. Uses the application's
- * translation service (see {@link '../../client/ui/i18n'}).
+ * Convenience function to translate a message using a supplied translation function.
  *
  * @param {ITranslatableMessage} translatable - the translatable to translate
+ * @param {TFunction} i18nTranslator - the translation function to use
  * @returns the translation with arguments applied
  */
-export function translateMessage(translatable: ITranslatableMessage): string {
+export function translateMessage(translatable: ITranslatableMessage, i18nTranslator: TFunction): string {
+	// the reason for injecting the translation function rather than including the inited function from i18n.ts
+	// is to avoid a situation where this is accidentally used from the server side causing an error
 	const { key: message, args, namespaces } = translatable
 
 	return i18nTranslator(message, { ns: namespaces, replace: { ...args } })
@@ -37,9 +39,9 @@ export function isTranslatableMessage(obj: any): obj is ITranslatableMessage {
 		return false
 	}
 
-	const { message, args, namespace } = obj
+	const { key, args, namespaces } = obj
 
-	if (!message || typeof message !== 'string') {
+	if (!key || typeof key !== 'string') {
 		return false
 	}
 
@@ -47,7 +49,7 @@ export function isTranslatableMessage(obj: any): obj is ITranslatableMessage {
 		return false
 	}
 
-	if (namespace && typeof namespace !== 'string') {
+	if (namespaces && !Array.isArray(namespaces) && namespaces.find((ns) => typeof ns !== 'string')) {
 		return false
 	}
 
