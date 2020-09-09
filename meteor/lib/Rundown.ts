@@ -25,9 +25,11 @@ export interface SegmentExtended extends DBSegment {
 	}
 }
 
+export type PartInstanceLimited = Omit<PartInstance, 'isTaken' | 'previousPartEndState' | 'takeCount'>
+
 export interface PartExtended {
 	partId: PartId
-	instance: PartInstance
+	instance: PartInstanceLimited
 	/** Pieces belonging to this part */
 	pieces: Array<PieceExtended>
 	renderedDuration: number
@@ -88,7 +90,7 @@ export function fetchPiecesThatMayBeActiveForPart(
 }
 
 export function getPieceInstancesForPartInstance(
-	partInstance: PartInstance,
+	partInstance: PartInstanceLimited,
 	partsBeforeThisInSegmentSet: Set<PartId>,
 	segmentsBeforeThisInRundownSet: Set<SegmentId>,
 	orderedAllParts: PartId[],

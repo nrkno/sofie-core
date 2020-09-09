@@ -17,12 +17,13 @@ import {
 	PieceExtended,
 	IOutputLayerExtended,
 	ISourceLayerExtended,
+	PartInstanceLimited,
 } from '../../lib/Rundown'
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { literal, normalizeArray, getCurrentTime } from '../../lib/lib'
-import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
+import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
 import { PartId } from '../../lib/collections/Parts'
@@ -293,7 +294,7 @@ export namespace RundownUtils {
 					takeCount: 0,
 				},
 			}
-		)
+		) as { [indexKey: string]: PartInstanceLimited }
 
 		const partsInSegment = segmentsAndParts.parts
 

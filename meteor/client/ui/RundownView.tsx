@@ -1508,7 +1508,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						_id: 1,
 						studioId: 1,
 					},
-				})
+				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (playlist) {
 					this.subscribe(PubSub.studios, {
 						_id: playlist.studioId,
@@ -1576,11 +1576,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					},
 				})
 				if (playlist) {
-					const rundownIds = playlist.getRundownIDs(undefined, {
-						fields: {
-							_id: 1,
-						},
-					})
+					const rundownIds = playlist.getRundownUnorderedIDs()
 					const segmentIds = Segments.find({
 						rundownId: {
 							$in: rundownIds,
@@ -1616,11 +1612,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					},
 				})
 				if (playlist) {
-					const rundownIds = playlist.getRundownIDs(undefined, {
-						fields: {
-							_id: 1,
-						},
-					})
+					const rundownIds = playlist.getRundownUnorderedIDs()
 					const partInstanceIds: PartInstanceId[] = []
 					if (playlist.previousPartInstanceId) {
 						partInstanceIds.push(playlist.previousPartInstanceId)
