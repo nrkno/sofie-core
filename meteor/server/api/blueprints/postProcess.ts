@@ -217,7 +217,7 @@ export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTi
 		'studio',
 		'studio',
 		false,
-		studio.blueprintId ? [unprotectString(studio.blueprintId)] : undefined
+		studio.blueprintId ? [unprotectString(studio.blueprintId)] : []
 	)
 	return postProcessTimelineObjects(
 		context,

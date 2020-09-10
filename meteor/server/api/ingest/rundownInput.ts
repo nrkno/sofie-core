@@ -450,10 +450,20 @@ function updateRundownFromIngestData(
 	}
 
 	const showStyleBlueprint = loadShowStyleBlueprint(showStyle.base).blueprint
+
+	const blueprintIds: Set<string> = new Set<string>()
+	if (showStyleBlueprint.blueprintId) {
+		blueprintIds.add(showStyleBlueprint.blueprintId)
+	}
+	if (studio.blueprintId) {
+		blueprintIds.add(unprotectString(studio.blueprintId))
+	}
+
 	const notesContext = new NotesContext(
 		`${showStyle.base.name}-${showStyle.variant.name}`,
 		`showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
-		true
+		true,
+		Array.from(blueprintIds)
 	)
 	const blueprintContext = new ShowStyleContext(
 		studio,
@@ -619,7 +629,13 @@ function updateRundownFromIngestData(
 	const cache = waitForPromise(initCacheForRundownPlaylist(dbPlaylist))
 
 	// Save the baseline
-	const rundownNotesContext = new NotesContext(dbRundown.name, `rundownId=${dbRundown._id}`, true)
+
+	const rundownNotesContext = new NotesContext(
+		dbRundown.name,
+		`rundownId=${dbRundown._id}`,
+		true,
+		Array.from(blueprintIds)
+	)
 	const blueprintRundownContext = new RundownContext(dbRundown, cache, rundownNotesContext)
 	logger.info(`Building baseline objects for ${dbRundown._id}...`)
 	logger.info(`... got ${rundownRes.baseline.length} objects from baseline.`)
@@ -660,6 +676,7 @@ function updateRundownFromIngestData(
 	const adlibActions: AdLibAction[] = []
 
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
+	blueprintIds.add(unprotectString(blueprintId))
 
 	_.each(ingestRundown.segments, (ingestSegment: IngestSegment) => {
 		const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
@@ -668,7 +685,12 @@ function updateRundownFromIngestData(
 
 		ingestSegment.parts = _.sortBy(ingestSegment.parts, (part) => part.rank)
 
-		const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundownId},segmentId=${segmentId}`, true)
+		const notesContext = new NotesContext(
+			ingestSegment.name,
+			`rundownId=${rundownId},segmentId=${segmentId}`,
+			true,
+			Array.from(blueprintIds)
+		)
 		const context = new SegmentContext(dbRundown, cache, notesContext)
 		const res = blueprint.getSegment(context, ingestSegment)
 
@@ -1108,7 +1130,20 @@ function updateSegmentFromIngestData(
 
 	ingestSegment.parts = _.sortBy(ingestSegment.parts, (s) => s.rank)
 
-	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
+	const blueprintIds: Set<string> = new Set()
+	if (blueprintId) {
+		blueprintIds.add(unprotectString(blueprintId))
+	}
+	if (studio.blueprintId) {
+		blueprintIds.add(unprotectString(studio.blueprintId))
+	}
+
+	const notesContext = new NotesContext(
+		ingestSegment.name,
+		`rundownId=${rundown._id},segmentId=${segmentId}`,
+		true,
+		Array.from(blueprintIds)
+	)
 	const context = new SegmentContext(rundown, cache, notesContext)
 	const res = blueprint.getSegment(context, ingestSegment)
 

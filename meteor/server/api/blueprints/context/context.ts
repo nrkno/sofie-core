@@ -93,7 +93,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 	private readonly _contextName: string
 	private readonly _contextIdentifier: string
 	private _handleNotesExternally: boolean
-	private _namespaces: Array<string>
+	private _translationNamespaces: Array<string>
 
 	private readonly savedNotes: Array<RawNote> = []
 
@@ -101,7 +101,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		contextName: string,
 		contextIdentifier: string,
 		handleNotesExternally: boolean,
-		blueprints?: Array<string>
+		blueprintIds?: Array<string>
 	) {
 		super(contextIdentifier)
 		this._contextName = contextName
@@ -109,8 +109,9 @@ export class NotesContext extends CommonContext implements INotesContext {
 		/** If the notes will be handled externally (using .getNotes()), set this to true */
 		this._handleNotesExternally = handleNotesExternally
 
-		if (blueprints) {
-			this._namespaces = blueprints.slice()
+		if (blueprintIds) {
+			// when uploaded, translations are bundled using blueprint ids as namespaces
+			this._translationNamespaces = blueprintIds.slice()
 		}
 	}
 	/** Throw Error and display message to the user in the GUI */
@@ -138,7 +139,7 @@ export class NotesContext extends CommonContext implements INotesContext {
 		if (this._handleNotesExternally) {
 			this.savedNotes.push({
 				type: type,
-				message: { key: message, args, namespaces: this._namespaces },
+				message: { key: message, args, namespaces: this._translationNamespaces },
 				trackingId: trackingId,
 			})
 		} else {
@@ -335,13 +336,23 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	readonly playlistId: RundownPlaylistId
 
 	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext | undefined) {
+		const blueprintIds: Set<string> = new Set<string>()
+		const showStyleBlueprintId = rundown.getShowStyleBase()?.blueprintId
+		if (showStyleBlueprintId) {
+			blueprintIds.add(unprotectString(showStyleBlueprintId))
+		}
+		const studioBlueprintId = rundown.getStudio()?.blueprintId
+		if (studioBlueprintId) {
+			blueprintIds.add(unprotectString(studioBlueprintId))
+		}
+
 		super(
 			cache.activationCache.getStudio(),
 			cache,
 			rundown,
 			rundown.showStyleBaseId,
 			rundown.showStyleVariantId,
-			notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false)
+			notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false, Array.from(blueprintIds))
 		)
 
 		this.rundownId = unprotectString(rundown._id)
@@ -375,10 +386,25 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 	readonly part: Readonly<IBlueprintPartInstance>
 
 	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, partInstance: PartInstance) {
+		const blueprintIds: Set<string> = new Set<string>()
+		const showStyleBlueprintId = rundown.getShowStyleBase()?.blueprintId
+		if (showStyleBlueprintId) {
+			blueprintIds.add(unprotectString(showStyleBlueprintId))
+		}
+		const studioBlueprintId = rundown.getStudio()?.blueprintId
+		if (studioBlueprintId) {
+			blueprintIds.add(unprotectString(studioBlueprintId))
+		}
+
 		super(
 			rundown,
 			cache,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},partInstanceId=${partInstance._id}`, false)
+			new NotesContext(
+				rundown.name,
+				`rundownId=${rundown._id},partInstanceId=${partInstance._id}`,
+				false,
+				Array.from(blueprintIds)
+			)
 		)
 
 		this.part = unprotectPartInstance(partInstance)
@@ -393,10 +419,25 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
 	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
+		const blueprintIds: Set<string> = new Set<string>()
+		const showStyleBlueprintId = rundown.getShowStyleBase()?.blueprintId
+		if (showStyleBlueprintId) {
+			blueprintIds.add(unprotectString(showStyleBlueprintId))
+		}
+		const studioBlueprintId = rundown.getStudio()?.blueprintId
+		if (studioBlueprintId) {
+			blueprintIds.add(unprotectString(studioBlueprintId))
+		}
+
 		super(
 			rundown,
 			cache,
-			new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false)
+			new NotesContext(
+				rundown.name,
+				`rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`,
+				false,
+				Array.from(blueprintIds)
+			)
 		)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}

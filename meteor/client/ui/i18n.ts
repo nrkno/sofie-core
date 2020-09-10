@@ -52,7 +52,7 @@ class I18nContainer extends WithManagedTracker {
 				console.error('Error initializing i18Next:', err)
 			} else {
 				this.i18nTranslator = t
-				console.debug('i18nTranslator init complete')
+				console.debug(`i18nTranslator init complete, using language ${this.i18nInstance.language}`)
 			}
 		})
 
@@ -72,7 +72,6 @@ class I18nContainer extends WithManagedTracker {
 					)
 					console.debug('i18instance updated', { bundle: { lang: bundle.language, ns: bundle.namespace } })
 				} else {
-					//TODO: remove, debug use only
 					console.debug(`Skipped bundle, no translations`, { bundle })
 				}
 			}
