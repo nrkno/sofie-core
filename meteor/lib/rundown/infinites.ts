@@ -451,15 +451,17 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 	const res: PieceInstanceOnInfiniteLayers = {}
 
 	const isCandidateBetter = (best: PieceInstance, candidate: PieceInstance): boolean => {
+		// Prioritise the one from this part over previous part
 		if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
 			// Prefer the candidate as it is not from previous
-			return false
+			return true
 		}
 		if (!best.infinite?.fromPreviousPart && candidate.infinite?.fromPreviousPart) {
 			// Prefer the best as it is not from previous
-			return true
+			return false
 		}
 
+		// If we have adlibs, prefer the newest
 		if (best.piece.enable.start === 'now') {
 			// If we are working for the 'now' time, then we are looking at adlibs
 			// All adlib pieces will have a take time, so prefer the later one
@@ -468,6 +470,16 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 			if (take0 !== undefined && take1 !== undefined) {
 				return take1 > take0
 			}
+		}
+
+		// If one is virtual, prefer that
+		if (best.piece.virtual && !candidate.piece.virtual) {
+			// Prefer the virtual best
+			return false
+		}
+		if (!best.piece.virtual && candidate.piece.virtual) {
+			// Prefer the virtual candidate
+			return true
 		}
 
 		// Fallback to id, as we dont have any other criteria and this will be stable.
