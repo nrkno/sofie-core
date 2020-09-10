@@ -240,6 +240,7 @@ export const RundownTimingProvider = withTracker<
 				Meteor.clearInterval(this.refreshTimer)
 				this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			}
+			this.onRefreshTimer()
 		}
 
 		componentWillUnmount() {
