@@ -11,6 +11,10 @@ import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { ensureCollectionProperty } from './lib'
+import { getCoreSystem } from '../../lib/collections/CoreSystem'
+import * as semver from 'semver'
+import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/X_X_X'
+import * as _ from 'underscore'
 
 /*
  * **************************************************************************************
@@ -257,6 +261,39 @@ addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					},
 				}
 			)
+		},
+	},
+	{
+		id: 'Drop removed collections',
+		canBeRunAutomatically: true,
+		validate: () => {
+			let databaseSystem = getCoreSystem()
+
+			// Only run this if version is under 0.25.0, in order to not create the deprecated databases
+			if (databaseSystem && semver.satisfies(databaseSystem.version, '<1.12.0')) {
+				// =======================================================   ^^^^^ TODO: change this, to Release 25 version
+				const dbs = getDeprecatedDatabases()
+
+				if (dbs) {
+					let foundAnything: string | null = null
+					_.find(_.keys(dbs), (collectionName) => {
+						const collection = dbs[collectionName]
+						if (collection.findOne()) {
+							foundAnything = collectionName
+							return true
+						}
+					})
+					if (foundAnything) return `Deprecated collection "${foundAnything}" is not empty`
+				}
+			}
+			return false
+		},
+		migrate: () => {
+			const dbs = getDeprecatedDatabases()
+
+			if (dbs) {
+				dropDeprecatedDatabases()
+			}
 		},
 	},
 ])
