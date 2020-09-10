@@ -234,10 +234,6 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	{
 		results.push(ownedByStudioId('BucketAdLibs', BucketAdLibs))
 	}
-	// BucketIngestCache
-	{
-		// ??????????? not in use?
-	}
 	// Buckets
 	{
 		results.push(ownedByStudioId('Buckets', Buckets))
