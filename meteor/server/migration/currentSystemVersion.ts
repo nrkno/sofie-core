@@ -21,7 +21,7 @@
  * 1.8.0: Release 20  (2019-05-12)
  * 1.9.0: Release 21  (never released)
  * 1.10.0: Release 22  (2020-08-17)
- * 1.11.0: Release 23  (TBD)
+ * 1.11.0: Release 23  (never released)
  * 1.12.0: Release 24  (TBD)
  */
 export const CURRENT_SYSTEM_VERSION = '1.12.0'
