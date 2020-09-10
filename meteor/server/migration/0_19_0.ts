@@ -20,7 +20,7 @@ import { Studio as Studio_1_10_0 } from './deprecatedDataTypes/1_10_0'
  */
 
 // 0.19.0 (Release 4) is a BIG refactoring
-addMigrationSteps('0.19.0', [
+export const addSteps = addMigrationSteps('0.19.0', [
 	{
 		// Create showStyleBase (migrate from studio)
 		id: 'showStyleBase exists',
