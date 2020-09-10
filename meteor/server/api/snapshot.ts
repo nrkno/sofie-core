@@ -86,7 +86,7 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../lib/collections/RundownBaselineAdLibActions'
-import { migrateConfigToBlueprintConfigOnObject } from '../migration/X_X_X'
+import { migrateConfigToBlueprintConfigOnObject } from '../migration/1_12_0'
 
 interface DeprecatedRundownSnapshot {
 	// Old, from the times before rundownPlaylists
