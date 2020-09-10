@@ -130,7 +130,7 @@ Array [
           "versions": Object {
             "blueprintId": "mockBlueprint0",
             "blueprintVersion": "0.0.0",
-            "core": "1.12.0-in-development-R24",
+            "core": "1.12.0-in-testing-R24",
             "studio": "asdf",
           },
         },
