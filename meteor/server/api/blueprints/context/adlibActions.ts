@@ -9,6 +9,7 @@ import {
 	unprotectStringArray,
 	getRandomId,
 	protectStringArray,
+	waitTime,
 } from '../../../../lib/lib'
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
@@ -514,6 +515,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				functionName,
 				...args
 			)
+			waitTime(10)
 		})
 	}
 }
