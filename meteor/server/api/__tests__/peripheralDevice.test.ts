@@ -221,7 +221,7 @@ describe('test peripheralDevice general API methods', () => {
 		const response = Meteor.call(PeripheralDeviceAPIMethods.determineDiffTime)
 		expect(response).toBeTruthy()
 		expect(response.mean).toBeTruthy()
-		expect(response.stdDev).toBeTruthy()
+		expect(response.stdDev).toBeDefined()
 	})
 
 	testInFiber('getTimeDiff', () => {

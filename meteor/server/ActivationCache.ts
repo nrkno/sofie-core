@@ -1,17 +1,11 @@
-import { RundownPlaylist, ActiveInstanceId, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
-import {
-	unprotectString,
-	protectString,
-	asyncCollectionFindOne,
-	ProtectedString,
-	asyncCollectionFindFetch,
-} from '../lib/lib'
+import { RundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
+import { asyncCollectionFindOne, ProtectedString, asyncCollectionFindFetch } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Studio, Studios, StudioId } from '../lib/collections/Studios'
 import { ShowStyleBase, ShowStyleBases } from '../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
-import { Rundown, Rundowns } from '../lib/collections/Rundowns'
+import { Rundown } from '../lib/collections/Rundowns'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
 import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
@@ -49,6 +43,11 @@ export function clearActivationCache(studioId: StudioId): void {
 export function clearOldActivationCaches() {
 	for (const [id, activationCache] of activationCaches) {
 		if (activationCache.expired) clearActivationCache(id)
+	}
+}
+export function forceClearAllActivationCaches() {
+	for (const id of activationCaches.keys()) {
+		clearActivationCache(id)
 	}
 }
 const activationCaches = new Map<StudioId, ActivationCache>()
