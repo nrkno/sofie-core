@@ -1477,6 +1477,11 @@ function generateSegmentContents(
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
 
+	// If the segment has no parts, then hide it
+	if (parts.length === 0) {
+		newSegment.isHidden = true
+	}
+
 	span?.end()
 	return {
 		newSegment,
