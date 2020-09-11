@@ -184,3 +184,51 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 		})
 	}
 }
+
+let pointerLockTurnstile = 0
+let pointerHandlerAttached = false
+
+function pointerLockChange(e: Event): void {
+	if (!document.pointerLockElement) {
+		// noOp, if the pointer is unlocked, good. That's a safe position
+	} else {
+		// if a pointer has been locked, check if it should be. We might have already
+		// changed our mind
+		if (pointerLockTurnstile <= 0) {
+			// this means that the we've received an equal amount of locks and unlocks (or even more unlocks)
+			// we should request an exit from the pointer lock
+			pointerLockTurnstile = 0
+			document.exitPointerLock()
+		}
+	}
+}
+
+function pointerLockError(e: Event): void {
+	console.log('Pointer lock error', e)
+	pointerLockTurnstile = 0
+}
+
+export function lockPointer(): void {
+	if (pointerLockTurnstile === 0) {
+		// pointerLockTurnstile === 0 means that no requests for locking the pointer have been made
+		// since we last unlocked it
+		document.body.requestPointerLock()
+		// attach the event handlers only once. Once they are attached, we will track the
+		// locked state and act according to the turnstile
+		if (!pointerHandlerAttached) {
+			pointerHandlerAttached = true
+			document.addEventListener('pointerlockchange', pointerLockChange)
+			document.addEventListener('pointerlockerror', pointerLockError)
+		}
+	}
+	// regardless of any other state, modify the turnstile so that we can track locks/unlocks
+	pointerLockTurnstile++
+}
+
+export function unlockPointer(): void {
+	// request and exit, but bear in mind that this might not actually
+	// cause an exit, for timing reasons, so lets modify the turnstile
+	// to be able to act, once the lock is confirmed
+	document.exitPointerLock()
+	pointerLockTurnstile--
+}
