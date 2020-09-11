@@ -66,5 +66,8 @@ addSteps1_10_0()
 import { addSteps as addSteps1_11_0 } from './1_11_0'
 addSteps1_11_0()
 
+import { addSteps as addSteps1_12_0 } from './1_12_0'
+addSteps1_12_0()
+
 import { addSteps as addStepsX_X_X } from './X_X_X'
 addStepsX_X_X()
