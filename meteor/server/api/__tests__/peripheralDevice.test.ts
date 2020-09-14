@@ -10,7 +10,7 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString, unprotectString, ProtectedString } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, ProtectedString, waitTime } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -282,6 +282,7 @@ describe('test peripheralDevice general API methods', () => {
 			undefined,
 			replyMessage
 		)
+		waitTime(10)
 		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
 
 		expect(resultErr).toBeNull()

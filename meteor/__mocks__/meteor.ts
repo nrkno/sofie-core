@@ -1,5 +1,6 @@
 import * as _ from 'underscore'
 import { Fiber, runInFiber } from './Fibers'
+import { waitTime } from '../lib/lib'
 
 let controllableDefer: boolean = false
 
@@ -274,6 +275,8 @@ export namespace MeteorMock {
 		_.each(mockStartupFunctions, (fcn) => {
 			fcn()
 		})
+
+		waitTime(10) // So that any observers or defers has had time to run.
 	}
 	export function mockLoginUser(user: Meteor.User) {
 		mockUser = user
