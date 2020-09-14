@@ -3,7 +3,7 @@ import * as MOS from 'mos-connection'
 import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment } from '../../../../../__mocks__/helpers/database'
 import { Rundowns, Rundown } from '../../../../../lib/collections/Rundowns'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../../../__mocks__/helpers/jest'
 import { Parts } from '../../../../../lib/collections/Parts'
 import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevices'
 import { MOSDeviceActions } from '../actions'
@@ -17,6 +17,7 @@ import { IngestDataCache, IngestCacheType } from '../../../../../lib/collections
 import { mockRO } from './mock-mos-data'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { waitForPromise } from '../../../../../lib/lib'
+import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
 
 require('../../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -111,7 +112,9 @@ describe('Test sending mos actions', () => {
 			})
 		})
 
-		MOSDeviceActions.reloadRundown(device, rundown)
+		const response = MOSDeviceActions.reloadRundown(device, rundown)
+
+		expect(response).toEqual(TriggerReloadDataResponse.WORKING)
 
 		// Verify metadata was set as ingest payload
 		const parts = Parts.find({ rundownId: rundown._id }).fetch()
