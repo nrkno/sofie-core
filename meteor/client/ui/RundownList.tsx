@@ -19,9 +19,8 @@ import { NoticeLevel, Notification, NotificationAction, NotificationCenter } fro
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
+import { RundownListFooter } from './RundownList/RundownListFooter'
 import { RundownListItem, RundownPlaylistUi } from './RundownList/RundownListItem'
-
-const PackageInfo = require('../../package.json')
 
 enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -54,33 +53,36 @@ export const RundownList = translateWithTracker(() => {
 			.fetch()
 			.map((playlist: RundownPlaylistUi) => {
 				const rundownsInPlaylist = playlist.getRundowns()
-				playlist.rundownAirStatus = rundownsInPlaylist.map((rundown) => rundown.airStatus).join(', ')
-				playlist.rundownStatus = rundownsInPlaylist.map((rundown) => rundown.status).join(', ')
-				playlist.unsyncedRundowns = rundownsInPlaylist.filter((rundown) => rundown.unsynced)
+				const airStatuses: string[] = []
+				const statuses: string[] = []
+				playlist.unsyncedRundowns = []
+				playlist.showStyles = []
 
-				const studio = studios.find((s) => s._id === playlist.studioId)
+				for (const rundown of rundownsInPlaylist) {
+					airStatuses.push(String(rundown.airStatus))
+					statuses.push(String(rundown.status))
 
-				playlist.studioName = (studio && studio.name) || ''
-				playlist.showStyles = _.compact(
-					_.uniq(
-						rundownsInPlaylist.map((rundown) => [rundown.showStyleBaseId, rundown.showStyleVariantId]),
-						false,
-						(ids) => ids[0] + '_' + ids[1]
-					).map((combo) => {
-						const showStyleBase = showStyleBases.find((style) => style._id === combo[0])
-						const showStyleVariant = showStyleVariants.find((variant) => variant._id === combo[1])
+					if (rundown.unsynced) {
+						playlist.unsyncedRundowns.push(rundown)
+					}
 
-						if (showStyleBase) {
-							return {
-								id: showStyleBase._id,
-								baseName: showStyleBase.name || undefined,
-								variantName: (showStyleVariant && showStyleVariant.name) || undefined,
-							}
-						} else {
-							return undefined
-						}
-					})
-				)
+					const showStyleBase = showStyleBases.find((style) => style._id === rundown.showStyleBaseId)
+					if (showStyleBase) {
+						const showStyleVariant = showStyleVariants.find((variant) => variant._id === rundown.showStyleVariantId)
+
+						playlist.showStyles.push({
+							id: showStyleBase._id,
+							baseName: showStyleBase.name || undefined,
+							variantName: (showStyleVariant && showStyleVariant.name) || undefined,
+						})
+					}
+				}
+
+				playlist.rundownAirStatus = airStatuses.join(', ')
+				playlist.rundownStatus = statuses.join(', ')
+
+				playlist.studioName = studios.find((s) => s._id === playlist.studioId)?.name || ''
+
 				return playlist
 			}),
 		rundownLayouts,
@@ -97,24 +99,17 @@ export const RundownList = translateWithTracker(() => {
 		}
 
 		tooltipStep() {
-			const syncedRundownPlaylists = this.props.rundownPlaylists.filter(
-				(rundownPlaylist) => rundownPlaylist.unsyncedRundowns.length === 0
-			)
-			const unsyncedRundownPlaylists = this.props.rundownPlaylists.filter(
-				(rundownPlaylist) => rundownPlaylist.unsyncedRundowns.length > 0
-			)
+			let gotPlaylists = false
 
-			if (
-				this.props.coreSystem &&
-				this.props.coreSystem.version === GENESIS_SYSTEM_VERSION &&
-				syncedRundownPlaylists.length === 0 &&
-				unsyncedRundownPlaylists.length === 0
-			) {
-				if (getAllowConfigure()) {
-					return ToolTipStep.TOOLTIP_RUN_MIGRATIONS
-				} else {
-					return ToolTipStep.TOOLTIP_START_HERE
+			for (const playlist of this.props.rundownPlaylists) {
+				if (playlist.unsyncedRundowns.length > -1) {
+					gotPlaylists = true
+					break
 				}
+			}
+
+			if (this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && gotPlaylists === true) {
+				return getAllowConfigure() ? ToolTipStep.TOOLTIP_RUN_MIGRATIONS : ToolTipStep.TOOLTIP_START_HERE
 			} else {
 				return ToolTipStep.TOOLTIP_EXTRAS
 			}
@@ -129,29 +124,27 @@ export const RundownList = translateWithTracker(() => {
 			this.subscribe(PubSub.rundownLayouts, {})
 
 			this.autorun(() => {
-				const showStyleBaseIds = _.uniq(
-					Rundowns.find()
-						.fetch()
-						.map((rundown) => rundown.showStyleBaseId)
-				)
-				const showStyleVariantIds = _.uniq(
-					Rundowns.find()
-						.fetch()
-						.map((rundown) => rundown.showStyleVariantId)
-				)
-				const playlistIds = _.uniq(
+				const showStyleBaseIds: Set<string> = new Set()
+				const showStyleVariantIds: Set<string> = new Set()
+				const playlistIds: Set<string> = new Set(
 					RundownPlaylists.find()
 						.fetch()
-						.map((i) => i._id)
+						.map((i) => unprotectString(i._id))
 				)
+
+				for (const rundown of Rundowns.find().fetch()) {
+					showStyleBaseIds.add(unprotectString(rundown.showStyleBaseId))
+					showStyleVariantIds.add(unprotectString(rundown.showStyleVariantId))
+				}
+
 				this.subscribe(PubSub.showStyleBases, {
-					_id: { $in: showStyleBaseIds },
+					_id: { $in: Array.from(showStyleBaseIds) },
 				})
 				this.subscribe(PubSub.showStyleVariants, {
-					_id: { $in: showStyleVariantIds },
+					_id: { $in: Array.from(showStyleVariantIds) },
 				})
 				this.subscribe(PubSub.rundowns, {
-					playlistId: { $in: playlistIds },
+					playlistId: { $in: Array.from(playlistIds) },
 				})
 			})
 
@@ -220,14 +213,6 @@ export const RundownList = translateWithTracker(() => {
 					) : (
 						undefined
 					)}
-					{/* !this.props.rundowns.length ?
-				<ReactNotification>{t('Add rundowns by connecting a gateway.')}</ReactNotification>
-				: undefined
-			*/}
-					{/* this.state.systemStatus && this.state.systemStatus.status === 'FAIL' ?
-				<ReactNotification>{t('Check system status messages.')}</ReactNotification>
-				: undefined
-			*/}
 				</React.Fragment>
 			)
 		}
@@ -264,8 +249,7 @@ export const RundownList = translateWithTracker(() => {
 			return (
 				<React.Fragment>
 					{this.props.coreSystem ? this.registerHelp() : null}
-					{this.props.coreSystem &&
-					this.props.coreSystem.version === GENESIS_SYSTEM_VERSION &&
+					{this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION &&
 					syncedRundownPlaylists.length === 0 &&
 					unsyncedRundownPlaylists.length === 0 ? (
 						<div className="mtl gutter has-statusbar">
@@ -336,9 +320,13 @@ export const RundownList = translateWithTracker(() => {
 															nrcsNames:
 																languageOr(
 																	t,
-																	_.flatten(
-																		unsyncedRundownPlaylists.map((p) =>
-																			p.unsyncedRundowns.map((r) => r.externalNRCSName)
+																	Array.from(
+																		new Set(
+																			_.flatten(
+																				unsyncedRundownPlaylists.map((p) =>
+																					p.unsyncedRundowns.map((r) => r.externalNRCSName)
+																				)
+																			)
 																		)
 																	)
 																) || 'NRCS',
@@ -357,39 +345,7 @@ export const RundownList = translateWithTracker(() => {
 							<Spinner />
 						)}
 					</div>
-					<div className="mtl gutter version-info">
-						<p>
-							{t('Sofie Automation')} {t('version')}: {PackageInfo.versionExtended || PackageInfo.version || 'UNSTABLE'}
-						</p>
-						<div>
-							{this.state.systemStatus ? (
-								<React.Fragment>
-									<div>
-										{t('System Status')}:&nbsp;
-										<Tooltip
-											overlay={t('System has issues which need to be resolved')}
-											visible={this.state.systemStatus.status === 'FAIL' && getHelpMode()}
-											placement="top">
-											<span>{this.state.systemStatus.status}</span>
-										</Tooltip>
-										&nbsp;/&nbsp;{this.state.systemStatus._internal.statusCodeString}
-									</div>
-									<div>
-										{this.state.systemStatus._internal.messages.length ? (
-											<div>
-												{t('Status Messages:')}
-												<ul>
-													{this.state.systemStatus._internal.messages.map((message, i) => {
-														return <li key={i}>{message}</li>
-													})}
-												</ul>
-											</div>
-										) : null}
-									</div>
-								</React.Fragment>
-							) : null}
-						</div>
-					</div>
+					{this.state.systemStatus ? <RundownListFooter systemStatus={this.state.systemStatus} /> : null}
 				</React.Fragment>
 			)
 		}
