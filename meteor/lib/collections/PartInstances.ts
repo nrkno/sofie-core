@@ -2,7 +2,6 @@ import * as _ from 'underscore'
 import { TransformedCollection } from '../typings/meteor'
 import {
 	applyClassToDocument,
-	Time,
 	registerCollection,
 	ProtectedString,
 	ProtectedStringProperties,
@@ -10,15 +9,16 @@ import {
 	unprotectString,
 	Omit,
 } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import { IBlueprintPartInstance, PartEndState } from 'tv-automation-sofie-blueprints-integration'
+import {
+	IBlueprintPartInstance,
+	PartEndState,
+	Time,
+	IBlueprintPartInstanceTimings,
+} from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
-import { PieceInstance, PieceInstances } from './PieceInstances'
-import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
-import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
 import { registerIndex } from '../database'
 
 /** A string, identifying a PartInstance */
@@ -47,6 +47,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	isTaken?: boolean
 
+	/** Playout timings, in here we log times when playout happens */
+	timings?: PartInstanceTimings
+
 	/** If the playlist was in rehearsal mode when the PartInstance was created */
 	rehearsal: boolean
 
@@ -54,6 +57,16 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 
 	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
 	previousPartEndState?: PartEndState
+}
+
+export interface PartInstanceTimings extends IBlueprintPartInstanceTimings {
+	/** The playback offset that was set for the last take */
+	playOffset?: Time
+	/**
+	 * The duration this part was playing for.
+	 * This is set when the next part has started playback
+	 */
+	duration?: Time
 }
 
 export class PartInstance implements DBPartInstance {
@@ -66,6 +79,7 @@ export class PartInstance implements DBPartInstance {
 	public takeCount: number
 	public previousPartEndState?: PartEndState
 
+	public timings?: PartInstanceTimings
 	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	public isTaken?: boolean
 	public rehearsal: boolean

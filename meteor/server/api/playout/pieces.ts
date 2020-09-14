@@ -83,7 +83,7 @@ export function createPieceGroupFirstObject(
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObj {
 	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
-		id: getPieceFirstObjectId(unprotectString(pieceInstance.piece._id)),
+		id: getPieceFirstObjectId(unprotectString(pieceInstance._id)),
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
@@ -204,7 +204,7 @@ export function getResolvedPieces(
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	const now = getCurrentTime()
-	const partStarted = partInstance.part.getLastStartedPlayback()
+	const partStarted = partInstance.timings?.startedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
 	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
@@ -293,7 +293,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 	// const oldId = piece._id
 	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
-		...omit(piece, 'timings', 'startedPlayback', 'stoppedPlayback'),
+		...piece,
 		_id: protectString(newId),
 		_rank: 0,
 		expectedDuration: piece.enable.duration,
@@ -340,29 +340,12 @@ export function convertAdLibToPieceInstance(
 		adLibSourceId: adLibPiece._id,
 		dynamicallyInserted: queue ? undefined : getCurrentTime(),
 		piece: literal<PieceInstancePiece>({
-			...(_.omit(
-				adLibPiece,
-				'_rank',
-				'expectedDuration',
-				'startedPlayback',
-				'stoppedPlayback',
-				'partId',
-				'rundownId'
-			) as PieceInstancePiece), // TODO - this could be typed stronger
+			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
 			_id: protectString(newPieceId),
 			startPartId: partInstance.part._id,
 			enable: {
 				start: queue ? 0 : 'now',
 				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,
-			},
-			timings: {
-				take: [getCurrentTime()],
-				startedPlayback: [],
-				next: [],
-				stoppedPlayback: [],
-				playOffset: [],
-				takeDone: [],
-				takeOut: [],
 			},
 		}),
 	})

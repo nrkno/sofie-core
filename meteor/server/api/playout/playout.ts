@@ -609,17 +609,8 @@ export namespace ServerPlayoutAPI {
 				// Find next piece to disable
 
 				let nowInPart = 0
-				if (
-					!ignoreStartedPlayback &&
-					partInstance.part.startedPlayback &&
-					partInstance.part.timings &&
-					partInstance.part.timings.startedPlayback
-				) {
-					let lastStartedPlayback = _.last(partInstance.part.timings.startedPlayback)
-
-					if (lastStartedPlayback) {
-						nowInPart = getCurrentTime() - lastStartedPlayback
-					}
+				if (!ignoreStartedPlayback && partInstance.timings?.startedPlayback) {
+					nowInPart = getCurrentTime() - partInstance.timings?.startedPlayback
 				}
 
 				const pieceInstances = getAllPieceInstancesFromCache(cache, partInstance)
@@ -656,7 +647,7 @@ export namespace ServerPlayoutAPI {
 
 			if (nextPartInstance) {
 				// pretend that the next part never has played (even if it has)
-				nextPartInstance.part.startedPlayback = false
+				delete nextPartInstance.timings?.startedPlayback
 			}
 
 			const partInstances: Array<[PartInstance | undefined, boolean]> = [
@@ -721,7 +712,7 @@ export namespace ServerPlayoutAPI {
 					`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
 				)
 
-			const isPlaying: boolean = !!(pieceInstance.piece.startedPlayback && !pieceInstance.piece.stoppedPlayback)
+			const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 			if (!isPlaying) {
 				logger.info(
 					`Playout reports pieceInstance "${pieceInstanceId}" has started playback on timestamp ${new Date(
@@ -766,7 +757,7 @@ export namespace ServerPlayoutAPI {
 					`PieceInstance "${pieceInstanceId}" in RundownPlaylist "${rundownPlaylistId}" not found!`
 				)
 
-			const isPlaying: boolean = !!(pieceInstance.piece.startedPlayback && !pieceInstance.piece.stoppedPlayback)
+			const isPlaying: boolean = !!(pieceInstance.startedPlayback && !pieceInstance.stoppedPlayback)
 			if (isPlaying) {
 				logger.info(
 					`Playout reports pieceInstance "${pieceInstanceId}" has stopped playback on timestamp ${new Date(
@@ -805,7 +796,8 @@ export namespace ServerPlayoutAPI {
 			if (playingPartInstance) {
 				// make sure we don't run multiple times, even if TSR calls us multiple times
 
-				const isPlaying = playingPartInstance.part.startedPlayback && !playingPartInstance.part.stoppedPlayback
+				const isPlaying =
+					playingPartInstance.timings?.startedPlayback && !playingPartInstance.timings?.stoppedPlayback
 				if (!isPlaying) {
 					logger.info(
 						`Playout reports PartInstance "${partInstanceId}" has started playback on timestamp ${new Date(
@@ -838,7 +830,7 @@ export namespace ServerPlayoutAPI {
 								logger.error(
 									`Previous PartInstance "${playlist.previousPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
 								)
-							} else if (!previousPartInstance.part.duration) {
+							} else if (!previousPartInstance.timings?.duration) {
 								onPartHasStoppedPlaying(cache, previousPartInstance, startedPlayback)
 							}
 						}
@@ -854,7 +846,7 @@ export namespace ServerPlayoutAPI {
 								logger.error(
 									`Previous PartInstance "${playlist.currentPartInstanceId}" on RundownPlaylist "${playlist._id}" could not be found.`
 								)
-							} else if (!currentPartInstance.part.duration) {
+							} else if (!currentPartInstance.timings?.duration) {
 								onPartHasStoppedPlaying(cache, currentPartInstance, startedPlayback)
 							}
 						}
@@ -951,7 +943,7 @@ export namespace ServerPlayoutAPI {
 			if (partInstance) {
 				// make sure we don't run multiple times, even if TSR calls us multiple times
 
-				const isPlaying = partInstance.part.startedPlayback && !partInstance.part.stoppedPlayback
+				const isPlaying = partInstance.timings?.startedPlayback && !partInstance.timings?.stoppedPlayback
 				if (isPlaying) {
 					logger.info(
 						`Playout reports PartInstance "${partInstanceId}" has stopped playback on timestamp ${new Date(
@@ -1171,7 +1163,7 @@ export namespace ServerPlayoutAPI {
 
 			const partInstance = cache.PartInstances.findOne(partInstanceId)
 			if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-			const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
+			const lastStartedPlayback = partInstance.timings?.startedPlayback
 			if (!lastStartedPlayback) throw new Meteor.Error(405, `Part "${partInstanceId}" has yet to start playback!`)
 
 			const rundown = cache.Rundowns.findOne(partInstance.rundownId)

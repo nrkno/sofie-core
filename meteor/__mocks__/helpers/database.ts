@@ -528,8 +528,6 @@ export function setupDefaultRundown(
 		_rank: 0,
 		externalId: 'MOCK_PART_0_0',
 		title: 'Part 0 0',
-
-		duration: 20,
 	}
 	Parts.insert(part00)
 

@@ -83,7 +83,7 @@ export function takeNextPartInnerSync(
 	const currentPart = currentPartInstance
 	if (currentPart) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
-		const start = currentPart.part.getLastStartedPlayback()
+		const start = currentPart.timings?.startedPlayback
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
@@ -179,52 +179,27 @@ export function takeNextPartInnerSync(
 	let partInstanceM: any = {
 		$set: {
 			isTaken: true,
-			'part.taken': true,
-		},
-		$unset: {} as { string: 0 | 1 },
-		$push: {
-			'part.timings.take': now,
-			'part.timings.playOffset': timeOffset || 0,
-		},
-	}
-	let partM = {
-		$set: {
-			taken: true,
-		} as Partial<Part>,
-		$unset: {} as { [key in keyof Part]: 0 | 1 },
-		$push: {
 			'timings.take': now,
 			'timings.playOffset': timeOffset || 0,
 		},
+		$unset: {} as { string: 0 | 1 },
 	}
 	if (previousPartEndState) {
 		partInstanceM.$set.previousPartEndState = previousPartEndState
 	} else {
 		partInstanceM.$unset.previousPartEndState = 1
 	}
-	if (Object.keys(partM.$set).length === 0) delete partM.$set
-	if (Object.keys(partM.$unset).length === 0) delete partM.$unset
 	if (Object.keys(partInstanceM.$set).length === 0) delete partInstanceM.$set
 	if (Object.keys(partInstanceM.$unset).length === 0) delete partInstanceM.$unset
 
 	cache.PartInstances.update(takePartInstance._id, partInstanceM)
-	// TODO-PartInstance - pending new data flow
-	cache.Parts.update(takePartInstance.part._id, partM)
 
 	if (m.previousPartInstanceId) {
 		cache.PartInstances.update(m.previousPartInstanceId, {
-			$push: {
-				'part.timings.takeOut': now,
+			$set: {
+				'timings.takeOut': now,
 			},
 		})
-		// TODO-PartInstance - pending new data flow
-		if (currentPartInstance) {
-			cache.Parts.update(currentPartInstance.part._id, {
-				$push: {
-					'timings.takeOut': now,
-				},
-			})
-		}
 	}
 	playlist = _.extend(playlist, m) as RundownPlaylist
 
@@ -251,12 +226,7 @@ export function takeNextPartInnerSync(
 		// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 		if (takePartInstance) {
 			cache.PartInstances.update(takePartInstance._id, {
-				$push: {
-					'part.timings.takeDone': takeDoneTime,
-				},
-			})
-			cache.Parts.update(takePartInstance.part._id, {
-				$push: {
+				$set: {
 					'timings.takeDone': takeDoneTime,
 				},
 			})
@@ -389,8 +359,8 @@ function startHold(
 			},
 		})
 		const content = newInstance.piece.content as VTContent | undefined
-		if (content && content.fileName && content.sourceDuration && instance.piece.startedPlayback) {
-			content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.piece.startedPlayback)
+		if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
+			content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.startedPlayback)
 		}
 
 		// This gets deleted once the nextpart is activated, so it doesnt linger for long

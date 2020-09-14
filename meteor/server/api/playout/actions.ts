@@ -154,14 +154,7 @@ export function deactivateRundownPlaylistInner(
 
 	if (currentPartInstance) {
 		cache.PartInstances.update(currentPartInstance._id, {
-			$push: {
-				'part.timings.takeOut': getCurrentTime(),
-			},
-		})
-
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(currentPartInstance.part._id, {
-			$push: {
+			$set: {
 				'timings.takeOut': getCurrentTime(),
 			},
 		})
