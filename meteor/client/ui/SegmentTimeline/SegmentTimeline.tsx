@@ -796,6 +796,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 
 					'has-guest-items': this.props.hasGuestItems,
 					'has-remote-items': this.props.hasRemoteItems,
+					'has-identifiers': identifiers.length > 0,
 					'invert-flash': this.state.highlight,
 				})}
 				data-obj-id={this.props.segment._id}
@@ -833,16 +834,18 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							)}
 						</div>
 					)}
-					<div className="segment-timeline__part-identifiers">
-						{identifiers.map((ident) => (
-							<div
-								className="segment-timeline__part-identifiers__identifier"
-								key={ident.partId + ''}
-								onClick={() => this.onClickSegmentIdent(ident.partId)}>
-								{ident.ident}
-							</div>
-						))}
-					</div>
+					{identifiers.length > 0 && (
+						<div className="segment-timeline__part-identifiers">
+							{identifiers.map((ident) => (
+								<div
+									className="segment-timeline__part-identifiers__identifier"
+									key={ident.partId + ''}
+									onClick={() => this.onClickSegmentIdent(ident.partId)}>
+									{ident.ident}
+								</div>
+							))}
+						</div>
+					)}
 				</ContextMenuTrigger>
 				<div
 					className="segment-timeline__duration"

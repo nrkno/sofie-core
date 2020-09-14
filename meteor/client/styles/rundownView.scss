@@ -558,6 +558,7 @@ body.no-overflow {
 					top: -0.3em;
 					left: -0.3em;
 					white-space: nowrap;
+					padding: 0 2px;
 				}
 
 				> svg.type-warning + .segment-timeline__title__notes__count {
@@ -570,6 +571,12 @@ body.no-overflow {
 					color: #fff;
 				}
 			}
+		}
+	}
+
+	&.has-identifiers {
+		.segment-timeline__title__notes {
+			margin: 0;
 		}
 	}
 
@@ -1928,6 +1935,10 @@ body.no-overflow {
 			text-overflow: ellipsis;
 			overflow: hidden;
 			white-space: nowrap;
+		}
+
+		.segment-timeline__part-identifiers {
+			position: relative;
 		}
 
 		.segment-timeline__zoom-area {
