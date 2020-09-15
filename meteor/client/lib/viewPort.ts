@@ -90,7 +90,7 @@ export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnim
 
 const FALLBACK_HEADER_HEIGHT = 65
 let HEADER_HEIGHT: number | undefined = undefined
-export const HEADER_MARGIN = 25
+export const HEADER_MARGIN = 15 // NRK uses: 25
 
 export function getHeaderHeight(): number {
 	if (HEADER_HEIGHT === undefined) {
@@ -103,6 +103,8 @@ export function getHeaderHeight(): number {
 	}
 	return HEADER_HEIGHT
 }
+
+let pendingSecondStageScroll: number | undefined
 
 export function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
@@ -119,37 +121,46 @@ export function scrollToSegment(
 	}
 
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
-	top += window.scrollY
-	bottom += window.scrollY
+	top = Math.floor(top)
+	bottom = Math.floor(bottom)
+
+	const headerHeight = Math.floor(getHeaderHeight())
 
 	// check if the item is in viewport
-	if (
-		forceScroll ||
-		bottom > window.scrollY + window.innerHeight ||
-		top < window.scrollY + getHeaderHeight() + HEADER_MARGIN
-	) {
-		return scrollToPosition(top, noAnimation).then(() => {
+	if (forceScroll || bottom > Math.floor(window.innerHeight) || top < headerHeight) {
+		if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
+
+		return scrollToPosition(top + window.scrollY, noAnimation).then(() => {
 			// retry scroll in case we have to load some data
 			return new Promise<boolean>((resolve, reject) => {
-				if (!secondStage) {
-					// check if we still need to scroll
-					let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
-					top += window.scrollY
-					bottom += window.scrollY
+				// scrollToPosition will resolve after some time, at which point a new pendingSecondStageScroll may have been created
+				if (pendingSecondStageScroll) window.cancelIdleCallback(pendingSecondStageScroll)
 
-					if (
-						bottom > window.scrollY + window.innerHeight ||
-						top < window.scrollY + getHeaderHeight() + HEADER_MARGIN
-					) {
-						setTimeout(() => {
-							scrollToSegment(elementToScrollToOrSegmentId, false, true, true).then(resolve, reject)
-						}, 3000)
-					} else {
-						resolve(true)
-					}
-				} else {
-					resolve(true)
-				}
+				pendingSecondStageScroll = window.requestIdleCallback(
+					() => {
+						let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
+						top = Math.floor(top)
+						bottom = Math.floor(bottom)
+
+						if (!secondStage) {
+							let { top, bottom } = elementToScrollTo!.getBoundingClientRect()
+							top = Math.floor(top)
+							bottom = Math.floor(bottom)
+
+							if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
+								return scrollToSegment(elementToScrollToOrSegmentId, forceScroll, true, true).then(
+									resolve,
+									reject
+								)
+							} else {
+								resolve(true)
+							}
+						} else {
+							resolve(true)
+						}
+					},
+					{ timeout: 250 }
+				)
 			})
 		})
 	}
@@ -177,7 +188,7 @@ export function scrollToPosition(scrollPosition: number, noAnimation?: boolean):
 					})
 					setTimeout(() => {
 						resolve()
-					}, 2000)
+					}, 3000)
 				},
 				{ timeout: 250 }
 			)
