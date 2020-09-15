@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types'
 import { withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'

@@ -21,7 +21,7 @@ import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
 import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import {
 	RundownTimingProvider,

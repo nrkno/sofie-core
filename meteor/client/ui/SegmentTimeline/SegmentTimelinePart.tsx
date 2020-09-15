@@ -10,7 +10,7 @@ import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './Se
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
 
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
