@@ -11,18 +11,18 @@ import { Rundowns } from '../../lib/collections/Rundowns'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Studios } from '../../lib/collections/Studios'
-import { literal, unprotectString } from '../../lib/lib'
+import { unprotectString } from '../../lib/lib'
 import { languageOr } from '../lib/language'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { NoticeLevel, Notification, NotificationAction, NotificationCenter } from '../lib/notifications/notifications'
-import { ReactNotification } from '../lib/notifications/ReactNotification'
+import { NoticeLevel, Notification, NotificationCenter } from '../lib/notifications/notifications'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
+import { RegisterHelp } from './RundownList/RegisterHelp'
 import { RundownListFooter } from './RundownList/RundownListFooter'
 import { RundownListItem, RundownPlaylistUi } from './RundownList/RundownListItem'
 
-enum ToolTipStep {
+export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
 	TOOLTIP_RUN_MIGRATIONS = 'TOOLTIP_RUN_MIGRATIONS',
 	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS',
@@ -174,49 +174,6 @@ export const RundownList = translateWithTracker(() => {
 				})
 		}
 
-		registerHelp() {
-			const { t } = this.props
-
-			const step = this.tooltipStep()
-
-			return (
-				<React.Fragment>
-					{step === ToolTipStep.TOOLTIP_START_HERE ? (
-						<ReactNotification
-							actions={[
-								literal<NotificationAction>({
-									label: 'Enable',
-									action: () => {
-										window.location.assign('/?configure=1')
-									},
-									type: 'button',
-								}),
-							]}>
-							{t('Enable configuration mode by adding ?configure=1 to the address bar.')}
-						</ReactNotification>
-					) : (
-						undefined
-					)}
-					{step === ToolTipStep.TOOLTIP_START_HERE || step === ToolTipStep.TOOLTIP_RUN_MIGRATIONS ? (
-						<ReactNotification
-							actions={[
-								literal<NotificationAction>({
-									label: 'Go to migrations',
-									action: () => {
-										window.location.assign('/settings/tools/migration')
-									},
-									type: 'button',
-								}),
-							]}>
-							{t('You need to run migrations to set the system up for operation.')}
-						</ReactNotification>
-					) : (
-						undefined
-					)}
-				</React.Fragment>
-			)
-		}
-
 		renderRundowns(list: RundownPlaylistUi[]) {
 			const { t, i18n, tReady } = this.props
 
@@ -246,9 +203,11 @@ export const RundownList = translateWithTracker(() => {
 				(rundownPlaylist) => rundownPlaylist.unsyncedRundowns.length > 0
 			)
 
+			const step = this.tooltipStep()
+
 			return (
 				<React.Fragment>
-					{this.props.coreSystem ? this.registerHelp() : null}
+					{this.props.coreSystem ? <RegisterHelp step={step} /> : null}
 					{this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION &&
 					syncedRundownPlaylists.length === 0 &&
 					unsyncedRundownPlaylists.length === 0 ? (
@@ -260,7 +219,7 @@ export const RundownList = translateWithTracker(() => {
 										{t('Start with giving this browser configuration permissions by adding this to the URL: ')}&nbsp;
 										<Tooltip
 											overlay={t('Start Here!')}
-											visible={this.tooltipStep() === ToolTipStep.TOOLTIP_START_HERE}
+											visible={step === ToolTipStep.TOOLTIP_START_HERE}
 											placement="top">
 											<a href="?configure=1">?configure=1</a>
 										</Tooltip>
@@ -269,7 +228,7 @@ export const RundownList = translateWithTracker(() => {
 										{t('Then, run the migrations script:')}&nbsp;
 										<Tooltip
 											overlay={t('Run Migrations to get set up')}
-											visible={this.tooltipStep() === ToolTipStep.TOOLTIP_RUN_MIGRATIONS}
+											visible={step === ToolTipStep.TOOLTIP_RUN_MIGRATIONS}
 											placement="bottom">
 											<a href="/settings/tools/migration">{t('Migrations')}</a>
 										</Tooltip>
