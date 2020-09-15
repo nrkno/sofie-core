@@ -34,6 +34,7 @@ import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { StudioId } from '../../lib/collections/Studios'
 import { getValidActivationCache } from '../ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { PieceGroupMetadata } from '../../lib/rundown/pieces'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -243,13 +244,14 @@ export namespace ServerPeripheralDeviceAPI {
 
 				tlChanged = true
 
-				if (obj.metaData?.pieceId && activePlaylist) {
+				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
+				if (objPieceId && activePlaylist) {
 					logger.debug('Update PieceInstance: ', {
-						pieceId: obj.metaData.pieceId,
+						pieceId: objPieceId,
 						time: new Date(o.time).toTimeString(),
 					})
 
-					const pieceInstance = cache.PieceInstances.findOne(obj.metaData.pieceId)
+					const pieceInstance = cache.PieceInstances.findOne(objPieceId)
 					if (pieceInstance) {
 						cache.PieceInstances.update(pieceInstance._id, {
 							$set: {

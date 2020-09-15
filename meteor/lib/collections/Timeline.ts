@@ -7,6 +7,7 @@ import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
+import { BlueprintId } from './Blueprints'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -46,6 +47,15 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 	isGroup: true
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
+
+export interface StatObjectMetadata {
+	versions: {
+		core: string
+		blueprintId: BlueprintId | undefined
+		blueprintVersion: string
+		studio: string
+	}
+}
 
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true

@@ -8,8 +8,13 @@ import {
 	TimelineObjGroupRundown,
 } from '../collections/Timeline'
 import { TSR, OnGenerateTimelineObj, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { literal, unprotectString, protectString } from '../lib'
+import { literal, unprotectString } from '../lib'
 import { clone } from 'underscore'
+import { PieceInstanceId } from '../collections/PieceInstances'
+
+export interface PieceGroupMetadata {
+	pieceId: PieceInstanceId
+}
 
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<
@@ -37,9 +42,9 @@ export function createPieceGroupAndCap(
 		enable: clone<TimelineObjRundown['enable']>(pieceEnable ?? pieceInstance.piece.enable),
 		layer: pieceInstance.piece.sourceLayerId,
 		priority: pieceInstance.priority,
-		metaData: {
+		metaData: literal<PieceGroupMetadata>({
 			pieceId: pieceInstance._id,
-		},
+		}),
 	})
 
 	const capObjs: TimelineObjRundown[] = []

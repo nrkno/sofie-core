@@ -18,6 +18,7 @@ import {
 	TimelineContentTypeOther,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
+	StatObjectMetadata,
 } from '../../../lib/collections/Timeline'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
@@ -304,14 +305,14 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 						objectType: TimelineObjType.RUNDOWN,
 						enable: { start: 0 },
 						layer: id,
-						metaData: {
+						metaData: literal<StatObjectMetadata>({
 							versions: {
 								core: PackageInfo.versionExtended || PackageInfo.version,
 								blueprintId: studio.blueprintId,
 								blueprintVersion: blueprint.blueprintVersion,
 								studio: studio._rundownVersionHash,
 							},
-						},
+						}),
 						content: {
 							deviceType: TSR.DeviceType.ABSTRACT,
 						},

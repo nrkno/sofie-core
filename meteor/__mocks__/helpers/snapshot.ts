@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TimelineObjGeneric, TimelineComplete } from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineComplete, StatObjectMetadata } from '../../lib/collections/Timeline'
 import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { Part, DBPart } from '../../lib/collections/Parts'
@@ -54,9 +54,10 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 			if (o.generated) o.generated = 12345
 
 			_.each(o.timeline, (obj) => {
-				if (obj.metaData && obj.metaData.versions && obj.metaData.versions.core) {
+				const statObjMetadata = obj.metaData as Partial<StatObjectMetadata> | undefined
+				if (statObjMetadata?.versions?.core) {
 					// re-write the core version to something static, so tests won't fail just because the version has changed
-					obj.metaData.versions.core = '0.0.0-test'
+					statObjMetadata.versions.core = '0.0.0-test'
 				}
 			})
 		} else if (isPlaylist(o)) {

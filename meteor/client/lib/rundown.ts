@@ -31,6 +31,10 @@ import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites
 import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 
+interface PieceGroupMetadata {
+	id: PieceId
+}
+
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {
 		places = places || 2
@@ -413,7 +417,7 @@ export namespace RundownUtils {
 					}
 
 					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
-					pieceGroup.metaData = { id: piece.piece._id }
+					pieceGroup.metaData = literal<PieceGroupMetadata>({ id: piece.piece._id })
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
 
@@ -484,7 +488,7 @@ export namespace RundownUtils {
 				const objs = Object.values(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
-					const obj0 = (obj as unknown) as TimelineObjectCoreExt
+					const obj0 = (obj as unknown) as TimelineObjectCoreExt<PieceGroupMetadata>
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						const piece = piecesLookup.get(obj0.metaData.id)

@@ -38,7 +38,7 @@ import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 
@@ -118,7 +118,7 @@ function resolvePieceTimeline(
 	let unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = (obj0 as any) as TimelineObjRundown
-		const id = (obj.metaData || {}).pieceId
+		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
 
 		if (!id) return
 
@@ -241,7 +241,11 @@ export function getResolvedPiecesFromFullTimeline(
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
 	const objs = clone(
-		allObjs.filter((o) => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId)))
+		allObjs.filter(
+			(o) =>
+				o.isGroup &&
+				((o as any).isPartGroup || (o.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
+		)
 	)
 
 	const now = getCurrentTime()

@@ -13,7 +13,7 @@ import {
 	isStringOrProtectedString,
 	getRandomId,
 } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjId } from '../../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineObjId, StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
@@ -1232,13 +1232,13 @@ export namespace ServerPlayoutAPI {
 			const markerObject = studioTimeline.timeline.find((x) => x.id === `baseline_version`)
 			if (!markerObject) return 'noBaseline'
 
-			const versionsContent = (markerObject.metaData || {}).versions || {}
+			const versionsContent = (markerObject.metaData as Partial<StatObjectMetadata> | undefined)?.versions
 
-			if (versionsContent.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
+			if (versionsContent?.core !== (PackageInfo.versionExtended || PackageInfo.version)) return 'coreVersion'
 
-			if (versionsContent.studio !== (studio._rundownVersionHash || 0)) return 'studio'
+			if (versionsContent?.studio !== (studio._rundownVersionHash || 0)) return 'studio'
 
-			if (versionsContent.blueprintId !== studio.blueprintId) return 'blueprintId'
+			if (versionsContent?.blueprintId !== unprotectString(studio.blueprintId)) return 'blueprintId'
 			if (studio.blueprintId) {
 				const blueprint = Blueprints.findOne(studio.blueprintId)
 				if (!blueprint) return 'blueprintUnknown'
