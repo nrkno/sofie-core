@@ -555,7 +555,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onClickSegmentIdent = (partId: PartId) => {
-		scrollToPart(partId)
+		scrollToPart(partId, false, true)
 	}
 
 	getSegmentContext = (props) => {
