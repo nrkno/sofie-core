@@ -762,9 +762,16 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			return prev
 		}, 0)
 
-		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts.map((p) => {
-			return { partId: p.partId, ident: p.instance.part.identifier }
-		})
+		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
+			.map((p) =>
+				p.instance.part.identifier
+					? {
+							partId: p.partId,
+							ident: p.instance.part.identifier,
+					  }
+					: null
+			)
+			.filter((entry) => entry !== null) as Array<{ partId: PartId; ident?: string }>
 
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
