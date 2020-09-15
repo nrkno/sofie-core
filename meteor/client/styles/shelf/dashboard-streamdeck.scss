@@ -120,6 +120,10 @@
 			}
 		}
 	}
+
+	#render-target .container-fluid .notification-pop-ups {
+		display: none;
+	}
 }
 
 /** Stream Deck Original */
