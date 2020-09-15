@@ -491,8 +491,8 @@ function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction):
 		content: content,
 		adlibAction: action,
 		tags: action.display.tags,
-		onAirTags: action.display.onAirTags,
-		setNextTags: action.display.setNextTags,
+		currentPieceTags: action.display.currentPieceTags,
+		nextPieceTags: action.display.nextPieceTags,
 	})
 }
 
