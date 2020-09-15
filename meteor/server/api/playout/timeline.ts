@@ -45,7 +45,7 @@ import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { StudioContext, PartEventContext } from '../blueprints/context'
+import { StudioContext, PartEventContext, TimelineEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
@@ -250,9 +250,8 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const showStyleBlueprint0 = waitForPromise(pshowStyleBlueprint)
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
 
-			if (showStyleBlueprintManifest.onTimelineGenerate && currentPartInstance) {
-				const currentPart = currentPartInstance
-				const context = new PartEventContext(activeRundown, cache, currentPart)
+			if (showStyleBlueprintManifest.onTimelineGenerate) {
+				const context = new TimelineEventContext(activeRundown, cache, currentPartInstance, nextPartInstance)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
 				try {
 					const tlGenRes = waitForPromise(
@@ -260,7 +259,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 							context,
 							timelineObjs,
 							playlist.previousPersistentState,
-							currentPart.previousPartEndState,
+							currentPartInstance?.previousPartEndState,
 							unprotectObjectArray(resolvedPieces.pieces)
 						)
 					)
