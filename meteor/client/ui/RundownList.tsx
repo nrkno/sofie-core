@@ -18,6 +18,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { NoticeLevel, Notification, NotificationCenter } from '../lib/notifications/notifications'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
+import { GettingStarted } from './RundownList/GettingStarted'
 import { RegisterHelp } from './RundownList/RegisterHelp'
 import { RundownListFooter } from './RundownList/RundownListFooter'
 import { RundownListItem, RundownPlaylistUi } from './RundownList/RundownListItem'
@@ -205,42 +206,17 @@ export const RundownList = translateWithTracker(() => {
 
 			const step = this.tooltipStep()
 
+			const showGettingStarted =
+				this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION &&
+				syncedRundownPlaylists.length === 0 &&
+				unsyncedRundownPlaylists.length === 0
+
 			return (
 				<React.Fragment>
 					{this.props.coreSystem ? <RegisterHelp step={step} /> : null}
-					{this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION &&
-					syncedRundownPlaylists.length === 0 &&
-					unsyncedRundownPlaylists.length === 0 ? (
-						<div className="mtl gutter has-statusbar">
-							<h1>{t('Getting Started')}</h1>
-							<div>
-								<ul>
-									<li>
-										{t('Start with giving this browser configuration permissions by adding this to the URL: ')}&nbsp;
-										<Tooltip
-											overlay={t('Start Here!')}
-											visible={step === ToolTipStep.TOOLTIP_START_HERE}
-											placement="top">
-											<a href="?configure=1">?configure=1</a>
-										</Tooltip>
-									</li>
-									<li>
-										{t('Then, run the migrations script:')}&nbsp;
-										<Tooltip
-											overlay={t('Run Migrations to get set up')}
-											visible={step === ToolTipStep.TOOLTIP_RUN_MIGRATIONS}
-											placement="bottom">
-											<a href="/settings/tools/migration">{t('Migrations')}</a>
-										</Tooltip>
-									</li>
-								</ul>
-								{t('Documentation is available at')}&nbsp;
-								<a href="https://github.com/nrkno/Sofie-TV-automation/">
-									https://github.com/nrkno/Sofie-TV-automation/
-								</a>
-							</div>
-						</div>
-					) : null}
+
+					{showGettingStarted === true ? <GettingStarted step={step} /> : null}
+
 					<div className="mtl gutter has-statusbar">
 						<header className="mvs">
 							<h1>{t('Rundowns')}</h1>
@@ -304,6 +280,7 @@ export const RundownList = translateWithTracker(() => {
 							<Spinner />
 						)}
 					</div>
+
 					{this.state.systemStatus ? <RundownListFooter systemStatus={this.state.systemStatus} /> : null}
 				</React.Fragment>
 			)
