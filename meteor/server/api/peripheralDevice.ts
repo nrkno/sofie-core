@@ -560,9 +560,13 @@ function functionReply(
 	err: any,
 	result: any
 ): void {
+	logger.debug('functionReply')
+	logger.debug(err)
+	logger.debug(result)
+	logger.debug(deviceId)
+	logger.debug(deviceToken)
 	const device = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
-	// logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(
 		{
 			_id: commandId,
