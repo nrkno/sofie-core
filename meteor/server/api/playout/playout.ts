@@ -76,7 +76,7 @@ import {
 	CacheForStudio,
 } from '../../DatabaseCaches'
 import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
-import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
+import { syncPlayheadInfinitesForNextPartInstance, getPieceInstancesForPart } from './infinites'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
 import { Settings } from '../../../lib/Settings'
@@ -550,6 +550,13 @@ export namespace ServerPlayoutAPI {
 			) {
 				throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
 			}
+
+			const currentPieceInstances = getAllPieceInstancesFromCache(cache, currentPartInstance)
+			if (currentPieceInstances.find((pi) => pi.dynamicallyInserted))
+				throw new Meteor.Error(
+					400,
+					`RundownPlaylist "${rundownPlaylistId}" cannot hold once an adlib has been used!`
+				)
 
 			cache.RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
 
