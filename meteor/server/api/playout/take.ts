@@ -12,6 +12,7 @@ import {
 	selectNextPart,
 	checkAccessAndGetPlaylist,
 	triggerGarbageCollection,
+	getAllPieceInstancesFromCache,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -31,6 +32,9 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { reportPartHasStarted } from '../asRunLog'
 import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
+import { ServerPlayoutAPI } from './playout'
+import { ServerPlayoutAdLibAPI } from './adlib'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -108,7 +112,7 @@ export function takeNextPartInnerSync(
 		})
 		// If hold is active, then this take is to clear it
 	} else if (playlist.holdState === RundownHoldState.ACTIVE) {
-		completeHold(cache, playlist, currentPartInstance)
+		completeHold(cache, playlist, waitForPromise(pShowStyle), currentPartInstance)
 
 		waitForPromise(cache.saveAllToDatabase())
 
@@ -402,6 +406,7 @@ function startHold(
 function completeHold(
 	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
+	showStyleBase: ShowStyleBase,
 	currentPartInstance: PartInstance | undefined
 ) {
 	cache.RundownPlaylists.update(playlist._id, {
@@ -414,24 +419,13 @@ function completeHold(
 		if (!currentPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
 
 		// Clear the current extension line
-		const extendedPieceInstances = cache.PieceInstances.findFetch({
-			partInstanceId: currentPartInstance._id,
-			'piece.extendOnHold': true,
-			infinite: { $exists: true },
-		})
-
-		for (const pieceInstance of extendedPieceInstances) {
-			if (pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInstance.part._id) {
-				// This is a continuation, so give it an end
-				cache.PieceInstances.update(pieceInstance._id, {
-					$set: {
-						userDuration: {
-							end: getCurrentTime(),
-						},
-					},
-				})
-			}
-		}
+		ServerPlayoutAdLibAPI.innerStopPieces(
+			cache,
+			showStyleBase,
+			currentPartInstance,
+			(p) => !!p.infinite?.fromHold,
+			undefined
+		)
 	}
 
 	updateTimeline(cache, playlist.studioId)
