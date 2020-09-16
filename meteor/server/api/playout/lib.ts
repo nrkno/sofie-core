@@ -776,7 +776,6 @@ export function getSelectedPartInstancesFromCache(
 
 	const selector: MongoQuery<DBPartInstance> = {
 		rundownId: { $in: rundownIds },
-		reset: { $ne: true },
 	}
 	return {
 		currentPartInstance: playlist.currentPartInstanceId
