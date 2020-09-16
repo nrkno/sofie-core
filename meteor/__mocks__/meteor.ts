@@ -275,7 +275,7 @@ export namespace MeteorMock {
 			fcn()
 		})
 
-		waitTime(10) // So that any observers or defers has had time to run.
+		waitTimeNoFakeTimers(10) // So that any observers or defers has had time to run.
 	}
 	export function mockLoginUser(user: Meteor.User) {
 		mockUser = user
@@ -304,12 +304,9 @@ export function setup() {
 	}
 }
 
-// Note: these are copies from lib/lib.ts, but uses MeteorMock instead
-export function waitTime(time: number) {
-	waitForPromise(sleep(time))
-}
-export function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => MeteorMock.setTimeout(resolve, ms))
+/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
+export function waitTimeNoFakeTimers(time: number) {
+	waitForPromise(new Promise((resolve) => $.orgSetTimeout(resolve, time)))
 }
 export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(function waitForPromises<T>(
 	p: Promise<T>,

@@ -5,8 +5,18 @@ export function beforeAllInFiber(fcn: Function, timeout?: number) {
 		await runInFiber(fcn)
 	}, timeout)
 }
+export function afterAllInFiber(fcn: Function, timeout?: number) {
+	afterAll(async () => {
+		await runInFiber(fcn)
+	}, timeout)
+}
 export function beforeEachInFiber(fcn: Function, timeout?: number) {
 	beforeEach(async () => {
+		await runInFiber(fcn)
+	}, timeout)
+}
+export function afterEachInFiber(fcn: Function, timeout?: number) {
+	afterEach(async () => {
 		await runInFiber(fcn)
 	}, timeout)
 }
