@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import { Fiber, runInFiber } from './Fibers'
-import { waitTime } from '../lib/lib'
 
 let controllableDefer: boolean = false
 
@@ -304,3 +303,24 @@ export function setup() {
 		Meteor: MeteorMock,
 	}
 }
+
+// Note: these are copies from lib/lib.ts, but uses MeteorMock instead
+export function waitTime(time: number) {
+	waitForPromise(sleep(time))
+}
+export function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => MeteorMock.setTimeout(resolve, ms))
+}
+export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(function waitForPromises<T>(
+	p: Promise<T>,
+	cb: (err: any | null, result?: any) => T
+) {
+	if (MeteorMock.isClient) throw new MeteorMock.Error(500, `waitForPromise can't be used client-side`)
+	Promise.resolve(p)
+		.then((result) => {
+			cb(null, result)
+		})
+		.catch((e) => {
+			cb(e)
+		})
+})
