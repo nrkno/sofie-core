@@ -57,6 +57,7 @@ export class Cache {
 				const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
 				this._activeTimeout = Meteor.setTimeout(() => {
 					logger.error(futureError)
+					logger.error(futureError.stack)
 				}, 2000)
 			}
 		}
