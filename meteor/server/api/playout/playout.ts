@@ -922,6 +922,13 @@ export namespace ServerPlayoutAPI {
 				throw new Meteor.Error(400, `RundownPlaylist "${rundownPlaylistId}" incompatible pair of HoldMode!`)
 			}
 
+			const currentPieceInstances = getAllPieceInstancesFromCache(cache, currentPartInstance)
+			if (currentPieceInstances.find((pi) => pi.piece.dynamicallyInserted))
+				throw new Meteor.Error(
+					400,
+					`RundownPlaylist "${rundownPlaylistId}" cannot hold once an adlib has been used!`
+				)
+
 			cache.RundownPlaylists.update(rundownPlaylistId, { $set: { holdState: RundownHoldState.PENDING } })
 
 			updateTimeline(cache, playlist.studioId)
