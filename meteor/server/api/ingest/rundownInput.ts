@@ -975,11 +975,19 @@ function handleUpdatedRundownPlaylist(
 
 	const updated = rundowns.map((r) => {
 		const rundownOrder = order[unprotectString(r._id)]
+		r.playlistId = playlist._id
 		if (rundownOrder !== undefined) {
-			r.playlistId = playlist._id
 			r._rank = rundownOrder
 		} else {
 			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+			r._rank = -1
+			// TODO - this should do something to make it be floated
+		}
+
+		if (r._id === currentRundown._id) {
+			// Apply to in-memory copy
+			currentRundown.playlistId = r.playlistId
+			currentRundown._rank = r._rank
 		}
 		return r
 	})
@@ -1476,6 +1484,11 @@ function generateSegmentContents(
 		adlibPieces.push(...postProcessAdLibPieces(context, blueprintPart.adLibPieces, blueprintId, part._id))
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
+
+	// If the segment has no parts, then hide it
+	if (parts.length === 0) {
+		newSegment.isHidden = true
+	}
 
 	span?.end()
 	return {

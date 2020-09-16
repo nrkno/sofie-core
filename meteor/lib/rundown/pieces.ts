@@ -75,7 +75,10 @@ export function createPieceGroupAndCap(
 				updatedPieceGroup = true
 				pieceGroup.enable.end = Math.min(pieceGroup.enable.end, pieceInstance.resolvedEndCap)
 			} else if (typeof pieceGroup.enable.start === 'number' && typeof pieceGroup.enable.duration === 'number') {
-				pieceGroup.enable.end = pieceGroup.enable.start + pieceGroup.enable.duration
+				pieceGroup.enable.end = Math.min(
+					pieceGroup.enable.start + pieceGroup.enable.duration,
+					pieceInstance.resolvedEndCap
+				)
 				delete pieceGroup.enable.duration
 			}
 		}

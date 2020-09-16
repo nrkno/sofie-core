@@ -151,6 +151,13 @@ export namespace ServerPeripheralDeviceAPI {
 			PeripheralDevices.update(deviceId, {
 				$set: {
 					status: status,
+					connected: true,
+				},
+			})
+		} else if (!peripheralDevice.connected) {
+			PeripheralDevices.update(deviceId, {
+				$set: {
+					connected: true,
 				},
 			})
 		}
@@ -652,13 +659,13 @@ function functionReply(
 	err: any,
 	result: any
 ): void {
-	checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+	const device = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 	// logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(
 		{
 			_id: commandId,
-			deviceId: deviceId,
+			deviceId: { $in: _.compact([device._id, device.parentDeviceId]) },
 		},
 		{
 			$set: {

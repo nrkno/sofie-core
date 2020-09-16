@@ -145,12 +145,14 @@ export namespace MongoMock {
 					const modifiedDoc = mongoModify(query, doc, modifier)
 					this.documents[unprotectString(doc._id)] = modifiedDoc
 
-					_.each(_.clone(this.observers), (obs) => {
-						if (mongoWhere(doc, obs.query)) {
-							if (obs.callbacks.changed) {
-								obs.callbacks.changed(doc._id, {}) // TODO - figure out what changed
+					Meteor.defer(() => {
+						_.each(_.clone(this.observers), (obs) => {
+							if (mongoWhere(doc, obs.query)) {
+								if (obs.callbacks.changed) {
+									obs.callbacks.changed(doc._id, {}) // TODO - figure out what changed
+								}
 							}
-						}
+						})
 					})
 				})
 
@@ -172,16 +174,18 @@ export namespace MongoMock {
 
 				this.documents[unprotectString(d._id)] = d
 
-				_.each(_.clone(this.observers), (obs) => {
-					if (mongoWhere(d, obs.query)) {
-						const fields = _.keys(_.omit(d, '_id'))
-						if (obs.callbacks.addedBefore) {
-							obs.callbacks.addedBefore(d._id, fields, null as any)
+				Meteor.defer(() => {
+					_.each(_.clone(this.observers), (obs) => {
+						if (mongoWhere(d, obs.query)) {
+							const fields = _.keys(_.omit(d, '_id'))
+							if (obs.callbacks.addedBefore) {
+								obs.callbacks.addedBefore(d._id, fields, null as any)
+							}
+							if (obs.callbacks.added) {
+								obs.callbacks.added(d._id, fields)
+							}
 						}
-						if (obs.callbacks.added) {
-							obs.callbacks.added(d._id, fields)
-						}
-					}
+					})
 				})
 
 				if (cb) cb(undefined, d._id)
@@ -211,6 +215,16 @@ export namespace MongoMock {
 
 				_.each(docs, (doc) => {
 					delete this.documents[unprotectString(doc._id)]
+
+					Meteor.defer(() => {
+						_.each(_.clone(this.observers), (obs) => {
+							if (mongoWhere(doc, obs.query)) {
+								if (obs.callbacks.removed) {
+									obs.callbacks.removed(doc._id)
+								}
+							}
+						})
+					})
 				})
 				if (cb) cb(undefined, docs.length)
 				else return docs.length

@@ -64,7 +64,7 @@ export function activateRundownPlaylist(
 
 	// Re-Initialize the ActivationCache now when the rundownPlaylist is active
 	const rundownsInPlaylist = cache.Rundowns.findFetch()
-	cache.activationCache.initialize(rundownPlaylist, rundownsInPlaylist)
+	waitForPromise(cache.activationCache.initialize(rundownPlaylist, rundownsInPlaylist))
 
 	let rundown: Rundown | undefined
 

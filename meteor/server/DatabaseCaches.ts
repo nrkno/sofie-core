@@ -243,7 +243,7 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 
 	activationCache: ActivationCache
 
-	constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
+	constructor(studioId: StudioId, playlistId: RundownPlaylistId, playlistIsActive: boolean) {
 		super(studioId)
 		this.containsDataFromPlaylist = playlistId
 
@@ -262,7 +262,11 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
 		this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
 
-		this.activationCache = getActivationCache(studioId, playlistId)
+		if (playlistIsActive) {
+			this.activationCache = getActivationCache(studioId, playlistId)
+		} else {
+			this.activationCache = new ActivationCache(playlistId)
+		}
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
@@ -271,8 +275,12 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		return super.deferAfterSave(fcn)
 	}
 }
-function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
-	return new CacheForRundownPlaylist(studioId, playlistId)
+function emptyCacheForRundownPlaylist(
+	studioId: StudioId,
+	playlistId: RundownPlaylistId,
+	playlistIsActive: boolean
+): CacheForRundownPlaylist {
+	return new CacheForRundownPlaylist(studioId, playlistId, playlistIsActive)
 }
 async function fillCacheForRundownPlaylistWithData(
 	cache: CacheForRundownPlaylist,
@@ -357,7 +365,11 @@ export async function initCacheForRundownPlaylist(
 	const span = profiler.startSpan('Cache.initCacheForRundownPlaylist')
 
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(playlist.studioId, initializeImmediately)
-	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(playlist.studioId, playlist._id)
+	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(
+		playlist.studioId,
+		playlist._id,
+		playlist.active ?? false
+	)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}
@@ -373,7 +385,7 @@ export async function initCacheForNoRundownPlaylist(
 	initializeImmediately: boolean = true
 ): Promise<CacheForRundownPlaylist> {
 	if (!extendFromCache) extendFromCache = await initCacheForStudioBase(studioId, initializeImmediately)
-	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''))
+	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''), false)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}

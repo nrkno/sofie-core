@@ -188,26 +188,7 @@ export const addSteps = addMigrationSteps('1.12.0', [
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in Studios', Studios),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleBases', ShowStyleBases),
 	migrateConfigToBlueprintConfig('Migrate config to blueprintConfig in ShowStyleVariants', ShowStyleVariants),
-	{
-		id: 'Single timeline object',
-		canBeRunAutomatically: true,
-		validate: () => {
-			const badCount = Timeline.find({
-				timeline: { $exists: false },
-			}).count()
-			if (badCount > 0) {
-				return `${badCount} timeline objects need to be deleted`
-			}
-			return false
-		},
-		migrate: () => {
-			Timeline.remove({
-				timeline: { $exists: false },
-			})
-		},
-	},
-	//
-	//
+
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),

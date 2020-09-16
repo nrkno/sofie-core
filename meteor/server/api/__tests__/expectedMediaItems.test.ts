@@ -8,8 +8,7 @@ import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { runInFiber } from '../../../__mocks__/Fibers'
+import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
@@ -211,12 +210,10 @@ describe('Expected Media Items', () => {
 		)
 	}
 
-	beforeAll(() =>
-		runInFiber(() => {
-			setupRundown(rdId0, rplId0)
-			setupRundown(rdId1, rplId1)
-		})
-	)
+	beforeAllInFiber(() => {
+		setupRundown(rdId0, rplId0)
+		setupRundown(rdId1, rplId1)
+	})
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {
