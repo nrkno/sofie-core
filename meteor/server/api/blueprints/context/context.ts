@@ -62,7 +62,7 @@ import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
 
 /** Common */
 
@@ -223,7 +223,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 	constructor(
 		studio: Studio,
-		private readonly cache: CacheForRundownPlaylist | undefined,
+		private readonly cache: ReadOnlyCacheForRundownPlaylist | undefined,
 		readonly _rundown: Rundown | undefined,
 		readonly showStyleBaseId: ShowStyleBaseId,
 		readonly showStyleVariantId: ShowStyleVariantId,
@@ -329,7 +329,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 	readonly _rundown: Rundown
 	readonly playlistId: RundownPlaylistId
 
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext | undefined) {
+	constructor(rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist, notesContext: NotesContext | undefined) {
 		super(
 			cache.activationCache.getStudio(),
 			cache,
@@ -387,7 +387,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
+	constructor(rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
 		super(
 			rundown,
 			cache,
