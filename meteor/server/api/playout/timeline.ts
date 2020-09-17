@@ -475,11 +475,14 @@ function buildTimelineObjsForRundown(
 	// Currently playing:
 	if (currentPartInstance) {
 		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: currentPartInstance._id })
-		const currentInfinitePieces = currentPieces.filter(
-			(l) => l.piece.infiniteMode! > PieceLifespan.OutOnNextPart && l.piece.infiniteId
-		)
-		const currentNormalItems = currentPieces.filter(
-			(l) => !(l.piece.infiniteMode! > PieceLifespan.OutOnNextPart && l.piece.infiniteId)
+		const [currentInfinitePieces, currentNormalItems] = _.partition(
+			currentPieces,
+			(l) =>
+				!!(
+					(l.piece.infiniteMode! > PieceLifespan.OutOnNextPart ||
+						(l.piece.dynamicallyInserted && l.piece.extendOnHold)) &&
+					l.piece.infiniteId
+				)
 		)
 
 		let allowTransition = false
