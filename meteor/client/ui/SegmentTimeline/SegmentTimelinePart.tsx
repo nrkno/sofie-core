@@ -423,7 +423,11 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
-			static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
+			static getDerivedStateFromProps(
+				nextProps: IProps & RundownTiming.InjectedROTimingProps,
+				nextState: IState
+			): Partial<IState> {
+				const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
 				const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id
 				const isNext = nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id
 
@@ -432,29 +436,49 @@ export const SegmentTimelinePart = withTranslation()(
 				const startedPlayback = nextPartInner.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active && !isLive && !!startedPlayback && !nextPartInner.duration
+					!!nextProps.playlist.active && isPrevious && !isLive && !!startedPlayback && !nextPartInner.duration
 
-				const liveDuration =
-					(isLive || isDurationSettling) && !nextProps.autoNextPart && !nextPartInner.autoNext
-						? Math.max(
-								(startedPlayback &&
-									nextProps.timingDurations.partDurations &&
-									(nextProps.relative
-										? SegmentTimelinePart0.getCurrentLiveLinePosition(
-												nextProps.part,
-												nextProps.timingDurations.currentTime || getCurrentTime()
-										  )
-										: SegmentTimelinePart0.getCurrentLiveLinePosition(
-												nextProps.part,
-												nextProps.timingDurations.currentTime || getCurrentTime()
-										  ) + SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))) ||
-									0,
-								nextProps.timingDurations.partDurations
-									? nextPartInner.displayDuration ||
-											nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
-									: 0
-						  )
-						: 0
+				let liveDuration = 0
+				if (!isDurationSettling) {
+					// if the duration isn't settling, calculate the live line postion and add some liveLive time padding
+					if (isLive && !nextProps.autoNextPart && !nextPartInner.autoNext) {
+						liveDuration = Math.max(
+							(startedPlayback &&
+								nextProps.timingDurations.partDurations &&
+								(nextProps.relative
+									? SegmentTimelinePart0.getCurrentLiveLinePosition(
+											nextProps.part,
+											nextProps.timingDurations.currentTime || getCurrentTime()
+									  )
+									: SegmentTimelinePart0.getCurrentLiveLinePosition(
+											nextProps.part,
+											nextProps.timingDurations.currentTime || getCurrentTime()
+									  ) + SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))) ||
+								0,
+							nextProps.timingDurations.partDurations
+								? nextPartInner.displayDuration ||
+										nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
+								: 0
+						)
+					}
+				} else {
+					// if the duration is settling, just calculate the current liveLine position and show without any padding
+					if (!nextProps.autoNextPart && !nextPartInner.autoNext) {
+						liveDuration = Math.max(
+							(startedPlayback &&
+								nextProps.timingDurations.partDurations &&
+								SegmentTimelinePart0.getCurrentLiveLinePosition(
+									nextProps.part,
+									nextProps.timingDurations.currentTime || getCurrentTime()
+								)) ||
+								0,
+							nextProps.timingDurations.partDurations
+								? nextPartInner.displayDuration ||
+										nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
+								: 0
+						)
+					}
+				}
 
 				const isInsideViewport =
 					nextProps.relative ||

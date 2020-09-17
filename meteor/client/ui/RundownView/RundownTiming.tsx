@@ -252,6 +252,7 @@ export const RundownTimingProvider = withTracker<
 			if (prevProps.parts !== this.props.parts) {
 				// empty the temporary Part Instances cache
 				this.temporaryPartInstances = {}
+				this.onRefreshTimer()
 			}
 		}
 

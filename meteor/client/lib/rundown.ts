@@ -236,33 +236,17 @@ export namespace RundownUtils {
 		segmentExtended: SegmentExtended
 		/** Parts in the segment, with additional information on the Part and the Pieces */
 		parts: Array<PartExtended>
-		/** A flag if the segment is currently on air (one of it's Parts is on air) */
-		isLiveSegment: boolean
-		/** A flag if the segment is currently next (one of it's Parts is on air) */
-		isNextSegment: boolean
-		/** The part that is currently on air, if the Segment is on air */
-		currentLivePart: PartExtended | undefined
-		/** The part that is currently set as next, if the Segment is next */
-		currentNextPart: PartExtended | undefined
 		/** A flag if any of the Parts have a Piece on a Layer with the 'Remote' flag on */
 		hasRemoteItems: boolean
 		/** A flag if any of the Parts have a Piece on a Layer with the 'Guest' flag on */
 		hasGuestItems: boolean
 		/** A flag if any of the Parts have already played */
 		hasAlreadyPlayed: boolean
-		/** A flag if the current on air part (doesn't have to be of this segment) will autonext */
-		autoNextPart: boolean
 	} {
-		let isLiveSegment = false
-		let isNextSegment = false
-		let currentLivePart: PartExtended | undefined = undefined
-		let currentNextPart: PartExtended | undefined = undefined
 		// let nextPart: PartExtended | undefined = undefined
 		let hasAlreadyPlayed = false
 		let hasRemoteItems = false
 		let hasGuestItems = false
-
-		let autoNextPart = false
 
 		let segmentExtended = literal<SegmentExtended>({
 			...segment,
@@ -274,7 +258,6 @@ export namespace RundownUtils {
 		// fetch all the parts for the segment
 		let partsE: Array<PartExtended> = []
 
-		const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 		const segmentsAndParts = playlist.getSegmentsAndPartsSync(
 			{
 				_id: segment._id,
@@ -356,20 +339,6 @@ export namespace RundownUtils {
 					),
 				})
 
-				// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
-				if (currentPartInstance && currentPartInstance._id === partE.instance._id) {
-					isLiveSegment = true
-					currentLivePart = partE
-				}
-				if (nextPartInstance && nextPartInstance._id === partE.instance._id) {
-					isNextSegment = true
-					currentNextPart = partE
-				}
-				autoNextPart = !!(
-					currentLivePart &&
-					currentLivePart.instance.part.autoNext &&
-					currentLivePart.instance.part.expectedDuration
-				)
 				if (partE.instance.part.startedPlayback !== undefined) {
 					hasAlreadyPlayed = true
 				}
@@ -624,28 +593,13 @@ export namespace RundownUtils {
 
 			segmentExtended.outputLayers = outputLayers
 			segmentExtended.sourceLayers = sourceLayers
-
-			if (isNextSegment && !isLiveSegment && !autoNextPart && currentPartInstance) {
-				if (
-					currentPartInstance &&
-					currentPartInstance.part.expectedDuration &&
-					currentPartInstance.part.autoNext
-				) {
-					autoNextPart = true
-				}
-			}
 		}
 		return {
 			segmentExtended,
 			parts: partsE,
-			isLiveSegment,
-			currentLivePart,
-			currentNextPart,
-			isNextSegment,
 			hasAlreadyPlayed,
 			hasGuestItems,
 			hasRemoteItems,
-			autoNextPart,
 		}
 
 		// get the part immediately after the last segment
