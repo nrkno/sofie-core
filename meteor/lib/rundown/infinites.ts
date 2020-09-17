@@ -195,10 +195,15 @@ export function isPiecePotentiallyActiveInPart(
 				pieceToCheck.startSegmentId === part.segmentId && partsBeforeThisInSegment.has(pieceToCheck.startPartId)
 			)
 		case PieceLifespan.OutOnRundownEnd:
-			return (
-				pieceToCheck.startRundownId === part.rundownId &&
-				segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
-			)
+			if (pieceToCheck.startRundownId === part.rundownId) {
+				if (pieceToCheck.startSegmentId === part.segmentId) {
+					return partsBeforeThisInSegment.has(pieceToCheck.startPartId)
+				} else {
+					return segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
+				}
+			} else {
+				return false
+			}
 		case PieceLifespan.OutOnSegmentChange:
 			if (previousPartInstance !== undefined) {
 				// This gets handled by getPlayheadTrackingInfinitesForPart
@@ -426,7 +431,7 @@ export function processAndPrunePieceInstanceTimings(
 			([k]) => (k === 'now' ? nowInPart : k)
 		)
 
-		const isClear = (piece?: PieceInstance): boolean => !!(piece?.dynamicallyInserted && piece?.piece.virtual)
+		const isClear = (piece?: PieceInstance): boolean => !!piece?.piece.virtual
 
 		// Step through time
 		activePieces = {}
@@ -434,13 +439,19 @@ export function processAndPrunePieceInstanceTimings(
 			const newPieces = findPieceInstancesOnInfiniteLayers(pieces)
 
 			// Handle any clears
-			if (isClear(newPieces.onSegmentEnd) && activePieces.onSegmentEnd) {
-				activePieces.onSegmentEnd.resolvedEndCap = start
-				activePieces.onSegmentEnd = newPieces.onSegmentEnd = undefined
+			if (isClear(newPieces.onSegmentEnd)) {
+				if (activePieces.onSegmentEnd) {
+					activePieces.onSegmentEnd.resolvedEndCap = start
+					activePieces.onSegmentEnd = undefined
+				}
+				newPieces.onSegmentEnd = undefined
 			}
-			if (isClear(newPieces.onRundownEnd) && activePieces.onRundownEnd) {
-				activePieces.onRundownEnd.resolvedEndCap = start
-				activePieces.onRundownEnd = newPieces.onRundownEnd = undefined
+			if (isClear(newPieces.onRundownEnd)) {
+				if (activePieces.onRundownEnd) {
+					activePieces.onRundownEnd.resolvedEndCap = start
+					activePieces.onRundownEnd = undefined
+				}
+				newPieces.onRundownEnd = undefined
 			}
 
 			// Apply the updates
@@ -510,7 +521,6 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.onRundownEnd = {
 						...piece,
 						priority: 1,
-						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break
@@ -519,7 +529,6 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.onSegmentEnd = {
 						...piece,
 						priority: 2,
-						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break
@@ -530,7 +539,6 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.other = {
 						...piece,
 						priority: 5,
-						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break

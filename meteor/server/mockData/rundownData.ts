@@ -7,12 +7,17 @@ import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
-import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } from '../DatabaseCaches'
-import { removeRundownPlaylistFromCache } from '../api/playout/lib'
+import { removeRundownPlaylistFromCache, setNextPart, getSelectedPartInstancesFromCache } from '../api/playout/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
+import { forceClearAllActivationCaches } from '../ActivationCache'
+import { PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstances } from '../../lib/collections/PieceInstances'
+import { updateTimeline } from '../api/playout/timeline'
+import { getActiveRundownPlaylistsInStudio } from '../api/playout/studio'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -91,6 +96,44 @@ if (!Settings.enableUserAccounts) {
 				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
 				waitForPromise(cache.saveAllToDatabase())
+			})
+		},
+
+		debug_forceClearAllActivationCaches() {
+			logger.info('forceClearAllActivationCaches')
+
+			forceClearAllActivationCaches()
+		},
+
+		debug_clearAllResetInstances() {
+			logger.info('clearAllResetInstances')
+
+			PartInstances.remove({ reset: true })
+			PieceInstances.remove({ reset: true })
+		},
+
+		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
+			logger.info('regenerateNextPartInstance')
+
+			rundownPlaylistSyncFunction(id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+				const playlist = RundownPlaylists.findOne(id)
+				if (!playlist) throw new Meteor.Error(404, 'not found')
+
+				if (playlist.nextPartInstanceId && playlist.active) {
+					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+
+					const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+					const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+					if (part) {
+						setNextPart(cache, playlist, null)
+						const playlist2 = cache.RundownPlaylists.findOne(playlist._id) as RundownPlaylist
+						setNextPart(cache, playlist2, part)
+
+						updateTimeline(cache, playlist.studioId)
+					}
+
+					waitForPromise(cache.saveAllToDatabase())
+				}
 			})
 		},
 	})
