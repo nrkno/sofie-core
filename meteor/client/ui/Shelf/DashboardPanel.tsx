@@ -678,7 +678,7 @@ export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null)
 				{
 					$or: [
 						{
-							'piece.adLibSourceId': {
+							adLibSourceId: {
 								$exists: true,
 							},
 						},
