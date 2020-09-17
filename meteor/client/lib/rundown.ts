@@ -358,6 +358,12 @@ export namespace RundownUtils {
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
 
+					// if there is an userDuration override, override it for the timeline
+					if (piece.userDuration) {
+						delete pieceGroup.enable.duration
+						pieceGroup.enable.end = piece.userDuration.end
+					}
+
 					// find the target output layer
 					let outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
 					resPiece.outputLayer = outputLayer

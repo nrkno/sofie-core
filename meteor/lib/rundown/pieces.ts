@@ -44,11 +44,6 @@ export function createPieceGroupAndCap(
 		},
 	})
 
-	// if there is an userDuration override, override it on the timeline
-	if (pieceInstance.userDuration) {
-		pieceGroup.enable.end = pieceInstance.userDuration.end
-	}
-
 	const capObjs: TimelineObjRundown[] = []
 
 	let nowObj: TimelineObjRundown | undefined
