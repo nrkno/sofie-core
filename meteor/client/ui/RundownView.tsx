@@ -721,7 +721,9 @@ const RundownHeader = withTranslation()(
 						(e) => MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizonalDelta, verticalDelta),
 						(err, partId) => {
 							if (!err && partId) {
-								scrollToPart(partId).catch(() => console.error)
+								scrollToPart(partId).catch((error) => {
+									if (!error.toString().match(/another scroll/)) console.error(error)
+								})
 							}
 						}
 					)
@@ -1056,7 +1058,9 @@ const RundownHeader = withTranslation()(
 						if (!err && reloadResponse) {
 							if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, reloadResponse)) {
 								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
-									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
+									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+										if (!error.toString().match(/another scroll/)) console.error(error)
+									})
 								}
 							}
 						}
@@ -1731,7 +1735,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					followLiveSegments: true,
 				})
 				if (this.props.playlist.currentPartInstanceId) {
-					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(() => console.error)
+					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.error(error)
+					})
 				}
 			} else if (
 				this.props.playlist &&
@@ -1751,7 +1757,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.props.playlist.nextPartInstanceId
 			) {
 				// scroll to next after activation
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
+				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 			} else if (
 				// after take
 				this.props.playlist &&
@@ -1760,7 +1768,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.props.playlist.currentPartInstanceId &&
 				this.state.followLiveSegments
 			) {
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(() => console.error)
+				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 			} else if (
 				// initial Rundown open
 				this.props.playlist &&
@@ -1927,7 +1937,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onGoToTop = () => {
-			scrollToPosition(0).catch(console.error)
+			scrollToPosition(0).catch((error) => {
+				if (!error.toString().match(/another scroll/)) console.error(error)
+			})
 
 			window.requestIdleCallback(
 				() => {
@@ -1948,7 +1960,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch(console.error)
+				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 				setTimeout(() => {
 					this.setState({
 						followLiveSegments: true,
@@ -1959,7 +1973,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(console.error)
+				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 				setTimeout(() => {
 					this.setState({
 						followLiveSegments: true,
@@ -2071,7 +2087,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								})
 							)
 						})
-						.catch(console.error)
+						.catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.error(error)
+						})
 				}
 			}
 		}

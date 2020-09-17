@@ -341,7 +341,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			window.requestAnimationFrame(() => {
 				this.mountedTime = Date.now()
 				if (this.isLiveSegment && this.props.followLiveSegments && !this.isVisible) {
-					scrollToSegment(this.props.segmentId, true).catch(console.error)
+					scrollToSegment(this.props.segmentId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.error(error)
+					})
 				}
 			})
 		}

@@ -90,7 +90,7 @@ export async function scrollToPart(partId: PartId, forceScroll?: boolean, noAnim
 
 const FALLBACK_HEADER_HEIGHT = 65
 let HEADER_HEIGHT: number | undefined = undefined
-export const HEADER_MARGIN = 15 // NRK uses: 25
+export const HEADER_MARGIN = 25
 
 export function getHeaderHeight(): number {
 	if (HEADER_HEIGHT === undefined) {
@@ -124,7 +124,7 @@ export function scrollToSegment(
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
 	} else if (secondStage && elementToScrollTo !== currentScrollingElement) {
-		return Promise.reject('Scroll overriden by a new scroll')
+		return Promise.reject('Scroll overriden by another scroll')
 	}
 
 	let { top, bottom } = elementToScrollTo.getBoundingClientRect()
