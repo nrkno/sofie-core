@@ -166,6 +166,7 @@ export namespace ServerPlayoutAPI {
 			if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundownPlaylistId}" not found in cache!`)
 
 			libResetRundownPlaylist(cache, playlist)
+			waitForPromise(cache.saveAllToDatabase())
 			prepareStudioForBroadcast(true, playlist)
 
 			libActivateRundownPlaylist(cache, playlist, !!rehearsal) // Activate rundown
