@@ -21,7 +21,8 @@ import { Spinner } from '../lib/Spinner'
 import { GettingStarted } from './RundownList/GettingStarted'
 import { RegisterHelp } from './RundownList/RegisterHelp'
 import { RundownListFooter } from './RundownList/RundownListFooter'
-import { RundownListItem, RundownPlaylistUi } from './RundownList/RundownListItem'
+import { RundownListItem } from './RundownList/RundownListItem'
+import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -176,40 +177,28 @@ export const RundownList = translateWithTracker(() => {
 		}
 
 		renderRundowns(list: RundownPlaylistUi[]) {
-			const { t, i18n, tReady } = this.props
+			const { t, rundownLayouts } = this.props
 
-			return list.length > 0 ? (
-				list.map((rundownPlaylist) => (
-					<RundownListItem
-						key={unprotectString(rundownPlaylist._id)}
-						rundownPlaylist={rundownPlaylist}
-						rundownLayouts={this.props.rundownLayouts}
-						{...{ t, i18n, tReady }}
-					/>
-				))
-			) : (
-				<tr>
-					<td colSpan={10}>{t('There are no rundowns ingested into Sofie.')}</td>
-				</tr>
-			)
+			if (list.length < 1) {
+				return (
+					<tr>
+						<td colSpan={10}>{t('There are no rundowns ingested into Sofie.')}</td>
+					</tr>
+				)
+			}
+
+			return list.map((playlist) => (
+				<RundownPlaylistUi key={unprotectString(playlist._id)} playlist={playlist} rundownLayouts={rundownLayouts} />
+			))
 		}
 
 		render() {
-			const { t } = this.props
-
-			const syncedRundownPlaylists = this.props.rundownPlaylists.filter(
-				(rundownPlaylist) => rundownPlaylist.unsyncedRundowns.length === 0
-			)
-			const unsyncedRundownPlaylists = this.props.rundownPlaylists.filter(
-				(rundownPlaylist) => rundownPlaylist.unsyncedRundowns.length > 0
-			)
+			const { t, rundownPlaylists } = this.props
 
 			const step = this.tooltipStep()
 
 			const showGettingStarted =
-				this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION &&
-				syncedRundownPlaylists.length === 0 &&
-				unsyncedRundownPlaylists.length === 0
+				this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && rundownPlaylists.length === 0
 
 			return (
 				<React.Fragment>
@@ -245,35 +234,7 @@ export const RundownList = translateWithTracker(() => {
 											<th className="c1">&nbsp;</th>
 										</tr>
 									</thead>
-									<tbody>{this.renderRundowns(syncedRundownPlaylists)}</tbody>
-									{unsyncedRundownPlaylists.length > 0 && (
-										<tbody>
-											<tr className="hl">
-												<th colSpan={10} className="pvn phn">
-													<h2 className="mtm mbs mhn">
-														{t('Unsynced from {{nrcsNames}}', {
-															nrcsNames:
-																languageOr(
-																	t,
-																	Array.from(
-																		new Set(
-																			_.flatten(
-																				unsyncedRundownPlaylists.map((p) =>
-																					p.unsyncedRundowns.map((r) => r.externalNRCSName)
-																				)
-																			)
-																		)
-																	)
-																) || 'NRCS',
-														})}
-													</h2>
-												</th>
-											</tr>
-										</tbody>
-									)}
-									{unsyncedRundownPlaylists.length > 0 && (
-										<tbody>{this.renderRundowns(unsyncedRundownPlaylists)}</tbody>
-									)}
+									<tbody>{this.renderRundowns(rundownPlaylists)}</tbody>
 								</table>
 							</div>
 						) : (

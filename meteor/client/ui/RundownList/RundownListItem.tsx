@@ -1,280 +1,134 @@
 import { IconName } from '@fortawesome/fontawesome-svg-core'
-import { faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import ClassNames from 'classnames'
 import Tooltip from 'rc-tooltip'
 import React from 'react'
+import { withTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { MeteorCall } from '../../../lib/api/methods'
-import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { StudioId } from '../../../lib/collections/Studios'
-import { unprotectString } from '../../../lib/lib'
-import { getAllowConfigure, getAllowService, getHelpMode } from '../../lib/localStorage'
-import { doModalDialog } from '../../lib/ModalDialog'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { Studio } from '../../../lib/collections/Studios'
+import { getAllowConfigure, getAllowService } from '../../lib/localStorage'
 import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
-import { SplitDropdown } from '../../lib/SplitDropdown'
-import { UIStateStorage } from '../../lib/UIStateStorage'
+import { getShowStyleBaseLink, getStudioLink } from './util'
+import { doModalDialog } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../lib/userAction'
-import { ActiveProgressBar } from './ActiveProgressBar'
+import { MeteorCall } from '../../../lib/api/methods'
+import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { UIStateStorage } from '../../lib/UIStateStorage'
 
-export interface RundownPlaylistUi extends RundownPlaylist {
-	rundownStatus: string
-	rundownAirStatus: string
-	unsyncedRundowns: Rundown[]
-	studioName: string
-	showStyles: Array<{ id: ShowStyleBaseId; baseName?: string; variantName?: string }>
+export interface IRundownListItemProps {
+	rundown: Rundown
+	viewLinks: JSX.Element | null
 }
 
-interface IRundownListItemProps {
-	key: string
-	rundownPlaylist: RundownPlaylistUi
-	rundownLayouts: Array<RundownLayoutBase>
-}
+export const RundownListItem = withTranslation()(
+	class RundownListItem extends React.Component<Translated<IRundownListItemProps>> {
+		studio: Studio
+		showStyle: ShowStyleBase
 
-interface IRundownListItemState {
-	selectedView: string
-}
+		constructor(props: Translated<IRundownListItemProps>) {
+			super(props)
 
-export class RundownListItem extends React.Component<Translated<IRundownListItemProps>, IRundownListItemState> {
-	constructor(props) {
-		super(props)
+			this.studio = this.props.rundown.getStudio()
+			this.showStyle = this.props.rundown.getShowStyleBase()
 
-		this.state = {
-			selectedView: UIStateStorage.getItemString(
-				`rundownList.${this.props.rundownPlaylist.studioId}`,
-				'defaultView',
-				'default'
-			),
-		}
-	}
-
-	private getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId) {
-		// double encoding so that "/" are handled correctly
-		return '/rundown/' + encodeURIComponent(encodeURIComponent(unprotectString(rundownPlaylistId)))
-	}
-	private getStudioLink(studioId: StudioId) {
-		// double encoding so that "/" are handled correctly
-		return '/settings/studio/' + encodeURIComponent(encodeURIComponent(unprotectString(studioId)))
-	}
-	private getShowStyleBaseLink(showStyleBaseId: ShowStyleBaseId) {
-		// double encoding so that "/" are handled correctly
-		return '/settings/showStyleBase/' + encodeURIComponent(encodeURIComponent(unprotectString(showStyleBaseId)))
-	}
-	private getShelfLink(rundownId, layoutId) {
-		// double encoding so that "/" are handled correctly
-		return (
-			'/rundown/' +
-			encodeURIComponent(encodeURIComponent(rundownId)) +
-			'/shelf/?layout=' +
-			encodeURIComponent(encodeURIComponent(layoutId))
-		)
-	}
-	private getRundownWithLayoutLink(rundownId, layoutId) {
-		// double encoding so that "/" are handled correctly
-		return (
-			'/rundown/' +
-			encodeURIComponent(encodeURIComponent(rundownId)) +
-			'?layout=' +
-			encodeURIComponent(encodeURIComponent(layoutId))
-		)
-	}
-
-	private confirmDeleteRundownPlaylist(rundownPlaylist: RundownPlaylist) {
-		const { t } = this.props
-
-		doModalDialog({
-			title: t('Delete this RundownPlaylist?'),
-			yes: t('Delete'),
-			no: t('Cancel'),
-			onAccept: (e) => {
-				doUserAction(t, e, UserAction.REMOVE_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.removeRundownPlaylist(e, rundownPlaylist._id)
-				)
-			},
-			message:
-				t('Are you sure you want to delete the "{{name}}" RundownPlaylist?', { name: rundownPlaylist.name }) +
-				'\n' +
-				t('Please note: This action is irreversible!'),
-		})
-	}
-
-	private confirmReSyncRundownPlaylist(rundownPlaylist: RundownPlaylist) {
-		const { t } = this.props
-		doModalDialog({
-			title: t('Re-Sync this rundownPlaylist?'),
-			yes: t('Re-Sync'),
-			no: t('Cancel'),
-			onAccept: (e) => {
-				doUserAction(t, e, UserAction.RESYNC_RUNDOWN_PLAYLIST, (e) =>
-					MeteorCall.userAction.resyncRundownPlaylist(e, rundownPlaylist._id)
-				)
-			},
-			message: t('Are you sure you want to re-sync all rundowns in playlist "{{name}}"?', {
-				name: rundownPlaylist.name,
-			}),
-		})
-	}
-
-	private saveViewChoice(key: string) {
-		UIStateStorage.setItem(`rundownList.${this.props.rundownPlaylist.studioId}`, 'defaultView', key)
-	}
-
-	private renderViewLinkItem(layout: RundownLayoutBase, link: string, key: string) {
-		return (
-			<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
-				<div className="action-btn expco-item">
-					<div
-						className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
-						style={{ color: layout.iconColor || 'transparent' }}>
-						<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
-					</div>
-					<span className="expco-text">{layout.name}</span>
-				</div>
-			</Link>
-		)
-	}
-
-	private renderViewLinks() {
-		const { t, rundownPlaylist } = this.props
-
-		const standaloneLayouts: JSX.Element[] = []
-		const shelfLayouts: JSX.Element[] = []
-
-		for (const layout of this.props.rundownLayouts) {
-			if (!rundownPlaylist.showStyles.some((s) => s.id === layout.showStyleBaseId)) {
-				continue
-			}
-
-			if (layout.exposeAsStandalone) {
-				standaloneLayouts.push(
-					this.renderViewLinkItem(layout, this.getShelfLink(rundownPlaylist._id, layout._id), `standalone${layout._id}`)
-				)
-			}
-
-			if (layout.exposeAsShelf) {
-				shelfLayouts.push(
-					this.renderViewLinkItem(
-						layout,
-						this.getRundownWithLayoutLink(rundownPlaylist._id, layout._id),
-						`shelf${layout._id}`
-					)
-				)
+			this.state = {
+				selectedView: UIStateStorage.getItemString(`rundownList.${this.studio._id}`, 'defaultView', 'default'),
 			}
 		}
 
-		const allElements = [
-			<div className="expco-header" key={`${rundownPlaylist._id}layoutsheader2`}>
-				{t('Standalone Shelf')}
-			</div>,
-			...standaloneLayouts,
-			<div className="expco-header" key={`${rundownPlaylist._id}layoutsheader1`}>
-				{t('Timeline views')}
-			</div>,
-			...shelfLayouts,
-			<Link
-				to={this.getRundownPlaylistLink(rundownPlaylist._id)}
-				onClick={() => this.saveViewChoice('default')}
-				key={'default'}>
-				<div className="action-btn expco-item">{t('Default')}</div>
-			</Link>,
-		]
+		render() {
+			const { t, rundown, viewLinks } = this.props
+			const userCanConfigure = getAllowConfigure()
 
-		return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
-			<React.Fragment>
-				<SplitDropdown selectedKey={this.state.selectedView}>{allElements}</SplitDropdown>
-			</React.Fragment>
-		) : null
-	}
-
-	render() {
-		const { t, rundownPlaylist } = this.props
-		const labelFirstShowStyle = `${rundownPlaylist.showStyles[0].baseName} - ${rundownPlaylist.showStyles[0].variantName}`
-		const userCanConfigure = getAllowConfigure()
-
-		return (
-			<React.Fragment>
-				<tr className="rundown-list-item">
-					<th className="rundown-list-item__name">
-						{rundownPlaylist.active ? (
-							<Tooltip overlay={t('This rundown is currently active')} visible={getHelpMode()} placement="bottom">
-								<div className="origo-pulse small right mrs">
-									<div className="pulse-marker">
-										<div className="pulse-rays"></div>
-										<div className="pulse-rays delay"></div>
-									</div>
-								</div>
-							</Tooltip>
-						) : null}
-						<Link to={this.getRundownPlaylistLink(rundownPlaylist._id)}>{rundownPlaylist.name}</Link>
-					</th>
-					<td className="rundown-list-item__studio">
-						{userCanConfigure ? (
-							<Link to={this.getStudioLink(rundownPlaylist.studioId)}>{rundownPlaylist.studioName}</Link>
-						) : (
-							rundownPlaylist.studioName
-						)}
-					</td>
-					<td className="rundown-list-item__showStyle">
-						{userCanConfigure ? (
-							rundownPlaylist.showStyles.length === 1 ? (
-								<Link to={this.getShowStyleBaseLink(rundownPlaylist.showStyles[0].id)}>{labelFirstShowStyle}</Link>
+			return (
+				<React.Fragment>
+					<tr className="rundown-list-item">
+						<th className="rundown-list-item__name">{rundown.name}</th>
+						<td className="rundown-list-item__studio">
+							{userCanConfigure ? (
+								<Link to={getStudioLink(rundown.studioId)}>{this.studio.name}</Link>
 							) : (
-								t('Multiple ({{count}})', { count: rundownPlaylist.showStyles.length })
-							)
-						) : rundownPlaylist.showStyles.length === 1 ? (
-							labelFirstShowStyle
-						) : (
-							t('Multiple ({{count}})', { count: rundownPlaylist.showStyles.length })
-						)}
-					</td>
-					<td className="rundown-list-item__created">
-						<MomentFromNow>{rundownPlaylist.created}</MomentFromNow>
-					</td>
-					<td className="rundown-list-item__airTime">
-						{rundownPlaylist.expectedStart && (
-							<Moment format="YYYY/MM/DD HH:mm:ss">{rundownPlaylist.expectedStart}</Moment>
-						)}
-					</td>
-					<td className="rundown-list-item__duration">
-						{rundownPlaylist.expectedDuration &&
-							RundownUtils.formatDiffToTimecode(rundownPlaylist.expectedDuration, false, false, true, false, true)}
-					</td>
-					<td className="rundown-list-item__status">{rundownPlaylist.rundownStatus}</td>
-					<td className="rundown-list-item__air-status">{rundownPlaylist.rundownAirStatus}</td>
-					<td className="rundown-list-item__views">{this.renderViewLinks()}</td>
-					<td className="rundown-list-item__actions">
-						{rundownPlaylist.unsyncedRundowns.length > 0 || getAllowConfigure() || getAllowService() ? (
-							<Tooltip overlay={t('Delete')} placement="top">
-								<button className="action-btn" onClick={() => this.confirmDeleteRundownPlaylist(rundownPlaylist)}>
-									<FontAwesomeIcon icon={faTrash} />
-								</button>
-							</Tooltip>
-						) : null}
-						{rundownPlaylist.unsyncedRundowns.length > 0 ? (
-							<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
-								<button className="action-btn" onClick={() => this.confirmReSyncRundownPlaylist(rundownPlaylist)}>
-									<FontAwesomeIcon icon={faSync} />
-								</button>
-							</Tooltip>
-						) : null}
-					</td>
-				</tr>
-				{rundownPlaylist.startedPlayback !== undefined &&
-					rundownPlaylist.expectedDuration !== undefined &&
-					rundownPlaylist.active && (
-						<tr className="hl expando-addon">
-							<td colSpan={10}>
-								<ActiveProgressBar rundownPlaylist={rundownPlaylist} />
-							</td>
-						</tr>
-					)}
-			</React.Fragment>
-		)
+								this.studio.name
+							)}
+						</td>
+						<td className="rundown-list-item__showStyle">
+							{userCanConfigure ? (
+								<Link to={getShowStyleBaseLink(rundown.showStyleBaseId)}>{this.showStyle.name}</Link>
+							) : (
+								this.showStyle.name
+							)}
+						</td>
+						<td className="rundown-list-item__created">
+							<MomentFromNow>{rundown.created}</MomentFromNow>
+						</td>
+						<td className="rundown-list-item__airTime">
+							{rundown.expectedStart && <Moment format="YYYY/MM/DD HH:mm:ss">{rundown.expectedStart}</Moment>}
+						</td>
+						<td className="rundown-list-item__duration">
+							{rundown.expectedDuration &&
+								RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, false, true, false, true)}
+						</td>
+						<td className="rundown-list-item__status">{rundown.status}</td>
+						<td className="rundown-list-item__air-status">{rundown.airStatus}</td>
+						<td className="rundown-list-item__views">{viewLinks}</td>
+						<td className="rundown-list-item__actions">
+							{rundown.unsynced || getAllowConfigure() || getAllowService() ? (
+								<Tooltip overlay={t('Delete')} placement="top">
+									<button className="action-btn" onClick={() => this.confirmDeleteRundown(rundown)}>
+										<FontAwesomeIcon icon={faTrash} />
+									</button>
+								</Tooltip>
+							) : null}
+							{rundown.unsynced ? (
+								<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
+									<button className="action-btn" onClick={() => this.confirmReSyncRundown(rundown)}>
+										<FontAwesomeIcon icon={faSync} />
+									</button>
+								</Tooltip>
+							) : null}
+						</td>
+					</tr>
+				</React.Fragment>
+			)
+		}
+
+		private confirmDeleteRundown(rundown: Rundown) {
+			const { t } = this.props
+
+			doModalDialog({
+				title: t('Delete rundown?'),
+				yes: t('Delete'),
+				no: t('Cancel'),
+				onAccept: (e) => {
+					doUserAction(t, e, UserAction.REMOVE_RUNDOWN, (e) => MeteorCall.userAction.removeRundown(e, rundown._id))
+				},
+				message:
+					t('Are you sure you want to delete the "{{name}}" rundown?', { name: rundown.name }) +
+					'\n' +
+					t('Please note: This action is irreversible!'),
+			})
+		}
+
+		private confirmReSyncRundown(rundown: Rundown): void {
+			const { t } = this.props
+
+			doModalDialog({
+				title: t('Re-Sync rundown?'),
+				yes: t('Re-Sync'),
+				no: t('Cancel'),
+				onAccept: (e) => {
+					doUserAction(t, e, UserAction.RESYNC_RUNDOWN, (e) => MeteorCall.userAction.resyncRundown(e, rundown._id))
+				},
+				message: t('Are you sure you want to re-sync the "{{name}}" rundown?', {
+					name: rundown.name,
+				}),
+			})
+		}
 	}
-}
+)
