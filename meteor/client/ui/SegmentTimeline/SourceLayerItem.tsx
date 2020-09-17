@@ -320,15 +320,8 @@ export const SourceLayerItem = withTranslation()(
 
 			const expectedDurationNumber =
 				typeof innerPiece.enable.duration === 'number' ? innerPiece.enable.duration || 0 : 0
-			const userDurationNumber =
-				piece.instance.userDuration &&
-				typeof piece.instance.userDuration.end === 'number' &&
-				innerPiece.startedPlayback &&
-				innerPiece.stoppedPlayback
-					? innerPiece.stoppedPlayback - innerPiece.startedPlayback
-					: 0
 			let itemDuration = Math.min(
-				userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0,
+				piece.renderedDuration || expectedDurationNumber || 0,
 				this.props.partDuration - (piece.renderedInPoint || 0)
 			)
 
@@ -338,7 +331,8 @@ export const SourceLayerItem = withTranslation()(
 						innerPiece.enable.duration === undefined &&
 						piece.instance.userDuration?.end === undefined)) &&
 				!piece.cropped &&
-				piece.renderedDuration === null
+				piece.renderedDuration === null &&
+				piece.instance.userDuration === undefined
 			) {
 				itemDuration = this.props.partDuration - (piece.renderedInPoint || 0)
 			}

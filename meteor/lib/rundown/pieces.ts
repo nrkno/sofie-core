@@ -14,7 +14,7 @@ import { clone } from 'underscore'
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<
 		DeepReadonly<PieceInstanceWithTimings>,
-		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority'
+		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'userDuration'
 	>,
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
@@ -43,6 +43,11 @@ export function createPieceGroupAndCap(
 			pieceId: pieceInstance._id,
 		},
 	})
+
+	// if there is an userDuration override, override it on the timeline
+	if (pieceInstance.userDuration) {
+		pieceGroup.enable.end = pieceInstance.userDuration.end
+	}
 
 	const capObjs: TimelineObjRundown[] = []
 
