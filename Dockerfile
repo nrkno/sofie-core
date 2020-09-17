@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
 FROM node:12.18.3
-RUN curl "https://install.meteor.com/?release=1.11.0" | sh
+RUN curl "https://install.meteor.com/?release=1.11" | sh
 COPY meteor /opt/core/meteor
 WORKDIR /opt/core/meteor
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
