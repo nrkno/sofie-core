@@ -469,7 +469,7 @@ function buildTimelineObjsForRundown(
 		const partLastStarted = partInstancesInfo.current.partInstance.part.getLastStartedPlayback()
 		const [currentInfinitePieces, currentNormalItems] = _.partition(
 			partInstancesInfo.current.pieceInstances,
-			(l) => !!l.infinite && l.piece.lifespan !== PieceLifespan.WithinPart
+			(l) => !!(l.infinite && (l.piece.lifespan !== PieceLifespan.WithinPart || l.infinite.fromHold))
 		)
 		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 

@@ -36,9 +36,6 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	startedPlayback?: number
 	/** Playout timings, in here we log times when playout happens */
 	timings?: PartTimings
-
-	isTransition?: boolean
-	extendOnHold?: boolean
 }
 
 /** A Single item in a Part: script, VT, cameras */
