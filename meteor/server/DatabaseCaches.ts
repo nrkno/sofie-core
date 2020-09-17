@@ -86,6 +86,7 @@ export class Cache {
 		for (let i = 0; i < this._deferredFunctions.length; i++) {
 			this._deferredFunctions[i](this)
 		}
+		this._deferredFunctions.length = 0 // clear the array
 
 		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
 		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
@@ -121,6 +122,7 @@ export class Cache {
 		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
 			this._deferredAfterSaveFunctions[i]()
 		}
+		this._deferredAfterSaveFunctions.length = 0 // clear the array
 
 		if (span) span.end()
 	}
