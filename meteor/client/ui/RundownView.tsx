@@ -1324,6 +1324,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		allParts = playlist
 			.getAllOrderedParts(undefined, {
 				fields: {
+					segmentId: 1,
 					_rank: 1,
 				},
 			})
