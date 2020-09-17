@@ -279,7 +279,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						'keyup',
 						this.props.hotkeyGroup
 					)
-					this.usedHotkeys.push(item.hotkey, this.props.hotkeyGroup)
+					this.usedHotkeys.push(item.hotkey)
 
 					const sourceLayer = this.props.sourceLayerLookup[item.sourceLayerId]
 					if (sourceLayer && sourceLayer.isQueueable) {

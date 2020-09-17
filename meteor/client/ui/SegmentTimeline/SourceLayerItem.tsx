@@ -321,8 +321,11 @@ export const SourceLayerItem = withTranslation()(
 			const expectedDurationNumber =
 				typeof innerPiece.enable.duration === 'number' ? innerPiece.enable.duration || 0 : 0
 			const userDurationNumber =
-				piece.instance.userDuration && typeof piece.instance.userDuration.end === 'number' && innerPiece.startedPlayback
-					? piece.instance.userDuration.end - innerPiece.startedPlayback
+				piece.instance.userDuration &&
+				typeof piece.instance.userDuration.end === 'number' &&
+				innerPiece.startedPlayback &&
+				innerPiece.stoppedPlayback
+					? innerPiece.stoppedPlayback - innerPiece.startedPlayback
 					: 0
 			let itemDuration = Math.min(
 				userDurationNumber || piece.renderedDuration || expectedDurationNumber || 0,
@@ -331,7 +334,9 @@ export const SourceLayerItem = withTranslation()(
 
 			if (
 				(innerPiece.lifespan !== PieceLifespan.WithinPart ||
-					(innerPiece.enable.start !== undefined && innerPiece.enable.duration === undefined)) &&
+					(innerPiece.enable.start !== undefined &&
+						innerPiece.enable.duration === undefined &&
+						piece.instance.userDuration?.end === undefined)) &&
 				!piece.cropped &&
 				piece.renderedDuration === null
 			) {
