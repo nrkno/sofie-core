@@ -1043,7 +1043,7 @@ const HotkeyLegendSettings = withTranslation()(
 			const mappedKeys = this.props.showStyleBase.hotkeyLegend
 			let ahkCommands: string[] = _.clone(AHKBaseHeader)
 
-			function convertComboToAHK(combo: string) {
+			function convertComboToAHK(combo: string, isPlatform: boolean) {
 				return combo
 					.split(/\s*\+\s*/)
 					.map((key) => {
@@ -1051,7 +1051,8 @@ const HotkeyLegendSettings = withTranslation()(
 						if (AHKModifierMap[lowerCaseKey] !== undefined) {
 							return AHKModifierMap[lowerCaseKey]
 						} else if (AHKKeyboardMap[lowerCaseKey] !== undefined) {
-							return AHKKeyboardMap[lowerCaseKey]
+							const ahkKey = AHKKeyboardMap[lowerCaseKey]
+							return Array.isArray(ahkKey) ? ahkKey[isPlatform ? 0 : 1] : ahkKey
 						} else {
 							return lowerCaseKey
 						}
@@ -1064,8 +1065,8 @@ const HotkeyLegendSettings = withTranslation()(
 					mappedKeys
 						.filter((key) => !!key.platformKey)
 						.map((key) => {
-							const platformKeyCombo = convertComboToAHK(key.platformKey!)
-							const browserKeyCombo = convertComboToAHK(key.key)
+							const platformKeyCombo = convertComboToAHK(key.platformKey!, true)
+							const browserKeyCombo = convertComboToAHK(key.key, false)
 
 							return useAHKComboTemplate({ platformKeyCombo, browserKeyCombo })
 						})
