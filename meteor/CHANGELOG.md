@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.10.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.10.0...v1.10.2-0) (2020-09-18)
+
+
+### Bug Fixes
+
+* block hold if an adlib has already been used in the source part, as the piece we will extend is likely to have been stopped already ([e670430](https://github.com/nrkno/tv-automation-server-core/commit/e670430ac47c920c80feb221332868a3d2aca16c))
+* bug fix in removeRundownFromCache: make sure all data that belong to Rundown is removed ([617a337](https://github.com/nrkno/tv-automation-server-core/commit/617a3371d4eedce103443bea9cdeba2fead94f80))
+* Find lookaheads from next point ([80bc0bb](https://github.com/nrkno/tv-automation-server-core/commit/80bc0bbe66a83dc27bd4bb4d239b93adbb5427cc))
+* include adlib-actions in snapshots ([706f8d6](https://github.com/nrkno/tv-automation-server-core/commit/706f8d6c913d10b8b9f5508168b330bd4ee8f94c))
+* nora preview renderer cross-origin requests ([ea483e7](https://github.com/nrkno/tv-automation-server-core/commit/ea483e7aadb5b559655237b70e356f6e9fa7b85d))
+* snapshot import failing if collection was missing ([3ce0639](https://github.com/nrkno/tv-automation-server-core/commit/3ce063988c9219b38ccf88f69e0db8054e8d9fd1))
+* test more AsRunLog entries and fix incorrect Id being stored for pieceInstanceId in STARTEDPLAYBACK ([#283](https://github.com/nrkno/tv-automation-server-core/issues/283)) ([e6757c1](https://github.com/nrkno/tv-automation-server-core/commit/e6757c196cc036f5fa1a21e21fbc159acf9c7314)), closes [#d8db5b55860efff1235f0fdfe0821bd0c48a01](https://github.com/nrkno/tv-automation-server-core/issues/d8db5b55860efff1235f0fdfe0821bd0c48a01)
+* treat extended for hold pieces as infinites ([a00c750](https://github.com/nrkno/tv-automation-server-core/commit/a00c75054b2296196f700894da9b45c11bfffd40))
+* wrap calls to timelineTriggerTime in a rundownPlaylistSyncFunction to avoid a race condition if it overlaps a playout action ([9cb883c](https://github.com/nrkno/tv-automation-server-core/commit/9cb883cecda6d853044518c6bc1a36cee6bd3a0f))
+
 ### [1.10.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.10.0...v1.10.1) (2020-08-24)
 
 
