@@ -94,7 +94,7 @@
     "react-timer-hoc": "^2.3.0",
     "semver": "^7.3.2",
     "soap": "^0.31.0",
-    "superfly-timeline": "^7.3.1",
+    "superfly-timeline": "^8.1.1",
     "timecode": "0.0.4",
     "tv-automation-sofie-blueprints-integration": "2.2.0-nightly-release24-20200825-111409-bd305bd4.0",
     "underscore": "^1.10.2",
