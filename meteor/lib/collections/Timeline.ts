@@ -155,6 +155,7 @@ export function getRoutedTimeline(
 export interface TimelineComplete {
 	_id: StudioId
 	timeline: Array<TimelineObjGeneric>
+	updated: Time
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
