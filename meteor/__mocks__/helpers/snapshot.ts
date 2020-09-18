@@ -74,9 +74,15 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 			// } else if (isPart(o)) {
 			// } else if (isSegment(o)) {
 			// } else if (isPieceInstance(o)) {
+		} else if (isTimelineComplete(o)) {
+			delete o.updated
 		}
 		return o
 	}
+}
+function isTimelineComplete(o): o is TimelineComplete {
+	const o2 = o as TimelineComplete
+	return !!(o2.timeline && o2._id && o2.updated)
 }
 function isTimelineObj(o): o is TimelineObjGeneric {
 	return o.enable && o._id && o.id && o.studioId

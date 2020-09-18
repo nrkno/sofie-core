@@ -103,6 +103,7 @@ describe('lib/lib', () => {
 		]
 		Timeline.insert({
 			_id: protectString('myStudio'),
+			updated: getCurrentTime(),
 			timeline: mystudioObjs,
 		})
 
@@ -121,6 +122,7 @@ describe('lib/lib', () => {
 		]
 		Timeline.insert({
 			_id: protectString('myStudio2'),
+			updated: getCurrentTime(),
 			timeline: mystudio2Objs,
 		})
 

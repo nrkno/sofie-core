@@ -52,6 +52,16 @@ export function getRandomId<T>(numberOfChars?: number): ProtectedString<T> {
 	return Random.id(numberOfChars) as any
 }
 
+export function applyToArray<T>(arr: T | T[], func: (val: T) => void) {
+	if (Array.isArray(arr)) {
+		for (const val of arr) {
+			func(val)
+		}
+	} else {
+		func(arr)
+	}
+}
+
 /**
  * Convenience method to convert a Meteor.call() into a Promise
  * @param  {string} Method name
