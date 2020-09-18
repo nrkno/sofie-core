@@ -205,6 +205,8 @@ export function afterUpdateTimeline(
 	}
 	statObj._id = getTimelineId(statObj)
 
+	logger.debug(`Updating statObj: objHash: "${objHash}", objCount: ${objCount}`)
+
 	cache.Timeline.upsert(statObj._id, statObj)
 }
 export function getActiveRundownPlaylist(cache: CacheForStudio, studioId: StudioId): RundownPlaylist | undefined {
