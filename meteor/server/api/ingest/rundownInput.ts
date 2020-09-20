@@ -135,10 +135,7 @@ export function rundownPlaylistSyncFunction<T extends Function>(
 	context: string,
 	fcn: T
 ): ReturnType<T> {
-	if (!fcn.name) {
-		Object.defineProperty(fcn, 'name', { value: context })
-	}
-	return syncFunction(fcn, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
+	return syncFunction(fcn, context, `ingest_rundown_${rundownPlaylistId}`, undefined, priority)()
 }
 
 interface SegmentChanges {

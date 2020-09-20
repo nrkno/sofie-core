@@ -176,116 +176,120 @@ export namespace ServerPeripheralDeviceAPI {
 	 * Called from Playout-gateway when the trigger-time of a timeline object has updated
 	 * ( typically when using the "now"-feature )
 	 */
-	export const timelineTriggerTime = syncFunction(function timelineTriggerTime(
-		context: MethodContext,
-		deviceId: PeripheralDeviceId,
-		token: string,
-		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
-	) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	export const timelineTriggerTime = syncFunction(
+		function timelineTriggerTime(
+			context: MethodContext,
+			deviceId: PeripheralDeviceId,
+			token: string,
+			results: PeripheralDeviceAPI.TimelineTriggerTimeResult
+		) {
+			const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		if (!peripheralDevice.studioId)
-			throw new Meteor.Error(401, `peripheralDevice "${deviceId}" not attached to a studio`)
+			if (!peripheralDevice.studioId)
+				throw new Meteor.Error(401, `peripheralDevice "${deviceId}" not attached to a studio`)
 
-		const studioId = peripheralDevice.studioId
+			const studioId = peripheralDevice.studioId
 
-		// check(r.time, Number)
-		check(results, Array)
-		_.each(results, (o) => {
-			check(o.id, String)
-			check(o.time, Number)
-		})
-
-		if (results.length > 0) {
-			const activePlaylist = RundownPlaylists.findOne({
-				studioId: studioId,
-				active: true,
-			})
-			// TODO - This cache usage NEEDS to be inside a rundownPlaylistSyncFunction. otherwise the cache.saveAllToDatabase() could fight with another
-			const cache = activePlaylist
-				? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
-				: waitForPromise(initCacheForNoRundownPlaylist(studioId))
-
-			let lastTakeTime: number | undefined
-
+			// check(r.time, Number)
+			check(results, Array)
 			_.each(results, (o) => {
 				check(o.id, String)
+				check(o.time, Number)
+			})
 
-				// check(o.time, Number)
-				logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
-
-				const id = getTimelineId(studioId, o.id)
-				const obj = cache.Timeline.findOne({
-					_id: id,
+			if (results.length > 0) {
+				const activePlaylist = RundownPlaylists.findOne({
 					studioId: studioId,
+					active: true,
 				})
-				if (obj) {
-					cache.Timeline.update(
-						{
-							_id: id,
-							studioId: studioId,
-						},
-						{
-							$set: {
-								'enable.start': o.time,
-								'enable.setFromNow': true,
+				// TODO - This cache usage NEEDS to be inside a rundownPlaylistSyncFunction. otherwise the cache.saveAllToDatabase() could fight with another
+				const cache = activePlaylist
+					? waitForPromise(initCacheForRundownPlaylist(activePlaylist))
+					: waitForPromise(initCacheForNoRundownPlaylist(studioId))
+
+				let lastTakeTime: number | undefined
+
+				_.each(results, (o) => {
+					check(o.id, String)
+
+					// check(o.time, Number)
+					logger.info('Timeline: Setting time: "' + o.id + '": ' + o.time)
+
+					const id = getTimelineId(studioId, o.id)
+					const obj = cache.Timeline.findOne({
+						_id: id,
+						studioId: studioId,
+					})
+					if (obj) {
+						cache.Timeline.update(
+							{
+								_id: id,
+								studioId: studioId,
 							},
-						}
-					)
-
-					obj.enable.start = o.time
-					obj.enable.setFromNow = true
-
-					if (obj.metaData?.pieceId) {
-						logger.debug('Update PieceInstance: ', {
-							pieceId: obj.metaData.pieceId,
-							time: new Date(o.time).toTimeString(),
-						})
-
-						const pieceInstance = cache.PieceInstances.findOne(obj.metaData.pieceId)
-						if (pieceInstance) {
-							cache.PieceInstances.update(pieceInstance._id, {
+							{
 								$set: {
-									'piece.enable.start': o.time,
+									'enable.start': o.time,
+									'enable.setFromNow': true,
 								},
+							}
+						)
+
+						obj.enable.start = o.time
+						obj.enable.setFromNow = true
+
+						if (obj.metaData?.pieceId) {
+							logger.debug('Update PieceInstance: ', {
+								pieceId: obj.metaData.pieceId,
+								time: new Date(o.time).toTimeString(),
 							})
 
-							const takeTime = pieceInstance.dynamicallyInserted
-							if (pieceInstance.dynamicallyInserted && takeTime) {
-								lastTakeTime = lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+							const pieceInstance = cache.PieceInstances.findOne(obj.metaData.pieceId)
+							if (pieceInstance) {
+								cache.PieceInstances.update(pieceInstance._id, {
+									$set: {
+										'piece.enable.start': o.time,
+									},
+								})
+
+								const takeTime = pieceInstance.dynamicallyInserted
+								if (pieceInstance.dynamicallyInserted && takeTime) {
+									lastTakeTime =
+										lastTakeTime === undefined ? takeTime : Math.max(lastTakeTime, takeTime)
+								}
 							}
 						}
 					}
-				}
-			})
-
-			if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId) {
-				// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
-				const remainingNowPieces = cache.PieceInstances.findFetch({
-					partInstanceId: activePlaylist.currentPartInstanceId,
-					dynamicallyInserted: { $exists: true },
-					disabled: { $ne: true },
 				})
-				for (const piece of remainingNowPieces) {
-					const pieceTakeTime = piece.dynamicallyInserted
-					if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-						// Disable and hide the instance
-						cache.PieceInstances.update(piece._id, {
-							$set: {
-								disabled: true,
-								hidden: true,
-							},
-						})
+
+				if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId) {
+					// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
+					const remainingNowPieces = cache.PieceInstances.findFetch({
+						partInstanceId: activePlaylist.currentPartInstanceId,
+						dynamicallyInserted: { $exists: true },
+						disabled: { $ne: true },
+					})
+					for (const piece of remainingNowPieces) {
+						const pieceTakeTime = piece.dynamicallyInserted
+						if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
+							// Disable and hide the instance
+							cache.PieceInstances.update(piece._id, {
+								$set: {
+									disabled: true,
+									hidden: true,
+								},
+							})
+						}
 					}
 				}
-			}
 
-			// After we've updated the timeline, we must call afterUpdateTimeline!
-			afterUpdateTimeline(cache, studioId)
-			waitForPromise(cache.saveAllToDatabase())
-		}
-	},
-	'timelineTriggerTime$1')
+				// After we've updated the timeline, we must call afterUpdateTimeline!
+				afterUpdateTimeline(cache, studioId)
+				waitForPromise(cache.saveAllToDatabase())
+			}
+		},
+		'timelineTriggerTime',
+		'timelineTriggerTime$1'
+	)
 
 	export function partPlaybackStarted(
 		context: MethodContext,

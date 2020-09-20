@@ -84,48 +84,48 @@ function checkAccessAndGetRundown(context: MethodContext, rundownId: RundownId):
 }
 
 // TODO - these use the rundownSyncFunction earlier, to ensure there arent differences when we get to the syncFunction?
-export const take = syncFunction(function take(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
-): ClientAPI.ClientResponse<void> {
-	// Called by the user. Wont throw as nasty errors
-	const now = getCurrentTime()
+export const take = syncFunction(
+	function take(context: MethodContext, rundownPlaylistId: RundownPlaylistId): ClientAPI.ClientResponse<void> {
+		// Called by the user. Wont throw as nasty errors
+		const now = getCurrentTime()
 
-	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
+		let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
 
-	if (!playlist.active) {
-		return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
-	}
-	if (!playlist.nextPartInstanceId) {
-		return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
-	}
-	if (playlist.currentPartInstanceId) {
-		const currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId)
-		if (currentPartInstance && currentPartInstance.part.timings) {
-			const lastStartedPlayback = _.last(currentPartInstance.part.timings.startedPlayback || []) || 0
-			const lastTake = _.last(currentPartInstance.part.timings.take || []) || 0
-			const lastChange = Math.max(lastTake, lastStartedPlayback)
-			if (now - lastChange < MINIMUM_TAKE_SPAN) {
-				logger.debug(
-					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${
-						currentPartInstance._id
-					}: ${getCurrentTime() - lastStartedPlayback}`
-				)
-				logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
-				return ClientAPI.responseError(
-					`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`
+		if (!playlist.active) {
+			return ClientAPI.responseError(`Rundown is not active, please activate the rundown before doing a TAKE.`)
+		}
+		if (!playlist.nextPartInstanceId) {
+			return ClientAPI.responseError('No Next point found, please set a part as Next before doing a TAKE.')
+		}
+		if (playlist.currentPartInstanceId) {
+			const currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId)
+			if (currentPartInstance && currentPartInstance.part.timings) {
+				const lastStartedPlayback = _.last(currentPartInstance.part.timings.startedPlayback || []) || 0
+				const lastTake = _.last(currentPartInstance.part.timings.take || []) || 0
+				const lastChange = Math.max(lastTake, lastStartedPlayback)
+				if (now - lastChange < MINIMUM_TAKE_SPAN) {
+					logger.debug(
+						`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${
+							currentPartInstance._id
+						}: ${getCurrentTime() - lastStartedPlayback}`
+					)
+					logger.debug(`lastStartedPlayback: ${lastStartedPlayback}, getCurrentTime(): ${getCurrentTime()}`)
+					return ClientAPI.responseError(
+						`Ignoring TAKES that are too quick after eachother (${MINIMUM_TAKE_SPAN} ms)`
+					)
+				}
+			} else {
+				// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
+				logger.error(
+					`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${rundownPlaylistId}", not found!`
 				)
 			}
-		} else {
-			// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
-			logger.error(
-				`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${rundownPlaylistId}", not found!`
-			)
 		}
-	}
-	return ServerPlayoutAPI.takeNextPart(context, playlist._id)
-},
-'userActionsTake$0')
+		return ServerPlayoutAPI.takeNextPart(context, playlist._id)
+	},
+	'take',
+	'userActionsTake$0'
+)
 
 export function setNext(
 	context: MethodContext,
