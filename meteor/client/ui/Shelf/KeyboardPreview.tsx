@@ -414,7 +414,7 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 			const functionBlock = keys.slice(5, 6)
 			const controlPad = keys.slice(6, 8)
 			const arrowPad = keys.slice(8, 10)
-			const numPad = keys.slice(11, 15)
+			const numPad = keys.slice(10, 15)
 
 			const knownModifiers = [
 				GenericFuncionalKeyLabels.AltLeft,

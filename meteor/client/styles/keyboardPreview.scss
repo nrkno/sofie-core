@@ -123,6 +123,14 @@
 		);
 		left: 52em;
 	}
+
+	.keyboard-preview__num-pad {
+		position: absolute;
+		top: calc(
+			var(--keyboard-preview-height) + var(--keyboard-preview-key-margin) + var(--keyboard-preview-section-margin)
+		);
+		left: 65em;
+	}
 }
 
 .dashboard > .adlib-panel--keyboard-preview {
