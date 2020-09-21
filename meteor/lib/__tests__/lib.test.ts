@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber } from '../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
 import { setLoggerLevel } from '../../server/api/logger'
 import {
 	getHash,
@@ -31,6 +31,8 @@ import {
 	mongoFindOptions,
 	ProtectedString,
 	SaveIntoDbOptions,
+	equalSets,
+	equivalentArrays,
 } from '../lib'
 import { Timeline, TimelineObjType, TimelineObjGeneric, TimelineComplete } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
@@ -76,49 +78,47 @@ describe('lib/lib', () => {
 	testInFiber('saveIntoDb', () => {
 		const mystudioObjs: Array<TimelineObjGeneric> = [
 			{
-				_id: protectString('abc'),
 				id: 'abc',
 				enable: {
 					start: 0,
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio'),
+				objectType: TimelineObjType.RUNDOWN,
 				classes: ['abc'], // to be removed
 			},
 			{
-				_id: protectString('abc2'),
 				id: 'abc2',
 				enable: {
 					start: 0,
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio'),
+				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
 		Timeline.insert({
 			_id: protectString('myStudio'),
+			timelineHash: protectString('abc'),
+			generated: 1234,
 			timeline: mystudioObjs,
 		})
 
 		const mystudio2Objs: Array<TimelineObjGeneric> = [
 			{
-				_id: protectString('abc10'),
 				id: 'abc10',
 				enable: {
 					start: 0,
 				},
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
-				objectType: TimelineObjType.MANUAL,
-				studioId: protectString('myStudio2'),
+				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
 		Timeline.insert({
 			_id: protectString('myStudio2'),
+			timelineHash: protectString('abc'),
+			generated: 1234,
 			timeline: mystudio2Objs,
 		})
 
@@ -151,27 +151,23 @@ describe('lib/lib', () => {
 					_id: protectString('myStudio'),
 					timeline: [
 						{
-							_id: protectString('abc'),
 							id: 'abc',
 							enable: {
 								start: 0,
 							},
 							layer: 'L2', // changed property
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							objectType: TimelineObjType.MANUAL,
 							studioId: protectString('myStudio'),
 						},
 						{
 							// insert object
-							_id: protectString('abc3'),
 							id: 'abc3',
 							enable: {
 								start: 0,
 							},
 							layer: 'L1',
 							content: { deviceType: TSR.DeviceType.ABSTRACT },
-							objectType: TimelineObjType.MANUAL,
-							studioId: protectString('myStudio'),
+							objectType: TimelineObjType.RUNDOWN,
 						}, // remove abc2
 					],
 				},
@@ -257,26 +253,22 @@ describe('lib/lib', () => {
 	})
 	testInFiber('literal', () => {
 		const obj = literal<TimelineObjGeneric>({
-			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
 				start: 0,
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
+			objectType: TimelineObjType.RUNDOWN,
 		})
 		expect(obj).toEqual({
-			_id: protectString('abc'),
 			id: 'abc',
 			enable: {
 				start: 0,
 			},
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
+			objectType: TimelineObjType.RUNDOWN,
 		})
 		const layer: string | number = obj.layer // just to check typings
 		expect(layer).toBeTruthy()
@@ -719,5 +711,13 @@ describe('lib/lib', () => {
 				},
 			])
 		})
+	})
+	testInFiber('equalSets', () => {
+		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['c', 'b', 'a']))).toBe(true)
+		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['d', 'b', 'a']))).toBe(false)
+	})
+	testInFiber('equivalentArrays', () => {
+		expect(equivalentArrays(['a', 'b', 'c'], ['c', 'a', 'b'])).toBe(true)
+		expect(equivalentArrays(['a', 'b', 'c'], ['b', 'g', 'a'])).toBe(false)
 	})
 })

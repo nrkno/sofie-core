@@ -1,10 +1,10 @@
 import { Time, literal, protectString } from '../../../lib/lib'
 import { RundownImportVersions, RundownHoldState, DBRundown } from '../../../lib/collections/Rundowns'
 import { RundownNote } from '../../../lib/api/notes'
-import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
+import { TimelinePersistentState, TSR } from 'tv-automation-sofie-blueprints-integration'
 import { DBRundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { StudioId, MappingsExt, ITestToolsConfig, IStudioSettings } from '../../../lib/collections/Studios'
+import { StudioId, MappingsExt, IStudioSettings } from '../../../lib/collections/Studios'
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
 import { PartId } from '../../../lib/collections/Parts'
@@ -13,6 +13,17 @@ import { BlueprintId } from '../../../lib/collections/Blueprints'
 export interface IConfigItem {
 	_id: string
 	value: any
+}
+
+export interface ITestToolsConfig {
+	recordings: {
+		deviceId?: string
+		channelIndex?: number
+		channelFormat: TSR.ChannelFormat
+		decklinkDevice?: number
+		filePrefix?: string
+		urlPrefix?: string
+	}
 }
 
 export interface Studio {

@@ -43,7 +43,12 @@ import { literal, extendMandadory, normalizeArray, unprotectString, protectStrin
 import { RundownAPI } from '../../../lib/api/rundown'
 import { Piece, PieceGeneric } from '../../../lib/collections/Pieces'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import {
+	PartInstance,
+	PartInstances,
+	PartInstanceId,
+	findPartInstanceOrWrapToTemporary,
+} from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibActionCommon, AdLibAction } from '../../../lib/collections/AdLibActions'
@@ -93,7 +98,7 @@ export function matchFilter(
 		if (
 			filter.currentSegment === true &&
 			item.partId &&
-			((liveSegment && liveSegment.parts.find((i) => item.partId === i._id) === undefined) || !liveSegment)
+			((liveSegment && liveSegment.parts.find((i) => item.partId === i.part._id) === undefined) || !liveSegment)
 		) {
 			return false
 		}
@@ -276,7 +281,7 @@ const AdLibListView = withTranslation()(
 									next: segment.isNext && !segment.isLive,
 									past:
 										segment.parts.reduce((memo, item) => {
-											return item.startedPlayback && item.duration ? memo : false
+											return item.timings?.startedPlayback && item.timings?.duration ? memo : false
 										}, true) === true,
 								}
 							)}>
@@ -429,7 +434,7 @@ export interface AdLibPieceUi extends AdLibPiece {
 
 export interface AdlibSegmentUi extends DBSegment {
 	/** Pieces belonging to this part */
-	parts: Array<Part>
+	parts: Array<PartInstance>
 	pieces: Array<AdLibPieceUi>
 	isLive: boolean
 	isNext: boolean
@@ -485,10 +490,9 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
 	const segments = props.playlist.getSegments()
-	const { currentPartInstance, nextPartInstance } = props.playlist.getSelectedPartInstances()
 
 	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
-		(currentPartId: PartId, nextPartId: PartId, segments: Segment[]) => {
+		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 
@@ -518,6 +522,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 				return segmentUi
 			})
 
+			const partInstances = props.playlist.getActivePartInstancesMap()
+
 			props.playlist
 				.getUnorderedParts({
 					segmentId: {
@@ -527,15 +533,16 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 				.forEach((part) => {
 					const segment = uiSegmentMap.get(part.segmentId)
 					if (segment) {
-						segment.parts.push(part)
+						const partInstance = findPartInstanceOrWrapToTemporary(partInstances, part)
+						segment.parts.push(partInstance)
 
 						uiPartSegmentMap.set(part._id, segment)
 
-						if (part._id === currentPartId) {
+						if (partInstance._id === currentPartInstanceId) {
 							segment.isLive = true
 							liveSegment = segment
 						}
-						if (part._id === nextPartId) {
+						if (partInstance._id === nextPartInstanceId) {
 							segment.isNext = true
 						}
 					}
@@ -543,7 +550,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 
 			uiSegmentMap.forEach((segment) => {
 				// Sort parts by rank
-				segment.parts = _.sortBy(segment.parts, (p) => p._rank)
+				segment.parts = _.sortBy(segment.parts, (p) => p.part._rank)
 			})
 
 			return {
@@ -553,8 +560,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 			}
 		},
 		'uiSegments',
-		currentPartInstance ? currentPartInstance.part._id : undefined,
-		nextPartInstance ? nextPartInstance.part._id : undefined,
+		props.playlist.currentPartInstanceId,
+		props.playlist.nextPartInstanceId,
 		segments
 	)
 
@@ -586,7 +593,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 		})
 
 	const adlibActions = memoizedIsolatedAutorun(
-		(rundownIds, partIds) =>
+		(rundownIds: RundownId[], partIds: PartId[]) =>
 			AdLibActions.find(
 				{
 					rundownId: {
@@ -736,7 +743,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 					)
 
 					const globalAdLibActions = memoizedIsolatedAutorun(
-						(rundownIds, partIds) =>
+						(rundownIds: RundownId[]) =>
 							RundownBaselineAdLibActions.find(
 								{
 									rundownId: {
@@ -782,8 +789,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 									})
 								}),
 						'globalAdLibActions',
-						rundownIds,
-						partIds
+						rundownIds
 					)
 
 					rundownBaselineAdLibs = rundownBaselineAdLibs
@@ -887,50 +893,6 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 		}
 
 		componentDidMount() {
-			this.subscribe(PubSub.rundowns, {
-				playlistId: this.props.playlist._id,
-			})
-			this.subscribe(PubSub.studios, {
-				_id: this.props.playlist.studioId,
-			})
-			this.autorun(() => {
-				const rundowns = this.props.playlist.getRundowns()
-				const rundownIds = rundowns.map((i) => i._id)
-				if (rundowns.length > 0) {
-					this.subscribe(PubSub.segments, {
-						rundownId: {
-							$in: rundownIds,
-						},
-					})
-					this.subscribe(PubSub.parts, {
-						rundownId: {
-							$in: rundownIds,
-						},
-					})
-					this.subscribe(PubSub.partInstances, {
-						rundownId: {
-							$in: rundownIds,
-						},
-						reset: {
-							$ne: true,
-						},
-					})
-					this.subscribe(PubSub.adLibPieces, {
-						rundownId: {
-							$in: rundownIds,
-						},
-					})
-					this.subscribe(PubSub.rundownBaselineAdLibPieces, {
-						rundownId: {
-							$in: rundownIds,
-						},
-					})
-					this.subscribe(PubSub.showStyleBases, {
-						_id: rundowns[0].showStyleBaseId,
-					})
-				}
-			})
-
 			if (this.props.liveSegment) {
 				this.setState({
 					selectedSegment: this.props.liveSegment,
@@ -1158,7 +1120,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							next: item.isNext && !item.isLive,
 							past:
 								item.parts.reduce((memo, part) => {
-									return part.startedPlayback && part.duration ? memo : false
+									return part.timings?.startedPlayback && part.timings?.duration ? memo : false
 								}, true) === true,
 						})}
 						onClick={(e) => this.onSelectSegment(item)}

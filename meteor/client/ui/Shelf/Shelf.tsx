@@ -24,7 +24,7 @@ import { ShelfRundownLayout } from './ShelfRundownLayout'
 import { ShelfDashboardLayout } from './ShelfDashboardLayout'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets } from './RundownViewBuckets'
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
 
 export enum ShelfTabs {

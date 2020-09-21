@@ -21,7 +21,6 @@ import { PieceInstance, PieceInstances } from '../lib/collections/PieceInstances
 import { Studio, Studios, StudioId } from '../lib/collections/Studios'
 import { Timeline, TimelineObjGeneric, TimelineComplete } from '../lib/collections/Timeline'
 import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
-import { RecordedFile, RecordedFiles } from '../lib/collections/RecordedFiles'
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
 import {
 	protectString,
@@ -87,6 +86,7 @@ export class Cache {
 		for (let i = 0; i < this._deferredFunctions.length; i++) {
 			this._deferredFunctions[i](this)
 		}
+		this._deferredFunctions.length = 0 // clear the array
 
 		const highPrioDBs: DbCacheWriteCollection<any, any>[] = []
 		const lowPrioDBs: DbCacheWriteCollection<any, any>[] = []
@@ -122,6 +122,7 @@ export class Cache {
 		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
 			this._deferredAfterSaveFunctions[i]()
 		}
+		this._deferredAfterSaveFunctions.length = 0 // clear the array
 
 		if (span) span.end()
 	}
@@ -140,7 +141,6 @@ export class CacheForStudioBase extends Cache {
 	RundownPlaylists: DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>
 	// Studios: DbCacheWriteCollection<Studio, Studio>
 	Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
-	RecordedFiles: DbCacheWriteCollection<RecordedFile, RecordedFile>
 
 	constructor(studioId: StudioId) {
 		super()
@@ -149,7 +149,6 @@ export class CacheForStudioBase extends Cache {
 		this.RundownPlaylists = new DbCacheWriteCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
 		// this.Studios = new DbCacheWriteCollection<Studio, Studio>(Studios)
 		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
-		this.RecordedFiles = new DbCacheWriteCollection<RecordedFile, RecordedFile>(RecordedFiles)
 	}
 	defer(fcn: DeferredFunction<CacheForStudioBase>) {
 		return super.defer(fcn)
@@ -187,7 +186,6 @@ async function fillCacheForStudioBaseWithData(
 	await Promise.all([
 		makePromise(() => cache.RundownPlaylists.prepareInit({ studioId: studioId }, initializeImmediately)),
 		makePromise(() => cache.Timeline.prepareInit({ _id: studioId }, initializeImmediately)),
-		makePromise(() => cache.RecordedFiles.prepareInit({ studioId: studioId }, initializeImmediately)),
 	])
 
 	return cache
@@ -247,7 +245,7 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 
 	activationCache: ActivationCache
 
-	constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
+	constructor(studioId: StudioId, playlistId: RundownPlaylistId, playlistIsActive: boolean) {
 		super(studioId)
 		this.containsDataFromPlaylist = playlistId
 
@@ -266,7 +264,11 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
 		this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
 
-		this.activationCache = getActivationCache(studioId, playlistId)
+		if (playlistIsActive) {
+			this.activationCache = getActivationCache(studioId, playlistId)
+		} else {
+			this.activationCache = new ActivationCache(playlistId)
+		}
 	}
 	defer(fcn: DeferredFunction<CacheForRundownPlaylist>) {
 		return super.defer(fcn)
@@ -275,8 +277,12 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		return super.deferAfterSave(fcn)
 	}
 }
-function emptyCacheForRundownPlaylist(studioId: StudioId, playlistId: RundownPlaylistId): CacheForRundownPlaylist {
-	return new CacheForRundownPlaylist(studioId, playlistId)
+function emptyCacheForRundownPlaylist(
+	studioId: StudioId,
+	playlistId: RundownPlaylistId,
+	playlistIsActive: boolean
+): CacheForRundownPlaylist {
+	return new CacheForRundownPlaylist(studioId, playlistId, playlistIsActive)
 }
 async function fillCacheForRundownPlaylistWithData(
 	cache: CacheForRundownPlaylist,
@@ -361,7 +367,11 @@ export async function initCacheForRundownPlaylist(
 	const span = profiler.startSpan('Cache.initCacheForRundownPlaylist')
 
 	if (!extendFromCache) extendFromCache = await initCacheForStudio(playlist.studioId, initializeImmediately)
-	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(playlist.studioId, playlist._id)
+	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(
+		playlist.studioId,
+		playlist._id,
+		playlist.active ?? false
+	)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}
@@ -377,7 +387,7 @@ export async function initCacheForNoRundownPlaylist(
 	initializeImmediately: boolean = true
 ): Promise<CacheForRundownPlaylist> {
 	if (!extendFromCache) extendFromCache = await initCacheForStudioBase(studioId, initializeImmediately)
-	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''))
+	let cache: CacheForRundownPlaylist = emptyCacheForRundownPlaylist(studioId, protectString(''), false)
 	if (extendFromCache) {
 		cache._extendWithData(extendFromCache)
 	}

@@ -6,7 +6,7 @@ import renderItem from './ItemRenderers/ItemRendererFactory'
 import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibPieceUi } from '../AdLibPanel'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 
 export { ShelfInspector }

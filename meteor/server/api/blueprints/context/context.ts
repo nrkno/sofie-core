@@ -25,6 +25,7 @@ import {
 	EventContext as IEventContext,
 	AsRunEventContext as IAsRunEventContext,
 	PartEventContext as IPartEventContext,
+	TimelineEventContext as ITimelineEventContext,
 	IStudioConfigContext,
 	IStudioContext,
 	BlueprintMappings,
@@ -58,6 +59,7 @@ import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessag
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 
 /** Common */
 
@@ -408,6 +410,35 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 		)
 
 		this.part = unprotectPartInstance(partInstance)
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
+}
+
+export class TimelineEventContext extends RundownContext implements ITimelineEventContext {
+	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
+	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
+
+	constructor(
+		rundown: Rundown,
+		cache: CacheForRundownPlaylist,
+		currentPartInstance: PartInstance | undefined,
+		nextPartInstance: PartInstance | undefined
+	) {
+		super(
+			rundown,
+			cache,
+			new NotesContext(
+				rundown.name,
+				`rundownId=${rundown._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
+				false
+			)
+		)
+
+		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
+		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
 	}
 
 	getCurrentTime(): number {

@@ -10,7 +10,7 @@ import { Piece, Pieces } from '../../../lib/collections/Pieces'
 
 import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 
-import { getCurrentTime, literal, protectString, unprotectString, ProtectedString } from '../../../lib/lib'
+import { getCurrentTime, literal, protectString, unprotectString, ProtectedString, waitTime } from '../../../lib/lib'
 import * as MOS from 'mos-connection'
 import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
@@ -221,7 +221,7 @@ describe('test peripheralDevice general API methods', () => {
 		const response = Meteor.call(PeripheralDeviceAPIMethods.determineDiffTime)
 		expect(response).toBeTruthy()
 		expect(response.mean).toBeTruthy()
-		expect(response.stdDev).toBeTruthy()
+		expect(response.stdDev).toBeDefined()
 	})
 
 	testInFiber('getTimeDiff', () => {
@@ -282,6 +282,7 @@ describe('test peripheralDevice general API methods', () => {
 			undefined,
 			replyMessage
 		)
+		waitTime(10)
 		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
 
 		expect(resultErr).toBeNull()
@@ -411,10 +412,9 @@ describe('test peripheralDevice general API methods', () => {
 		const updatedStudioTimeline = Timeline.findOne({
 			_id: env.studio._id,
 		})
-		const prevIds = timelineObjs.map((x) => x._id)
+		const prevIds = timelineObjs.map((x) => x.id)
 		const timelineUpdatedObjs =
-			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x._id) >= 0)) || []
-		console.log('>>>', timelineUpdatedObjs)
+			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
 		timelineUpdatedObjs.forEach((tlObj) => {
 			expect(tlObj.enable.setFromNow).toBe(true)
 			expect(tlObj.enable.start).toBeGreaterThan(0)

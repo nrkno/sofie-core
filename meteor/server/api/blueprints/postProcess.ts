@@ -99,8 +99,6 @@ export function postProcessTimelineObjects(
 		const obj: TimelineObjRundown = {
 			...o,
 			id: o.id,
-			_id: protectString(''), // set later
-			studioId: protectString(''), // set later
 			objectType: TimelineObjType.RUNDOWN,
 		}
 

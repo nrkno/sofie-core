@@ -64,7 +64,7 @@ export function activateRundownPlaylist(
 
 	// Re-Initialize the ActivationCache now when the rundownPlaylist is active
 	const rundownsInPlaylist = cache.Rundowns.findFetch()
-	cache.activationCache.initialize(rundownPlaylist, rundownsInPlaylist)
+	waitForPromise(cache.activationCache.initialize(rundownPlaylist, rundownsInPlaylist))
 
 	let rundown: Rundown | undefined
 
@@ -154,14 +154,7 @@ export function deactivateRundownPlaylistInner(
 
 	if (currentPartInstance) {
 		cache.PartInstances.update(currentPartInstance._id, {
-			$push: {
-				'part.timings.takeOut': getCurrentTime(),
-			},
-		})
-
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(currentPartInstance.part._id, {
-			$push: {
+			$set: {
 				'timings.takeOut': getCurrentTime(),
 			},
 		})

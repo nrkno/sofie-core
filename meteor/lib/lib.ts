@@ -67,6 +67,7 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 }
 
 export type Time = number
+export type TimeDuration = number
 
 const systemTime = {
 	diff: 0,
@@ -1388,6 +1389,15 @@ export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	if (a.size !== b.size) return false
 	for (let val of a.values()) {
 		if (!b.has(val)) return false
+	}
+	return true
+}
+
+export function equivalentArrays<T>(a: T[], b: T[]): boolean {
+	if (a === b) return true
+	if (a.length !== b.length) return false
+	for (let i = 0; i < a.length; i++) {
+		if (!b.includes(a[i])) return false
 	}
 	return true
 }

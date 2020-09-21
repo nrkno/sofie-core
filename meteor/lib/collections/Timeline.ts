@@ -1,15 +1,13 @@
 import { TransformedCollection } from '../typings/meteor'
-import { registerCollection, Time, Omit, ProtectedString, protectString, isProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
+import { registerCollection, Omit, ProtectedString, Time } from '../lib'
 import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
-import { logger } from '../logging'
 import { createMongoCollection } from './lib'
 import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
-import { registerIndex } from '../database'
+import { BlueprintId } from './Blueprints'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -18,17 +16,13 @@ export enum TimelineContentTypeOther {
 
 /** A string, identifying a TimelineObj */
 export type TimelineObjId = ProtectedString<'TimelineObjId'>
+export type TimelineHash = ProtectedString<'TimelineHash'>
 
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
-	/** Unique _id (generally obj.studioId + '_' + obj.id) */
-	_id: TimelineObjId
 	/** Unique within a timeline (ie within a studio) */
 	id: string
 	/** Set when the id of the object is prefixed */
 	originalId?: string
-
-	/** Studio installation Id */
-	studioId: StudioId
 
 	objectType: TimelineObjType
 
@@ -37,24 +31,13 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** The id of the group object this object is in  */
 	inGroup?: string
 }
-// export type TimelineObj = TimelineObjRundown | TimelineObjRecording | TimelineObjManual | TimelineObjStat
 
 export enum TimelineObjType {
 	/** Objects played in a rundown */
 	RUNDOWN = 'rundown',
-	/** Objects controlling recording */
-	RECORDING = 'record',
-	/** Objects controlling manual playback */
-	MANUAL = 'manual',
 }
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
-}
-export interface TimelineObjRecording extends TimelineObjGeneric {
-	objectType: TimelineObjType.RECORDING
-}
-export interface TimelineObjManual extends TimelineObjGeneric {
-	objectType: TimelineObjType.MANUAL
 }
 export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 	content: {
@@ -64,6 +47,15 @@ export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
 	isGroup: true
 }
 export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
+
+export interface StatObjectMetadata {
+	versions: {
+		core: string
+		blueprintId: BlueprintId | undefined
+		blueprintVersion: string
+		studio: string
+	}
+}
 
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true
@@ -96,33 +88,6 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown {
 	}
 }
 
-export function getTimelineId(obj: TimelineObjGeneric): TimelineObjId
-export function getTimelineId(studioId: StudioId, id: string): TimelineObjId
-export function getTimelineId(objOrStudioId: TimelineObjGeneric | StudioId, id?: string): TimelineObjId {
-	if (isProtectedString(objOrStudioId)) {
-		if (!objOrStudioId) throw new Meteor.Error(500, `Parameter studioId missing`)
-		if (!id) throw new Meteor.Error(500, `Parameter id missing`)
-		return protectString(objOrStudioId + '_' + id)
-	} else {
-		const obj: TimelineObjGeneric = objOrStudioId
-		if (!obj.id) {
-			logger.debug(obj)
-			throw new Meteor.Error(500, `TimelineObj missing id attribute`)
-		}
-		if (!obj.studioId) {
-			logger.debug(obj)
-			throw new Meteor.Error(500, `TimelineObj missing studioId attribute, id: "${obj.id}")`)
-		}
-		return protectString(obj.studioId + '_' + obj.id)
-	}
-}
-export function setTimelineId<T extends TimelineObjGeneric>(objs: Array<T>): Array<T> {
-	return _.map(objs, (obj) => {
-		obj._id = getTimelineId(obj)
-		return obj
-	})
-}
-
 export function getRoutedTimeline(
 	inputTimelineObjs: TimelineObjGeneric[],
 	mappingRoutes: ResultingMappingRoutes
@@ -141,7 +106,6 @@ export function getRoutedTimeline(
 				if (i > 0) {
 					// If there are multiple routes we must rename the ids, so that they stay unique.
 					routedObj.id = `_${i}_${routedObj.id}`
-					routedObj._id = getTimelineId(routedObj)
 				}
 				outputTimelineObjs.push(routedObj)
 			})
@@ -153,7 +117,16 @@ export function getRoutedTimeline(
 	return outputTimelineObjs
 }
 export interface TimelineComplete {
+	/** The id of the timeline. Since there is one (1) timeline in a studio, we can use that id here. */
 	_id: StudioId
+	/**
+	 * The TimelineHash is a random string, which is modified whenever the timeline has changed.
+	 * It is used in the playout-gateway to be able to report back resolve-times
+	 */
+	timelineHash: TimelineHash
+	/** Timestamp when the timeline is generated */
+	generated: Time
+	/** Array containing all timeline-objects */
 	timeline: Array<TimelineObjGeneric>
 }
 

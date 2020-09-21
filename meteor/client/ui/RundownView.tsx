@@ -17,11 +17,11 @@ import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { Segment, SegmentId } from '../../lib/collections/Segments'
+import { Segment, SegmentId, Segments } from '../../lib/collections/Segments'
 import { Studio, Studios, StudioRouteSet } from '../../lib/collections/Studios'
 import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
-import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import {
 	RundownTimingProvider,
@@ -1162,7 +1162,6 @@ const RundownHeader = withTranslation()(
 						className={ClassNames('header rundown', {
 							active: this.props.playlist.active,
 							'not-active': !this.props.playlist.active,
-
 							rehearsal: this.props.playlist.rehearsal,
 						})}>
 						<ContextMenuTrigger
@@ -1504,7 +1503,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				playlistId,
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId)
+				let playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						_id: 1,
+						studioId: 1,
+					},
+				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (playlist) {
 					this.subscribe(PubSub.studios, {
 						_id: playlist.studioId,
@@ -1515,9 +1519,18 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}
 			})
 			this.autorun(() => {
-				let playlist = RundownPlaylists.findOne(playlistId)
+				let playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						_id: 1,
+					},
+				})
 				if (playlist) {
-					const rundowns = playlist.getRundowns()
+					const rundowns = playlist.getRundowns(undefined, {
+						fields: {
+							_id: 1,
+							showStyleBaseId: 1,
+						},
+					})
 					this.subscribe(PubSub.showStyleBases, {
 						_id: {
 							$in: rundowns.map((i) => i.showStyleBaseId),
@@ -1528,7 +1541,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							$in: rundowns.map((i) => i.showStyleBaseId),
 						},
 					})
-
 					const rundownIDs = rundowns.map((i) => i._id)
 					this.subscribe(PubSub.segments, {
 						rundownId: {
@@ -1553,6 +1565,76 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.subscribe(PubSub.rundownBaselineAdLibActions, {
 						rundownId: {
 							$in: rundownIDs,
+						},
+					})
+				}
+			})
+			this.autorun(() => {
+				let playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						_id: 1,
+					},
+				})
+				if (playlist) {
+					const rundownIds = playlist.getRundownUnorderedIDs()
+					const segmentIds = Segments.find({
+						rundownId: {
+							$in: rundownIds,
+						},
+					}).map((s) => s._id)
+					this.subscribe(PubSub.parts, {
+						rundownId: {
+							$in: rundownIds,
+						},
+						segmentId: {
+							$in: segmentIds,
+						},
+					})
+					this.subscribe(PubSub.partInstances, {
+						rundownId: {
+							$in: rundownIds,
+						},
+						segmentId: {
+							$in: segmentIds,
+						},
+						reset: {
+							$ne: true,
+						},
+					})
+				}
+			})
+			this.autorun(() => {
+				const playlist = RundownPlaylists.findOne(playlistId, {
+					fields: {
+						previousPartInstanceId: 1,
+						currentPartInstanceId: 1,
+						nextPartInstanceId: 1,
+					},
+				})
+				if (playlist) {
+					const rundownIds = playlist.getRundownUnorderedIDs()
+					const partInstanceIds: PartInstanceId[] = []
+					if (playlist.previousPartInstanceId) {
+						partInstanceIds.push(playlist.previousPartInstanceId)
+					}
+					if (playlist.currentPartInstanceId) {
+						partInstanceIds.push(playlist.currentPartInstanceId)
+					}
+					if (playlist.nextPartInstanceId) {
+						partInstanceIds.push(playlist.nextPartInstanceId)
+					}
+					// run this subscription manually, so that it doesn't affect subscriptionsReady()
+					// it's in a MeteorReactComponent.autorun, so the component lifecycle will
+					// cause it to be unsubscribed when the view is unloaded
+					Meteor.subscribe(PubSub.pieceInstances, {
+						rundownId: {
+							$in: rundownIds,
+						},
+						partInstanceId: {
+							$in: partInstanceIds,
+						},
+						reset: {
+							$ne: true,
 						},
 					})
 				}
