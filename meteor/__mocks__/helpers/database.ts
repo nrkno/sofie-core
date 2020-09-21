@@ -11,8 +11,6 @@ import {
 	SourceLayerType,
 	StudioBlueprintManifest,
 	BlueprintManifestType,
-	IStudioContext,
-	IStudioConfigContext,
 	IBlueprintShowStyleBase,
 	IngestRundown,
 	BlueprintManifestBase,
@@ -22,7 +20,6 @@ import {
 	BlueprintResultRundown,
 	BlueprintResultSegment,
 	IngestSegment,
-	SegmentContext,
 	IBlueprintAdLibPiece,
 	IBlueprintRundown,
 	IBlueprintSegment,
@@ -275,11 +272,11 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
+				getBaseline: (context: unknown): TSR.TSRTimelineObjBase[] => {
 					return []
 				},
 				getShowStyleId: (
-					context: IStudioConfigContext,
+					context: unknown,
 					showStyles: Array<IBlueprintShowStyleBase>,
 					ingestRundown: IngestRundown
 				): string | null => {
@@ -321,7 +318,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 				showStyleConfigManifest: [],
 				showStyleMigrations: [],
 				getShowStyleVariantId: (
-					context: IStudioConfigContext,
+					context: unknown,
 					showStyleVariants: Array<IBlueprintShowStyleVariant>,
 					ingestRundown: IngestRundown
 				): string | null => {
@@ -341,7 +338,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 						baseline: [],
 					}
 				},
-				getSegment: (context: SegmentContext, ingestSegment: IngestSegment): BlueprintResultSegment => {
+				getSegment: (context: unknown, ingestSegment: IngestSegment): BlueprintResultSegment => {
 					const segment: IBlueprintSegment = {
 						name: ingestSegment.name ? ingestSegment.name : ingestSegment.externalId,
 						metaData: ingestSegment.payload,
