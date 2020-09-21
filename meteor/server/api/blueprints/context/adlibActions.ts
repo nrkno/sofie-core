@@ -33,11 +33,12 @@ import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartIn
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { NotesContext, ShowStyleContext, EventContext } from './context'
+import { ShowStyleContext, ContextInfo, UserContextInfo, RawNote } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
+import { NoteType } from '../../../../lib/api/notes'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -99,6 +100,9 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
 
+	public readonly notes: RawNote[] = []
+	private readonly blackHoleNotes: boolean
+
 	private queuedPartInstance: PartInstance | undefined
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
@@ -108,17 +112,46 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	public takeAfterExecute: boolean
 
 	constructor(
+		contextInfo: UserContextInfo,
 		cache: CacheForRundownPlaylist,
-		notesContext: NotesContext,
 		studio: Studio,
 		rundownPlaylist: RundownPlaylist,
 		rundown: Rundown
 	) {
-		super(studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId, notesContext)
+		super(contextInfo, studio, cache, rundown, rundown.showStyleBaseId, rundown.showStyleVariantId)
 		this._cache = cache
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
 		this.takeAfterExecute = false
+	}
+
+	userError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+		if (this.blackHoleNotes) {
+			this.logError(message)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+				trackingId: trackingId,
+			})
+		}
+	}
+	userWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+		if (this.blackHoleNotes) {
+			this.logWarning(message)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+				trackingId: trackingId,
+			})
+		}
 	}
 
 	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | null {

@@ -18,16 +18,16 @@ import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
-	NotesContext as INotesContext,
+	IUserNotesContext,
 	ShowStyleContext as IShowStyleContext,
 	RundownContext as IRundownContext,
-	SegmentContext as ISegmentContext,
+	SegmentUserContext as ISegmentUserContext,
 	EventContext as IEventContext,
 	AsRunEventContext as IAsRunEventContext,
 	PartEventContext as IPartEventContext,
 	TimelineEventContext as ITimelineEventContext,
-	IStudioConfigContext,
-	IStudioContext,
+	StudioContext as IStudioContext,
+	StudioUserContext as IStudioUserContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
 	IngestPart,
@@ -38,6 +38,7 @@ import {
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
+	ShowStyleBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
 import { ConfigRef, preprocessStudioConfig, findMissingConfigs, preprocessShowStyleConfig } from '../config'
@@ -59,17 +60,25 @@ import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessag
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
+import { BlueprintId } from '../../../../lib/collections/Blueprints'
+
+export interface ContextInfo {
+	name: string
+	identifier: string
+}
+export interface UserContextInfo extends ContextInfo {
+	blackHoleUserNotes?: boolean // TODO-CONTEXT remove this
+}
 
 /** Common */
 
 export class CommonContext implements ICommonContext {
-	private _idPrefix: string = ''
+	private readonly _contextIdentifier: string
 	private hashI = 0
 	private hashed: { [hash: string]: string } = {}
 
-	constructor(idPrefix: string) {
-		this._idPrefix = idPrefix
+	constructor(info: ContextInfo) {
+		this._contextIdentifier = info.identifier
 	}
 	getHashId(str: string, isNotUnique?: boolean) {
 		if (!str) str = 'hash' + this.hashI++
@@ -78,88 +87,34 @@ export class CommonContext implements ICommonContext {
 			str = str + '_' + this.hashI++
 		}
 
-		const id = getHash(this._idPrefix + '_' + str.toString())
+		const id = getHash(this._contextIdentifier + '_' + str.toString())
 		this.hashed[id] = str
 		return id
 	}
 	unhashId(hash: string): string {
 		return this.hashed[hash] || hash
 	}
+
+	logDebug(message: string): void {
+		// TODO - prefix with _contextIdentifier?
+		logger.debug(message)
+	}
+	logInfo(message: string): void {
+		// TODO - prefix with _contextIdentifier?
+		logger.info(message)
+	}
+	logWarning(message: string): void {
+		// TODO - prefix with _contextIdentifier?
+		logger.warn(message)
+	}
+	logError(message: string): void {
+		// TODO - prefix with _contextIdentifier?
+		logger.error(message)
+	}
 }
 
 export interface RawNote extends INoteBase {
 	trackingId: string | undefined
-}
-
-export class NotesContext extends CommonContext implements INotesContext {
-	private readonly _contextName: string
-	private readonly _contextIdentifier: string
-	private _handleNotesExternally: boolean
-	private _translationNamespaces: Array<string>
-
-	private readonly savedNotes: Array<RawNote> = []
-
-	constructor(
-		contextName: string,
-		contextIdentifier: string,
-		handleNotesExternally: boolean,
-		blueprintIds?: Array<string>
-	) {
-		super(contextIdentifier)
-		this._contextName = contextName
-		this._contextIdentifier = contextIdentifier
-		/** If the notes will be handled externally (using .getNotes()), set this to true */
-		this._handleNotesExternally = handleNotesExternally
-
-		if (blueprintIds) {
-			// when uploaded, translations are bundled using blueprint ids as namespaces
-			this._translationNamespaces = blueprintIds.slice()
-		}
-	}
-	/** Throw Error and display message to the user in the GUI */
-	error(message: string, params?: { [key: string]: any }, trackingId?: string) {
-		check(message, String)
-		logger.error('Error from blueprint: ' + message)
-		this._pushNote(NoteType.ERROR, message, params, trackingId)
-		throw new Meteor.Error(500, message)
-	}
-	/** Save note, which will be displayed to the user in the GUI */
-	warning(message: string, params?: { [key: string]: any }, trackingId?: string) {
-		check(message, String)
-		this._pushNote(NoteType.WARNING, message, params, trackingId)
-	}
-	getNotes(): RawNote[] {
-		return this.savedNotes
-	}
-	get handleNotesExternally(): boolean {
-		return this._handleNotesExternally
-	}
-	set handleNotesExternally(value: boolean) {
-		this._handleNotesExternally = value
-	}
-	protected _pushNote(type: NoteType, message: string, args?: { [key: string]: any }, trackingId?: string) {
-		if (this._handleNotesExternally) {
-			this.savedNotes.push({
-				type: type,
-				message: { key: message, args, namespaces: this._translationNamespaces },
-				trackingId: trackingId,
-			})
-		} else {
-			if (type === NoteType.WARNING) {
-				logger.warn(
-					`Warning from "${this._contextName}"${trackingId ? `(${trackingId})` : ''}: "${message}"\n(${
-						this._contextIdentifier
-					})`
-				)
-			} else {
-				logger.error(
-					`Error from "${this._contextName}"${trackingId ? `(${trackingId})` : ''}: "${message}"\n(${
-						this._contextIdentifier
-					})`
-				)
-			}
-		}
-	}
 }
 
 const studioBlueprintConfigCache: { [studioId: string]: Cache } = {}
@@ -170,9 +125,10 @@ interface Cache {
 
 /** Studio */
 
-export class StudioConfigContext implements IStudioConfigContext {
+export class StudioContext extends CommonContext implements IStudioContext {
 	protected readonly studio: Studio
-	constructor(studio: Studio) {
+	constructor(contextInfo: ContextInfo, studio: Studio) {
+		super(contextInfo)
 		this.studio = studio
 	}
 
@@ -216,30 +172,61 @@ export class StudioConfigContext implements IStudioConfigContext {
 	getStudioConfigRef(configKey: string): string {
 		return ConfigRef.getStudioConfigRef(this.studio._id, configKey)
 	}
-}
 
-export class StudioContext extends StudioConfigContext implements IStudioContext {
 	getStudioMappings(): Readonly<BlueprintMappings> {
 		return this.studio.mappings
+	}
+}
+
+export class StudioUserContext extends StudioContext implements IStudioUserContext {
+	public readonly notes: INoteBase[] = []
+	private readonly blackHoleNotes: boolean
+
+	constructor(contextInfo: UserContextInfo, studio: Studio) {
+		super(contextInfo, studio)
+		this.blackHoleNotes = contextInfo.blackHoleUserNotes ?? false
+	}
+
+	userError(message: string, params?: { [key: string]: any }): void {
+		if (this.blackHoleNotes) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
+	}
+	userWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.blackHoleNotes) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
 	}
 }
 
 /** Show Style Variant */
 
 export class ShowStyleContext extends StudioContext implements IShowStyleContext {
-	readonly notesContext: NotesContext
-
 	constructor(
+		contextInfo: ContextInfo,
 		studio: Studio,
 		private readonly cache: ReadOnlyCacheForRundownPlaylist | undefined,
 		readonly _rundown: Rundown | undefined,
 		readonly showStyleBaseId: ShowStyleBaseId,
-		readonly showStyleVariantId: ShowStyleVariantId,
-		notesContext: NotesContext
+		readonly showStyleVariantId: ShowStyleVariantId
 	) {
-		super(studio)
-
-		this.notesContext = notesContext
+		super(contextInfo, studio)
 	}
 
 	getShowStyleBase(): ShowStyleBase {
@@ -307,54 +294,67 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	getShowStyleConfigRef(configKey: string): string {
 		return ConfigRef.getShowStyleConfigRef(this.showStyleVariantId, configKey)
 	}
+}
 
-	/** NotesContext */
-	error(message: string, params?: { [key: string]: any }, trackingId?: string) {
-		this.notesContext.error(message, params, trackingId)
+export class ShowStyleUserContext extends ShowStyleContext implements IUserNotesContext {
+	public readonly notes: INoteBase[] = []
+	private readonly blackHoleNotes: boolean
+
+	constructor(
+		contextInfo: UserContextInfo,
+		studio: Studio,
+		cache: CacheForRundownPlaylist | undefined,
+		_rundown: Rundown | undefined,
+		showStyleBaseId: ShowStyleBaseId,
+		showStyleVariantId: ShowStyleVariantId
+	) {
+		super(contextInfo, studio, cache, _rundown, showStyleBaseId, showStyleVariantId)
 	}
-	warning(message: string, params?: { [key: string]: any }, trackingId?: string) {
-		this.notesContext.warning(message, params, trackingId)
+
+	userError(message: string, params?: { [key: string]: any }): void {
+		if (this.blackHoleNotes) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
 	}
-	getHashId(str: string, isNotUnique?: boolean) {
-		return this.notesContext.getHashId(str, isNotUnique)
-	}
-	unhashId(hash: string) {
-		return this.notesContext.unhashId(hash)
-	}
-	get handleNotesExternally(): boolean {
-		return this.notesContext.handleNotesExternally
-	}
-	set handleNotesExternally(value: boolean) {
-		this.notesContext.handleNotesExternally = value
+	userWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.blackHoleNotes) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+			})
+		}
 	}
 }
 
 /** Rundown */
 
-export class RundownContext extends ShowStyleContext implements IRundownContext, IEventContext {
+export class RundownContext extends ShowStyleContext implements IRundownContext {
 	readonly rundownId: string
 	readonly rundown: Readonly<IBlueprintRundownDB>
 	readonly _rundown: Rundown
 	readonly playlistId: RundownPlaylistId
 
-	constructor(rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist, notesContext: NotesContext | undefined) {
-		const blueprintIds: Set<string> = new Set<string>()
-		const showStyleBlueprintId = rundown.getShowStyleBase()?.blueprintId
-		if (showStyleBlueprintId) {
-			blueprintIds.add(unprotectString(showStyleBlueprintId))
-		}
-		const studioBlueprintId = rundown.getStudio()?.blueprintId
-		if (studioBlueprintId) {
-			blueprintIds.add(unprotectString(studioBlueprintId))
-		}
-
+	constructor(contextInfo: ContextInfo, rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist) {
 		super(
+			contextInfo,
 			cache.activationCache.getStudio(),
 			cache,
 			rundown,
 			rundown.showStyleBaseId,
-			rundown.showStyleVariantId,
-			notesContext || new NotesContext(rundown.name, `rundownId=${rundown._id}`, false, Array.from(blueprintIds))
+			rundown.showStyleVariantId
 		)
 
 		this.rundownId = unprotectString(rundown._id)
@@ -362,15 +362,51 @@ export class RundownContext extends ShowStyleContext implements IRundownContext,
 		this._rundown = rundown
 		this.playlistId = rundown.playlistId
 	}
+}
+
+export class RundownEventContext extends RundownContext implements IEventContext {
+	constructor(blueprintId: BlueprintId, rundown: Rundown, cache: CacheForRundownPlaylist) {
+		super(
+			{
+				name: rundown.name,
+				identifier: `rundownId=${rundown._id},blueprintId=${blueprintId}`,
+			},
+			rundown,
+			cache
+		)
+	}
 
 	getCurrentTime(): number {
 		return getCurrentTime()
 	}
 }
 
-export class SegmentContext extends RundownContext implements ISegmentContext {
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, notesContext: NotesContext) {
-		super(rundown, cache, notesContext)
+export class SegmentUserContext extends RundownContext implements ISegmentUserContext {
+	public readonly notes: RawNote[] = []
+
+	constructor(contextInfo: ContextInfo, rundown: Rundown, cache: CacheForRundownPlaylist) {
+		super(contextInfo, rundown, cache)
+	}
+
+	userError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+		this.notes.push({
+			type: NoteType.ERROR,
+			message: {
+				key: message,
+				args: params,
+			},
+			trackingId: trackingId,
+		})
+	}
+	userWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+		this.notes.push({
+			type: NoteType.WARNING,
+			message: {
+				key: message,
+				args: params,
+			},
+			trackingId: trackingId,
+		})
 	}
 }
 
@@ -387,26 +423,20 @@ export class EventContext extends CommonContext implements IEventContext {
 export class PartEventContext extends RundownContext implements IPartEventContext {
 	readonly part: Readonly<IBlueprintPartInstance>
 
-	constructor(rundown: Rundown, cache: CacheForRundownPlaylist, partInstance: PartInstance) {
-		const blueprintIds: Set<string> = new Set<string>()
-		const showStyleBlueprintId = rundown.getShowStyleBase()?.blueprintId
-		if (showStyleBlueprintId) {
-			blueprintIds.add(unprotectString(showStyleBlueprintId))
-		}
-		const studioBlueprintId = rundown.getStudio()?.blueprintId
-		if (studioBlueprintId) {
-			blueprintIds.add(unprotectString(studioBlueprintId))
-		}
-
+	constructor(
+		eventName: string,
+		blueprintId: BlueprintId,
+		rundown: Rundown,
+		cache: CacheForRundownPlaylist,
+		partInstance: PartInstance
+	) {
 		super(
+			{
+				name: `Event: ${eventName}`,
+				identifier: `rundownId=${rundown._id},blueprintId=${blueprintId}`,
+			},
 			rundown,
-			cache,
-			new NotesContext(
-				rundown.name,
-				`rundownId=${rundown._id},partInstanceId=${partInstance._id}`,
-				false,
-				Array.from(blueprintIds)
-			)
+			cache
 		)
 
 		this.part = unprotectPartInstance(partInstance)
@@ -421,56 +451,78 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
+	public readonly notes: RawNote[] = []
+	private readonly blackHoleNotes: boolean
+
 	constructor(
+		contextInfo: UserContextInfo,
 		rundown: Rundown,
 		cache: CacheForRundownPlaylist,
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined
 	) {
-		super(
-			rundown,
-			cache,
-			new NotesContext(
-				rundown.name,
-				`rundownId=${rundown._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
-				false
-			)
-		)
+		super(contextInfo, rundown, cache)
 
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
 		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
+
+		this.blackHoleNotes = contextInfo.blackHoleUserNotes ?? false
 	}
 
 	getCurrentTime(): number {
 		return getCurrentTime()
+	}
+
+	userError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+		if (this.blackHoleNotes) {
+			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.ERROR,
+				message: {
+					key: message,
+					args: params,
+				},
+				trackingId: trackingId,
+			})
+		}
+	}
+	userWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+		if (this.blackHoleNotes) {
+			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
+		} else {
+			this.notes.push({
+				type: NoteType.WARNING,
+				message: {
+					key: message,
+					args: params,
+				},
+				trackingId: trackingId,
+			})
+		}
 	}
 }
 
 export class AsRunEventContext extends RundownContext implements IAsRunEventContext {
 	public readonly asRunEvent: Readonly<IBlueprintAsRunLogEvent>
 
-	constructor(rundown: Rundown, cache: ReadOnlyCacheForRundownPlaylist, asRunEvent: AsRunLogEvent) {
-		const blueprintIds: Set<string> = new Set<string>()
-		const showStyleBlueprintId = rundown.getShowStyleBase()?.blueprintId
-		if (showStyleBlueprintId) {
-			blueprintIds.add(unprotectString(showStyleBlueprintId))
-		}
-		const studioBlueprintId = rundown.getStudio()?.blueprintId
-		if (studioBlueprintId) {
-			blueprintIds.add(unprotectString(studioBlueprintId))
-		}
-
+	constructor(
+		contextInfo: ContextInfo,
+		rundown: Rundown,
+		cache: ReadOnlyCacheForRundownPlaylist,
+		asRunEvent: AsRunLogEvent
+	) {
 		super(
+			contextInfo,
 			rundown,
-			cache,
-			new NotesContext(
-				rundown.name,
-				`rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`,
-				false,
-				Array.from(blueprintIds)
-			)
+			cache
+			// new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false)
 		)
 		this.asRunEvent = unprotectObject(asRunEvent)
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
 
 	/** Get all asRunEvents in the rundown */

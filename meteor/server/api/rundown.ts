@@ -33,7 +33,7 @@ import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collec
 import { Blueprints } from '../../lib/collections/Blueprints'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { BlueprintResultOrderedRundowns, ExtendedIngestRundown } from 'tv-automation-sofie-blueprints-integration'
-import { StudioConfigContext } from './blueprints/context'
+import { StudioUserContext } from './blueprints/context'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from './blueprints/cache'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
@@ -66,9 +66,10 @@ import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { profiler } from './profiler'
 
 export function selectShowStyleVariant(
-	studio: Studio,
+	context: StudioUserContext,
 	ingestRundown: ExtendedIngestRundown
 ): { variant: ShowStyleVariant; base: ShowStyleBase } | null {
+	const studio = context.getStudio()
 	if (!studio.supportedShowStyleBase.length) {
 		logger.debug(`Studio "${studio._id}" does not have any supportedShowStyleBase`)
 		return null
@@ -81,8 +82,6 @@ export function selectShowStyleVariant(
 		)
 		return null
 	}
-
-	const context = new StudioConfigContext(studio)
 
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
@@ -139,10 +138,11 @@ export interface RundownPlaylistAndOrder {
 }
 
 export function produceRundownPlaylistInfo(
-	studio: Studio,
+	context: StudioUserContext,
 	currentRundown: DBRundown,
 	peripheralDevice: PeripheralDevice | undefined
 ): RundownPlaylistAndOrder {
+	const studio = context.getStudio()
 	const studioBlueprint = loadStudioBlueprint(studio)
 	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
 
@@ -157,7 +157,10 @@ export function produceRundownPlaylistInfo(
 				`produceRundownPlaylistInfo: currentRundown ("${currentRundown._id}") not found in collection!`
 			)
 
-		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(allRundowns))
+		const playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(
+			context,
+			unprotectObjectArray(allRundowns)
+		)
 		if (!playlistInfo)
 			throw new Meteor.Error(
 				500,

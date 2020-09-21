@@ -46,7 +46,7 @@ import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { StudioContext, PartEventContext, TimelineEventContext } from '../blueprints/context'
+import { StudioContext, TimelineEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
@@ -262,7 +262,17 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
 
 			if (showStyleBlueprintManifest.onTimelineGenerate) {
-				const context = new TimelineEventContext(activeRundown, cache, currentPartInstance, nextPartInstance)
+				const context = new TimelineEventContext(
+					{
+						name: `onTimelineGenerate=${activeRundown.name}`,
+						identifier: `blueprintId=${showStyleBlueprint0.blueprintId},rundownId=${activeRundown._id},currentPartInstanceId=${currentPartInstance?._id},nextPartInstanceId=${nextPartInstance?._id}`,
+						blackHoleUserNotes: true, // TODO-CONTEXT store/show these notes
+					},
+					activeRundown,
+					cache,
+					currentPartInstance,
+					nextPartInstance
+				)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
 				try {
 					const tlGenRes = waitForPromise(
@@ -305,8 +315,13 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const studioBlueprint = loadStudioBlueprint(studio)
 			if (studioBlueprint) {
 				const blueprint = studioBlueprint.blueprint
-				const baselineObjs = blueprint.getBaseline(new StudioContext(studio))
-				studioBaseline = postProcessStudioBaselineObjects(studio, baselineObjs)
+
+				const context = new StudioContext(
+					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
+					studio
+				)
+				const baselineObjs = blueprint.getBaseline(context)
+				studioBaseline = postProcessStudioBaselineObjects(context, studioBlueprint.blueprintId, baselineObjs)
 
 				const id = `baseline_version`
 				studioBaseline.push(

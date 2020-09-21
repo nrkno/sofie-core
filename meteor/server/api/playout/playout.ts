@@ -30,7 +30,6 @@ import {
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { NotesContext } from '../blueprints/context/context'
 import { ActionExecutionContext, ActionPartChange } from '../blueprints/context/adlibActions'
 import { IngestActions } from '../ingest/actions'
 import { updateTimeline } from './timeline'
@@ -1209,23 +1208,27 @@ export namespace ServerPlayoutAPI {
 				if (!rundown)
 					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
-				const blueprintIds: Set<string> = new Set<string>()
-				if (studio.blueprintId) {
-					blueprintIds.add(unprotectString(studio.blueprintId))
-				}
-				if (rundown.getShowStyleBase()?.blueprintId) {
-					blueprintIds.add(unprotectString(rundown.getShowStyleBase().blueprintId))
-				}
+				// const blueprintIds: Set<string> = new Set<string>()
+				// if (studio.blueprintId) {
+				// 	blueprintIds.add(unprotectString(studio.blueprintId))
+				// }
+				// if (rundown.getShowStyleBase()?.blueprintId) {
+				// 	blueprintIds.add(unprotectString(rundown.getShowStyleBase().blueprintId))
+				// }
 
-				const notesContext = new NotesContext(
-					`${rundown.name}(${playlist.name})`,
-					`playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-						currentPartInstance._id
-					},execution=${getRandomId()}`,
-					false,
-					Array.from(blueprintIds)
+				const actionContext = new ActionExecutionContext(
+					{
+						name: `${rundown.name}(${playlist.name})`,
+						identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+							currentPartInstance._id
+						},execution=${getRandomId()}`,
+						blackHoleUserNotes: true, // TODO-CONTEXT store these notes
+					},
+					cache,
+					studio,
+					playlist,
+					rundown
 				)
-				const actionContext = new ActionExecutionContext(cache, notesContext, studio, playlist, rundown)
 
 				// If any action cannot be done due to timings, that needs to be rejected by the context
 				func(actionContext, cache, rundown, currentPartInstance)
