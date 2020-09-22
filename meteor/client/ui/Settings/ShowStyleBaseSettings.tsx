@@ -1160,13 +1160,9 @@ const HotkeyLegendSettings = withTranslation()(
 							className={ClassNames({
 								hl: this.isItemEdited(item),
 							})}>
-							<th className="settings-studio-custom-config-table__name c2">
-								{mousetrapHelper.shortcutLabel(item.key)}
-							</th>
+							<th className="settings-studio-custom-config-table__name c2">{item.key}</th>
 							<td className="settings-studio-custom-config-table__value c3">{item.label}</td>
-							<td className="settings-studio-custom-config-table__value c2">
-								{item.platformKey ? mousetrapHelper.shortcutLabel(item.platformKey) : ''}
-							</td>
+							<td className="settings-studio-custom-config-table__value c2">{item.platformKey || ''}</td>
 							<td className="settings-studio-custom-config-table__value c2">
 								{item.sourceLayerType !== undefined ? SourceLayerType[item.sourceLayerType] : ''}
 							</td>
