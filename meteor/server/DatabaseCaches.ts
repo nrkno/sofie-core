@@ -45,6 +45,16 @@ import { profiler } from './api/profiler'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
+type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T extends DbCacheReadCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T
+type IReadOnlyCache<T extends Cache> = Omit<
+	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
+	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
+>
+
 /** This cache contains data relevant in a studio */
 export class ReadOnlyCache {
 	protected _deferredFunctions: DeferredFunction<ReadOnlyCache>[] = []
@@ -162,12 +172,9 @@ export class CacheForStudioBase extends Cache {
 		return super.deferAfterSave(fcn)
 	}
 }
-/** readonly version of CacheForStudioBase */
-export interface ReadOnlyCacheForStudioBase extends Cache {
-	RundownPlaylists: DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>
-	Timeline: DbCacheReadCollection<TimelineComplete, TimelineComplete>
-	RecordedFiles: DbCacheReadCollection<RecordedFile, RecordedFile>
-}
+/** Readonly version of CacheForStudioBase */
+export type ReadOnlyCacheForStudioBase = IReadOnlyCache<CacheForStudioBase>
+
 export function convertReadOnlyCacheForStudioBase(cache: CacheForStudioBase): ReadOnlyCacheForStudioBase {
 	cache._abortActiveTimeout()
 	cache.defer = () => {
@@ -302,19 +309,9 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		return super.deferAfterSave(fcn)
 	}
 }
-/** A read-only copy of CacheForRundownPlaylist */
-export interface ReadOnlyCacheForRundownPlaylist extends ReadOnlyCacheForStudioBase {
-	Rundowns: DbCacheReadCollection<Rundown, DBRundown>
-	Segments: DbCacheReadCollection<Segment, DBSegment>
-	Parts: DbCacheReadCollection<Part, DBPart>
-	Pieces: DbCacheReadCollection<Piece, Piece>
-	PartInstances: DbCacheReadCollection<PartInstance, DBPartInstance>
-	PieceInstances: DbCacheReadCollection<PieceInstance, PieceInstance>
-	RundownBaselineObjs: DbCacheReadCollection<RundownBaselineObj, RundownBaselineObj>
-	AdLibPieces: DbCacheReadCollection<AdLibPiece, AdLibPiece>
-	AdLibActions: DbCacheReadCollection<AdLibAction, AdLibAction>
-	activationCache: ActivationCache
-}
+/** A read-only version of CacheForRundownPlaylist */
+export type ReadOnlyCacheForRundownPlaylist = IReadOnlyCache<CacheForRundownPlaylist>
+
 export function convertReadOnlyCacheForRundownPlaylist(
 	cache: CacheForRundownPlaylist
 ): ReadOnlyCacheForRundownPlaylist {
