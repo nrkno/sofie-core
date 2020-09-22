@@ -111,7 +111,7 @@ function getOrderedPartsAfterPlayhead(
 		res.push(...playablePartsSlice)
 	}
 
-	if (res.length < partCount && !playlist.loop) {
+	if (res.length < partCount && playlist.loop) {
 		// The rundown would loop here, so lets run with that
 		const playableParts = orderedParts.filter((p) => p.isPlayable())
 		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
