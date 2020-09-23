@@ -64,6 +64,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibAutoNext: false,
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
+	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>

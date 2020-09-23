@@ -217,12 +217,14 @@ export function getResolvedPieces(
 		})
 	)
 	objs.forEach((o) => {
-		if (o.enable.start === 'now' && partStarted) {
-			// Emulate playout starting now. TODO - ensure didnt break other uses
-			o.enable.start = nowInPart
-		} else if (o.enable.start === 0 || o.enable.start === 'now') {
-			o.enable.start = 1
-		}
+		applyToArray(o.enable, (enable) => {
+			if (enable.start === 'now' && partStarted) {
+				// Emulate playout starting now. TODO - ensure didnt break other uses
+				enable.start = nowInPart
+			} else if (enable.start === 0 || enable.start === 'now') {
+				enable.start = 1
+			}
+		})
 	})
 
 	const resolvedPieces = resolvePieceTimeline(

@@ -3,7 +3,7 @@ import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMe
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
-import { getCurrentTime, Time } from '../../../lib/lib'
+import { getCurrentTime, Time, applyToArray, clone } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
@@ -165,15 +165,15 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 		renderTimeline() {
 			this.startVisualizer = true
 
-			let timeline = _.compact(
-				_.map(this.props.timeline, (obj) => {
-					let o = _.clone(obj)
-
-					if (o.enable.start === 'now') o.enable.start = getCurrentTime() // tmp
-
-					return o
+			const timeline = this.props.timeline.map((o) => {
+				const obj = clone(o)
+				applyToArray(o.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = getCurrentTime()
+					}
 				})
-			)
+				return obj
+			})
 
 			this.newTimeline = timeline
 
@@ -239,18 +239,13 @@ export const ComponentTimelineSimulate = withTracker<
 			(tlComplete &&
 				tlComplete.timeline
 					.map((o) => {
-						if (!Array.isArray(o.enable) && o.enable.start === 'now') {
-							console.log('de-now', o, now)
-							return {
-								...o,
-								enable: {
-									...o.enable,
-									start: tlComplete?.generated + 1000 ?? now,
-								},
+						const obj = clone(o)
+						applyToArray(o.enable, (enable) => {
+							if (enable.start === 'now') {
+								enable.start = getCurrentTime()
 							}
-						} else {
-							return o
-						}
+						})
+						return obj
 					})
 					.sort((a, b) => {
 						if (a.id > b.id) {

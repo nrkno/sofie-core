@@ -112,7 +112,7 @@ function getOrderedPartsAfterPlayhead(
 		res.push(...playablePartsSlice)
 	}
 
-	if (res.length < partCount && !playlist.loop) {
+	if (res.length < partCount && playlist.loop) {
 		// The rundown would loop here, so lets run with that
 		const playableParts = orderedParts.filter((p) => p.isPlayable())
 		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
@@ -415,14 +415,20 @@ function tryActivateKeyframesForObject(
 	// Try and find a keyframe that is used when in a transition
 	let transitionKF: TimelineTypes.TimelineKeyframe | undefined = undefined
 	if (hasTransition) {
-		transitionKF = _.find(obj.keyframes || [], (kf) => kf.enable.while === '.is_transition')
+		transitionKF = _.find(
+			obj.keyframes || [],
+			(kf) => !Array.isArray(kf.enable) && kf.enable.while === '.is_transition'
+		)
 
 		// TODO - this keyframe matching is a hack, and is very fragile
 
 		if (!transitionKF && classesFromPreviousPart && classesFromPreviousPart.length > 0) {
 			// Check if the keyframe also uses a class to match. This handles a specific edge case
 			transitionKF = _.find(obj.keyframes || [], (kf) =>
-				_.any(classesFromPreviousPart, (cl) => kf.enable.while === `.is_transition & .${cl}`)
+				_.any(
+					classesFromPreviousPart,
+					(cl) => !Array.isArray(kf.enable) && kf.enable.while === `.is_transition & .${cl}`
+				)
 			)
 		}
 		return { ...obj.content, ...transitionKF?.content }

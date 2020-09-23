@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
 import { Parts, Part, DBPart } from '../../../lib/collections/Parts'
-import { getCurrentTime, Time, clone, literal, waitForPromise, protectString } from '../../../lib/lib'
+import { getCurrentTime, Time, clone, literal, waitForPromise, protectString, applyToArray } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -485,7 +485,7 @@ export function onPartHasStoppedPlaying(
 }
 
 export function substituteObjectIds(
-	rawEnable: TSR.Timeline.TimelineEnable,
+	rawEnable: TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[],
 	idMap: { [oldId: string]: string | undefined }
 ) {
 	const replaceIds = (str: string) => {
@@ -495,13 +495,14 @@ export function substituteObjectIds(
 		})
 	}
 
-	const enable = clone(rawEnable)
-
-	for (const key of _.keys(enable)) {
-		if (typeof enable[key] === 'string') {
-			enable[key] = replaceIds(enable[key])
+	const enable = clone<TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[]>(rawEnable)
+	applyToArray(enable, (enable0) => {
+		for (const key of _.keys(enable0)) {
+			if (typeof enable0[key] === 'string') {
+				enable0[key] = replaceIds(enable0[key])
+			}
 		}
-	}
+	})
 
 	return enable
 }
