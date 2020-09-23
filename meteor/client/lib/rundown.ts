@@ -9,6 +9,7 @@ import {
 	IBlueprintActionManifestDisplay,
 	IBlueprintActionManifestDisplayContent,
 	TimelineObjectCoreExt,
+	TimelineObjectSofieBase,
 } from 'tv-automation-sofie-blueprints-integration'
 import {
 	SegmentExtended,
@@ -343,7 +344,7 @@ export namespace RundownUtils {
 
 			partsE = partsInSegment.map((part, itIndex) => {
 				const partInstance = findPartInstanceOrWrapToTemporary(activePartInstancesMap, part)
-				let partTimeline: SuperTimeline.TimelineObject[] = []
+				let partTimeline: TimelineObjectSofieBase[] = []
 
 				// extend objects to match the Extended interface
 				let partE = literal<PartExtended>({

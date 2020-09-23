@@ -12,6 +12,7 @@ import {
 	TSR,
 	IBlueprintActionManifest,
 	NotesContext as INotesContext,
+	TimelineObjectSofieBase,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
@@ -91,7 +92,7 @@ export function postProcessTimelineObjects(
 	innerContext: INotesContext,
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
-	timelineObjects: TSR.TSRTimelineObjBase[],
+	timelineObjects: TimelineObjectSofieBase[],
 	prefixAllTimelineObjects: boolean,
 	timelineUniqueIds: { [key: string]: boolean }
 ) {
@@ -209,7 +210,10 @@ export function postProcessAdLibActions(
 	)
 }
 
-export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
+export function postProcessStudioBaselineObjects(
+	studio: Studio,
+	objs: TimelineObjectSofieBase[]
+): TimelineObjRundown[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	const context = new NotesContext('studio', 'studio', false)
 	return postProcessTimelineObjects(
@@ -225,7 +229,7 @@ export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTi
 export function postProcessRundownBaselineItems(
 	innerContext: RundownContext,
 	blueprintId: BlueprintId,
-	baselineItems: TSR.TSRTimelineObjBase[]
+	baselineItems: TimelineObjectSofieBase[]
 ): TimelineObjGeneric[] {
 	const timelineUniqueIds: { [id: string]: true } = {}
 	return postProcessTimelineObjects(

@@ -17,6 +17,7 @@ import {
 	TimelineObjectCoreExt,
 	TSR,
 	PieceLifespan,
+	TimelineObjectSofieBase,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
@@ -104,7 +105,7 @@ describe('Test blueprint post-process', () => {
 		testInFiber('some no ids', () => {
 			const studio = getStudio()
 
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TimelineObjectSofieBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
@@ -161,7 +162,7 @@ describe('Test blueprint post-process', () => {
 		testInFiber('duplicate ids', () => {
 			const studio = getStudio()
 
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TimelineObjectSofieBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
@@ -219,7 +220,7 @@ describe('Test blueprint post-process', () => {
 		testInFiber('some no ids', () => {
 			const context = getContext()
 
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TimelineObjectSofieBase[]>([
 				{
 					id: 'testObj',
 					enable: {},
@@ -294,7 +295,7 @@ describe('Test blueprint post-process', () => {
 		testInFiber('duplicate ids', () => {
 			const context = getContext()
 
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TimelineObjectSofieBase[]>([
 				{
 					id: 'testObj',
 					enable: {},

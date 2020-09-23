@@ -8,6 +8,7 @@ import {
 	OnGenerateTimelineObj,
 	TSR,
 	PieceLifespan,
+	TimelineObjectSofieBase,
 } from 'tv-automation-sofie-blueprints-integration'
 import { DeepReadonly } from 'utility-types'
 import { logger } from '../../../lib/logging'
@@ -339,7 +340,7 @@ function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjG
 	let fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
-			_.each(o.children, (child: TSR.TSRTimelineObjBase) => {
+			_.each(o.children, (child: TimelineObjectSofieBase) => {
 				let childFixed: TimelineObjGeneric = {
 					...child,
 					objectType: o.objectType,
@@ -892,7 +893,6 @@ function transformPartIntoTimeline(
 						continue
 					}
 				}
-
 				pieceObjects.push({
 					...clone<TimelineObjectCoreExt>(o),
 					inGroup: pieceGroup.id,

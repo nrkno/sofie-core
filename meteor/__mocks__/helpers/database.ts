@@ -30,6 +30,7 @@ import {
 	IBlueprintPart,
 	IBlueprintPiece,
 	TSR,
+	TimelineObjectSofieBase,
 } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
@@ -275,7 +276,7 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 
 				studioConfigManifest: [],
 				studioMigrations: [],
-				getBaseline: (context: IStudioContext): TSR.TSRTimelineObjBase[] => {
+				getBaseline: (context: IStudioContext): TimelineObjectSofieBase[] => {
 					return []
 				},
 				getShowStyleId: (

@@ -250,7 +250,7 @@ describe('Test blueprint management api', () => {
 
 					// studioConfigManifest: [],
 					// studioMigrations: [],
-					// getBaseline: (context: IStudioContext): TSRTimelineObjBase[] => {
+					// getBaseline: (context: IStudioContext): TimelineObjectSofieBase[] => {
 					// 	return []
 					// },
 					// getShowStyleId: (context: IStudioConfigContext, showStyles: Array<IBlueprintShowStyleBase>, ingestRundown: IngestRundown): string | null => {

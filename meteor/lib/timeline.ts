@@ -4,6 +4,7 @@ import { TimelineObjGeneric, TimelineObjGroup } from './collections/Timeline'
 import { TimelineObject } from 'superfly-timeline'
 import { clone, unprotectString } from './lib'
 import { logger } from './logging'
+import { TimelineObjectSofieBase } from 'tv-automation-sofie-blueprints-integration'
 
 // This is a collection of functions that match what the playout-gateway / TSR does
 // playout-gateway:
@@ -56,6 +57,6 @@ export function transformTimeline(timeline: Array<TimelineObjGeneric>): Array<Ti
 }
 
 // TSR: ---------
-export interface TimelineContentObject extends TimelineObject {
+export interface TimelineContentObject extends TimelineObjectSofieBase {
 	inGroup?: string
 }
