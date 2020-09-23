@@ -15,11 +15,6 @@ export function transformTimeline(timeline: Array<TimelineObjGeneric>): Array<Ti
 		let transformedObj: TimelineContentObject = clone(_.omit(obj, ['_id', 'studioId']))
 		transformedObj.id = obj.id
 
-		if (!transformedObj.content) transformedObj.content = {}
-		if (transformedObj.isGroup) {
-			if (!transformedObj.content.objects) transformedObj.content.objects = []
-		}
-
 		return transformedObj
 	}
 
