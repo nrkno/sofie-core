@@ -487,7 +487,6 @@ function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction):
 		status: RundownAPI.PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
-		disabled: false,
 		externalId: unprotectString(action._id),
 		rundownId: action.rundownId,
 		sourceLayerId,
@@ -498,6 +497,7 @@ function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction):
 		tags: action.display.tags,
 		currentPieceTags: action.display.currentPieceTags,
 		nextPieceTags: action.display.nextPieceTags,
+		lifespan: PieceLifespan.WithinPart, // value doesn't matter
 	})
 }
 
