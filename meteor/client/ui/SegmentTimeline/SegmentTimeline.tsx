@@ -17,7 +17,7 @@ import { SegmentDuration, PartCountdown, RundownTiming, CurrentPartRemaining } f
 import { RundownUtils } from '../../lib/rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import { scrollToSegment, scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
+import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
 // @ts-ignore Not recognized by Typescript
 import * as Zoom_In_MouseOut from './Zoom_In_MouseOut.json'
@@ -553,7 +553,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onClickSegmentIdent = (partId: PartId) => {
-		scrollToPart(partId, false, true)
+		scrollToPart(partId, false, true).catch((error) => {
+			if (!error.toString().match(/another scroll/)) console.error(error)
+		})
 	}
 
 	getSegmentContext = (props) => {

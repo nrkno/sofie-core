@@ -261,7 +261,6 @@ export namespace RundownUtils {
 		let isNextSegment = false
 		let currentLivePart: PartExtended | undefined = undefined
 		let currentNextPart: PartExtended | undefined = undefined
-		// let nextPart: PartExtended | undefined = undefined
 		let hasAlreadyPlayed = false
 		let hasRemoteItems = false
 		let hasGuestItems = false
@@ -417,7 +416,9 @@ export namespace RundownUtils {
 					}
 
 					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
-					pieceGroup.metaData = literal<PieceGroupMetadata>({ id: piece.piece._id })
+					pieceGroup.metaData = literal<PieceGroupMetadata>({
+						id: piece.piece._id,
+					})
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
 
