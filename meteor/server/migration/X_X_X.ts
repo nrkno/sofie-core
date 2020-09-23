@@ -62,24 +62,6 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		},
 	},
 	{
-		id: 'Single timeline object',
-		canBeRunAutomatically: true,
-		validate: () => {
-			const badCount = Timeline.find({
-				timeline: { $exists: false },
-			}).count()
-			if (badCount > 0) {
-				return `${badCount} timeline objects need to be deleted`
-			}
-			return false
-		},
-		migrate: () => {
-			Timeline.remove({
-				timeline: { $exists: false },
-			})
-		},
-	},
-	{
 		id: 'Drop removed collections',
 		canBeRunAutomatically: true,
 		validate: () => {

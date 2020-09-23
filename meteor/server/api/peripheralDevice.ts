@@ -216,12 +216,14 @@ export namespace ServerPeripheralDeviceAPI {
 					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 					const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
 					timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
+					waitForPromise(cache.saveAllToDatabase())
 				})
 			} else {
 				// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
 				// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird
 				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 				timelineTriggerTimeInner(cache, studioId, results, undefined)
+				waitForPromise(cache.saveAllToDatabase())
 			}
 		}
 	},
@@ -308,9 +310,6 @@ export namespace ServerPeripheralDeviceAPI {
 				true
 			)
 		}
-
-		// After we've updated the timeline, we must call afterUpdateTimeline!
-		waitForPromise(cache.saveAllToDatabase())
 	}
 	export function partPlaybackStarted(
 		context: MethodContext,

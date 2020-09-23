@@ -436,7 +436,7 @@ function buildTimelineObjsForRundown(
 	if (partInstancesInfo.current) {
 		const [currentInfinitePieces, currentNormalItems] = _.partition(
 			partInstancesInfo.current.pieceInstances,
-			(l) => !!l.infinite && l.piece.lifespan !== PieceLifespan.WithinPart
+			(l) => !!(l.infinite && (l.piece.lifespan !== PieceLifespan.WithinPart || l.infinite.fromHold))
 		)
 		const currentInfinitePieceIds = _.compact(currentInfinitePieces.map((l) => l.infinite?.infinitePieceId))
 
@@ -827,7 +827,9 @@ function transformPartIntoTimeline(
 			continue
 		}
 
-		const hasDefinitelyEnded = hasPieceInstanceDefinitelyEnded(pieceInstance, nowInPart)
+		// If a piece has definitely finished playback, then we can prune its contents. But we can only do that check if the part has an absolute time, otherwise we are only guessing
+		const hasDefinitelyEnded =
+			typeof partGroup.enable.start === 'number' && hasPieceInstanceDefinitelyEnded(pieceInstance, nowInPart)
 
 		const isInfiniteContinuation = pieceInstance.infinite && pieceInstance.piece.startPartId !== partId
 

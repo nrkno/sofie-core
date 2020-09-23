@@ -25,9 +25,6 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
-
-	isTransition?: boolean
-	extendOnHold?: boolean
 }
 
 /** A Single item in a Part: script, VT, cameras */

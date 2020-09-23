@@ -1324,6 +1324,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		allParts = playlist
 			.getAllOrderedParts(undefined, {
 				fields: {
+					segmentId: 1,
 					_rank: 1,
 				},
 			})
@@ -2087,13 +2088,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		onStudioRouteSetSwitch = (
 			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
 			routeSetId: string,
+			routeSet: StudioRouteSet,
 			state: boolean
 		) => {
 			const { t } = this.props
 			if (this.props.studio) {
-				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
-					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
-				)
+				e.persist()
+				doModalDialog({
+					title: t('Switching route'),
+					message: state
+						? t('Are you sure you want to enable this route: "{{routeName}}"?', { routeName: routeSet.name })
+						: t('Are you sure you want to disable this route: "{{routeName}}"?', { routeName: routeSet.name }),
+					onAccept: () => {
+						doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+							MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+						)
+					},
+				})
 			}
 		}
 

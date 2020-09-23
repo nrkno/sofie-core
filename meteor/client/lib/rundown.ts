@@ -22,7 +22,7 @@ import {
 import { DBSegment, SegmentId } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { literal, normalizeArray, getCurrentTime } from '../../lib/lib'
+import { literal, normalizeArray, getCurrentTime, applyToArray } from '../../lib/lib'
 import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../lib/collections/PartInstances'
 import { PieceId } from '../../lib/collections/Pieces'
 import { AdLibPieceUi } from '../ui/Shelf/AdLibPanel'
@@ -421,6 +421,12 @@ export namespace RundownUtils {
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
 
+					// if there is an userDuration override, override it for the timeline
+					if (piece.userDuration) {
+						delete pieceGroup.enable.duration
+						pieceGroup.enable.end = piece.userDuration.end
+					}
+
 					// find the target output layer
 					let outputLayer = outputLayers[piece.piece.outputLayerId] as IOutputLayerExtended | undefined
 					resPiece.outputLayer = outputLayer
@@ -478,9 +484,11 @@ export namespace RundownUtils {
 
 				// Use the SuperTimeline library to resolve all the items within the Part
 				partTimeline.forEach((obj) => {
-					if (obj.enable.start === 'now') {
-						obj.enable.start = nowInPart
-					}
+					applyToArray(obj.enable, (enable) => {
+						if (enable.start === 'now') {
+							enable.start = nowInPart
+						}
+					})
 				})
 				let tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part

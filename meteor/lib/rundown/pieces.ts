@@ -19,7 +19,7 @@ export interface PieceGroupMetadata {
 export function createPieceGroupAndCap(
 	pieceInstance: Pick<
 		DeepReadonly<PieceInstanceWithTimings>,
-		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority'
+		'_id' | 'rundownId' | 'piece' | 'infinite' | 'resolvedEndCap' | 'priority' | 'userDuration'
 	>,
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
