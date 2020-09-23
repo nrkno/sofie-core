@@ -479,7 +479,7 @@ export namespace ServerPlayoutAdLibAPI {
 				!pieceInstance.userDuration &&
 				!pieceInstance.piece.virtual &&
 				filter(pieceInstance) &&
-				pieceInstance.resolvedStart &&
+				pieceInstance.resolvedStart !== undefined &&
 				pieceInstance.resolvedStart <= relativeStopAt
 			) {
 				switch (pieceInstance.piece.lifespan) {
