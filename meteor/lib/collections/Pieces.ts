@@ -1,15 +1,8 @@
 import { RundownAPI } from '../api/rundown'
 import { TransformedCollection } from '../typings/meteor'
-import { PartTimings, PartId } from './Parts'
-import { registerCollection, ProtectedString, ProtectedStringProperties, Omit } from '../lib'
-import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPieceGeneric,
-	IBlueprintPieceDB,
-	PieceLifespan,
-	BaseContent,
-	Timeline,
-} from 'tv-automation-sofie-blueprints-integration'
+import { PartId } from './Parts'
+import { registerCollection, ProtectedString, Omit } from '../lib'
+import { IBlueprintPieceGeneric, IBlueprintPieceDB, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
@@ -32,10 +25,6 @@ export interface PieceGeneric extends IBlueprintPieceGeneric {
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
 	continuesRefId?: PieceId
-	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
-	startedPlayback?: number
-	/** Playout timings, in here we log times when playout happens */
-	timings?: PartTimings
 
 	isTransition?: boolean
 	extendOnHold?: boolean
@@ -71,11 +60,6 @@ export interface Piece extends RundownPieceGeneric, Omit<IBlueprintPieceDB, '_id
 
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintPiece
-
-	/** Whether the piece has stopped playback (the most recent time it was played).
-	 * This is set from a callback from the playout gateway
-	 */
-	stoppedPlayback?: number
 }
 
 export const Pieces: TransformedCollection<Piece, Piece> = createMongoCollection<Piece>('pieces')

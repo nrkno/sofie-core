@@ -73,7 +73,14 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		lastPartInstanceId?: PartInstanceId
 	}
 
-	/** This is set when the duration needs to be overriden from some user action */
+	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
+	startedPlayback?: Time
+	/** Whether the piece has stopped playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway (milliseconds since epoch)
+	 */
+	stoppedPlayback?: Time
+
+	/** This is set when the duration needs to be overriden from some user action (milliseconds since start of part) */
 	userDuration?: {
 		end: number
 	}

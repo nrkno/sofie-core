@@ -310,22 +310,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						clearKeyboardHotkeySourceLayers[hotkey].push(sourceLayer)
 					})
 				}
-
-				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
-					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach((element) => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							element,
-							(e: ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleSticky(sourceLayer._id, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(element)
-					})
-				}
 			})
 
 			_.each(clearKeyboardHotkeySourceLayers, (sourceLayers, hotkey) => {
@@ -587,19 +571,19 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 	const now = getCurrentTime()
 	if (currentPartInstanceId) {
 		prospectivePieces = PieceInstances.find({
-			'piece.startedPlayback': {
+			startedPlayback: {
 				$exists: true,
 			},
 			$and: [
 				{
 					$or: [
 						{
-							'piece.stoppedPlayback': {
+							stoppedPlayback: {
 								$eq: 0,
 							},
 						},
 						{
-							'piece.stoppedPlayback': {
+							stoppedPlayback: {
 								$exists: false,
 							},
 						},
@@ -630,7 +614,7 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 				pieceInstance.userDuration && typeof pieceInstance.userDuration.end === 'number'
 					? pieceInstance.userDuration.end
 					: typeof piece.enable.duration === 'number'
-					? piece.enable.duration + piece.startedPlayback!
+					? piece.enable.duration + pieceInstance.startedPlayback!
 					: undefined
 
 			if (end !== undefined) {

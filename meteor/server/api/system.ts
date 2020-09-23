@@ -31,7 +31,6 @@ import { Parts } from '../../lib/collections/Parts'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
-import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
@@ -235,10 +234,6 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 	{
 		results.push(ownedByStudioId('BucketAdLibs', BucketAdLibs))
 	}
-	// BucketIngestCache
-	{
-		// ??????????? not in use?
-	}
 	// Buckets
 	{
 		results.push(ownedByStudioId('Buckets', Buckets))
@@ -359,10 +354,6 @@ function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanu
 		removeByQuery('PieceInstances', PieceInstances, {
 			rundownId: { $nin: rundownIds },
 		})
-	}
-	// RecordedFiles
-	{
-		results.push(ownedByStudioId('RecordedFiles', RecordedFiles))
 	}
 	// RundownBaselineAdLibActions
 	{

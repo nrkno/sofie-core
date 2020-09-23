@@ -622,7 +622,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 		onAirLineRefresh = (e: TimingEvent) => {
 			if (this.state.isLiveSegment && this.state.currentLivePart) {
-				const currentLivePart = this.state.currentLivePart.instance.part
+				const currentLivePartInstance = this.state.currentLivePart.instance
+				const currentLivePart = currentLivePartInstance.part
 
 				let simulationPercentage = this.playbackSimulationPercentage
 				const partOffset =
@@ -632,17 +633,17 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 							this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)]) ||
 					0
 
-				let isExpectedToPlay: boolean = currentLivePart.startedPlayback || false
-				const lastTake = currentLivePart.getLastTake()
-				const lastStartedPlayback = currentLivePart.getLastStartedPlayback()
-				const lastTakeOffset = currentLivePart.getLastPlayOffset() || 0
+				let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
+				const lastTake = currentLivePartInstance.timings?.take
+				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+				const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
 				let virtualStartedPlayback =
 					(lastTake || 0) > (lastStartedPlayback || -1)
 						? lastTake
 						: lastStartedPlayback
 						? lastStartedPlayback - lastTakeOffset
 						: undefined
-				if (currentLivePart.taken && lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
+				if (lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
 					isExpectedToPlay = true
 
 					// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through

@@ -38,7 +38,7 @@ import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
-import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
+import { createPieceGroupAndCap, PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { profiler } from '../profiler'
 
@@ -83,9 +83,7 @@ export function createPieceGroupFirstObject(
 	firstObjClasses?: string[]
 ): TimelineObjPieceAbstract & OnGenerateTimelineObj {
 	const firstObject = literal<TimelineObjPieceAbstract & OnGenerateTimelineObj>({
-		id: getPieceFirstObjectId(unprotectString(pieceInstance.piece._id)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
+		id: getPieceFirstObjectId(unprotectString(pieceInstance._id)),
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
@@ -120,7 +118,7 @@ function resolvePieceTimeline(
 	let unresolvedIds: string[] = []
 	_.each(tlResolved.objects, (obj0) => {
 		const obj = (obj0 as any) as TimelineObjRundown
-		const id = (obj.metaData || {}).pieceId
+		const id = unprotectString((obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
 
 		if (!id) return
 
@@ -206,7 +204,7 @@ export function getResolvedPieces(
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	const now = getCurrentTime()
-	const partStarted = partInstance.part.getLastStartedPlayback()
+	const partStarted = partInstance.timings?.startedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
 	const preprocessedPieces = processAndPrunePieceInstanceTimings(showStyleBase, pieceInstances, nowInPart)
@@ -243,7 +241,11 @@ export function getResolvedPiecesFromFullTimeline(
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = profiler.startSpan('getResolvedPiecesFromFullTimeline')
 	const objs = clone(
-		allObjs.filter((o) => o.isGroup && ((o as any).isPartGroup || (o.metaData && o.metaData.pieceId)))
+		allObjs.filter(
+			(o) =>
+				o.isGroup &&
+				((o as any).isPartGroup || (o.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId)
+		)
 	)
 
 	const now = getCurrentTime()
@@ -295,7 +297,7 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 	// const oldId = piece._id
 	const newId = Random.id()
 	const newAdLibPiece = literal<AdLibPiece>({
-		...omit(piece, 'timings', 'startedPlayback', 'stoppedPlayback'),
+		...piece,
 		_id: protectString(newId),
 		_rank: 0,
 		expectedDuration: piece.enable.duration,
@@ -308,8 +310,6 @@ export function convertPieceToAdLibPiece(piece: PieceInstancePiece): AdLibPiece 
 			_.compact(
 				_.map(contentObjects, (obj: TimelineObjectCoreExt) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 					})
 				})
@@ -344,29 +344,12 @@ export function convertAdLibToPieceInstance(
 		adLibSourceId: adLibPiece._id,
 		dynamicallyInserted: queue ? undefined : getCurrentTime(),
 		piece: literal<PieceInstancePiece>({
-			...(_.omit(
-				adLibPiece,
-				'_rank',
-				'expectedDuration',
-				'startedPlayback',
-				'stoppedPlayback',
-				'partId',
-				'rundownId'
-			) as PieceInstancePiece), // TODO - this could be typed stronger
+			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
 			_id: protectString(newPieceId),
 			startPartId: partInstance.part._id,
 			enable: {
 				start: queue ? 0 : 'now',
 				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,
-			},
-			timings: {
-				take: [getCurrentTime()],
-				startedPlayback: [],
-				next: [],
-				stoppedPlayback: [],
-				playOffset: [],
-				takeDone: [],
-				takeOut: [],
 			},
 		}),
 	})
@@ -385,8 +368,6 @@ export function convertAdLibToPieceInstance(
 			_.compact(
 				_.map(contentObjects, (obj) => {
 					return extendMandadory<TimelineObjectCoreExt, TimelineObjGeneric>(obj, {
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 					})
 				})

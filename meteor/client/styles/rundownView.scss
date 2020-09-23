@@ -496,7 +496,10 @@ body.no-overflow {
 	}
 
 	.segment-timeline__title {
-		display: block;
+		display: grid;
+		grid-template-columns: auto;
+		grid-template-rows: [title-title] min-content [title-notifications] 1fr [title-identifiers] min-content [end];
+
 		margin: 0;
 		padding: 0;
 		overflow: hidden;
@@ -520,6 +523,7 @@ body.no-overflow {
 			hyphens: auto;
 			-webkit-hyphens: auto;
 			-ms-hyphens: auto;
+			grid-row: title-title / title-notifications;
 		}
 
 		.segment-timeline__title__notes {
@@ -528,6 +532,7 @@ body.no-overflow {
 			line-height: 1.4em;
 			font-size: 0.75em;
 			font-weight: 400;
+			grid-row: title-notifications / title-identifiers;
 
 			> .segment-timeline__title__notes__note {
 				position: relative;
@@ -570,6 +575,18 @@ body.no-overflow {
 					background: red;
 					color: #fff;
 				}
+			}
+		}
+
+		.segment-timeline__part-identifiers {
+			grid-row: title-identifiers / end;
+
+			.segment-timeline__part-identifiers__identifier {
+				margin: 2.5px;
+				padding: 0 10px 0 10px;
+				background-color: $part-identifier;
+				color: $part-identifier-text;
+				border-radius: 10px;
 			}
 		}
 	}
@@ -1812,8 +1829,9 @@ body.no-overflow {
 				z-index: -1;
 				padding: 0 10px 0 10px;
 				box-sizing: border-box;
-				background-color: #7400d5;
+				background-color: $part-identifier;
 				border-radius: 0 10px 10px 0;
+				color: $part-identifier-text;
 			}
 		}
 	}
@@ -1935,10 +1953,6 @@ body.no-overflow {
 			text-overflow: ellipsis;
 			overflow: hidden;
 			white-space: nowrap;
-		}
-
-		.segment-timeline__part-identifiers {
-			position: relative;
 		}
 
 		.segment-timeline__zoom-area {

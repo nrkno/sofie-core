@@ -6,8 +6,7 @@ import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, Studio, StudioId
 import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
-import { RecordedFiles, RecordedFile } from '../../lib/collections/RecordedFiles'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
+import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/typings/meteor'
@@ -58,23 +57,13 @@ meteorPublish(PubSub.externalMessageQueue, function(selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.recordedFiles, function(selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<RecordedFile> = {
-		fields: {},
-	}
-	if (StudioReadAccess.studioContent(selector, { userId: this.userId, token })) {
-		return RecordedFiles.find(selector, modifier)
-	}
-	return null
-})
 
 meteorPublish(PubSub.mediaObjects, function(studioId, selector, token) {
 	if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
 	selector = selector || {}
 	check(studioId, String)
 	check(selector, Object)
-	const modifier: FindOptions<RecordedFile> = {
+	const modifier: FindOptions<MediaObject> = {
 		fields: {},
 	}
 	selector.studioId = studioId

@@ -142,7 +142,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 			this.props.parts.forEach((item) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
 				const duration = Math.max(
-					item.instance.part.duration || item.renderedDuration || 0,
+					item.instance.timings?.duration || item.renderedDuration || 0,
 					(durations.partDisplayDurations && durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
 						Settings.defaultDisplayDuration
 				)
@@ -178,10 +178,8 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 					autoNextPart={this.props.autoNextPart}
 					liveLineHistorySize={this.props.liveLineHistorySize}
 					livePosition={
-						part.instance._id === this.props.playlist.currentPartInstanceId &&
-						part.instance.part.startedPlayback &&
-						part.instance.part.getLastStartedPlayback()
-							? this.props.livePosition - (part.instance.part.getLastStartedPlayback() || 0)
+						part.instance._id === this.props.playlist.currentPartInstanceId && part.instance.timings?.startedPlayback
+							? this.props.livePosition - part.instance.timings.startedPlayback
 							: null
 					}
 					isLastInSegment={false}
@@ -555,7 +553,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onClickSegmentIdent = (partId: PartId) => {
-		scrollToPart(partId).catch((error) => {
+		scrollToPart(partId, false, true).catch((error) => {
 			if (!error.toString().match(/another scroll/)) console.error(error)
 		})
 	}
@@ -764,9 +762,16 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			return prev
 		}, 0)
 
-		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts.map((p) => {
-			return { partId: p.partId, ident: p.instance.part.identifier }
-		})
+		const identifiers: Array<{ partId: PartId; ident?: string }> = this.props.parts
+			.map((p) =>
+				p.instance.part.identifier
+					? {
+							partId: p.partId,
+							ident: p.instance.part.identifier,
+					  }
+					: null
+			)
+			.filter((entry) => entry !== null) as Array<{ partId: PartId; ident?: string }>
 
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
@@ -859,7 +864,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
 								partIds={this.props.parts
-									.filter((item) => item.instance.part.duration === undefined)
+									.filter((item) => item.instance.timings?.duration === undefined)
 									.map((item) => item.instance.part._id)}
 							/>
 						)}

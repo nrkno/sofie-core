@@ -12,17 +12,8 @@ import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
-	// if (!playlist.active) throw new Meteor.Error(500, `The playlist "${playlist._id}" is not active!`)
-	// if (!playlist.activeInstanceId)
-	// 	throw new Meteor.Error(500, `The playlist "${playlist._id}" has no activeInstanceId set!`)
-
 	let activationCache = activationCaches.get(studioId)
-	if (
-		activationCache &&
-		!activationCache.expired &&
-		activationCache.persistant &&
-		activationCache.playlistId === playlistId
-	) {
+	if (activationCache && getValidActivationCache(studioId, playlistId)) {
 		activationCache.touch()
 	} else {
 		if (activationCache) activationCache.destroy()
@@ -32,6 +23,23 @@ export function getActivationCache(studioId: StudioId, playlistId: RundownPlayli
 	}
 
 	return activationCache
+}
+/** Only return an activationCache if one is found */
+export function getValidActivationCache(
+	studioId: StudioId,
+	playlistId?: RundownPlaylistId
+): ActivationCache | undefined {
+	let activationCache = activationCaches.get(studioId)
+	if (
+		activationCache &&
+		!activationCache.expired &&
+		activationCache.persistant &&
+		(!playlistId || activationCache.playlistId === playlistId)
+	) {
+		return activationCache
+	} else {
+		return undefined
+	}
 }
 export function clearActivationCache(studioId: StudioId): void {
 	const activationCache = activationCaches.get(studioId)

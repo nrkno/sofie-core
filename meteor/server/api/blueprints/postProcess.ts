@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
@@ -43,7 +42,7 @@ export function postProcessPieces(
 
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
-	const processedPieces = _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
+	const processedPieces = pieces.map((itemOrig: IBlueprintPiece) => {
 		let piece: Piece = {
 			...(itemOrig as Omit<IBlueprintPiece, 'continuesRefId'>),
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)),
@@ -70,7 +69,7 @@ export function postProcessPieces(
 				)}")`
 			)
 
-		if (piece.content && piece.content.timelineObjects) {
+		if (piece.content?.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
 				innerContext,
 				piece._id,
@@ -96,12 +95,10 @@ export function postProcessTimelineObjects(
 	prefixAllTimelineObjects: boolean,
 	timelineUniqueIds: { [key: string]: boolean }
 ) {
-	let newObjs = _.map(_.compact(timelineObjects), (o: TimelineObjectCoreExt, i) => {
+	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
 		const obj: TimelineObjRundown = {
 			...o,
 			id: o.id,
-			_id: protectString(''), // set later
-			studioId: protectString(''), // set later
 			objectType: TimelineObjType.RUNDOWN,
 		}
 
@@ -144,12 +141,7 @@ export function postProcessAdLibPieces(
 	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
 
-	const processedPieces: AdLibPiece[] = []
-	for (const itemOrig of adLibPieces) {
-		if (!itemOrig) {
-			continue
-		}
-
+	const processedPieces = adLibPieces.map((itemOrig) => {
 		const piece: AdLibPiece = {
 			...itemOrig,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
@@ -177,8 +169,8 @@ export function postProcessAdLibPieces(
 			)
 		}
 
-		processedPieces.push(piece)
-	}
+		return piece
+	})
 
 	span?.end()
 	return processedPieces
@@ -189,7 +181,7 @@ export function postProcessGlobalAdLibActions(
 	adlibActions: IBlueprintActionManifest[],
 	blueprintId: BlueprintId
 ): RundownBaselineAdLibAction[] {
-	return _.map(adlibActions, (action, i) =>
+	return adlibActions.map((action, i) =>
 		literal<RundownBaselineAdLibAction>({
 			...action,
 			actionId: action.actionId,
@@ -206,7 +198,7 @@ export function postProcessAdLibActions(
 	blueprintId: BlueprintId,
 	partId: PartId
 ): AdLibAction[] {
-	return _.map(adlibActions, (action, i) =>
+	return adlibActions.map((action, i) =>
 		literal<AdLibAction>({
 			...action,
 			actionId: action.actionId,

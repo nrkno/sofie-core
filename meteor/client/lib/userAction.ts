@@ -39,9 +39,6 @@ export enum UserAction {
 	ABORT_ALL_MEDIA_WORKFLOWS,
 	GENERATE_RESTART_TOKEN,
 	RESTART_CORE,
-	STOP_RECORDING,
-	START_RECORDING,
-	DELETE_RECORDING,
 	USER_LOG_PLAYER_METHOD,
 	UNKNOWN_ACTION,
 	CREATE_BUCKET,
@@ -122,12 +119,6 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Generating restart token')
 		case UserAction.RESTART_CORE:
 			return t('Restarting Sofie Core')
-		case UserAction.STOP_RECORDING:
-			return t('Stopping recording')
-		case UserAction.START_RECORDING:
-			return t('Starting recording')
-		case UserAction.DELETE_RECORDING:
-			return t('Deleting recording')
 		case UserAction.USER_LOG_PLAYER_METHOD:
 			return t('Method ${method}')
 		case UserAction.CREATE_BUCKET:

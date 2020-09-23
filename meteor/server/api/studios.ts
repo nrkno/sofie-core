@@ -11,7 +11,6 @@ import { OrganizationContentWriteAccess } from '../security/organization'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { Timeline } from '../../lib/collections/Timeline'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
-import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { Credentials } from '../security/lib/credentials'
 import { OrganizationId } from '../../lib/collections/Organization'
@@ -71,7 +70,6 @@ export function removeStudio(context: MethodContext, studioId: StudioId): void {
 	Studios.remove(studio._id)
 	Studios.remove({ studioId: studio._id })
 	ExternalMessageQueue.remove({ studioId: studio._id })
-	RecordedFiles.remove({ studioId: studio._id })
 	MediaObjects.remove({ studioId: studio._id })
 	Timeline.remove({ studioId: studio._id })
 }

@@ -31,6 +31,10 @@ import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites
 import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 
+interface PieceGroupMetadata {
+	id: PieceId
+}
+
 export namespace RundownUtils {
 	function padZerundown(input: number, places?: number): string {
 		places = places || 2
@@ -41,7 +45,7 @@ export namespace RundownUtils {
 		return parts.reduce((memo, part) => {
 			return (
 				memo +
-				(part.instance.part.duration ||
+				(part.instance.timings?.duration ||
 					part.instance.part.expectedDuration ||
 					part.renderedDuration ||
 					(display ? Settings.defaultDisplayDuration : 0))
@@ -192,12 +196,12 @@ export namespace RundownUtils {
 				(piece !== undefined
 					? (piece.renderedInPoint || 0) +
 					  (piece.renderedDuration ||
-							(part.instance.part.duration !== undefined
-								? part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)
+							(part.instance.timings?.duration !== undefined
+								? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
 								: (partDuration || part.renderedDuration || part.instance.part.expectedDuration || 0) -
 								  (piece.renderedInPoint || 0)))
-					: part.instance.part.duration !== undefined
-					? part.instance.part.duration + (part.instance.part.getLastPlayOffset() || 0)
+					: part.instance.timings?.duration !== undefined
+					? part.instance.timings.duration + (part.instance.timings?.playOffset || 0)
 					: partDuration || part.renderedDuration || 0)
 		) {
 			return false
@@ -339,7 +343,21 @@ export namespace RundownUtils {
 					),
 				})
 
-				if (partE.instance.part.startedPlayback !== undefined) {
+				// set the flags for isLiveSegment, isNextSegment, autoNextPart, hasAlreadyPlayed
+				if (currentPartInstance && currentPartInstance._id === partE.instance._id) {
+					isLiveSegment = true
+					currentLivePart = partE
+				}
+				if (nextPartInstance && nextPartInstance._id === partE.instance._id) {
+					isNextSegment = true
+					currentNextPart = partE
+				}
+				autoNextPart = !!(
+					currentLivePart &&
+					currentLivePart.instance.part.autoNext &&
+					currentLivePart.instance.part.expectedDuration
+				)
+				if (partE.instance.timings?.startedPlayback !== undefined) {
 					hasAlreadyPlayed = true
 				}
 
@@ -364,9 +382,7 @@ export namespace RundownUtils {
 					}
 				)
 
-				const partStarted = partE.instance.part.startedPlayback
-					? partE.instance.part.getLastStartedPlayback()
-					: undefined
+				const partStarted = partE.instance.timings?.startedPlayback
 				const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
 
 				const preprocessedPieces = processAndPrunePieceInstanceTimings(
@@ -384,7 +400,7 @@ export namespace RundownUtils {
 					}
 
 					const { pieceGroup, capObjs } = createPieceGroupAndCap(piece)
-					pieceGroup.metaData = { id: piece.piece._id }
+					pieceGroup.metaData = literal<PieceGroupMetadata>({ id: piece.piece._id })
 					partTimeline.push(pieceGroup)
 					partTimeline.push(...capObjs)
 
@@ -455,7 +471,7 @@ export namespace RundownUtils {
 				const objs = Object.values(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
-					const obj0 = (obj as unknown) as TimelineObjectCoreExt
+					const obj0 = (obj as unknown) as TimelineObjectCoreExt<PieceGroupMetadata>
 					if (obj.resolved.resolved && obj0.metaData) {
 						// Timeline actually has copies of the content object, instead of the object itself, so we need to match it back to the Part
 						const piece = piecesLookup.get(obj0.metaData.id)
@@ -503,7 +519,7 @@ export namespace RundownUtils {
 							(partE.instance.part.expectedDuration || 0)
 					)
 					partE.renderedDuration =
-						partE.instance.part.duration ||
+						partE.instance.timings?.duration ||
 						Math.min(partE.instance.part.displayDuration || 0, partE.instance.part.expectedDuration || 0) ||
 						displayDurationGroups.get(partE.instance.part.displayDurationGroup) ||
 						0
@@ -512,7 +528,7 @@ export namespace RundownUtils {
 						Math.max(
 							0,
 							(displayDurationGroups.get(partE.instance.part.displayDurationGroup) || 0) -
-								(partE.instance.part.duration || partE.renderedDuration)
+								(partE.instance.timings?.duration || partE.renderedDuration)
 						)
 					)
 				}
@@ -534,8 +550,8 @@ export namespace RundownUtils {
 				const userDurationNumber =
 					item.instance.userDuration &&
 					typeof item.instance.userDuration.end === 'number' &&
-					item.instance.piece.startedPlayback
-						? item.instance.userDuration.end - item.instance.piece.startedPlayback
+					item.instance.startedPlayback
+						? item.instance.userDuration.end - item.instance.startedPlayback
 						: 0
 				return userDurationNumber || item.renderedDuration || expectedDurationNumber
 			}

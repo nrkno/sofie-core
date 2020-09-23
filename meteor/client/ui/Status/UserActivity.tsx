@@ -53,7 +53,10 @@ export const UserActionsList = withTranslation()(
 										<Moment format="YYYY/MM/DD HH:mm:ss.SSS">{msg.timestamp}</Moment>
 									</td>
 									<td className="user-action-log__executionTime">
-										{msg.executionTime ? msg.executionTime + 'ms' : null}
+										{msg.executionTime ? msg.executionTime : null}
+										{msg.gatewayDuration ? ` + ${msg.gatewayDuration.join(', ')}` : null}
+										{msg.timelineResolveDuration ? ` (${msg.timelineResolveDuration.join(', ')})` : null}
+										{' ms'}
 									</td>
 									<td className="user-action-log__userId">{msg.userId}</td>
 									<td className="user-action-log__clientAddress">{msg.clientAddress}</td>

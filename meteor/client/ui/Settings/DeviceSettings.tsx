@@ -1,7 +1,12 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDevices,
+	PeripheralDeviceId,
+	getExpectedLatency,
+} from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
@@ -100,6 +105,8 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 		renderEditForm(device: PeripheralDevice) {
 			const { t } = this.props
 
+			const latencies = getExpectedLatency(device)
+
 			return (
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">
@@ -132,6 +139,21 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							</div>
 							<div className="mbs">
 								<PeripheralDeviceStatus device={device} />
+							</div>
+							<div className="mbs">
+								{latencies.average > 0 ? (
+									<React.Fragment>
+										<b>Latencies:</b>
+										<div>
+											Average: {Math.floor(latencies.average)} ms
+											<br />
+											Safe: {Math.floor(latencies.safe)} ms
+											<br />
+											Fastest: {Math.floor(latencies.fastest)} ms
+											<br />
+										</div>
+									</React.Fragment>
+								) : null}
 							</div>
 						</div>
 					</div>

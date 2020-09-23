@@ -32,6 +32,14 @@ export interface IStudioSettings {
 
 	/** Should the play from anywhere feature be enabled in this studio */
 	enablePlayFromAnywhere?: boolean
+
+	/** If set, forces the "now"-time to be set right away (aka the "multi-playout-gateway" feature).
+	 * even for single playout-gateways */
+	forceSettingNowTime?: boolean
+
+	/** How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature) .
+	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
+	nowSafeLatency?: number
 }
 /** A string, identifying a Studio */
 export type StudioId = ProtectedString<'StudioId'>
@@ -62,7 +70,6 @@ export interface DBStudio {
 
 	/** Config values are used by the Blueprints */
 	blueprintConfig: IBlueprintConfig
-	testToolsConfig?: ITestToolsConfig
 
 	settings: IStudioSettings
 
@@ -150,17 +157,6 @@ export function getRoutedMappings(inputMappings: MappingsExt, mappingRoutes: Res
 	return outputMappings
 }
 
-export interface ITestToolsConfig {
-	recordings: {
-		deviceId?: string
-		channelIndex?: number
-		channelFormat: TSR.ChannelFormat
-		decklinkDevice?: number
-		filePrefix?: string
-		urlPrefix?: string
-	}
-}
-
 export class Studio implements DBStudio {
 	public _id: StudioId
 	public organizationId: OrganizationId | null
@@ -171,7 +167,6 @@ export class Studio implements DBStudio {
 	public supportedShowStyleBase: Array<ShowStyleBaseId>
 	public blueprintConfig: IBlueprintConfig
 	public settings: IStudioSettings
-	public testToolsConfig?: ITestToolsConfig
 
 	public _rundownVersionHash: string
 
