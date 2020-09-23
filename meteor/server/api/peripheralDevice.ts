@@ -1007,6 +1007,11 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 			MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc)
 		)
 	}
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
+		return makePromise(() =>
+			MediaScannerIntegration.clearMediaObjectCollection(deviceId, deviceToken, collectionId)
+		)
+	}
 	// ------- Media Manager --------------
 	getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string) {
 		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowRevisions(this, deviceId, deviceToken))

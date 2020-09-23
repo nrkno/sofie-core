@@ -93,7 +93,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
@@ -721,7 +721,9 @@ const RundownHeader = withTranslation()(
 						(e) => MeteorCall.userAction.moveNext(e, this.props.playlist._id, horizonalDelta, verticalDelta),
 						(err, partId) => {
 							if (!err && partId) {
-								scrollToPart(partId).catch(() => console.error)
+								scrollToPart(partId).catch((error) => {
+									if (!error.toString().match(/another scroll/)) console.error(error)
+								})
 							}
 						}
 					)
@@ -1056,7 +1058,9 @@ const RundownHeader = withTranslation()(
 						if (!err && reloadResponse) {
 							if (!handleRundownPlaylistReloadResponse(t, this.props.playlist, reloadResponse)) {
 								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
-									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
+									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+										if (!error.toString().match(/another scroll/)) console.error(error)
+									})
 								}
 							}
 						}
@@ -1305,6 +1309,8 @@ interface ITrackedProps {
 		inspector: boolean
 	}
 	bucketDisplayFilter: number[] | undefined
+	currentPartInstance: PartInstance | undefined
+	nextPartInstance: PartInstance | undefined
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
 	let playlistId
@@ -1318,6 +1324,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 	let rundowns: Rundown[] = []
 	let studio: Studio | undefined
 	let allParts: PartId[] = []
+	let currentPartInstance: PartInstance | undefined
+	let nextPartInstance: PartInstance | undefined
+
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
 		rundowns = playlist.getRundowns()
@@ -1329,6 +1338,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				},
 			})
 			.map((part) => part._id)
+		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
 	const params = queryStringParse(location.search)
@@ -1389,6 +1399,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			inspector: displayOptions.includes('inspector'),
 		},
 		bucketDisplayFilter,
+		currentPartInstance,
+		nextPartInstance,
 	}
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -1718,16 +1730,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
 				this.state.manualSetAsNext
 			) {
+				// reset followLiveSegments after a manual set as next
 				this.setState({
 					manualSetAsNext: false,
 					followLiveSegments: true,
 				})
+				if (this.props.playlist.currentPartInstanceId) {
+					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+						if (!error.toString().match(/another scroll/)) console.error(error)
+					})
+				}
 			} else if (
 				this.props.playlist &&
 				prevProps.playlist &&
 				prevProps.playlist.active &&
 				!this.props.playlist.active
 			) {
+				// reset followLiveSegments after deactivating a rundown
 				this.setState({
 					followLiveSegments: true,
 				})
@@ -1738,7 +1757,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.props.playlist.active &&
 				this.props.playlist.nextPartInstanceId
 			) {
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch(() => console.error)
+				// scroll to next after activation
+				scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 			} else if (
 				// after take
 				this.props.playlist &&
@@ -1747,7 +1769,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.props.playlist.currentPartInstanceId &&
 				this.state.followLiveSegments
 			) {
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(() => console.error)
+				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 			} else if (
 				// initial Rundown open
 				this.props.playlist &&
@@ -1914,7 +1938,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onGoToTop = () => {
-			scrollToPosition(0).catch(console.error)
+			scrollToPosition(0).catch((error) => {
+				if (!error.toString().match(/another scroll/)) console.error(error)
+			})
 
 			window.requestIdleCallback(
 				() => {
@@ -1935,7 +1961,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch(console.error)
+				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 				setTimeout(() => {
 					this.setState({
 						followLiveSegments: true,
@@ -1946,7 +1974,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch(console.error)
+				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 				setTimeout(() => {
 					this.setState({
 						followLiveSegments: true,
@@ -2058,7 +2088,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								})
 							)
 						})
-						.catch(console.error)
+						.catch((error) => {
+							if (!error.toString().match(/another scroll/)) console.error(error)
+						})
 				}
 			}
 		}
@@ -2160,6 +2192,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onPieceClick={this.onSelectPiece}
 												onPieceDoubleClick={this.onPieceDoubleClick}
 												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+												ownCurrentPartInstance={
+													this.props.currentPartInstance && this.props.currentPartInstance.segmentId === segment._id
+														? this.props.currentPartInstance
+														: undefined
+												}
+												ownNextPartInstance={
+													this.props.nextPartInstance && this.props.nextPartInstance.segmentId === segment._id
+														? this.props.nextPartInstance
+														: undefined
+												}
 											/>
 										</VirtualElement>
 									</ErrorBoundary>
