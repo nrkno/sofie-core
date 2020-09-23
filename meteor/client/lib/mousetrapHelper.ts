@@ -180,6 +180,6 @@ mousetrap.addKeycodes({
 	109: 'NumpadSubtract',
 	110: 'NumpadDecimal',
 	111: 'NumpadDivide',
-	187: 'add',
+	187: 'minus',
 	188: 'comma',
 })
