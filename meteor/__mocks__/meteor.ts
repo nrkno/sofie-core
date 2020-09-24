@@ -274,6 +274,8 @@ export namespace MeteorMock {
 		_.each(mockStartupFunctions, (fcn) => {
 			fcn()
 		})
+
+		waitTimeNoFakeTimers(10) // So that any observers or defers has had time to run.
 	}
 	export function mockLoginUser(user: Meteor.User) {
 		mockUser = user
@@ -301,3 +303,21 @@ export function setup() {
 		Meteor: MeteorMock,
 	}
 }
+
+/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
+export function waitTimeNoFakeTimers(time: number) {
+	waitForPromise(new Promise((resolve) => $.orgSetTimeout(resolve, time)))
+}
+export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(function waitForPromises<T>(
+	p: Promise<T>,
+	cb: (err: any | null, result?: any) => T
+) {
+	if (MeteorMock.isClient) throw new MeteorMock.Error(500, `waitForPromise can't be used client-side`)
+	Promise.resolve(p)
+		.then((result) => {
+			cb(null, result)
+		})
+		.catch((e) => {
+			cb(e)
+		})
+})

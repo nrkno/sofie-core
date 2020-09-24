@@ -192,7 +192,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 						<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
 						<div className="field">
-							{t('Enabled')}
+							{t('APM Enabled')}
 							<div className="mdi">
 								<EditAttribute
 									attribute="apm.enabled"
@@ -202,7 +202,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 						</div>
 						<label className="field">
-							{t('Transaction Sample Rate')}
+							{t('APM Transaction Sample Rate')}
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"
@@ -223,6 +223,32 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 							</div>
 							<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 						</label>
+
+						<h2 className="mhn">{t('Monitor blocked thread')}</h2>
+
+						<label className="field">
+							{t('Enable')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="enableMonitorBlockedThread"
+									obj={this.props.coreSystem}
+									type="checkbox"
+									collection={CoreSystem}
+									className="mdinput"
+								/>
+								<span className="mdfx"></span>
+							</div>
+							<div>
+								(
+								{t(
+									'Enables internal monitoring of blocked main thread. Logs when there is an issue, but (unverified) might cause issues in itself.'
+								)}
+								)
+							</div>
+						</label>
+
+						<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 
 						<h2 className="mhn">{t('Cleanup')}</h2>
 						<div>

@@ -260,8 +260,11 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 
 			if (deviceTypes.length === 1) {
 				const config = configManifest.config[configManifest.defaultType || 'default']
-				const propNames = config.map((o) => o.columnName).map((name) => (name ? <th key={name}>{name}</th> : undefined))
-				propNames.push(<th key="action">&nbsp;</th>)
+				const propNames = [
+					<th key="ID">ID</th>,
+					...config.map((o) => o.columnName).map((name) => (name ? <th key={name}>{name}</th> : undefined)),
+					<th key="action">&nbsp;</th>,
+				]
 
 				return (
 					<React.Fragment>
@@ -317,8 +320,8 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 				const propNames = [
 					<th key="ID">ID</th>,
 					..._.map(this.getConfigSummaryFields(configManifest), (f) => <th key={f.columnName}>{f.columnName}</th>),
+					<th key="action">&nbsp;</th>,
 				]
-				propNames.push(<th key="action">&nbsp;</th>)
 
 				const deviceTypesObj = {}
 				for (let i in deviceTypes) {

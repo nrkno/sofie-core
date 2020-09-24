@@ -15,7 +15,6 @@ import {
 	IBlueprintPiece,
 	IBlueprintAdLibPiece,
 	TimelineObjectCoreExt,
-	IBlueprintPieceDB,
 	TSR,
 	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
@@ -101,13 +100,7 @@ describe('Test blueprint post-process', () => {
 			const res = postProcessStudioBaselineObjects(studio, [])
 			expect(res).toHaveLength(0)
 		})
-		testInFiber('null object', () => {
-			const studio = getStudio()
 
-			// Ensure that a null object gets dropped
-			const res = postProcessStudioBaselineObjects(studio, [null as any])
-			expect(res).toHaveLength(0)
-		})
 		testInFiber('some no ids', () => {
 			const studio = getStudio()
 
@@ -222,13 +215,7 @@ describe('Test blueprint post-process', () => {
 			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [])
 			expect(res).toHaveLength(0)
 		})
-		testInFiber('null object', () => {
-			const context = getContext()
 
-			// Ensure that a null object gets dropped
-			const res = postProcessRundownBaselineItems(context, protectString('some-blueprints'), [null as any])
-			expect(res).toHaveLength(0)
-		})
 		testInFiber('some no ids', () => {
 			const context = getContext()
 
@@ -296,13 +283,11 @@ describe('Test blueprint post-process', () => {
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<TimelineObjGeneric>({
-				_id: protectString(''),
 				id: '',
 				layer: '',
 				enable: {},
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
-				studioId: protectString(''),
 			})
 			ensureAllKeysDefined(tmpObj, res)
 		})
@@ -364,13 +349,7 @@ describe('Test blueprint post-process', () => {
 			const res = postProcessAdLibPieces(context, [], protectString('blueprint9'))
 			expect(res).toHaveLength(0)
 		})
-		testInFiber('null piece', () => {
-			const context = getContext()
 
-			// Ensure that a null object gets dropped
-			const res = postProcessAdLibPieces(context, [null as any], protectString('blueprint9'))
-			expect(res).toHaveLength(0)
-		})
 		testInFiber('various pieces', () => {
 			const context = getContext()
 
@@ -410,7 +389,7 @@ describe('Test blueprint post-process', () => {
 					sourceLayerId: 'sl0',
 					outputLayerId: 'ol0',
 					content: {
-						timelineObjects: [null as any],
+						timelineObjects: [],
 					},
 					lifespan: PieceLifespan.WithinPart,
 				},
@@ -498,20 +477,7 @@ describe('Test blueprint post-process', () => {
 			)
 			expect(res).toHaveLength(0)
 		})
-		testInFiber('null piece', () => {
-			const context = getContext()
 
-			// Ensure that a null object gets dropped
-			const res = postProcessPieces(
-				context,
-				[null as any],
-				protectString('blueprint9'),
-				context._rundown._id,
-				protectString('segment5'),
-				protectString('part8')
-			)
-			expect(res).toHaveLength(0)
-		})
 		testInFiber('various pieces', () => {
 			const context = getContext()
 
@@ -544,21 +510,10 @@ describe('Test blueprint post-process', () => {
 					},
 					lifespan: PieceLifespan.WithinPart,
 				},
-				{
-					name: 'test2',
-					externalId: 'eid2',
-					enable: { start: 0 },
-					sourceLayerId: 'sl0',
-					outputLayerId: 'ol0',
-					content: {
-						timelineObjects: [null as any],
-					},
-					lifespan: PieceLifespan.WithinPart,
-				},
 			])
 
 			// mock getHash, to track the returned ids
-			const mockedIds = ['mocked1', 'mocked2', 'mcoked3', 'mocked4']
+			const mockedIds = ['mocked1', 'mocked2', 'mcoked3']
 			const expectedIds = [...mockedIds]
 			jest.spyOn(context, 'getHashId').mockImplementation(() => mockedIds.shift() || '')
 
@@ -590,11 +545,10 @@ describe('Test blueprint post-process', () => {
 			ensureAllKeysDefined(tmpObj, res)
 
 			// Ensure getHashId was called as expected
-			expect(context.getHashId).toHaveBeenCalledTimes(4)
+			expect(context.getHashId).toHaveBeenCalledTimes(3)
 			expect(context.getHashId).toHaveBeenNthCalledWith(1, 'blueprint9_part8_piece_0')
 			expect(context.getHashId).toHaveBeenNthCalledWith(2, 'blueprint9_part8_piece_1')
 			expect(context.getHashId).toHaveBeenNthCalledWith(3, 'blueprint9_part8_piece_2')
-			expect(context.getHashId).toHaveBeenNthCalledWith(4, 'blueprint9_part8_piece_3')
 
 			// Ensure no ids were duplicates
 			const ids = _.map(res, (obj) => obj._id).sort()

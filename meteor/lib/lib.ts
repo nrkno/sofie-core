@@ -67,6 +67,7 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 }
 
 export type Time = number
+export type TimeDuration = number
 
 const systemTime = {
 	diff: 0,
@@ -656,6 +657,19 @@ function cleanOldCacheResult() {
 	_.each(cacheResultCache, (cache, name) => {
 		if (cache.ttl < Date.now()) clearCacheResult(name)
 	})
+}
+const lazyIgnoreCache: { [name: string]: number } = {}
+export function lazyIgnore(name: string, f1: () => void, t: number): void {
+	// Don't execute the function f1 until the time t has passed.
+	// Subsequent calls will extend the lazyness and ignore the previous call
+
+	if (lazyIgnoreCache[name]) {
+		Meteor.clearTimeout(lazyIgnoreCache[name])
+	}
+	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
+		delete lazyIgnoreCache[name]
+		f1()
+	}, t)
 }
 
 export function escapeHtml(text: string): string {
@@ -1375,6 +1389,15 @@ export function equalSets<T extends any>(a: Set<T>, b: Set<T>): boolean {
 	if (a.size !== b.size) return false
 	for (let val of a.values()) {
 		if (!b.has(val)) return false
+	}
+	return true
+}
+
+export function equivalentArrays<T>(a: T[], b: T[]): boolean {
+	if (a === b) return true
+	if (a.length !== b.length) return false
+	for (let i = 0; i < a.length; i++) {
+		if (!b.includes(a[i])) return false
 	}
 	return true
 }

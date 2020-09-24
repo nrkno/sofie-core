@@ -22,6 +22,18 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 						// connectionId: ''
 					},
 				})
+				PeripheralDevices.update(
+					{
+						parentDeviceId: p._id,
+					},
+					{
+						$set: {
+							lastSeen: getCurrentTime(),
+							connected: false,
+							// connectionId: ''
+						},
+					}
+				)
 			})
 		}
 	})

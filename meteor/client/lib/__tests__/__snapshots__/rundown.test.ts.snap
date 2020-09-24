@@ -18,7 +18,6 @@ Object {
         "part": Part {
           "_id": "randomId9002_part0_0",
           "_rank": 0,
-          "duration": 20,
           "externalId": "MOCK_PART_0_0",
           "rundownId": "randomId9002",
           "segmentId": "randomId9002_segment0",

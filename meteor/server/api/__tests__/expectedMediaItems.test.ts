@@ -8,12 +8,19 @@ import { Pieces, Piece, PieceId } from '../../../lib/collections/Pieces'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { updateExpectedMediaItemsOnRundown, updateExpectedMediaItemsOnPart } from '../expectedMediaItems'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { runInFiber } from '../../../__mocks__/Fibers'
+import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
 import { AdLibPieces, AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { initCacheForRundownPlaylistFromRundown } from '../../DatabaseCaches'
 import { removeRundownFromCache } from '../playout/lib'
+import {
+	defaultRundownPlaylist,
+	defaultRundown,
+	defaultSegment,
+	defaultPart,
+	defaultPiece,
+	defaultAdLibPiece,
+} from '../../../__mocks__/defaultCollectionObjects'
 require('../expectedMediaItems') // include in order to create the Meteor methods needed
 
 describe('Expected Media Items', () => {
@@ -39,92 +46,54 @@ describe('Expected Media Items', () => {
 
 	function setupRundown(rdId: RundownId, rplId: RundownPlaylistId) {
 		RundownPlaylists.insert({
-			_id: rplId,
+			...defaultRundownPlaylist(rplId, env.studio._id, protectString('')),
 			externalId: 'mock_rpl',
 			name: 'Mock Playlist',
-			studioId: env.studio._id,
-			peripheralDeviceId: protectString(''),
-			created: 0,
-			modified: 0,
-			currentPartInstanceId: protectString(''),
-			previousPartInstanceId: protectString(''),
-			nextPartInstanceId: protectString(''),
+
+			// currentPartInstanceId: protectString(''),
+			// previousPartInstanceId: protectString(''),
+			// nextPartInstanceId: protectString(''),
 			active: true,
 		})
 
 		Rundowns.insert(
 			literal<DBRundown>({
-				_id: rdId,
-				created: 0,
-				dataSource: '',
-				expectedDuration: 0,
-				expectedStart: 0,
-				externalId: '',
-				importVersions: {
-					blueprint: '',
-					core: '',
-					showStyleBase: '',
-					showStyleVariant: '',
-					studio: '',
-				},
-				metaData: {},
-				modified: 0,
-				name: 'Mock Rundown',
-				peripheralDeviceId: env.ingestDevice._id,
-				showStyleBaseId: env.showStyleBaseId,
-				showStyleVariantId: env.showStyleVariantId,
-				studioId: env.studio._id,
-				playlistId: rplId,
-				_rank: 0,
-				externalNRCSName: 'mockNRCS',
-				organizationId: protectString(''),
+				...defaultRundown(
+					rdId,
+					env.studio._id,
+					env.ingestDevice._id,
+					rplId,
+					env.showStyleBase._id,
+					env.showStyleVariant._id
+				),
 			})
 		)
 		Segments.insert(
 			literal<DBSegment>({
-				_id: getRandomId(),
+				...defaultSegment(getRandomId(), rdId),
 				_rank: 1,
-				externalId: '',
-				metaData: {},
-				name: '',
-				rundownId: rdId,
-				externalModified: 1,
 			})
 		)
 		Parts.insert(
 			literal<DBPart>({
-				_id: protectString(rdId + '_' + mockPart0),
+				...defaultPart(protectString(rdId + '_' + mockPart0), rdId, protectString('')),
 				_rank: 1,
-				autoNext: false,
-				autoNextOverlap: 0,
-				classes: [],
-				classesForNext: [],
-				disableOutTransition: false,
-				expectedDuration: 1,
-				externalId: '',
-				rundownId: rdId,
-				segmentId: protectString(''),
 				title: '',
 			})
 		)
 		Pieces.insert(
 			literal<Piece>({
-				_id: protectString(rdId + '_' + mockPiece0),
+				...defaultPiece(
+					protectString(rdId + '_' + mockPiece0),
+					rdId,
+					protectString(''),
+					protectString(rdId + '_' + mockPart0)
+				),
 				name: '',
-				enable: {
-					start: 0,
-				},
-				adlibPreroll: 0,
-				externalId: '',
-				metaData: {},
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
-				startPartId: protectString(rdId + '_' + mockPart0),
-				startSegmentId: protectString(''),
-				startRundownId: rdId,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				invalid: false,
 				content: literal<VTContent>({
 					fileName: mockFileName0,
 					path: mockPath0,
@@ -138,38 +107,25 @@ describe('Expected Media Items', () => {
 		)
 		Parts.insert(
 			literal<DBPart>({
-				_id: protectString(rdId + '_' + mockPart1),
+				...defaultPart(protectString(rdId + '_' + mockPart1), rdId, protectString('')),
 				_rank: 1,
-				autoNext: false,
-				autoNextOverlap: 0,
-				classes: [],
-				classesForNext: [],
-				disableOutTransition: false,
-				expectedDuration: 1,
 				externalId: '',
-				rundownId: rdId,
-				segmentId: protectString(''),
 				title: '',
 			})
 		)
 		Pieces.insert(
 			literal<Piece>({
-				_id: protectString(rdId + '_' + mockPiece1),
+				...defaultPiece(
+					protectString(rdId + '_' + mockPiece1),
+					rdId,
+					protectString(''),
+					protectString(rdId + '_' + mockPart1)
+				),
 				name: '',
-				enable: {
-					start: 0,
-				},
-				adlibPreroll: 0,
-				externalId: '',
-				metaData: {},
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
-				startPartId: protectString(rdId + '_' + mockPart1),
-				startSegmentId: protectString(''),
-				startRundownId: rdId,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
-				invalid: false,
 				content: literal<VTContent>({
 					fileName: mockFileName1,
 					path: mockPath1,
@@ -183,21 +139,18 @@ describe('Expected Media Items', () => {
 		)
 		AdLibPieces.insert(
 			literal<AdLibPiece>({
+				...defaultAdLibPiece(
+					protectString(rdId + '_' + mockAdLibPiece0),
+					rdId,
+					protectString(rdId + '_' + mockPart1)
+				),
 				_id: protectString(rdId + '_' + mockAdLibPiece0),
 				name: '',
 				_rank: 0,
-				adlibPreroll: 0,
-				expectedDuration: 0,
-				externalId: '',
 				lifespan: PieceLifespan.WithinPart,
-				invalid: false,
-				metaData: {},
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
-				partId: protectString(rdId + '_' + mockPart1),
-				rundownId: rdId,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
 				status: RundownAPI.PieceStatusCode.UNKNOWN,
-				// trigger: undefined,
 				content: literal<VTContent>({
 					fileName: mockFileName1,
 					path: mockPath1,
@@ -211,12 +164,10 @@ describe('Expected Media Items', () => {
 		)
 	}
 
-	beforeAll(() =>
-		runInFiber(() => {
-			setupRundown(rdId0, rplId0)
-			setupRundown(rdId1, rplId1)
-		})
-	)
+	beforeAllInFiber(() => {
+		setupRundown(rdId0, rplId0)
+		setupRundown(rdId1, rplId1)
+	})
 
 	describe('Based on a Rundown', () => {
 		testInFiber('Generates ExpectedMediaItems based on a Rundown', () => {

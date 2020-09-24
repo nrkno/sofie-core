@@ -13,6 +13,7 @@ import { initCacheForRundownPlaylistFromRundown, initCacheForRundownPlaylist } f
 import { removeRundownPlaylistFromCache } from '../api/playout/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
+import { forceClearAllActivationCaches } from '../ActivationCache'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -97,6 +98,12 @@ if (!Settings.enableUserAccounts) {
 					waitForPromise(cache.saveAllToDatabase())
 				}
 			)
+		},
+
+		debug_forceClearAllActivationCaches() {
+			logger.info('forceClearAllActivationCaches')
+
+			forceClearAllActivationCaches()
 		},
 	})
 }

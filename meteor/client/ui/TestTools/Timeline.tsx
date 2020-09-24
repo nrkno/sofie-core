@@ -68,10 +68,11 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 	ITimelineVisualizerInStudioState,
 	ITimelineVisualizerInStudioTrackedProps
 >((props: ITimelineVisualizerInStudioProps) => {
+	const findMeATimeline = Timeline.findOne({
+		_id: props.studioId,
+	})
 	return {
-		timeline: Timeline.find({
-			studioId: props.studioId,
-		}).fetch(),
+		timeline: (findMeATimeline && findMeATimeline.timeline) || [],
 	}
 })(
 	class TimelineVisualizerInStudio extends MeteorReactComponent<
@@ -92,7 +93,7 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 		}
 		componentDidMount() {
 			this.subscribe(PubSub.timeline, {
-				studioId: this.props.studioId,
+				_id: this.props.studioId,
 			})
 
 			this.triggerLoadScript()
@@ -166,7 +167,6 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 			let timeline = _.compact(
 				_.map(this.props.timeline, (obj) => {
 					let o = _.clone(obj)
-					delete o._id
 
 					if (o.enable.start === 'now') o.enable.start = getCurrentTime() // tmp
 
@@ -227,17 +227,23 @@ export const ComponentTimelineSimulate = withTracker<ITimelineSimulateProps, {},
 		try {
 			// These properties will be exposed under this.props
 			// Note that these properties are reactively recalculated
-			let timeline = transformTimeline(
-				Timeline.find(
-					{
-						studioId: props.studioId,
-					},
-					{ sort: { _id: 1 } }
-				).fetch()
-			)
+			const tlComplete = Timeline.findOne(props.studioId)
+			const timeline =
+				(tlComplete &&
+					tlComplete.timeline.sort((a, b) => {
+						if (a.id > b.id) {
+							return 1
+						}
+						if (a.id < b.id) {
+							return -1
+						}
+						return 0
+					})) ||
+				[]
+			const transformed = transformTimeline(timeline)
 
 			// TODO - dont repeat unless changed
-			let tl = Resolver.resolveTimeline(timeline, { time: now })
+			let tl = Resolver.resolveTimeline(transformed, { time: now })
 			let allStates = Resolver.resolveAllStates(tl)
 
 			let state = Resolver.getState(allStates, now)

@@ -62,8 +62,10 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		/** When the instance was a copy made from hold */
 		fromHold?: boolean
 
-		/** Whether this was 'copied' from the previous PartInstance, rather than from a Part */
-		fromPrevious?: boolean
+		/** Whether this was 'copied' from the previous PartInstance or Part */
+		fromPreviousPart: boolean
+		/** Whether this was 'copied' from the previous PartInstance via the playhead, rather than from a Part */
+		fromPreviousPlayhead?: boolean
 
 		// /** The first partInstance this existed in */
 		// firstPartInsanceId: PartInstanceId
@@ -71,7 +73,14 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		lastPartInstanceId?: PartInstanceId
 	}
 
-	/** This is set when the duration needs to be overriden from some user action */
+	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
+	startedPlayback?: Time
+	/** Whether the piece has stopped playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway (milliseconds since epoch)
+	 */
+	stoppedPlayback?: Time
+
+	/** This is set when the duration needs to be overriden from some user action (milliseconds since start of part) */
 	userDuration?: {
 		end: number
 	}
@@ -127,4 +136,5 @@ registerCollection('PieceInstances', PieceInstances)
 registerIndex(PieceInstances, {
 	rundownId: 1,
 	partInstanceId: 1,
+	reset: -1,
 })

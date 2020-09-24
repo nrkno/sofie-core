@@ -167,6 +167,13 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			)
 		).map((i) => i._id)
 	}
+	getRundownUnorderedIDs(selector?: MongoQuery<DBRundown>): RundownId[] {
+		return this.getRundowns(selector, {
+			fields: {
+				_id: 1,
+			},
+		}).map((i) => i._id)
+	}
 	getRundownsMap(selector?: MongoQuery<DBRundown>, options?: FindOptions<DBRundown>): { [key: string]: Rundown } {
 		return normalizeArray(this.getRundowns(selector, options), '_id')
 	}

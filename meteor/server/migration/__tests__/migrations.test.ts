@@ -1,14 +1,9 @@
 import * as _ from 'underscore'
 import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../../__mocks__/helpers/jest'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
-import {
-	CURRENT_SYSTEM_VERSION,
-	clearMigrationSteps,
-	addMigrationSteps,
-	prepareMigration,
-	PreparedMigration,
-} from '../databaseMigration'
+import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
 import { literal, protectString, waitForPromise } from '../../../lib/lib'
 import {
@@ -29,6 +24,8 @@ import { MeteorCall } from '../../../lib/api/methods'
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
 require('../../api/blueprints/api.ts') // include in order to create the Meteor methods needed
+
+require('../migrations') // include in order to create the migration steps
 
 // Include all migration scripts:
 const normalizedPath = require('path').join(__dirname, '../')
@@ -69,6 +66,8 @@ describe('Migrations', () => {
 
 		const migrationStatus0: GetMigrationStatusResult = waitForPromise(MeteorCall.migration.getMigrationStatus())
 
+		expect(migrationStatus0.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
+
 		expect(migrationStatus0).toMatchObject({
 			migrationNeeded: true,
 
@@ -83,7 +82,6 @@ describe('Migrations', () => {
 				// chunks: expect.any(Array)
 			},
 		})
-		expect(migrationStatus0.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
 
 		const migrationResult0: RunMigrationResult = waitForPromise(
 			MeteorCall.migration.runMigration(
@@ -142,7 +140,7 @@ describe('Migrations', () => {
 
 		clearMigrationSteps()
 
-		addMigrationSteps('0.2.0', [
+		const addSteps0_2_0 = addMigrationSteps('0.2.0', [
 			{
 				id: 'myCoreMockStep2',
 				canBeRunAutomatically: true,
@@ -164,11 +162,12 @@ describe('Migrations', () => {
 						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
 		])
-		addMigrationSteps('0.3.0', [
+		const addSteps0_3_0 = addMigrationSteps('0.3.0', [
 			{
 				id: 'myCoreMockStep3',
 				canBeRunAutomatically: true,
@@ -190,11 +189,12 @@ describe('Migrations', () => {
 						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
 		])
-		addMigrationSteps('0.1.0', [
+		const addSteps0_1_0 = addMigrationSteps('0.1.0', [
 			{
 				id: 'myCoreMockStep1',
 				canBeRunAutomatically: true,
@@ -216,10 +216,14 @@ describe('Migrations', () => {
 						// @ts-ignore
 						config: [],
 						_rundownVersionHash: '',
+						routeSets: {},
 					})
 				},
 			},
 		])
+		addSteps0_2_0()
+		addSteps0_3_0()
+		addSteps0_1_0()
 
 		let migration: PreparedMigration
 
