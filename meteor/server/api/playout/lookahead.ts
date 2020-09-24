@@ -204,9 +204,11 @@ export async function getLookeaheadObjects(
 	}
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
-		return info.pieceInstances.filter(
-			(p) => info.partInstance.timings?.startedPlayback && !hasPieceInstanceDefinitelyEnded(p, info.nowInPart)
-		)
+		if (!info.partInstance.timings?.startedPlayback) {
+			return info.pieceInstances
+		} else {
+			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
+		}
 	}
 	const partInstancesInfo: PartInstanceAndPieceInstances[] = _.compact([
 		partInstancesInfo0.current
