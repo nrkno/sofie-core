@@ -24,6 +24,7 @@ import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
+import { CASPARCG_RESTART_TIME } from '../../../lib/constants'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -95,7 +96,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server?'),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'restartCasparCG')
+					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
