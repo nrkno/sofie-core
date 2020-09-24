@@ -758,7 +758,7 @@ describe('Test blueprint api context', () => {
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
 
 					partInstance.part.autoNext = true
-					partInstance.part.expectedDuration = 4000
+					partInstance.part.expectedDuration = 700
 					partInstance.timings = {
 						startedPlayback: getCurrentTime(),
 						stoppedPlayback: undefined,
@@ -768,7 +768,7 @@ describe('Test blueprint api context', () => {
 						takeOut: undefined,
 						next: undefined,
 					}
-					expect(isTooCloseToAutonext(partInstance, false)).toBeTruthy()
+					expect(isTooCloseToAutonext(partInstance, true)).toBeTruthy()
 					expect(() => context.queuePart({} as any, [{}] as any)).toThrowError(
 						'Too close to an autonext to queue a part'
 					)

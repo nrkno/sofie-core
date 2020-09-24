@@ -40,8 +40,8 @@ import { invalidateAt } from '../../lib/invalidatingTime'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { getNextPiecesReactive } from './AdLibRegionPanel'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { pieceSetInOutPoints } from '../../../server/api/userActions'
 
 interface IState {
 	outputLayers: {
@@ -64,12 +64,10 @@ export interface IDashboardPanelProps {
 
 export interface IDashboardPanelTrackedProps {
 	studio?: Studio
-	unfinishedPieceInstances: {
-		[adlibId: string]: PieceInstance[]
-	}
-	nextPieces: {
-		[key: string]: PieceInstance[]
-	}
+	unfinishedAdLibIds: PieceId[]
+	unfinishedTags: string[]
+	nextAdLibIds: PieceId[]
+	nextTags: string[]
 }
 
 interface DashboardPositionableElement {
@@ -167,19 +165,34 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					startedPlayback: {
 						$exists: true,
 					},
-					adLibSourceId: {
-						$exists: true,
-					},
-					$or: [
+					$and: [
 						{
-							stoppedPlayback: {
-								$eq: 0,
-							},
+							$or: [
+								{
+									adLibSourceId: {
+										$exists: true,
+									},
+								},
+								{
+									'piece.tags': {
+										$exists: true,
+									},
+								},
+							],
 						},
 						{
-							stoppedPlayback: {
-								$exists: false,
-							},
+							$or: [
+								{
+									stoppedPlayback: {
+										$eq: 0,
+									},
+								},
+								{
+									stoppedPlayback: {
+										$exists: false,
+									},
+								},
+							],
 						},
 					],
 				})
@@ -205,23 +218,11 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
-		if (
-			this.props.unfinishedPieceInstances[unprotectString(adLib._id)] &&
-			this.props.unfinishedPieceInstances[unprotectString(adLib._id)].length > 0
-		) {
-			return true
-		}
-		return false
+		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
-		if (
-			this.props.nextPieces[unprotectString(adLib._id)] &&
-			this.props.nextPieces[unprotectString(adLib._id)].length > 0
-		) {
-			return true
-		}
-		return false
+		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
 	}
 
 	refreshKeyboardHotkeys() {
@@ -308,22 +309,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					sourceLayer.clearKeyboardHotkey.split(',').forEach((hotkey) => {
 						if (!clearKeyboardHotkeySourceLayers[hotkey]) clearKeyboardHotkeySourceLayers[hotkey] = []
 						clearKeyboardHotkeySourceLayers[hotkey].push(sourceLayer)
-					})
-				}
-
-				if (sourceLayer.isSticky && sourceLayer.activateStickyKeyboardHotkey) {
-					sourceLayer.activateStickyKeyboardHotkey.split(',').forEach((element) => {
-						mousetrapHelper.bind(element, preventDefault, 'keydown', this.props.hotkeyGroup)
-						mousetrapHelper.bind(
-							element,
-							(e: ExtendedKeyboardEvent) => {
-								preventDefault(e)
-								this.onToggleSticky(sourceLayer._id, e)
-							},
-							'keyup',
-							this.props.hotkeyGroup
-						)
-						this.usedHotkeys.push(element)
 					})
 				}
 			})
@@ -605,20 +590,33 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 						},
 					],
 				},
-			],
-			adLibSourceId: {
-				$exists: true,
-			},
-			$or: [
 				{
-					userDuration: {
-						$exists: false,
-					},
+					$or: [
+						{
+							adLibSourceId: {
+								$exists: true,
+							},
+						},
+						{
+							'piece.tags': {
+								$exists: true,
+							},
+						},
+					],
 				},
 				{
-					'userDuration.end': {
-						$exists: false,
-					},
+					$or: [
+						{
+							userDuration: {
+								$exists: false,
+							},
+						},
+						{
+							'userDuration.end': {
+								$exists: false,
+							},
+						},
+					],
 				},
 			],
 		}).fetch()
@@ -647,14 +645,104 @@ export function getUnfinishedPieceInstancesReactive(currentPartInstanceId: PartI
 		if (Number.isFinite(nearestEnd)) invalidateAt(nearestEnd)
 	}
 
-	// Convert to array of ids as that is all that is needed
-	const unfinishedPieceInstances: { [adlibId: string]: PieceInstance[] } = {}
-	_.each(
-		_.groupBy(prospectivePieces, (piece) => piece.adLibSourceId),
-		(grp, id) => (unfinishedPieceInstances[id] = _.map(grp, (instance) => instance))
-	)
+	return prospectivePieces
+}
 
-	return unfinishedPieceInstances
+export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): PieceInstance[] {
+	let prospectivePieceInstances: PieceInstance[] = []
+	if (nextPartInstanceId) {
+		prospectivePieceInstances = PieceInstances.find({
+			partInstanceId: nextPartInstanceId,
+			$and: [
+				{
+					piece: {
+						$exists: true,
+					},
+				},
+				{
+					$or: [
+						{
+							adLibSourceId: {
+								$exists: true,
+							},
+						},
+						{
+							'piece.tags': {
+								$exists: true,
+							},
+						},
+					],
+				},
+			],
+		}).fetch()
+	}
+
+	return prospectivePieceInstances
+}
+
+export function getUnfinishedPieceInstancesGrouped(
+	currentPartInstanceId: PartInstanceId | null
+): Pick<IDashboardPanelTrackedProps, 'unfinishedAdLibIds' | 'unfinishedTags'> {
+	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(currentPartInstanceId)
+
+	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
+	const unfinishedTags: string[] = unfinishedPieceInstances
+		.filter((piece) => !!piece.piece.tags)
+		.map((piece) => piece.piece.tags!)
+		.reduce((a, b) => a.concat(b), [])
+
+	return {
+		unfinishedAdLibIds,
+		unfinishedTags,
+	}
+}
+
+export function getNextPieceInstancesGrouped(
+	nextPartInstanceId: PartInstanceId | null
+): Pick<IDashboardPanelTrackedProps, 'nextAdLibIds' | 'nextTags'> & { nextPieceInstances: PieceInstance[] } {
+	const nextPieceInstances = getNextPiecesReactive(nextPartInstanceId)
+
+	const nextAdLibIds: PieceId[] = nextPieceInstances
+		.filter((piece) => !!piece.adLibSourceId)
+		.map((piece) => piece.adLibSourceId!)
+	const nextTags: string[] = nextPieceInstances
+		.filter((piece) => !!piece.piece.tags)
+		.map((piece) => piece.piece.tags!)
+		.reduce((a, b) => a.concat(b), [])
+
+	return { nextAdLibIds, nextTags, nextPieceInstances }
+}
+
+export function isAdLibOnAir(
+	unfinishedAdLibIds: IDashboardPanelTrackedProps['unfinishedAdLibIds'],
+	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
+	adLib: AdLibPieceUi
+) {
+	if (
+		unfinishedAdLibIds.includes(adLib._id) ||
+		(adLib.currentPieceTags && adLib.currentPieceTags.every((tag) => unfinishedTags.includes(tag)))
+	) {
+		return true
+	}
+	return false
+}
+
+export function isAdLibNext(
+	nextAdLibIds: IDashboardPanelTrackedProps['nextAdLibIds'],
+	unfinishedTags: IDashboardPanelTrackedProps['unfinishedTags'],
+	nextTags: IDashboardPanelTrackedProps['nextTags'],
+	adLib: AdLibPieceUi
+) {
+	if (
+		nextAdLibIds.includes(adLib._id) ||
+		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => unfinishedTags.includes(tag))) ||
+		(adLib.nextPieceTags && adLib.nextPieceTags.every((tag) => nextTags.includes(tag)))
+	) {
+		return true
+	}
+	return false
 }
 
 export const DashboardPanel = translateWithTracker<
@@ -663,11 +751,17 @@ export const DashboardPanel = translateWithTracker<
 	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return {
 			...fetchAndFilter(props),
 			studio: props.playlist.getStudio(),
-			unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
-			nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId),
+			unfinishedAdLibIds,
+			unfinishedTags,
+			nextAdLibIds,
+			nextTags,
 		}
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {

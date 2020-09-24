@@ -244,7 +244,9 @@ export const RundownSystemStatus = translateWithTracker(
 				}
 			}
 			if (segmentId) {
-				scrollToSegment(segmentId).catch(console.error)
+				scrollToSegment(segmentId).catch((error) => {
+					if (!error.toString().match(/another scroll/)) console.error(error)
+				})
 			}
 		}
 		clickNotes() {

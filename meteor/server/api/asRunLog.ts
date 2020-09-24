@@ -29,7 +29,12 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../DatabaseCaches'
+import {
+	CacheForRundownPlaylist,
+	initCacheForRundownPlaylist,
+	convertReadOnlyCacheForRundownPlaylist,
+	initReadOnlyCacheForRundownPlaylist,
+} from '../DatabaseCaches'
 import { profiler } from './profiler'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
@@ -85,7 +90,8 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const { blueprint } = loadShowStyleBlueprint(showStyleBase)
 
 				if (blueprint.onAsRunEvent) {
-					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					const cache = waitForPromise(initReadOnlyCacheForRundownPlaylist(playlist))
+
 					const context = new AsRunEventContext(rundown, cache, event)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))

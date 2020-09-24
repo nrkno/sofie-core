@@ -319,6 +319,9 @@ export function afterTake(
 	if (span) span.end()
 }
 
+/**
+ * A Hold starts by extending the "extendOnHold"-able pieces in the previous Part.
+ */
 function startHold(
 	cache: CacheForRundownPlaylist,
 	holdFromPartInstance: PartInstance | undefined,
@@ -329,51 +332,46 @@ function startHold(
 	const span = profiler.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
-	const itemsToCopy = cache.PieceInstances.findFetch({ partInstanceId: holdFromPartInstance._id }).filter(
-		(i) => i.piece.extendOnHold
-	)
+	const itemsToCopy = getAllPieceInstancesFromCache(cache, holdFromPartInstance).filter((pi) => pi.piece.extendOnHold)
 	itemsToCopy.forEach((instance) => {
-		// mark current one as infinite
-		instance.infinite = {
-			infinitePieceId: instance.piece._id,
-			fromPreviousPart: false,
-			fromHold: true,
-		}
-		cache.PieceInstances.update(instance._id, {
-			$set: {
+		if (!instance.infinite) {
+			// mark current one as infinite
+			cache.PieceInstances.update(instance._id, {
+				$set: {
+					infinite: {
+						infinitePieceId: instance.piece._id,
+						fromPreviousPart: false,
+					},
+				},
+			})
+
+			// make the extension
+			const newInstance = literal<PieceInstance>({
+				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
+				rundownId: instance.rundownId,
+				partInstanceId: holdToPartInstance._id,
+				dynamicallyInserted: getCurrentTime(),
+				piece: {
+					...clone(instance.piece),
+					_id: protectString<PieceId>(instance.piece._id + '_hold'),
+					startPartId: holdToPartInstance.part._id,
+					enable: { start: 0 },
+					extendOnHold: false,
+				},
 				infinite: {
 					infinitePieceId: instance.piece._id,
-					fromPreviousPart: false,
+					fromPreviousPart: true,
 					fromHold: true,
 				},
-			},
-		})
+			})
+			const content = newInstance.piece.content as VTContent | undefined
+			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
+				content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.startedPlayback)
+			}
 
-		// make the extension
-		const newInstance = literal<PieceInstance>({
-			_id: protectString<PieceInstanceId>(instance._id + '_hold'),
-			rundownId: instance.rundownId,
-			partInstanceId: holdToPartInstance._id,
-			dynamicallyInserted: getCurrentTime(),
-			piece: {
-				...clone(instance.piece),
-				_id: protectString<PieceId>(instance.piece._id + '_hold'),
-				startPartId: holdToPartInstance.part._id,
-				enable: { start: 0 },
-			},
-			infinite: {
-				infinitePieceId: instance.piece._id,
-				fromPreviousPart: true,
-				fromHold: true,
-			},
-		})
-		const content = newInstance.piece.content as VTContent | undefined
-		if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
-			content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.startedPlayback)
+			// This gets deleted once the nextpart is activated, so it doesnt linger for long
+			cache.PieceInstances.upsert(newInstance._id, newInstance)
 		}
-
-		// This gets deleted once the nextpart is activated, so it doesnt linger for long
-		cache.PieceInstances.upsert(newInstance._id, newInstance)
 	})
 	if (span) span.end()
 }

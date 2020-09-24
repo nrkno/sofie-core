@@ -33,26 +33,6 @@ function getFunctionName<T extends Function>(context: string, fcn: T): string {
 	} else {
 		return context
 	}
-	// 	let name = 'Anonymous'
-	// 	for (let i = 4; i < 10; i++) {
-	// 		try {
-	// 			const newName = callerModule.GetCallerModule(i).callSite.getFunctionName()
-	// 			if (newName) {
-	// 				if (newName !== 'args') {
-	// 					name += `(${newName})`
-	// 					break
-	// 				}
-	// 			} else {
-	// 				name += `(Anonymous)`
-	// 			}
-	// 		} catch (e) {
-	// 			// Probably reached the top?
-	// 			break
-	// 		}
-	// 	}
-
-	// 	return name
-	// }
 }
 export function MeteorWrapAsync(func: Function, context?: Object): any {
 	// A variant of Meteor.wrapAsync to fix the bug

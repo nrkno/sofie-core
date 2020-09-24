@@ -31,6 +31,7 @@ import {
 	waitTime,
 	sumChanges,
 	anythingChanged,
+	ProtectedString,
 } from '../lib/lib'
 import { logger } from './logging'
 import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
@@ -43,10 +44,20 @@ import { profiler } from './api/profiler'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
 
+type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T extends DbCacheReadCollection<infer A, infer B>
+	? DbCacheReadCollection<A, B>
+	: T
+type IReadOnlyCache<T extends Cache> = Omit<
+	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
+	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
+>
+
 /** This cache contains data relevant in a studio */
-export class Cache {
-	private _deferredFunctions: DeferredFunction<Cache>[] = []
-	private _deferredAfterSaveFunctions: (() => void)[] = []
+export class ReadOnlyCache {
+	protected _deferredFunctions: DeferredFunction<ReadOnlyCache>[] = []
+	protected _deferredAfterSaveFunctions: (() => void)[] = []
 	private _activeTimeout: number | null = null
 
 	constructor() {
@@ -56,6 +67,7 @@ export class Cache {
 				const futureError = new Meteor.Error(500, `saveAllToDatabase never called`)
 				this._activeTimeout = Meteor.setTimeout(() => {
 					logger.error(futureError)
+					logger.error(futureError.stack)
 				}, 2000)
 			}
 		}
@@ -126,6 +138,8 @@ export class Cache {
 
 		if (span) span.end()
 	}
+}
+export class Cache extends ReadOnlyCache {
 	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
 	defer(fcn: DeferredFunction<Cache>): void {
 		this._deferredFunctions.push(fcn)
@@ -156,6 +170,22 @@ export class CacheForStudioBase extends Cache {
 	deferAfterSave(fcn: () => void) {
 		return super.deferAfterSave(fcn)
 	}
+}
+/** Readonly version of CacheForStudioBase */
+export type ReadOnlyCacheForStudioBase = IReadOnlyCache<CacheForStudioBase>
+
+export function convertReadOnlyCacheForStudioBase(cache: CacheForStudioBase): ReadOnlyCacheForStudioBase {
+	cache._abortActiveTimeout()
+	cache.defer = () => {
+		throw new Meteor.Error(500, 'defer cannot be used in getReadOnlyCacheForStudioBase')
+	}
+	cache.deferAfterSave = () => {
+		throw new Meteor.Error(500, 'deferAfterSave cannot be used in getReadOnlyCacheForStudioBase')
+	}
+	cache.saveAllToDatabase = () => {
+		throw new Meteor.Error(500, 'saveAllToDatabase cannot be used in getReadOnlyCacheForStudioBase')
+	}
+	return cache
 }
 export class CacheForStudio extends CacheForStudioBase {
 	containsDataFromStudio: StudioId // Just to get the typings to alert on different cache types
@@ -277,6 +307,14 @@ export class CacheForRundownPlaylist extends CacheForStudioBase {
 		return super.deferAfterSave(fcn)
 	}
 }
+/** A read-only version of CacheForRundownPlaylist */
+export type ReadOnlyCacheForRundownPlaylist = IReadOnlyCache<CacheForRundownPlaylist>
+
+export function convertReadOnlyCacheForRundownPlaylist(
+	cache: CacheForRundownPlaylist
+): ReadOnlyCacheForRundownPlaylist {
+	return convertReadOnlyCacheForStudioBase(cache) as ReadOnlyCacheForRundownPlaylist
+}
 function emptyCacheForRundownPlaylist(
 	studioId: StudioId,
 	playlistId: RundownPlaylistId,
@@ -379,6 +417,15 @@ export async function initCacheForRundownPlaylist(
 
 	span?.end()
 	return cache
+}
+export async function initReadOnlyCacheForRundownPlaylist(
+	playlist: RundownPlaylist,
+	extendFromCache?: CacheForStudioBase,
+	initializeImmediately: boolean = true
+): Promise<ReadOnlyCacheForRundownPlaylist> {
+	return convertReadOnlyCacheForRundownPlaylist(
+		await initCacheForRundownPlaylist(playlist, extendFromCache, initializeImmediately)
+	)
 }
 /** Cache for playout, but there is no playlist playing */
 export async function initCacheForNoRundownPlaylist(

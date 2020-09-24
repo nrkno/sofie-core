@@ -48,7 +48,7 @@
 		}
 
 		&.on-air {
-			border: 3px solid var(--general-live-color);
+			border: 3px solid var(--general-live-color) !important;
 		}
 
 		&.next {

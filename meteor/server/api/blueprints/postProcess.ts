@@ -1,7 +1,12 @@
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineObjRundown,
+	TimelineObjType,
+	TimelineEnableExt,
+} from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -87,6 +92,14 @@ export function postProcessPieces(
 	return processedPieces
 }
 
+function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
+	if (Array.isArray(enable)) {
+		return !!enable.find((e) => e.start === 'now')
+	} else {
+		return enable.start === 'now'
+	}
+}
+
 export function postProcessTimelineObjects(
 	innerContext: INotesContext,
 	pieceId: PieceId,
@@ -103,7 +116,7 @@ export function postProcessTimelineObjects(
 		}
 
 		if (!obj.id) obj.id = innerContext.getHashId(pieceId + '_' + i++)
-		if (obj.enable.start === 'now')
+		if (isNow(obj.enable))
 			throw new Meteor.Error(
 				400,
 				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(
