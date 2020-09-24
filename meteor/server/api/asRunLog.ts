@@ -29,7 +29,12 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../DatabaseCaches'
+import {
+	CacheForRundownPlaylist,
+	initCacheForRundownPlaylist,
+	convertReadOnlyCacheForRundownPlaylist,
+	initReadOnlyCacheForRundownPlaylist,
+} from '../DatabaseCaches'
 import { profiler } from './profiler'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 
@@ -85,7 +90,8 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const { blueprint } = loadShowStyleBlueprint(showStyleBase)
 
 				if (blueprint.onAsRunEvent) {
-					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					const cache = waitForPromise(initReadOnlyCacheForRundownPlaylist(playlist))
+
 					const context = new AsRunEventContext(rundown, cache, event)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
@@ -176,22 +182,7 @@ export function reportPartHasStarted(cache: CacheForRundownPlaylist, partInstanc
 		const span = profiler.startSpan('reportPartHasStarted')
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
-				'part.startedPlayback': true,
-				'part.stoppedPlayback': false,
 				isTaken: true,
-			},
-			$push: {
-				'part.timings.startedPlayback': timestamp,
-			},
-		})
-
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(partInstance.part._id, {
-			$set: {
-				startedPlayback: true,
-				stoppedPlayback: false,
-			},
-			$push: {
 				'timings.startedPlayback': timestamp,
 			},
 		})
@@ -225,26 +216,13 @@ export function reportPartHasStopped(playlistId: RundownPlaylistId, partInstance
 
 		asyncCollectionUpdate(PartInstances, partInstance._id, {
 			$set: {
-				'part.stoppedPlayback': true,
-			},
-			$push: {
-				'part.timings.stoppedPlayback': timestamp,
-			},
-		}),
-
-		// TODO-PartInstance - pending new data flow
-		asyncCollectionUpdate(Parts, partInstance.part._id, {
-			$set: {
-				stoppedPlayback: true,
-			},
-			$push: {
 				'timings.stoppedPlayback': timestamp,
 			},
 		}),
 	])
 	// also update local object:
-	partInstance.part.stoppedPlayback = true
-	pushOntoPath(partInstance.part, 'timings.stoppedPlayback', timestamp)
+	if (!partInstance.timings) partInstance.timings = {}
+	partInstance.timings.stoppedPlayback = timestamp
 
 	if (playlist) {
 		let event = pushAsRunLog(
@@ -272,11 +250,8 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 
 		asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
 			$set: {
-				'piece.startedPlayback': timestamp,
-				'piece.stoppedPlayback': 0,
-			},
-			$push: {
-				'piece.timings.startedPlayback': timestamp,
+				startedPlayback: timestamp,
+				stoppedPlayback: 0,
 			},
 		}),
 
@@ -291,32 +266,17 @@ export function reportPieceHasStarted(playlistId: RundownPlaylistId, pieceInstan
 					},
 					{
 						$set: {
-							'piece.startedPlayback': timestamp,
-							'piece.stoppedPlayback': 0,
-						},
-						$push: {
-							'piece.timings.startedPlayback': timestamp,
+							startedPlayback: timestamp,
+							stoppedPlayback: 0,
 						},
 					}
 			  )
 			: (Promise.resolve() as Promise<any>),
-
-		// TODO-PartInstance - pending new data flow
-		asyncCollectionUpdate(Pieces, pieceInstance.piece._id, {
-			$set: {
-				startedPlayback: timestamp,
-				stoppedPlayback: 0,
-			},
-			$push: {
-				'timings.startedPlayback': timestamp,
-			},
-		}),
 	])
 
 	// also update local object:
-	pieceInstance.piece.startedPlayback = timestamp
-	pieceInstance.piece.stoppedPlayback = 0
-	pushOntoPath(pieceInstance.piece, 'timings.startedPlayback', timestamp)
+	pieceInstance.startedPlayback = timestamp
+	pieceInstance.stoppedPlayback = 0
 
 	if (!partInstance) {
 		logger.error(
@@ -349,27 +309,13 @@ export function reportPieceHasStopped(playlistId: RundownPlaylistId, pieceInstan
 
 		asyncCollectionUpdate(PieceInstances, pieceInstance._id, {
 			$set: {
-				'piece.stoppedPlayback': timestamp,
-			},
-			$push: {
-				'piece.timings.stoppedPlayback': timestamp,
-			},
-		}),
-
-		// TODO-PartInstance - pending new data flow
-		asyncCollectionUpdate(Pieces, pieceInstance.piece._id, {
-			$set: {
 				stoppedPlayback: timestamp,
-			},
-			$push: {
-				'timings.stoppedPlayback': timestamp,
 			},
 		}),
 	])
 
 	// also update local object:
-	pieceInstance.piece.stoppedPlayback = timestamp
-	pushOntoPath(pieceInstance.piece, 'timings.stoppedPlayback', timestamp)
+	pieceInstance.stoppedPlayback = timestamp
 
 	if (!partInstance) {
 		logger.error(

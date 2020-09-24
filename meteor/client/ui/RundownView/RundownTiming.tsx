@@ -252,6 +252,7 @@ export const RundownTimingProvider = withTracker<
 			if (prevProps.parts !== this.props.parts) {
 				// empty the temporary Part Instances cache
 				this.temporaryPartInstances = {}
+				this.onRefreshTimer()
 			}
 		}
 
@@ -342,12 +343,8 @@ export const RundownTimingProvider = withTracker<
 					// expected is just a sum of expectedDurations
 					totalRundownDuration += partInstance.part.expectedDuration || 0
 
-					const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
-					const playOffset =
-						(partInstance.part.timings &&
-							partInstance.part.timings.playOffset &&
-							_.last(partInstance.part.timings.playOffset)) ||
-						0
+					const lastStartedPlayback = partInstance.timings?.startedPlayback
+					const playOffset = partInstance.timings?.playOffset || 0
 
 					let partDuration = 0
 					let partDisplayDuration = 0
@@ -386,56 +383,56 @@ export const RundownTimingProvider = withTracker<
 					}
 
 					// This is where we actually calculate all the various variants of duration of a part
-					if (partInstance.part.startedPlayback && lastStartedPlayback && !partInstance.part.duration) {
+					if (lastStartedPlayback && !partInstance.timings?.duration) {
 						currentRemaining = Math.max(
 							0,
-							(partInstance.part.duration ||
+							(partInstance.timings?.duration ||
 								(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
 								0) -
 								(now - lastStartedPlayback)
 						)
 						partDuration =
 							Math.max(
-								partInstance.part.duration || partInstance.part.expectedDuration || 0,
+								partInstance.timings?.duration || partInstance.part.expectedDuration || 0,
 								now - lastStartedPlayback
 							) - playOffset
 						// because displayDurationGroups have no actual timing on them, we need to have a copy of the
 						// partDisplayDuration, but calculated as if it's not playing, so that the countdown can be
 						// calculated
 						partDisplayDurationNoPlayback =
-							partInstance.part.duration ||
+							partInstance.timings?.duration ||
 							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
 							this.props.defaultDuration ||
 							Settings.defaultDisplayDuration
 						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 					} else {
-						partDuration = (partInstance.part.duration || partInstance.part.expectedDuration || 0) - playOffset
+						partDuration = (partInstance.timings?.duration || partInstance.part.expectedDuration || 0) - playOffset
 						partDisplayDuration = Math.max(
 							0,
-							(partInstance.part.duration && partInstance.part.duration + playOffset) ||
+							(partInstance.timings?.duration && partInstance.timings?.duration + playOffset) ||
 								displayDurationFromGroup ||
 								partInstance.part.expectedDuration ||
 								this.props.defaultDuration ||
 								Settings.defaultDisplayDuration
 						)
 						partDisplayDurationNoPlayback = partDisplayDuration
-						this.partPlayed[unprotectString(partInstance.part._id)] = (partInstance.part.duration || 0) - playOffset
+						this.partPlayed[unprotectString(partInstance.part._id)] = (partInstance.timings?.duration || 0) - playOffset
 					}
 
 					// asPlayed is the actual duration so far and expected durations in unplayed lines.
 					// If item is onAir right now, it's duration is counted as expected duration or current
 					// playback duration whichever is larger.
 					// Parts that don't count are ignored.
-					if (partInstance.part.startedPlayback && lastStartedPlayback && !partInstance.part.duration) {
+					if (lastStartedPlayback && !partInstance.timings?.duration) {
 						asPlayedRundownDuration += Math.max(
 							memberOfDisplayDurationGroup
 								? Math.max(displayDurationFromGroup, partInstance.part.expectedDuration || 0)
 								: partInstance.part.expectedDuration || 0,
 							now - lastStartedPlayback
 						)
-					} else if (partInstance.part.duration) {
-						asPlayedRundownDuration += partInstance.part.duration
+					} else if (partInstance.timings?.duration) {
+						asPlayedRundownDuration += partInstance.timings.duration
 					} else if (partCounts) {
 						asPlayedRundownDuration += partInstance.part.expectedDuration || 0
 					}
@@ -444,7 +441,7 @@ export const RundownTimingProvider = withTracker<
 					// If item is onAir right now, it's duration is counted as expected duration or current
 					// playback duration whichever is larger.
 					// All parts are counted.
-					if (partInstance.part.startedPlayback && lastStartedPlayback && !partInstance.part.duration) {
+					if (lastStartedPlayback && !partInstance.timings?.duration) {
 						asDisplayedRundownDuration += Math.max(
 							memberOfDisplayDurationGroup
 								? Math.max(displayDurationFromGroup, partInstance.part.expectedDuration || 0)
@@ -452,11 +449,11 @@ export const RundownTimingProvider = withTracker<
 							now - lastStartedPlayback
 						)
 					} else {
-						asDisplayedRundownDuration += partInstance.part.duration || partInstance.part.expectedDuration || 0
+						asDisplayedRundownDuration += partInstance.timings?.duration || partInstance.part.expectedDuration || 0
 					}
 
 					// the part is the current part but has not yet started playback
-					if (playlist.currentPartInstanceId === partInstance._id && !partInstance.part.startedPlayback) {
+					if (playlist.currentPartInstanceId === partInstance._id && !lastStartedPlayback) {
 						currentRemaining = partDisplayDuration
 					}
 
@@ -471,14 +468,14 @@ export const RundownTimingProvider = withTracker<
 						partInstance.part.displayDurationGroup &&
 						!partInstance.part.floated &&
 						!partInstance.part.invalid &&
-						(partInstance.part.duration || partCounts)
+						(partInstance.timings?.duration || partCounts)
 					) {
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 							this.displayDurationGroups[partInstance.part.displayDurationGroup] - partDisplayDuration
 					}
 					const partInstancePartId = unprotectString(partInstance.part._id)
 					this.partExpectedDurations[partInstancePartId] =
-						partInstance.part.expectedDuration || partInstance.part.duration || 0
+						partInstance.part.expectedDuration || partInstance.timings?.duration || 0
 					this.partStartsAt[partInstancePartId] = startsAtAccumulator
 					this.partDisplayStartsAt[partInstancePartId] = displayStartsAtAccumulator
 					this.partDurations[partInstancePartId] = partDuration
@@ -490,21 +487,20 @@ export const RundownTimingProvider = withTracker<
 					// always add the full duration, in case by some manual intervention this segment should play twice
 					if (memberOfDisplayDurationGroup) {
 						waitAccumulator +=
-							partInstance.part.duration || partDisplayDuration || partInstance.part.expectedDuration || 0
+							partInstance.timings?.duration || partDisplayDuration || partInstance.part.expectedDuration || 0
 					} else {
-						waitAccumulator += partInstance.part.duration || partInstance.part.expectedDuration || 0
+						waitAccumulator += partInstance.timings?.duration || partInstance.part.expectedDuration || 0
 					}
 
 					// remaining is the sum of unplayed lines + whatever is left of the current segment
 					// if outOfOrderTiming is true, count parts before current part towards remaining rundown duration
 					// if false (default), past unplayed parts will not count towards remaining time
-					if (!partInstance.part.startedPlayback && !partInstance.part.floated && partCounts) {
+					if (!lastStartedPlayback && !partInstance.part.floated && partCounts) {
 						remainingRundownDuration += partInstance.part.expectedDuration || 0
 						// item is onAir right now, and it's is currently shorter than expectedDuration
 					} else if (
-						partInstance.part.startedPlayback &&
 						lastStartedPlayback &&
-						!partInstance.part.duration &&
+						!partInstance.timings?.duration &&
 						playlist.currentPartInstanceId === partInstance._id &&
 						lastStartedPlayback + (partInstance.part.expectedDuration || 0) > now
 					) {
@@ -553,19 +549,19 @@ export const RundownTimingProvider = withTracker<
 			let currentPartWillAutoNext = false
 			if (currentAIndex >= 0) {
 				const currentLivePart = parts[currentAIndex]
+				const currentLivePartInstance = findPartInstanceOrWrapToTemporary(partInstancesMap, currentLivePart)
 
-				const lastStartedPlayback = currentLivePart.getLastStartedPlayback()
+				const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
 
-				let onAirPartDuration = currentLivePart.duration || currentLivePart.expectedDuration || 0
+				let onAirPartDuration = currentLivePartInstance.timings?.duration || currentLivePart.expectedDuration || 0
 				if (currentLivePart.displayDurationGroup && !currentLivePart.displayDuration) {
 					onAirPartDuration =
 						this.partDisplayDurationsNoPlayback[unprotectString(currentLivePart._id)] || onAirPartDuration
 				}
 
-				remainingTimeOnCurrentPart =
-					currentLivePart.startedPlayback && lastStartedPlayback
-						? now - (lastStartedPlayback + onAirPartDuration)
-						: onAirPartDuration * -1
+				remainingTimeOnCurrentPart = lastStartedPlayback
+					? now - (lastStartedPlayback + onAirPartDuration)
+					: onAirPartDuration * -1
 
 				currentPartWillAutoNext = !!(
 					currentLivePart.autoNext &&

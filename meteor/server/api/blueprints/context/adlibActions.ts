@@ -64,6 +64,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibAutoNext: false,
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
+	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
@@ -229,15 +230,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
-		piece.timings = {
-			take: [getCurrentTime()],
-			startedPlayback: [],
-			next: [],
-			stoppedPlayback: [],
-			playOffset: [],
-			takeDone: [],
-			takeOut: [],
-		}
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
@@ -331,7 +323,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance, false)) {
+		if (isTooCloseToAutonext(currentPartInstance, true)) {
 			throw new Error('Too close to an autonext to queue a part')
 		}
 

@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { TimelineObjGeneric, TimelineComplete } from '../../lib/collections/Timeline'
+import { TimelineObjGeneric, TimelineComplete, StatObjectMetadata } from '../../lib/collections/Timeline'
 import { DBRundown, RundownImportVersions } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { Part, DBPart } from '../../lib/collections/Parts'
@@ -54,9 +54,10 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 			if (o.generated) o.generated = 12345
 
 			_.each(o.timeline, (obj) => {
-				if (obj.metaData && obj.metaData.versions && obj.metaData.versions.core) {
+				const statObjMetadata = obj.metaData as Partial<StatObjectMetadata> | undefined
+				if (statObjMetadata?.versions?.core) {
 					// re-write the core version to something static, so tests won't fail just because the version has changed
-					obj.metaData.versions.core = '0.0.0-test'
+					statObjMetadata.versions.core = '0.0.0-test'
 				}
 			})
 		} else if (isPlaylist(o)) {
@@ -73,12 +74,18 @@ export function fixSnapshot(data: Data | Array<Data>, sortData?: boolean) {
 			// } else if (isPart(o)) {
 			// } else if (isSegment(o)) {
 			// } else if (isPieceInstance(o)) {
+		} else if (isTimelineComplete(o)) {
+			delete o.generated
 		}
 		return o
 	}
 }
 function isTimelineComplete(o): o is TimelineComplete {
-	return o.timeline && o._id
+	const o2 = o as TimelineComplete
+	return !!(o2.timeline && o2._id && o2.generated)
+}
+function isTimelineObj(o): o is TimelineObjGeneric {
+	return o.enable && o._id && o.id && o.studioId
 }
 function isPlaylist(o): o is DBRundownPlaylist {
 	return o._id && _.has(o, 'currentPartInstanceId')

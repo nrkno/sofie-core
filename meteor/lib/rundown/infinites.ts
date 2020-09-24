@@ -1,10 +1,15 @@
 import _ from 'underscore'
 import { PartInstance, PartInstanceId } from '../collections/PartInstances'
-import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../collections/PieceInstances'
+import {
+	PieceInstance,
+	PieceInstancePiece,
+	rewrapPieceToInstance,
+	unprotectPieceInstance,
+} from '../collections/PieceInstances'
 import { DBPart, PartId, Part } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
-import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
 import { assertNever, max, flatten, literal, protectString } from '../lib'
 import { Mongo } from 'meteor/mongo'
 import { Studio } from '../collections/Studios'
@@ -190,10 +195,15 @@ export function isPiecePotentiallyActiveInPart(
 				pieceToCheck.startSegmentId === part.segmentId && partsBeforeThisInSegment.has(pieceToCheck.startPartId)
 			)
 		case PieceLifespan.OutOnRundownEnd:
-			return (
-				pieceToCheck.startRundownId === part.rundownId &&
-				segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
-			)
+			if (pieceToCheck.startRundownId === part.rundownId) {
+				if (pieceToCheck.startSegmentId === part.segmentId) {
+					return partsBeforeThisInSegment.has(pieceToCheck.startPartId)
+				} else {
+					return segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
+				}
+			} else {
+				return false
+			}
 		case PieceLifespan.OutOnSegmentChange:
 			if (previousPartInstance !== undefined) {
 				// This gets handled by getPlayheadTrackingInfinitesForPart
@@ -347,9 +357,22 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 	/**
 	 * This is a maximum end point of the pieceInstance.
 	 * If the pieceInstance also has a enable.duration of userDuration set then the shortest one will need to be used
+	 * This can be:
+	 *  - 'now', if it was stopped by something that does not need a preroll (or is virtual)
+	 *  - '#something.start + 100', if it was stopped by something that needs a preroll
+	 *  - '100', if not relative to now at all
 	 */
-	resolvedEndCap?: number | 'now'
+	resolvedEndCap?: number | string
 	priority: number
+}
+
+function offsetFromStart(start: number | 'now', newPiece: PieceInstance): number | string {
+	const offset = newPiece.piece.adlibPreroll
+	if (!offset) return start
+
+	return typeof start === 'number'
+		? start + offset
+		: `#${getPieceGroupId(unprotectPieceInstance(newPiece))}.start + ${offset}`
 }
 
 /**
@@ -374,7 +397,7 @@ export function processAndPrunePieceInstanceTimings(
 		if (newPiece) {
 			const activePiece = activePieces[key]
 			if (activePiece) {
-				activePiece.resolvedEndCap = start
+				activePiece.resolvedEndCap = offsetFromStart(start, newPiece)
 			}
 			activePieces[key] = newPiece
 			result.push(newPiece)
@@ -382,7 +405,7 @@ export function processAndPrunePieceInstanceTimings(
 			if (activePieces.other) {
 				if (key === 'onSegmentEnd' || (key === 'onRundownEnd' && !activePieces.onSegmentEnd)) {
 					// These modes should stop the 'other' when they start if not hidden behind a high priority onEnd
-					activePieces.other.resolvedEndCap = start
+					activePieces.other.resolvedEndCap = offsetFromStart(start, newPiece)
 					activePieces.other = undefined
 				}
 			}
@@ -410,7 +433,7 @@ export function processAndPrunePieceInstanceTimings(
 			([k]) => (k === 'now' ? nowInPart : k)
 		)
 
-		const isClear = (piece?: PieceInstance): boolean => !!(piece?.dynamicallyInserted && piece?.piece.virtual)
+		const isClear = (piece?: PieceInstance): boolean => !!piece?.piece.virtual
 
 		// Step through time
 		activePieces = {}
@@ -418,13 +441,19 @@ export function processAndPrunePieceInstanceTimings(
 			const newPieces = findPieceInstancesOnInfiniteLayers(pieces)
 
 			// Handle any clears
-			if (isClear(newPieces.onSegmentEnd) && activePieces.onSegmentEnd) {
-				activePieces.onSegmentEnd.resolvedEndCap = start
-				activePieces.onSegmentEnd = newPieces.onSegmentEnd = undefined
+			if (isClear(newPieces.onSegmentEnd)) {
+				if (activePieces.onSegmentEnd) {
+					activePieces.onSegmentEnd.resolvedEndCap = start
+					activePieces.onSegmentEnd = undefined
+				}
+				newPieces.onSegmentEnd = undefined
 			}
-			if (isClear(newPieces.onRundownEnd) && activePieces.onRundownEnd) {
-				activePieces.onRundownEnd.resolvedEndCap = start
-				activePieces.onRundownEnd = newPieces.onRundownEnd = undefined
+			if (isClear(newPieces.onRundownEnd)) {
+				if (activePieces.onRundownEnd) {
+					activePieces.onRundownEnd.resolvedEndCap = start
+					activePieces.onRundownEnd = undefined
+				}
+				newPieces.onRundownEnd = undefined
 			}
 
 			// Apply the updates
@@ -451,15 +480,17 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 	const res: PieceInstanceOnInfiniteLayers = {}
 
 	const isCandidateBetter = (best: PieceInstance, candidate: PieceInstance): boolean => {
+		// Prioritise the one from this part over previous part
 		if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
 			// Prefer the candidate as it is not from previous
-			return false
+			return true
 		}
 		if (!best.infinite?.fromPreviousPart && candidate.infinite?.fromPreviousPart) {
 			// Prefer the best as it is not from previous
-			return true
+			return false
 		}
 
+		// If we have adlibs, prefer the newest
 		if (best.piece.enable.start === 'now') {
 			// If we are working for the 'now' time, then we are looking at adlibs
 			// All adlib pieces will have a take time, so prefer the later one
@@ -468,6 +499,16 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 			if (take0 !== undefined && take1 !== undefined) {
 				return take1 > take0
 			}
+		}
+
+		// If one is virtual, prefer that
+		if (best.piece.virtual && !candidate.piece.virtual) {
+			// Prefer the virtual best
+			return false
+		}
+		if (!best.piece.virtual && candidate.piece.virtual) {
+			// Prefer the virtual candidate
+			return true
 		}
 
 		// Fallback to id, as we dont have any other criteria and this will be stable.
@@ -482,7 +523,6 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.onRundownEnd = {
 						...piece,
 						priority: 1,
-						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break
@@ -491,7 +531,6 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.onSegmentEnd = {
 						...piece,
 						priority: 2,
-						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break
@@ -502,7 +541,6 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 					res.other = {
 						...piece,
 						priority: 5,
-						// resolvedStart: piece.piece.enable.start,
 					}
 				}
 				break

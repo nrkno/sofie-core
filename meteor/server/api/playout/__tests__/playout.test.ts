@@ -503,9 +503,7 @@ describe('Playout API', () => {
 
 				// the currentPartInstance timings are set
 				const { currentPartInstance } = playlist.getSelectedPartInstances()
-				expect(currentPartInstance!.part.startedPlayback).toBe(true)
-				expect(currentPartInstance!.part.timings).toBeDefined()
-				expect(_.last(currentPartInstance!.part.timings!.startedPlayback)).toBe(now)
+				expect(currentPartInstance?.timings?.startedPlayback).toBe(now)
 
 				// AsRunLog is updated
 				const entry0 = AsRunLog.find({
@@ -554,11 +552,8 @@ describe('Playout API', () => {
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstance?._id!)
 				expect(pieceInstances).toHaveLength(2)
 				pieceInstances.forEach((pieceInstance) => {
-					expect(pieceInstance.piece.timings?.startedPlayback).toBeTruthy()
-					expect(_.last(pieceInstance.piece.timings?.startedPlayback!)).toBeWithinRange(
-						now,
-						now + TIME_RANDOM
-					)
+					expect(pieceInstance.startedPlayback).toBeTruthy()
+					expect(pieceInstance.startedPlayback).toBeWithinRange(now, now + TIME_RANDOM)
 				})
 			}
 
@@ -614,8 +609,7 @@ describe('Playout API', () => {
 
 				const previousPartInstanceAfterTake = PartInstances.findOne(currentPartInstanceBeforeTakeId)
 				expect(previousPartInstanceAfterTake).toBeTruthy()
-				expect(previousPartInstanceAfterTake?.part.timings?.stoppedPlayback!).toBeTruthy()
-				expect(_.last(previousPartInstanceAfterTake?.part.timings?.stoppedPlayback!)).toBe(now)
+				expect(previousPartInstanceAfterTake?.timings?.stoppedPlayback).toBe(now)
 
 				// verify AsRunLog is updated
 				const entry = AsRunLog.find({

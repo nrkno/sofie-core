@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Escape from 'react-escape'
 import { withTranslation } from 'react-i18next'
-import { ContextMenu, MenuItem } from 'react-contextmenu'
+import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -44,8 +44,10 @@ export const SegmentContextMenu = withTranslation()(
 					<ContextMenu id="segment-timeline-context-menu">
 						{part && !part.instance.part.invalid && timecode !== null && (
 							<React.Fragment>
-								{startsAt !== null && !part.instance.part.dynamicallyInsertedAfterPartId && (
-									<MenuItem onClick={(e) => this.props.onSetNext(part.instance.part, e)} disabled={isCurrentPart}>
+								{startsAt !== null && (
+									<MenuItem
+										onClick={(e) => this.props.onSetNext(part.instance.part, e)}
+										disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
 										<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span> (
 										{RundownUtils.formatTimeToShortTime(Math.floor(startsAt / 1000) * 1000)})
 									</MenuItem>

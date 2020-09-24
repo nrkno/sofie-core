@@ -38,7 +38,12 @@ interface IProps {
 	onToggleNotifications?: (e: React.MouseEvent<HTMLButtonElement>, filter: NoticeLevel) => void
 	onToggleSupportPanel?: (e: React.MouseEvent<HTMLButtonElement>) => void
 	onTake?: (e: React.MouseEvent<HTMLButtonElement>) => void
-	onStudioRouteSetSwitch?: (e: React.MouseEvent<HTMLButtonElement>, routeSetId: string, state: boolean) => void
+	onStudioRouteSetSwitch?: (
+		e: React.MouseEvent<HTMLButtonElement>,
+		routeSetId: string,
+		routeSet: StudioRouteSet,
+		state: boolean
+	) => void
 }
 
 interface IState {
@@ -252,7 +257,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 									onClick={(e) =>
 										!(routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY) &&
 										this.props.onStudioRouteSetSwitch &&
-										this.props.onStudioRouteSetSwitch(e, id, !routeSet.active)
+										this.props.onStudioRouteSetSwitch(e, id, routeSet, !routeSet.active)
 									}
 									tabIndex={0}
 									key={id}>
@@ -310,7 +315,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 															onClick={(e) =>
 																!(routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY) &&
 																this.props.onStudioRouteSetSwitch &&
-																this.props.onStudioRouteSetSwitch(e, id, !routeSet.active)
+																this.props.onStudioRouteSetSwitch(e, id, routeSet, !routeSet.active)
 															}
 															tabIndex={0}
 															key={id}>

@@ -7,6 +7,7 @@ import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { RundownPlaylistId } from './RundownPlaylists'
+import { BlueprintId } from './Blueprints'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -17,6 +18,8 @@ export enum TimelineContentTypeOther {
 export type TimelineObjId = ProtectedString<'TimelineObjId'>
 export type TimelineHash = ProtectedString<'TimelineHash'>
 
+export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Unique within a timeline (ie within a studio) */
 	id: string
@@ -25,7 +28,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	objectType: TimelineObjType
 
-	enable: TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+	enable: TimelineEnableExt | TimelineEnableExt[]
 
 	/** The id of the group object this object is in  */
 	inGroup?: string
@@ -39,13 +42,23 @@ export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
 }
 export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
+	enable: TimelineEnableExt
 	content: {
 		type: TimelineContentTypeOther.GROUP
 	}
 	children: TimelineObjGeneric[]
 	isGroup: true
 }
-export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
+export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
+
+export interface StatObjectMetadata {
+	versions: {
+		core: string
+		blueprintId: BlueprintId | undefined
+		blueprintVersion: string
+		studio: string
+	}
+}
 
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true

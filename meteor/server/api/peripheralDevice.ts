@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId, applyToArray } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
@@ -34,6 +34,7 @@ import { getActiveRundownPlaylistsInStudio } from './playout/studio'
 import { StudioId } from '../../lib/collections/Studios'
 import { getValidActivationCache } from '../ActivationCache'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import { PieceGroupMetadata } from '../../lib/rundown/pieces'
 
 // import {ServerPeripheralDeviceAPIMOS as MOS} from './peripheralDeviceMos'
 export namespace ServerPeripheralDeviceAPI {
@@ -150,6 +151,13 @@ export namespace ServerPeripheralDeviceAPI {
 			PeripheralDevices.update(deviceId, {
 				$set: {
 					status: status,
+					connected: true,
+				},
+			})
+		} else if (!peripheralDevice.connected) {
+			PeripheralDevices.update(deviceId, {
+				$set: {
+					connected: true,
 				},
 			})
 		}
@@ -208,12 +216,14 @@ export namespace ServerPeripheralDeviceAPI {
 					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 					const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
 					timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
+					waitForPromise(cache.saveAllToDatabase())
 				})
 			} else {
 				// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
 				// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird
 				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 				timelineTriggerTimeInner(cache, studioId, results, undefined)
+				waitForPromise(cache.saveAllToDatabase())
 			}
 		}
 	},
@@ -238,18 +248,23 @@ export namespace ServerPeripheralDeviceAPI {
 
 			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
 			if (obj) {
-				obj.enable.start = o.time
-				obj.enable.setFromNow = true
+				applyToArray(obj.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = o.time
+						enable.setFromNow = true
 
-				tlChanged = true
+						tlChanged = true
+					}
+				})
 
-				if (obj.metaData?.pieceId && activePlaylist) {
+				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
+				if (objPieceId && activePlaylist) {
 					logger.debug('Update PieceInstance: ', {
-						pieceId: obj.metaData.pieceId,
+						pieceId: objPieceId,
 						time: new Date(o.time).toTimeString(),
 					})
 
-					const pieceInstance = cache.PieceInstances.findOne(obj.metaData.pieceId)
+					const pieceInstance = cache.PieceInstances.findOne(objPieceId)
 					if (pieceInstance) {
 						cache.PieceInstances.update(pieceInstance._id, {
 							$set: {
@@ -299,9 +314,6 @@ export namespace ServerPeripheralDeviceAPI {
 				true
 			)
 		}
-
-		// After we've updated the timeline, we must call afterUpdateTimeline!
-		waitForPromise(cache.saveAllToDatabase())
 	}
 	export function partPlaybackStarted(
 		context: MethodContext,
@@ -650,13 +662,13 @@ function functionReply(
 	err: any,
 	result: any
 ): void {
-	checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+	const device = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 	// logger.debug('functionReply', err, result)
 	PeripheralDeviceCommands.update(
 		{
 			_id: commandId,
-			deviceId: deviceId,
+			deviceId: { $in: _.compact([device._id, device.parentDeviceId]) },
 		},
 		{
 			$set: {
@@ -997,6 +1009,11 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		return makePromise(() =>
 			MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc)
+		)
+	}
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
+		return makePromise(() =>
+			MediaScannerIntegration.clearMediaObjectCollection(deviceId, deviceToken, collectionId)
 		)
 	}
 	// ------- Media Manager --------------

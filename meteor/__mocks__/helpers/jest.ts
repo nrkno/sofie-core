@@ -1,27 +1,45 @@
 import { runInFiber } from '../Fibers'
 
-export function beforeAllInFiber(fcn: Function) {
+export function beforeAllInFiber(fcn: Function, timeout?: number) {
 	beforeAll(async () => {
 		await runInFiber(fcn)
-	})
+	}, timeout)
 }
-export function beforeEachInFiber(fcn: Function) {
+export function afterAllInFiber(fcn: Function, timeout?: number) {
+	afterAll(async () => {
+		await runInFiber(fcn)
+	}, timeout)
+}
+export function beforeEachInFiber(fcn: Function, timeout?: number) {
 	beforeEach(async () => {
 		await runInFiber(fcn)
-	})
+	}, timeout)
 }
-
-export function testInFiber(testName: string, fcn: Function) {
-	test(testName, async () => {
+export function afterEachInFiber(fcn: Function, timeout?: number) {
+	afterEach(async () => {
 		await runInFiber(fcn)
-	})
+	}, timeout)
 }
 
-export function testInFiberOnly(testName: string, fcn: Function) {
+export function testInFiber(testName: string, fcn: Function, timeout?: number) {
+	test(
+		testName,
+		async () => {
+			await runInFiber(fcn)
+		},
+		timeout
+	)
+}
+
+export function testInFiberOnly(testName: string, fcn: Function, timeout?: number) {
 	// tslint:disable-next-line:no-focused-test
-	test.only(testName, async () => {
-		await runInFiber(fcn)
-	})
+	test.only(
+		testName,
+		async () => {
+			await runInFiber(fcn)
+		},
+		timeout
+	)
 }
 const orgSetTimeout = setTimeout
 export async function runAllTimers() {

@@ -10,7 +10,7 @@ import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './Se
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
 
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
@@ -397,7 +397,7 @@ export const SegmentTimelinePart = withTranslation()(
 
 				const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
 				const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-				const startedPlayback = partInstance.part.startedPlayback
+				const startedPlayback = partInstance.timings?.startedPlayback
 
 				this.state = {
 					isLive,
@@ -423,38 +423,66 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
-			static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
+			static getDerivedStateFromProps(
+				nextProps: IProps & RundownTiming.InjectedROTimingProps,
+				nextState: IState
+			): Partial<IState> {
+				const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
 				const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id
 				const isNext = nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id
 
 				const nextPartInner = nextProps.part.instance.part
 
-				const startedPlayback = nextPartInner.startedPlayback
+				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active && !isLive && !!startedPlayback && !nextPartInner.duration
+					!!nextProps.playlist.active &&
+					isPrevious &&
+					!isLive &&
+					!!startedPlayback &&
+					!nextProps.part.instance.timings?.duration
 
-				const liveDuration =
-					(isLive || isDurationSettling) && !nextProps.autoNextPart && !nextPartInner.autoNext
-						? Math.max(
-								(startedPlayback &&
-									nextProps.timingDurations.partDurations &&
-									(nextProps.relative
-										? SegmentTimelinePart0.getCurrentLiveLinePosition(
-												nextProps.part,
-												nextProps.timingDurations.currentTime || getCurrentTime()
-										  )
-										: SegmentTimelinePart0.getCurrentLiveLinePosition(
-												nextProps.part,
-												nextProps.timingDurations.currentTime || getCurrentTime()
-										  ) + SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))) ||
-									0,
-								nextProps.timingDurations.partDurations
-									? nextPartInner.displayDuration ||
-											nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
-									: 0
-						  )
-						: 0
+				let liveDuration = 0
+				if (!isDurationSettling) {
+					// if the duration isn't settling, calculate the live line postion and add some liveLive time padding
+					if (isLive && !nextProps.autoNextPart && !nextPartInner.autoNext) {
+						liveDuration = Math.max(
+							(startedPlayback &&
+								nextProps.timingDurations.partDurations &&
+								(nextProps.relative
+									? SegmentTimelinePart0.getCurrentLiveLinePosition(
+											nextProps.part,
+											nextProps.timingDurations.currentTime || getCurrentTime()
+									  )
+									: SegmentTimelinePart0.getCurrentLiveLinePosition(
+											nextProps.part,
+											nextProps.timingDurations.currentTime || getCurrentTime()
+									  ) + SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))) ||
+								0,
+							nextProps.timingDurations.partDurations
+								? nextPartInner.displayDuration ||
+										nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
+								: 0
+						)
+					}
+				} else {
+					// if the duration is settling, just calculate the current liveLine position and show without any padding
+					if (!nextProps.autoNextPart && !nextPartInner.autoNext) {
+						liveDuration = Math.max(
+							(startedPlayback &&
+								nextProps.timingDurations.partDurations &&
+								SegmentTimelinePart0.getCurrentLiveLinePosition(
+									nextProps.part,
+									nextProps.timingDurations.currentTime || getCurrentTime()
+								)) ||
+								0,
+							nextProps.timingDurations.partDurations
+								? nextPartInner.displayDuration ||
+										nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
+								: 0
+						)
+					}
+				}
 
 				const isInsideViewport =
 					nextProps.relative ||
@@ -483,11 +511,11 @@ export const SegmentTimelinePart = withTranslation()(
 			}
 
 			static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
-				if (part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback()) {
-					if (part.instance.part.duration) {
-						return part.instance.part.duration
+				if (part.instance.timings?.startedPlayback) {
+					if (part.instance.timings?.duration) {
+						return part.instance.timings.duration
 					} else {
-						return currentTime - (part.instance.part.getLastStartedPlayback() || 0)
+						return currentTime - part.instance.timings.startedPlayback
 					}
 				} else {
 					return 0
@@ -584,11 +612,10 @@ export const SegmentTimelinePart = withTranslation()(
 
 			static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 				// const part = this.props.part
-				const innerPart = props.part.instance.part
 
 				return Math.max(
 					liveDuration,
-					innerPart.duration ||
+					props.part.instance.timings?.duration ||
 						(props.timingDurations.partDisplayDurations &&
 							props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
 						props.part.renderedDuration ||
