@@ -389,7 +389,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 		}
 	})
 	lastBlueprintConfigIds = blueprintIds
-})
+}, 'checkBlueprintsConfig')
 function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
 		setSystemStatus(systemStatusId, {
