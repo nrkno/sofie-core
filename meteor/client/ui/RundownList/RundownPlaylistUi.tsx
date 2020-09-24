@@ -15,6 +15,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
 import { getRundownPlaylistLink, getRundownWithLayoutLink, getShelfLink } from './util'
 import { SplitDropdown } from '../../lib/SplitDropdown'
+import {
+	DragElementWrapper,
+	DropTarget,
+	DropTargetCollector,
+	DropTargetConnector,
+	DropTargetMonitor,
+	DropTargetSpec,
+} from 'react-dnd'
+import RundownListDragDropTypes from './RundownListDragDropTypes'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundownStatus: string
@@ -33,120 +42,194 @@ interface IRundownPlaylistUiState {
 	selectedView: string
 }
 
-export const RundownPlaylistUi = withTranslation()(
-	class RundownPlaylistUi extends React.Component<Translated<IRundownPlaylistUiProps>, IRundownPlaylistUiState> {
-		constructor(props: Translated<IRundownPlaylistUiProps>) {
-			super(props)
-		}
+interface IRundownPlaylistDropTargetProps {
+	connectDropTarget: DragElementWrapper<RundownPlaylistUi>
+	isOver: boolean
+	isOverCurrent: boolean
+	canDrop: boolean
+	itemType: string | symbol | null
+}
 
-		private saveViewChoice(key: string) {
-			UIStateStorage.setItem(`rundownList.${this.props.playlist.studioId}`, 'defaultView', key)
-		}
+const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
+	canDrop: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor) => {
+		console.debug(`canDrop #${props.playlist._id}`, monitor.getItem())
+		return true
+	},
+	drop: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor, component: RundownPlaylistUi) => {
+		console.debug(`drop #${props.playlist._id}`, monitor.getItem(), component)
+		return undefined
+	},
+	hover: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor, component: RundownPlaylistUi) => {
+		console.debug(`hover #${props.playlist._id}`, monitor.getItem(), component)
+		console.debug(`is this component? ${monitor.isOver({ shallow: true })}`)
+	},
+}
 
-		private renderViewLinkItem(layout: RundownLayoutBase, link: string, key: string) {
-			return (
-				<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
-					<div className="action-btn expco-item">
-						<div
-							className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
-							style={{ color: layout.iconColor || 'transparent' }}>
-							<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
-						</div>
-						<span className="expco-text">{layout.name}</span>
-					</div>
-				</Link>
-			)
-		}
+const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlaylistUiProps> = function(
+	connect: DropTargetConnector,
+	monitor: DropTargetMonitor,
+	props: IRundownPlaylistUiProps
+): IRundownPlaylistDropTargetProps {
+	return {
+		connectDropTarget: connect.dropTarget(),
+		isOver: monitor.isOver(),
+		isOverCurrent: monitor.isOver({ shallow: true }),
+		canDrop: monitor.canDrop(),
+		itemType: monitor.getItemType(),
+	}
+}
 
-		private createPlaylistViewLinks() {
-			const { t, playlist } = this.props
-
-			const standaloneLayouts: JSX.Element[] = []
-			const shelfLayouts: JSX.Element[] = []
-
-			for (const layout of this.props.rundownLayouts) {
-				if (!playlist.showStyles.some((s) => s.id === layout.showStyleBaseId)) {
-					continue
-				}
-
-				if (layout.exposeAsStandalone) {
-					standaloneLayouts.push(
-						this.renderViewLinkItem(layout, getShelfLink(playlist._id, layout._id), `standalone${layout._id}`)
-					)
-				}
-
-				if (layout.exposeAsShelf) {
-					shelfLayouts.push(
-						this.renderViewLinkItem(layout, getRundownWithLayoutLink(playlist._id, layout._id), `shelf${layout._id}`)
-					)
-				}
+export const RundownPlaylistUi = DropTarget(
+	RundownListDragDropTypes.PLAYLIST,
+	spec,
+	collect
+)(
+	withTranslation()(
+		class RundownPlaylistUi extends React.Component<Translated<IRundownPlaylistUiProps>, IRundownPlaylistUiState> {
+			constructor(props: Translated<IRundownPlaylistUiProps>) {
+				super(props)
 			}
 
-			const allElements = [
-				<div className="expco-header" key={`${playlist._id}layoutsheader2`}>
-					{t('Standalone Shelf')}
-				</div>,
-				...standaloneLayouts,
-				<div className="expco-header" key={`${playlist._id}layoutsheader1`}>
-					{t('Timeline views')}
-				</div>,
-				...shelfLayouts,
-				<Link to={getRundownPlaylistLink(playlist._id)} onClick={() => this.saveViewChoice('default')} key={'default'}>
-					<div className="action-btn expco-item">{t('Default')}</div>
-				</Link>,
-			]
+			private saveViewChoice(key: string) {
+				UIStateStorage.setItem(`rundownList.${this.props.playlist.studioId}`, 'defaultView', key)
+			}
 
-			return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
-				<React.Fragment>
-					<SplitDropdown selectedKey={this.state.selectedView}>{allElements}</SplitDropdown>
-				</React.Fragment>
-			) : null
-		}
-
-		render() {
-			const { playlist } = this.props
-			const rundowns = playlist.getRundowns()
-			const playbackProgressBar = createProgressBarRow(playlist)
-			const playlistViewLinks = this.createPlaylistViewLinks()
-
-			if (rundowns.length === 1) {
+			private renderViewLinkItem(layout: RundownLayoutBase, link: string, key: string) {
 				return (
-					<>
-						<RundownListItem
-							key={unprotectString(rundowns[0]._id)}
-							rundown={rundowns[0]}
-							viewLinks={playlistViewLinks}
-						/>
-						{playbackProgressBar}
-					</>
+					<Link to={link} onClick={() => this.saveViewChoice(key)} key={key}>
+						<div className="action-btn expco-item">
+							<div
+								className={ClassNames('action-btn layout-icon', { small: !layout.icon })}
+								style={{ color: layout.iconColor || 'transparent' }}>
+								<FontAwesomeIcon icon={(layout.icon as IconName) || 'circle'} />
+							</div>
+							<span className="expco-text">{layout.name}</span>
+						</div>
+					</Link>
 				)
 			}
 
-			const rundownComponents = rundowns.map((rundown) => (
-				<RundownListItem key={unprotectString(rundown._id)} rundown={rundown} viewLinks={playlistViewLinks} />
-			))
+			private createPlaylistViewLinks() {
+				const { t, playlist } = this.props
 
-			return (
-				<tr>
-					<td colSpan={10}>
-						<table className="table">
-							<thead>
-								<tr>
-									<td colSpan={8}>
-										<h2>{playlist.name}</h2>
-									</td>
-									<td>{playlistViewLinks}</td>
-									<td>Actions her</td>
-								</tr>
-							</thead>
-							<tbody>{rundownComponents}</tbody>
-							<tfoot>{playbackProgressBar}</tfoot>
-						</table>
-					</td>
-				</tr>
-			)
+				const standaloneLayouts: JSX.Element[] = []
+				const shelfLayouts: JSX.Element[] = []
+
+				for (const layout of this.props.rundownLayouts) {
+					if (!playlist.showStyles.some((s) => s.id === layout.showStyleBaseId)) {
+						continue
+					}
+
+					if (layout.exposeAsStandalone) {
+						standaloneLayouts.push(
+							this.renderViewLinkItem(layout, getShelfLink(playlist._id, layout._id), `standalone${layout._id}`)
+						)
+					}
+
+					if (layout.exposeAsShelf) {
+						shelfLayouts.push(
+							this.renderViewLinkItem(layout, getRundownWithLayoutLink(playlist._id, layout._id), `shelf${layout._id}`)
+						)
+					}
+				}
+
+				const allElements = [
+					<div className="expco-header" key={`${playlist._id}layoutsheader2`}>
+						{t('Standalone Shelf')}
+					</div>,
+					...standaloneLayouts,
+					<div className="expco-header" key={`${playlist._id}layoutsheader1`}>
+						{t('Timeline views')}
+					</div>,
+					...shelfLayouts,
+					<Link
+						to={getRundownPlaylistLink(playlist._id)}
+						onClick={() => this.saveViewChoice('default')}
+						key={'default'}>
+						<div className="action-btn expco-item">{t('Default')}</div>
+					</Link>,
+				]
+
+				return shelfLayouts.length > 0 || standaloneLayouts.length > 0 ? (
+					<React.Fragment>
+						<SplitDropdown selectedKey={this.state.selectedView}>{allElements}</SplitDropdown>
+					</React.Fragment>
+				) : null
+			}
+
+			// onDragEnd (magic: any) {
+			// 	console.log({
+			// 		rundownIdTHatWasMoved: RundownId, // always
+			// 		movedIntoPlaylistId: PlaylistId | null, // if null, move to (new) separate playlist containing only this items
+			// 		rundownsIdsInPlaylistInOrder: RundownId[] // new order of playlist, ignore if moved to single item playlist
+			// 	})
+
+			// 	// reorder inside a playlist
+			// 	console.log({
+			// 		rundownIdTHatWasMoved: 'C',
+			// 		movedIntoPlaylistId: 'P',
+			// 		rundownsIdsInPlaylistInOrder: ['A', 'C', 'B']
+			// 	})
+			// 	// move into a playlist
+			// 	console.log({
+			// 		rundownIdTHatWasMoved: 'D',
+			// 		movedIntoPlaylistId: 'P',
+			// 		rundownsIdsInPlaylistInOrder: ['A', 'B', 'D', 'C']
+			// 	})
+
+			// 	// move out from a playlist
+			// 	console.log({
+			// 		rundownIdTHatWasMoved: 'C',
+			// 		movedIntoPlaylistId: null, // backend: create new playlist -> C, delete playlist C was originally in (if empty)?
+			// 		rundownsIdsInPlaylistInOrder: ['C'] // but who cares
+			// 	})
+			// }
+
+			render() {
+				const { playlist } = this.props
+				const rundowns = playlist.getRundowns()
+				const playbackProgressBar = createProgressBarRow(playlist)
+				const playlistViewLinks = this.createPlaylistViewLinks()
+
+				if (rundowns.length === 1) {
+					return (
+						<>
+							<RundownListItem
+								key={unprotectString(rundowns[0]._id)}
+								rundown={rundowns[0]}
+								viewLinks={playlistViewLinks}
+							/>
+							{playbackProgressBar}
+						</>
+					)
+				}
+
+				const rundownComponents = rundowns.map((rundown) => (
+					<RundownListItem key={unprotectString(rundown._id)} rundown={rundown} viewLinks={playlistViewLinks} />
+				))
+
+				return (
+					<tr>
+						<td colSpan={10}>
+							<table className="table">
+								<thead>
+									<tr>
+										<td colSpan={8}>
+											<h2>{playlist.name}</h2>
+										</td>
+										<td>{playlistViewLinks}</td>
+										<td>Actions her</td>
+									</tr>
+								</thead>
+								<tbody>{rundownComponents}</tbody>
+								<tfoot>{playbackProgressBar}</tfoot>
+							</table>
+						</td>
+					</tr>
+				)
+			}
 		}
-	}
+	)
 )
 
 function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement | null {
