@@ -2353,7 +2353,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'restartCasparCG')
+					callPeripheralDeviceFunction(event, device._id, undefined, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
