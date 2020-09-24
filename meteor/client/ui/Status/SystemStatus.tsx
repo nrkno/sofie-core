@@ -95,7 +95,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server?'),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'restartCasparCG')
+					callPeripheralDeviceFunction(event, device._id, undefined, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -130,7 +130,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				title: t('Restart Quantel Gateway'),
 				message: t('Do you want to restart Quantel Gateway?'),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'restartQuantel')
+					callPeripheralDeviceFunction(event, device._id, undefined, 'restartQuantel')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
@@ -162,7 +162,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 				title: t('Format HyperDeck disks'),
 				message: t('Do you want to format the HyperDeck disks? This is a destructive action and cannot be undone.'),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'formatHyperdeck')
+					callPeripheralDeviceFunction(event, device._id, undefined, 'formatHyperdeck')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(
