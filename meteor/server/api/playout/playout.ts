@@ -1190,11 +1190,15 @@ export namespace ServerPlayoutAPI {
 			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
 			if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${rundown.showStyleBaseId}" not found!`)
 
+			const relativeStopAt = getCurrentTime() - lastStartedPlayback
+
 			ServerPlayoutAdLibAPI.innerStopPieces(
 				cache,
 				showStyleBase,
 				partInstance,
-				(pieceInstance) => sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1,
+				(pieceInstance) =>
+					sourceLayerIds.indexOf(pieceInstance.piece.sourceLayerId) !== -1 &&
+					(pieceInstance.piece.enable.start === 'now' || pieceInstance.piece.enable.start <= relativeStopAt),
 				undefined
 			)
 
