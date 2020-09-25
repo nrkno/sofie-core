@@ -95,7 +95,7 @@
     "soap": "^0.31.0",
     "superfly-timeline": "^8.1.1",
     "timecode": "0.0.4",
-    "tv-automation-sofie-blueprints-integration": "3.0.0-nightly-feat-localisation-20200921-162712-68edb847.0",
+    "tv-automation-sofie-blueprints-integration": "3.0.0-nightly-feat-localisation-20200925-131650-a7a0fd91.0",
     "underscore": "^1.11.0",
     "utility-types": "^3.10.0",
     "velocity-animate": "^1.5.2",
