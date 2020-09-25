@@ -73,11 +73,14 @@ export interface UserContextInfo extends ContextInfo {
 
 export class CommonContext implements ICommonContext {
 	private readonly _contextIdentifier: string
+	private readonly _contextName: string
+
 	private hashI = 0
 	private hashed: { [hash: string]: string } = {}
 
 	constructor(info: ContextInfo) {
 		this._contextIdentifier = info.identifier
+		this._contextName = info.name
 	}
 	getHashId(str: string, isNotUnique?: boolean) {
 		if (!str) str = 'hash' + this.hashI++
@@ -95,20 +98,16 @@ export class CommonContext implements ICommonContext {
 	}
 
 	logDebug(message: string): void {
-		// TODO - prefix with _contextIdentifier?
-		logger.debug(message)
+		logger.debug(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
 	logInfo(message: string): void {
-		// TODO - prefix with _contextIdentifier?
-		logger.info(message)
+		logger.info(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
 	logWarning(message: string): void {
-		// TODO - prefix with _contextIdentifier?
-		logger.warn(message)
+		logger.warn(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
 	logError(message: string): void {
-		// TODO - prefix with _contextIdentifier?
-		logger.error(message)
+		logger.error(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
 }
 
