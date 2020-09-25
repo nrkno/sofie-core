@@ -27,7 +27,7 @@ const { ServerPlayoutAPI: _ActualServerPlayoutAPI } = jest.requireActual('../pla
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownAPI } from '../../../lib/api/rundown'
 import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { Timeline } from '../../../lib/collections/Timeline'
+import { Timeline, TimelineEnableExt } from '../../../lib/collections/Timeline'
 import { MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
@@ -400,7 +400,11 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		expect(studioTimeline).toBeTruthy()
 		const timelineObjs =
-			(studioTimeline && studioTimeline.timeline.filter((x) => x.enable && x.enable.start === 'now')) || []
+			(studioTimeline &&
+				studioTimeline.timeline.filter(
+					(x) => x.enable && !Array.isArray(x.enable) && x.enable.start === 'now'
+				)) ||
+			[]
 		expect(timelineObjs.length).toBe(1)
 		let timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = timelineObjs.map((tObj) => ({
 			id: tObj.id,
@@ -416,8 +420,10 @@ describe('test peripheralDevice general API methods', () => {
 		const timelineUpdatedObjs =
 			(updatedStudioTimeline && updatedStudioTimeline.timeline.filter((x) => prevIds.indexOf(x.id) >= 0)) || []
 		timelineUpdatedObjs.forEach((tlObj) => {
-			expect(tlObj.enable.setFromNow).toBe(true)
-			expect(tlObj.enable.start).toBeGreaterThan(0)
+			expect(Array.isArray(tlObj.enable)).toBeFalsy
+			const enable = tlObj.enable as TimelineEnableExt
+			expect(enable.setFromNow).toBe(true)
+			expect(enable.start).toBeGreaterThan(0)
 		})
 
 		ActualServerPlayoutAPI.deactivateRundownPlaylist(DEFAULT_CONTEXT, rundownPlaylistID)

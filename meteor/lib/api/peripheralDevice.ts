@@ -244,6 +244,7 @@ export interface NewPeripheralDeviceAPI {
 		id: string,
 		doc: MediaObject | null
 	): Promise<void>
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string): Promise<void>
 
 	getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string): Promise<MediaWorkFlowRevision[]>
 	getMediaWorkFlowStepRevisions(
@@ -330,6 +331,7 @@ export enum PeripheralDeviceAPIMethods {
 
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
+	'clearMediaObjectCollection' = 'peripheralDevice.mediaScanner.clearMediaObjectCollection',
 
 	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
@@ -434,7 +436,7 @@ export namespace PeripheralDeviceAPI {
 	export function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		cb: (err, result) => void,
-		timeoutTime: number,
+		timeoutTime: number = 3000,
 		functionName: string,
 		...args: any[]
 	) {
@@ -519,7 +521,6 @@ export namespace PeripheralDeviceAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		const timeoutTime = 3000
-		return executeFunctionWithCustomTimeout(deviceId, cb, timeoutTime, functionName, ...args)
+		return executeFunctionWithCustomTimeout(deviceId, cb, undefined, functionName, ...args)
 	}
 }

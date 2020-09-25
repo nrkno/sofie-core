@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, waitForPromise, getRandomId, applyToArray } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete, TimelineHash } from '../../lib/collections/Timeline'
@@ -212,16 +212,23 @@ export namespace ServerPeripheralDeviceAPI {
 			if (activePlaylists.length === 1) {
 				const activePlaylist = activePlaylists[0]
 				const playlistId = activePlaylist._id
-				rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.CALLBACK_PLAYOUT, () => {
-					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-					const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
-					timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
-				})
+				rundownPlaylistSyncFunction(
+					playlistId,
+					RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+					'timelineTriggerTime',
+					() => {
+						// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
+						const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
+						timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
+						waitForPromise(cache.saveAllToDatabase())
+					}
+				)
 			} else {
 				// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
 				// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird
 				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 				timelineTriggerTimeInner(cache, studioId, results, undefined)
+				waitForPromise(cache.saveAllToDatabase())
 			}
 		}
 	},
@@ -246,10 +253,14 @@ export namespace ServerPeripheralDeviceAPI {
 
 			const obj = timelineObjs.find((tlo) => tlo.id === o.id)
 			if (obj) {
-				obj.enable.start = o.time
-				obj.enable.setFromNow = true
+				applyToArray(obj.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = o.time
+						enable.setFromNow = true
 
-				tlChanged = true
+						tlChanged = true
+					}
+				})
 
 				const objPieceId = (obj.metaData as Partial<PieceGroupMetadata> | undefined)?.pieceId
 				if (objPieceId && activePlaylist) {
@@ -308,9 +319,6 @@ export namespace ServerPeripheralDeviceAPI {
 				true
 			)
 		}
-
-		// After we've updated the timeline, we must call afterUpdateTimeline!
-		waitForPromise(cache.saveAllToDatabase())
 	}
 	export function partPlaybackStarted(
 		context: MethodContext,
@@ -1006,6 +1014,11 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	) {
 		return makePromise(() =>
 			MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc)
+		)
+	}
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
+		return makePromise(() =>
+			MediaScannerIntegration.clearMediaObjectCollection(deviceId, deviceToken, collectionId)
 		)
 	}
 	// ------- Media Manager --------------
