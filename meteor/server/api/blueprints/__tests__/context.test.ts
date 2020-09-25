@@ -429,48 +429,6 @@ describe('Test blueprint api context', () => {
 				getShowStyleConfigRef.mockRestore()
 			}
 		})
-
-		// class FakeNotesContext implements INotesContext {
-		// 	error: (message: string) => void = jest.fn()
-		// 	warning: (message: string) => void = jest.fn()
-		// 	getHashId: (originString: string, originIsNotUnique?: boolean | undefined) => string = jest.fn(
-		// 		() => 'hashed'
-		// 	)
-		// 	unhashId: (hash: string) => string = jest.fn(() => 'unhash')
-		// }
-
-		// testInFiber('notes', () => {
-		// 	const studio = mockStudio()
-		// 	const context = getContext(studio)
-
-		// 	// Fake the notes context
-		// 	const fakeNotes = new FakeNotesContext()
-		// 		// Apply mocked notesContext:
-		// 	;(context as any).notesContext = fakeNotes
-
-		// 	context.error('this is an {{error}}', { error: 'embarrasing situation' }, 'extid1')
-
-		// 	expect(fakeNotes.error).toHaveBeenCalledTimes(1)
-		// 	expect(fakeNotes.error).toHaveBeenCalledWith(
-		// 		'this is an {{error}}',
-		// 		{ error: 'embarrasing situation' },
-		// 		'extid1'
-		// 	)
-
-		// 	context.warning('this is an warning', {}, 'extid1')
-		// 	expect(fakeNotes.warning).toHaveBeenCalledTimes(1)
-		// 	expect(fakeNotes.warning).toHaveBeenCalledWith('this is an warning', {}, 'extid1')
-
-		// 	const hash = context.getHashId('str 1', false)
-		// 	expect(hash).toEqual('hashed')
-		// 	expect(fakeNotes.getHashId).toHaveBeenCalledTimes(1)
-		// 	expect(fakeNotes.getHashId).toHaveBeenCalledWith('str 1', false)
-
-		// 	const unhash = context.unhashId('str 1')
-		// 	expect(unhash).toEqual('unhash')
-		// 	expect(fakeNotes.unhashId).toHaveBeenCalledTimes(1)
-		// 	expect(fakeNotes.unhashId).toHaveBeenCalledWith('str 1')
-		// })
 	})
 
 	describe('SegmentUserContext', () => {
