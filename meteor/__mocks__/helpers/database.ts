@@ -16,7 +16,7 @@ import {
 	BlueprintManifestBase,
 	ShowStyleBlueprintManifest,
 	IBlueprintShowStyleVariant,
-	ShowStyleContext,
+	IShowStyleContext,
 	BlueprintResultRundown,
 	BlueprintResultSegment,
 	IngestSegment,
@@ -324,7 +324,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 				): string | null => {
 					return SHOW_STYLE_VARIANT_ID
 				},
-				getRundown: (context: ShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
+				getRundown: (context: IShowStyleContext, ingestRundown: IngestRundown): BlueprintResultRundown => {
 					const rundown: IBlueprintRundown = {
 						externalId: ingestRundown.externalId,
 						name: ingestRundown.name,

@@ -19,15 +19,15 @@ import { logger } from '../../../../lib/logging'
 import {
 	ICommonContext,
 	IUserNotesContext,
-	ShowStyleContext as IShowStyleContext,
-	RundownContext as IRundownContext,
-	SegmentUserContext as ISegmentUserContext,
-	EventContext as IEventContext,
-	AsRunEventContext as IAsRunEventContext,
-	PartEventContext as IPartEventContext,
-	TimelineEventContext as ITimelineEventContext,
-	StudioContext as IStudioContext,
-	StudioUserContext as IStudioUserContext,
+	IShowStyleContext,
+	IRundownContext,
+	ISegmentUserContext,
+	IEventContext,
+	IAsRunEventContext,
+	IPartEventContext,
+	ITimelineEventContext,
+	IStudioContext,
+	IStudioUserContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
 	IngestPart,
@@ -38,7 +38,6 @@ import {
 	IBlueprintAsRunLogEvent,
 	IBlueprintExternalMessageQueueObj,
 	ExtendedIngestRundown,
-	ShowStyleBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, StudioId, Studios } from '../../../../lib/collections/Studios'
 import { ConfigRef, preprocessStudioConfig, findMissingConfigs, preprocessShowStyleConfig } from '../config'
@@ -187,7 +186,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 		this.blackHoleNotes = contextInfo.blackHoleUserNotes ?? false
 	}
 
-	userError(message: string, params?: { [key: string]: any }): void {
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
 		if (this.blackHoleNotes) {
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
@@ -200,7 +199,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 			})
 		}
 	}
-	userWarning(message: string, params?: { [key: string]: any }): void {
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
 		if (this.blackHoleNotes) {
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
@@ -311,7 +310,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 		super(contextInfo, studio, cache, _rundown, showStyleBaseId, showStyleVariantId)
 	}
 
-	userError(message: string, params?: { [key: string]: any }): void {
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
 		if (this.blackHoleNotes) {
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
@@ -324,7 +323,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 			})
 		}
 	}
-	userWarning(message: string, params?: { [key: string]: any }): void {
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
 		if (this.blackHoleNotes) {
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
@@ -388,7 +387,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		super(contextInfo, rundown, cache)
 	}
 
-	userError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
 		this.notes.push({
 			type: NoteType.ERROR,
 			message: {
@@ -398,7 +397,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 			trackingId: trackingId,
 		})
 	}
-	userWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
 		this.notes.push({
 			type: NoteType.WARNING,
 			message: {
@@ -473,7 +472,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		return getCurrentTime()
 	}
 
-	userError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
 		if (this.blackHoleNotes) {
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
@@ -487,7 +486,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 			})
 		}
 	}
-	userWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
 		if (this.blackHoleNotes) {
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
@@ -512,12 +511,7 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 		cache: ReadOnlyCacheForRundownPlaylist,
 		asRunEvent: AsRunLogEvent
 	) {
-		super(
-			contextInfo,
-			rundown,
-			cache
-			// new NotesContext(rundown.name, `rundownId=${rundown._id},asRunEventId=${asRunEvent._id}`, false)
-		)
+		super(contextInfo, rundown, cache)
 		this.asRunEvent = unprotectObject(asRunEvent)
 	}
 

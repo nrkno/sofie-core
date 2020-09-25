@@ -82,14 +82,14 @@ describe('Test blueprint post-process', () => {
 		)
 
 		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect(((context as unknown) as IUserNotesContext).userError).toBeUndefined()
+		expect(((context as unknown) as IUserNotesContext).notifyUserError).toBeUndefined()
 		return context
 	}
 	function getStudioContext(studio: Studio) {
 		const context = new StudioContext({ name: studio.name, identifier: `studioId=${studio._id}` }, studio)
 
 		// Make sure we arent an IUserNotesContext, as that means new work to handle those notes
-		expect(((context as unknown) as IUserNotesContext).userError).toBeUndefined()
+		expect(((context as unknown) as IUserNotesContext).notifyUserError).toBeUndefined()
 		return context
 	}
 

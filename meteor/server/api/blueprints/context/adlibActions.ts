@@ -13,8 +13,8 @@ import {
 import { Part } from '../../../../lib/collections/Parts'
 import { logger } from '../../../../lib/logging'
 import {
-	EventContext as IEventContext,
-	ActionExecutionContext as IActionExecutionContext,
+	IEventContext,
+	IActionExecutionContext,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
 	IBlueprintPiece,
@@ -125,7 +125,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		this.takeAfterExecute = false
 	}
 
-	userError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
 		if (this.blackHoleNotes) {
 			this.logError(message)
 		} else {
@@ -139,7 +139,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			})
 		}
 	}
-	userWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
 		if (this.blackHoleNotes) {
 			this.logWarning(message)
 		} else {
