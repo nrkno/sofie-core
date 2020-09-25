@@ -146,7 +146,7 @@ export function handleMosRundownData(
 
 	// Create or update a rundown (ie from rundownCreate or rundownList)
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMosRundownData', () => {
 		const parts = _.compact(storiesToIngestParts(rundownId, mosRunningOrder.Stories || [], !createFresh, []))
 		const groupedStories = groupIngestParts(parts)
 
@@ -207,31 +207,34 @@ export function handleMosRundownMetadata(
 
 	const playlistId = getRundown(rundownId, mosRunningOrderBase.ID.toString()).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
-		const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
-		if (!canBeUpdated(rundown)) return
+	return rundownPlaylistSyncFunction(
+		playlistId,
+		RundownSyncFunctionPriority.INGEST,
+		'handleMosRundownMetadata',
+		() => {
+			const rundown = getRundown(rundownId, parseMosString(mosRunningOrderBase.ID))
+			if (!canBeUpdated(rundown)) return
 
-		// Load the blueprint to process the data
-		const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
-		if (!showStyleBase) {
-			throw new Meteor.Error(
-				500,
-				`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
-			)
+			// Load the blueprint to process the data
+			const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId)
+			if (!showStyleBase) {
+				throw new Meteor.Error(
+					500,
+					`Failed to ShowStyleBase "${rundown.showStyleBaseId}" for rundown "${rundown._id}"`
+				)
+			}
+			const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
+
+			// Load the cached RO Data
+			const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+			ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
+			ingestRundown.modified = getCurrentTime()
+			// TODO - verify this doesn't lose data, it was doing more work before
+
+			// TODO - make this more lightweight?
+			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
 		}
-		const showStyleBlueprint = loadShowStyleBlueprint(showStyleBase)
-
-		// Load the cached RO Data
-		const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-		ingestRundown.payload = _.extend(ingestRundown.payload, mosRunningOrderBase)
-		ingestRundown.modified = getCurrentTime()
-		// TODO - verify this doesn't lose data, it was doing more work before
-
-		// TODO - make this more lightweight?
-		handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
-
-		span?.end()
-	})
+	)
 }
 
 export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
@@ -247,7 +250,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 
 	const playlistId = getRundown(rundownId, story.RunningOrderId.toString()).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMosFullStory', () => {
 		const rundown = getRundown(rundownId, parseMosString(story.RunningOrderId))
 		const playlist = getRundownPlaylist(rundown)
 		// canBeUpdated is done inside handleUpdatedPartInner
@@ -297,7 +300,7 @@ export function handleMosDeleteStory(
 
 	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMosDeleteStory', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) {
 			span?.end()
@@ -372,7 +375,7 @@ export function handleInsertParts(
 
 	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleInsertParts', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
@@ -445,7 +448,7 @@ export function handleSwapStories(
 
 	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleSwapStories', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 
@@ -490,7 +493,7 @@ export function handleMoveStories(
 	const rundownId = getRundownIdFromMosRO(studio, runningOrderMosId)
 	const playlistId = getRundown(rundownId, runningOrderMosId.toString()).playlistId
 
-	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, () => {
+	return rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.INGEST, 'handleMoveStories', () => {
 		const rundown = getRundown(rundownId, parseMosString(runningOrderMosId))
 		if (!canBeUpdated(rundown)) return
 

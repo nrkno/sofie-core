@@ -10,6 +10,7 @@ import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
+import { CASPARCG_RESTART_TIME } from '../lib/constants'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -127,7 +128,7 @@ Meteor.startup(() => {
 											resolve()
 										}
 									},
-									10000,
+									CASPARCG_RESTART_TIME,
 									'restartCasparCG'
 								)
 							})

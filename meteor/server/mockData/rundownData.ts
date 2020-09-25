@@ -89,14 +89,19 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			rundownPlaylistSyncFunction(id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-				const playlist = RundownPlaylists.findOne(id)
-				if (!playlist) throw new Meteor.Error(404, 'not found')
+			rundownPlaylistSyncFunction(
+				id,
+				RundownSyncFunctionPriority.USER_PLAYOUT,
+				'debug_syncPlayheadInfinitesForNextPartInstance',
+				() => {
+					const playlist = RundownPlaylists.findOne(id)
+					if (!playlist) throw new Meteor.Error(404, 'not found')
 
-				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-				syncPlayheadInfinitesForNextPartInstance(cache, playlist)
-				waitForPromise(cache.saveAllToDatabase())
-			})
+					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+					waitForPromise(cache.saveAllToDatabase())
+				}
+			)
 		},
 
 		debug_forceClearAllActivationCaches() {
@@ -115,26 +120,31 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			rundownPlaylistSyncFunction(id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
-				const playlist = RundownPlaylists.findOne(id)
-				if (!playlist) throw new Meteor.Error(404, 'not found')
+			rundownPlaylistSyncFunction(
+				id,
+				RundownSyncFunctionPriority.USER_PLAYOUT,
+				'debug_regenerateNextPartInstance',
+				() => {
+					const playlist = RundownPlaylists.findOne(id)
+					if (!playlist) throw new Meteor.Error(404, 'not found')
 
-				if (playlist.nextPartInstanceId && playlist.active) {
-					const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+					if (playlist.nextPartInstanceId && playlist.active) {
+						const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
 
-					const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
-					const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
-					if (part) {
-						setNextPart(cache, playlist, null)
-						const playlist2 = cache.RundownPlaylists.findOne(playlist._id) as RundownPlaylist
-						setNextPart(cache, playlist2, part)
+						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+						if (part) {
+							setNextPart(cache, playlist, null)
+							const playlist2 = cache.RundownPlaylists.findOne(playlist._id) as RundownPlaylist
+							setNextPart(cache, playlist2, part)
 
-						updateTimeline(cache, playlist.studioId)
+							updateTimeline(cache, playlist.studioId)
+						}
+
+						waitForPromise(cache.saveAllToDatabase())
 					}
-
-					waitForPromise(cache.saveAllToDatabase())
 				}
-			})
+			)
 		},
 	})
 }
