@@ -211,9 +211,14 @@ export const addSteps = addMigrationSteps('1.12.0', [
 	},
 	//
 	//
-	setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.10.1'),
-	setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.5.0'),
-	setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.2.1'),
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.10.1'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.5.0'),
+	setExpectedVersion(
+		'expectedVersion.mediaManager',
+		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+		'_process',
+		'^1.2.1'
+	),
 ])
 
 function migrateConfigToBlueprintConfig<
