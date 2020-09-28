@@ -70,7 +70,7 @@ import { MethodContext } from '../../../lib/api/methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
 import { CacheForPlayout, CacheForPlayoutPreInit, CacheForStudio2, ReadOnlyCache } from '../../DatabaseCaches'
-import { takeNextPartInner, afterTake, takeNextPartInnerSync } from './take'
+import { afterTake, takeNextPartInnerSync } from './take'
 import { syncPlayheadInfinitesForNextPartInstance, getPieceInstancesForPart } from './infinites'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { check, Match } from '../../../lib/check'
@@ -121,13 +121,14 @@ export function rundownPlaylistFromStudioSyncFunction<T>(
 	return rundownPlaylistPlayoutSyncFunctionInner(context, tmpPlaylist, preInitFcn, fcn)
 }
 
-function rundownPlaylistPlayoutSyncFunctionInner<T>(
+export function rundownPlaylistPlayoutSyncFunctionInner<T>(
 	context: string,
 	tmpPlaylist: RundownPlaylist,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => void),
-	fcn: (cache: CacheForPlayout) => T
+	fcn: (cache: CacheForPlayout) => T,
+	options?: { skipPlaylistLock?: boolean }
 ): T {
-	return rundownPlaylistCustomSyncFunction(context, tmpPlaylist._id, RundownSyncFunctionPriority.USER_PLAYOUT, () => {
+	function doPlaylistInner() {
 		const cache = waitForPromise(CacheForPlayout.create(tmpPlaylist))
 
 		if (preInitFcn) {
@@ -141,7 +142,19 @@ function rundownPlaylistPlayoutSyncFunctionInner<T>(
 		waitForPromise(cache.saveAllToDatabase())
 
 		return res
-	})
+	}
+
+	if (options?.skipPlaylistLock) {
+		// TODO-PartInstances remove this once new data flow
+		return doPlaylistInner()
+	} else {
+		return rundownPlaylistCustomSyncFunction(
+			context,
+			tmpPlaylist._id,
+			RundownSyncFunctionPriority.USER_PLAYOUT,
+			doPlaylistInner
+		)
+	}
 }
 
 export namespace ServerPlayoutAPI {
@@ -349,7 +362,11 @@ export namespace ServerPlayoutAPI {
 	): ClientAPI.ClientResponse<void> {
 		check(rundownPlaylistId, String)
 
-		return takeNextPartInner(context, rundownPlaylistId)
+		let now = getCurrentTime()
+
+		return rundownPlaylistPlayoutSyncFunction(context, 'takeNextPart', rundownPlaylistId, null, (cache) => {
+			return takeNextPartInnerSync(cache, now)
+		})
 	}
 
 	export function setNextPart(

@@ -416,12 +416,15 @@ export function handleInsertParts(
 				return ingestParts
 			})
 
-			return prepareMosSegmentChanges(cache, ingestDataCache, ingestRundown, newIngestSegments)
+			return {
+				preparedChanges: prepareMosSegmentChanges(cache, ingestDataCache, ingestRundown, newIngestSegments),
+				newPartIds,
+			}
 		},
-		(cache, playoutInfo, preparedChanges) => {
-			if (preparedChanges) {
-				applyMosSegmentChanges(cache, playoutInfo, preparedChanges)
-				UpdateNext.afterInsertParts(cache, playoutInfo, newPartIds, removePrevious)
+		(cache, playoutInfo, data) => {
+			if (data) {
+				applyMosSegmentChanges(cache, playoutInfo, data.preparedChanges)
+				UpdateNext.afterInsertParts(cache, playoutInfo, data.newPartIds, removePrevious)
 			}
 		}
 	)

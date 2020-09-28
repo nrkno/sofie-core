@@ -26,23 +26,10 @@ import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
 import { reportPartHasStarted } from '../asRunLog'
-import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
-import { rundownPlaylistPlayoutSyncFunction } from './playout'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { ServerPlayoutAdLibAPI } from './adlib'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-
-export function takeNextPartInner(
-	context: MethodContext,
-	rundownPlaylistId: RundownPlaylistId
-): ClientAPI.ClientResponse<void> {
-	let now = getCurrentTime()
-
-	return rundownPlaylistPlayoutSyncFunction(context, 'takeNextPartInner', rundownPlaylistId, null, (cache) => {
-		return takeNextPartInnerSync(cache, now)
-	})
-}
 
 /**
  * This *must* be run within a rundownPlaylistSyncFunction.

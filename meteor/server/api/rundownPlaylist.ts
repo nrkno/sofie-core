@@ -1,6 +1,6 @@
 import { StudioId } from '../../lib/collections/Studios'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { waitForPromiseAll, makePromise } from '../../lib/lib'
+import { waitForPromiseAll, makePromise, waitForPromise } from '../../lib/lib'
 import * as _ from 'underscore'
 import {
 	studioSyncFunction,
@@ -27,7 +27,7 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 
 							const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
 							if (rundowns === 0) {
-								removeRundownPlaylistFromDb(playlist._id)
+								waitForPromise(removeRundownPlaylistFromDb(playlist._id))
 							}
 						}
 					)

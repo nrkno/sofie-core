@@ -39,6 +39,7 @@ PickerPOST.route('/ingest/:studioId', (params, req: IncomingMessage, response: S
 })
 export function importIngestRundown(studioId: StudioId, ingestRundown: IngestRundown) {
 	return rundownIngestSyncFromStudioFunction(
+		'importIngestRundown',
 		studioId,
 		ingestRundown.externalId,
 		(cache, ingestDataCache) => {

@@ -131,7 +131,7 @@ describe('Test blueprint api context', () => {
 
 		generateSparsePieceInstances(rundown)
 
-		return rundownPlaylistPlayoutSyncFunction(null, tmpPlaylist._id, null, (cache) =>
+		return rundownPlaylistPlayoutSyncFunction(null, 'test', tmpPlaylist._id, null, (cache) =>
 			fcn(cache, cache.Playlist.doc)
 		)
 	}

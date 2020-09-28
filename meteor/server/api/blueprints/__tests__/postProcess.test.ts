@@ -22,7 +22,7 @@ import { Piece } from '../../../../lib/collections/Pieces'
 import { TimelineObjGeneric, TimelineObjType } from '../../../../lib/collections/Timeline'
 import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { CacheForIngest, ReadOnlyCache } from '../../../DatabaseCaches'
+import { ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 
 describe('Test blueprint post-process', () => {
 	let env: DefaultEnvironment
@@ -73,12 +73,11 @@ describe('Test blueprint post-process', () => {
 			previousPartInstanceId: null,
 		})
 
-		const cache: ReadOnlyCache<CacheForIngest> = waitForPromise(
-			CacheForIngest.create(env.studio._id, rundown.externalId)
-		)
+		const studio = getStudio()
+		const showStyle = {} as ShowStyleCompound
 
 		const rundownNotesContext = new NotesContext(rundown.name, `rundownId=${rundown._id}`, true)
-		return new RundownContext(rundown, cache, rundownNotesContext)
+		return new RundownContext(studio, rundown, showStyle, rundownNotesContext)
 	}
 
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {

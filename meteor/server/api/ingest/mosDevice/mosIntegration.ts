@@ -118,6 +118,7 @@ export namespace MosIntegration {
 		logger.debug(status)
 
 		rundownIngestSyncFunction(
+			'mosRoStatus',
 			peripheralDevice,
 			rundownExternalId,
 			() => {
@@ -294,6 +295,7 @@ export namespace MosIntegration {
 		logger.debug(Action)
 
 		return rundownIngestSyncFunction(
+			'mosRoReadyToAir',
 			peripheralDevice,
 			rundownExternalId,
 			(cache, ingestCache) => {

@@ -1,18 +1,19 @@
 import * as _ from 'underscore'
 import { testInFiber, testInFiberOnly, beforeAllInFiber } from '../../../../__mocks__/helpers/jest'
-import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
+import { Rundowns, RundownId, Rundown } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
-import { literal, saveIntoDb, protectString } from '../../../../lib/lib'
+import { literal, saveIntoDb, protectString, waitForPromise } from '../../../../lib/lib'
 
 import { UpdateNext } from '../updateNext'
 
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
-import { removeRundownFromCache } from '../../playout/lib'
-import { wrapWithCacheForRundownPlaylistFromRundown, wrapWithCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { Studios } from '../../../../lib/collections/Studios'
+import { removeRundownsFromDb } from '../../playout/lib'
+import { CacheForIngest } from '../../../DatabaseCaches'
+import { getIngestPlaylistInfoFromDb } from '../lib'
 jest.mock('../../playout/playout')
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
@@ -21,8 +22,7 @@ const rundownId: RundownId = protectString('mock_ro')
 const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')
 function createMockRO() {
 	const existing = Rundowns.findOne(rundownId)
-	if (existing)
-		wrapWithCacheForRundownPlaylistFromRundown(existing._id, (cache) => removeRundownFromCache(cache, existing))
+	if (existing) waitForPromise(removeRundownsFromDb([existing._id]))
 
 	Studios.insert({
 		_id: protectString('mock_studio'),
@@ -300,11 +300,14 @@ describe('Test mos update next part helpers', () => {
 		expect(playlist).toBeTruthy()
 		return playlist
 	}
+	function getRundown() {
+		const rundown = Rundowns.findOne(rundownId) as Rundown
+		expect(rundown).toBeTruthy()
+		return rundown
+	}
 	function ensureNextPartIsValid() {
-		const playlist = getRundownPlaylist()
-		return wrapWithCacheForRundownPlaylist(playlist, (cache) => {
-			UpdateNext.ensureNextPartIsValid(cache, playlist)
-		})
+		const ingestInfo = getIngestPlaylistInfoFromDb(getRundown())
+		UpdateNext.ensureNextPartIsValid((null as unknown) as CacheForIngest, ingestInfo)
 	}
 
 	testInFiber('ensureNextPartIsValid: Start with null', () => {
@@ -417,36 +420,30 @@ describe('Test mos update next part helpers', () => {
 		)
 	})
 
+	const ingestCache = (undefined as unknown) as CacheForIngest
+
 	testInFiber('afterInsertParts: Did not remove previous', () => {
 		resetPartIds('fake_part', 'not_real_either')
 
 		// The params should be ignored, so fill with a few instances of junk to check the call to ensureNextPartIsValid gets done
 
-		const playlist = getRundownPlaylist()
-
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
-		wrapWithCacheForRundownPlaylist(playlist, (cache) => UpdateNext.afterInsertParts(cache, playlist, [''], false))
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), [''], false)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		ensureMock.mockClear()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			UpdateNext.afterInsertParts(cache, playlist, null as any, false)
-		)
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), null as any, false)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		ensureMock.mockClear()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			UpdateNext.afterInsertParts(cache, playlist, ['p3'], false)
-		)
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), ['p3'], false)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		// Try again with the next manually set
 		resetPartIds('fake_part', 'not_real_either', true)
 
 		ensureMock.mockClear()
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			UpdateNext.afterInsertParts(cache, playlist, null as any, false)
-		)
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), null as any, false)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 
 		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
@@ -455,12 +452,9 @@ describe('Test mos update next part helpers', () => {
 	testInFiber('afterInsertParts: Next part no longer exists', () => {
 		resetPartIds('mock_part_instance2', 'fake_part', true)
 
-		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			UpdateNext.afterInsertParts(cache, playlist, ['p4', 'p5'], true)
-		)
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), ['p4', 'p5'], true)
 		expect(ensureMock).not.toHaveBeenCalled()
 
 		expect(ServerPlayoutAPI.setNextPartInner).toHaveBeenCalledWith(
@@ -473,12 +467,9 @@ describe('Test mos update next part helpers', () => {
 	testInFiber('afterInsertParts: Next part no longer exists, missing new parts', () => {
 		resetPartIds('mock_part_instance2', 'fake_part', true)
 
-		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			UpdateNext.afterInsertParts(cache, playlist, ['p99'], true)
-		)
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), ['p99'], true)
 		expect(ensureMock).toHaveBeenCalledTimes(1)
 		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
 	})
@@ -489,9 +480,7 @@ describe('Test mos update next part helpers', () => {
 		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			UpdateNext.afterInsertParts(cache, playlist, ['p3', 'p4'], true)
-		)
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), ['p3', 'p4'], true)
 		expect(ensureMock).not.toHaveBeenCalled()
 		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
 	})
@@ -502,9 +491,7 @@ describe('Test mos update next part helpers', () => {
 		const playlist = getRundownPlaylist()
 		const ensureMock = jest.spyOn(UpdateNext, 'ensureNextPartIsValid').mockImplementation(jest.fn())
 
-		wrapWithCacheForRundownPlaylist(playlist, (cache) =>
-			UpdateNext.afterInsertParts(cache, playlist, ['p4', 'p5'], true)
-		)
+		UpdateNext.afterInsertParts(ingestCache, getIngestPlaylistInfoFromDb(getRundown()), ['p4', 'p5'], true)
 		expect(ensureMock).not.toHaveBeenCalled()
 		expect(ServerPlayoutAPI.setNextPartInner).not.toHaveBeenCalled()
 	})

@@ -59,7 +59,7 @@ if (!Settings.enableUserAccounts) {
 
 			// Note: this is not 'thread'-safe, but its only a debug tool
 
-			removeRundownPlaylistFromDb(id)
+			waitForPromise(removeRundownPlaylistFromDb(id))
 		},
 
 		debug_removeAllRos() {
@@ -68,7 +68,7 @@ if (!Settings.enableUserAccounts) {
 			// Note: this is not 'thread'-safe, but its only a debug tool
 
 			RundownPlaylists.find({}).forEach((playlist) => {
-				removeRundownPlaylistFromDb(playlist._id)
+				waitForPromise(removeRundownPlaylistFromDb(playlist._id))
 			})
 		},
 

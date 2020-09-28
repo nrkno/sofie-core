@@ -175,6 +175,37 @@ export function rundownIngestSyncFunction<T>(
 	)
 }
 
+export function getIngestPlaylistInfoFromDb(rundown: DeepReadonly<Rundown>) {
+	const [playlist, rundowns] = waitForPromiseAll([
+		asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
+		asyncCollectionFindFetch(
+			Rundowns,
+			{
+				playlistId: rundown.playlistId,
+			},
+			{
+				sort: {
+					_rank: 1,
+					_id: 1,
+				},
+			}
+		),
+	])
+
+	if (!playlist)
+		throw new Meteor.Error(404, `RundownPlaylist "${rundown.playlistId}"  (for Rundown "${rundown._id}") not found`)
+
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(rundowns.map((r) => r._id))
+
+	const playoutInfo: IngestPlayoutInfo = {
+		playlist,
+		rundowns,
+		currentPartInstance,
+		nextPartInstance,
+	}
+	return playoutInfo
+}
+
 export function rundownIngestSyncFromStudioFunction<T>(
 	context: string,
 	studioId: StudioId,
@@ -205,28 +236,7 @@ export function rundownIngestSyncFromStudioFunction<T>(
 
 				function doPlaylistInner() {
 					if (saveFcn) {
-						// TODO-CACHE will this work?
-						const [playlist, rundowns] = waitForPromiseAll([
-							asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
-							asyncCollectionFindFetch(Rundowns, { playlistId: rundown.playlistId }),
-						])
-
-						if (!playlist)
-							throw new Meteor.Error(
-								404,
-								`RundownPlaylist "${rundown.playlistId}"  (for Rundown "${rundown._id}") not found`
-							)
-
-						const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(
-							rundowns.map((r) => r._id)
-						)
-
-						const playoutInfo: IngestPlayoutInfo = {
-							playlist,
-							rundowns,
-							currentPartInstance,
-							nextPartInstance,
-						}
+						const playoutInfo = getIngestPlaylistInfoFromDb(rundown)
 
 						saveFcn(cache, playoutInfo, val)
 					}

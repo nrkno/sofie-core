@@ -11,15 +11,11 @@ import { updatePartRanks, ServerRundownAPI } from '../../rundown'
 import { ServerPlayoutAPI } from '../../playout/playout'
 import { RundownInput } from '../rundownInput'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { unprotectString, protectString } from '../../../../lib/lib'
+import { unprotectString, protectString, waitForPromise } from '../../../../lib/lib'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { getSegmentId, rundownIngestSyncFromStudioFunction } from '../lib'
 import { MethodContext } from '../../../../lib/api/methods'
-import {
-	getAllOrderedPartsFromPlayoutCache,
-	getAllOrderedPartsFromIngestCache,
-	removeRundownPlaylistFromDb,
-} from '../../playout/lib'
+import { removeRundownPlaylistFromDb } from '../../playout/lib'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1173,7 +1169,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		// Cleanup any rundowns / playlists
 		RundownPlaylists.find()
 			.fetch()
-			.forEach((playlist) => removeRundownPlaylistFromDb(playlist._id))
+			.forEach((playlist) => waitForPromise(removeRundownPlaylistFromDb(playlist._id)))
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,

@@ -1,23 +1,25 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Rundown } from '../../../lib/collections/Rundowns'
-import { ServerPlayoutAPI } from '../playout/playout'
-import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { moveNext } from '../userActions'
+import {
+	ServerPlayoutAPI,
+	rundownPlaylistPlayoutSyncFunction,
+	rundownPlaylistPlayoutSyncFunctionInner,
+} from '../playout/playout'
 import { selectNextPart, isTooCloseToAutonext, getAllOrderedPartsFromPlayoutCache } from '../playout/lib'
 import { CacheForIngest } from '../../DatabaseCaches'
 import { IngestPlayoutInfo } from './lib'
 import { profiler } from '../profiler'
 
 export namespace UpdateNext {
-	export function ensureNextPartIsValid(cache: CacheForIngest, playoutInfo: IngestPlayoutInfo) {
+	export function ensureNextPartIsValid(_ingestCache: CacheForIngest, playoutInfo: IngestPlayoutInfo) {
 		const span = profiler.startSpan('api.ingest.ensureNextPartIsValid')
 
 		const { playlist, currentPartInstance, nextPartInstance } = playoutInfo
 
 		// Ensure the next-id is still valid
 		if (playlist.active && playlist.nextPartInstanceId) {
-			const allParts = getAllOrderedPartsFromPlayoutCache(cache)
+			// Note: we have the playlist lock, so we can use the db directly
+			const allParts = playoutInfo.playlist.getAllOrderedParts()
 
 			if (currentPartInstance) {
 				// Leave the manually chosen part
@@ -43,18 +45,22 @@ export namespace UpdateNext {
 				}
 
 				// Set to the newly selected part
-				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
+				rundownPlaylistPlayoutSyncFunctionInner('ensureNextPartIsValid', playlist, null, (cache) => {
+					ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
+				})
 			} else if (!nextPartInstance) {
 				// Don't have a currentPart or a nextPart, so set next to first in the show
 				const newNextPart = selectNextPart(playlist, null, allParts)
-				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
+				rundownPlaylistPlayoutSyncFunctionInner('ensureNextPartIsValid', playlist, null, (cache) => {
+					ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
+				})
 			}
 		}
 
 		span?.end()
 	}
 	export function afterInsertParts(
-		cache: CacheForIngest,
+		ingestCache: CacheForIngest,
 		playoutInfo: IngestPlayoutInfo,
 		newPartExternalIds: string[],
 		removePrevious: boolean
@@ -69,11 +75,13 @@ export namespace UpdateNext {
 				const newNextPart = selectNextPart(
 					playlist,
 					currentPartInstance || null,
-					getAllOrderedPartsFromPlayoutCache(cache)
+					playoutInfo.playlist.getAllOrderedParts()
 				)
-				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
+				rundownPlaylistPlayoutSyncFunctionInner('ensureNextPartIsValid', playlist, null, (cache) => {
+					ServerPlayoutAPI.setNextPartInner(cache, newNextPart?.part ?? null)
+				})
 			} else if (playlist.nextPartManual && removePrevious) {
-				const allParts = getAllOrderedPartsFromPlayoutCache(cache)
+				const allParts = playoutInfo.playlist.getAllOrderedParts()
 
 				// If the manually chosen part does not exist, assume it was the one that was removed
 				const currentNextPart = nextPartInstance
@@ -86,15 +94,17 @@ export namespace UpdateNext {
 					)
 					if (firstNewPart) {
 						// Matched a part that replaced the old, so set to it
-						ServerPlayoutAPI.setNextPartInner(cache, playlist, firstNewPart)
+						rundownPlaylistPlayoutSyncFunctionInner('ensureNextPartIsValid', playlist, null, (cache) => {
+							ServerPlayoutAPI.setNextPartInner(cache, firstNewPart)
+						})
 					} else {
 						// Didn't find a match. Lets assume it is because the specified part was the one that was removed, so auto it
-						UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
+						UpdateNext.ensureNextPartIsValid(ingestCache, playoutInfo)
 					}
 				}
 			} else {
 				// Ensure next is valid
-				UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
+				UpdateNext.ensureNextPartIsValid(ingestCache, playoutInfo)
 			}
 		}
 	}

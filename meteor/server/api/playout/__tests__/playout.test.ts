@@ -479,7 +479,7 @@ describe('Playout API', () => {
 
 				// simulate TSR starting part playback
 				const currentPartInstanceId = currentPartInstance?._id || protectString('')
-				ServerPlayoutAPI.onPartPlaybackStarted(DEFAULT_CONTEXT, playlistId0, currentPartInstanceId, now)
+				ServerPlayoutAPI.onPartPlaybackStarted(playoutDevice, playlistId0, currentPartInstanceId, now)
 
 				// simulate TSR starting each piece
 				const pieceInstances = getAllPieceInstancesForPartInstance(currentPartInstanceId)
@@ -578,7 +578,7 @@ describe('Playout API', () => {
 				const nextPartInstanceBeforeTakeId = nextPartInstanceBeforeTake?._id
 
 				now += currentPartInstanceBeforeTake?.part.expectedDuration!
-				ServerPlayoutAPI.onPartPlaybackStarted(DEFAULT_CONTEXT, playlistId0, nextPartInstanceBeforeTakeId!, now)
+				ServerPlayoutAPI.onPartPlaybackStarted(playoutDevice, playlistId0, nextPartInstanceBeforeTakeId!, now)
 				ServerPlayoutAPI.onPartPlaybackStopped(
 					DEFAULT_CONTEXT,
 					playlistId0,

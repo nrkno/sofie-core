@@ -18,7 +18,7 @@ if (!Settings.enableUserAccounts) {
 		debug_updateTimeline: (studioId: StudioId) => {
 			check(studioId, String)
 
-			return studioSyncFunction(studioId, (cache) => {
+			return studioSyncFunction('debug_updateTimeline', studioId, (cache) => {
 				updateStudioOrPlaylistTimeline(cache)
 			})
 		},
