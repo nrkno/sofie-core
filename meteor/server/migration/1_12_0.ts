@@ -12,6 +12,7 @@ import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { setExpectedVersion } from './lib'
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
