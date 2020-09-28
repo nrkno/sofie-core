@@ -78,7 +78,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			return false
 		},
 		migrate: () => {
-			Timeline.update(
+			Studios.update(
 				{
 					'testToolsConfig.recording': { $exists: true },
 				},

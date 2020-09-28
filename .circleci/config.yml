@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
     steps:
       - checkout
       - restore_cache:
@@ -38,7 +38,7 @@ jobs:
 
   tests:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
     steps:
       - checkout
       - run:
@@ -47,7 +47,7 @@ jobs:
           no_output_timeout: 60m
   lint:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
     steps:
       - checkout
       - run:
@@ -57,7 +57,7 @@ jobs:
 
   validate-prod-dependencies:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
     steps:
       - checkout
       - run:
@@ -66,7 +66,7 @@ jobs:
           no_output_timeout: 15m
   validate-all-dependencies:
     docker:
-      - image: sofietv/tv-automation-meteor-base:1.11
+      - image: sofietv/tv-automation-meteor-base:1.11.1
     steps:
       - checkout
       - run:
