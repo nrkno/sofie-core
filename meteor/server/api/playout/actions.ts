@@ -57,7 +57,7 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 
 	// Re-Initialize the ActivationCache now when the rundownPlaylist is active
 	const rundownsInPlaylist = cache.Rundowns.findFetch()
-	cache.activationCache.initialize(activePlaylist, rundownsInPlaylist)
+	waitForPromise(cache.activationCache.initialize(activePlaylist, rundownsInPlaylist))
 
 	if (!activePlaylist.nextPartInstanceId) {
 		const firstPart = selectNextPart(activePlaylist, null, getAllOrderedPartsFromCache(cache))
@@ -71,10 +71,10 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 
 		cache.defer(() => {
 			if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
-			const showStyleBase = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
-			const { blueprint } = loadShowStyleBlueprint(showStyleBase)
+			const showStyleCompound = waitForPromise(cache.activationCache.getShowStyleCompound(rundown))
+			const { blueprint } = loadShowStyleBlueprint(showStyleCompound)
 
-			const context = new RundownContext(cache.Studio.doc, rundown, showStyleBase, undefined)
+			const context = new RundownContext(cache.Studio.doc, rundown, showStyleCompound, undefined)
 			context.wipeCache()
 
 			if (blueprint.onRundownActivate) {
@@ -142,14 +142,7 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
 
 	if (currentPartInstance) {
 		cache.PartInstances.update(currentPartInstance._id, {
-			$push: {
-				'part.timings.takeOut': getCurrentTime(),
-			},
-		})
-
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(currentPartInstance.part._id, {
-			$push: {
+			$set: {
 				'timings.takeOut': getCurrentTime(),
 			},
 		})

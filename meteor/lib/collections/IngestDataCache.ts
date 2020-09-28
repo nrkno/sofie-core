@@ -6,6 +6,7 @@ import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { PartId } from './Parts'
+import { registerIndex } from '../database'
 
 export enum IngestCacheType {
 	RUNDOWN = 'rundown',
@@ -55,10 +56,7 @@ export const IngestDataCache: TransformedCollection<IngestDataCacheObj, IngestDa
 	IngestDataCacheObj
 >('ingestDataCache')
 registerCollection('IngestDataCache', IngestDataCache)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		IngestDataCache._ensureIndex({
-			rundownId: 1,
-		})
-	}
+
+registerIndex(IngestDataCache, {
+	rundownId: 1,
 })

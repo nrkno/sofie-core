@@ -5,7 +5,7 @@ import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 0.23.0 ( Release 8 )
-addMigrationSteps('0.23.0', [
+export const addSteps = addMigrationSteps('0.23.0', [
 	{
 		// Ensure rundowns have importVersions set
 		id: 'rundowns have importVersions',

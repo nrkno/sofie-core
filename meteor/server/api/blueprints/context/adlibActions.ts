@@ -65,6 +65,7 @@ const IBlueprintPieceSample: Required<IBlueprintPiece> = {
 	adlibAutoNext: false,
 	adlibAutoNextOverlap: 0,
 	adlibDisableOutTransition: false,
+	tags: [],
 }
 // Compile a list of the keys which are allowed to be set
 const IBlueprintPieceSampleKeys = Object.keys(IBlueprintPieceSample) as Array<keyof IBlueprintPiece>
@@ -107,7 +108,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	public takeAfterExecute: boolean
 
 	constructor(cache: CacheForPlayout, notesContext: NotesContext, rundown: Rundown) {
-		super(cache.Studio.doc, getShowStyleCompound(rundown.showStyleVariantId), notesContext)
+		super(cache.Studio.doc, waitForPromise(cache.activationCache.getShowStyleCompound(rundown)), notesContext)
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -230,15 +231,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			part === 'current',
 			true
 		)[0]
-		piece.timings = {
-			take: [getCurrentTime()],
-			startedPlayback: [],
-			next: [],
-			stoppedPlayback: [],
-			playOffset: [],
-			takeDone: [],
-			takeOut: [],
-		}
 		const newPieceInstance = wrapPieceToInstance(piece, partInstance._id)
 
 		// Do the work
@@ -269,7 +261,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Failed to find rundown of pieceInstance')
 		}
 
-		if (pieceInstance.infinite?.fromPrevious) {
+		if (pieceInstance.infinite?.fromPreviousPart) {
 			throw new Error('Cannot update an infinite piece that is continued from a previous part')
 		}
 
@@ -337,7 +329,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
-		if (isTooCloseToAutonext(currentPartInstance, false)) {
+		if (isTooCloseToAutonext(currentPartInstance, true)) {
 			throw new Error('Too close to an autonext to queue a part')
 		}
 

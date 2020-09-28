@@ -109,6 +109,7 @@ describe('systemStatus API', () => {
 		testInFiber('REST /health with state GOOD', () => {
 			env = setupDefaultStudioEnvironment()
 			MeteorMock.mockRunMeteorStartup()
+
 			// simulate initialized system
 			setSystemStatus('systemTime', {
 				statusCode: StatusCode.GOOD,

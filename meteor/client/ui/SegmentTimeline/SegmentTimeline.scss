@@ -26,18 +26,11 @@ $timeline-layer-height: 1em;
 	border-radius: 3px;
 }
 .segment-timeline__part-identifiers {
-	display: flex;
-	position: absolute;
-	bottom: 2.5px;
-	flex-wrap: wrap;
+	text-align: left;
 
 	.segment-timeline__part-identifiers__identifier {
-		float: left;
-		margin: 2.5px;
-		padding: 0 10px 0 10px;
+		display: inline-block;
 		box-sizing: border-box;
-		background-color: #7400d5;
-		border-radius: 10px;
 		cursor: pointer;
 	}
 }

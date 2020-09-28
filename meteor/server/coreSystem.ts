@@ -12,7 +12,8 @@ import {
 } from '../lib/collections/CoreSystem'
 import { getCurrentTime, unprotectString } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CURRENT_SYSTEM_VERSION, prepareMigration, runMigration } from './migration/databaseMigration'
+import { prepareMigration, runMigration } from './migration/databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from './migration/currentSystemVersion'
 import { setSystemStatus, StatusCode, removeSystemStatus } from './systemStatus/systemStatus'
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
@@ -388,7 +389,7 @@ const checkBlueprintsConfig = syncFunction(function checkBlueprintsConfig() {
 		}
 	})
 	lastBlueprintConfigIds = blueprintIds
-})
+}, 'checkBlueprintsConfig')
 function setBlueprintConfigStatus(systemStatusId: string, diff: string[], studioId?: StudioId) {
 	if (diff && diff.length > 0) {
 		setSystemStatus(systemStatusId, {

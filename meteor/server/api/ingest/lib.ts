@@ -37,6 +37,7 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestDataCacheObj, IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { DbCacheWriteCollection } from '../../DatabaseCache'
 import { RundownIngestDataCacheCollection } from './ingestCache'
+import { profiler } from '../profiler'
 
 /** Check Access and return PeripheralDevice, throws otherwise */
 export function checkAccessAndGetPeripheralDevice(
@@ -44,10 +45,17 @@ export function checkAccessAndGetPeripheralDevice(
 	token: string | undefined,
 	context: Credentials | MethodContext
 ): PeripheralDevice {
-	const access = PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
-	const peripheralDevice = access.device
-	if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+	const span = profiler.startSpan('lib.checkAccessAndGetPeripheralDevice')
 
+	const { device: peripheralDevice } = PeripheralDeviceContentWriteAccess.peripheralDevice(
+		{ userId: context.userId, token },
+		deviceId
+	)
+	if (!peripheralDevice) {
+		throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
+	}
+
+	span?.end()
 	return peripheralDevice
 }
 
@@ -68,6 +76,8 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 }
 
 export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio {
+	const span = profiler.startSpan('mosDevice.lib.getStudioFromDevice')
+
 	const studioId = getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
@@ -75,19 +85,29 @@ export function getStudioFromDevice(peripheralDevice: PeripheralDevice): Studio 
 
 	const studio = Studios.findOne(studioId)
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
+
+	span?.end()
 	return studio
 }
 export function getRundownPlaylist(rundown: Rundown): RundownPlaylist {
+	const span = profiler.startSpan('mosDevice.lib.getRundownPlaylist')
+
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)
 	if (!playlist)
 		throw new Meteor.Error(500, `Rundown playlist "${rundown.playlistId}" of rundown "${rundown._id}" not found!`)
 	playlist.touch()
+
+	span?.end()
 	return playlist
 }
 export function getRundown(rundownId: RundownId, externalRundownId: string): Rundown {
+	const span = profiler.startSpan('mosDevice.lib.getRundown')
+
 	const rundown = Rundowns.findOne(rundownId)
 	if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" ("${externalRundownId}") not found`)
 	rundown.touch()
+
+	span?.end()
 	return rundown
 }
 export function getRundown2(cache: ReadOnlyCache<CacheForIngest> | CacheForIngest): DeepReadonly<Rundown> {
@@ -135,6 +155,7 @@ export interface IngestPlayoutInfo {
 }
 
 export function rundownIngestSyncFunction<T>(
+	context: string,
 	peripheralDevice: PeripheralDevice,
 	rundownExternalId: string,
 	calcFcn: (cache: ReadOnlyCache<CacheForIngest>, ingestCache: RundownIngestDataCacheCollection) => T,
@@ -146,6 +167,7 @@ export function rundownIngestSyncFunction<T>(
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
 	return rundownIngestSyncFromStudioFunction(
+		context,
 		studioId,
 		rundownExternalId,
 		(cache, ingestCache) => calcFcn(cache, ingestCache),
@@ -154,77 +176,83 @@ export function rundownIngestSyncFunction<T>(
 }
 
 export function rundownIngestSyncFromStudioFunction<T>(
+	context: string,
 	studioId: StudioId,
 	rundownExternalId: string,
 	calcFcn: (cache: ReadOnlyCache<CacheForIngest>, ingestCache: RundownIngestDataCacheCollection) => T,
 	saveFcn: ((cache: CacheForIngest, playoutInfo: IngestPlayoutInfo, data: T) => void) | null,
 	options?: { skipPlaylistLock?: boolean }
 ): void {
-	return syncFunction(() => {
-		const ingestObjCache = new DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache)
-		const [cache] = waitForPromiseAll([
-			CacheForIngest.create(studioId, rundownExternalId),
-			makePromise(() =>
-				ingestObjCache.prepareInit({ rundownId: getRundownId(studioId, rundownExternalId) }, true)
-			),
-		])
+	return syncFunction(
+		() => {
+			const ingestObjCache = new DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache)
+			const [cache] = waitForPromiseAll([
+				CacheForIngest.create(studioId, rundownExternalId),
+				makePromise(() =>
+					ingestObjCache.prepareInit({ rundownId: getRundownId(studioId, rundownExternalId) }, true)
+				),
+			])
 
-		let saveIngestChanges: Promise<any> | undefined
+			let saveIngestChanges: Promise<any> | undefined
 
-		try {
-			const val = calcFcn(cache, ingestObjCache)
+			try {
+				const val = calcFcn(cache, ingestObjCache)
 
-			// Start saving the ingest data
-			saveIngestChanges = ingestObjCache.updateDatabaseWithData()
+				// Start saving the ingest data
+				saveIngestChanges = ingestObjCache.updateDatabaseWithData()
 
-			const rundown = getRundown2(cache)
+				const rundown = getRundown2(cache)
 
-			function doPlaylistInner() {
-				if (saveFcn) {
-					// TODO-CACHE will this work?
-					const [playlist, rundowns] = waitForPromiseAll([
-						asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
-						asyncCollectionFindFetch(Rundowns, { playlistId: rundown.playlistId }),
-					])
+				function doPlaylistInner() {
+					if (saveFcn) {
+						// TODO-CACHE will this work?
+						const [playlist, rundowns] = waitForPromiseAll([
+							asyncCollectionFindOne(RundownPlaylists, { _id: rundown.playlistId }),
+							asyncCollectionFindFetch(Rundowns, { playlistId: rundown.playlistId }),
+						])
 
-					if (!playlist)
-						throw new Meteor.Error(
-							404,
-							`RundownPlaylist "${rundown.playlistId}"  (for Rundown "${rundown._id}") not found`
+						if (!playlist)
+							throw new Meteor.Error(
+								404,
+								`RundownPlaylist "${rundown.playlistId}"  (for Rundown "${rundown._id}") not found`
+							)
+
+						const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(
+							rundowns.map((r) => r._id)
 						)
 
-					const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances(
-						rundowns.map((r) => r._id)
-					)
+						const playoutInfo: IngestPlayoutInfo = {
+							playlist,
+							rundowns,
+							currentPartInstance,
+							nextPartInstance,
+						}
 
-					const playoutInfo: IngestPlayoutInfo = {
-						playlist,
-						rundowns,
-						currentPartInstance,
-						nextPartInstance,
+						saveFcn(cache, playoutInfo, val)
 					}
 
-					saveFcn(cache, playoutInfo, val)
+					// TODO-CACHE - does this need to be inside the sync-function if there was no save step, as it cant touch anything playlisty?
+					waitForPromise(cache.saveAllToDatabase())
 				}
 
-				// TODO-CACHE - does this need to be inside the sync-function if there was no save step, as it cant touch anything playlisty?
-				waitForPromise(cache.saveAllToDatabase())
+				if (options?.skipPlaylistLock) {
+					doPlaylistInner()
+				} else {
+					rundownPlaylistCustomSyncFunction(
+						context,
+						rundown.playlistId,
+						RundownSyncFunctionPriority.INGEST,
+						doPlaylistInner
+					)
+				}
+			} finally {
+				// Ensure we save the ingest data
+				waitForPromise(saveIngestChanges ?? ingestObjCache.updateDatabaseWithData())
 			}
-
-			if (options?.skipPlaylistLock) {
-				doPlaylistInner()
-			} else {
-				rundownPlaylistCustomSyncFunction(
-					rundown.playlistId,
-					RundownSyncFunctionPriority.INGEST,
-					doPlaylistInner
-				)
-			}
-		} finally {
-			// Ensure we save the ingest data
-			waitForPromise(saveIngestChanges ?? ingestObjCache.updateDatabaseWithData())
-		}
-	}, `rundown_ingest_${rundownExternalId}`)()
+		},
+		context,
+		`rundown_ingest_${rundownExternalId}`
+	)()
 }
 
 // export function rundownPlaylistIngestSaveSyncFunction<T>(

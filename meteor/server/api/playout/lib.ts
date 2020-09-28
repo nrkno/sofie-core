@@ -3,8 +3,8 @@ import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
 import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
-import { Parts, Part, PartId } from '../../../lib/collections/Parts'
-import { getCurrentTime, Time, clone, literal, waitForPromise, protectString } from '../../../lib/lib'
+import { Parts, Part, DBPart, PartId } from '../../../lib/collections/Parts'
+import { getCurrentTime, Time, clone, literal, waitForPromise, protectString, applyToArray } from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -48,21 +48,6 @@ export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
 		rundownId: rundown._id,
 		dynamicallyInsertedAfterPartId: { $exists: true },
 	})
-
-	cache.Parts.update(
-		{
-			rundownId: rundown._id,
-		},
-		{
-			$unset: {
-				duration: 1,
-				startedPlayback: 1,
-				taken: 1,
-				timings: 1,
-				stoppedPlayback: 1,
-			},
-		}
-	)
 
 	// Mask all instances as reset
 	cache.PartInstances.update(
@@ -121,19 +106,6 @@ export function resetRundownPlaylist(cache: CacheForPlayout) {
 	cache.Parts.remove({
 		dynamicallyInsertedAfterPartId: { $exists: true },
 	})
-
-	cache.Parts.update(
-		{},
-		{
-			$unset: {
-				duration: 1,
-				startedPlayback: 1,
-				timings: 1,
-				stoppedPlayback: 1,
-				taken: 1,
-			},
-		}
-	)
 
 	resetRundownPlaylistPlayhead(cache)
 }
@@ -211,7 +183,10 @@ export function selectNextPart(
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const nextPart2 = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
+			const nextPart2 = findFirstPlayablePart(
+				0,
+				(part) => part.segmentId === rundownPlaylist.nextSegmentId && !part.dynamicallyInsertedAfterPartId
+			)
 			if (nextPart2) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
@@ -265,21 +240,12 @@ export function setNextPart(
 		}
 
 		if (newNextPart) {
-			if (currentPartInstance && newNextPart._id === currentPartInstance.part._id) {
-				throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
-			}
-
-			// If this is a part being copied, then reset and reload it (so that we copy the new, not old data)
 			// TODO-PartInstances - pending new data flow
-			resetPart(cache, newNextPart)
+			removeDynamicallyInsertedPartsAfter(cache, [newNextPart._id])
 			const partId = newNextPart._id
 			newNextPart = cache.Parts.findOne(partId) as Part
 			if (!newNextPart) {
-				throw new Meteor.Error(409, `Part "${partId}" could not be reloaded after reset`)
-			}
-		} else if (newNextPartInstance) {
-			if (currentPartInstance && newNextPartInstance._id === currentPartInstance._id) {
-				throw new Meteor.Error(402, 'Not allowed to Next the currently playing Part')
+				throw new Meteor.Error(409, `Part "${partId}" is missing after the reset`)
 			}
 		}
 
@@ -321,10 +287,15 @@ export function setNextPart(
 			}
 		}
 
+		const selectedPartInstanceIds = _.compact([
+			newInstanceId,
+			cache.Playlist.doc.currentPartInstanceId,
+			cache.Playlist.doc.previousPartInstanceId,
+		])
 		// reset any previous instances of this part
 		cache.PartInstances.update(
 			{
-				_id: { $ne: newInstanceId },
+				_id: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
 				'part._id': nextPart._id,
 				reset: { $ne: true },
@@ -337,7 +308,7 @@ export function setNextPart(
 		)
 		cache.PieceInstances.update(
 			{
-				partInstanceId: { $ne: newInstanceId },
+				partInstanceId: { $nin: selectedPartInstanceIds },
 				rundownId: nextPart.rundownId,
 				'piece.partId': nextPart._id,
 				reset: { $ne: true },
@@ -428,25 +399,6 @@ export function setNextSegment(cache: CacheForPlayout, nextSegment: Segment | nu
 	if (span) span.end()
 }
 
-function resetPart(cache: CacheForPlayout, part: Part): void {
-	cache.Parts.update(
-		{
-			_id: part._id,
-		},
-		{
-			$unset: {
-				duration: 1,
-				startedPlayback: 1,
-				taken: 1,
-				stoppedPlayback: 1,
-			},
-		}
-	)
-
-	// remove parts that have been dynamically queued for after this part (queued adLibs)
-	removeDynamicallyInsertedPartsAfter(cache, [part._id])
-}
-
 export function removeDynamicallyInsertedPartsAfter(cache: CacheForPlayout, afterPartIds: PartId[]): void {
 	// TODO-PartInstances pending new data flow
 
@@ -459,18 +411,10 @@ export function removeDynamicallyInsertedPartsAfter(cache: CacheForPlayout, afte
 }
 
 export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: PartInstance, stoppedPlayingTime: Time) {
-	const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
-	if (partInstance.part.startedPlayback && lastStartedPlayback && lastStartedPlayback > 0) {
+	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
 		cache.PartInstances.update(partInstance._id, {
 			$set: {
-				'part.duration': stoppedPlayingTime - lastStartedPlayback,
-			},
-		})
-
-		// TODO-PartInstance - pending new data flow
-		cache.Parts.update(partInstance.part._id, {
-			$set: {
-				duration: stoppedPlayingTime - lastStartedPlayback,
+				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
 			},
 		})
 	} else {
@@ -479,7 +423,7 @@ export function onPartHasStoppedPlaying(cache: CacheForPlayout, partInstance: Pa
 }
 
 export function substituteObjectIds(
-	rawEnable: TSR.Timeline.TimelineEnable,
+	rawEnable: TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[],
 	idMap: { [oldId: string]: string | undefined }
 ) {
 	const replaceIds = (str: string) => {
@@ -489,13 +433,14 @@ export function substituteObjectIds(
 		})
 	}
 
-	const enable = clone(rawEnable)
-
-	for (const key of _.keys(enable)) {
-		if (typeof enable[key] === 'string') {
-			enable[key] = replaceIds(enable[key])
+	const enable = clone<TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[]>(rawEnable)
+	applyToArray(enable, (enable0) => {
+		for (const key of _.keys(enable0)) {
+			if (typeof enable0[key] === 'string') {
+				enable0[key] = replaceIds(enable0[key])
+			}
 		}
-	}
+	})
 
 	return enable
 }
@@ -545,8 +490,8 @@ export function isTooCloseToAutonext(currentPartInstance: DeepReadonly<PartInsta
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
 
-	const start = currentPartInstance.part.getLastStartedPlayback()
-	const offset = currentPartInstance.part.getLastPlayOffset()
+	const start = currentPartInstance.timings?.startedPlayback
+	const offset = currentPartInstance.timings?.playOffset
 	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
 		// date.now - start = playback duration, duration + offset gives position in part
 		const playbackDuration = getCurrentTime() - start + offset
@@ -588,37 +533,6 @@ export function getRundownsFromCache(cache: CacheForPlayout) {
 export function getRundownIDsFromCache(cache: CacheForPlayout) {
 	return getRundownsFromCache(cache).map((r) => r._id)
 }
-// /** Get all pieces in a part */
-// export function getAllPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
-// 	return cache.Pieces.findFetch({
-// 		rundownId: part.rundownId,
-// 		partId: part._id,
-// 	})
-// }
-// /** Get all adlib pieces in a part */
-// export function getAllAdLibPiecesFromCache(cache: CacheForRundownPlaylist, part: Part) {
-// 	return cache.AdLibPieces.findFetch(
-// 		{
-// 			rundownId: part.rundownId,
-// 			partId: part._id,
-// 		},
-// 		{
-// 			sort: {
-// 				_rank: 1,
-// 				name: 1,
-// 			},
-// 		}
-// 	)
-// }
-// export function getStudioFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-// 	if (!playlist.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')
-// 	let studio = cache.activationCache.getStudio()
-// 	if (studio) {
-// 		return studio
-// 	} else {
-// 		throw new Meteor.Error(404, 'Studio "' + playlist.studioId + '" not found!')
-// 	}
-// }
 export function getSelectedPartInstancesFromCache(
 	cache: CacheForPlayout
 ): {

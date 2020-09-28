@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
-import { runInFiber } from '../../../../__mocks__/Fibers'
-import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly, beforeAllInFiber } from '../../../../__mocks__/helpers/jest'
 import { Rundowns, RundownId } from '../../../../lib/collections/Rundowns'
 import { Segments, DBSegment } from '../../../../lib/collections/Segments'
 import { Parts, DBPart } from '../../../../lib/collections/Parts'
@@ -30,6 +29,7 @@ function createMockRO() {
 		organizationId: null,
 		name: 'mock studio',
 		mappings: {},
+		routeSets: {},
 		supportedShowStyleBase: [],
 		blueprintConfig: {},
 		settings: {
@@ -274,9 +274,8 @@ function createMockRO() {
 }
 
 describe('Test mos update next part helpers', () => {
-	beforeAll(async () => {
-		// const env = setupDefaultStudioEnvironment()
-		await runInFiber(createMockRO)
+	beforeAllInFiber(() => {
+		createMockRO()
 	})
 	beforeEach(() => {
 		jest.clearAllMocks()

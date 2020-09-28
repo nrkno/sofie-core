@@ -16,7 +16,6 @@ import { Blueprints } from '../../lib/collections/Blueprints'
 import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
-import { RecordedFiles } from '../../lib/collections/RecordedFiles'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
@@ -183,18 +182,6 @@ ExternalMessageQueue.allow({
 	},
 })
 
-RecordedFiles.allow({
-	insert(userId, doc): boolean {
-		return false
-	},
-	update(userId, doc, fields, modifier) {
-		// return true // tmp!
-		return false
-	},
-	remove(userId, doc) {
-		return false
-	},
-})
 MediaObjects.allow({
 	insert(userId, doc): boolean {
 		return false

@@ -21,7 +21,7 @@ export namespace GenericDeviceActions {
 	): void {
 		logger.info('reloadRundown ' + rundown._id)
 
-		PeripheralDeviceAPI.executeFunction(
+		PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 			peripheralDevice._id,
 			(err: Error, ingestRundown: IngestRundown | null) => {
 				if (err) {
@@ -62,6 +62,7 @@ export namespace GenericDeviceActions {
 					}
 				}
 			},
+			10 * 1000, // 10 seconds, sometimes the NRCS is pretty slow in returning a response
 			'triggerReloadRundown',
 			rundown.externalId
 		)

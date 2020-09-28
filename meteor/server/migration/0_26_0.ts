@@ -4,7 +4,7 @@ import { setExpectedVersion } from './lib'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 
 // 0.26.0 (Release 11)
-addMigrationSteps('0.26.0', [
+export const addSteps = addMigrationSteps('0.26.0', [
 	// add steps here:
 	// {
 	// 	id: 'my fancy step',

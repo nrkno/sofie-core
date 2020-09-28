@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -24,20 +24,25 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notific
 import { literal, unprotectString, partial } from '../../../lib/lib'
 import { ensureHasTrailingSlash, contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
-import { getUnfinishedPieceInstancesReactive, DashboardPanelInner, dashboardElementPosition } from './DashboardPanel'
+import {
+	IDashboardPanelTrackedProps,
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
+	isAdLibOnAir,
+} from './DashboardPanel'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { Bucket, BucketId } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { AdLibPieceUi } from './AdLibPanel'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -155,9 +160,8 @@ export interface IBucketPanelProps {
 	onAdLibContext: (args: { contextBucket: Bucket; contextBucketAdLib: BucketAdLib }, callback: () => void) => void
 }
 
-export interface IBucketPanelTrackedProps {
+export interface IBucketPanelTrackedProps extends IDashboardPanelTrackedProps {
 	adLibPieces: BucketAdLib[]
-	unfinishedPieceInstances: _.Dictionary<PieceInstance[]>
 	studio: Studio
 	showStyleVariantId: ShowStyleVariantId
 }
@@ -178,16 +182,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
+				//@ts-ignore
 				fields: {
 					rundownId: 1,
+					'part._id': 1,
 				},
-			})
+			}) as Pick<PartInstance, 'rundownId'> | undefined
 			if (part) {
 				const rundown = Rundowns.findOne(part.rundownId, {
 					fields: {
 						showStyleVariantId: 1,
 					},
-				})
+				}) as Pick<Rundown, 'showStyleVariantId'> | undefined
 				if (rundown) {
 					showStyleVariantId = rundown.showStyleVariantId
 				}
@@ -201,11 +207,15 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						showStyleVariantId: 1,
 					},
 				}
-			)[0]
+			)[0] as Pick<Rundown, 'showStyleVariantId'> | undefined
 			if (rundown) {
 				showStyleVariantId = rundown.showStyleVariantId
 			}
 		}
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return literal<IBucketPanelTrackedProps>({
 			adLibPieces: BucketAdLibs.find(
 				{
@@ -219,8 +229,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 			).fetch(),
 			studio: props.playlist.getStudio(),
-			unfinishedPieceInstances: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
+			unfinishedAdLibIds,
+			unfinishedTags,
 			showStyleVariantId,
+			nextAdLibIds,
+			nextTags,
 		})
 	},
 	(data, props: IBucketPanelProps, nextProps: IBucketPanelProps) => {
@@ -325,14 +338,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					window.removeEventListener(MOSEvents.dragleave, this.onDragLeave)
 				}
 
-				isAdLibOnAir(adLib: IAdLibListItem) {
-					if (
-						this.props.unfinishedPieceInstances[unprotectString(adLib._id)] &&
-						this.props.unfinishedPieceInstances[unprotectString(adLib._id)].length > 0
-					) {
-						return true
-					}
-					return false
+				isAdLibOnAir(adLibPiece: AdLibPieceUi) {
+					return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLibPiece)
 				}
 
 				onDragEnter = () => {
@@ -394,7 +401,10 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						return
 					}
 					if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-						if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.clearKeyboardHotkey)) {
+						if (
+							!this.isAdLibOnAir((piece as any) as AdLibPieceUi) ||
+							!(sourceLayer && sourceLayer.clearKeyboardHotkey)
+						) {
 							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
@@ -610,7 +620,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 														outputLayer={this.state.outputLayers[adlib.outputLayerId]}
 														onToggleAdLib={this.onToggleAdLib}
 														playlist={this.props.playlist}
-														isOnAir={this.isAdLibOnAir((adlib as any) as IAdLibListItem)}
+														isOnAir={this.isAdLibOnAir((adlib as any) as AdLibPieceUi)}
 														mediaPreviewUrl={
 															this.props.studio
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''

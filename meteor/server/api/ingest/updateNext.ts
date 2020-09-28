@@ -7,10 +7,14 @@ import { moveNext } from '../userActions'
 import { selectNextPart, isTooCloseToAutonext, getAllOrderedPartsFromCache } from '../playout/lib'
 import { CacheForIngest } from '../../DatabaseCaches'
 import { IngestPlayoutInfo } from './lib'
+import { profiler } from '../profiler'
 
 export namespace UpdateNext {
 	export function ensureNextPartIsValid(cache: CacheForIngest, playoutInfo: IngestPlayoutInfo) {
+		const span = profiler.startSpan('api.ingest.ensureNextPartIsValid')
+
 		const { playlist, currentPartInstance, nextPartInstance } = playoutInfo
+
 		// Ensure the next-id is still valid
 		if (playlist.active && playlist.nextPartInstanceId) {
 			const allParts = getAllOrderedPartsFromCache(cache)
@@ -21,17 +25,20 @@ export namespace UpdateNext {
 					? allParts.find((p) => p._id === nextPartInstance.part._id)
 					: undefined
 				if (playlist.nextPartManual && oldNextPart && nextPartInstance && nextPartInstance.part.isPlayable()) {
+					span?.end()
 					return
 				}
 
 				// Check if the part is the same
 				const newNextPart = selectNextPart(playlist, currentPartInstance, allParts)
 				if (newNextPart && nextPartInstance && newNextPart.part._id === nextPartInstance.part._id) {
+					span?.end()
 					return
 				}
 
 				// If we are close to an autonext, then leave it to avoid glitches
 				if (isTooCloseToAutonext(currentPartInstance) && nextPartInstance) {
+					span?.end()
 					return
 				}
 
@@ -43,6 +50,8 @@ export namespace UpdateNext {
 				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
 			}
 		}
+
+		span?.end()
 	}
 	export function afterInsertParts(
 		cache: CacheForIngest,

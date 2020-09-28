@@ -10,7 +10,6 @@ import {
 	ExternalMessageQueueObjId,
 	ExternalMessageQueueObj,
 } from '../../lib/collections/ExternalMessageQueue'
-import { RecordedFiles, RecordedFileId, RecordedFile } from '../../lib/collections/RecordedFiles'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { Timeline } from '../../lib/collections/Timeline'
@@ -56,21 +55,11 @@ export namespace StudioContentWriteAccess {
 	export function dataFromSnapshot(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function recordedFiles(cred0: Credentials, studioId: StudioId) {
-		return anyContent(cred0, studioId)
-	}
 	export function timeline(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)
 	}
-	export function recordedFile(cred0: Credentials, existingFile: RecordedFile | RecordedFileId) {
-		triggerWriteAccess()
-		if (existingFile && isProtectedString(existingFile)) {
-			const fileId = existingFile
-			const m = RecordedFiles.findOne(fileId)
-			if (!m) throw new Meteor.Error(404, `RecordedFile "${fileId}" not found!`)
-			existingFile = m
-		}
-		return { ...anyContent(cred0, existingFile.studioId), file: existingFile }
+	export function routeSet(cred0: Credentials, studioId: StudioId) {
+		return anyContent(cred0, studioId)
 	}
 	export function baseline(cred0: Credentials, studioId: StudioId) {
 		return anyContent(cred0, studioId)

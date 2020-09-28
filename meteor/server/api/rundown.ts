@@ -63,6 +63,9 @@ import { DeepReadonly } from 'utility-types'
 import { DbCacheWriteCollection } from '../DatabaseCache'
 import { PartInstance, DBPartInstance, PartInstances } from '../../lib/collections/PartInstances'
 import { studioSyncFunction } from './ingest/rundownInput'
+import { modifyPlaylistExternalId } from './ingest/lib'
+import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { profiler } from './profiler'
 
 export function selectShowStyleVariant(
 	studio: DeepReadonly<Studio>,
@@ -480,6 +483,8 @@ export namespace ServerRundownAPI {
 	}
 
 	export function unsyncRundownInner(cache: CacheForIngest): void {
+		const span = profiler.startSpan('api.rundown.unsyncRundownInner')
+
 		const rundown = cache.Rundown.doc
 		if (rundown) {
 			logger.info('unsyncRundown ' + rundown._id)
@@ -494,6 +499,8 @@ export namespace ServerRundownAPI {
 				logger.info(`Rundown "${rundown._id}" was already unsynced`)
 			}
 		}
+
+		span?.end()
 	}
 	/** Remove a RundownPlaylist and all its contents */
 	export function removeRundownPlaylistInner(cache: CacheForRundownPlaylist, playlistId: RundownPlaylistId) {

@@ -12,6 +12,7 @@ import { MediaWorkFlowId, MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { TimelineHash } from '../collections/Timeline'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -86,6 +87,12 @@ export interface NewPeripheralDeviceAPI {
 	requestUserAuthToken(deviceId: PeripheralDeviceId, deviceToken: string, authUrl: string): Promise<void>
 	storeAccessToken(deviceId: PeripheralDeviceId, deviceToken: string, authToken: any): Promise<void>
 	removePeripheralDevice(deviceId: PeripheralDeviceId): Promise<void>
+	reportResolveDone(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		timelineHash: TimelineHash,
+		resolveDuration: number
+	)
 
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string): Promise<string[]>
 	dataRundownGet(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<IngestRundown>
@@ -237,6 +244,7 @@ export interface NewPeripheralDeviceAPI {
 		id: string,
 		doc: MediaObject | null
 	): Promise<void>
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string): Promise<void>
 
 	getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string): Promise<MediaWorkFlowRevision[]>
 	getMediaWorkFlowStepRevisions(
@@ -273,6 +281,7 @@ export enum PeripheralDeviceAPIMethods {
 	'pingWithCommand' = 'peripheralDevice.pingWithCommand',
 	'killProcess' = 'peripheralDevice.killProcess',
 	'removePeripheralDevice' = 'peripheralDevice.removePeripheralDevice',
+	'reportResolveDone' = 'peripheralDevice.reportResolveDone',
 
 	'determineDiffTime' = 'systemTime.determineDiffTime',
 	'getTimeDiff' = 'systemTime.getTimeDiff',
@@ -322,6 +331,7 @@ export enum PeripheralDeviceAPIMethods {
 
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
+	'clearMediaObjectCollection' = 'peripheralDevice.mediaScanner.clearMediaObjectCollection',
 
 	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
@@ -426,47 +436,46 @@ export namespace PeripheralDeviceAPI {
 	export function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		cb: (err, result) => void,
-		timeoutTime: number,
+		timeoutTime: number = 3000,
 		functionName: string,
 		...args: any[]
 	) {
 		let commandId: PeripheralDeviceCommandId = getRandomId()
-		PeripheralDeviceCommands.insert({
-			_id: commandId,
-			deviceId: deviceId,
-			time: getCurrentTime(),
-			functionName,
-			args: args,
-			hasReply: false,
-		})
+
 		let subscription: Meteor.SubscriptionHandle | null = null
 		if (Meteor.isClient) {
 			subscription = meteorSubscribe(PubSub.peripheralDeviceCommands, deviceId)
 		}
 		// logger.debug('command created: ' + functionName)
-		const cursor = PeripheralDeviceCommands.find({
-			_id: commandId,
-		})
-		let observer: Meteor.LiveQueryHandle
+
+		let observer: Meteor.LiveQueryHandle | null = null
 		let timeoutCheck: number = 0
 		// we've sent the command, let's just wait for the reply
 		const checkReply = () => {
 			let cmd = PeripheralDeviceCommands.findOne(commandId)
 			// if (!cmd) throw new Meteor.Error('Command "' + commandId + '" not found')
 			// logger.debug('checkReply')
-			if (cmd) {
-				if (cmd.hasReply) {
-					// We've got a reply!
-					// logger.debug('got reply ' + commandId)
 
-					// Cleanup before the callback to ensure it doesnt get a timeout during the callback
-					if (observer) observer.stop()
-					PeripheralDeviceCommands.remove(cmd._id)
+			if (cmd) {
+				const cmdId = cmd._id
+				const cleanup = () => {
+					if (observer) {
+						observer.stop()
+						observer = null
+					}
 					if (subscription) subscription.stop()
 					if (timeoutCheck) {
 						Meteor.clearTimeout(timeoutCheck)
 						timeoutCheck = 0
 					}
+					PeripheralDeviceCommands.remove(cmdId)
+				}
+
+				if (cmd.hasReply) {
+					// We've got a reply!
+
+					// Do cleanup before the callback to ensure it doesn't get a timeout during the callback:
+					cleanup()
 
 					// Handle result
 					if (cmd.replyError) {
@@ -475,25 +484,35 @@ export namespace PeripheralDeviceAPI {
 						cb(null, cmd.reply)
 					}
 				} else if (getCurrentTime() - (cmd.time || 0) >= timeoutTime) {
-					// timeout
+					// Timeout
+
+					// Do cleanup:
+					cleanup()
+
 					cb(
 						`Timeout after ${timeoutTime} ms when executing the function "${cmd.functionName}" on device "${cmd.deviceId}"`,
 						null
 					)
-					if (observer) observer.stop()
-					PeripheralDeviceCommands.remove(cmd._id)
-					if (subscription) subscription.stop()
 				}
-			} else {
-				// logger.debug('Command "' + commandId + '" not found when looking for reply')
 			}
 		}
 
-		observer = cursor.observeChanges({
+		observer = PeripheralDeviceCommands.find({
+			_id: commandId,
+		}).observeChanges({
 			added: checkReply,
 			changed: checkReply,
 		})
 		timeoutCheck = Meteor.setTimeout(checkReply, timeoutTime)
+
+		PeripheralDeviceCommands.insert({
+			_id: commandId,
+			deviceId: deviceId,
+			time: getCurrentTime(),
+			functionName,
+			args: args,
+			hasReply: false,
+		})
 	}
 
 	export function executeFunction(
@@ -502,7 +521,6 @@ export namespace PeripheralDeviceAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		const timeoutTime = 3000
-		return executeFunctionWithCustomTimeout(deviceId, cb, timeoutTime, functionName, ...args)
+		return executeFunctionWithCustomTimeout(deviceId, cb, undefined, functionName, ...args)
 	}
 }

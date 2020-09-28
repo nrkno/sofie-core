@@ -5,6 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { IBlueprintAdLibPiece, BaseContent } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
+import { registerIndex } from '../database'
 
 export type BucketId = ProtectedString<'BucketId'>
 
@@ -33,10 +34,7 @@ export interface Bucket {
 }
 export const Buckets: TransformedCollection<Bucket, Bucket> = createMongoCollection<Bucket>('buckets')
 registerCollection('Buckets', Buckets)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Buckets._ensureIndex({
-			studioId: 1,
-		})
-	}
+
+registerIndex(Buckets, {
+	studioId: 1,
 })

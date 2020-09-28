@@ -47,15 +47,16 @@ Array [
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9012",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9014",
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
-      "infinitePieceId": "randomId9012",
+      "fromPreviousPart": false,
+      "infinitePieceId": "randomId9014",
     },
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
-      "_id": "randomId9012",
+      "_id": "randomId9014",
       "enable": Object {
         "start": "now",
       },
@@ -66,17 +67,6 @@ Array [
       "sourceLayerId": "cam0",
       "startPartId": "randomId9002_part0_0",
       "status": -1,
-      "timings": Object {
-        "next": Array [],
-        "playOffset": Array [],
-        "startedPlayback": Array [],
-        "stoppedPlayback": Array [],
-        "take": Array [
-          1000,
-        ],
-        "takeDone": Array [],
-        "takeOut": Array [],
-      },
     },
     "rundownId": "randomId9002",
   },
@@ -130,15 +120,16 @@ Array [
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9012",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9014",
     "adLibSourceId": "randomId9002_globalAdLib0",
     "dynamicallyInserted": 1000,
     "infinite": Object {
-      "infinitePieceId": "randomId9012",
+      "fromPreviousPart": false,
+      "infinitePieceId": "randomId9014",
     },
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
-      "_id": "randomId9012",
+      "_id": "randomId9014",
       "enable": Object {
         "start": "now",
       },
@@ -149,27 +140,16 @@ Array [
       "sourceLayerId": "cam0",
       "startPartId": "randomId9002_part0_0",
       "status": -1,
-      "timings": Object {
-        "next": Array [],
-        "playOffset": Array [],
-        "startedPlayback": Array [],
-        "stoppedPlayback": Array [],
-        "take": Array [
-          1000,
-        ],
-        "takeDone": Array [],
-        "takeOut": Array [],
-      },
     },
     "rundownId": "randomId9002",
   },
   Object {
-    "_id": "randomId9002_part0_0_randomId9007_randomId9014",
+    "_id": "randomId9002_part0_0_randomId9007_randomId9017",
     "adLibSourceId": "randomId9002_adLib000",
     "dynamicallyInserted": 3000,
     "partInstanceId": "randomId9002_part0_0_randomId9007",
     "piece": Object {
-      "_id": "randomId9014",
+      "_id": "randomId9017",
       "enable": Object {
         "duration": 1000,
         "start": "now",
@@ -181,17 +161,6 @@ Array [
       "sourceLayerId": "vt0",
       "startPartId": "randomId9002_part0_0",
       "status": -1,
-      "timings": Object {
-        "next": Array [],
-        "playOffset": Array [],
-        "startedPlayback": Array [],
-        "stoppedPlayback": Array [],
-        "take": Array [
-          3000,
-        ],
-        "takeDone": Array [],
-        "takeOut": Array [],
-      },
     },
     "rundownId": "randomId9002",
   },

@@ -10,6 +10,7 @@ import {
 	selectNextPart,
 	getAllOrderedPartsFromCache,
 	triggerGarbageCollection,
+	getAllPieceInstancesFromCache,
 } from './lib'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { RundownHoldState, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
@@ -29,6 +30,8 @@ import { MethodContext } from '../../../lib/api/methods'
 import { profiler } from '../profiler'
 import { rundownPlaylistPlayoutSyncFunction } from './playout'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { ServerPlayoutAdLibAPI } from './adlib'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 
 export function takeNextPartInner(
 	context: MethodContext,
@@ -69,7 +72,7 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	const currentPart = currentPartInstance
 	if (currentPart) {
 		const allowTransition = previousPartInstance && !previousPartInstance.part.disableOutTransition
-		const start = currentPart.part.getLastStartedPlayback()
+		const start = currentPart.timings?.startedPlayback
 
 		// If there was a transition from the previous Part, then ensure that has finished before another take is permitted
 		if (
@@ -94,7 +97,7 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 		})
 		// If hold is active, then this take is to clear it
 	} else if (playlist.holdState === RundownHoldState.ACTIVE) {
-		completeHold(cache, currentPartInstance)
+		completeHold(cache, waitForPromise(pShowStyle), currentPartInstance)
 
 		return ClientAPI.responseSuccess(undefined)
 	}
@@ -165,52 +168,27 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	let partInstanceM: any = {
 		$set: {
 			isTaken: true,
-			'part.taken': true,
-		},
-		$unset: {} as { string: 0 | 1 },
-		$push: {
-			'part.timings.take': now,
-			'part.timings.playOffset': timeOffset || 0,
-		},
-	}
-	let partM = {
-		$set: {
-			taken: true,
-		} as Partial<Part>,
-		$unset: {} as { [key in keyof Part]: 0 | 1 },
-		$push: {
 			'timings.take': now,
 			'timings.playOffset': timeOffset || 0,
 		},
+		$unset: {} as { string: 0 | 1 },
 	}
 	if (previousPartEndState) {
 		partInstanceM.$set.previousPartEndState = previousPartEndState
 	} else {
 		partInstanceM.$unset.previousPartEndState = 1
 	}
-	if (Object.keys(partM.$set).length === 0) delete partM.$set
-	if (Object.keys(partM.$unset).length === 0) delete partM.$unset
 	if (Object.keys(partInstanceM.$set).length === 0) delete partInstanceM.$set
 	if (Object.keys(partInstanceM.$unset).length === 0) delete partInstanceM.$unset
 
 	cache.PartInstances.update(takePartInstance._id, partInstanceM)
-	// TODO-PartInstance - pending new data flow
-	cache.Parts.update(takePartInstance.part._id, partM)
 
 	if (m.previousPartInstanceId) {
 		cache.PartInstances.update(m.previousPartInstanceId, {
-			$push: {
-				'part.timings.takeOut': now,
+			$set: {
+				'timings.takeOut': now,
 			},
 		})
-		// TODO-PartInstance - pending new data flow
-		if (currentPartInstance) {
-			cache.Parts.update(currentPartInstance.part._id, {
-				$push: {
-					'timings.takeOut': now,
-				},
-			})
-		}
 	}
 
 	// Once everything is synced, we can choose the next part
@@ -230,12 +208,7 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 		// todo: should this be changed back to Meteor.defer, at least for the blueprint stuff?
 		if (takePartInstance) {
 			cache.PartInstances.update(takePartInstance._id, {
-				$push: {
-					'part.timings.takeDone': takeDoneTime,
-				},
-			})
-			cache.Parts.update(takePartInstance.part._id, {
-				$push: {
+				$set: {
 					'timings.takeDone': takeDoneTime,
 				},
 			})
@@ -317,6 +290,9 @@ export function afterTake(cache: CacheForPlayout, takePartInstance: PartInstance
 	if (span) span.end()
 }
 
+/**
+ * A Hold starts by extending the "extendOnHold"-able pieces in the previous Part.
+ */
 function startHold(
 	cache: CacheForPlayout,
 	holdFromPartInstance: PartInstance | undefined,
@@ -327,53 +303,55 @@ function startHold(
 	const span = profiler.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
-	const itemsToCopy = cache.PieceInstances.findFetch({ partInstanceId: holdFromPartInstance._id }).filter(
-		(i) => i.piece.extendOnHold
-	)
+	const itemsToCopy = getAllPieceInstancesFromCache(cache, holdFromPartInstance).filter((pi) => pi.piece.extendOnHold)
 	itemsToCopy.forEach((instance) => {
-		// mark current one as infinite
-		instance.infinite = {
-			infinitePieceId: instance.piece._id,
-			fromHold: true,
-		}
-		cache.PieceInstances.update(instance._id, {
-			$set: {
+		if (!instance.infinite) {
+			// mark current one as infinite
+			cache.PieceInstances.update(instance._id, {
+				$set: {
+					infinite: {
+						infinitePieceId: instance.piece._id,
+						fromPreviousPart: false,
+					},
+				},
+			})
+
+			// make the extension
+			const newInstance = literal<PieceInstance>({
+				_id: protectString<PieceInstanceId>(instance._id + '_hold'),
+				rundownId: instance.rundownId,
+				partInstanceId: holdToPartInstance._id,
+				dynamicallyInserted: getCurrentTime(),
+				piece: {
+					...clone(instance.piece),
+					_id: protectString<PieceId>(instance.piece._id + '_hold'),
+					startPartId: holdToPartInstance.part._id,
+					enable: { start: 0 },
+					extendOnHold: false,
+				},
 				infinite: {
 					infinitePieceId: instance.piece._id,
+					fromPreviousPart: true,
 					fromHold: true,
 				},
-			},
-		})
+			})
+			const content = newInstance.piece.content as VTContent | undefined
+			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {
+				content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.startedPlayback)
+			}
 
-		// make the extension
-		const newInstance = literal<PieceInstance>({
-			_id: protectString<PieceInstanceId>(instance._id + '_hold'),
-			rundownId: instance.rundownId,
-			partInstanceId: holdToPartInstance._id,
-			dynamicallyInserted: getCurrentTime(),
-			piece: {
-				...clone(instance.piece),
-				_id: protectString<PieceId>(instance.piece._id + '_hold'),
-				startPartId: holdToPartInstance.part._id,
-				enable: { start: 0 },
-			},
-			infinite: {
-				infinitePieceId: instance.piece._id,
-				fromHold: true,
-			},
-		})
-		const content = newInstance.piece.content as VTContent | undefined
-		if (content && content.fileName && content.sourceDuration && instance.piece.startedPlayback) {
-			content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.piece.startedPlayback)
+			// This gets deleted once the nextpart is activated, so it doesnt linger for long
+			cache.PieceInstances.upsert(newInstance._id, newInstance)
 		}
-
-		// This gets deleted once the nextpart is activated, so it doesnt linger for long
-		cache.PieceInstances.upsert(newInstance._id, newInstance)
 	})
 	if (span) span.end()
 }
 
-function completeHold(cache: CacheForPlayout, currentPartInstance: PartInstance | undefined) {
+function completeHold(
+	cache: CacheForPlayout,
+	showStyleBase: ShowStyleBase,
+	currentPartInstance: PartInstance | undefined
+) {
 	cache.Playlist.update({
 		$set: {
 			holdState: RundownHoldState.COMPLETE,
@@ -384,24 +362,13 @@ function completeHold(cache: CacheForPlayout, currentPartInstance: PartInstance 
 		if (!currentPartInstance) throw new Meteor.Error(404, 'currentPart not found!')
 
 		// Clear the current extension line
-		const extendedPieceInstances = cache.PieceInstances.findFetch({
-			partInstanceId: currentPartInstance._id,
-			'piece.extendOnHold': true,
-			infinite: { $exists: true },
-		})
-
-		for (const pieceInstance of extendedPieceInstances) {
-			if (pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInstance.part._id) {
-				// This is a continuation, so give it an end
-				cache.PieceInstances.update(pieceInstance._id, {
-					$set: {
-						userDuration: {
-							end: getCurrentTime(),
-						},
-					},
-				})
-			}
-		}
+		ServerPlayoutAdLibAPI.innerStopPieces(
+			cache,
+			showStyleBase,
+			currentPartInstance,
+			(p) => !!p.infinite?.fromHold,
+			undefined
+		)
 	}
 
 	updateTimeline(cache)

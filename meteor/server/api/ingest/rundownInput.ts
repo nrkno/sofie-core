@@ -134,6 +134,7 @@ import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { DeepReadonly } from 'utility-types'
 import { ShowStyleCompound, getShowStyleCompound2 } from '../../../lib/collections/ShowStyleVariants'
 import { run } from 'tslint/lib/runner'
+import { profiler } from '../profiler'
 
 /** Priority for handling of synchronous events. Higher value means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -151,29 +152,35 @@ export enum RundownSyncFunctionPriority {
 export function rundownPlaylistSyncFunction<T extends Function>( // TODO - remove this
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
+	context: string,
 	fcn: T
 ): ReturnType<T> {
-	return syncFunction(fcn, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
+	return syncFunction(fcn, context, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
 }
 
 export function rundownPlaylistCustomSyncFunction<T>(
+	context: string,
 	rundownPlaylistId: RundownPlaylistId,
 	priority: RundownSyncFunctionPriority,
 	fcn: () => T
 ): T {
-	return syncFunction(fcn, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
+	return syncFunction(fcn, context, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
 }
 
-export function studioSyncFunction<T>(studioId: StudioId, fcn: (cache: CacheForStudio2) => T): T {
-	return syncFunction(() => {
-		const cache = waitForPromise(CacheForStudio2.create(studioId))
+export function studioSyncFunction<T>(context: string, studioId: StudioId, fcn: (cache: CacheForStudio2) => T): T {
+	return syncFunction(
+		() => {
+			const cache = waitForPromise(CacheForStudio2.create(studioId))
 
-		const res = fcn(cache)
+			const res = fcn(cache)
 
-		waitForPromise(cache.saveAllToDatabase())
+			waitForPromise(cache.saveAllToDatabase())
 
-		return res
-	}, `studio_${studioId}`)()
+			return res
+		},
+		context,
+		`studio_${studioId}`
+	)()
 }
 
 interface SegmentChanges {
@@ -345,7 +352,9 @@ function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 }
 
 export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
-	return rundownIngestSyncFunction(
+	const span = profiler.startSpan('rundownInput.handleRemovedRundown')
+	rundownIngestSyncFunction(
+		'handleRemovedRundown',
 		peripheralDevice,
 		rundownExternalId,
 		() => {
@@ -392,6 +401,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 			}
 		}
 	)
+	span?.end()
 }
 /** Handle an updated (or inserted) Rundown */
 export function handleUpdatedRundown(
@@ -400,6 +410,7 @@ export function handleUpdatedRundown(
 	dataSource: string
 ) {
 	return rundownIngestSyncFunction(
+		'handleUpdatedRundown',
 		peripheralDevice,
 		ingestRundown.externalId,
 		(cache, ingestDataCache) => {
@@ -447,6 +458,8 @@ function updateRundownFromIngestData(
 	dataSource?: string,
 	peripheralDevice?: PeripheralDevice
 ): PreparedRundownChanges {
+	const span = profiler.startSpan('ingest.rundownInput.updateRundownFromIngestData')
+
 	const studio = cache.Studio.doc
 	const extendedIngestRundown = extendIngestRundownCore(
 		ingestRundown,
@@ -462,6 +475,7 @@ function updateRundownFromIngestData(
 	const showStyle = selectShowStyleVariant(studio, extendedIngestRundown)
 	if (!showStyle) {
 		logger.debug('Blueprint rejected the rundown')
+		span?.end()
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
@@ -639,7 +653,7 @@ function updateRundownFromIngestData(
 	})
 
 	// Prepare updates:
-	return literal<PreparedRundownChanges>({
+	const res = literal<PreparedRundownChanges>({
 		rundownPlaylistInfo,
 		dbRundown,
 
@@ -653,6 +667,9 @@ function updateRundownFromIngestData(
 		baselineAdlibPieces,
 		baselineAdlibActions,
 	})
+
+	span?.end()
+	return res
 }
 
 export interface PreparedRundownChanges {
@@ -675,6 +692,8 @@ export function savePreparedRundownChanges(
 	playoutInfo: IngestPlayoutInfo,
 	preparedChanges: PreparedRundownChanges
 ): boolean {
+	const span = profiler.startSpan('ingest.rundownInput.savePreparedRundownChanges')
+
 	// TODO-CACHE - is thhis playlist update safe? Note: new/updated Rundown is not in the db yet
 	const playlistChanges = saveIntoDb(
 		RundownPlaylists,
@@ -708,7 +727,10 @@ export function savePreparedRundownChanges(
 	const dbRundown = cache.Rundown.replace(preparedChanges.dbRundown)
 
 	const dbPlaylist = dbRundown.getRundownPlaylist()
-	if (!dbPlaylist) throw new Meteor.Error(500, 'RundownPlaylist not found (it should have been)')
+	if (!dbPlaylist) {
+		span?.end()
+		throw new Meteor.Error(500, 'RundownPlaylist not found (it should have been)')
+	}
 
 	const rundownChanges = {
 		added: cache.Rundown.doc ? 0 : 1,
@@ -728,6 +750,8 @@ export function savePreparedRundownChanges(
 		) {
 			ServerRundownAPI.unsyncRundownInner(cache)
 			waitForPromise(cache.saveAllToDatabase())
+
+			span?.end()
 			return false
 		} else {
 			const segmentChanges: SegmentChanges[] = splitIntoSegments(
@@ -812,6 +836,8 @@ export function savePreparedRundownChanges(
 		) {
 			ServerRundownAPI.unsyncRundownInner(cache)
 			waitForPromise(cache.saveAllToDatabase())
+
+			span?.end()
 			return false
 		}
 	}
@@ -942,6 +968,8 @@ export function savePreparedRundownChanges(
 	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
+
+	span?.end()
 	return didChange
 }
 
@@ -970,11 +998,19 @@ function handleUpdatedRundownPlaylist(
 
 	const updated = rundowns.map((r) => {
 		const rundownOrder = order[unprotectString(r._id)]
+		r.playlistId = playlist._id
 		if (rundownOrder !== undefined) {
-			r.playlistId = playlist._id
 			r._rank = rundownOrder
 		} else {
 			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+			r._rank = -1
+			// TODO - this should do something to make it be floated
+		}
+
+		if (r._id === currentRundown._id) {
+			// Apply to in-memory copy
+			currentRundown.playlistId = r.playlistId
+			currentRundown._rank = r._rank
 		}
 		return r
 	})
@@ -988,6 +1024,7 @@ function handleRemovedSegment(
 	segmentExternalId: string
 ) {
 	return rundownIngestSyncFunction(
+		'handleRemovedSegment',
 		peripheralDevice,
 		rundownExternalId,
 		() => {
@@ -1019,7 +1056,9 @@ export function handleUpdatedSegment(
 	rundownExternalId: string,
 	ingestSegment: IngestSegment
 ) {
-	return rundownIngestSyncFunction(
+	const span = profiler.startSpan('ingest.rundownInput.updateSegmentFromIngestData')
+	rundownIngestSyncFunction(
+		'handleUpdatedSegment',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -1044,6 +1083,7 @@ export function handleUpdatedSegment(
 			}
 		}
 	)
+	span?.end()
 }
 /**
  * Run ingestData through blueprints and update the Segment
@@ -1057,7 +1097,9 @@ export function prepareUpdateSegmentFromIngestData(
 	wrappedBlueprint: WrappedShowStyleBlueprint,
 	ingestSegment: IngestSegment
 ): PreparedSegmentChanges {
+	const span = profiler.startSpan('ingest.rundownInput.prepareUpdateSegmentFromIngestData')
 	const rundown = getRundown2(cache)
+
 	const segmentId = getSegmentId(rundown._id, ingestSegment.externalId)
 
 	const existingSegment = cache.Segments.findOne(segmentId)
@@ -1082,7 +1124,7 @@ export function prepareUpdateSegmentFromIngestData(
 		res
 	)
 
-	return literal<PreparedSegmentChanges>({
+	const changes = literal<PreparedSegmentChanges>({
 		segmentId,
 		segment: newSegment,
 		parts,
@@ -1090,6 +1132,9 @@ export function prepareUpdateSegmentFromIngestData(
 		adlibPieces,
 		adlibActions,
 	})
+
+	span?.end()
+	return changes
 }
 
 export interface PreparedSegmentChanges {
@@ -1106,6 +1151,7 @@ export function savePreparedSegmentChanges(
 	playoutInfo: IngestPlayoutInfo,
 	preparedChanges: PreparedSegmentChanges
 ): SegmentId | null {
+	const span = profiler.startSpan('ingest.rundownInput.savePreparedSegmentChanges')
 	const rundown = getRundown2(cache)
 
 	const partIds = preparedChanges.parts.map((p) => p._id)
@@ -1151,6 +1197,7 @@ export function savePreparedSegmentChanges(
 	// determine if update is allowed here
 	if (!isUpdateAllowed(playoutInfo, rundown, {}, { changed: [preparedChanges.segment] }, prepareSaveParts)) {
 		ServerRundownAPI.unsyncRundownInner(cache)
+		span?.end()
 		return null
 	}
 
@@ -1215,7 +1262,9 @@ export function savePreparedSegmentChanges(
 		})
 	)
 
-	return anythingChanged(changes) ? preparedChanges.segmentId : null
+	const hasChanged = anythingChanged(changes) ? preparedChanges.segmentId : null
+	span?.end()
+	return hasChanged
 }
 
 export function afterIngestChangedData(
@@ -1241,6 +1290,7 @@ export function handleRemovedPart(
 	partExternalId: string
 ) {
 	return rundownIngestSyncFunction(
+		'handleRemovedPart',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -1298,10 +1348,11 @@ export function handleUpdatedPart(
 	ingestPart: IngestPart
 ) {
 	return rundownIngestSyncFunction(
+		'handleUpdatedPart',
 		peripheralDevice,
 		rundownExternalId,
-		(cache) => {
-			return prepareUpdatePartInner(cache, segmentExternalId, ingestPart)
+		(cache, ingestCache) => {
+			return prepareUpdatePartInner(cache, ingestCache, segmentExternalId, ingestPart)
 		},
 		(cache, playoutInfo, preparedChanges) => {
 			if (preparedChanges) {
@@ -1324,6 +1375,8 @@ export function prepareUpdatePartInner(
 	segmentExternalId: string,
 	ingestPart: IngestPart
 ): PreparedSegmentChanges | undefined {
+	const span = profiler.startSpan('ingest.rundownInput.handleUpdatedPartInner')
+
 	// Updated OR created part
 	const rundown = getRundown2(cache)
 	const segmentId = getSegmentId(rundown._id, segmentExternalId)
@@ -1358,8 +1411,9 @@ export function prepareUpdatePartInner(
 
 	const showStyle = getShowStyleCompound2(rundown)
 	const blueprint = loadShowStyleBlueprint(showStyle)
-	return prepareUpdateSegmentFromIngestData(cache, showStyle, blueprint, ingestSegment)
-	// }
+	const res = prepareUpdateSegmentFromIngestData(cache, showStyle, blueprint, ingestSegment)
+	span?.end()
+	return res
 }
 
 function generateSegmentContents(
@@ -1370,6 +1424,8 @@ function generateSegmentContents(
 	existingParts: DBPart[],
 	blueprintRes: BlueprintResultSegment
 ) {
+	const span = profiler.startSpan('ingest.rundownInput.generateSegmentContents')
+
 	const rundownId = context._rundown._id
 	const segmentId = getSegmentId(rundownId, ingestSegment.externalId)
 	const rawNotes = context.notesContext.getNotes()
@@ -1377,19 +1433,20 @@ function generateSegmentContents(
 	// Ensure all parts have a valid externalId set on them
 	const knownPartIds = blueprintRes.parts.map((p) => p.part.externalId)
 
-	const rawSegmentNotes = _.filter(
-		rawNotes,
-		(note) => !note.trackingId || knownPartIds.indexOf(note.trackingId) === -1
-	)
-	const segmentNotes = _.map(rawSegmentNotes, (note) =>
-		literal<SegmentNote>({
-			type: note.type,
-			message: note.message,
-			origin: {
-				name: '', // TODO
-			},
-		})
-	)
+	const segmentNotes: SegmentNote[] = []
+	for (const note of rawNotes) {
+		if (!note.trackingId || knownPartIds.indexOf(note.trackingId) === -1) {
+			segmentNotes.push(
+				literal<SegmentNote>({
+					type: note.type,
+					message: note.message,
+					origin: {
+						name: '', // TODO
+					},
+				})
+			)
+		}
+	}
 
 	const newSegment = literal<DBSegment>({
 		..._.omit(existingSegment || {}, 'isHidden'),
@@ -1410,16 +1467,21 @@ function generateSegmentContents(
 	blueprintRes.parts.forEach((blueprintPart, i) => {
 		const partId = getPartId(rundownId, blueprintPart.part.externalId)
 
-		const partRawNotes = _.filter(rawNotes, (note) => note.trackingId === blueprintPart.part.externalId)
-		const notes = _.map(partRawNotes, (note) =>
-			literal<PartNote>({
-				type: note.type,
-				message: note.message,
-				origin: {
-					name: '', // TODO
-				},
-			})
-		)
+		const notes: PartNote[] = []
+
+		for (const note of rawNotes) {
+			if (note.trackingId === blueprintPart.part.externalId) {
+				notes.push(
+					literal<PartNote>({
+						type: note.type,
+						message: note.message,
+						origin: {
+							name: '', // TODO
+						},
+					})
+				)
+			}
+		}
 
 		const existingPart = _.find(existingParts, (p) => p._id === partId)
 		const part = literal<DBPart>({
@@ -1456,6 +1518,12 @@ function generateSegmentContents(
 		adlibActions.push(...postProcessAdLibActions(context, blueprintPart.actions || [], blueprintId, part._id))
 	})
 
+	// If the segment has no parts, then hide it
+	if (parts.length === 0) {
+		newSegment.isHidden = true
+	}
+
+	span?.end()
 	return {
 		newSegment,
 		parts,
@@ -1472,6 +1540,8 @@ export function isUpdateAllowed(
 	segmentChanges?: Partial<PreparedChanges<DBSegment>>,
 	partChanges?: Partial<PreparedChanges<DBPart>>
 ): boolean {
+	const span = profiler.startSpan('rundownInput.isUpdateAllowed')
+
 	let allowed: boolean = true
 
 	if (!rundown) return false
@@ -1563,6 +1633,8 @@ export function isUpdateAllowed(
 		if (segmentChanges) logger.debug(`segmentChanges: ${printChanges(segmentChanges)}`)
 		if (partChanges) logger.debug(`partChanges: ${printChanges(partChanges)}`)
 	}
+
+	span?.end()
 	return allowed
 }
 function printChanges(changes: Partial<PreparedChanges<{ _id: ProtectedString<any> }>>): string {

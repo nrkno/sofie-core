@@ -18,6 +18,7 @@ import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
 import { PartInstance, PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PieceInstance */
 export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
@@ -61,8 +62,10 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		/** When the instance was a copy made from hold */
 		fromHold?: boolean
 
-		/** Whether this was 'copied' from the previous PartInstance, rather than from a Part */
-		fromPrevious?: boolean
+		/** Whether this was 'copied' from the previous PartInstance or Part */
+		fromPreviousPart: boolean
+		/** Whether this was 'copied' from the previous PartInstance via the playhead, rather than from a Part */
+		fromPreviousPlayhead?: boolean
 
 		// /** The first partInstance this existed in */
 		// firstPartInsanceId: PartInstanceId
@@ -70,7 +73,14 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 		lastPartInstanceId?: PartInstanceId
 	}
 
-	/** This is set when the duration needs to be overriden from some user action */
+	/** The time the system started playback of this part, null if not yet played back (milliseconds since epoch) */
+	startedPlayback?: Time
+	/** Whether the piece has stopped playback (the most recent time it was played).
+	 * This is set from a callback from the playout gateway (milliseconds since epoch)
+	 */
+	stoppedPlayback?: Time
+
+	/** This is set when the duration needs to be overriden from some user action (milliseconds since start of part) */
 	userDuration?: {
 		end: number
 	}
@@ -122,11 +132,9 @@ export const PieceInstances: TransformedCollection<PieceInstance, PieceInstance>
 	'pieceInstances'
 )
 registerCollection('PieceInstances', PieceInstances)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PieceInstances._ensureIndex({
-			rundownId: 1,
-			partInstanceId: 1,
-		})
-	}
+
+registerIndex(PieceInstances, {
+	rundownId: 1,
+	partInstanceId: 1,
+	reset: -1,
 })

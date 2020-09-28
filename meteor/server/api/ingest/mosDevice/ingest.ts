@@ -47,6 +47,7 @@ import { DeepReadonly } from 'utility-types'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { loadShowStyleBlueprint } from '../../blueprints/cache'
 import { getShowStyleCompound2 } from '../../../../lib/collections/ShowStyleVariants'
+import { profiler } from '../../profiler'
 
 interface AnnotatedIngestPart {
 	externalId: string
@@ -60,9 +61,11 @@ function storiesToIngestParts(
 	undefinedPayload: boolean,
 	existingIngestParts: AnnotatedIngestPart[]
 ): (AnnotatedIngestPart | null)[] {
+	const span = profiler.startSpan('ingest.storiesToIngestParts')
+
 	const existingIngestPartsMap = normalizeArray(existingIngestParts, 'externalId')
 
-	return _.map(stories, (s, i) => {
+	const parts = stories.map((s, i) => {
 		if (!s) return null
 
 		const externalId = parseMosString(s.ID)
@@ -82,6 +85,9 @@ function storiesToIngestParts(
 			}),
 		}
 	})
+
+	span?.end()
+	return parts
 }
 /** Group IngestParts together into something that could be Segments */
 function groupIngestParts(parts: AnnotatedIngestPart[]): { name: string; parts: LocalIngestPart[] }[] {
@@ -124,9 +130,11 @@ export function handleMosRundownData(
 	mosRunningOrder: MOS.IMOSRunningOrder,
 	createFresh: boolean
 ) {
+	const span = profiler.startSpan('ingest.handleMosRundownData')
 	const rundownExternalId = parseMosString(mosRunningOrder.ID)
 
-	return rundownIngestSyncFunction(
+	rundownIngestSyncFunction(
+		'handleMosRundownData',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -184,14 +192,17 @@ export function handleMosRundownData(
 			}
 		}
 	)
+	span?.end()
 }
 export function handleMosRundownMetadata(
 	peripheralDevice: PeripheralDevice,
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
 ) {
+	const span = profiler.startSpan('mosDevice.ingest.handleMosRundownMetadata')
 	const rundownExternalId = parseMosString(mosRunningOrderBase.ID)
 
-	return rundownIngestSyncFunction(
+	rundownIngestSyncFunction(
+		'handleMosRundownMetadata',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -219,14 +230,18 @@ export function handleMosRundownMetadata(
 			}
 		}
 	)
+	span?.end()
 }
 
 export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MOS.IMOSROFullStory) {
+	const span = profiler.startSpan('mosDevice.ingest.handleMosFullStory')
+
 	fixIllegalObject(story)
 
 	const rundownExternalId = parseMosString(story.RunningOrderId)
 
-	return rundownIngestSyncFunction(
+	rundownIngestSyncFunction(
+		'handleMosFullStory',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -266,6 +281,7 @@ export function handleMosFullStory(peripheralDevice: PeripheralDevice, story: MO
 			}
 		}
 	)
+	span?.end()
 }
 export function handleMosDeleteStory(
 	peripheralDevice: PeripheralDevice,
@@ -274,9 +290,13 @@ export function handleMosDeleteStory(
 ) {
 	if (stories.length === 0) return
 
+	// no point in measuring a simple prop check => return
+	const span = profiler.startSpan('mosDevice.ingest.handleMosDeleteStory')
+
 	const rundownExternalId = parseMosString(runningOrderMosId)
 
-	return rundownIngestSyncFunction(
+	rundownIngestSyncFunction(
+		'handleMosDeleteStory',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -285,13 +305,13 @@ export function handleMosDeleteStory(
 
 			const ingestRundown = loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 			const ingestParts = getAnnotatedIngestParts(ingestRundown)
-			const ingestPartIds = _.map(ingestParts, (part) => part.externalId)
+			const ingestPartIds = ingestParts.map((part) => part.externalId)
 
-			const storyIds = _.map(stories, parseMosString)
+			const storyIds = stories.map(parseMosString)
 
 			logger.debug(`handleMosDeleteStory storyIds: [${storyIds.join(',')}]`)
 
-			const missingIds = _.filter(storyIds, (id) => ingestPartIds.indexOf(id) === -1)
+			const missingIds = storyIds.filter((id) => ingestPartIds.indexOf(id) === -1)
 			if (missingIds.length > 0) {
 				throw new Meteor.Error(
 					404,
@@ -303,6 +323,7 @@ export function handleMosDeleteStory(
 				const filteredParts = ingestParts.filter((p) => storyIds.indexOf(p.externalId) === -1)
 				// if (filteredParts.length === ingestParts.length) return // Nothing was removed
 				logger.debug(`handleMosDeleteStory, new part count ${filteredParts.length} (was ${ingestParts.length})`)
+
 				return filteredParts
 			})
 
@@ -315,9 +336,11 @@ export function handleMosDeleteStory(
 			}
 		}
 	)
+	span?.end()
 }
 
 function getAnnotatedIngestParts(ingestRundown: LocalIngestRundown): AnnotatedIngestPart[] {
+	const span = profiler.startSpan('mosDevice.ingest.getAnnotatedIngestParts')
 	const ingestParts: AnnotatedIngestPart[] = []
 	_.each(ingestRundown.segments, (s) => {
 		_.each(s.parts, (p) => {
@@ -329,6 +352,8 @@ function getAnnotatedIngestParts(ingestRundown: LocalIngestRundown): AnnotatedIn
 			})
 		})
 	})
+
+	span?.end()
 	return ingestParts
 }
 export function handleInsertParts(
@@ -340,10 +365,12 @@ export function handleInsertParts(
 ) {
 	// inserts stories and all of their defined items before the referenced story in a Running Order
 	// ...and roStoryReplace message replaces the referenced story with another story or stories
+	const span = profiler.startSpan('mosDevice.ingest.handleInsertParts')
 
 	const rundownExternalId = parseMosString(runningOrderMosId)
 
-	return rundownIngestSyncFunction(
+	rundownIngestSyncFunction(
+		'handleInsertParts',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -364,18 +391,19 @@ export function handleInsertParts(
 				)
 			}
 
-			const newParts = _.compact(storiesToIngestParts(rundown._id, newStories || [], true, ingestParts))
-			const newPartIds = _.map(newParts, (part) => part.externalId)
+			const newParts = storiesToIngestParts(rundown._id, newStories || [], true, ingestParts).filter(
+				(p): p is AnnotatedIngestPart => !!p
+			)
+			const newPartIds = newParts.map((part) => part.externalId)
 
 			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
 				if (removePrevious) {
 					ingestParts.splice(insertIndex, 1) // Replace the previous part with new parts
 				}
 
-				const collidingPartIds = _.map(
-					_.filter(ingestParts, (part) => newPartIds.indexOf(part.externalId) !== -1),
-					(part) => part.externalId
-				)
+				const collidingPartIds = ingestParts
+					.filter((part) => newPartIds.indexOf(part.externalId) > -1)
+					.map((part) => part.externalId)
 				if (collidingPartIds.length > 0) {
 					throw new Meteor.Error(
 						500,
@@ -397,6 +425,7 @@ export function handleInsertParts(
 			}
 		}
 	)
+	span?.end()
 }
 export function handleSwapStories(
 	peripheralDevice: PeripheralDevice,
@@ -413,9 +442,12 @@ export function handleSwapStories(
 		)
 	}
 
+	const span = profiler.startSpan('mosDevice.ingest.handleSwapStories')
+
 	const rundownExternalId = parseMosString(runningOrderMosId)
 
-	return rundownIngestSyncFunction(
+	rundownIngestSyncFunction(
+		'handleSwapStories',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -456,6 +488,7 @@ export function handleSwapStories(
 			}
 		}
 	)
+	span?.end()
 }
 export function handleMoveStories(
 	peripheralDevice: PeripheralDevice,
@@ -463,9 +496,11 @@ export function handleMoveStories(
 	insertBeforeStoryId: MOS.MosString128 | null,
 	stories: MOS.MosString128[]
 ) {
+	const span = profiler.startSpan('mosDevice.ingest.handleMoveStories')
 	const rundownExternalId = parseMosString(runningOrderMosId)
 
-	return rundownIngestSyncFunction(
+	rundownIngestSyncFunction(
+		'handleMoveStories',
 		peripheralDevice,
 		rundownExternalId,
 		(cache, ingestDataCache) => {
@@ -475,7 +510,7 @@ export function handleMoveStories(
 			const ingestParts = getAnnotatedIngestParts(ingestRundown)
 
 			// Get story data
-			const storyIds = _.map(stories, parseMosString)
+			const storyIds = stories.map(parseMosString)
 
 			const newIngestSegments = makeChangeToIngestParts(rundown, ingestParts, (ingestParts) => {
 				// Extract the parts-to-be-moved:
@@ -522,6 +557,7 @@ export function handleMoveStories(
 			}
 		}
 	)
+	span?.end()
 }
 /** Takes a list of ingestParts, modify it, then output them grouped together into ingestSegments, keeping track of the modified property */
 function makeChangeToIngestParts(
@@ -529,6 +565,8 @@ function makeChangeToIngestParts(
 	ingestParts: AnnotatedIngestPart[],
 	modifyFunction: (ingestParts: AnnotatedIngestPart[]) => AnnotatedIngestPart[]
 ): LocalIngestSegment[] {
+	const span = profiler.startSpan('mosDevice.ingest.makeChangeToIngestParts')
+
 	const referenceIngestSegments = groupPartsIntoIngestSegments(rundown, ingestParts)
 
 	const modifiedParts = modifyFunction(ingestParts)
@@ -554,6 +592,8 @@ function makeChangeToIngestParts(
 			}
 		}
 	})
+
+	span?.end()
 	return newIngestSegments
 }
 function groupPartsIntoIngestSegments(
@@ -573,6 +613,7 @@ function prepareMosSegmentChanges(
 	oldIngestRundown: LocalIngestRundown,
 	newIngestSegments: LocalIngestSegment[]
 ): PreparedMosSegmentChanges {
+	const span = profiler.startSpan('mosDevice.ingest.prepareMosSegmentChanges')
 	const rundown = getRundown2(cache)
 
 	// Fetch all existing segments:
@@ -600,6 +641,8 @@ function prepareMosSegmentChanges(
 		}
 	}
 
+	span?.end()
+
 	return {
 		newIngestSegments,
 		segmentDiff,
@@ -618,19 +661,22 @@ function applyMosSegmentChanges(
 	playoutInfo: IngestPlayoutInfo,
 	preparedChanges: PreparedMosSegmentChanges
 ): void {
+	const span = profiler.startSpan('mosDevice.ingest.applyMosSegmentChanges')
 	const rundown = getRundown2(cache)
 
 	// Check if operation affect currently playing Part:
 	if (playoutInfo.playlist.active && playoutInfo.currentPartInstance) {
 		const currentPartInstance = playoutInfo.currentPartInstance
 		let currentPart: LocalIngestPart | undefined = undefined
-		_.find(preparedChanges.newIngestSegments, (ingestSegment) => {
-			currentPart = _.find(ingestSegment.parts, (ingestPart) => {
+
+		for (let i = 0; currentPart === undefined && i < preparedChanges.newIngestSegments.length; i++) {
+			const { parts } = preparedChanges.newIngestSegments[i]
+			currentPart = parts.find((ingestPart) => {
 				const partId = getPartId(rundown._id, ingestPart.externalId)
 				return partId === currentPartInstance.part._id
 			})
-			if (currentPart) return true // break
-		})
+		}
+
 		if (!currentPart) {
 			// Looks like the currently playing part has been removed.
 			logger.warn(
@@ -641,6 +687,7 @@ function applyMosSegmentChanges(
 			} else {
 				ServerRundownAPI.unsyncRundownInner(cache)
 			}
+			span?.end()
 			return
 		} else {
 			// TODO: add logic for determining whether to allow changes to the currently playing Part.
@@ -715,6 +762,8 @@ function applyMosSegmentChanges(
 	if (changedSegmentIds.length > 0) {
 		afterIngestChangedData(cache, playoutInfo, changedSegmentIds)
 	}
+
+	span?.end()
 }
 
 export interface SegmentEntries {

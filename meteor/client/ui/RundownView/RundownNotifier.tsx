@@ -52,7 +52,7 @@ export interface RONotificationEvent {
 }
 
 const BACKEND_POLL_INTERVAL = 10 * 1000
-const SEGMENT_DELIMITER = ' ⯈ '
+const SEGMENT_DELIMITER = ' • '
 
 class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList

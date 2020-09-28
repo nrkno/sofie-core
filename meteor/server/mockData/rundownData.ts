@@ -7,13 +7,18 @@ import { logger } from '../logging'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
-import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { initCacheForRundownPlaylist } from '../DatabaseCaches'
-import { removeRundownPlaylistFromCache } from '../api/playout/lib'
+import { removeRundownPlaylistFromCache, getSelectedPartInstancesFromCache, setNextPart } from '../api/playout/lib'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 import { rundownPlaylistPlayoutSyncFunction } from '../api/playout/playout'
 import { rundownIngestSyncFromStudioFunction } from '../api/ingest/lib'
+import { forceClearAllActivationCaches } from '../ActivationCache'
+import { PartInstances } from '../../lib/collections/PartInstances'
+import { PieceInstances } from '../../lib/collections/PieceInstances'
+import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
+import { updateTimeline } from '../api/playout/timeline'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -79,10 +84,12 @@ if (!Settings.enableUserAccounts) {
 				rundownIngestSyncFromStudioFunction(
 					r.studioId,
 					r.externalId,
+					() => {
+						// Nothing to prepare
+					},
 					(cache) => {
 						updateExpectedMediaItemsOnRundown(cache)
-					},
-					null
+					}
 				)
 			})
 		},
@@ -90,9 +97,55 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			rundownPlaylistPlayoutSyncFunction(null, id, null, (cache) => {
-				syncPlayheadInfinitesForNextPartInstance(cache)
-			})
+			rundownPlaylistPlayoutSyncFunction(
+				null,
+				'debug_syncPlayheadInfinitesForNextPartInstance',
+				id,
+				null,
+				(cache) => {
+					syncPlayheadInfinitesForNextPartInstance(cache)
+				}
+			)
+		},
+
+		debug_forceClearAllActivationCaches() {
+			logger.info('forceClearAllActivationCaches')
+
+			forceClearAllActivationCaches()
+		},
+
+		debug_clearAllResetInstances() {
+			logger.info('clearAllResetInstances')
+
+			PartInstances.remove({ reset: true })
+			PieceInstances.remove({ reset: true })
+		},
+
+		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
+			logger.info('regenerateNextPartInstance')
+
+			rundownPlaylistPlayoutSyncFunction(
+				null,
+				'debug_regenerateNextPartInstance',
+				id,
+				(cache) => {
+					//
+				},
+				(cache) => {
+					const playlist = cache.Playlist.doc
+
+					if (playlist.nextPartInstanceId && playlist.active) {
+						const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+						const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+						if (part) {
+							setNextPart(cache, null)
+							setNextPart(cache, part)
+
+							updateTimeline(cache)
+						}
+					}
+				}
+			)
 		},
 	})
 }

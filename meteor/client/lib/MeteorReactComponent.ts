@@ -49,8 +49,9 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		return computation
 	}
 	subscriptionsReady(): boolean {
-		for (let sub of Object.values(this._subscriptions)) {
-			if (!sub.ready()) {
+		const values = Object.values(this._subscriptions)
+		for (let i = 0; i < values.length; i++) {
+			if (!values[i].ready()) {
 				return false
 			}
 		}
@@ -60,15 +61,16 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 		return Object.values(this._subscriptions)
 	}
 	protected _cleanUp() {
-		for (let sub of Object.values(this._subscriptions)) {
+		const subscriptions = Object.values(this._subscriptions)
+		for (let i = 0; i < subscriptions.length; i++) {
 			// Wait a little bit with unsubscribing, maybe the next view is going to subscribe to the same data as well?
 			// In that case, by unsubscribing directly, we'll get a flicker in the view because of the unloading+loading
 			Meteor.setTimeout(() => {
-				sub.stop()
+				subscriptions[i].stop()
 			}, 100)
 		}
-		for (let computation of Object.values(this._computations)) {
-			computation.stop()
+		for (let i = 0; i < this._computations.length; i++) {
+			this._computations[i].stop()
 		}
 	}
 }

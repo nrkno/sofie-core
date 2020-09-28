@@ -322,10 +322,10 @@ describe('Test blueprint api context', () => {
 							outputLayerId: '',
 							status: -1,
 							enable: { start: 0 },
-							startedPlayback: 1000,
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
 						},
+						startedPlayback: 1000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -349,10 +349,10 @@ describe('Test blueprint api context', () => {
 							outputLayerId: '',
 							status: -1,
 							enable: { start: 0 },
-							startedPlayback: 2000,
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
 						},
+						startedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -397,10 +397,10 @@ describe('Test blueprint api context', () => {
 							outputLayerId: '',
 							status: -1,
 							enable: { start: 0 },
-							startedPlayback: 1000,
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
 						},
+						startedPlayback: 1000,
 					})
 					const pieceId1: PieceInstanceId = getRandomId()
 					cache.PieceInstances.insert({
@@ -417,10 +417,10 @@ describe('Test blueprint api context', () => {
 							outputLayerId: '',
 							status: -1,
 							enable: { start: 0 },
-							startedPlayback: 2000,
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
 						},
+						startedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -469,10 +469,10 @@ describe('Test blueprint api context', () => {
 							outputLayerId: '',
 							status: -1,
 							enable: { start: 0 },
-							startedPlayback: 1000,
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
 						},
+						startedPlayback: 1000,
 					})
 					const pieceId1: PieceInstanceId = getRandomId()
 					cache.PieceInstances.insert({
@@ -488,7 +488,6 @@ describe('Test blueprint api context', () => {
 							outputLayerId: '',
 							status: -1,
 							enable: { start: 0 },
-							startedPlayback: 2000,
 							metaData: {
 								prop1: 'hello',
 								prop2: '5',
@@ -496,6 +495,7 @@ describe('Test blueprint api context', () => {
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							invalid: false,
 						},
+						startedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					waitForPromise(cache.saveAllToDatabase())
@@ -762,18 +762,17 @@ describe('Test blueprint api context', () => {
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
 
 					partInstance.part.autoNext = true
-					partInstance.part.expectedDuration = 4000
-					partInstance.part.startedPlayback = true
-					partInstance.part.timings = {
-						startedPlayback: [getCurrentTime()],
-						stoppedPlayback: [],
-						playOffset: [0],
-						take: [],
-						takeDone: [],
-						takeOut: [],
-						next: [],
+					partInstance.part.expectedDuration = 700
+					partInstance.timings = {
+						startedPlayback: getCurrentTime(),
+						stoppedPlayback: undefined,
+						playOffset: 0,
+						take: undefined,
+						takeDone: undefined,
+						takeOut: undefined,
+						next: undefined,
 					}
-					expect(isTooCloseToAutonext(partInstance, false)).toBeTruthy()
+					expect(isTooCloseToAutonext(partInstance, true)).toBeTruthy()
 					expect(() => context.queuePart({} as any, [{}] as any)).toThrowError(
 						'Too close to an autonext to queue a part'
 					)

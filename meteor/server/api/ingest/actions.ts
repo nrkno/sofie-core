@@ -110,6 +110,7 @@ export namespace IngestActions {
 
 		return rundownPlaylistPlayoutSyncFunction(
 			context,
+			'regenerateRundownPlaylist',
 			rundownPlaylistId,
 			(playlistCache) => {
 				const playlist = playlistCache.Playlist.doc
@@ -127,6 +128,7 @@ export namespace IngestActions {
 							}
 
 							return rundownIngestSyncFromStudioFunction(
+								'regenerateRundownPlaylist',
 								rundown.studioId,
 								rundown.externalId,
 								(cache, ingestDataCache) => {

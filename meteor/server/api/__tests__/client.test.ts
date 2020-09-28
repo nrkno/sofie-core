@@ -6,7 +6,6 @@ import { protectString, makePromise } from '../../../lib/lib'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
 import { setLoggerLevel } from '../logger'
 import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { runInFiber } from '../../../__mocks__/Fibers'
 import { PeripheralDeviceId, PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -59,6 +58,7 @@ describe('ClientAPI', () => {
 						ClientAPIMethods.callPeripheralDeviceFunction,
 						mockContext,
 						mockDeviceId,
+						undefined,
 						mockFunctionName,
 						...mockArgs
 					)
@@ -93,32 +93,30 @@ describe('ClientAPI', () => {
 				expect(pdc.args).toMatchObject(mockArgs)
 			})
 			testInFiber('Resolves the returned promise once a response from the peripheralDevice is received', () => {
-				return runInFiber(() => {
-					PeripheralDeviceCommands.update(
-						{
-							deviceId: mockDeviceId,
-							functionName: mockFunctionName,
+				PeripheralDeviceCommands.update(
+					{
+						deviceId: mockDeviceId,
+						functionName: mockFunctionName,
+					},
+					{
+						$set: {
+							hasReply: true,
+							reply: 'OK',
 						},
-						{
-							$set: {
-								hasReply: true,
-								reply: 'OK',
-							},
-						}
-					)
-					return promise.then((value) => {
-						const log = UserActionsLog.findOne({
-							method: logMethodName,
-						})
-						if (!log) {
-							fail('Log entry not found')
-							return
-						}
-
-						expect(log.success).toBe(true)
-						expect(log.doneTime).toBeDefined()
-						expect(value).toBe('OK')
+					}
+				)
+				return promise.then((value) => {
+					const log = UserActionsLog.findOne({
+						method: logMethodName,
 					})
+					if (!log) {
+						fail('Log entry not found')
+						return
+					}
+
+					expect(log.success).toBe(true)
+					expect(log.doneTime).toBeDefined()
+					expect(value).toBe('OK')
 				})
 			})
 		})
@@ -132,6 +130,7 @@ describe('ClientAPI', () => {
 					ClientAPIMethods.callPeripheralDeviceFunction,
 					mockContext,
 					mockDeviceId,
+					undefined,
 					mockFailingFunctionName,
 					...mockArgs
 				)
@@ -163,34 +162,32 @@ describe('ClientAPI', () => {
 				expect(pdc.args).toMatchObject(mockArgs)
 			})
 			testInFiber('Resolves the returned promise once a response from the peripheralDevice is received', () => {
-				return runInFiber(() => {
-					PeripheralDeviceCommands.update(
-						{
-							deviceId: mockDeviceId,
-							functionName: mockFailingFunctionName,
+				PeripheralDeviceCommands.update(
+					{
+						deviceId: mockDeviceId,
+						functionName: mockFailingFunctionName,
+					},
+					{
+						$set: {
+							hasReply: true,
+							replyError: 'Failed',
 						},
-						{
-							$set: {
-								hasReply: true,
-								replyError: 'Failed',
-							},
-						}
-					)
-					// This will probably resolve after around 3s, since that is the timeout time
-					// of checkReply and the observeChanges is not implemented in the mock
-					return promise.catch((value) => {
-						const log = UserActionsLog.findOne({
-							method: logMethodName,
-						})
-						if (!log) {
-							fail('Log entry not found')
-							return
-						}
-
-						expect(log.success).toBe(false)
-						expect(log.doneTime).toBeDefined()
-						expect(value).toBe('Failed')
+					}
+				)
+				// This will probably resolve after around 3s, since that is the timeout time
+				// of checkReply and the observeChanges is not implemented in the mock
+				return promise.catch((value) => {
+					const log = UserActionsLog.findOne({
+						method: logMethodName,
 					})
+					if (!log) {
+						fail('Log entry not found')
+						return
+					}
+
+					expect(log.success).toBe(false)
+					expect(log.doneTime).toBeDefined()
+					expect(value).toBe('Failed')
 				})
 			})
 		})
