@@ -1,2 +1,1 @@
-METEOR@1.11
-# Note: Remember to update the base docker image in .circleci/config.yml when updating this!
+METEOR@1.11.1
