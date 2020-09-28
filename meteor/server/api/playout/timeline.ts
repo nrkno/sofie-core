@@ -41,6 +41,8 @@ import {
 	clone,
 	makePromise,
 	asyncCollectionFindOne,
+	getRandomId,
+	applyToArray,
 } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownHoldState } from '../../../lib/collections/Rundowns'
@@ -108,11 +110,21 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		// A timeline object is updated if found in both collections
 
 		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[unprotectString(tlo._id)]
-		// let tlo: TimelineObjGeneric | undefined = timelineObjs.find((x) => x._id === tloldo._id)
 
-		if (tlo && tlo.enable.start === 'now' && tloldo && tloldo.enable.setFromNow) {
-			tlo.enable.start = tloldo.enable.start
-			tlo.enable.setFromNow = true
+		let oldNow: TSR.Timeline.TimelineEnable['start'] | undefined
+		if (tloldo && tloldo.enable) {
+			applyToArray(tloldo.enable, (enable) => {
+				if (enable.setFromNow) oldNow = enable.start
+			})
+		}
+
+		if (oldNow !== undefined && tlo) {
+			applyToArray(tlo.enable, (enable) => {
+				if (enable.start === 'now') {
+					enable.start = oldNow
+					enable.setFromNow = true
+				}
+			})
 		}
 	})
 
@@ -402,10 +414,12 @@ function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjG
  */
 function setNowToTimeInObjects(timelineObjs: Array<TimelineObjGeneric>, now: Time): void {
 	_.each(timelineObjs, (o) => {
-		if (o.enable.start === 'now') {
-			o.enable.start = now
-			o.enable.setFromNow = true
-		}
+		applyToArray(o.enable, (enable) => {
+			if (enable.start === 'now') {
+				enable.start = now
+				enable.setFromNow = true
+			}
+		})
 	})
 }
 
@@ -417,8 +431,8 @@ function buildTimelineObjsForRundown(
 ): (TimelineObjRundown & OnGenerateTimelineObj)[] {
 	const span = profiler.startSpan('buildTimelineObjsForRundown')
 	let timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
-	let currentPartGroup: TimelineObjRundown | undefined
-	let previousPartGroup: TimelineObjRundown | undefined
+	let currentPartGroup: TimelineObjGroupPart | undefined
+	let previousPartGroup: TimelineObjGroupPart | undefined
 
 	// const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
 	// 	cache,
@@ -731,10 +745,7 @@ function buildTimelineObjsForRundown(
 	if (span) span.end()
 	return timelineObjs
 }
-function createPartGroup(
-	partInstance: PartInstance,
-	enable: TSR.Timeline.TimelineEnable
-): TimelineObjGroupPart & TimelineObjRundown {
+function createPartGroup(partInstance: PartInstance, enable: TSR.Timeline.TimelineEnable): TimelineObjGroupPart {
 	if (!enable.start) {
 		// TODO - is this loose enough?
 		enable.start = 'now'
@@ -838,7 +849,7 @@ function transformPartIntoTimeline(
 	partId: PartId,
 	pieceInstances: DeepReadonly<PieceInstanceWithTimings>[],
 	firstObjClasses: string[],
-	partGroup: TimelineObjRundown,
+	partGroup: TimelineObjGroupPart,
 	nowInPart: number,
 	isAbsoluteInfinitePartGroup: boolean,
 	transitionProps?: TransformTransitionProps,

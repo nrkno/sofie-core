@@ -19,10 +19,10 @@ export function createPieceGroupAndCap(
 	partGroup?: TimelineObjRundown,
 	pieceEnable?: TSR.Timeline.TimelineEnable
 ): {
-	pieceGroup: TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj
+	pieceGroup: TimelineObjGroupRundown & OnGenerateTimelineObj
 	capObjs: TimelineObjRundown[]
 } {
-	const pieceGroup = literal<TimelineObjGroup & TimelineObjRundown & OnGenerateTimelineObj>({
+	const pieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObj>({
 		id: getPieceGroupId(unprotectString(pieceInstance._id)),
 		_id: protectString(''), // set later
 		studioId: protectString(''), // set later
@@ -36,7 +36,7 @@ export function createPieceGroupAndCap(
 		pieceInstanceId: unprotectString(pieceInstance._id),
 		infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 		objectType: TimelineObjType.RUNDOWN,
-		enable: clone<TimelineObjRundown['enable']>(pieceEnable ?? pieceInstance.piece.enable),
+		enable: clone<TimelineObjGroupRundown['enable']>(pieceEnable ?? pieceInstance.piece.enable),
 		layer: pieceInstance.piece.sourceLayerId,
 		priority: pieceInstance.priority,
 		metaData: {

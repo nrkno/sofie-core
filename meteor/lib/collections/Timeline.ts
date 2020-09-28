@@ -19,6 +19,8 @@ export enum TimelineContentTypeOther {
 /** A string, identifying a TimelineObj */
 export type TimelineObjId = ProtectedString<'TimelineObjId'>
 
+export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Unique _id (generally obj.studioId + '_' + obj.id) */
 	_id: TimelineObjId
@@ -32,7 +34,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	objectType: TimelineObjType
 
-	enable: TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+	enable: TimelineEnableExt | TimelineEnableExt[]
 
 	/** The id of the group object this object is in  */
 	inGroup?: string
@@ -57,13 +59,14 @@ export interface TimelineObjManual extends TimelineObjGeneric {
 	objectType: TimelineObjType.MANUAL
 }
 export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
+	enable: TimelineEnableExt
 	content: {
 		type: TimelineContentTypeOther.GROUP
 	}
 	children: TimelineObjGeneric[]
 	isGroup: true
 }
-export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
+export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true

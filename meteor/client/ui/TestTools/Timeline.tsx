@@ -165,16 +165,19 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 		renderTimeline() {
 			this.startVisualizer = true
 
-			let timeline = _.compact(
-				_.map(this.props.timeline, (obj) => {
-					let o = _.clone(obj)
-					delete o._id
-
-					if (o.enable.start === 'now') o.enable.start = getCurrentTime() // tmp
-
+			const timeline = this.props.timeline.map((o) => {
+				if (!Array.isArray(o.enable) && o.enable.start === 'now') {
+					return {
+						...o,
+						enable: {
+							...o.enable,
+							start: getCurrentTime(), // tmp
+						},
+					}
+				} else {
 					return o
-				})
-			)
+				}
+			})
 
 			this.newTimeline = timeline
 
@@ -241,7 +244,6 @@ export const ComponentTimelineSimulate = withTracker<
 				tlComplete.timeline
 					.map((o) => {
 						if (!Array.isArray(o.enable) && o.enable.start === 'now') {
-							console.log('de-now', o, now)
 							return {
 								...o,
 								enable: {
