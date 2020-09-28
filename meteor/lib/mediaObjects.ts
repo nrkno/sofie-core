@@ -286,6 +286,8 @@ export function checkPieceContentStatus(
 							messages.push(t('Clip is being ingested', { fileName: displayName }))
 							newStatus = RundownAPI.PieceStatusCode.SOURCE_MISSING
 						}
+
+						metadata = mediaObject
 						message = t('{{displayName}}: {{messages}}', {
 							displayName: displayName,
 							messages: messages.join(', '),
