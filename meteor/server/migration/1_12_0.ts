@@ -10,6 +10,8 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import { IBlueprintConfig } from 'tv-automation-sofie-blueprints-integration'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Timeline, TimelineObjGeneric } from '../../lib/collections/Timeline'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { setExpectedVersion } from './lib'
 
 // Release 24
 export const addSteps = addMigrationSteps('1.12.0', [
@@ -208,9 +210,14 @@ export const addSteps = addMigrationSteps('1.12.0', [
 	},
 	//
 	//
-	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
-	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
-	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
+	setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT, '_process', '^1.10.1'),
+	setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS, '_process', '^1.5.0'),
+	setExpectedVersion(
+		'expectedVersion.mediaManager',
+		PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,
+		'_process',
+		'^1.2.1'
+	),
 ])
 
 function migrateConfigToBlueprintConfig<
