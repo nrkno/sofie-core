@@ -472,7 +472,13 @@ export namespace ServerPlayoutAdLibAPI {
 		const stoppedInfiniteIds = new Set<PieceId>()
 
 		for (const pieceInstance of resolvedPieces) {
-			if (!pieceInstance.userDuration && !pieceInstance.piece.virtual && filter(pieceInstance)) {
+			if (
+				!pieceInstance.userDuration &&
+				!pieceInstance.piece.virtual &&
+				filter(pieceInstance) &&
+				pieceInstance.resolvedStart !== undefined &&
+				pieceInstance.resolvedStart <= relativeStopAt
+			) {
 				switch (pieceInstance.piece.lifespan) {
 					case PieceLifespan.WithinPart:
 					case PieceLifespan.OutOnSegmentChange:
