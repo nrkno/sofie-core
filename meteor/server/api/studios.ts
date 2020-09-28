@@ -39,6 +39,7 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 			},
 			_rundownVersionHash: '',
 			routeSets: {},
+			routeSetExclusivityGroups: {},
 		})
 	)
 }

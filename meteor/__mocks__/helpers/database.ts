@@ -168,6 +168,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 		},
 		_rundownVersionHash: 'asdf',
 		routeSets: {},
+		routeSetExclusivityGroups: {},
 	}
 	const studio = _.extend(defaultStudio, doc)
 	Studios.insert(studio)
