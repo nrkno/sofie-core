@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -34,12 +34,10 @@ import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceId } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-
-const HOTKEY_GROUP = 'BucketPanel'
+import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, monitor: DragSourceMonitor, component: any) {
@@ -148,6 +146,7 @@ export interface IBucketPanelProps {
 	playlist: RundownPlaylist
 	showStyleBase: ShowStyleBase
 	shouldQueue: boolean
+	hotkeyGroup: string
 	editableName?: boolean
 	onNameChanged: (e: any, newName: string) => void
 	moveBucket: (id: BucketId, atIndex: number) => void
@@ -179,16 +178,18 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
+				//@ts-ignore
 				fields: {
 					rundownId: 1,
+					'part._id': 1,
 				},
-			})
+			}) as Pick<PartInstance, 'rundownId'> | undefined
 			if (part) {
 				const rundown = Rundowns.findOne(part.rundownId, {
 					fields: {
 						showStyleVariantId: 1,
 					},
-				})
+				}) as Pick<Rundown, 'showStyleVariantId'> | undefined
 				if (rundown) {
 					showStyleVariantId = rundown.showStyleVariantId
 				}
@@ -202,7 +203,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						showStyleVariantId: 1,
 					},
 				}
-			)[0]
+			)[0] as Pick<Rundown, 'showStyleVariantId'> | undefined
 			if (rundown) {
 				showStyleVariantId = rundown.showStyleVariantId
 			}
@@ -349,7 +350,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
-					// console.log(sourceLayer)
 					const { t } = this.props
 					if (this.props.playlist._id && this.props.playlist.currentPartInstanceId) {
 						const currentPartInstanceId = this.props.playlist.currentPartInstanceId
@@ -579,9 +579,9 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 											{this.state.bucketName}
 										</h4>
 									)}
-									{/* 
+									{/*
 						<FontAwesomeIcon icon={faBars} />&nbsp;
-						
+
 						{ filter.enableSearch &&
 							<AdLibPanelToolbar
 								onFilterChange={this.onFilterChange} />
@@ -618,8 +618,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
 																: ''
 														}
-														widthScale={1}
-														heightScale={1}
 														disabled={adlib.showStyleVariantId !== this.props.showStyleVariantId}
 														findAdLib={this.findAdLib}
 														moveAdLib={this.moveAdLib}

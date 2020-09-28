@@ -20,6 +20,7 @@ import {
 	ValidateFunctionCore,
 	ValidateFunctionShowStyle,
 	ValidateFunctionStudio,
+	SomeBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import * as _ from 'underscore'
 import {
@@ -28,6 +29,9 @@ import {
 	MigrationStepType,
 	RunMigrationResult,
 } from '../../lib/api/migration'
+import { logger } from '../../lib/logging'
+import { internalStoreSystemSnapshot } from '../api/snapshot'
+import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { Blueprints } from '../../lib/collections/Blueprints'
 import {
 	GENESIS_SYSTEM_VERSION,
@@ -36,41 +40,12 @@ import {
 	setCoreSystemVersion,
 	Version,
 } from '../../lib/collections/CoreSystem'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { SnapshotId } from '../../lib/collections/Snapshots'
 import { Studios } from '../../lib/collections/Studios'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
-import { logger } from '../../lib/logging'
-import { evalBlueprints } from '../api/blueprints/cache'
+import { evalBlueprint } from '../api/blueprints/cache'
 import { MigrationContextShowStyle, MigrationContextStudio } from '../api/blueprints/migrationContext'
-import { storeSystemSnapshot } from '../api/snapshot'
-
-/** The current database version, x.y.z
- * 0.16.0: Release 3   (2018-10-26)
- * 0.17.0: Release 3.1 (2018-11-14)
- * 0.18.0: Release 4   (2018-11-26)
- * 0.19.0: Release 5   (2019-01-11)
- * 0.20.0: Release 5.1 (2019-02-05)
- * 0.21.0: Release 6   (never released)
- * 0.22.0: Release 7   (2019-03-15)
- * 0.23.0: Release 8   (2019-04-08)
- * 0.24.0: Release 9   (2019-05-16)
- * 0.25.0: Release 10  (2019-07-05)
- * 0.26.0: Release 11  -
- * 1.0.0: Release 12  (2019-09-11)
- * 1.1.0: Release 13  (2019-10-17)
- * 1.2.0: Release 14  (2019-11-06)
- * 1.3.0: Release 15  (2019-11-25)
- * 1.4.0: Release 16  (2019-01-02)
- * 1.5.0: Release 17  (2019-01-24)
- * 1.6.0: Release 18  (2019-03-04)
- * 1.7.0: Release 19  (2019-03-31)
- * 1.8.0: Release 20  (2019-05-12)
- * 1.9.0: Release 21  (never released)
- * 1.10.0: Release 22  (2020-08-17)
- * x.x.x: Release 23  (TBD)
- */
-export const CURRENT_SYSTEM_VERSION = '1.10.0'
+import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -116,13 +91,15 @@ export function addMigrationStep(step: MigrationStep) {
  * @param steps
  */
 export function addMigrationSteps(version: string, steps: Array<MigrationStepBase>) {
-	_.each(steps, (step) => {
-		addMigrationStep(
-			_.extend(step, {
-				version: version,
-			})
-		)
-	})
+	return () => {
+		_.each(steps, (step) => {
+			addMigrationStep(
+				_.extend(step, {
+					version: version,
+				})
+			)
+		})
+	}
 }
 /** Removes all migration steps (used in tests) */
 export function clearMigrationSteps() {
@@ -185,8 +162,9 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 	// Collect migration steps from blueprints:
 	Blueprints.find({}).forEach((blueprint) => {
+		// console.log('bp', blueprint._id)
 		if (blueprint.code) {
-			const rawBlueprint = evalBlueprints(blueprint)
+			const blueprintManifest = evalBlueprint(blueprint)
 
 			// @ts-ignore
 			if (!blueprint.databaseVersion || _.isString(blueprint.databaseVersion)) blueprint.databaseVersion = {}
@@ -194,7 +172,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			if (!blueprint.databaseVersion.studio) blueprint.databaseVersion.studio = {}
 
 			if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
-				const bp = rawBlueprint as ShowStyleBlueprintManifest
+				const bp = blueprintManifest as ShowStyleBlueprintManifest
 
 				// Find all showStyles that uses this blueprint:
 				ShowStyleBases.find({
@@ -233,7 +211,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 					})
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
-				const bp = rawBlueprint as StudioBlueprintManifest
+				const bp = blueprintManifest as StudioBlueprintManifest
 				// Find all studios that use this blueprint
 				Studios.find({
 					blueprintId: blueprint._id,
@@ -273,6 +251,8 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			} else {
 				// No migrations for system blueprints
 			}
+		} else {
+			console.log(`blueprint ${blueprint._id} has no code`)
 		}
 	})
 
@@ -313,9 +293,16 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 	// Filter steps:
 	let migrationSteps: { [id: string]: MigrationStepInternal } = {}
 	let ignoredSteps: { [id: string]: true } = {}
+	let includesCoreStep = false
 	_.each(allMigrationSteps, (step: MigrationStepInternal) => {
 		if (!step.canBeRunAutomatically && (!step.input || (_.isArray(step.input) && !step.input.length)))
 			throw new Meteor.Error(500, `MigrationStep "${step.id}" is manual, but no input is provided`)
+
+		if (step.chunk.sourceType !== MigrationStepType.CORE && includesCoreStep) {
+			// stop here as core migrations need to be run before anything else can
+			partialMigration = true
+			return
+		}
 
 		if (partialMigration) return
 		if (
@@ -365,6 +352,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 
 			if (step._validateResult) {
 				migrationSteps[step.id] = step
+				includesCoreStep = includesCoreStep || step.chunk.sourceType === MigrationStepType.CORE
 			} else {
 				// No need to run step
 				ignoredSteps[step.id] = true
@@ -531,7 +519,7 @@ export function runMigration(
 		let system = getCoreSystem()
 		if (system && system.storePath) {
 			try {
-				snapshotId = storeSystemSnapshot(null, `Automatic, taken before migration`)
+				snapshotId = internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)
 			} catch (e) {
 				warningMessages.push(`Error when taking snapshot:${e.toString()}`)
 				logger.error(e)

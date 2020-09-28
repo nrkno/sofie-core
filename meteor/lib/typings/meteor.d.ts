@@ -2,6 +2,12 @@ import { Mongo } from 'meteor/mongo'
 import { Tracker } from 'meteor/tracker'
 import { Omit, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
+import { Collection as RawCollection } from 'mongodb'
+
+// This is a copy of the type used in the Users collection,
+// to avoid nasty dependencies
+/** A string, identifying a User */
+export type UserId = ProtectedString<'UserId'>
 
 declare module 'meteor/tracker' {
 	namespace Tracker {
@@ -28,6 +34,7 @@ export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpec
 export type IndexSpecifier<T> = {
 	[P in keyof T]?: -1 | 1 | string
 }
+export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
 export interface FindOptions<DBInterface> {
 	sort?: SortSpecifier<DBInterface>
@@ -46,9 +53,14 @@ export interface UpsertOptions {
 }
 /** Mongo Selector. Contains everything that can be sent into collection.find(selector) */
 export type MongoSelector<DBInterface> = Mongo.Selector<DBInterface>
-/** Subset of MongoSelector, only allows direct queries, not QueryWithModifiers such as $explain etc.  */
+/**
+ * Subset of MongoSelector, only allows direct queries, not QueryWithModifiers such as $explain etc.
+ * Used for simplified expressions (ie not using $and, $or etc..)
+ * */
 export type MongoQuery<DBInterface> = Mongo.Query<DBInterface>
+export type MongoQueryKey<T> = RegExp | T | Mongo.FieldExpression<T> // Allowed properties in a Mongo.Query
 export type MongoModifier<DBInterface> = Mongo.Modifier<DBInterface>
+
 export interface Mongocursor<DBInterface extends { _id: ProtectedString<any> }>
 	extends Omit<Mongo.Cursor<DBInterface>, 'observe' | 'observeChanges'> {
 	observe(callbacks: ObserveCallbacks<DBInterface>): Meteor.LiveQueryHandle
@@ -70,19 +82,20 @@ export interface ObserveChangesCallbacks<DBInterface extends { _id: ProtectedStr
 	movedBefore?(id: DBInterface['_id'], before: Object): void
 	removed?(id: DBInterface['_id']): void
 }
+export type FieldNames<DBInterface> = (keyof DBInterface)[]
 
 export interface TransformedCollection<Class extends DBInterface, DBInterface extends { _id: ProtectedString<any> }> {
 	allow(options: {
-		insert?: (userId: string, doc: DBInterface) => boolean
-		update?: (userId: string, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
-		remove?: (userId: string, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (userId: UserId, doc: DBInterface, fieldNames: FieldNames<DBInterface>, modifier: any) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
 	deny(options: {
-		insert?: (userId: string, doc: DBInterface) => boolean
-		update?: (userId: string, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
-		remove?: (userId: string, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => boolean
+		update?: (userId: UserId, doc: DBInterface, fieldNames: string[], modifier: any) => boolean
+		remove?: (userId: UserId, doc: DBInterface) => boolean
 		fetch?: string[]
 		transform?: Function
 	}): boolean
@@ -95,7 +108,7 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 		options?: Omit<FindOptions<DBInterface>, 'limit'>
 	): Class | undefined
 	insert(doc: DBInterface, callback?: Function): DBInterface['_id']
-	rawCollection(): any
+	rawCollection(): RawCollection<DBInterface>
 	rawDatabase(): any
 	remove(selector: MongoSelector<DBInterface> | Mongo.ObjectID | DBInterface['_id'], callback?: Function): number
 	update(
@@ -114,15 +127,12 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 		insertedId?: DBInterface['_id']
 	}
 	_ensureIndex(
-		keys:
-			| {
-					[key: string]: number | string
-			  }
-			| string,
+		keys: IndexSpecifier<DBInterface> | string,
 		options?: {
 			[key: string]: any
 		}
 	): void
+
 	_dropIndex(
 		keys:
 			| {
@@ -130,4 +140,17 @@ export interface TransformedCollection<Class extends DBInterface, DBInterface ex
 			  }
 			| string
 	): void
+}
+
+export interface MeteorError {
+	isClientSafe: boolean
+	/** Error code. Example: 500 */
+	error: number
+	/** "Error reason" */
+	reason: string
+	/** "Error reason [500]" */
+	message: string
+	/** "Meteor.Error" */
+	errorType: string
+	details: string
 }

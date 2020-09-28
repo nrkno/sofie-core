@@ -7,13 +7,14 @@ import { createMongoCollection } from './lib'
 import { RundownId } from './Rundowns'
 import { PartId } from './Parts'
 import { BucketId } from './Buckets'
+import { registerIndex } from '../database'
 
 export interface AdLibPiece extends PieceGeneric, IBlueprintAdLibPiece {
 	/** The object describing the piece in detail */
 	content?: BaseContent // TODO: Temporary, should be put into IBlueprintAdLibPiece
 
 	// trigger: undefined
-	disabled: false
+	// disabled: false
 
 	/** Rundown this AdLib belongs to */
 	rundownId: RundownId
@@ -26,12 +27,9 @@ export const AdLibPieces: TransformedCollection<AdLibPiece, AdLibPiece> = create
 	'adLibPieces'
 )
 registerCollection('AdLibPieces', AdLibPieces)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		AdLibPieces._ensureIndex({
-			rundownId: 1,
-			partId: 1,
-			_rank: 1,
-		})
-	}
+
+registerIndex(AdLibPieces, {
+	rundownId: 1,
+	partId: 1,
+	_rank: 1,
 })

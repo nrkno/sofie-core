@@ -2,16 +2,30 @@ import { registerClassToMeteorMethods } from '../methods'
 import { StatusResponse, NewSystemStatusAPI, SystemStatusAPIMethods } from '../../lib/api/systemStatus'
 import { getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'
-import { protectString, makePromise } from '../../lib/lib'
 import { PickerGET } from '../api/http'
+import { protectString, makePromise } from '../../lib/lib'
 
-// Server routes:
-PickerGET.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
-	let status = getSystemStatus()
+import { Settings } from '../../lib/Settings'
+import { MethodContextAPI } from '../../lib/api/methods'
+
+if (!Settings.enableUserAccounts) {
+	// For backwards compatibility:
+
+	PickerGET.route('/health', (params, req: IncomingMessage, res: ServerResponse) => {
+		let status = getSystemStatus({ userId: null })
+		health(status, res)
+	})
+	PickerGET.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+		let status = getSystemStatus({ userId: null }, protectString(params.studioId))
+		health(status, res)
+	})
+}
+PickerGET.route('/health/:token', (params, req: IncomingMessage, res: ServerResponse) => {
+	let status = getSystemStatus({ userId: null, token: params.token })
 	health(status, res)
 })
-PickerGET.route('/health/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
-	let status = getSystemStatus(protectString(params.studioId))
+PickerGET.route('/health/:token/:studioId', (params, req: IncomingMessage, res: ServerResponse) => {
+	let status = getSystemStatus({ userId: null, token: params.token }, protectString(params.studioId))
 	health(status, res)
 })
 function health(status: StatusResponse, res: ServerResponse) {
@@ -24,9 +38,9 @@ function health(status: StatusResponse, res: ServerResponse) {
 	res.end(content)
 }
 
-class ServerSystemStatusAPI implements NewSystemStatusAPI {
+class ServerSystemStatusAPI extends MethodContextAPI implements NewSystemStatusAPI {
 	getSystemStatus() {
-		return makePromise(() => getSystemStatus())
+		return makePromise(() => getSystemStatus(this))
 	}
 }
 registerClassToMeteorMethods(SystemStatusAPIMethods, ServerSystemStatusAPI, false)

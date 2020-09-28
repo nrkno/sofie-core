@@ -12,7 +12,7 @@ import { Blueprints } from '../../../lib/collections/Blueprints'
 import {
 	ConfigManifestEntry,
 	ConfigManifestEntryType,
-	IConfigItem,
+	IBlueprintConfig,
 	BasicConfigManifestEntry,
 	ConfigManifestEntryEnum,
 	ConfigItemValue,
@@ -23,7 +23,7 @@ import {
 	SourceLayerType,
 	ConfigManifestEntrySelectFromOptions,
 } from 'tv-automation-sofie-blueprints-integration'
-import { literal, DBObj, KeysByType, ProtectedString } from '../../../lib/lib'
+import { literal, DBObj, KeysByType, ProtectedString, objectPathGet } from '../../../lib/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { logger } from '../../../lib/logging'
@@ -99,6 +99,21 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 					className="input text-input input-l"
 				/>
 			)
+		case ConfigManifestEntryType.MULTILINE_STRING:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute={attribute}
+					obj={object}
+					type="multiline"
+					collection={collection}
+					className="input text-input input-l"
+					mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join('\n'))}
+					mutateUpdateValue={(v) =>
+						v === undefined || v.length === 0 ? undefined : v.split('\n').map((i) => i.trimStart())
+					}
+				/>
+			)
 		case ConfigManifestEntryType.NUMBER:
 			return (
 				<EditAttribute
@@ -130,6 +145,18 @@ function getEditAttribute<DBInterface extends { _id: ProtectedString<any> }, Doc
 					obj={object}
 					type="dropdown"
 					options={item2.options || []}
+					collection={collection}
+					className="input text-input input-l"
+				/>
+			)
+		case ConfigManifestEntryType.JSON:
+			return (
+				<EditAttribute
+					modifiedClassName="bghl"
+					invalidClassName="warn"
+					attribute={attribute}
+					obj={object}
+					type="json"
 					collection={collection}
 					className="input text-input input-l"
 				/>
@@ -193,7 +220,7 @@ interface IConfigManifestSettingsProps<
 
 	collection: TCol
 	object: DBInterface
-	configPath: KeysByType<DBInterface, Array<IConfigItem>>
+	configPath: string // KeysByType<DBInterface, Array<IConfigItem>> TODO
 
 	layerMappings?: { [key: string]: MappingsExt }
 	sourceLayers?: Array<{ name: string; value: string; type: SourceLayerType }>
@@ -515,7 +542,7 @@ export class ConfigManifestSettings<
 		}
 	}
 
-	getObjectConfig(): Array<IConfigItem> {
+	getObjectConfig(): IBlueprintConfig {
 		return this.props.object[this.props.configPath]
 	}
 
@@ -538,19 +565,19 @@ export class ConfigManifestSettings<
 	}
 
 	createItem = (item: ConfigManifestEntry) => {
-		const m: any = {}
-		m[this.props.configPath] = literal<IConfigItem>({
-			_id: item.id,
-			value: item.defaultVal,
-		})
-		this.updateObject(this.props.object, { $push: m })
+		const m: any = {
+			$set: {
+				[`${this.props.configPath}.${item.id}`]: item.defaultVal,
+			},
+		}
+		this.updateObject(this.props.object, m)
 	}
 
 	editItem = (item: ConfigManifestEntry) => {
 		// Ensure the item exists, so edit by index works
-		const valIndex = this.getObjectConfig().findIndex((v) => v._id === item.id)
+		const val = objectPathGet(this.getObjectConfig(), item.id)
 
-		if (valIndex === -1) throw new Meteor.Error(500, `Unable to edit an item that doesn't exist`)
+		if (val === undefined) throw new Meteor.Error(500, `Unable to edit an item that doesn't exist`)
 
 		if (this.state.editedItems.indexOf(item.id) < 0) {
 			this.state.editedItems.push(item.id)
@@ -582,12 +609,12 @@ export class ConfigManifestSettings<
 	handleConfirmAddItemAccept = (e) => {
 		if (this.state.addItemId) {
 			const item = this.props.manifest.find((c) => c.id === this.state.addItemId)
-			const m: any = {}
-			m[this.props.configPath] = literal<IConfigItem>({
-				_id: this.state.addItemId,
-				value: item ? item.defaultVal : '',
-			})
-			this.updateObject(this.props.object, { $push: m })
+			const m: any = {
+				$set: {
+					[`${this.props.configPath}.${this.state.addItemId}`]: item ? item.defaultVal : '',
+				},
+			}
+			this.updateObject(this.props.object, m)
 		}
 
 		this.setState({
@@ -613,11 +640,12 @@ export class ConfigManifestSettings<
 
 	handleConfirmDeleteAccept = (e) => {
 		if (this.state.deleteConfirmItem) {
-			const m: any = {}
-			m[this.props.configPath] = {
-				_id: this.state.deleteConfirmItem.id,
+			const m: any = {
+				$unset: {
+					[`${this.props.configPath}.${this.state.deleteConfirmItem.id}`]: '',
+				},
 			}
-			this.updateObject(this.props.object, { $pull: m })
+			this.updateObject(this.props.object, m)
 		}
 
 		this.setState({
@@ -655,8 +683,8 @@ export class ConfigManifestSettings<
 		}
 	}
 
-	renderEditableArea(item: ConfigManifestEntry, valIndex: number) {
-		const baseAttribute = `config.${valIndex}.value`
+	renderEditableArea(item: ConfigManifestEntry, valIndex: string) {
+		const baseAttribute = `blueprintConfig.${valIndex}`
 		const { t, collection, object, i18n, tReady } = this.props
 		switch (item.type) {
 			case ConfigManifestEntryType.TABLE:
@@ -712,10 +740,8 @@ export class ConfigManifestSettings<
 
 		const values = this.getObjectConfig()
 		return this.props.manifest.map((item, index) => {
-			const valIndex = values.findIndex((v) => v._id === item.id)
-			if (valIndex === -1 && !item.required) return undefined
-
-			const configItem = values[valIndex]
+			const configItem = objectPathGet(values, item.id)
+			if (configItem === undefined && !item.required) return undefined
 
 			return (
 				<React.Fragment key={`${item.id}`}>
@@ -725,10 +751,10 @@ export class ConfigManifestSettings<
 						})}>
 						<th className="settings-studio-custom-config-table__name c2">{item.name}</th>
 						<td className="settings-studio-custom-config-table__value c3">
-							{this.renderConfigValue(item, configItem ? configItem.value : undefined)}
+							{this.renderConfigValue(item, configItem)}
 						</td>
 						<td className="settings-studio-custom-config-table__actions table-item-actions c3">
-							{configItem ? (
+							{configItem !== undefined ? (
 								<React.Fragment>
 									<button className="action-btn" onClick={(e) => this.editItem(item)}>
 										<FontAwesomeIcon icon={faPencilAlt} />
@@ -757,7 +783,7 @@ export class ConfigManifestSettings<
 									<div className="mod mvs mhs">
 										<label className="field">{item.description}</label>
 									</div>
-									<div className="mod mvs mhs">{this.renderEditableArea(item, valIndex)}</div>
+									<div className="mod mvs mhs">{this.renderEditableArea(item, item.id)}</div>
 								</div>
 								<div className="mod alright">
 									<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(item)}>
@@ -773,12 +799,11 @@ export class ConfigManifestSettings<
 	}
 
 	getAddOptions() {
-		let existingIds: string[] = []
 		let addOptions: { value: string; name: string }[] = []
-		existingIds = this.getObjectConfig().map((c) => c._id)
+		const config = this.getObjectConfig()
 		addOptions = this.props.manifest.map((c) => ({ value: c.id, name: c.name }))
 
-		return addOptions.filter((o) => existingIds.indexOf(o.value) === -1)
+		return addOptions.filter((o) => objectPathGet(config, o.value) === undefined)
 	}
 
 	render() {

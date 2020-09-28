@@ -58,8 +58,8 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	static getDerivedStateFromProps(props: IProps): IState {
 		let subItems: Array<SplitSubItem> = []
 		const splitContent = props.piece.instance.piece.content as SplitsContent | undefined
-		if (splitContent) {
-			subItems = _.map(splitContent.boxSourceConfiguration, (item, index) => {
+		if (splitContent && splitContent.boxSourceConfiguration) {
+			subItems = splitContent.boxSourceConfiguration.map((item, index) => {
 				return literal<SplitSubItem>({
 					_id: item.studioLabel + '_' + index,
 					type: item.type,

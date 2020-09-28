@@ -1,7 +1,8 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PieceLifespan } from 'tv-automation-sofie-blueprints-integration'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { Studio } from '../../../lib/collections/Studios'
@@ -21,15 +22,18 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
-import { isMaintainingFocus, scrollToSegment, HEADER_HEIGHT } from '../../lib/viewPort'
+import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
+import { RundownId } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
+import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
+import { Tracker } from 'meteor/tracker'
+import { Meteor } from 'meteor/meteor'
 
 export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
@@ -60,7 +64,10 @@ export interface PieceUi extends PieceExtended {
 }
 interface IProps {
 	id: string
+	rundownId: RundownId
 	segmentId: SegmentId
+	segmentsIdsBefore: Set<SegmentId>
+	orderedAllPartIds: PartId[]
 	studio: Studio
 	showStyleBase: ShowStyleBase
 	playlist: RundownPlaylist
@@ -103,11 +110,7 @@ interface ITrackedProps {
 }
 export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITrackedProps>(
 	(props: IProps) => {
-		// console.log('PeripheralDevices',PeripheralDevices);
-		// console.log('PeripheralDevices.find({}).fetch()',PeripheralDevices.find({}, { sort: { created: -1 } }).fetch());
 		const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
-
-		// console.log(`${props.segmentId}: running tracker`)
 
 		// We need the segment to do anything
 		if (!segment) {
@@ -127,9 +130,15 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		let o = RundownUtils.getResolvedSegment(props.showStyleBase, props.playlist, segment)
+		let o = RundownUtils.getResolvedSegment(
+			props.showStyleBase,
+			props.playlist,
+			segment,
+			props.segmentsIdsBefore,
+			props.orderedAllPartIds
+		)
 		let notes: Array<SegmentNote> = []
-		_.each(o.parts, (part) => {
+		o.parts.forEach((part) => {
 			notes = notes.concat(
 				part.instance.part.getMinimumReactiveNotes(props.studio, props.showStyleBase),
 				part.instance.part.getInvalidReasonNotes()
@@ -192,11 +201,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				) ||
 					data.parts.find(
 						(i) =>
-							i.instance._id === props.playlist.currentPartInstanceId ||
-							i.instance._id === nextProps.playlist.currentPartInstanceId
-					) ||
-					data.parts.find(
-						(i) =>
 							i.instance._id === props.playlist.nextPartInstanceId ||
 							i.instance._id === nextProps.playlist.nextPartInstanceId
 					))) ||
@@ -210,8 +214,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		if (
 			typeof props.studio !== typeof nextProps.studio ||
 			!_.isEqual(props.studio.settings, nextProps.studio.settings) ||
-			!_.isEqual(props.studio.config, nextProps.studio.config) ||
-			!_.isEqual(props.showStyleBase.config, nextProps.showStyleBase.config) ||
 			!_.isEqual(props.showStyleBase.sourceLayers, nextProps.showStyleBase.sourceLayers) ||
 			!_.isEqual(props.showStyleBase.outputLayers, nextProps.showStyleBase.outputLayers)
 		) {
@@ -234,6 +236,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		intersectionObserver: IntersectionObserver | undefined
 		mountedTime: number
 		playbackSimulationPercentage: number = 0
+
+		private pastInfinitesComp: Tracker.Computation | undefined
 
 		constructor(props: IProps & ITrackedProps) {
 			super(props)
@@ -265,38 +269,60 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		componentDidMount() {
-			this.subscribe(PubSub.segments, {
-				_id: this.props.segmentId,
-			})
-			this.subscribe(PubSub.parts, {
-				segmentId: this.props.segmentId,
-			})
-			this.subscribe(PubSub.partInstances, {
-				segmentId: this.props.segmentId,
-				reset: {
-					$ne: true,
-				},
-			})
 			this.autorun(() => {
-				const partIds = Parts.find({
-					segmentId: this.props.segmentId,
-				}).map((part) => part._id)
-				const partInstanceIds = PartInstances.find({
-					segmentId: this.props.segmentId,
-				}).map((instance) => instance._id)
+				const partIds = Parts.find(
+					{
+						segmentId: this.props.segmentId,
+					},
+					{
+						fields: {
+							_id: 1,
+						},
+					}
+				).map((part) => part._id)
+
 				this.subscribe(PubSub.pieces, {
-					partId: {
+					startRundownId: this.props.rundownId,
+					startPartId: {
 						$in: partIds,
 					},
 				})
-				this.subscribe(PubSub.pieceInstances, {
-					partInstanceId: {
-						$in: partInstanceIds,
+			})
+			this.autorun(() => {
+				const partInstanceIds = PartInstances.find(
+					{
+						segmentId: this.props.segmentId,
+						reset: {
+							$ne: true,
+						},
 					},
-					reset: {
-						$ne: true,
+					{
+						fields: {
+							_id: 1,
+							part: 1,
+						},
+					}
+				).map((instance) => instance._id)
+				this.subscribeToPieceInstances(partInstanceIds)
+			})
+			// past inifnites subscription
+			this.pastInfinitesComp = this.autorun(() => {
+				const segment = Segments.findOne(this.props.segmentId, {
+					fields: {
+						rundownId: 1,
+						_rank: 1,
 					},
 				})
+				segment &&
+					this.subscribe(PubSub.pieces, {
+						startRundownId: segment.rundownId,
+						startSegmentId: { $in: Array.from(this.props.segmentsIdsBefore.values()) },
+						invalid: {
+							$ne: true,
+						},
+						// same rundown, and previous segment
+						lifespan: { $in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange] },
+					})
 			})
 			SpeechSynthesiser.init()
 
@@ -349,8 +375,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 				if (this.props.segmentui && this.props.segmentui.unsynced) {
 					const { t } = this.props
+					// TODO: This doesn't seem right? componentDidUpdate can be triggered in a lot of different ways.
+					// What is this supposed to do?
 					doUserAction(t, undefined, UserAction.RESYNC_SEGMENT, (e) =>
-						MeteorCall.userAction.resyncSegment('', this.props.segmentui!._id)
+						MeteorCall.userAction.resyncSegment('', this.props.segmentui!.rundownId, this.props.segmentui!._id)
 					)
 				}
 
@@ -429,6 +457,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (this.props.followLiveSegments && !prevProps.followLiveSegments) {
 				this.onFollowLiveLine(true, {})
 			}
+
+			if (this.pastInfinitesComp && !equalSets(this.props.segmentsIdsBefore, prevProps.segmentsIdsBefore)) {
+				this.pastInfinitesComp.invalidate()
+			}
 		}
 
 		componentWillUnmount() {
@@ -436,8 +468,56 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (this.intersectionObserver && this.props.isLiveSegment && this.props.followLiveSegments) {
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 			}
+			if (this.partInstanceSub !== undefined) {
+				const sub = this.partInstanceSub
+				setTimeout(() => {
+					sub.stop()
+				}, 500)
+			}
 			this.stopLive()
 			window.removeEventListener(RundownViewEvents.rewindsegments, this.onRewindSegment)
+		}
+
+		private partInstanceSub: Meteor.SubscriptionHandle | undefined
+		private partInstanceSubPartInstanceIds: PartInstanceId[] | undefined
+		private subscribeToPieceInstancesInner = (partInstanceIds: PartInstanceId[]) => {
+			this.partInstanceSubDebounce = undefined
+			if (
+				this.partInstanceSubPartInstanceIds &&
+				equivalentArrays(this.partInstanceSubPartInstanceIds, partInstanceIds)
+			) {
+				// old subscription is equivalent to the new one, don't do anything
+				return
+			}
+			// avoid having the subscription automatically scrapped by a re-run of the autorun
+			Tracker.nonreactive(() => {
+				if (this.partInstanceSub !== undefined) {
+					this.partInstanceSub.stop()
+				}
+				// we handle this subscription manually
+				this.partInstanceSub = Meteor.subscribe(PubSub.pieceInstances, {
+					rundownId: this.props.rundownId,
+					partInstanceId: {
+						$in: partInstanceIds,
+					},
+					reset: {
+						$ne: true,
+					},
+				})
+				this.partInstanceSubPartInstanceIds = partInstanceIds
+			})
+		}
+		private partInstanceSubDebounce: NodeJS.Timeout | undefined
+		private subscribeToPieceInstances(partInstanceIds: PartInstanceId[]) {
+			// run the first subscribe immediately, to avoid unneccessary wait time during bootup
+			if (this.partInstanceSub === undefined) {
+				this.subscribeToPieceInstancesInner(partInstanceIds)
+			} else {
+				if (this.partInstanceSubDebounce !== undefined) {
+					clearTimeout(this.partInstanceSubDebounce)
+				}
+				this.partInstanceSubDebounce = setTimeout(this.subscribeToPieceInstancesInner, 40, partInstanceIds)
+			}
 		}
 
 		onCollapseOutputToggle = (outputLayer: IOutputLayerUi) => {
@@ -525,13 +605,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						: undefined
 				if (currentLivePart.taken && lastTake && lastTake + SIMULATED_PLAYBACK_HARD_MARGIN > e.detail.currentTime) {
 					isExpectedToPlay = true
-					// console.log('Simulated playback')
 
 					// If we are between the SOFT_MARGIN and HARD_MARGIN and the take timing has already flowed through
 					if (lastStartedPlayback && lastTake + SIMULATED_PLAYBACK_SOFT_MARGIN < e.detail.currentTime) {
-						// console.log('Within crossfade range', virtualStartedPlayback, lastStartedPlayback, simulationPercentage)
 						if (lastTake < lastStartedPlayback && simulationPercentage < 1) {
-							// console.log(simulationPercentage)
 							virtualStartedPlayback =
 								simulationPercentage * lastStartedPlayback + (1 - simulationPercentage) * lastTake
 						}
@@ -547,24 +624,18 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 					this.playbackSimulationPercentage = Math.min(simulationPercentage + SIMULATED_PLAYBACK_CROSSFADE_STEP, 1)
 				}
 
-				this.setState(
-					_.extend(
-						{
-							livePosition: newLivePosition,
-						},
-						this.state.followLiveLine
-							? {
-									scrollLeft: Math.max(newLivePosition - this.props.liveLineHistorySize / this.props.timeScale, 0),
-							  }
-							: null
-					)
-				)
+				//@ts-ignore
+				this.setState({
+					livePosition: newLivePosition,
+					scrollLeft: this.state.followLiveLine
+						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.props.timeScale, 0)
+						: this.state.scrollLeft,
+				})
 			}
 		}
 
 		visibleChanged = (entries: IntersectionObserverEntry[]) => {
 			if (entries[0].intersectionRatio < 0.99 && !isMaintainingFocus() && Date.now() - this.mountedTime > 2000) {
-				// console.log("onSegmentScroll", entries[0].intersectionRatio, isMaintainingFocus())
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 				this.isVisible = false
 			} else {
@@ -580,7 +651,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				// As of Chrome 76, IntersectionObserver rootMargin works in screen pixels when root
 				// is viewport. This seems like an implementation bug and IntersectionObserver is
 				// an Experimental Feature in Chrome, so this might change in the future.
-				rootMargin: `-${HEADER_HEIGHT * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
+				rootMargin: `-${getHeaderHeight() * zoomFactor}px 0px -${20 * zoomFactor}px 0px`,
 				threshold: [0, 0.25, 0.5, 0.75, 0.98],
 			})
 			this.intersectionObserver.observe(this.timelineDiv.parentElement!.parentElement!)
@@ -610,18 +681,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		onShowEntireSegment = (event: any) => {
-			this.setState(
-				_.extend(
-					{
-						scrollLeft: 0,
-					},
-					this.props.isLiveSegment
-						? {
-								followLiveLine: false,
-						  }
-						: {}
-				)
-			)
+			this.setState({
+				scrollLeft: 0,
+				followLiveLine: this.props.isLiveSegment ? false : this.state.followLiveLine,
+			})
 			if (typeof this.props.onTimeScaleChange === 'function') {
 				this.props.onTimeScaleChange(
 					(getElementWidth(this.timelineDiv) || 1) /

@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { MeteorPromiseCall } from '../lib'
+import { MeteorPromiseCall, ProtectedStringProperties } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
@@ -15,7 +15,12 @@ import { NewTestToolsAPI, TestToolsAPIMethods } from './testTools'
 import { NewUserActionAPI, UserActionAPIMethods } from './userActions'
 import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewManualPlayoutAPI, ManualPlayoutAPIMethods } from './manualPlayout'
+import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
+import { NewUserAPI, UserAPIMethods } from './user'
+import { SystemAPIMethods, NewSystemAPI } from './system'
+import { UserId } from '../typings/meteor'
 import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
+import { Meteor } from 'meteor/meteor'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -36,8 +41,11 @@ interface IMeteorCall {
 	studio: NewStudiosAPI
 	systemStatus: NewSystemStatusAPI
 	testTools: NewTestToolsAPI
+	user: NewUserAPI
 	userAction: NewUserActionAPI
+	organization: NewOrganizationAPI
 	rundownNotifications: RundownNotificationsAPI
+	system: NewSystemAPI
 }
 export const MeteorCall: IMeteorCall = {
 	blueprint: makeMethods(BlueprintAPIMethods),
@@ -54,8 +62,11 @@ export const MeteorCall: IMeteorCall = {
 	studio: makeMethods(StudiosAPIMethods),
 	systemStatus: makeMethods(SystemStatusAPIMethods),
 	testTools: makeMethods(TestToolsAPIMethods),
+	user: makeMethods(UserAPIMethods),
 	userAction: makeMethods(UserActionAPIMethods),
+	organization: makeMethods(OrganizationAPIMethods),
 	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
+	system: makeMethods(SystemAPIMethods),
 }
 function makeMethods(methods: object): any {
 	const o = {}
@@ -64,11 +75,27 @@ function makeMethods(methods: object): any {
 	})
 	return o
 }
-export interface MethodContext {
-	userId: string | null
-	connection: {
-		clientAddress: string
-	} | null
+export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
+	userId: UserId | null
+}
+
+/** Abstarct class to be used when defining Mehod-classes */
+export abstract class MethodContextAPI implements MethodContext {
+	public userId: UserId | null
+	public isSimulation: boolean
+	public setUserId(userId: string): void {
+		throw new Meteor.Error(
+			500,
+			`This shoulc never be called, there's something wrong in with 'this' in the calling method`
+		)
+	}
+	public unblock(): void {
+		throw new Meteor.Error(
+			500,
+			`This shoulc never be called, there's something wrong in with 'this' in the calling method`
+		)
+	}
+	public connection: Meteor.Connection | null
 }
 /** Convenience-method to call a userAction method old-Meteor.call-style */
 export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]) {

@@ -37,8 +37,6 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 					uploadFileKey: Date.now(),
 				})
 
-				console.log(e2)
-
 				let uploadFileContents = (e2.target as any).result
 
 				fetchFrom(`/devices/${this.props.device._id}/uploadCredentials`, {
@@ -104,7 +102,6 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 		}
 		onUpdatedAccessToken(authToken: string) {
 			authToken = (authToken + '').trim()
-			console.log(authToken)
 			if (authToken && authToken.length > 5) {
 				PeripheralDeviceAPI.executeFunction(
 					this.props.device._id,

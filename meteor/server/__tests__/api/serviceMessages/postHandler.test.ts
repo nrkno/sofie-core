@@ -1,5 +1,5 @@
 import { postHandler, BodyParsingIncomingMessage } from '../../../api/serviceMessages/postHandler'
-import { Criticality, ServiceMessage } from '../../../../lib/collections/CoreSystem'
+import { Criticality, ServiceMessage, ExternalServiceMessage } from '../../../../lib/collections/CoreSystem'
 import { IncomingMessage, ServerResponse } from 'http'
 import { Socket } from 'net'
 import * as serviceMessagesApi from '../../../api/serviceMessages/serviceMessagesApi'
@@ -12,7 +12,7 @@ jest.mock('../../../api/serviceMessages/serviceMessagesApi', () => {
 	}
 })
 
-const validInput: ServiceMessage = {
+const validInput: ExternalServiceMessage = {
 	id: '294a7079efdce49fb553e52d9e352e24',
 	criticality: Criticality.CRITICAL,
 	message: 'Something is wrong that should have been right',
@@ -313,7 +313,7 @@ describe('ServiceMessages API POST endpoint', () => {
 		})
 
 		it('should call API writeMessage with the given timestamp', () => {
-			const expected = new Date(validInput.timestamp)
+			const expected = new Date(validInput.timestamp).getTime()
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
 			postHandler({}, mockRequest, mockResponse)

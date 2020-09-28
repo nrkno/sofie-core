@@ -9,6 +9,7 @@ import { SegmentId } from './Segments'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
 import { TimelineObjId } from './Timeline'
+import { registerIndex } from '../database'
 
 export type AsRunLogEventBase = Omit<
 	ProtectedStringProperties<
@@ -41,11 +42,9 @@ export const AsRunLog: TransformedCollection<AsRunLogEvent, AsRunLogEvent> = cre
 )
 registerCollection('AsRunLog', AsRunLog)
 
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		AsRunLog._ensureIndex({
-			studioId: 1,
-			rundownId: 1,
-		})
-	}
+registerIndex(AsRunLog, {
+	rundownId: 1,
+})
+registerIndex(AsRunLog, {
+	timestamp: 1,
 })

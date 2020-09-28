@@ -10,6 +10,7 @@ import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { AsRunLog } from '../lib/collections/AsRunLog'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
+import { CASPARCG_RESTART_TIME } from '../lib/constants'
 
 let lowPrioFcn = (fcn: (...args: any[]) => any, ...args: any[]) => {
 	// Do it at a random time in the future:
@@ -77,7 +78,7 @@ Meteor.startup(() => {
 
 			// Remove old entries in Snapshots:
 			const oldSnapshotsCount: number = Snapshots.find({
-				timestamp: { $lt: cleanLimitTime },
+				created: { $lt: cleanLimitTime },
 			}).count()
 			if (oldSnapshotsCount > 0) {
 				logger.info(`Cronjob: Will remove ${oldSnapshotsCount} entries from Snapshots`)
@@ -104,7 +105,7 @@ Meteor.startup(() => {
 
 						ps.push(
 							new Promise((resolve, reject) => {
-								PeripheralDeviceAPI.executeFunction(
+								PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 									subDevice._id,
 									(err) => {
 										if (err) {
@@ -127,6 +128,7 @@ Meteor.startup(() => {
 											resolve()
 										}
 									},
+									CASPARCG_RESTART_TIME,
 									'restartCasparCG'
 								)
 							})

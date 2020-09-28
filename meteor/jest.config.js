@@ -5,7 +5,6 @@ const commonConfig = {
 	globals: {
 		'ts-jest': {
 			tsConfig: 'tsconfig.json',
-			diagnostics: false,
 			babelConfig: {
 				plugins: [
 					'@babel/plugin-transform-modules-commonjs',

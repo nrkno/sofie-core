@@ -2,9 +2,9 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
-import { MethodContext } from '../lib/api/methods'
+import { MethodContext, MethodContextAPI } from '../lib/api/methods'
 
-type MeteorMethod = (this: Meteor.MethodThisType, ...args: any[]) => any
+type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 
 interface Methods {
 	[method: string]: MeteorMethod
@@ -12,7 +12,10 @@ interface Methods {
 export interface MethodsInner {
 	[method: string]: { wrapped: MeteorMethod; original: MeteorMethod }
 }
+/** All (non-secret) methods */
 export const MeteorMethodSignatures: { [key: string]: string[] } = {}
+/** All methods */
+export const AllMeteorMethods: string[] = []
 
 let runningMethods: {
 	[methodId: string]: {
@@ -34,14 +37,18 @@ function getAllClassMethods(myClass: any): string[] {
 
 export function registerClassToMeteorMethods(
 	methodEnum: any,
-	orgClass: any,
+	orgClass: typeof MethodContextAPI,
 	secret?: boolean,
 	wrapper?: (methodContext: MethodContext, methodName: string, args: any[], fcn: Function) => any
 ): void {
 	const methods: MethodsInner = {}
 	_.each(getAllClassMethods(orgClass), (classMethodName) => {
 		const enumValue = methodEnum[classMethodName]
-		if (!enumValue) throw new Meteor.Error(500, `registerClassToMeteorMethods: Unknown method "${classMethodName}"`)
+		if (!enumValue)
+			throw new Meteor.Error(
+				500,
+				`registerClassToMeteorMethods: The method "${classMethodName}" is not set in the enum containing methods.`
+			)
 		if (wrapper) {
 			methods[enumValue] = {
 				wrapped: function(...args: any[]) {
@@ -92,7 +99,9 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 						return result
 					}
 				} catch (err) {
-					logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
+					if (!_suppressExtraErrorLogging) {
+						logger.error(err.message || err.reason || (err.toString ? err.toString() : null) || err)
+					}
 					delete runningMethods[methodId]
 					throw err
 				}
@@ -101,8 +110,10 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 				const signature = extractFunctionSignature(m.original)
 				if (signature) MeteorMethodSignatures[methodName] = signature
 			}
+			AllMeteorMethods.push(methodName)
 		}
 	})
+	// @ts-ignore: incompatible due to userId
 	Meteor.methods(methods)
 }
 export function getRunningMethods() {
@@ -110,4 +121,8 @@ export function getRunningMethods() {
 }
 export function resetRunningMethods() {
 	runningMethods = {}
+}
+let _suppressExtraErrorLogging: boolean = true
+export function suppressExtraErrorLogging(value: boolean) {
+	_suppressExtraErrorLogging = value
 }

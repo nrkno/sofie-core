@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { logger } from './logging'
 import { getRunningMethods, resetRunningMethods } from './methods'
+import { getCoreSystem } from '../lib/collections/CoreSystem'
 
 /**
  * The performanceMonotor runs at an interval, and when run it checks that it actually ran on time.
@@ -55,21 +56,15 @@ function traceDebuggingData() {
 		debugData.connections.push(conn)
 		// named subscriptions
 
-		// console.log(_.keys(connection._meteorSession))
-		// console.log(connection._meteorSession)
-
 		let session = connection._meteorSession
 
 		if (session) {
-			// console.log(session.connectionHandle)
-
 			// if (session.clientAddress) conn.clientAddress = session.clientAddress()
 			if (session.connectionHandle) conn.clientAddress = session.connectionHandle.clientAddress
 
 			_.each(session._namedSubs, (sub: any) => {
 				debugData.namedSubscriptionCount++
 				// @ts-ignore
-				// console.log(sub._name)
 				if (!debugData.subscriptions[sub._name]) {
 					debugData.subscriptions[sub._name] = {
 						count: 0,
@@ -172,7 +167,7 @@ function getStatistics() {
 }
 
 let lastTime = 0
-let monitorPerformance = () => {
+let monitorBlockedThread = () => {
 	if (lastTime) {
 		let timeSinceLast = Date.now() - lastTime
 
@@ -199,11 +194,13 @@ let monitorPerformance = () => {
 	}
 	lastTime = Date.now()
 	Meteor.setTimeout(() => {
-		monitorPerformance()
+		monitorBlockedThread()
 	}, PERMORMANCE_CHECK_INTERVAL)
 }
 Meteor.startup(() => {
-	Meteor.setTimeout(() => {
-		monitorPerformance()
-	}, 5000)
+	if (getCoreSystem()?.enableMonitorBlockedThread) {
+		Meteor.setTimeout(() => {
+			monitorBlockedThread()
+		}, 5000)
+	}
 })

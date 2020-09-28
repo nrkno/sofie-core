@@ -39,7 +39,6 @@ class MeteorDataManager {
 	}
 
 	static runUpdates() {
-		// console.log(`running ${globalTrackerQueue.length} queued updates`)
 		clearTimeout(globalTrackerTimeout)
 		globalTrackerTimeout = undefined
 		globalTrackerTimestamp = undefined
@@ -252,7 +251,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 
 	return (WrappedComponent) => {
 		// return ''
-		const HOC = class extends ReactMeteorComponentWrapper<IProps, IState> {
+		const HOC = class HOC extends ReactMeteorComponentWrapper<IProps, IState> {
 			_queueTrackerUpdates = expandedOptions.queueTrackerUpdates
 
 			getMeteorData() {

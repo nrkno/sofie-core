@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { testInFiber } from '../../__mocks__/helpers/jest'
+import { testInFiber, testInFiberOnly } from '../../__mocks__/helpers/jest'
 import { setLoggerLevel } from '../../server/api/logger'
 import {
 	getHash,
@@ -20,18 +20,21 @@ import {
 	objectPathGet,
 	objectPathSet,
 	stringifyObjects,
-	rateLimit,
-	rateLimitAndDoItLater,
-	rateLimitIgnore,
-	getRank,
+	// rateLimit,
+	// rateLimitAndDoItLater,
+	// rateLimitIgnore,
+	// getRank,
 	partial,
 	partialExceptId,
 	escapeHtml,
 	protectString,
 	mongoFindOptions,
 	ProtectedString,
+	SaveIntoDbOptions,
+	equalSets,
+	equivalentArrays,
 } from '../lib'
-import { Timeline, TimelineObjType, TimelineObjGeneric } from '../collections/Timeline'
+import { Timeline, TimelineObjType, TimelineObjGeneric, TimelineComplete } from '../collections/Timeline'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
 import { FindOptions } from '../typings/meteor'
 
@@ -73,42 +76,57 @@ describe('lib/lib', () => {
 		expect(getCurrentTime() / 1000).toBeCloseTo((Date.now() - 5439) / 1000, 1)
 	})
 	testInFiber('saveIntoDb', () => {
-		Timeline.insert({
-			_id: protectString('abc'),
-			id: 'abc',
-			enable: {
-				start: 0,
+		const mystudioObjs: Array<TimelineObjGeneric> = [
+			{
+				_id: protectString('abc'),
+				id: 'abc',
+				enable: {
+					start: 0,
+				},
+				layer: 'L1',
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
+				objectType: TimelineObjType.MANUAL,
+				studioId: protectString('myStudio'),
+				classes: ['abc'], // to be removed
 			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
-			classes: ['abc'], // to be removed
-		})
-		Timeline.insert({
-			_id: protectString('abc2'),
-			id: 'abc2',
-			enable: {
-				start: 0,
+			{
+				_id: protectString('abc2'),
+				id: 'abc2',
+				enable: {
+					start: 0,
+				},
+				layer: 'L1',
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
+				objectType: TimelineObjType.MANUAL,
+				studioId: protectString('myStudio'),
 			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio'),
-		})
+		]
 		Timeline.insert({
-			_id: protectString('abc10'),
-			id: 'abc10',
-			enable: {
-				start: 0,
-			},
-			layer: 'L1',
-			content: { deviceType: TSR.DeviceType.ABSTRACT },
-			objectType: TimelineObjType.MANUAL,
-			studioId: protectString('myStudio2'),
+			_id: protectString('myStudio'),
+			updated: getCurrentTime(),
+			timeline: mystudioObjs,
 		})
 
-		const options = {
+		const mystudio2Objs: Array<TimelineObjGeneric> = [
+			{
+				_id: protectString('abc10'),
+				id: 'abc10',
+				enable: {
+					start: 0,
+				},
+				layer: 'L1',
+				content: { deviceType: TSR.DeviceType.ABSTRACT },
+				objectType: TimelineObjType.MANUAL,
+				studioId: protectString('myStudio2'),
+			},
+		]
+		Timeline.insert({
+			_id: protectString('myStudio2'),
+			updated: getCurrentTime(),
+			timeline: mystudio2Objs,
+		})
+
+		const options: SaveIntoDbOptions<any, any> = {
 			beforeInsert: jest.fn((o) => o),
 			beforeUpdate: jest.fn((o, pre) => o),
 			beforeRemove: jest.fn((o) => o),
@@ -116,82 +134,85 @@ describe('lib/lib', () => {
 			// insert: jest.fn((o) => o),
 			// update: jest.fn((id, o,) => { return undefined }),
 			// remove: jest.fn((o) => { return undefined }),
-			afterInsert: jest.fn((o) => {
-				return undefined
-			}),
-			afterUpdate: jest.fn((o) => {
-				return undefined
-			}),
-			afterRemove: jest.fn((o) => {
-				return undefined
-			}),
+			// afterInsert: jest.fn((o) => {
+			// 	return undefined
+			// }),
+			// afterUpdate: jest.fn((o) => {
+			// 	return undefined
+			// }),
+			// afterRemove: jest.fn((o) => {
+			// 	return undefined
+			// }),
 		}
 
 		const changes = saveIntoDb(
 			Timeline,
 			{
-				studioId: protectString('myStudio'),
+				_id: protectString('myStudio'),
 			},
 			[
 				{
-					_id: protectString('abc'),
-					id: 'abc',
-					enable: {
-						start: 0,
-					},
-					layer: 'L2', // changed property
-					content: { deviceType: TSR.DeviceType.ABSTRACT },
-					objectType: TimelineObjType.MANUAL,
-					studioId: protectString('myStudio'),
+					_id: protectString('myStudio'),
+					timeline: [
+						{
+							_id: protectString('abc'),
+							id: 'abc',
+							enable: {
+								start: 0,
+							},
+							layer: 'L2', // changed property
+							content: { deviceType: TSR.DeviceType.ABSTRACT },
+							objectType: TimelineObjType.MANUAL,
+							studioId: protectString('myStudio'),
+						},
+						{
+							// insert object
+							_id: protectString('abc3'),
+							id: 'abc3',
+							enable: {
+								start: 0,
+							},
+							layer: 'L1',
+							content: { deviceType: TSR.DeviceType.ABSTRACT },
+							objectType: TimelineObjType.MANUAL,
+							studioId: protectString('myStudio'),
+						}, // remove abc2
+					],
 				},
-				{
-					// insert object
-					_id: protectString('abc3'),
-					id: 'abc3',
-					enable: {
-						start: 0,
-					},
-					layer: 'L1',
-					content: { deviceType: TSR.DeviceType.ABSTRACT },
-					objectType: TimelineObjType.MANUAL,
-					studioId: protectString('myStudio'),
-				},
-				// remove abc2
 			],
 			options
 		)
 
 		expect(
 			Timeline.find({
-				studioId: protectString('myStudio'),
+				_id: protectString('myStudio'),
 			}).count()
-		).toEqual(2)
-		const abc = Timeline.findOne(protectString('abc')) as TimelineObjGeneric
+		).toEqual(1)
+		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
 		expect(abc).toBeTruthy()
-		expect(abc.classes).toEqual(undefined)
-		expect(abc.layer).toEqual('L2')
+		expect(abc.timeline).toHaveLength(2)
+		expect(abc.timeline[0].classes).toEqual(undefined)
+		expect(abc.timeline[0].layer).toEqual('L2')
 
 		expect(
 			Timeline.find({
-				studioId: protectString('myStudio2'),
+				_id: protectString('myStudio2'),
 			}).count()
 		).toEqual(1)
 
-		expect(options.beforeInsert).toHaveBeenCalledTimes(1)
+		// expect(options.beforeInsert).toHaveBeenCalledTimes(1) - overwrites with single timeline object
 		expect(options.beforeUpdate).toHaveBeenCalledTimes(1)
-		expect(options.beforeRemove).toHaveBeenCalledTimes(1)
+		// expect(options.beforeRemove).toHaveBeenCalledTimes(1) - overwrites with single timeline object
 		expect(options.beforeDiff).toHaveBeenCalledTimes(1)
 		// expect(options.insert).toHaveBeenCalledTimes(1)
 		// expect(options.update).toHaveBeenCalledTimes(1)
 		// expect(options.remove).toHaveBeenCalledTimes(1)
-		expect(options.afterInsert).toHaveBeenCalledTimes(1)
-		expect(options.afterUpdate).toHaveBeenCalledTimes(1)
-		expect(options.afterRemove).toHaveBeenCalledTimes(1)
+		// expect(options.afterInsert).toHaveBeenCalledTimes(1)
+		// expect(options.afterUpdate).toHaveBeenCalledTimes(1)
+		// expect(options.afterRemove).toHaveBeenCalledTimes(1)
 
 		expect(changes).toMatchObject({
-			added: 1,
 			updated: 1,
-			removed: 1,
 		})
 		expect(
 			sumChanges(
@@ -203,9 +224,9 @@ describe('lib/lib', () => {
 				changes
 			)
 		).toMatchObject({
-			added: 2,
+			added: 1,
 			updated: 3,
-			removed: 4,
+			removed: 3,
 		})
 	})
 	testInFiber('anythingChanged', () => {
@@ -364,35 +385,35 @@ describe('lib/lib', () => {
 		}
 		expect(stringifyObjects(o)).toEqual(stringifyObjects(o))
 	})
-	testInFiber('rateLimit', () => {
-		const f0 = jest.fn()
-		const f1 = jest.fn()
-		rateLimit('test', f0, f1, 500)
-		rateLimit('test', f0, f1, 500)
-		rateLimit('test', f0, f1, 500)
-		expect(f0).toHaveBeenCalledTimes(1)
-		expect(f1).toHaveBeenCalledTimes(2)
-	})
-	testInFiber('rateLimitAndDoItLater', () => {
-		const f0 = jest.fn()
-		rateLimitAndDoItLater('test', f0, 10)
-		rateLimitAndDoItLater('test', f0, 10)
-		rateLimitAndDoItLater('test', f0, 10)
-		rateLimitAndDoItLater('test', f0, 10)
-		expect(f0).toHaveBeenCalledTimes(1)
-		waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
-		expect(f0).toHaveBeenCalledTimes(4)
-	})
-	testInFiber('rateLimitIgnore', () => {
-		const f0 = jest.fn()
-		rateLimitIgnore('test', f0, 10)
-		rateLimitIgnore('test', f0, 10)
-		rateLimitIgnore('test', f0, 10)
-		rateLimitIgnore('test', f0, 10)
-		expect(f0).toHaveBeenCalledTimes(1)
-		waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
-		expect(f0).toHaveBeenCalledTimes(2)
-	})
+	// testInFiber('rateLimit', () => {
+	// 	const f0 = jest.fn()
+	// 	const f1 = jest.fn()
+	// 	rateLimit('test', f0, f1, 500)
+	// 	rateLimit('test', f0, f1, 500)
+	// 	rateLimit('test', f0, f1, 500)
+	// 	expect(f0).toHaveBeenCalledTimes(1)
+	// 	expect(f1).toHaveBeenCalledTimes(2)
+	// })
+	// testInFiber('rateLimitAndDoItLater', () => {
+	// 	const f0 = jest.fn()
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	rateLimitAndDoItLater('test', f0, 10)
+	// 	expect(f0).toHaveBeenCalledTimes(1)
+	// 	waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
+	// 	expect(f0).toHaveBeenCalledTimes(4)
+	// })
+	// testInFiber('rateLimitIgnore', () => {
+	// 	const f0 = jest.fn()
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	rateLimitIgnore('test', f0, 10)
+	// 	expect(f0).toHaveBeenCalledTimes(1)
+	// 	waitForPromise(new Promise((resolve) => setTimeout(resolve, 100)))
+	// 	expect(f0).toHaveBeenCalledTimes(2)
+	// })
 	testInFiber('mongowhere', () => {
 		setLoggerLevel('debug')
 
@@ -447,43 +468,43 @@ describe('lib/lib', () => {
 		expect(MyCollection.find({ rank: { $lt: 3 } }).fetch()).toHaveLength(3)
 		expect(MyCollection.find({ rank: { $lte: 3 } }).fetch()).toHaveLength(4)
 	})
-	testInFiber('getRank', () => {
-		const objs: { _rank: number }[] = [
-			{ _rank: 0 },
-			{ _rank: 10 },
-			{ _rank: 20 },
-			{ _rank: 21 },
-			{ _rank: 22 },
-			{ _rank: 23 },
-		]
+	// testInFiber('getRank', () => {
+	// 	const objs: { _rank: number }[] = [
+	// 		{ _rank: 0 },
+	// 		{ _rank: 10 },
+	// 		{ _rank: 20 },
+	// 		{ _rank: 21 },
+	// 		{ _rank: 22 },
+	// 		{ _rank: 23 },
+	// 	]
 
-		// First:
-		expect(getRank(null, objs[0])).toEqual(-0.5)
-		// Insert two:
-		expect(getRank(null, objs[0], 0, 2)).toEqual(-0.6666666666666667)
-		expect(getRank(null, objs[0], 1, 2)).toEqual(-0.33333333333333337)
+	// 	// First:
+	// 	expect(getRank(null, objs[0])).toEqual(-0.5)
+	// 	// Insert two:
+	// 	expect(getRank(null, objs[0], 0, 2)).toEqual(-0.6666666666666667)
+	// 	expect(getRank(null, objs[0], 1, 2)).toEqual(-0.33333333333333337)
 
-		// Center:
-		expect(getRank(objs[1], objs[2])).toEqual(15)
-		// Insert three:
-		expect(getRank(objs[1], objs[2], 0, 3)).toEqual(12.5)
-		expect(getRank(objs[1], objs[2], 1, 3)).toEqual(15)
-		expect(getRank(objs[1], objs[2], 2, 3)).toEqual(17.5)
+	// 	// Center:
+	// 	expect(getRank(objs[1], objs[2])).toEqual(15)
+	// 	// Insert three:
+	// 	expect(getRank(objs[1], objs[2], 0, 3)).toEqual(12.5)
+	// 	expect(getRank(objs[1], objs[2], 1, 3)).toEqual(15)
+	// 	expect(getRank(objs[1], objs[2], 2, 3)).toEqual(17.5)
 
-		// Last:
-		expect(getRank(objs[5], undefined)).toEqual(23.5)
-		// Insert three:
-		expect(getRank(objs[5], undefined, 0, 3)).toEqual(23.25)
-		expect(getRank(objs[5], undefined, 1, 3)).toEqual(23.5)
-		expect(getRank(objs[5], undefined, 2, 3)).toEqual(23.75)
+	// 	// Last:
+	// 	expect(getRank(objs[5], undefined)).toEqual(23.5)
+	// 	// Insert three:
+	// 	expect(getRank(objs[5], undefined, 0, 3)).toEqual(23.25)
+	// 	expect(getRank(objs[5], undefined, 1, 3)).toEqual(23.5)
+	// 	expect(getRank(objs[5], undefined, 2, 3)).toEqual(23.75)
 
-		// Insert in empty list
-		expect(getRank(undefined, undefined)).toEqual(0.5)
+	// 	// Insert in empty list
+	// 	expect(getRank(undefined, undefined)).toEqual(0.5)
 
-		// Insert three:
-		expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
-		expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
-	})
+	// 	// Insert three:
+	// 	expect(getRank(undefined, undefined, 0, 2)).toEqual(0.3333333333333333)
+	// 	expect(getRank(undefined, undefined, 1, 2)).toEqual(0.6666666666666666)
+	// })
 	testInFiber('partial', () => {
 		const o = {
 			a: 1,
@@ -702,5 +723,13 @@ describe('lib/lib', () => {
 				},
 			])
 		})
+	})
+	testInFiber('equalSets', () => {
+		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['c', 'b', 'a']))).toBe(true)
+		expect(equalSets(new Set(['a', 'b', 'c']), new Set(['d', 'b', 'a']))).toBe(false)
+	})
+	testInFiber('equivalentArrays', () => {
+		expect(equivalentArrays(['a', 'b', 'c'], ['c', 'a', 'b'])).toBe(true)
+		expect(equivalentArrays(['a', 'b', 'c'], ['b', 'g', 'a'])).toBe(false)
 	})
 })

@@ -30,8 +30,10 @@ hwillson:stub-collections
 nerdmed:catiline
 runisland:static-assets
 dynamic-import@0.5.1
-peerlibrary:computed-field
+#peerlibrary:computed-field
 meteorhacks:picker
 ostrio:meteor-root
 underscore@1.0.10
 #mdg:validated-method
+accounts-password
+kschingiz:meteor-elastic-apm

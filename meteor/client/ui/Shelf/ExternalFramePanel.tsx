@@ -9,7 +9,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementPosition } from './DashboardPanel'
-import { literal, check, protectString } from '../../../lib/lib'
+import { literal, protectString } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
@@ -30,6 +30,7 @@ import { IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
+import { check } from '../../../lib/check'
 
 const PackageInfo = require('../../../package.json')
 
@@ -247,7 +248,7 @@ export const ExternalFramePanel = withTranslation()(
 			check(message.id, String)
 			check(message.type, String)
 
-			if (_.values(SofieExternalMessageType).indexOf(message.type) < 0) {
+			if (Object.values(SofieExternalMessageType).indexOf(message.type) < 0) {
 				console.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
 				return
 			}
@@ -409,7 +410,6 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		onDrop = (e: DragEvent) => {
-			// console.log(e)
 			if (e.dataTransfer) {
 				if (
 					e.dataTransfer

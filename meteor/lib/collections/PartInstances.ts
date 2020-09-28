@@ -11,11 +11,7 @@ import {
 	Omit,
 } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import {
-	IBlueprintPartInstance,
-	BlueprintRuntimeArguments,
-	PartEndState,
-} from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintPartInstance, PartEndState } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { DBPart, Part } from './Parts'
 import { PieceInstance, PieceInstances } from './PieceInstances'
@@ -23,12 +19,16 @@ import { Pieces } from './Pieces'
 import { RundownId } from './Rundowns'
 import { SegmentId } from './Segments'
 import { CacheForRundownPlaylist } from '../../server/DatabaseCaches'
+import { registerIndex } from '../database'
 
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
 export interface InternalIBlueprintPartInstance
 	extends ProtectedStringProperties<Omit<IBlueprintPartInstance, 'part'>, '_id' | 'segmentId'> {
-	part: ProtectedStringProperties<IBlueprintPartInstance['part'], '_id' | 'segmentId'>
+	part: ProtectedStringProperties<
+		IBlueprintPartInstance['part'],
+		'_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'
+	>
 }
 export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
@@ -37,12 +37,6 @@ export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPar
 export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	_id: PartInstanceId
 	rundownId: RundownId
-
-	/**
-	 * Whether this PartInstance is a scratch instance - the copy of the Part for the instance
-	 * is still being made and the piece instances are being created.
-	 */
-	readonly isScratch?: true
 
 	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	reset?: boolean
@@ -57,6 +51,9 @@ export interface DBPartInstance extends InternalIBlueprintPartInstance {
 	rehearsal: boolean
 
 	part: DBPart
+
+	/** The end state of the previous part, to allow for bits of this to part to be based on what the previous did/was */
+	previousPartEndState?: PartEndState
 }
 
 export class PartInstance implements DBPartInstance {
@@ -64,10 +61,12 @@ export class PartInstance implements DBPartInstance {
 	/** Whether this PartInstance is a temprorary wrapping of a Part */
 	public readonly isTemporary: boolean
 
-	// From DBPartInstance:
-	public readonly isScratch?: true
+	/** Whether this instance has been finished with and reset (to restore the original part as the primary version) */
 	public reset?: boolean
 	public takeCount: number
+	public previousPartEndState?: PartEndState
+
+	/** Temporarily track whether this PartInstance has been taken, so we can easily find and prune those which are only nexted */
 	public isTaken?: boolean
 	public rehearsal: boolean
 
@@ -100,11 +99,11 @@ export function wrapPartToTemporaryInstance(part: DBPart): PartInstance {
 	)
 }
 
-export function findPartInstanceOrWrapToTemporary(
-	partInstances: { [partId: string]: PartInstance | undefined },
+export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance>>(
+	partInstances: { [partId: string]: T | undefined },
 	part: DBPart
-): PartInstance {
-	return partInstances[unprotectString(part._id)] || wrapPartToTemporaryInstance(part)
+): T {
+	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(part) as T)
 }
 
 export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> = createMongoCollection<PartInstance>(
@@ -112,21 +111,18 @@ export const PartInstances: TransformedCollection<PartInstance, DBPartInstance> 
 	{ transform: (doc) => applyClassToDocument(PartInstance, doc) }
 )
 registerCollection('PartInstances', PartInstances)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			segmentId: 1,
-			takeCount: 1,
-		})
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			takeCount: 1,
-		})
-		PartInstances._ensureIndex({
-			rundownId: 1,
-			partId: 1,
-			takeCount: 1,
-		})
-	}
+registerIndex(PartInstances, {
+	rundownId: 1,
+	segmentId: 1,
+	takeCount: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	takeCount: 1,
+})
+registerIndex(PartInstances, {
+	rundownId: 1,
+	// @ts-ignore deep property
+	'part._id': 1,
+	takeCount: 1,
 })

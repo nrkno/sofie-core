@@ -5,10 +5,11 @@ import { TimelineObjectCoreExt, TSR } from 'tv-automation-sofie-blueprints-integ
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
-import { RundownId } from './Rundowns'
+import { StudioId, ResultingMappingRoutes } from './Studios'
 import { PartInstanceId } from './PartInstances'
 import { PieceInstanceId } from './PieceInstances'
+import { RundownPlaylistId } from './RundownPlaylists'
+import { registerIndex } from '../database'
 
 export enum TimelineContentTypeOther {
 	NOTHING = 'nothing',
@@ -17,6 +18,8 @@ export enum TimelineContentTypeOther {
 
 /** A string, identifying a TimelineObj */
 export type TimelineObjId = ProtectedString<'TimelineObjId'>
+
+export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
 
 export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 	/** Unique _id (generally obj.studioId + '_' + obj.id) */
@@ -31,7 +34,7 @@ export interface TimelineObjGeneric extends TimelineObjectCoreExt {
 
 	objectType: TimelineObjType
 
-	enable: TSR.Timeline.TimelineEnable & { setFromNow?: boolean }
+	enable: TimelineEnableExt | TimelineEnableExt[]
 
 	/** The id of the group object this object is in  */
 	inGroup?: string
@@ -45,18 +48,6 @@ export enum TimelineObjType {
 	RECORDING = 'record',
 	/** Objects controlling manual playback */
 	MANUAL = 'manual',
-	/** "Magic object", used to calculate a hash of the timeline */
-	STAT = 'stat',
-}
-export interface TimelineObjStat extends TimelineObjGeneric {
-	objectType: TimelineObjType.STAT
-	content: {
-		deviceType: TSR.DeviceType.ABSTRACT
-		type: TimelineContentTypeOther.NOTHING
-		modified: Time
-		objCount: number
-		objHash: string
-	}
 }
 export interface TimelineObjRundown extends TimelineObjGeneric {
 	objectType: TimelineObjType.RUNDOWN
@@ -68,13 +59,14 @@ export interface TimelineObjManual extends TimelineObjGeneric {
 	objectType: TimelineObjType.MANUAL
 }
 export interface TimelineObjGroup extends Omit<TimelineObjGeneric, 'content'> {
+	enable: TimelineEnableExt
 	content: {
 		type: TimelineContentTypeOther.GROUP
 	}
 	children: TimelineObjGeneric[]
 	isGroup: true
 }
-export type TimelineObjGroupRundown = TimelineObjGroup & TimelineObjRundown
+export type TimelineObjGroupRundown = TimelineObjGroup & Omit<TimelineObjRundown, 'enable'>
 
 export interface TimelineObjGroupPart extends TimelineObjGroupRundown {
 	isPartGroup: true
@@ -87,7 +79,7 @@ export interface TimelineObjPartAbstract extends TimelineObjRundown {
 		callBack: 'partPlaybackStarted'
 		callBackStopped: 'partPlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			partInstanceId: PartInstanceId
 		}
 	}
@@ -100,7 +92,7 @@ export interface TimelineObjPieceAbstract extends TimelineObjRundown {
 		callBack: 'piecePlaybackStarted'
 		callBackStopped: 'piecePlaybackStopped'
 		callBackData: {
-			rundownId: RundownId
+			rundownPlaylistId: RundownPlaylistId
 			pieceInstanceId: PieceInstanceId
 			dynamicallyInserted?: boolean
 		}
@@ -133,27 +125,49 @@ export function setTimelineId<T extends TimelineObjGeneric>(objs: Array<T>): Arr
 		return obj
 	})
 }
-export function fixTimelineId(obj: TimelineObjectCoreExt) {
-	// Temporary workaround, to handle old _id:s in the db. We might want to add a warning in this, and later remove it.
 
-	const o: any = obj
-	if (o._id && !o.id) {
-		logger.warn(`Fixed id of timelineObject with _id ${o._id}`)
-		o.id = o._id
-		delete o._id
-	}
+export function getRoutedTimeline(
+	inputTimelineObjs: TimelineObjGeneric[],
+	mappingRoutes: ResultingMappingRoutes
+): TimelineObjGeneric[] {
+	const outputTimelineObjs: TimelineObjGeneric[] = []
+
+	_.each(inputTimelineObjs, (obj) => {
+		const inputLayer = obj.layer + ''
+		const routes = mappingRoutes[inputLayer]
+		if (routes) {
+			_.each(routes, (route, i) => {
+				const routedObj: TimelineObjGeneric = {
+					...obj,
+					layer: route.outputMappedLayer,
+				}
+				if (i > 0) {
+					// If there are multiple routes we must rename the ids, so that they stay unique.
+					routedObj.id = `_${i}_${routedObj.id}`
+					routedObj._id = getTimelineId(routedObj)
+				}
+				outputTimelineObjs.push(routedObj)
+			})
+		} else {
+			// If no route is found at all, pass it through (backwards compatibility)
+			outputTimelineObjs.push(obj)
+		}
+	})
+	return outputTimelineObjs
+}
+export interface TimelineComplete {
+	_id: StudioId
+	timeline: Array<TimelineObjGeneric>
+	updated: Time
 }
 
 // export const Timeline = createMongoCollection<TimelineObj>('timeline')
-export const Timeline: TransformedCollection<TimelineObjGeneric, TimelineObjGeneric> = createMongoCollection<
-	TimelineObjGeneric
+export const Timeline: TransformedCollection<TimelineComplete, TimelineComplete> = createMongoCollection<
+	TimelineComplete
 >('timeline')
 registerCollection('Timeline', Timeline)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Timeline._ensureIndex({
-			studioId: 1,
-			rundownId: 1,
-		})
-	}
-})
+
+// Note: this index is always created by default, so it's not needed.
+// registerIndex(Timeline, {
+// 	_id: 1,
+// })

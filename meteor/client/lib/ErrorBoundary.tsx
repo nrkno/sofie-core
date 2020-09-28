@@ -161,10 +161,10 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 							<h5 style={ErrorBoundary.style.header}>{this.state.error.name}</h5>
 							{this.state.info && (
 								<p
-									style={_.extend(
-										_.clone(ErrorBoundary.style.componentStack),
-										this.state.expandedComponentStack ? ErrorBoundary.style.expandedStack : {}
-									)}
+									style={{
+										...ErrorBoundary.style.componentStack,
+										...(this.state.expandedComponentStack ? ErrorBoundary.style.expandedStack : {}),
+									}}
 									onClick={this.toggleComponentStack}>
 									{this.state.info.componentStack}
 								</p>
@@ -172,10 +172,10 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 							<p style={ErrorBoundary.style.message}>{this.state.error.message}</p>
 							{this.state.error.stack && (
 								<p
-									style={_.extend(
-										_.clone(ErrorBoundary.style.stack),
-										this.state.expandedStack ? ErrorBoundary.style.expandedStack : {}
-									)}
+									style={{
+										...ErrorBoundary.style.stack,
+										...(this.state.expandedStack ? ErrorBoundary.style.expandedStack : {}),
+									}}
 									onClick={this.toggleStack}>
 									{this.state.error.stack}
 								</p>

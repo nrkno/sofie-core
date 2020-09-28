@@ -1,17 +1,13 @@
 import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { protectString, unprotectString, Omit, literal } from '../../../lib/lib'
 import {
-	extendMandadory,
-	getHash,
-	protectString,
-	unprotectString,
-	Omit,
-	ProtectedStringProperties,
-	literal,
-} from '../../../lib/lib'
-import { TimelineObjGeneric, TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
+	TimelineObjGeneric,
+	TimelineObjRundown,
+	TimelineObjType,
+	TimelineEnableExt,
+} from '../../../lib/collections/Timeline'
 import { Studio } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -21,7 +17,6 @@ import {
 	RundownContext,
 	TSR,
 	IBlueprintActionManifest,
-	SomeContent,
 	NotesContext as INotesContext,
 } from 'tv-automation-sofie-blueprints-integration'
 import { RundownAPI } from '../../../lib/api/rundown'
@@ -35,30 +30,36 @@ import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { prefixAllObjectIds } from '../playout/lib'
+import { SegmentId } from '../../../lib/collections/Segments'
+import { profiler } from '../profiler'
 
 export function postProcessPieces(
 	innerContext: ShowStyleContext,
 	pieces: IBlueprintPiece[],
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
+	segmentId: SegmentId,
 	partId: PartId,
 	allowNowForPiece?: boolean,
-	prefixAllTimelineObjects?: boolean
+	prefixAllTimelineObjects?: boolean,
+	setInvalid?: boolean
 ): Piece[] {
+	const span = profiler.startSpan('blueprints.postProcess.postProcessPieces')
+
 	let i = 0
-	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
+	const processedPieces = _.map(_.compact(pieces), (itemOrig: IBlueprintPiece) => {
 		let piece: Piece = {
-			...(itemOrig as Omit<IBlueprintPiece, '_id' | 'continuesRefId'>),
-			_id: protectString(itemOrig._id),
+			...(itemOrig as Omit<IBlueprintPiece, 'continuesRefId'>),
+			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)),
 			continuesRefId: protectString(itemOrig.continuesRefId),
-			rundownId: rundownId,
-			partId: partId,
+			startRundownId: rundownId,
+			startSegmentId: segmentId,
+			startPartId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
+			invalid: setInvalid ?? false,
 		}
 
-		if (!piece._id) piece._id = protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`))
 		if (!piece.externalId && !piece.isTransition)
 			throw new Meteor.Error(
 				400,
@@ -74,15 +75,6 @@ export function postProcessPieces(
 				)}")`
 			)
 
-		if (partsUniqueIds[unprotectString(piece._id)])
-			throw new Meteor.Error(
-				400,
-				`Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(
-					unprotectString(piece._id)
-				)}")`
-			)
-		partsUniqueIds[unprotectString(piece._id)] = true
-
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
 				innerContext,
@@ -96,6 +88,17 @@ export function postProcessPieces(
 
 		return piece
 	})
+
+	span?.end()
+	return processedPieces
+}
+
+function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
+	if (Array.isArray(enable)) {
+		return !!enable.find((e) => e.start === 'now')
+	} else {
+		return enable.start === 'now'
+	}
 }
 
 export function postProcessTimelineObjects(
@@ -116,7 +119,7 @@ export function postProcessTimelineObjects(
 		}
 
 		if (!obj.id) obj.id = innerContext.getHashId(pieceId + '_' + i++)
-		if (obj.enable.start === 'now')
+		if (isNow(obj.enable))
 			throw new Meteor.Error(
 				400,
 				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${innerContext.unhashId(
@@ -149,17 +152,23 @@ export function postProcessAdLibPieces(
 	blueprintId: BlueprintId,
 	partId?: PartId
 ): AdLibPiece[] {
+	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
+
 	let i = 0
-	let partsUniqueIds: { [id: string]: true } = {}
 	let timelineUniqueIds: { [id: string]: true } = {}
-	return _.map(_.compact(adLibPieces), (itemOrig: IBlueprintAdLibPiece) => {
-		let piece: AdLibPiece = {
+
+	const processedPieces: AdLibPiece[] = []
+	for (const itemOrig of adLibPieces) {
+		if (!itemOrig) {
+			continue
+		}
+
+		const piece: AdLibPiece = {
 			...itemOrig,
 			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
 			rundownId: protectString(innerContext.rundown._id),
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
-			disabled: false,
 		}
 
 		if (!piece.externalId)
@@ -169,15 +178,6 @@ export function postProcessAdLibPieces(
 					unprotectString(piece._id)
 				)}")`
 			)
-
-		if (partsUniqueIds[unprotectString(piece._id)])
-			throw new Meteor.Error(
-				400,
-				`Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(
-					unprotectString(piece._id)
-				)}")`
-			)
-		partsUniqueIds[unprotectString(piece._id)] = true
 
 		if (piece.content && piece.content.timelineObjects) {
 			piece.content.timelineObjects = postProcessTimelineObjects(
@@ -190,8 +190,11 @@ export function postProcessAdLibPieces(
 			)
 		}
 
-		return piece
-	})
+		processedPieces.push(piece)
+	}
+
+	span?.end()
+	return processedPieces
 }
 
 export function postProcessGlobalAdLibActions(

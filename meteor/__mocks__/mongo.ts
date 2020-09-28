@@ -14,6 +14,15 @@ import { UpsertOptions, UpdateOptions, FindOptions, ObserveChangesCallbacks } fr
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
+import {
+	BulkWriteOperation,
+	BulkWriteInsertOneOperation,
+	BulkWriteUpdateOneOperation,
+	BulkWriteUpdateManyOperation,
+	BulkWriteReplaceOneOperation,
+	BulkWriteDeleteOneOperation,
+	BulkWriteDeleteManyOperation,
+} from 'mongodb'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -43,7 +52,7 @@ export namespace MongoMock {
 
 		private _transform?: (o: T) => T
 
-		constructor(name: string, options: any) {
+		constructor(name: string, options?: any) {
 			this._options = options || {}
 			this._name = name
 			this._transform = this._options.transform
@@ -128,21 +137,22 @@ export namespace MongoMock {
 				let docs = this.find(query)._fetchRaw()
 
 				// By default mongo only updates one doc, unless told multi
-				if (!options || !options.multi) {
-					docs = _.take(docs, 1)
+				if (this.documents.length && !options?.multi) {
+					docs = [docs[0]]
 				}
 
-				// console.log(query, docs)
 				_.each(docs, (doc) => {
 					const modifiedDoc = mongoModify(query, doc, modifier)
 					this.documents[unprotectString(doc._id)] = modifiedDoc
 
-					_.each(_.clone(this.observers), (obs) => {
-						if (mongoWhere(doc, obs.query)) {
-							if (obs.callbacks.changed) {
-								obs.callbacks.changed(doc._id, {}) // TODO - figure out what changed
+					Meteor.defer(() => {
+						_.each(_.clone(this.observers), (obs) => {
+							if (mongoWhere(doc, obs.query)) {
+								if (obs.callbacks.changed) {
+									obs.callbacks.changed(doc._id, {}) // TODO - figure out what changed
+								}
 							}
-						}
+						})
 					})
 				})
 
@@ -164,16 +174,18 @@ export namespace MongoMock {
 
 				this.documents[unprotectString(d._id)] = d
 
-				_.each(_.clone(this.observers), (obs) => {
-					if (mongoWhere(d, obs.query)) {
-						const fields = _.keys(_.omit(d, '_id'))
-						if (obs.callbacks.addedBefore) {
-							obs.callbacks.addedBefore(d._id, fields, null as any)
+				Meteor.defer(() => {
+					_.each(_.clone(this.observers), (obs) => {
+						if (mongoWhere(d, obs.query)) {
+							const fields = _.keys(_.omit(d, '_id'))
+							if (obs.callbacks.addedBefore) {
+								obs.callbacks.addedBefore(d._id, fields, null as any)
+							}
+							if (obs.callbacks.added) {
+								obs.callbacks.added(d._id, fields)
+							}
 						}
-						if (obs.callbacks.added) {
-							obs.callbacks.added(d._id, fields)
-						}
-					}
+					})
 				})
 
 				if (cb) cb(undefined, d._id)
@@ -188,8 +200,7 @@ export namespace MongoMock {
 
 			const docs = this.find(id)._fetchRaw()
 
-			if (docs.length === 1) {
-				// console.log(docs)
+			if (docs.length) {
 				this.update(docs[0]._id, modifier, options, cb)
 			} else {
 				this.insert({
@@ -204,6 +215,16 @@ export namespace MongoMock {
 
 				_.each(docs, (doc) => {
 					delete this.documents[unprotectString(doc._id)]
+
+					Meteor.defer(() => {
+						_.each(_.clone(this.observers), (obs) => {
+							if (mongoWhere(doc, obs.query)) {
+								if (obs.callbacks.removed) {
+									obs.callbacks.removed(doc._id)
+								}
+							}
+						})
+					})
 				})
 				if (cb) cb(undefined, docs.length)
 				else return docs.length
@@ -218,6 +239,48 @@ export namespace MongoMock {
 		}
 		allow() {
 			// todo
+		}
+		rawCollection() {
+			return {
+				// indexes: () => {}
+				// stats: () => {}
+				// drop: () => {}
+				bulkWrite: (updates: BulkWriteOperation<any>[], _options) => {
+					for (let update of updates) {
+						if (update['insertOne']) {
+							update = update as BulkWriteInsertOneOperation<any>
+							this.insert(update.insertOne.document)
+						} else if (update['updateOne']) {
+							update = update as BulkWriteUpdateOneOperation<any>
+							if (update.updateOne.upsert) {
+								this.upsert(update.updateOne.filter, update.updateOne.update, { multi: false })
+							} else {
+								this.update(update.updateOne.filter, update.updateOne.update, { multi: false })
+							}
+						} else if (update['updateMany']) {
+							update = update as BulkWriteUpdateManyOperation<any>
+							if (update.updateMany.upsert) {
+								this.upsert(update.updateMany.filter, update.updateMany.update, { multi: true })
+							} else {
+								this.update(update.updateMany.filter, update.updateMany.update, { multi: true })
+							}
+						} else if (update['deleteOne']) {
+							update = update as BulkWriteDeleteOneOperation<any>
+							const docs = this.find(update.deleteOne.filter).fetch()
+							if (docs.length) {
+								this.remove(docs[0]._id)
+							}
+						} else if (update['deleteMany']) {
+							update = update as BulkWriteDeleteManyOperation<any>
+							this.remove(update.deleteMany.filter)
+						} else if (update['replaceOne']) {
+							update = update as BulkWriteReplaceOneOperation<any>
+							this.upsert(update.replaceOne.filter, update.replaceOne.replacement)
+						}
+					}
+				},
+				collectionName: this._name,
+			}
 		}
 		// observe () {
 		// 	// todo
@@ -247,9 +310,17 @@ export namespace MongoMock {
 			mockCollections[collectionName] = data
 		}
 	}
+
+	export function deleteAllData() {
+		Object.keys(mockCollections).forEach((id) => {
+			mockCollections[id] = {}
+		})
+	}
 }
 export function setup() {
 	return {
 		Mongo: MongoMock,
 	}
 }
+
+MeteorMock.mockSetUsersCollection(new MongoMock.Collection('Meteor.users'))

@@ -11,8 +11,13 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import ClassNames from 'classnames'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { PartInstance, findPartInstanceOrWrapToTemporary, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { DEFAULT_DISPLAY_DURATION } from '../../../lib/Rundown'
+import {
+	PartInstance,
+	findPartInstanceOrWrapToTemporary,
+	PartInstanceId,
+	wrapPartToTemporaryInstance,
+} from '../../../lib/collections/PartInstances'
+import { Settings } from '../../../lib/Settings'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
@@ -111,7 +116,6 @@ export namespace RundownTiming {
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15 // the low-resolution events will be called every
 // LOW_RESOLUTION_TIMING_DECIMATOR-th time of the high-resolution events
-const DEFAULT_DURATION = 3000
 
 /**
  * RundownTimingProvider properties.
@@ -175,6 +179,10 @@ export const RundownTimingProvider = withTracker<
 		refreshTimer: number
 		refreshTimerInterval: number
 		refreshDecimator: number
+
+		private temporaryPartInstances: {
+			[key: string]: PartInstance
+		} = {}
 
 		private linearParts: Array<[PartId, number | null]> = []
 		// look at the comments on RundownTimingContext to understand what these do
@@ -241,6 +249,10 @@ export const RundownTimingProvider = withTracker<
 				Meteor.clearInterval(this.refreshTimer)
 				this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			}
+			if (prevProps.parts !== this.props.parts) {
+				// empty the temporary Part Instances cache
+				this.temporaryPartInstances = {}
+			}
 		}
 
 		componentWillUnmount() {
@@ -269,6 +281,24 @@ export const RundownTimingProvider = withTracker<
 			window.dispatchEvent(event)
 		}
 
+		private getPartInstanceOrGetCachedTemp(
+			partInstancesMap: { [key: string]: PartInstance | undefined },
+			part: Part
+		): PartInstance {
+			const origPartId = unprotectString(part._id)
+			if (partInstancesMap[origPartId] !== undefined) {
+				return partInstancesMap[origPartId]!
+			} else {
+				if (this.temporaryPartInstances[origPartId]) {
+					return this.temporaryPartInstances[origPartId]
+				} else {
+					const partInstance = wrapPartToTemporaryInstance(part)
+					this.temporaryPartInstances[origPartId] = partInstance
+					return partInstance
+				}
+			}
+		}
+
 		updateDurations(now: number, isLowResolution: boolean) {
 			let totalRundownDuration = 0
 			let remainingRundownDuration = 0
@@ -279,7 +309,7 @@ export const RundownTimingProvider = withTracker<
 			let startsAtAccumulator = 0
 			let displayStartsAtAccumulator = 0
 
-			_.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
+			Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
 			this.linearParts.length = 0
 
 			let debugConsole = ''
@@ -291,7 +321,7 @@ export const RundownTimingProvider = withTracker<
 
 			if (playlist && parts) {
 				parts.forEach((origPart, itIndex) => {
-					const partInstance = findPartInstanceOrWrapToTemporary(partInstancesMap, origPart)
+					const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
 
 					// add piece to accumulator
 					const aIndex = this.linearParts.push([partInstance.part._id, waitAccumulator]) - 1
@@ -348,7 +378,9 @@ export const RundownTimingProvider = withTracker<
 							Math.max(
 								0,
 								this.displayDurationGroups[partInstance.part.displayDurationGroup],
-								partInstance.part.gap ? MINIMAL_NONZERO_DURATION : this.props.defaultDuration || DEFAULT_DURATION
+								partInstance.part.gap
+									? MINIMAL_NONZERO_DURATION
+									: this.props.defaultDuration || Settings.defaultDisplayDuration
 							)
 						memberOfDisplayDurationGroup = true
 					}
@@ -374,7 +406,7 @@ export const RundownTimingProvider = withTracker<
 							partInstance.part.duration ||
 							(memberOfDisplayDurationGroup ? displayDurationFromGroup : partInstance.part.expectedDuration) ||
 							this.props.defaultDuration ||
-							DEFAULT_DURATION
+							Settings.defaultDisplayDuration
 						partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 						this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
 					} else {
@@ -385,7 +417,7 @@ export const RundownTimingProvider = withTracker<
 								displayDurationFromGroup ||
 								partInstance.part.expectedDuration ||
 								this.props.defaultDuration ||
-								DEFAULT_DURATION
+								Settings.defaultDisplayDuration
 						)
 						partDisplayDurationNoPlayback = partDisplayDuration
 						this.partPlayed[unprotectString(partInstance.part._id)] = (partInstance.part.duration || 0) - playOffset
@@ -430,7 +462,7 @@ export const RundownTimingProvider = withTracker<
 
 					// Handle invalid parts by overriding the values to preset values for Invalid parts
 					if (partInstance.part.invalid && !partInstance.part.gap) {
-						partDisplayDuration = this.props.defaultDuration || DEFAULT_DURATION
+						partDisplayDuration = this.props.defaultDuration || Settings.defaultDisplayDuration
 						this.partPlayed[unprotectString(partInstance.part._id)] = 0
 					}
 
@@ -456,7 +488,6 @@ export const RundownTimingProvider = withTracker<
 					displayStartsAtAccumulator += this.partDisplayDurations[partInstancePartId] // || this.props.defaultDuration || 3000
 					// waitAccumulator is used to calculate the countdowns for Parts relative to the current Part
 					// always add the full duration, in case by some manual intervention this segment should play twice
-					// console.log('%c' + item._id + ', ' + waitAccumulator, 'color: red')
 					if (memberOfDisplayDurationGroup) {
 						waitAccumulator +=
 							partInstance.part.duration || partDisplayDuration || partInstance.part.expectedDuration || 0
@@ -477,7 +508,6 @@ export const RundownTimingProvider = withTracker<
 						playlist.currentPartInstanceId === partInstance._id &&
 						lastStartedPlayback + (partInstance.part.expectedDuration || 0) > now
 					) {
-						// console.log((now - item.startedPlayback))
 						remainingRundownDuration += (partInstance.part.expectedDuration || 0) - (now - lastStartedPlayback)
 					}
 				})
@@ -543,8 +573,6 @@ export const RundownTimingProvider = withTracker<
 				)
 			}
 
-			// console.log(linearSegLines.map((value) => value[1]))
-
 			this.durations = Object.assign(
 				this.durations,
 				literal<RundownTiming.RundownTimingContext>({
@@ -603,12 +631,10 @@ export function withTiming<IProps, IState>(
 ): (
 	WrappedComponent: IWrappedComponent<IProps, IState>
 ) => new (props: IProps, context: any) => React.Component<IProps, IState> {
-	let expandedOptions: WithTimingOptions = _.extend(
-		{
-			isHighResolution: false,
-		},
-		typeof options === 'function' ? {} : options
-	)
+	let expandedOptions: WithTimingOptions = {
+		isHighResolution: false,
+		...(typeof options === 'function' ? {} : options),
+	}
 
 	return (WrappedComponent) => {
 		return class WithTimingHOCComponent extends React.Component<IProps, IState> {
@@ -624,7 +650,10 @@ export function withTiming<IProps, IState>(
 				super(props, context)
 
 				if (typeof options === 'function') {
-					expandedOptions = _.extend(expandedOptions, options(this.props))
+					expandedOptions = {
+						...expandedOptions,
+						...options(this.props),
+					}
 				}
 
 				if (typeof expandedOptions.filter === 'function') {
@@ -911,7 +940,7 @@ export function computeSegmentDuration(
 		const pId = unprotectString(partId)
 		const partDuration =
 			(partDurations ? (partDurations[pId] !== undefined ? partDurations[pId] : 0) : 0) ||
-			(display ? DEFAULT_DISPLAY_DURATION : 0)
+			(display ? Settings.defaultDisplayDuration : 0)
 		return memo + partDuration
 	}, 0)
 }
