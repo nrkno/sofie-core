@@ -4,7 +4,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { moveNext } from '../userActions'
-import { selectNextPart, isTooCloseToAutonext, getAllOrderedPartsFromCache } from '../playout/lib'
+import { selectNextPart, isTooCloseToAutonext, getAllOrderedPartsFromPlayoutCache } from '../playout/lib'
 import { CacheForIngest } from '../../DatabaseCaches'
 import { IngestPlayoutInfo } from './lib'
 import { profiler } from '../profiler'
@@ -17,7 +17,7 @@ export namespace UpdateNext {
 
 		// Ensure the next-id is still valid
 		if (playlist.active && playlist.nextPartInstanceId) {
-			const allParts = getAllOrderedPartsFromCache(cache)
+			const allParts = getAllOrderedPartsFromPlayoutCache(cache)
 
 			if (currentPartInstance) {
 				// Leave the manually chosen part
@@ -69,11 +69,11 @@ export namespace UpdateNext {
 				const newNextPart = selectNextPart(
 					playlist,
 					currentPartInstance || null,
-					getAllOrderedPartsFromCache(cache)
+					getAllOrderedPartsFromPlayoutCache(cache)
 				)
 				ServerPlayoutAPI.setNextPartInner(cache, playlist, newNextPart ? newNextPart.part : null)
 			} else if (playlist.nextPartManual && removePrevious) {
-				const allParts = getAllOrderedPartsFromCache(cache)
+				const allParts = getAllOrderedPartsFromPlayoutCache(cache)
 
 				// If the manually chosen part does not exist, assume it was the one that was removed
 				const currentNextPart = nextPartInstance

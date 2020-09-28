@@ -16,8 +16,6 @@ import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { protectString } from '../../../../lib/lib'
-import { removeRundownFromCache, removeRundownPlaylistFromCache } from '../lib'
-import { wrapWithCacheForRundownPlaylistFromRundown } from '../../../DatabaseCaches'
 import { rundownPlaylistPlayoutSyncFunction } from '../playout'
 
 // const Timeline = mockupCollection(OrgTimeline)

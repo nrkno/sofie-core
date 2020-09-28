@@ -59,8 +59,6 @@ import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessag
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
 import { DeepReadonly } from 'utility-types'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 
 /** Common */
 

@@ -53,7 +53,6 @@ import { PackageInfo } from '../../coreSystem'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForPlayout, CacheForStudio2, CacheForStudioBase2 } from '../../DatabaseCaches'
-import { saveIntoCache } from '../../DatabaseCache'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -67,9 +66,15 @@ import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio2) {
 	const playlists = getActiveRundownPlaylistsInStudio2(cache)
 	if (playlists.length === 1) {
-		return rundownPlaylistFromStudioSyncFunction(cache, playlists[0]._id, null, (playlistCache) => {
-			updateTimeline(playlistCache)
-		})
+		return rundownPlaylistFromStudioSyncFunction(
+			'updateStudioOrPlaylistTimeline',
+			cache,
+			playlists[0]._id,
+			null,
+			(playlistCache) => {
+				updateTimeline(playlistCache)
+			}
+		)
 	} else {
 		return updateStudioTimeline(cache)
 	}

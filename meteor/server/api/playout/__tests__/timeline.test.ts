@@ -17,7 +17,6 @@ import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/R
 import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { protectString, waitForPromise } from '../../../../lib/lib'
 import { MethodContext } from '../../../../lib/api/methods'
-import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylistFromStudio } from '../../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 
 const DEFAULT_CONTEXT: MethodContext = {
@@ -95,13 +94,13 @@ describe('Timeline', () => {
 			// })
 		}
 
-		rundownPlaylistPlayoutSyncFunction(null, getRundown0().playlistId, null, (cache) => {
+		rundownPlaylistPlayoutSyncFunction(null, 'updateTimeline', getRundown0().playlistId, null, (cache) => {
 			updateTimeline(cache)
 		})
 
 		expect(fixSnapshot(Timeline.find().fetch())).toMatchSnapshot()
 
-		rundownPlaylistPlayoutSyncFunction(null, getRundown0().playlistId, null, (cache) => {
+		rundownPlaylistPlayoutSyncFunction(null, 'updateTimeline', getRundown0().playlistId, null, (cache) => {
 			const currentTime = 100 * 1000
 			updateTimeline(cache, currentTime)
 		})

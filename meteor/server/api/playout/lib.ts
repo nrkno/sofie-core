@@ -2,9 +2,18 @@ import { Meteor } from 'meteor/meteor'
 import { Random } from 'meteor/random'
 import * as _ from 'underscore'
 import { logger } from '../../logging'
-import { Rundown, RundownHoldState, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown, RundownHoldState, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { Parts, Part, DBPart, PartId } from '../../../lib/collections/Parts'
-import { getCurrentTime, Time, clone, literal, waitForPromise, protectString, applyToArray } from '../../../lib/lib'
+import {
+	getCurrentTime,
+	Time,
+	clone,
+	literal,
+	waitForPromise,
+	protectString,
+	applyToArray,
+	asyncCollectionRemove,
+} from '../../../lib/lib'
 import { TimelineObjGeneric } from '../../../lib/collections/Timeline'
 import {
 	fetchPiecesThatMayBeActiveForPart,
@@ -12,11 +21,11 @@ import {
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
 import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
-import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
-import { CacheForRundownPlaylist, CacheForPlayout } from '../../DatabaseCaches'
+import { CacheForPlayout, CacheForIngest } from '../../DatabaseCaches'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
@@ -32,45 +41,7 @@ import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
 import { DeepReadonly } from 'utility-types'
-
-/**
- * Reset the rundown:
- * Remove all dynamically inserted/updated pieces, parts, timings etc..
- */
-export function resetRundown(cache: CacheForRundownPlaylist, rundown: Rundown) {
-	logger.info('resetRundown ' + rundown._id)
-	// Remove all dunamically inserted pieces (adlibs etc)
-
-	// Note: After the RundownPlaylist (R19) update, the playhead is no longer affected in this operation,
-	// since that isn't tied to the rundown anymore.
-
-	cache.Parts.remove({
-		rundownId: rundown._id,
-		dynamicallyInsertedAfterPartId: { $exists: true },
-	})
-
-	// Mask all instances as reset
-	cache.PartInstances.update(
-		{
-			rundownId: rundown._id,
-		},
-		{
-			$set: {
-				reset: true,
-			},
-		}
-	)
-	cache.PieceInstances.update(
-		{
-			rundownId: rundown._id,
-		},
-		{
-			$set: {
-				reset: true,
-			},
-		}
-	)
-}
+import { DbCacheReadCollection } from '../../DatabaseCache'
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -135,7 +106,7 @@ function resetRundownPlaylistPlayhead(cache: CacheForPlayout) {
 
 	if (cache.Playlist.doc.active) {
 		// put the first on queue:
-		const firstPart = selectNextPart(cache.Playlist.doc, null, getAllOrderedPartsFromCache(cache))
+		const firstPart = selectNextPart(cache.Playlist.doc, null, getAllOrderedPartsFromPlayoutCache(cache))
 		setNextPart(cache, firstPart?.part ?? null)
 	} else {
 		setNextPart(cache, null)
@@ -505,22 +476,13 @@ export function isTooCloseToAutonext(currentPartInstance: DeepReadonly<PartInsta
 	return false
 }
 
-export function getSegmentsAndPartsFromCache(
+export function getOrderedSegmentsAndPartsFromPlayoutCache(
 	cache: CacheForPlayout
 ): {
 	segments: Segment[]
 	parts: Part[]
 } {
-	const rundowns = getRundownsFromCache(cache)
-	return getRundownsSegmentsAndPartsFromCache(cache, rundowns)
-}
-export function getAllOrderedPartsFromCache(cache: CacheForPlayout): Part[] {
-	const { parts } = getSegmentsAndPartsFromCache(cache)
-	return parts
-}
-/** Get all rundowns in a playlist */
-export function getRundownsFromCache(cache: CacheForPlayout) {
-	return cache.Rundowns.findFetch(
+	const rundowns = cache.Rundowns.findFetch(
 		{},
 		{
 			sort: {
@@ -529,9 +491,14 @@ export function getRundownsFromCache(cache: CacheForPlayout) {
 			},
 		}
 	)
+	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, rundowns)
+}
+export function getAllOrderedPartsFromPlayoutCache(cache: CacheForPlayout): Part[] {
+	const { parts } = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+	return parts
 }
 export function getRundownIDsFromCache(cache: CacheForPlayout) {
-	return getRundownsFromCache(cache).map((r) => r._id)
+	return cache.Rundowns.findFetch({}).map((r) => r._id)
 }
 export function getSelectedPartInstancesFromCache(
 	cache: CacheForPlayout
@@ -555,50 +522,32 @@ export function getSelectedPartInstancesFromCache(
 	}
 }
 
-export function removeRundownPlaylistFromCache(cache: CacheForRundownPlaylist, playlist: RundownPlaylist) {
-	const allRundowns = cache.Rundowns.findFetch({ playlistId: playlist._id })
-	allRundowns.forEach((rundown) => removeRundownFromCache(cache, rundown))
+export async function removeRundownPlaylistFromDb(playlistId: RundownPlaylistId): Promise<void> {
+	// We assume we have the master lock at this point
+	const rundownIds = Rundowns.find({ playlistId }, { fields: { _id: 1 } }).map((r) => r._id)
 
-	cache.RundownPlaylists.remove(playlist._id)
+	await Promise.all([asyncCollectionRemove(RundownPlaylists, { _id: playlistId }), removeRundownsFromDb(rundownIds)])
 }
-export function removeRundownFromCache(cache: CacheForRundownPlaylist, rundown: Rundown) {
-	cache.Rundowns.remove(rundown._id)
-	if (rundown.playlistId) {
-		// Check if any other rundowns in the playlist are left
-		if (
-			cache.Rundowns.findFetch({
-				playlistId: rundown.playlistId,
-			}).length === 0
-		) {
-			// No other rundowns left, remove the playlist as well then:
-			cache.RundownPlaylists.remove(rundown.playlistId)
-		}
+export async function removeRundownsFromDb(rundownIds: RundownId[]): Promise<void> {
+	// Note: playlists are not removed by this, one could be left behind empty
+	if (rundownIds.length > 0) {
+		await Promise.all([
+			asyncCollectionRemove(Rundowns, { _id: { $in: rundownIds } }),
+			asyncCollectionRemove(AdLibActions, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(AdLibPieces, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(ExpectedMediaItems, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(ExpectedPlayoutItems, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(IngestDataCache, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(RundownBaselineAdLibPieces, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(Segments, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(Parts, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(PartInstances, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(Pieces, { startRundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(PieceInstances, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(RundownBaselineAdLibActions, { rundownId: { $in: rundownIds } }),
+			asyncCollectionRemove(RundownBaselineObjs, { rundownId: { $in: rundownIds } }),
+		])
 	}
-	cache.Segments.remove({ rundownId: rundown._id })
-	cache.Parts.remove({ rundownId: rundown._id })
-	cache.PartInstances.remove({ rundownId: rundown._id })
-	cache.Pieces.remove({ startRundownId: rundown._id })
-	cache.PieceInstances.remove({ rundownId: rundown._id })
-	cache.RundownBaselineObjs.remove({ rundownId: rundown._id })
-
-	cache.defer(() => {
-		// These are not present in the cache because they do not directly affect output.
-		AdLibActions.remove({ rundownId: rundown._id })
-		AdLibPieces.remove({ rundownId: rundown._id })
-		ExpectedMediaItems.remove({ rundownId: rundown._id })
-		ExpectedPlayoutItems.remove({ rundownId: rundown._id })
-		IngestDataCache.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibPieces.remove({ rundownId: rundown._id })
-
-		// These might only partly be present in the cache, this should make sure they are properly removed:
-		Segments.remove({ rundownId: rundown._id })
-		Parts.remove({ rundownId: rundown._id })
-		PartInstances.remove({ rundownId: rundown._id })
-		Pieces.remove({ startRundownId: rundown._id })
-		PieceInstances.remove({ rundownId: rundown._id })
-		RundownBaselineAdLibActions.remove({ rundownId: rundown._id })
-		RundownBaselineObjs.remove({ rundownId: rundown._id })
-	})
 }
 
 /** Get all piece instances in a part instance */
@@ -618,13 +567,12 @@ export function touchRundownPlaylistsInCache(cache: CacheForPlayout) {
 }
 
 export function getRundownsSegmentsAndPartsFromCache(
-	cache: CacheForPlayout,
-	rundowns: Rundown[]
+	partsCache: DbCacheReadCollection<Part, DBPart>,
+	segmentsCache: DbCacheReadCollection<Segment, DBSegment>,
+	rundowns: Array<DeepReadonly<Rundown>>
 ): { segments: Segment[]; parts: Part[] } {
-	const rundownIds = rundowns.map((i) => i._id)
-
 	const segments = RundownPlaylist._sortSegments(
-		cache.Segments.findFetch(
+		segmentsCache.findFetch(
 			{},
 			{
 				sort: {
@@ -637,7 +585,7 @@ export function getRundownsSegmentsAndPartsFromCache(
 	)
 
 	const parts = RundownPlaylist._sortPartsInner(
-		cache.Parts.findFetch(
+		partsCache.findFetch(
 			{},
 			{
 				sort: {

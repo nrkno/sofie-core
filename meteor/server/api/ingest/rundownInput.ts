@@ -107,21 +107,10 @@ import {
 	RundownPlaylistId,
 } from '../../../lib/collections/RundownPlaylists'
 import { Mongo } from 'meteor/mongo'
-import {
-	isTooCloseToAutonext,
-	getRundownsSegmentsAndPartsFromCache,
-	removeRundownFromCache,
-	getAllOrderedPartsFromCache,
-} from '../playout/lib'
+import { isTooCloseToAutonext } from '../playout/lib'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
-import {
-	CacheForRundownPlaylist,
-	initCacheForRundownPlaylist,
-	CacheForStudio2,
-	CacheForIngest,
-	ReadOnlyCache,
-} from '../../DatabaseCaches'
+import { CacheForStudio2, CacheForIngest, ReadOnlyCache } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../DatabaseCache'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
@@ -197,7 +186,11 @@ export namespace RundownInput {
 	export function dataRundownList(context: MethodContext, deviceId: PeripheralDeviceId, deviceToken: string) {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownList')
-		return listIngestRundowns(peripheralDevice)
+		const rundowns = Rundowns.find({
+			peripheralDeviceId: peripheralDevice._id,
+		}).fetch()
+
+		return rundowns.map((r) => r.externalId)
 	}
 	export function dataRundownGet(
 		context: MethodContext,
@@ -208,7 +201,16 @@ export namespace RundownInput {
 		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		logger.info('dataRundownGet', rundownExternalId)
 		check(rundownExternalId, String)
-		return getIngestRundown(peripheralDevice, rundownExternalId)
+
+		const rundown = Rundowns.findOne({
+			peripheralDeviceId: peripheralDevice._id,
+			externalId: rundownExternalId,
+		})
+		if (!rundown) {
+			throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+		}
+
+		return loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 	}
 	// Delete, Create & Update Rundown (and it's contents):
 	export function dataRundownDelete(
@@ -332,25 +334,6 @@ export namespace RundownInput {
 	}
 }
 
-function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string): IngestRundown {
-	const rundown = Rundowns.findOne({
-		peripheralDeviceId: peripheralDevice._id,
-		externalId: rundownExternalId,
-	})
-	if (!rundown) {
-		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
-	}
-
-	return loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
-}
-function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
-	const rundowns = Rundowns.find({
-		peripheralDeviceId: peripheralDevice._id,
-	}).fetch()
-
-	return rundowns.map((r) => r.externalId)
-}
-
 export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundownExternalId: string) {
 	const span = profiler.startSpan('rundownInput.handleRemovedRundown')
 	rundownIngestSyncFunction(
@@ -385,7 +368,7 @@ export function handleRemovedRundown(peripheralDevice: PeripheralDevice, rundown
 				}
 				if (okToRemove) {
 					logger.info(`Removing rundown "${rundown._id}"`)
-					removeRundownFromCache(cache, rundown)
+					cache.removeRundown()
 				} else {
 					// Don't allow removing currently playing rundown playlists:
 					logger.warn(
@@ -964,7 +947,7 @@ export function savePreparedRundownChanges(
 			...preparedChanges.segments.inserted.map((s) => s._id),
 		])
 
-		reportRundownDataHasChanged(cache, dbPlaylist, dbRundown)
+		reportRundownDataHasChanged(cache, dbPlaylist)
 	}
 
 	logger.info(`Rundown ${dbRundown._id} update complete`)
@@ -1276,7 +1259,7 @@ export function afterIngestChangedData(
 	updateExpectedMediaItemsOnRundown(cache)
 	updateExpectedPlayoutItemsOnRundown(cache)
 
-	updatePartRanks(cache.Parts, undefined, getAllOrderedPartsFromCache(cache), changedSegmentIds)
+	updatePartRanks(cache.Parts, undefined, changedSegmentIds)
 
 	UpdateNext.ensureNextPartIsValid(cache, playoutInfo)
 	// TODO - this timeline update stuff needs rethinking

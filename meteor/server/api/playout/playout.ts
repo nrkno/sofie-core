@@ -40,10 +40,9 @@ import {
 	setNextSegment as libSetNextSegment,
 	onPartHasStoppedPlaying,
 	selectNextPart,
-	getSegmentsAndPartsFromCache,
+	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
-	getRundownsFromCache,
-	getAllOrderedPartsFromCache,
+	getAllOrderedPartsFromPlayoutCache,
 	getAllPieceInstancesFromCache,
 	checkAccessAndGetPlaylist,
 } from './lib'
@@ -327,7 +326,7 @@ export namespace ServerPlayoutAPI {
 			rundownPlaylistId,
 			null,
 			(cache) => {
-				const rundowns = getRundownsFromCache(cache)
+				const rundowns = cache.Rundowns.findFetch({})
 				const response: ReloadRundownPlaylistResponse = {
 					rundownsResponses: rundowns.map((rundown) => {
 						return {
@@ -427,7 +426,7 @@ export namespace ServerPlayoutAPI {
 			},
 			(cache) => {
 				const playlist = cache.Playlist.doc
-				const { segments, parts } = getSegmentsAndPartsFromCache(cache)
+				const { segments, parts } = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 
 				const res = moveNextPartInner(cache, segments, parts, horizontalDelta, verticalDelta, setManually)
 				return res
@@ -932,7 +931,7 @@ export namespace ServerPlayoutAPI {
 						const nextPart = selectNextPart(
 							playlist,
 							playingPartInstance,
-							getAllOrderedPartsFromCache(cache)
+							getAllOrderedPartsFromPlayoutCache(cache)
 						)
 						libsetNextPart(cache, nextPart ? nextPart.part : null)
 					} else {
@@ -958,7 +957,7 @@ export namespace ServerPlayoutAPI {
 							const nextPart = selectNextPart(
 								playlist,
 								playingPartInstance,
-								getAllOrderedPartsFromCache(cache)
+								getAllOrderedPartsFromPlayoutCache(cache)
 							)
 							libsetNextPart(cache, nextPart?.part ?? null)
 						}
@@ -1230,7 +1229,7 @@ export namespace ServerPlayoutAPI {
 
 				const partInstance = cache.PartInstances.findOne(partInstanceId)
 				if (!partInstance) throw new Meteor.Error(404, `PartInstance "${partInstanceId}" not found!`)
-				const lastStartedPlayback = partInstance.part.getLastStartedPlayback()
+				const lastStartedPlayback = partInstance.timings?.startedPlayback
 				if (!lastStartedPlayback)
 					throw new Meteor.Error(405, `Part "${partInstanceId}" has yet to start playback!`)
 

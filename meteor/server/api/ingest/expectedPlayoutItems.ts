@@ -7,8 +7,8 @@ import { DBRundown, RundownId } from '../../../lib/collections/Rundowns'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
-import { saveIntoDb, protectString } from '../../../lib/lib'
-import { CacheForRundownPlaylist, CacheForIngest } from '../../DatabaseCaches'
+import { protectString } from '../../../lib/lib'
+import { CacheForIngest } from '../../DatabaseCaches'
 import { getRundownId } from './lib'
 import { DeepReadonly } from 'utility-types'
 import { saveIntoCache } from '../../DatabaseCache'
@@ -72,52 +72,3 @@ export function updateExpectedPlayoutItemsOnRundown(cache: CacheForIngest): void
 
 	saveIntoCache<ExpectedPlayoutItem, ExpectedPlayoutItem>(cache.ExpectedPlayoutItems, {}, expectedPlayoutItems)
 }
-
-// export function updateExpectedPlayoutItemsOnPart(
-// 	cache: CacheForRundownPlaylist,
-// 	rundownId: RundownId,
-// 	partId: PartId
-// ): void {
-// 	check(rundownId, String)
-// 	check(partId, String)
-
-// 	const rundown = cache.Rundowns.findOne(rundownId)
-// 	if (!rundown) {
-// 		cache.defer(() => {
-// 			const removedItems = ExpectedPlayoutItems.remove({
-// 				rundownId: rundownId,
-// 			})
-// 			logger.info(`Removed ${removedItems} expected playout items for deleted rundown "${rundownId}"`)
-// 		})
-// 		return
-// 	}
-
-// 	const part = cache.Parts.findOne(partId)
-// 	if (!part) {
-// 		cache.defer(() => {
-// 			const removedItems = ExpectedPlayoutItems.remove({
-// 				rundownId: rundownId,
-// 				partId: partId,
-// 			})
-// 			logger.info(`Removed ${removedItems} expected playout items for deleted part "${partId}"`)
-// 		})
-// 		return
-// 	}
-
-// 	cache.defer(() => {
-// 		const intermediaryItems = extractExpectedPlayoutItems(part, [
-// 			...getAllPiecesFromCache(cache, part),
-// 			...part.getAllAdLibPieces(),
-// 		])
-// 		const expectedPlayoutItems = wrapExpectedPlayoutItems(rundown, intermediaryItems)
-
-// 		saveIntoDb<ExpectedPlayoutItem, ExpectedPlayoutItem>(
-// 			ExpectedPlayoutItems,
-// 			{
-// 				rundownId: rundownId,
-// 				partId: part._id,
-// 			},
-// 			expectedPlayoutItems
-// 		)
-// 	})
-// }

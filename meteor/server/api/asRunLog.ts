@@ -30,19 +30,8 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import {
-	CacheForRundownPlaylist,
-	initCacheForRundownPlaylist,
-	initReadOnlyCacheForRundownPlaylist,
-	CacheForPlayout,
-} from '../DatabaseCaches'
+import { CacheForPlayout, CacheForIngest } from '../DatabaseCaches'
 import { profiler } from './profiler'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import {
-	studioSyncFunction,
-	rundownPlaylistCustomSyncFunction,
-	RundownSyncFunctionPriority,
-} from './ingest/rundownInput'
 import {
 	createShowStyleCompound,
 	getShowStyleCompound,
@@ -103,9 +92,7 @@ function handleAsRunEvent(event: AsRunLogEvent): void {
 				const { blueprint } = loadShowStyleBlueprint(showStyleCompound)
 
 				if (blueprint.onAsRunEvent) {
-					const cache = waitForPromise(initReadOnlyCacheForRundownPlaylist(playlist))
-
-					const context = new AsRunEventContext(rundown, cache, event)
+					const context = new AsRunEventContext(studio, rundown, showStyleCompound, event)
 
 					Promise.resolve(blueprint.onAsRunEvent(context))
 						.then((messages: Array<IBlueprintExternalMessageQueueObj>) => {
@@ -156,13 +143,10 @@ export function reportRundownHasStarted(cache: CacheForPlayout, rundown: Rundown
 	}
 }
 
-export function reportRundownDataHasChanged(
-	_cache: CacheForRundownPlaylist,
-	playlist: RundownPlaylist,
-	rundown: Rundown
-) {
+export function reportRundownDataHasChanged(cache: CacheForIngest, playlist: RundownPlaylist) {
 	// Called when the data in rundown is changed
 
+	const rundown = cache.Rundown.doc
 	if (!rundown) {
 		logger.error(`rundown argument missing in reportRundownDataHasChanged`)
 	} else if (!playlist) {

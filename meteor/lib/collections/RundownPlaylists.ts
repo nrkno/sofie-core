@@ -186,14 +186,6 @@ export class RundownPlaylist implements DBRundownPlaylist {
 			RundownPlaylists.update(this._id, { $set: { modified: m } })
 		}
 	}
-	/** Remove this RundownPlaylist and all its contents */
-	removeTOBEREMOVED() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		const allRundowns = this.getRundowns()
-		allRundowns.forEach((i) => i.removeTOBEREMOVED())
-
-		RundownPlaylists.remove(this._id)
-	}
 	/** Return the studio for this RundownPlaylist */
 	getStudio(): Studio {
 		if (!this.studioId) throw new Meteor.Error(500, 'RundownPlaylist is not in a studio!')

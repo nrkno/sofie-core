@@ -6,7 +6,7 @@ import { asyncCollectionFindFetch, literal, assertNever, extendMandadory } from 
 import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { getAllOrderedPartsFromCache, selectNextPart, getSelectedPartInstancesFromCache } from './lib'
+import { getAllOrderedPartsFromPlayoutCache, selectNextPart, getSelectedPartInstancesFromCache } from './lib'
 import { CacheForPlayout } from '../../DatabaseCaches'
 import { saveIntoCache } from '../../DatabaseCache'
 import {
@@ -87,9 +87,7 @@ export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, 
 	const span = profiler.startSpan('fetchPiecesThatMayBeActiveForPart')
 
 	const thisPiecesQuery = buildPiecesStartingInThisPartQuery(part)
-	const pPiecesStartingInPart = cache.Pieces.initialized
-		? Promise.resolve(cache.Pieces.findFetch(thisPiecesQuery))
-		: asyncCollectionFindFetch(Pieces, thisPiecesQuery)
+	const pPiecesStartingInPart = asyncCollectionFindFetch(Pieces, thisPiecesQuery)
 
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
@@ -98,9 +96,7 @@ export async function fetchPiecesThatMayBeActiveForPart(cache: CacheForPlayout, 
 		partsBeforeThisInSegment,
 		segmentsBeforeThisInRundown
 	)
-	const pInfinitePieces = cache.Pieces.initialized
-		? Promise.resolve(cache.Pieces.findFetch(infinitePiecesQuery))
-		: asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
+	const pInfinitePieces = asyncCollectionFindFetch(Pieces, infinitePiecesQuery)
 
 	const [piecesStartingInPart, infinitePieces] = await Promise.all([pPiecesStartingInPart, pInfinitePieces])
 	if (span) span.end()
@@ -133,7 +129,7 @@ function getPlayheadTrackingInfinitesForPart(
 	const span = profiler.startSpan('getPlayheadTrackingInfinitesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, nextPartInstance.part)
 
-	const orderedParts = getAllOrderedPartsFromCache(cache)
+	const orderedParts = getAllOrderedPartsFromPlayoutCache(cache)
 
 	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
 		cache.Playlist.doc,
@@ -168,7 +164,7 @@ export function getPieceInstancesForPart(
 	const span = profiler.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown } = getIdsBeforeThisPart(cache, part)
 
-	const orderedParts = getAllOrderedPartsFromCache(cache)
+	const orderedParts = getAllOrderedPartsFromPlayoutCache(cache)
 	const playingPieceInstances = playingPartInstance
 		? cache.PieceInstances.findFetch((p) => p.partInstanceId === playingPartInstance._id)
 		: []

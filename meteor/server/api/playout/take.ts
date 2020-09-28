@@ -8,7 +8,7 @@ import {
 	getSelectedPartInstancesFromCache,
 	isTooCloseToAutonext,
 	selectNextPart,
-	getAllOrderedPartsFromCache,
+	getAllOrderedPartsFromPlayoutCache,
 	triggerGarbageCollection,
 	getAllPieceInstancesFromCache,
 } from './lib'
@@ -39,7 +39,7 @@ export function takeNextPartInner(
 ): ClientAPI.ClientResponse<void> {
 	let now = getCurrentTime()
 
-	return rundownPlaylistPlayoutSyncFunction(context, rundownPlaylistId, null, (cache) => {
+	return rundownPlaylistPlayoutSyncFunction(context, 'takeNextPartInner', rundownPlaylistId, null, (cache) => {
 		return takeNextPartInnerSync(cache, now)
 	})
 }
@@ -108,7 +108,7 @@ export function takeNextPartInnerSync(cache: CacheForPlayout, now: number) {
 	if (!takeRundown)
 		throw new Meteor.Error(500, `takeRundown: takeRundown not found! ("${takePartInstance.rundownId}")`)
 
-	const partsInOrder = getAllOrderedPartsFromCache(cache)
+	const partsInOrder = getAllOrderedPartsFromPlayoutCache(cache)
 	const nextPart = selectNextPart(playlist, takePartInstance, partsInOrder)
 
 	// beforeTake(rundown, previousPart || null, takePart)

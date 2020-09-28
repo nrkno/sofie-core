@@ -26,7 +26,7 @@ import {
 	getRundownIDsFromCache,
 	getSelectedPartInstancesFromCache,
 	removeDynamicallyInsertedPartsAfter,
-	getAllOrderedPartsFromCache,
+	getAllOrderedPartsFromPlayoutCache,
 } from './lib'
 import { convertAdLibToPieceInstance, getResolvedPieces, convertPieceToAdLibPiece } from './pieces'
 import { updateTimeline } from './timeline'
@@ -419,9 +419,7 @@ export namespace ServerPlayoutAdLibAPI {
 			cache.PieceInstances.insert(pieceInstance)
 		})
 
-		updatePartRanks(cache.Parts, cache.PartInstances, getAllOrderedPartsFromCache(cache), [
-			newPartInstance.part.segmentId,
-		])
+		updatePartRanks(cache.Parts, cache.PartInstances, [newPartInstance.part.segmentId])
 
 		setNextPart(cache, newPartInstance)
 

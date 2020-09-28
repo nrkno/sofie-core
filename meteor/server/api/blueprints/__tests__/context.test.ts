@@ -8,7 +8,7 @@ import {
 	setupMockStudioBlueprint,
 } from '../../../../__mocks__/helpers/database'
 import { getHash, literal, protectString, unprotectObject, unprotectString, waitForPromise } from '../../../../lib/lib'
-import { Studio } from '../../../../lib/collections/Studios'
+import { Studio, Studios } from '../../../../lib/collections/Studios'
 import {
 	LookaheadMode,
 	NotesContext as INotesContext,
@@ -37,8 +37,15 @@ import {
 	AsRunEventContext,
 } from '../context'
 import { ConfigRef } from '../config'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleBases, ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import {
+	ShowStyleVariant,
+	ShowStyleVariants,
+	getShowStyleCompound,
+	getShowStyleCompound2,
+	createShowStyleCompound,
+	ShowStyleCompound,
+} from '../../../../lib/collections/ShowStyleVariants'
 import { Rundowns, Rundown, RundownId } from '../../../../lib/collections/Rundowns'
 import { DBPart, PartId } from '../../../../lib/collections/Parts'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
@@ -55,7 +62,6 @@ import { SegmentId } from '../../../../lib/collections/Segments'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
-import { initCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { generateFakeBlueprint } from './lib'
 
 describe('Test blueprint api context', () => {
@@ -356,27 +362,23 @@ describe('Test blueprint api context', () => {
 				getSegment: () => null,
 				getShowStyleVariantId: () => null,
 			})
-			const showStyleBase = ShowStyleBases.findOne()
+			const showStyleBase = ShowStyleBases.findOne(showStyleVariant.showStyleBaseId) as ShowStyleBase
 			const blueprint = generateFakeBlueprint(
-				unprotectString(showStyleBase!.blueprintId),
+				unprotectString(showStyleBase.blueprintId),
 				BlueprintManifestType.SHOWSTYLE,
 				(manifest as any) as () => SomeBlueprintManifest
 			)
 			Blueprints.update(blueprint._id, blueprint)
+
+			const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant) as ShowStyleCompound
+			expect(showStyleCompound).toBeTruthy()
 
 			const notesContext = new NotesContext(
 				contextName || 'N/A',
 				`rundownId=${rundownId},segmentId=${segmentId}`,
 				false
 			)
-			return new ShowStyleContext(
-				studio,
-				undefined,
-				undefined,
-				showStyleVariant.showStyleBaseId,
-				showStyleVariant._id,
-				notesContext
-			)
+			return new ShowStyleContext(studio, showStyleCompound, notesContext)
 		}
 
 		testInFiber('handleNotesExternally', () => {
@@ -397,15 +399,6 @@ describe('Test blueprint api context', () => {
 			context.handleNotesExternally = false
 			expect(notesContext.handleNotesExternally).toEqual(context.handleNotesExternally)
 			expect(notesContext.handleNotesExternally).toBeFalsy()
-		})
-
-		testInFiber('getShowStyleBase', () => {
-			const studio = mockStudio()
-			const context = getContext(studio)
-
-			const showStyleBase = context.getShowStyleBase()
-			expect(showStyleBase).toBeTruthy()
-			expect(showStyleBase._id).toEqual((context as any).showStyleBaseId)
 		})
 
 		testInFiber('getShowStyleConfig', () => {
@@ -530,14 +523,17 @@ describe('Test blueprint api context', () => {
 			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+			const studio = Studios.findOne(rundown.studioId) as Studio
+			expect(studio).toBeTruthy()
+
+			const showStyle = getShowStyleCompound2(rundown)
 
 			const mockPart = {
 				_id: protectString('not-a-real-part'),
 			}
 
 			const tmpPart = wrapPartToTemporaryInstance(mockPart as DBPart)
-			const context = new PartEventContext(rundown, cache, tmpPart)
+			const context = new PartEventContext(studio, rundown, showStyle, tmpPart)
 			expect(context.getStudio()).toBeTruthy()
 
 			expect(context.part).toEqual(tmpPart)
@@ -559,9 +555,12 @@ describe('Test blueprint api context', () => {
 			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+			const studio = Studios.findOne(rundown.studioId) as Studio
+			expect(studio).toBeTruthy()
 
-			return new AsRunEventContext(rundown, cache, mockEvent)
+			const showStyle = getShowStyleCompound2(rundown)
+
+			return new AsRunEventContext(studio, rundown, showStyle, mockEvent)
 		}
 		testInFiber('getAllAsRunEvents', () => {
 			const { rundownId } = setupDefaultRundownPlaylist(env)
@@ -571,7 +570,10 @@ describe('Test blueprint api context', () => {
 			const playlist = RundownPlaylists.findOne(rundown.playlistId) as RundownPlaylist
 			expect(playlist).toBeTruthy()
 
-			let cache = waitForPromise(initCacheForRundownPlaylist(playlist))
+			const studio = Studios.findOne(rundown.studioId) as Studio
+			expect(studio).toBeTruthy()
+
+			const showStyle = getShowStyleCompound2(rundown)
 
 			const mockEvent: AsRunLogEvent = {
 				_id: protectString(`${rundown._id}_tmp`),
@@ -582,7 +584,7 @@ describe('Test blueprint api context', () => {
 				content: IBlueprintAsRunLogEventContent.STARTEDPLAYBACK,
 			}
 
-			const context = new AsRunEventContext(rundown, cache, mockEvent)
+			const context = new AsRunEventContext(studio, rundown, showStyle, mockEvent)
 			expect(context.getStudio()).toBeTruthy()
 			expect(context.asRunEvent).toEqual(mockEvent)
 

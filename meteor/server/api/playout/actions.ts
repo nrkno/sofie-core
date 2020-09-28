@@ -13,13 +13,12 @@ import {
 	onPartHasStoppedPlaying,
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
+	getAllOrderedPartsFromPlayoutCache,
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { CacheForRundownPlaylist, CacheForPlayout, CacheForStudio2 } from '../../DatabaseCaches'
+import { CacheForPlayout, CacheForStudio2 } from '../../DatabaseCaches'
 import { profiler } from '../profiler'
 
 export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): void {
@@ -60,7 +59,7 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 	waitForPromise(cache.activationCache.initialize(activePlaylist, rundownsInPlaylist))
 
 	if (!activePlaylist.nextPartInstanceId) {
-		const firstPart = selectNextPart(activePlaylist, null, getAllOrderedPartsFromCache(cache))
+		const firstPart = selectNextPart(activePlaylist, null, getAllOrderedPartsFromPlayoutCache(cache))
 		setNextPart(cache, firstPart ? firstPart.part : null)
 	} else {
 		const nextPartInstance = cache.PartInstances.findOne(activePlaylist.nextPartInstanceId)

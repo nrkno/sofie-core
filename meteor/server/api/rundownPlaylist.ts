@@ -7,9 +7,10 @@ import {
 	rundownPlaylistCustomSyncFunction,
 	RundownSyncFunctionPriority,
 } from './ingest/rundownInput'
+import { removeRundownPlaylistFromDb } from './playout/lib'
 
 export function removeEmptyPlaylists(studioId: StudioId) {
-	return studioSyncFunction(studioId, (cache) => {
+	return studioSyncFunction('removeEmptyPlaylists', studioId, (cache) => {
 		const playlists = cache.RundownPlaylists.findFetch({})
 
 		// We want to run them all in parallel fibers
@@ -17,15 +18,19 @@ export function removeEmptyPlaylists(studioId: StudioId) {
 			playlists.map(async (playlist) =>
 				makePromise(() => {
 					// Take the playlist lock, to ensure we don't fight something else
-					rundownPlaylistCustomSyncFunction(playlist._id, RundownSyncFunctionPriority.USER_INGEST, () => {
-						// TODO - is this correct priority?
+					rundownPlaylistCustomSyncFunction(
+						'removeEmptyPlaylists',
+						playlist._id,
+						RundownSyncFunctionPriority.USER_INGEST,
+						() => {
+							// TODO - is this correct priority?
 
-						const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
-						if (rundowns === 0) {
-							// TODO - is this the best way?
-							playlist.removeTOBEREMOVED()
+							const rundowns = Rundowns.find({ playlistId: playlist._id }).count()
+							if (rundowns === 0) {
+								removeRundownPlaylistFromDb(playlist._id)
+							}
 						}
-					})
+					)
 				})
 			)
 		)

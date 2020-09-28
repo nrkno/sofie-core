@@ -9,15 +9,13 @@ import { getCurrentTime, waitForPromise } from '../../lib/lib'
 import { updateExpectedMediaItemsOnRundown } from '../api/expectedMediaItems'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
-import { initCacheForRundownPlaylist } from '../DatabaseCaches'
-import { removeRundownPlaylistFromCache, getSelectedPartInstancesFromCache, setNextPart } from '../api/playout/lib'
+import { getSelectedPartInstancesFromCache, setNextPart, removeRundownPlaylistFromDb } from '../api/playout/lib'
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 import { rundownPlaylistPlayoutSyncFunction } from '../api/playout/playout'
 import { rundownIngestSyncFromStudioFunction } from '../api/ingest/lib'
 import { forceClearAllActivationCaches } from '../ActivationCache'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../api/ingest/rundownInput'
 import { updateTimeline } from '../api/playout/timeline'
 
 if (!Settings.enableUserAccounts) {
@@ -56,24 +54,21 @@ if (!Settings.enableUserAccounts) {
 			}
 		},
 
-		debug_removeRundown(id: RundownPlaylistId) {
-			logger.debug('Remove rundown "' + id + '"')
+		debug_removeRundownPlaylist(id: RundownPlaylistId) {
+			logger.debug('Remove playlist "' + id + '"')
 
-			const playlist = RundownPlaylists.findOne(id)
-			if (playlist) {
-				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-				removeRundownPlaylistFromCache(cache, playlist)
-				waitForPromise(cache.saveAllToDatabase())
-			}
+			// Note: this is not 'thread'-safe, but its only a debug tool
+
+			removeRundownPlaylistFromDb(id)
 		},
 
 		debug_removeAllRos() {
 			logger.debug('Remove all rundowns')
 
+			// Note: this is not 'thread'-safe, but its only a debug tool
+
 			RundownPlaylists.find({}).forEach((playlist) => {
-				const cache = waitForPromise(initCacheForRundownPlaylist(playlist))
-				removeRundownPlaylistFromCache(cache, playlist)
-				waitForPromise(cache.saveAllToDatabase())
+				removeRundownPlaylistFromDb(playlist._id)
 			})
 		},
 
@@ -82,6 +77,7 @@ if (!Settings.enableUserAccounts) {
 
 			rundowns.map((r) => {
 				rundownIngestSyncFromStudioFunction(
+					'debug_recreateExpectedMediaItems',
 					r.studioId,
 					r.externalId,
 					() => {
@@ -116,6 +112,8 @@ if (!Settings.enableUserAccounts) {
 
 		debug_clearAllResetInstances() {
 			logger.info('clearAllResetInstances')
+
+			// Note: this is not 'thread'-safe, but its only a debug tool
 
 			PartInstances.remove({ reset: true })
 			PieceInstances.remove({ reset: true })

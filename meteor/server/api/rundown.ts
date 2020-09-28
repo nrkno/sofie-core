@@ -48,13 +48,7 @@ import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { RundownPlaylistContentWriteAccess } from '../security/rundownPlaylist'
-import {
-	CacheForRundownPlaylist,
-	initCacheForRundownPlaylist,
-	initCacheForRundownPlaylistFromRundown,
-	CacheForIngest,
-} from '../DatabaseCaches'
-import { removeRundownFromCache, removeRundownPlaylistFromCache, getAllOrderedPartsFromCache } from './playout/lib'
+import { CacheForIngest } from '../DatabaseCaches'
 import { Settings } from '../../lib/Settings'
 import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
@@ -62,9 +56,7 @@ import { getRundown2, rundownIngestSyncFunction, rundownIngestSyncFromStudioFunc
 import { DeepReadonly } from 'utility-types'
 import { DbCacheWriteCollection } from '../DatabaseCache'
 import { PartInstance, DBPartInstance, PartInstances } from '../../lib/collections/PartInstances'
-import { studioSyncFunction } from './ingest/rundownInput'
-import { modifyPlaylistExternalId } from './ingest/lib'
-import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { rundownPlaylistPlayoutSyncFunction } from './playout/playout'
 import { profiler } from './profiler'
 
 export function selectShowStyleVariant(
@@ -326,7 +318,6 @@ export function afterRemoveParts(cache: CacheForIngest, removedPartIds: PartId[]
 export function updatePartRanks(
 	partsCache: DbCacheWriteCollection<Part, DBPart>,
 	partInstancesCache: DbCacheWriteCollection<PartInstance, DBPartInstance> | undefined,
-	allOrderedParts: Part[],
 	segmentIds: SegmentId[]
 ) {
 	// TODO-PartInstance this will need to consider partInstances that have no backing part at some point
@@ -339,7 +330,15 @@ export function updatePartRanks(
 
 	let updatedParts = 0
 	for (const segmentId of segmentIds) {
-		const parts = allOrderedParts.filter((p) => p.segmentId === segmentId)
+		const parts = partsCache.findFetch(
+			{ segmentId },
+			{
+				sort: {
+					_rank: 1,
+					_id: 1,
+				},
+			}
+		)
 		const [dynamicParts, sortedParts] = _.partition(parts, (p) => !!p.dynamicallyInsertedAfterPartId)
 		logger.debug(
 			`updatePartRanks (${parts.length} parts with ${dynamicParts.length} dynamic in segment "${segmentId}")`
@@ -444,28 +443,48 @@ export namespace ServerRundownAPI {
 	export function removeRundownPlaylist(context: MethodContext, playlistId: RundownPlaylistId) {
 		check(playlistId, String)
 		const access = StudioContentWriteAccess.rundownPlaylist(context, playlistId)
-		const cache = waitForPromise(initCacheForRundownPlaylist(access.playlist))
-		const result = removeRundownPlaylistInner(cache, playlistId)
-		waitForPromise(cache.saveAllToDatabase())
-		return result
+
+		rundownPlaylistPlayoutSyncFunction(context, 'removeRundownPlaylist', playlistId, null, (cache) => {
+			cache.removePlaylist()
+		})
 	}
 	/** Remove an individual rundown */
 	export function removeRundown(context: MethodContext, rundownId: RundownId) {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(access.rundown._id))
-		const result = removeRundownInner(cache, rundownId)
-		waitForPromise(cache.saveAllToDatabase())
-		return result
+
+		// This is safe enough to do outside the cache
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+		rundownIngestSyncFromStudioFunction(
+			'removeRundown',
+			rundown.studioId,
+			rundown.externalId,
+			() => {},
+			(cache) => {
+				cache.removeRundown()
+			}
+		)
 	}
 
 	export function unsyncRundown(context: MethodContext, rundownId: RundownId): void {
 		check(rundownId, String)
 		const access = RundownPlaylistContentWriteAccess.rundown(context, rundownId)
-		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(access.rundown._id))
-		const result = unsyncRundownInner(cache)
-		waitForPromise(cache.saveAllToDatabase())
-		return result
+
+		// This is safe enough to do outside the cache
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+		rundownIngestSyncFromStudioFunction(
+			'unsyncRundown',
+			rundown.studioId,
+			rundown.externalId,
+			() => {},
+			(cache) => {
+				unsyncRundownInner(cache)
+			}
+		)
 	}
 	/** Resync all rundowns in a rundownPlaylist */
 	export function resyncRundownPlaylist(
@@ -501,40 +520,6 @@ export namespace ServerRundownAPI {
 		}
 
 		span?.end()
-	}
-	/** Remove a RundownPlaylist and all its contents */
-	export function removeRundownPlaylistInner(cache: CacheForRundownPlaylist, playlistId: RundownPlaylistId) {
-		check(playlistId, String)
-		logger.info('removeRundownPlaylist ' + playlistId)
-
-		const playlist = cache.RundownPlaylists.findOne(playlistId)
-		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${playlistId}" not found!`)
-		if (playlist.active)
-			throw new Meteor.Error(400, `Not allowed to remove an active RundownPlaylist "${playlistId}".`)
-
-		removeRundownPlaylistFromCache(cache, playlist)
-	}
-	/** Remove an individual rundown */
-	export function removeRundownInner(cache: CacheForRundownPlaylist, rundownId: RundownId) {
-		check(rundownId, String)
-		logger.info('removeRundown ' + rundownId)
-
-		const rundown = cache.Rundowns.findOne(rundownId)
-		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
-		if (rundown.playlistId) {
-			const playlist = cache.RundownPlaylists.findOne(rundown.playlistId)
-			if (playlist && playlist.active && playlist.currentPartInstanceId) {
-				const partInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
-				if (partInstance && partInstance.rundownId === rundown._id) {
-					throw new Meteor.Error(
-						400,
-						`Not allowed to remove an active Rundown "${rundownId}". (active part: "${partInstance._id}" in playlist "${playlist._id}")`
-					)
-				}
-			}
-		}
-
-		removeRundownFromCache(cache, rundown)
 	}
 	/** Resync all rundowns in a rundownPlaylist */
 	export function innerResyncRundownPlaylist(playlist: RundownPlaylist): ReloadRundownPlaylistResponse {
@@ -577,10 +562,20 @@ export namespace ServerRundownAPI {
 	}
 	export function unsyncSegment(context: MethodContext, rundownId: RundownId, segmentId: SegmentId): void {
 		rundownContentAllowWrite(context.userId, { rundownId })
-		const cache = waitForPromise(initCacheForRundownPlaylistFromRundown(rundownId))
-		const result = unsyncSegmentInner(cache, segmentId)
-		waitForPromise(cache.saveAllToDatabase())
-		return result
+
+		// This is safe enough to do outside the cache
+		const rundown = Rundowns.findOne(rundownId)
+		if (!rundown) throw new Meteor.Error(404, `Rundown "${rundownId}" not found!`)
+
+		rundownIngestSyncFromStudioFunction(
+			'unsyncRundown',
+			rundown.studioId,
+			rundown.externalId,
+			() => {},
+			(cache) => {
+				unsyncSegmentInner(cache, segmentId)
+			}
+		)
 	}
 
 	export function innerResyncRundown(rundown: Rundown): TriggerReloadDataResponse {

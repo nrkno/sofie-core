@@ -16,7 +16,7 @@ import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../../
 import {
 	selectNextPart,
 	getSelectedPartInstancesFromCache,
-	getAllOrderedPartsFromCache,
+	getAllOrderedPartsFromPlayoutCache,
 	getRundownIDsFromCache,
 } from './lib'
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
@@ -69,7 +69,7 @@ function getOrderedPartsAfterPlayhead(cache: CacheForPlayout, partCount: number)
 	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
 
 	const playlist = cache.Playlist.doc
-	const orderedParts = getAllOrderedPartsFromCache(cache)
+	const orderedParts = getAllOrderedPartsFromPlayoutCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the nextPartInstance consumes the

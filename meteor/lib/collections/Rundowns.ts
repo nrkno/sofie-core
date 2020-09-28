@@ -280,33 +280,6 @@ export class Rundown implements DBRundown {
 		}
 		return this.getAllPartInstances(newSelector, options)
 	}
-	removeTOBEREMOVED() {
-		if (!Meteor.isServer) throw new Meteor.Error('The "remove" method is available server-side only (sorry)')
-		Rundowns.remove(this._id)
-		if (this.playlistId) {
-			// Check if any other members of the playlist are left
-			if (
-				Rundowns.find({
-					playlistId: this.playlistId,
-				}).count() === 0
-			) {
-				RundownPlaylists.remove(this.playlistId)
-			}
-		}
-		Segments.remove({ rundownId: this._id })
-		Parts.remove({ rundownId: this._id })
-		PartInstances.remove({ rundownId: this._id })
-		Pieces.remove({ rundownId: this._id })
-		PieceInstances.remove({ rundownId: this._id })
-		AdLibPieces.remove({ rundownId: this._id })
-		AdLibActions.remove({ rundownId: this._id })
-		RundownBaselineObjs.remove({ rundownId: this._id })
-		RundownBaselineAdLibPieces.remove({ rundownId: this._id })
-		RundownBaselineAdLibActions.remove({ rundownId: this._id })
-		IngestDataCache.remove({ rundownId: this._id })
-		ExpectedMediaItems.remove({ rundownId: this._id })
-		ExpectedPlayoutItems.remove({ rundownId: this._id })
-	}
 	touch() {
 		if (getCurrentTime() - this.modified > 3600 * 1000) {
 			const m = getCurrentTime()
