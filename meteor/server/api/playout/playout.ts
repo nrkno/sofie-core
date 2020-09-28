@@ -1208,14 +1208,6 @@ export namespace ServerPlayoutAPI {
 				if (!rundown)
 					throw new Meteor.Error(501, `Current Rundown "${currentPartInstance.rundownId}" could not be found`)
 
-				// const blueprintIds: Set<string> = new Set<string>()
-				// if (studio.blueprintId) {
-				// 	blueprintIds.add(unprotectString(studio.blueprintId))
-				// }
-				// if (rundown.getShowStyleBase()?.blueprintId) {
-				// 	blueprintIds.add(unprotectString(rundown.getShowStyleBase().blueprintId))
-				// }
-
 				const actionContext = new ActionExecutionContext(
 					{
 						name: `${rundown.name}(${playlist.name})`,

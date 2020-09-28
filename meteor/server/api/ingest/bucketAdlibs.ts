@@ -23,14 +23,6 @@ export function updateBucketAdlibFromIngestData(
 ): PieceId | null {
 	const { blueprint, blueprintId } = loadShowStyleBlueprint(showStyle)
 
-	// const blueprintIds: Set<string> = new Set<string>()
-	// if (blueprintId) {
-	// 	blueprintIds.add(unprotectString(blueprintId))
-	// }
-	// if (studio.blueprintId) {
-	// 	blueprintIds.add(unprotectString(studio.blueprintId))
-	// }
-
 	const context = new ShowStyleUserContext(
 		{
 			name: `Bucket Ad-Lib`,

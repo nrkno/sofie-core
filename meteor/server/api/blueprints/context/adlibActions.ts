@@ -123,6 +123,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		this.rundownPlaylist = rundownPlaylist
 		this.rundown = rundown
 		this.takeAfterExecute = false
+
+		this.blackHoleNotes = contextInfo.blackHoleUserNotes ?? false
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
