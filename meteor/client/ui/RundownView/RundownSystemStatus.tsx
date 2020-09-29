@@ -277,7 +277,9 @@ export const RundownSystemStatus = translateWithTracker(
 							})}>
 							<div className="indicator__tooltip">
 								<h4>
-									{t('{{nrcsName}} Connection', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+									{t('{{nrcsName}} Connection', {
+										nrcsName: (this.props.firstRundown && this.props.firstRundown.externalNRCSName) || 'NRCS',
+									})}
 								</h4>
 								<div>
 									<h5>{t('Last update')}</h5>

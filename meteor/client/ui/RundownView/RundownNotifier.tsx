@@ -697,7 +697,9 @@ class RundownViewNotifier extends WithManagedTracker {
 						true,
 						[
 							{
-								label: t('Reload {{nrcsName}} Data', { nrcsName: firstRundown?.externalNRCSName || 'NRCS' }),
+								label: t('Reload {{nrcsName}} Data', {
+									nrcsName: (firstRundown && firstRundown.externalNRCSName) || 'NRCS',
+								}),
 								type: 'primary',
 								action: (e) => {
 									const reloadFunc = reloadRundownPlaylistClick.get()
