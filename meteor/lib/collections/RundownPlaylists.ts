@@ -38,7 +38,7 @@ export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
 	/** External ID (source) of the playlist */
-	externalId: string
+	externalId: string | null
 	/** ID of the organization that owns the playlist */
 	organizationId?: OrganizationId | null
 	/** Studio that this playlist is assigned to */
@@ -90,6 +90,9 @@ export interface DBRundownPlaylist {
 	/** Timestamp for the last time an incorrect part was reported as started */
 	lastIncorrectPartPlaybackReported?: Time
 
+	/** If the _rank of rundowns in this playlist has ben set manually by a user in Sofie */
+	rundownRanksAreSetInSofie?: boolean
+
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
 }
@@ -120,6 +123,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public previousPartInstanceId: PartInstanceId | null
 	public loop?: boolean
 	public outOfOrderTiming?: boolean
+	public rundownRanksAreSetInSofie?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
 

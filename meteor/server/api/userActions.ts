@@ -763,6 +763,20 @@ export function switchRouteSet(
 	return ServerPlayoutAPI.switchRouteSet(context, studioId, routeSetId, state)
 }
 
+export function moveRundown(
+	context: MethodContext,
+	rundownId: RundownId,
+	intoPlaylistId: RundownPlaylistId | null,
+	rundownsIdsInPlaylistInOrder: RundownId[]
+): ClientAPI.ClientResponse<void> {
+	check(rundownId, String)
+	check(intoPlaylistId, Match.Optional(String))
+
+	return ClientAPI.responseSuccess(
+		ServerRundownAPI.moveRundown(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
+	)
+}
+
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
 	const transaction = profiler.startTransaction(description, 'userAction')
 	return makePromise(() => {
@@ -1030,6 +1044,14 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return makePromise(() => switchRouteSet(this, studioId, routeSetId, state))
+	}
+	moveRundown(
+		_userEvent: string,
+		rundownId: RundownId,
+		intoPlaylistId: RundownPlaylistId | null,
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
 	}
 }
 registerClassToMeteorMethods(

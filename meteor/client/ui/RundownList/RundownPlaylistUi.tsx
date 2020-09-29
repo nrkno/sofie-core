@@ -157,6 +157,8 @@ export const RundownPlaylistUi = DropTarget(
 				) : null
 			}
 
+			// MeteorCall.userAction.moveRundown(e, rundownIdTHatWasMoved, movedIntoPlaylistId, rundownsIdsInPlaylistInOrder)
+
 			// onDragEnd (magic: any) {
 			// 	console.log({
 			// 		rundownIdTHatWasMoved: RundownId, // always
