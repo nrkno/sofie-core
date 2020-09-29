@@ -25,6 +25,7 @@ import {
 	IngestSegment,
 	IngestPart,
 	BlueprintResultSegment,
+	BlueprintResultOrderedRundowns,
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -36,6 +37,9 @@ import {
 	removeSegments,
 	updatePartRanks,
 	produceRundownPlaylistInfo,
+	allowedToMoveRundownOutOfPlaylist,
+	RundownPlaylistAndOrder,
+	getAllRundownsInPlaylist,
 } from '../rundown'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
@@ -532,13 +536,7 @@ function updateRundownFromIngestData(
 		// The rundown is going to change playlist
 		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
 		if (existingPlaylist) {
-			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
-
-			if (
-				existingPlaylist.active &&
-				currentPartInstance &&
-				currentPartInstance.rundownId === existingDbRundown._id
-			) {
+			if (allowedToMoveRundownOutOfPlaylist(existingPlaylist, existingDbRundown)) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
 				// and will just revert the playlist change:
@@ -560,6 +558,9 @@ function updateRundownFromIngestData(
 		}
 	}
 
+	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
+	dbRundownData.playlistId = rundownPlaylistInfo.rundownPlaylist._id
+
 	// Save rundown into database:
 	const rundownChanges = saveIntoDb(
 		Rundowns,
@@ -579,8 +580,6 @@ function updateRundownFromIngestData(
 			},
 		}
 	)
-
-	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
 
 	const playlistChanges = saveIntoDb(
 		RundownPlaylists,
@@ -607,7 +606,7 @@ function updateRundownFromIngestData(
 	const dbRundown = Rundowns.findOne(dbRundownData._id)
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
-	handleUpdatedRundownPlaylist(dbRundown, rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order)
+	updateRundownsInPlaylist(rundownPlaylistInfo, dbRundown)
 	removeEmptyPlaylists(studio)
 
 	const dbPlaylist = dbRundown.getRundownPlaylist()
@@ -950,49 +949,54 @@ function updateRundownFromIngestData(
 	return didChange
 }
 
-/** Set order and playlistID of rundowns in a playlist */
-function handleUpdatedRundownPlaylist(
-	currentRundown: DBRundown,
-	playlist: DBRundownPlaylist,
-	order: _.Dictionary<number>
-) {
-	let rundowns: DBRundown[] = []
-	let selector: Mongo.Selector<DBRundown> = {}
-	if (currentRundown.playlistExternalId && playlist.externalId === currentRundown.playlistExternalId) {
-		selector = { playlistExternalId: currentRundown.playlistExternalId }
-		rundowns = Rundowns.find({ playlistExternalId: currentRundown.playlistExternalId }).fetch()
-	} else if (!currentRundown.playlistExternalId) {
-		selector = { _id: currentRundown._id }
-		rundowns = [currentRundown]
-	} else if (currentRundown.playlistExternalId && playlist.externalId !== currentRundown.playlistExternalId) {
+/** Set _rank and playlistId of rundowns in a playlist */
+export function updateRundownsInPlaylist(rundownPlaylistInfo: RundownPlaylistAndOrder, currentRundown?: DBRundown) {
+	const playlist: DBRundownPlaylist = rundownPlaylistInfo.rundownPlaylist
+	const rundownRanks: BlueprintResultOrderedRundowns = rundownPlaylistInfo.order
+
+	const { rundowns, selector } = getAllRundownsInPlaylist(playlist._id, playlist.externalId)
+
+	let maxRank: number = Number.NEGATIVE_INFINITY
+	let currentRundownUpdated: DBRundown | undefined
+	rundowns.forEach((rundown) => {
+		rundown.playlistId = playlist._id
+
+		if (!playlist.rundownRanksAreSetInSofie) {
+			const rundownRank = rundownRanks[unprotectString(rundown._id)]
+			if (rundownRank !== undefined) {
+				rundown._rank = rundownRank
+			} else {
+				// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
+				rundown._rank = -1
+				// TODO - this should do something to make it be floated
+			}
+		}
+		maxRank = Math.max(maxRank, rundown._rank)
+		if (currentRundown && rundown._id === currentRundown._id) currentRundownUpdated = rundown
+		return rundown
+	})
+	if (playlist.rundownRanksAreSetInSofie) {
+		// Place new rundowns at the end:
+		rundowns.forEach((rundown) => {
+			if (rundown._rank === undefined) {
+				rundown._rank = ++maxRank
+			}
+		})
+	}
+	if (currentRundown && !currentRundownUpdated) {
+		logger.debug(currentRundown)
 		throw new Meteor.Error(
-			501,
-			`Rundown "${currentRundown._id}" is assigned to a playlist "${currentRundown.playlistExternalId}", but the produced playlist has external ID: "${playlist.externalId}".`
+			500,
+			`updateRundownsInPlaylist: Rundown "${currentRundown._id}" is not a part of rundowns`
 		)
-	} else {
-		throw new Meteor.Error(501, `Unknown error when handling rundown playlist.`)
+	}
+	if (currentRundown && currentRundownUpdated) {
+		// Apply to in-memory copy:
+		currentRundown.playlistId = currentRundownUpdated.playlistId
+		currentRundown._rank = currentRundownUpdated._rank
 	}
 
-	const updated = rundowns.map((r) => {
-		const rundownOrder = order[unprotectString(r._id)]
-		r.playlistId = playlist._id
-		if (rundownOrder !== undefined) {
-			r._rank = rundownOrder
-		} else {
-			// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
-			r._rank = -1
-			// TODO - this should do something to make it be floated
-		}
-
-		if (r._id === currentRundown._id) {
-			// Apply to in-memory copy
-			currentRundown.playlistId = r.playlistId
-			currentRundown._rank = r._rank
-		}
-		return r
-	})
-
-	saveIntoDb(Rundowns, selector, updated)
+	saveIntoDb(Rundowns, selector, rundowns)
 }
 
 function handleRemovedSegment(

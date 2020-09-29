@@ -189,6 +189,12 @@ export interface NewUserActionAPI extends MethodContext {
 		routeSetId: string,
 		state: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
+	moveRundown(
+		userEvent: string,
+		rundownId: RundownId,
+		intoPlaylistId: RundownPlaylistId | null,
+		rundownsIdsInPlaylistInOrder: RundownId[]
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -255,6 +261,7 @@ export enum UserActionAPIMethods {
 	'guiBlurred' = 'userAction.blurred',
 
 	'switchRouteSet' = 'userAction.switchRouteSet',
+	'moveRundown' = 'userAction.moveRundown',
 }
 
 export interface ReloadRundownPlaylistResponse {
