@@ -1009,6 +1009,23 @@ const StudioRoutings = withTranslation()(
 				$set: setObject,
 			})
 		}
+		addNewExclusivityGroup = () => {
+			let newEGroupKeyName = 'exclusivityGroup'
+			let iter: number = 0
+			while ((this.props.studio.routeSetExclusivityGroups || {})[newEGroupKeyName + iter]) {
+				iter++
+			}
+
+			let newGroup: StudioRouteSetExclusivityGroup = {
+				name: 'New Exclusivity Group',
+			}
+			let setObject: Partial<DBStudio> = {}
+			setObject['routeSetExclusivityGroups.' + newEGroupKeyName + iter] = newGroup
+
+			Studios.update(this.props.studio._id, {
+				$set: setObject,
+			})
+		}
 		updateRouteSetId = (edit: EditAttributeBase, newValue: string) => {
 			let oldRouteId = edit.props.overrideDisplayValue
 			let newRouteId = newValue + ''
@@ -1183,7 +1200,7 @@ const StudioRoutings = withTranslation()(
 									hl: this.isItemEdited(exclusivityGroupId),
 								})}>
 								<th className="settings-studio-device__name c3">{exclusivityGroupId}</th>
-								<td className="settings-studio-device__id c2">{exclusivityGroup.name}</td>
+								<td className="settings-studio-device__id c5">{exclusivityGroup.name}</td>
 								<td className="settings-studio-device__id c3">
 									{
 										_.filter(
@@ -1236,10 +1253,8 @@ const StudioRoutings = withTranslation()(
 												</label>
 											</div>
 										</div>
-										<div className="mod">
-											<button
-												className="btn btn-primary right"
-												onClick={(e) => this.finishEditItem(exclusivityGroupId)}>
+										<div className="mod alright">
+											<button className="btn btn-primary" onClick={(e) => this.finishEditItem(exclusivityGroupId)}>
 												<FontAwesomeIcon icon={faCheck} />
 											</button>
 										</div>
@@ -1270,9 +1285,9 @@ const StudioRoutings = withTranslation()(
 							className={ClassNames({
 								hl: this.isItemEdited(routeId),
 							})}>
-							<th className="settings-studio-device__name c3">{routeId}</th>
-							<td className="settings-studio-device__id c2">{routeSet.name}</td>
-							<td className="settings-studio-device__id c2">{routeSet.exclusivityGroup}</td>
+							<th className="settings-studio-device__name c2">{routeId}</th>
+							<td className="settings-studio-device__id c3">{routeSet.name}</td>
+							<td className="settings-studio-device__id c4">{routeSet.exclusivityGroup}</td>
 							<td className="settings-studio-device__id c2">{routeSet.routes.length}</td>
 							<td className="settings-studio-device__id c2">
 								{routeSet.active ? <span className="pill">{t('Active')}</span> : null}
@@ -1309,7 +1324,7 @@ const StudioRoutings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.active'}
+													attribute={`routeSets.${routeId}.active`}
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
@@ -1325,7 +1340,7 @@ const StudioRoutings = withTranslation()(
 												{t('Route Set Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.name'}
+													attribute={`routeSets.${routeId}.name`}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
@@ -1338,9 +1353,21 @@ const StudioRoutings = withTranslation()(
 												{t('Exclusivity group')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.exclusivityGroup'}
+													attribute={`routeSets.${routeId}.exclusivityGroup`}
 													obj={this.props.studio}
-													type="text"
+													type="checkbox"
+													collection={Studios}
+													className="mod mas"
+													mutateDisplayValue={(v) => (v === undefined ? false : true)}
+													mutateUpdateValue={(v) => undefined}
+												/>
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeId}.exclusivityGroup`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={Object.keys(this.props.studio.routeSetExclusivityGroups)}
+													mutateDisplayValue={(v) => (v === undefined ? 'None' : v)}
 													collection={Studios}
 													className="input text-input input-l"></EditAttribute>
 												<span className="text-s dimmed">
@@ -1353,7 +1380,7 @@ const StudioRoutings = withTranslation()(
 												{t('Behavior')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'routeSets.' + routeId + '.behavior'}
+													attribute={`routeSets.${routeId}.behavior`}
 													obj={this.props.studio}
 													type="dropdown"
 													options={StudioRouteBehavior}
@@ -1392,6 +1419,11 @@ const StudioRoutings = withTranslation()(
 					<table className="expando settings-studio-mappings-table">
 						<tbody>{this.renderExclusivityGroups()}</tbody>
 					</table>
+					<div className="mod mhs">
+						<button className="btn btn-primary" onClick={(e) => this.addNewExclusivityGroup()}>
+							<FontAwesomeIcon icon={faPlus} />
+						</button>
+					</div>
 					<h3 className="mhn">{t('Route Sets')}</h3>
 					<table className="expando settings-studio-mappings-table">
 						<tbody>{this.renderRouteSets()}</tbody>

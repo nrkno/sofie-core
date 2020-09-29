@@ -2,7 +2,7 @@ import * as _ from 'underscore'
 import * as React from 'react'
 import * as VelocityReact from 'velocity-react'
 
-import { StudioRouteSet, StudioRouteBehavior } from '../../../lib/collections/Studios'
+import { StudioRouteSet, StudioRouteBehavior, StudioRouteSetExclusivityGroup } from '../../../lib/collections/Studios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFastBackward, faRandom } from '@fortawesome/free-solid-svg-icons'
 
@@ -24,10 +24,14 @@ import * as On_Air_MouseOver from './On_Air_MouseOver.json'
 import { SupportPopUpToggle } from '../SupportPopUp'
 import classNames from 'classnames'
 import { NoticeLevel } from '../../lib/notifications/notifications'
+import { RouteSetsIcon } from '../../lib/routeSetIcons'
 
 interface IProps {
 	studioRouteSets: {
 		[id: string]: StudioRouteSet
+	}
+	studioRouteSetExclusivityGroups: {
+		[id: string]: StudioRouteSetExclusivityGroup
 	}
 	isFollowingOnAir: boolean
 	onFollowOnAir?: () => void
@@ -244,27 +248,7 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 					{this.props.isStudioMode &&
 						this.props.studioRouteSets &&
 						this.props.onStudioRouteSetSwitch &&
-						availableRouteSets.length > 0 &&
-						(availableRouteSets.length < 3 ? (
-							availableRouteSets.map(([id, routeSet]) => (
-								<button
-									className={classNames('status-bar__controls__button', 'status-bar__controls__button--route-set', {
-										active: routeSet.active,
-										'status-bar__controls__button--inactive':
-											routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY,
-									})}
-									role="button"
-									onClick={(e) =>
-										!(routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY) &&
-										this.props.onStudioRouteSetSwitch &&
-										this.props.onStudioRouteSetSwitch(e, id, routeSet, !routeSet.active)
-									}
-									tabIndex={0}
-									key={id}>
-									{routeSet.name}
-								</button>
-							))
-						) : (
+						availableRouteSets.length > 0 && (
 							<>
 								<button
 									className={classNames(
@@ -278,13 +262,13 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 									role="button"
 									onClick={this.onRouteSetsToggle}
 									tabIndex={0}>
-									<FontAwesomeIcon icon={faRandom} />
+									<RouteSetsIcon />
 									{activeRoutes > 0 && <span className="notification">{activeRoutes}</span>}
 								</button>
 								<VelocityReact.VelocityTransitionGroup
 									enter={{
 										animation: {
-											width: ['21.875rem', '0rem'],
+											width: ['28rem', '0rem'],
 										},
 										easing: 'ease-out',
 										duration: 300,
@@ -298,37 +282,40 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 									}}>
 									{this.state.isRouteSetsOpen && (
 										<div className="route-set-pop-up-panel">
-											{Object.entries(exclusivityGroups).map(([key, routeSets]) => (
-												<div className="route-set-pop-up-panel__group" key={key}>
-													{routeSets.map(([id, routeSet]) => (
-														<button
-															className={classNames(
-																'status-bar__controls__button',
-																'status-bar__controls__button--route-set',
-																{
-																	active: routeSet.active,
-																	'status-bar__controls__button--inactive':
-																		routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY,
+											<div className="route-set-pop-up-panel__inside">
+												<h2 className="mhn mvn">Route Sets</h2>
+												{Object.entries(exclusivityGroups).map(([key, routeSets]) => (
+													<div className="route-set-pop-up-panel__group" key={key}>
+														{routeSets.map(([id, routeSet]) => (
+															<button
+																className={classNames(
+																	'status-bar__controls__button',
+																	'status-bar__controls__button--route-set',
+																	{
+																		active: routeSet.active,
+																		'status-bar__controls__button--inactive':
+																			routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY,
+																	}
+																)}
+																role="button"
+																onClick={(e) =>
+																	!(routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY) &&
+																	this.props.onStudioRouteSetSwitch &&
+																	this.props.onStudioRouteSetSwitch(e, id, routeSet, !routeSet.active)
 																}
-															)}
-															role="button"
-															onClick={(e) =>
-																!(routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY) &&
-																this.props.onStudioRouteSetSwitch &&
-																this.props.onStudioRouteSetSwitch(e, id, routeSet, !routeSet.active)
-															}
-															tabIndex={0}
-															key={id}>
-															{routeSet.name}
-														</button>
-													))}
-												</div>
-											))}
+																tabIndex={0}
+																key={id}>
+																{routeSet.name}
+															</button>
+														))}
+													</div>
+												))}
+											</div>
 										</div>
 									)}
 								</VelocityReact.VelocityTransitionGroup>
 							</>
-						))}
+						)}
 					<SupportPopUpToggle onClick={this.props.onToggleSupportPanel} isOpen={this.props.isSupportPanelOpen} />
 				</VelocityReact.VelocityTransitionGroup>
 			</div>

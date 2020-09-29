@@ -2458,6 +2458,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
 										studioRouteSets={this.props.studio.routeSets}
+										studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
 										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
@@ -2498,26 +2499,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										}}>
 										{this.state.isSupportPanelOpen && (
 											<SupportPopUp>
-												<button className="btn btn-primary" onClick={this.onToggleHotkeys}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onToggleHotkeys}>
 													{t('Show Hotkeys')}
 												</button>
-												<button className="btn btn-primary" onClick={this.onTakeRundownSnapshot}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
 													{t('Take a Snapshot')}
 												</button>
+												<hr />
 												{this.state.studioMode && (
-													<button className="btn btn-primary" onClick={this.onRestartPlayout}>
-														{t('Restart Playout')}
-													</button>
+													<>
+														<button className="btn btn-secondary" onClick={this.onRestartPlayout}>
+															{t('Restart Playout')}
+														</button>
+														<hr />
+													</>
 												)}
 												{this.state.studioMode &&
 													this.props.casparCGPlayoutDevices &&
 													this.props.casparCGPlayoutDevices.map((i) => (
-														<button
-															className="btn btn-primary"
-															onClick={() => this.onRestartCasparCG(i)}
-															key={unprotectString(i._id)}>
-															{t('Restart {{device}}', { device: i.name })}
-														</button>
+														<React.Fragment key={unprotectString(i._id)}>
+															<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+																{t('Restart {{device}}', { device: i.name })}
+															</button>
+															<hr />
+														</React.Fragment>
 													))}
 											</SupportPopUp>
 										)}

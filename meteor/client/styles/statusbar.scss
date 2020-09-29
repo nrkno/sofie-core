@@ -191,6 +191,17 @@
 
 		&.status-bar__controls__button--route-set-panel {
 			z-index: 310;
+
+			> svg {
+				width: 1.7em;
+				height: 1.7em;
+				position: relative;
+				left: 0.1em;
+			}
+
+			&.status-bar__controls__button--open > svg > path {
+				fill: var(--ui-dark-color);
+			}
 		}
 	}
 }
