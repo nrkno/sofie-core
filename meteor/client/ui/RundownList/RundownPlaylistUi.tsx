@@ -80,13 +80,16 @@ const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlay
 }
 
 export const RundownPlaylistUi = DropTarget(
-	RundownListDragDropTypes.PLAYLIST,
+	RundownListDragDropTypes.RUNDOWN,
 	spec,
 	collect
 )(
 	withTranslation()(
-		class RundownPlaylistUi extends React.Component<Translated<IRundownPlaylistUiProps>, IRundownPlaylistUiState> {
-			constructor(props: Translated<IRundownPlaylistUiProps>) {
+		class RundownPlaylistUi extends React.Component<
+			Translated<IRundownPlaylistUiProps> & IRundownPlaylistDropTargetProps,
+			IRundownPlaylistUiState
+		> {
+			constructor(props: Translated<IRundownPlaylistUiProps> & IRundownPlaylistDropTargetProps) {
 				super(props)
 			}
 
@@ -186,7 +189,7 @@ export const RundownPlaylistUi = DropTarget(
 			// }
 
 			render() {
-				const { playlist } = this.props
+				const { playlist, connectDropTarget, isOver } = this.props
 				const rundowns = playlist.getRundowns()
 				const playbackProgressBar = createProgressBarRow(playlist)
 				const playlistViewLinks = this.createPlaylistViewLinks()
@@ -208,8 +211,13 @@ export const RundownPlaylistUi = DropTarget(
 					<RundownListItem key={unprotectString(rundown._id)} rundown={rundown} viewLinks={playlistViewLinks} />
 				))
 
-				return (
-					<tr>
+				const styles: any = {}
+				if (isOver) {
+					styles['borderColor'] = 'red'
+				}
+
+				return connectDropTarget(
+					<tr style={styles}>
 						<td colSpan={10}>
 							<table className="table">
 								<thead>
