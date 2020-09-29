@@ -89,7 +89,7 @@ describe('User Actions - Media Manager', () => {
 					},
 				})
 				pResolve()
-			}, 10)
+			}, 50)
 
 			Meteor.call(UserActionAPI.methods.mediaRestartWorkflow, '', workFlowId)
 			await p
@@ -126,7 +126,7 @@ describe('User Actions - Media Manager', () => {
 					},
 				})
 				pResolve()
-			}, 10)
+			}, 50)
 
 			Meteor.call(UserActionAPI.methods.mediaAbortWorkflow, '', workFlowId)
 			await p
@@ -165,7 +165,7 @@ describe('User Actions - Media Manager', () => {
 					},
 				})
 				pResolve()
-			}, 10)
+			}, 50)
 
 			Meteor.call(UserActionAPI.methods.mediaPrioritizeWorkflow, '', workFlowId)
 			await p
@@ -187,7 +187,7 @@ describe('User Actions - Media Manager', () => {
 						reply: 'done',
 					},
 				})
-			}, 10)
+			}, 50)
 
 			Meteor.call(UserActionAPI.methods.mediaRestartAllWorkflows, '')
 		}
@@ -208,7 +208,7 @@ describe('User Actions - Media Manager', () => {
 						reply: 'done',
 					},
 				})
-			}, 10)
+			}, 50)
 
 			Meteor.call(UserActionAPI.methods.mediaAbortAllWorkflows, '')
 		}
