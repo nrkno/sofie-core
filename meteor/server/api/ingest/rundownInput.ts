@@ -40,6 +40,7 @@ import {
 	allowedToMoveRundownOutOfPlaylist,
 	RundownPlaylistAndOrder,
 	getAllRundownsInPlaylist,
+	sortDefaultRundownInPlaylistOrder,
 } from '../rundown'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
@@ -607,7 +608,7 @@ function updateRundownFromIngestData(
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
 	updateRundownsInPlaylist(rundownPlaylistInfo, dbRundown)
-	removeEmptyPlaylists(studio)
+	removeEmptyPlaylists(studio._id)
 
 	const dbPlaylist = dbRundown.getRundownPlaylist()
 	if (!dbPlaylist) throw new Meteor.Error(500, 'RundownPlaylist not found (it should have been)')
@@ -965,26 +966,26 @@ export function updateRundownsInPlaylist(rundownPlaylistInfo: RundownPlaylistAnd
 			const rundownRank = rundownRanks[unprotectString(rundown._id)]
 			if (rundownRank !== undefined) {
 				rundown._rank = rundownRank
-			} else {
-				// an unranked Rundown is essentially "floated" - it is a part of the playlist, but it shouldn't be visible in the UI
-				rundown._rank = -1
-				// TODO - this should do something to make it be floated
 			}
 		}
-		maxRank = Math.max(maxRank, rundown._rank)
+		if (!_.isNaN(Number(rundown._rank))) {
+			maxRank = Math.max(maxRank, rundown._rank)
+		}
 		if (currentRundown && rundown._id === currentRundown._id) currentRundownUpdated = rundown
 		return rundown
 	})
 	if (playlist.rundownRanksAreSetInSofie) {
 		// Place new rundowns at the end:
-		rundowns.forEach((rundown) => {
+
+		const unrankedRundowns = sortDefaultRundownInPlaylistOrder(rundowns.filter((r) => r._rank === undefined))
+
+		unrankedRundowns.forEach((rundown) => {
 			if (rundown._rank === undefined) {
 				rundown._rank = ++maxRank
 			}
 		})
 	}
 	if (currentRundown && !currentRundownUpdated) {
-		logger.debug(currentRundown)
 		throw new Meteor.Error(
 			500,
 			`updateRundownsInPlaylist: Rundown "${currentRundown._id}" is not a part of rundowns`

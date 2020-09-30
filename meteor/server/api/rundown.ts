@@ -73,7 +73,7 @@ import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
 import { profiler } from './profiler'
 import { updateRundownsInPlaylist } from './ingest/rundownInput'
 import { Mongo } from 'meteor/mongo'
-import { getPlaylistIdFromExternalId } from './rundownPlaylist'
+import { getPlaylistIdFromExternalId, removeEmptyPlaylists } from './rundownPlaylist'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -152,7 +152,7 @@ export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, run
 			`Wrong playlist "${playlist._id}" provided for rundown "${rundown._id}" ("${rundown.playlistId}")`
 		)
 
-	return playlist.active && currentPartInstance && currentPartInstance.rundownId === rundown._id
+	return !(playlist.active && currentPartInstance && currentPartInstance.rundownId === rundown._id)
 }
 
 export function generatePlaylistIdFromExternalId(playlistExternalId: string) {}
@@ -273,36 +273,46 @@ export function produceRundownPlaylistInfo(
 	// Fallback:
 
 	// It's a rundown that "doesn't have a playlist", so we just make one up:
-	{
-		const playlistExternalId = unprotectString(currentRundown._id)
-		const playlistId = getPlaylistIdFromExternalId(playlistExternalId)
 
+	let playlistExternalId: string | null
+	let newPlaylistId: RundownPlaylistId
+
+	if (playlistId) {
+		// There is a playlistId specified, that should be used then:
 		const existingPlaylist = RundownPlaylists.findOne(playlistId)
 
-		const { rundowns } = getAllRundownsInPlaylist(playlistId, playlistExternalId)
-		if (!rundowns.find((rundown) => rundown._id === currentRundown._id)) {
-			rundowns.push(currentRundown)
-		}
+		playlistExternalId = existingPlaylist?.externalId || null
+		newPlaylistId = playlistId
+	} else {
+		playlistExternalId = unprotectString(currentRundown._id)
+		newPlaylistId = getPlaylistIdFromExternalId(playlistExternalId)
+	}
 
-		const defaultPlaylist: DBRundownPlaylist = defaultPlaylistForRundown(currentRundown, studio, existingPlaylist)
+	const existingPlaylist = RundownPlaylists.findOne(newPlaylistId)
 
-		const playlist = {
-			...defaultPlaylist,
+	const { rundowns } = getAllRundownsInPlaylist(newPlaylistId, playlistExternalId)
+	if (!rundowns.find((rundown) => rundown._id === currentRundown._id)) {
+		rundowns.push(currentRundown)
+	}
 
-			_id: playlistId,
-			externalId: playlistExternalId,
-			peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
-		}
+	const defaultPlaylist: DBRundownPlaylist = defaultPlaylistForRundown(currentRundown, studio, existingPlaylist)
 
-		const rundownsInOrder = sortDefaultRundownInPlaylistOrder(rundowns)
+	const playlist = {
+		...defaultPlaylist,
 
-		return {
-			rundownPlaylist: playlist,
-			order: _.object(rundownsInOrder.map((i, index) => [i._id, index + 1])),
-		}
+		_id: newPlaylistId,
+		externalId: playlistExternalId,
+		peripheralDeviceId: peripheralDevice ? peripheralDevice._id : protectString(''),
+	}
+
+	const rundownsInOrder = sortDefaultRundownInPlaylistOrder(rundowns)
+
+	return {
+		rundownPlaylist: playlist,
+		order: _.object(rundownsInOrder.map((i, index) => [i._id, index + 1])),
 	}
 }
-function sortDefaultRundownInPlaylistOrder(rundowns: DBRundown[]): DBRundown[] {
+export function sortDefaultRundownInPlaylistOrder(rundowns: DBRundown[]): DBRundown[] {
 	return mongoFindOptions<DBRundown, DBRundown>(rundowns, {
 		sort: {
 			expectedStart: 1,
@@ -839,6 +849,9 @@ export namespace ServerRundownAPI {
 				if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
 			} else {
 				// Move into another playlist
+
+				// Note: When moving into another playlist, the rundown is placed last.
+
 				Rundowns.update(rundown._id, {
 					$set: {
 						playlistId: intoPlaylist._id,
@@ -872,7 +885,8 @@ export namespace ServerRundownAPI {
 		}
 
 		if (oldPlaylist) {
-			// Remove the old playlist if it's empty
+			// Remove the old playlist if it's empty:
+			removeEmptyPlaylists(oldPlaylist.studioId)
 		}
 	}
 }

@@ -1,4 +1,4 @@
-import { Studio } from '../../lib/collections/Studios'
+import { StudioId } from '../../lib/collections/Studios'
 import { RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { Rundowns } from '../../lib/collections/Rundowns'
 import { removeRundownPlaylistFromCache } from './playout/lib'
@@ -6,9 +6,9 @@ import { waitForPromise, getHash, protectString } from '../../lib/lib'
 import { initCacheForRundownPlaylist } from '../DatabaseCaches'
 import * as _ from 'underscore'
 
-export function removeEmptyPlaylists(studio: Studio) {
+export function removeEmptyPlaylists(studioId: StudioId) {
 	const playlistsInStudio = RundownPlaylists.find({
-		studioId: studio._id,
+		studioId: studioId,
 	}).fetch()
 	const rundowns = Rundowns.find({
 		playlistId: { $in: playlistsInStudio.map((p) => p._id) },
