@@ -355,19 +355,29 @@ export const KeyboardPreview = withTracker<IProps, IState, ITrackedProps>((props
 								modifierKey = key.code
 							}
 
-							const thisCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + key.code : key.code)
-								.toLowerCase()
+							// Combo mapped to visual key
+							const mappedCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + thisKeyLabel : thisKeyLabel)
+								.toUpperCase()
+								.trim()
+
+							// Combo as recognised natively by the web browser
+							const nativeCombo = (modifiers ? modifiers.replace(' ', '+') + '+' + key.code : key.code)
+								.toUpperCase()
+								.replace(/key|digit/i, '')
 								.trim()
 
 							let customLabel: string | undefined = undefined
 							let customSourceLayer: SourceLayerType | undefined = undefined
 							let customColor: string | undefined = undefined
 
-							const combo = thisCombo.toUpperCase().replace(/key|digit/i, '')
-							if (this.props.customLabels[combo]) {
-								customLabel = this.props.customLabels[combo].label
-								customSourceLayer = this.props.customLabels[combo].sourceLayerType
-								customColor = this.props.customLabels[combo].buttonColor
+							if (this.props.customLabels[mappedCombo]) {
+								customLabel = this.props.customLabels[mappedCombo].label
+								customSourceLayer = this.props.customLabels[mappedCombo].sourceLayerType
+								customColor = this.props.customLabels[mappedCombo].buttonColor
+							} else if (this.props.customLabels[nativeCombo]) {
+								customLabel = this.props.customLabels[nativeCombo].label
+								customSourceLayer = this.props.customLabels[nativeCombo].sourceLayerType
+								customColor = this.props.customLabels[nativeCombo].buttonColor
 							}
 
 							return (
