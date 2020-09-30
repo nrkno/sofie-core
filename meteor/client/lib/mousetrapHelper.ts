@@ -148,7 +148,7 @@ export namespace mousetrapHelper {
 
 // Add mousetrap keycodes for special keys
 mousetrap.addKeycodes({
-	220: '§', // on US-based (ANSI) keyboards (single-row, Enter key), this is the key above Enter, usually with a backslash and the vertical pipe character
+	220: '½', // [TV 2]
 	222: '\\', // on 101 keyboards, this is the key with single quote
 	223: '|', // this key is not present on 101 keyboards
 
