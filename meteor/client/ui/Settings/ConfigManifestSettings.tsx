@@ -659,11 +659,13 @@ export class ConfigManifestSettings<
 
 		const value = rawValue === undefined ? item.defaultVal : rawValue
 
+		const rawValueArr = rawValue as any[]
+
 		switch (item.type) {
 			case ConfigManifestEntryType.BOOLEAN:
 				return value ? t('true') : t('false')
 			case ConfigManifestEntryType.TABLE:
-				return t('{{count}} rows', { count: ((rawValue as any[]) || []).length })
+				return t('{{count}} rows', { count: (rawValueArr || []).length })
 			case ConfigManifestEntryType.SELECT:
 			case ConfigManifestEntryType.LAYER_MAPPINGS:
 			case ConfigManifestEntryType.SOURCE_LAYERS:
