@@ -25,6 +25,7 @@ import { SupportPopUpToggle } from '../SupportPopUp'
 import classNames from 'classnames'
 import { NoticeLevel } from '../../lib/notifications/notifications'
 import { RouteSetsIcon } from '../../lib/routeSetIcons'
+import { RouteSetsPopUp } from './RouteSetsPopUp'
 
 interface IProps {
 	studioRouteSets: {
@@ -43,7 +44,7 @@ interface IProps {
 	onToggleSupportPanel?: (e: React.MouseEvent<HTMLButtonElement>) => void
 	onTake?: (e: React.MouseEvent<HTMLButtonElement>) => void
 	onStudioRouteSetSwitch?: (
-		e: React.MouseEvent<HTMLButtonElement>,
+		e: React.MouseEvent<HTMLElement>,
 		routeSetId: string,
 		routeSet: StudioRouteSet,
 		state: boolean
@@ -281,37 +282,11 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 										duration: 500,
 									}}>
 									{this.state.isRouteSetsOpen && (
-										<div className="route-set-pop-up-panel">
-											<div className="route-set-pop-up-panel__inside">
-												<h2 className="mhn mvn">Route Sets</h2>
-												{Object.entries(exclusivityGroups).map(([key, routeSets]) => (
-													<div className="route-set-pop-up-panel__group" key={key}>
-														{routeSets.map(([id, routeSet]) => (
-															<button
-																className={classNames(
-																	'status-bar__controls__button',
-																	'status-bar__controls__button--route-set',
-																	{
-																		active: routeSet.active,
-																		'status-bar__controls__button--inactive':
-																			routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY,
-																	}
-																)}
-																role="button"
-																onClick={(e) =>
-																	!(routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY) &&
-																	this.props.onStudioRouteSetSwitch &&
-																	this.props.onStudioRouteSetSwitch(e, id, routeSet, !routeSet.active)
-																}
-																tabIndex={0}
-																key={id}>
-																{routeSet.name}
-															</button>
-														))}
-													</div>
-												))}
-											</div>
-										</div>
+										<RouteSetsPopUp
+											availableRouteSets={availableRouteSets}
+											studioRouteSetExclusivityGroups={this.props.studioRouteSetExclusivityGroups}
+											onStudioRouteSetSwitch={this.props.onStudioRouteSetSwitch}
+										/>
 									)}
 								</VelocityReact.VelocityTransitionGroup>
 							</>
