@@ -1,5 +1,5 @@
 /* tslint:disable:no-use-before-declare */
-import { Resolver } from 'superfly-timeline'
+import { Resolver, TimelineEnable } from 'superfly-timeline'
 import * as _ from 'underscore'
 import { DeepReadonly } from 'utility-types'
 import { Piece } from '../../../lib/collections/Pieces'
@@ -13,6 +13,7 @@ import {
 	unprotectString,
 	omit,
 	flatten,
+	applyToArray,
 } from '../../../lib/lib'
 import {
 	TimelineObjPieceAbstract,
@@ -218,12 +219,14 @@ export function getResolvedPieces(
 		})
 	)
 	objs.forEach((o) => {
-		if (o.enable.start === 'now' && partStarted) {
-			// Emulate playout starting now. TODO - ensure didnt break other uses
-			o.enable.start = nowInPart
-		} else if (o.enable.start === 0 || o.enable.start === 'now') {
-			o.enable.start = 1
-		}
+		applyToArray(o.enable, (enable) => {
+			if (enable.start === 'now' && partStarted) {
+				// Emulate playout starting now. TODO - ensure didnt break other uses
+				enable.start = nowInPart
+			} else if (enable.start === 0 || enable.start === 'now') {
+				enable.start = 1
+			}
+		})
 	})
 
 	const resolvedPieces = resolvePieceTimeline(
@@ -261,16 +264,19 @@ export function getResolvedPiecesFromFullTimeline(
 
 	const replaceNows = (obj: TimelineContentObject, parentAbsoluteStart: number) => {
 		let absoluteStart = parentAbsoluteStart
-		if (obj.enable.start === 'now') {
-			// Start is always relative to parent start, so we need to factor that when flattening the 'now
-			obj.enable.start = Math.max(0, now - parentAbsoluteStart)
-			absoluteStart = now
-		} else if (typeof obj.enable.start === 'number') {
-			absoluteStart += obj.enable.start
-		} else {
-			// We can't resolve this here, so lets hope there are no 'now' inside and end
-			return
-		}
+
+		applyToArray(obj.enable, (enable: TimelineEnable) => {
+			if (enable.start === 'now') {
+				// Start is always relative to parent start, so we need to factor that when flattening the 'now
+				enable.start = Math.max(0, now - parentAbsoluteStart)
+				absoluteStart = now
+			} else if (typeof enable.start === 'number') {
+				absoluteStart += enable.start
+			} else {
+				// We can't resolve this here, so lets hope there are no 'now' inside and end
+				return
+			}
+		})
 
 		// Ensure any children have their 'now's updated
 		if (obj.isGroup && obj.children && obj.children.length) {

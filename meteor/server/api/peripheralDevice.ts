@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
 import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, waitForPromise } from '../../lib/lib'
+import { getCurrentTime, protectString, makePromise, waitForPromise, applyToArray } from '../../lib/lib'
 import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { Timeline, getTimelineId } from '../../lib/collections/Timeline'
@@ -213,12 +213,14 @@ export namespace ServerPeripheralDeviceAPI {
 					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 					const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
 					timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
+					waitForPromise(cache.saveAllToDatabase())
 				})
 			} else {
 				// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
 				// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird
 				const cache = waitForPromise(initCacheForNoRundownPlaylist(studioId))
 				timelineTriggerTimeInner(cache, studioId, results, undefined)
+				waitForPromise(cache.saveAllToDatabase())
 			}
 		}
 	},
@@ -244,10 +246,14 @@ export namespace ServerPeripheralDeviceAPI {
 			const id = getTimelineId(studioId, o.id)
 			const obj = timelineObjs.find((tlo) => tlo._id === id)
 			if (obj) {
-				obj.enable.start = o.time
-				obj.enable.setFromNow = true
+				applyToArray(obj.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = o.time
+						enable.setFromNow = true
 
-				tlChanged = true
+						tlChanged = true
+					}
+				})
 
 				if (obj.metaData?.pieceId && activePlaylist) {
 					logger.debug('Update PieceInstance: ', {
@@ -303,9 +309,6 @@ export namespace ServerPeripheralDeviceAPI {
 				true
 			)
 		}
-
-		// After we've updated the timeline, we must call afterUpdateTimeline!
-		waitForPromise(cache.saveAllToDatabase())
 	}
 	export function partPlaybackStarted(
 		context: MethodContext,

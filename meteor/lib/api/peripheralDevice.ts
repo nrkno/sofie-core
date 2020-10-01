@@ -426,7 +426,7 @@ export namespace PeripheralDeviceAPI {
 	export function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		cb: (err, result) => void,
-		timeoutTime: number,
+		timeoutTime: number = 3000,
 		functionName: string,
 		...args: any[]
 	) {
@@ -511,7 +511,6 @@ export namespace PeripheralDeviceAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		const timeoutTime = 3000
-		return executeFunctionWithCustomTimeout(deviceId, cb, timeoutTime, functionName, ...args)
+		return executeFunctionWithCustomTimeout(deviceId, cb, undefined, functionName, ...args)
 	}
 }
