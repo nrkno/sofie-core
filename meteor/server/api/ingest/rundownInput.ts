@@ -533,12 +533,12 @@ function updateRundownFromIngestData(
 		// The rundown is going to change playlist
 		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
 		if (existingPlaylist) {
-			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = existingPlaylist.getSelectedPartInstances()
 
 			if (
 				existingPlaylist.active &&
-				currentPartInstance &&
-				currentPartInstance.rundownId === existingDbRundown._id
+				((currentPartInstance && currentPartInstance.rundownId === existingDbRundown._id) ||
+					(nextPartInstance && nextPartInstance.rundownId === existingDbRundown._id))
 			) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
