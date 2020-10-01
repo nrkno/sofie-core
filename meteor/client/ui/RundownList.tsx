@@ -51,13 +51,14 @@ export const RundownList = translateWithTracker(() => {
 		rundownPlaylists: RundownPlaylists.find({}, { sort: { created: -1 } })
 			.fetch()
 			.map((playlist: RundownPlaylistUi) => {
-				const rundownsInPlaylist = playlist.getRundowns()
+				playlist.rundowns = playlist.getRundowns()
+
 				const airStatuses: string[] = []
 				const statuses: string[] = []
 				playlist.unsyncedRundowns = []
 				playlist.showStyles = []
 
-				for (const rundown of rundownsInPlaylist) {
+				for (const rundown of playlist.rundowns) {
 					airStatuses.push(String(rundown.airStatus))
 					statuses.push(String(rundown.status))
 
@@ -173,7 +174,7 @@ export const RundownList = translateWithTracker(() => {
 				})
 		}
 
-		renderRundowns(list: RundownPlaylistUi[]) {
+		renderRundownPlaylists(list: RundownPlaylistUi[]) {
 			const { t, rundownLayouts } = this.props
 
 			if (list.length < 1) {
@@ -231,7 +232,7 @@ export const RundownList = translateWithTracker(() => {
 											<th className="c1">&nbsp;</th>
 										</tr>
 									</thead>
-									<tbody>{this.renderRundowns(rundownPlaylists)}</tbody>
+									<tbody>{this.renderRundownPlaylists(rundownPlaylists)}</tbody>
 								</table>
 							</div>
 						) : (

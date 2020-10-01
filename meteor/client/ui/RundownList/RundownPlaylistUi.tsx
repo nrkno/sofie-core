@@ -26,6 +26,7 @@ import {
 import RundownListDragDropTypes from './RundownListDragDropTypes'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
+	rundowns: Rundown[]
 	rundownStatus: string
 	rundownAirStatus: string
 	unsyncedRundowns: Rundown[]
@@ -52,16 +53,16 @@ interface IRundownPlaylistDropTargetProps {
 
 const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 	canDrop: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor) => {
-		console.debug(`canDrop #${props.playlist._id}`, monitor.getItem())
+		// console.debug(`canDrop #${props.playlist._id}`, monitor.getItem())
 		return true
 	},
 	drop: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor, component: RundownPlaylistUi) => {
-		console.debug(`drop #${props.playlist._id}`, monitor.getItem(), component)
+		// console.debug(`drop #${props.playlist._id}`, monitor.getItem(), component)
 		return undefined
 	},
 	hover: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor, component: RundownPlaylistUi) => {
-		console.debug(`hover #${props.playlist._id}`, monitor.getItem(), component)
-		console.debug(`is this component? ${monitor.isOver({ shallow: true })}`)
+		// console.debug(`hover #${props.playlist._id}`, monitor.getItem(), component)
+		// console.debug(`is hovering over this component? ${monitor.isOver({ shallow: true })}`)
 	},
 }
 
@@ -192,16 +193,15 @@ export const RundownPlaylistUi = DropTarget(
 
 			render() {
 				const { playlist, connectDropTarget, isOver } = this.props
-				const rundowns = playlist.getRundowns()
 				const playbackProgressBar = createProgressBarRow(playlist)
 				const playlistViewLinks = this.createPlaylistViewLinks()
 
-				if (rundowns.length === 1) {
+				if (playlist.rundowns.length === 1) {
 					return (
 						<>
 							<RundownListItem
-								key={unprotectString(rundowns[0]._id)}
-								rundown={rundowns[0]}
+								key={unprotectString(playlist.rundowns[0]._id)}
+								rundown={playlist.rundowns[0]}
 								viewLinks={playlistViewLinks}
 							/>
 							{playbackProgressBar}
@@ -209,7 +209,7 @@ export const RundownPlaylistUi = DropTarget(
 					)
 				}
 
-				const rundownComponents = rundowns.map((rundown) => (
+				const rundownComponents = playlist.rundowns.map((rundown) => (
 					<RundownListItem key={unprotectString(rundown._id)} rundown={rundown} viewLinks={playlistViewLinks} />
 				))
 
