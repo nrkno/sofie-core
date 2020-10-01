@@ -1152,7 +1152,9 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
-										{t('Reload {{nrcsName}} Data', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+										{t('Reload {{nrcsName}} Data', {
+											nrcsName: (this.props.firstRundown && this.props.firstRundown.externalNRCSName) || 'NRCS',
+										})}
 									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
