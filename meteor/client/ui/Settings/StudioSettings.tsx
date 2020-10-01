@@ -13,6 +13,7 @@ import {
 	StudioRouteBehavior,
 	RouteMapping,
 	StudioRouteSetExclusivityGroup,
+	getActiveRoutes,
 } from '../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -204,9 +205,8 @@ const StudioDevices = withTranslation()(
 
 interface IDeviceMappingSettingsProps {
 	studio: Studio
-	layerId: string
 	mapping: BlueprintMapping
-	prefix?: string
+	attribute: string
 	showOptional?: boolean
 }
 
@@ -227,18 +227,17 @@ const DeviceMappingSettings = withTranslation()(
 			)
 		}
 
-		renderCasparCGMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderCasparCGMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('CasparCG Channel')}
-							{showOptional && this.renderOptionalInput(prefix + '.channel', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.channel', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.channel'}
+								attribute={attribute + '.channel'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -249,10 +248,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('CasparCG Layer')}
-							{showOptional && this.renderOptionalInput(prefix + '.layer', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.layer', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.layer'}
+								attribute={attribute + '.layer'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -263,10 +262,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Preview when not on air')}
-							{showOptional && this.renderOptionalInput(prefix + '.previewWhenNotOnAir', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.previewWhenNotOnAir', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.previewWhenNotOnAir'}
+								attribute={attribute + '.previewWhenNotOnAir'}
 								obj={this.props.studio}
 								type="checkbox"
 								collection={Studios}
@@ -278,18 +277,17 @@ const DeviceMappingSettings = withTranslation()(
 			)
 		}
 
-		renderAtemMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderAtemMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingAtemType}
@@ -301,10 +299,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Index')}
-							{showOptional && this.renderOptionalInput(prefix + '.index', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.index', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.index'}
+								attribute={attribute + '.index'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -314,18 +312,17 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderLawoMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderLawoMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingLawoType}
@@ -337,10 +334,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Identifier')}
-							{showOptional && this.renderOptionalInput(prefix + '.identifier', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.identifier', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.identifier'}
+								attribute={attribute + '.identifier'}
 								obj={this.props.studio}
 								type="text"
 								collection={Studios}
@@ -350,10 +347,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Priority')}
-							{showOptional && this.renderOptionalInput(prefix + '.priority', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.priority', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.priority'}
+								attribute={attribute + '.priority'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -363,18 +360,17 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderPanasonicPTZSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderPanasonicPTZSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingPanasonicPtzType}
@@ -386,23 +382,22 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderTCPSendSettings(layerId: string, prefix?: string, _showOptional?: boolean) {
+		renderTCPSendSettings(attribute: string, _showOptional?: boolean) {
 			const { t } = this.props
 			return <React.Fragment></React.Fragment>
 		}
 
-		renderHyperdeckMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderHyperdeckMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mapping type')}
-							{showOptional && this.renderOptionalInput(prefix + '.mappingType', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mappingType', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mappingType'}
+								attribute={attribute + '.mappingType'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.MappingHyperdeckType}
@@ -414,12 +409,11 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderPharosMappingSettings(layerId: string, prefix?: string, _showOptional?: boolean) {
+		renderPharosMappingSettings(attribute: string, _showOptional?: boolean) {
 			return <React.Fragment></React.Fragment>
 		}
-		renderSisyfosMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderSisyfosMappingSettings(prefix: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
@@ -438,19 +432,18 @@ const DeviceMappingSettings = withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderQuantelMappingSettings(layerId: string, prefix?: string, showOptional?: boolean) {
+		renderQuantelMappingSettings(attribute: string, showOptional?: boolean) {
 			const { t } = this.props
-			prefix = prefix || 'mappings.' + layerId
 
 			return (
 				<React.Fragment>
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Quantel Port ID')}
-							{showOptional && this.renderOptionalInput(prefix + '.portId', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.portId', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.portId'}
+								attribute={attribute + '.portId'}
 								obj={this.props.studio}
 								type="text"
 								collection={Studios}
@@ -461,10 +454,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Quantel Channel ID')}
-							{showOptional && this.renderOptionalInput(prefix + '.channelId', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.channelId', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.channelId'}
+								attribute={attribute + '.channelId'}
 								obj={this.props.studio}
 								type="int"
 								collection={Studios}
@@ -475,10 +468,10 @@ const DeviceMappingSettings = withTranslation()(
 					<div className="mod mvs mhs">
 						<label className="field">
 							{t('Mode')}
-							{showOptional && this.renderOptionalInput(prefix + '.mode', this.props.studio, Studios)}
+							{showOptional && this.renderOptionalInput(attribute + '.mode', this.props.studio, Studios)}
 							<EditAttribute
 								modifiedClassName="bghl"
-								attribute={prefix + '.mode'}
+								attribute={attribute + '.mode'}
 								obj={this.props.studio}
 								type="dropdown"
 								options={TSR.QuantelControlMode}
@@ -491,26 +484,26 @@ const DeviceMappingSettings = withTranslation()(
 			)
 		}
 		render() {
-			const { layerId, mapping, prefix, showOptional } = this.props
+			const { mapping, attribute, showOptional } = this.props
 
 			return mappingIsCasparCG(mapping)
-				? this.renderCasparCGMappingSettings(layerId, prefix, showOptional)
+				? this.renderCasparCGMappingSettings(attribute, showOptional)
 				: mappingIsAtem(mapping)
-				? this.renderAtemMappingSettings(layerId, prefix, showOptional)
+				? this.renderAtemMappingSettings(attribute, showOptional)
 				: mappingIsLawo(mapping)
-				? this.renderLawoMappingSettings(layerId, prefix, showOptional)
+				? this.renderLawoMappingSettings(attribute, showOptional)
 				: mappingIsPanasonicPtz(mapping)
-				? this.renderPanasonicPTZSettings(layerId, prefix, showOptional)
+				? this.renderPanasonicPTZSettings(attribute, showOptional)
 				: mappingIsTCPSend(mapping)
-				? this.renderTCPSendSettings(layerId, prefix, showOptional)
+				? this.renderTCPSendSettings(attribute, showOptional)
 				: mappingIsHyperdeck(mapping)
-				? this.renderHyperdeckMappingSettings(layerId, prefix, showOptional)
+				? this.renderHyperdeckMappingSettings(attribute, showOptional)
 				: mappingIsPharos(mapping)
-				? this.renderPharosMappingSettings(layerId, prefix, showOptional)
+				? this.renderPharosMappingSettings(attribute, showOptional)
 				: mappingIsSisyfos(mapping)
-				? this.renderSisyfosMappingSettings(layerId, prefix, showOptional)
+				? this.renderSisyfosMappingSettings(attribute, showOptional)
 				: mappingIsQuantel(mapping)
-				? this.renderQuantelMappingSettings(layerId, prefix, showOptional)
+				? this.renderQuantelMappingSettings(attribute, showOptional)
 				: null
 		}
 	}
@@ -622,20 +615,8 @@ const StudioMappings = withTranslation()(
 
 		renderMappings() {
 			const { t } = this.props
-			const activeRouteSets = Object.entries(this.props.studio.routeSets).filter(([_id, routeSet]) => routeSet.active)
-			const layerOverrides: {
-				[id: string]: string[]
-			} = {}
-			for (let [routeSetId, routeSet] of activeRouteSets) {
-				for (let routeMap of routeSet.routes) {
-					if (layerOverrides[routeMap.mappedLayer] === undefined) {
-						layerOverrides[routeMap.mappedLayer] = []
-					}
-					if (!layerOverrides[routeMap.mappedLayer].includes(routeSetId)) {
-						layerOverrides[routeMap.mappedLayer].push(routeSetId)
-					}
-				}
-			}
+
+			const activeRoutes = getActiveRoutes(this.props.studio)
 
 			return _.map(this.props.studio.mappings, (mapping: MappingExt, layerId: string) => {
 				// If an internal mapping, then hide it
@@ -649,14 +630,14 @@ const StudioMappings = withTranslation()(
 							})}>
 							<th className="settings-studio-device__name c3 notifications-s notifications-text">
 								{layerId}
-								{layerOverrides[layerId] !== undefined ? (
+								{activeRoutes.existing[layerId] !== undefined ? (
 									<Tooltip
 										overlay={t('This layer is now rerouted by an active Route Set: {{routeSets}}', {
-											routeSets: layerOverrides[layerId].join(', '),
-											count: layerOverrides[layerId].length,
+											routeSets: activeRoutes.existing[layerId].join(', '),
+											count: activeRoutes.existing[layerId].length,
 										})}
 										placement="right">
-										<span className="notification">{layerOverrides[layerId].length}</span>
+										<span className="notification">{activeRoutes.existing[layerId].length}</span>
 									</Tooltip>
 								) : null}
 							</th>
@@ -806,7 +787,11 @@ const StudioMappings = withTranslation()(
 													className="input text-input input-l"></EditAttribute>
 											</label>
 										</div>
-										<DeviceMappingSettings layerId={layerId} mapping={mapping} studio={this.props.studio} />
+										<DeviceMappingSettings
+											mapping={mapping}
+											studio={this.props.studio}
+											attribute={'mappings.' + layerId}
+										/>
 									</div>
 									<div className="mod alright">
 										<button className={ClassNames('btn btn-primary')} onClick={(e) => this.finishEditItem(layerId)}>
@@ -1091,7 +1076,12 @@ const StudioRoutings = withTranslation()(
 						<p className="text-s dimmed mhs">{t('There are no routes set up yet')}</p>
 					) : null}
 					{routeSet.routes.map((route, index) => {
-						const sourceMapping = this.props.studio.mappings[route.mappedLayer]
+						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
+							? this.props.studio.mappings[route.mappedLayer]?.device
+							: undefined
+						const routeDeviceType: TSR.DeviceType | undefined = route.mappedLayer
+							? deviceTypeFromMappedLayer
+							: route.deviceType
 						return (
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
@@ -1102,12 +1092,12 @@ const StudioRoutings = withTranslation()(
 								<div>
 									<div className="mod mvs mhs">
 										<label className="field">
-											{t('Source Layer ID')}
+											{t('Original Layer')}
 											<EditAttribute
 												modifiedClassName="bghl"
 												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
 												obj={this.props.studio}
-												type="dropdown"
+												type="dropdowntext"
 												options={Object.keys(this.props.studio.mappings)}
 												collection={Studios}
 												className="input text-input input-l"></EditAttribute>
@@ -1115,7 +1105,7 @@ const StudioRoutings = withTranslation()(
 									</div>
 									<div className="mod mvs mhs">
 										<label className="field">
-											{t('New Layer ID')}
+											{t('New Layer')}
 											<EditAttribute
 												modifiedClassName="bghl"
 												attribute={`routeSets.${routeSetId}.routes.${index}.outputMappedLayer`}
@@ -1127,13 +1117,25 @@ const StudioRoutings = withTranslation()(
 									</div>
 									<div className="mod mvs mhs">
 										{t('Device Type')}
-										{sourceMapping ? (
-											<span className="mls">{TSR.DeviceType[sourceMapping.device]}</span>
+										{route.mappedLayer ? (
+											deviceTypeFromMappedLayer ? (
+												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
+											) : (
+												<span className="mls dimmed">{t('Source Layer not found')}</span>
+											)
 										) : (
-											<span className="mls dimmed">{t('Source Layer not found')}</span>
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeSetId}.routes.${index}.deviceType`}
+												obj={this.props.studio}
+												type="dropdown"
+												options={TSR.DeviceType}
+												optionsAreNumbers={true}
+												collection={Studios}
+												className="input text-input input-l"></EditAttribute>
 										)}
 									</div>
-									{sourceMapping && route.remapping !== undefined && (
+									{routeDeviceType && route.remapping !== undefined && (
 										<>
 											<div className="mod mvs mhs">
 												<label className="field">
@@ -1158,15 +1160,14 @@ const StudioRoutings = withTranslation()(
 												</label>
 											</div>
 											<DeviceMappingSettings
-												layerId={route.mappedLayer}
 												mapping={
 													{
-														device: sourceMapping.device,
+														device: routeDeviceType,
 														...route.remapping,
 													} as BlueprintMapping
 												}
 												studio={this.props.studio}
-												prefix={`routeSets.${routeSetId}.routes.${index}.remapping`}
+												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
 												showOptional={true}
 											/>
 										</>
