@@ -7,8 +7,8 @@ import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInsta
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getAllOrderedPartsFromPlayoutCache, selectNextPart, getSelectedPartInstancesFromCache } from './lib'
-import { CacheForPlayout } from '../../DatabaseCaches'
-import { saveIntoCache } from '../../DatabaseCache'
+import { CacheForPlayout } from '../../cache/DatabaseCaches'
+import { saveIntoCache } from '../../cache/lib'
 import {
 	getPieceInstancesForPart as libgetPieceInstancesForPart,
 	getPlayheadTrackingInfinitesForPart as libgetPlayheadTrackingInfinitesForPart,

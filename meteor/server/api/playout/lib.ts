@@ -25,7 +25,7 @@ import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../l
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
-import { CacheForPlayout, CacheForIngest } from '../../DatabaseCaches'
+import { CacheForPlayout, CacheForIngest } from '../../cache/DatabaseCaches'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
@@ -41,7 +41,7 @@ import { Pieces } from '../../../lib/collections/Pieces'
 import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
 import { profiler } from '../profiler'
 import { DeepReadonly } from 'utility-types'
-import { DbCacheReadCollection } from '../../DatabaseCache'
+import { DbCacheReadCollection } from '../../cache/lib'
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):

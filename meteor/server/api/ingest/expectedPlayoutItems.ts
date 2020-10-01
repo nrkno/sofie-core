@@ -8,10 +8,10 @@ import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { logger } from '../../logging'
 import { PartId, DBPart } from '../../../lib/collections/Parts'
 import { protectString } from '../../../lib/lib'
-import { CacheForIngest } from '../../DatabaseCaches'
+import { CacheForIngest } from '../../cache/DatabaseCaches'
 import { getRundownId } from './lib'
 import { DeepReadonly } from 'utility-types'
-import { saveIntoCache } from '../../DatabaseCache'
+import { saveIntoCache } from '../../cache/lib'
 
 interface ExpectedPlayoutItemGenericWithPiece extends ExpectedPlayoutItemGeneric {
 	partId?: PartId

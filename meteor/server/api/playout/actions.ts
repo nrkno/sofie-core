@@ -18,7 +18,7 @@ import {
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudio } from './studio'
-import { CacheForPlayout, CacheForStudio2 } from '../../DatabaseCaches'
+import { CacheForPlayout, CacheForStudio2 } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
 
 export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): void {

@@ -11,9 +11,9 @@ import { logger } from '../logging'
 import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
 import { StudioId } from '../../lib/collections/Studios'
 import { BucketId } from '../../lib/collections/Buckets'
-import { CacheForIngest } from '../DatabaseCaches'
+import { CacheForIngest } from '../cache/DatabaseCaches'
 import { getRundownId } from './ingest/lib'
-import { saveIntoCache } from '../DatabaseCache'
+import { saveIntoCache } from '../cache/lib'
 
 export enum PieceType {
 	PIECE = 'piece',

@@ -37,7 +37,7 @@ import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/Run
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { PieceInstance, ResolvedPieceInstance, PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForPlayout } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../cache/DatabaseCaches'
 import { processAndPrunePieceInstanceTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap, PieceGroupMetadata } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'

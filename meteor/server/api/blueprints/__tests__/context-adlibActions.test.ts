@@ -16,7 +16,7 @@ import {
 	PieceInstanceId,
 	PieceInstances,
 } from '../../../../lib/collections/PieceInstances'
-import { CacheForPlayout } from '../../../DatabaseCaches'
+import { CacheForPlayout } from '../../../cache/DatabaseCaches'
 import { RundownPlaylist, RundownPlaylists } from '../../../../lib/collections/RundownPlaylists'
 import { testInFiber, testInFiberOnly } from '../../../../__mocks__/helpers/jest'
 

@@ -1,11 +1,11 @@
 import * as _ from 'underscore'
-import { Rundown, Rundowns, DBRundown, RundownId } from '../lib/collections/Rundowns'
+import { Rundown, Rundowns, DBRundown, RundownId } from '../../lib/collections/Rundowns'
 import {
 	RundownPlaylist,
 	RundownPlaylists,
 	DBRundownPlaylist,
 	RundownPlaylistId,
-} from '../lib/collections/RundownPlaylists'
+} from '../../lib/collections/RundownPlaylists'
 import { Meteor } from 'meteor/meteor'
 import {
 	DbCacheReadCollection,
@@ -15,16 +15,16 @@ import {
 	DbCacheReadObject,
 	DbCacheWriteObject,
 	DbCacheWriteOptionalObject,
-} from './DatabaseCache'
-import { Segment, Segments, DBSegment } from '../lib/collections/Segments'
-import { Parts, DBPart, Part } from '../lib/collections/Parts'
-import { Piece, Pieces } from '../lib/collections/Pieces'
-import { PartInstances, DBPartInstance, PartInstance } from '../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../lib/collections/PieceInstances'
-import { Studio, Studios, StudioId } from '../lib/collections/Studios'
-import { Timeline, TimelineObjGeneric, TimelineComplete } from '../lib/collections/Timeline'
-import { RundownBaselineObj, RundownBaselineObjs } from '../lib/collections/RundownBaselineObjs'
-import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
+} from './lib'
+import { Segment, Segments, DBSegment } from '../../lib/collections/Segments'
+import { Parts, DBPart, Part } from '../../lib/collections/Parts'
+import { Piece, Pieces } from '../../lib/collections/Pieces'
+import { PartInstances, DBPartInstance, PartInstance } from '../../lib/collections/PartInstances'
+import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
+import { RundownBaselineObj, RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
+import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import {
 	protectString,
 	waitForPromiseAll,
@@ -37,31 +37,24 @@ import {
 	sumChanges,
 	anythingChanged,
 	ProtectedString,
-} from '../lib/lib'
-import { logger } from './logging'
-import { AdLibPiece, AdLibPieces } from '../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibAction, AdLibActions } from '../lib/collections/AdLibActions'
-import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/collections/RundownBaselineAdLibActions'
-import { isInTestWrite } from './security/lib/securityVerify'
+} from '../../lib/lib'
+import { logger } from '../logging'
+import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibAction, AdLibActions } from '../../lib/collections/AdLibActions'
+import {
+	RundownBaselineAdLibAction,
+	RundownBaselineAdLibActions,
+} from '../../lib/collections/RundownBaselineAdLibActions'
+import { isInTestWrite } from '../security/lib/securityVerify'
 import { ActivationCache, getActivationCache } from './ActivationCache'
-import { profiler } from './api/profiler'
-import { getRundownId } from './api/ingest/lib'
-import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../lib/collections/ExpectedPlayoutItems'
-import { ExpectedMediaItem, ExpectedMediaItems } from '../lib/collections/ExpectedMediaItems'
-import { removeRundownsFromDb, removeRundownPlaylistFromDb } from './api/playout/lib'
+import { profiler } from '../api/profiler'
+import { getRundownId } from '../api/ingest/lib'
+import { ExpectedPlayoutItem, ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
+import { ExpectedMediaItem, ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
+import { removeRundownsFromDb, removeRundownPlaylistFromDb } from '../api/playout/lib'
 
 type DeferredFunction<Cache> = (cache: Cache) => void
-
-// type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A, infer B>
-// 	? DbCacheReadCollection<A, B>
-// 	: T extends DbCacheReadCollection<infer A, infer B>
-// 	? DbCacheReadCollection<A, B>
-// 	: T
-// type IReadOnlyCache<T extends Cache> = Omit<
-// 	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
-// 	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
-// >
 
 /** This cache contains data relevant in a studio */
 export abstract class Cache {

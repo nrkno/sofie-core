@@ -6,7 +6,7 @@ import {
 	rundownPlaylistPlayoutSyncFunctionInner,
 } from '../playout/playout'
 import { selectNextPart, isTooCloseToAutonext, getAllOrderedPartsFromPlayoutCache } from '../playout/lib'
-import { CacheForIngest } from '../../DatabaseCaches'
+import { CacheForIngest } from '../../cache/DatabaseCaches'
 import { IngestPlayoutInfo } from './lib'
 import { profiler } from '../profiler'
 

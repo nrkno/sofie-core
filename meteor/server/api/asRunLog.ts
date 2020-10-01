@@ -30,7 +30,7 @@ import { AsRunEventContext } from './blueprints/context'
 import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
 import { PartInstance, PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
 import { PieceInstances, PieceInstance, PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { CacheForPlayout, CacheForIngest } from '../DatabaseCaches'
+import { CacheForPlayout, CacheForIngest } from '../cache/DatabaseCaches'
 import { profiler } from './profiler'
 import {
 	createShowStyleCompound,

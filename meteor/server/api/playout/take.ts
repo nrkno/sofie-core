@@ -2,7 +2,7 @@ import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/Run
 import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { CacheForPlayout } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../cache/DatabaseCaches'
 import {
 	setNextPart as libsetNextPart,
 	getSelectedPartInstancesFromCache,

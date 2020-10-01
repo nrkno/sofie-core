@@ -15,7 +15,7 @@ import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
-import { DbCacheWriteCollection, saveIntoCache } from '../../DatabaseCache'
+import { DbCacheWriteCollection, saveIntoCache } from '../../cache/lib'
 import { profiler } from '../profiler'
 
 export type RundownIngestDataCacheCollection = DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>

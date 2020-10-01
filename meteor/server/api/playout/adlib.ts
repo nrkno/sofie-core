@@ -38,7 +38,7 @@ import {
 	rewrapPieceToInstance,
 } from '../../../lib/collections/PieceInstances'
 import { PartInstances, PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
-import { CacheForPlayout } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../cache/DatabaseCaches'
 import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { syncPlayheadInfinitesForNextPartInstance, fetchPiecesThatMayBeActiveForPart } from './infinites'

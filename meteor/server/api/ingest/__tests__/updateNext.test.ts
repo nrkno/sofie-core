@@ -12,7 +12,7 @@ import { RundownPlaylists, RundownPlaylist, RundownPlaylistId } from '../../../.
 import { PartInstances, DBPartInstance } from '../../../../lib/collections/PartInstances'
 import { Studios } from '../../../../lib/collections/Studios'
 import { removeRundownsFromDb } from '../../playout/lib'
-import { CacheForIngest } from '../../../DatabaseCaches'
+import { CacheForIngest } from '../../../cache/DatabaseCaches'
 import { getIngestPlaylistInfoFromDb } from '../lib'
 jest.mock('../../playout/playout')
 

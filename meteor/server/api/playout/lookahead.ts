@@ -20,7 +20,7 @@ import {
 	getRundownIDsFromCache,
 } from './lib'
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
-import { CacheForPlayout } from '../../DatabaseCaches'
+import { CacheForPlayout } from '../../cache/DatabaseCaches'
 import { sortPiecesByStart } from './pieces'
 import { profiler } from '../profiler'
 import {

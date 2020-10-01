@@ -13,7 +13,7 @@ import { getSelectedPartInstancesFromCache, setNextPart, removeRundownPlaylistFr
 import { syncPlayheadInfinitesForNextPartInstance } from '../api/playout/infinites'
 import { rundownPlaylistPlayoutSyncFunction } from '../api/playout/playout'
 import { rundownIngestSyncFromStudioFunction } from '../api/ingest/lib'
-import { forceClearAllActivationCaches } from '../ActivationCache'
+import { forceClearAllActivationCaches } from '../cache/ActivationCache'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { updateTimeline } from '../api/playout/timeline'

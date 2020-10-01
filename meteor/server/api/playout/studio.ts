@@ -6,7 +6,7 @@ import {
 } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
 import { protectString } from '../../../lib/lib'
-import { CacheForStudioBase, CacheForStudio2 } from '../../DatabaseCaches'
+import { CacheForStudioBase, CacheForStudio2 } from '../../cache/DatabaseCaches'
 import { MongoQuery } from '../../../lib/typings/meteor'
 
 export function getActiveRundownPlaylistsInStudio(
