@@ -144,7 +144,7 @@ export function selectShowStyleVariant(
 }
 /** Return true if the rundown is allowed to be moved out of that playlist */
 export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, rundown: DBRundown) {
-	const { currentPartInstance } = playlist.getSelectedPartInstances()
+	const { currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances()
 
 	if (rundown.playlistId !== playlist._id)
 		throw new Meteor.Error(
@@ -152,7 +152,11 @@ export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, run
 			`Wrong playlist "${playlist._id}" provided for rundown "${rundown._id}" ("${rundown.playlistId}")`
 		)
 
-	return !(playlist.active && currentPartInstance && currentPartInstance.rundownId === rundown._id)
+	return !(
+		playlist.active &&
+		((currentPartInstance && currentPartInstance.rundownId === rundown._id) ||
+			(nextPartInstance && nextPartInstance.rundownId === rundown._id))
+	)
 }
 
 export function generatePlaylistIdFromExternalId(playlistExternalId: string) {}
