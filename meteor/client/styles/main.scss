@@ -104,6 +104,15 @@ a.selectable {
 .switch-button {
 	width: 42px !important;
 	height: 21px !important;
+
+	&.sb-nocolor.sb-on {
+		.sb-content {
+			.sb-label {
+				background-color: #737373;
+			}
+		}
+	}
+
 	.sb-content {
 		width: 42px;
 		height: 21px;

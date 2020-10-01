@@ -37,12 +37,12 @@ export const RouteSetsPopUp = withTranslation()(
 						{Object.entries(exclusivityGroups).map(([key, routeSets]) => (
 							<div className="route-set-pop-up-panel__group" key={key}>
 								{this.props.studioRouteSetExclusivityGroups[key]?.name && (
-									<p className="mhs mvs">{this.props.studioRouteSetExclusivityGroups[key]?.name}</p>
+									<p className="mhs mbs mtn">{this.props.studioRouteSetExclusivityGroups[key]?.name}</p>
 								)}
 								{routeSets.length === 2 &&
 								routeSets[0][1].behavior === StudioRouteBehavior.ACTIVATE_ONLY &&
 								routeSets[1][1].behavior === StudioRouteBehavior.ACTIVATE_ONLY ? (
-									<div key={routeSets[0][0]} className="route-set-pop-up-panel__group__controls mhm">
+									<div key={routeSets[0][0]} className="route-set-pop-up-panel__group__controls mhm mbs">
 										<span
 											className={classNames({
 												'route-set-pop-up-panel__group__controls__active': routeSets[0][1].active,
@@ -51,7 +51,7 @@ export const RouteSetsPopUp = withTranslation()(
 											{routeSets[0][1].name}
 										</span>
 										<a
-											className={classNames('switch-button', {
+											className={classNames('switch-button', 'sb-nocolor', {
 												'sb-on': routeSets[1][1].active,
 											})}
 											role="button"
@@ -83,18 +83,17 @@ export const RouteSetsPopUp = withTranslation()(
 									</div>
 								) : (
 									routeSets.map(([id, routeSet]) => (
-										<div key={id} className="route-set-pop-up-panel__group__controls mhm">
+										<div key={id} className="route-set-pop-up-panel__group__controls mhm mbs">
 											<span
 												className={classNames({
-													'route-set-pop-up-panel__group__controls__active': !routeSet.active,
-													'route-set-pop-up-panel__group__controls__inactive': routeSet.active,
+													'route-set-pop-up-panel__group__controls__active': routeSet.active,
+													'route-set-pop-up-panel__group__controls__inactive': !routeSet.active,
 												})}>
-												{t('Off')}
+												{routeSet.name}
 											</span>
 											<a
-												className={classNames('switch-button', {
-													'sb-on': routeSet.active,
-													'sb-disabled': routeSet.active && routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY,
+												className={classNames('switch-button', 'sb-nocolor', {
+													'sb-on': !routeSet.active,
 												})}
 												role="button"
 												onClick={(e) =>
@@ -113,10 +112,10 @@ export const RouteSetsPopUp = withTranslation()(
 											</a>
 											<span
 												className={classNames({
-													'route-set-pop-up-panel__group__controls__active': routeSet.active,
-													'route-set-pop-up-panel__group__controls__inactive': !routeSet.active,
+													'route-set-pop-up-panel__group__controls__active': !routeSet.active,
+													'route-set-pop-up-panel__group__controls__inactive': routeSet.active,
 												})}>
-												{routeSet.name}
+												{t('Off')}
 											</span>
 										</div>
 									))
