@@ -1,9 +1,16 @@
 .rundown-list-item {
+	--scaleFactor: 1;
+
 	.rundown-list-item__actions {
 		min-width: 4em;
 
 		> .action-btn {
 			width: 1.5em;
 		}
+	}
+
+	&.dragging {
+		--scaleFactor: 1.1;
+		z-index: 99;
 	}
 }
