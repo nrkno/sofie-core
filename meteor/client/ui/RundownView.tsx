@@ -95,6 +95,7 @@ import { AdLibPieceUi } from './Shelf/AdLibPanel'
 import { documentTitle } from '../lib/documentTitle'
 import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
+import { CASPARCG_RESTART_TIME } from '../../lib/constants'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1151,7 +1152,9 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
-										{t('Reload {{nrcsName}} Data', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+										{t('Reload {{nrcsName}} Data', {
+											nrcsName: (this.props.firstRundown && this.props.firstRundown.externalNRCSName) || 'NRCS',
+										})}
 									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
@@ -1586,6 +1589,31 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							rundownId: {
 								$in: rundownIDs,
 							},
+							partInstanceId: {
+								$in: [
+									playlist.currentPartInstanceId,
+									playlist.nextPartInstanceId,
+									playlist.previousPartInstanceId,
+								].filter((p) => p !== null),
+							},
+							reset: {
+								$ne: true,
+							},
+						})
+					}
+				}
+			})
+			this.autorun(() => {
+				if (this.props.onlyShelf) {
+					let playlist = RundownPlaylists.findOne(playlistId, {
+						fields: {
+							currentPartInstanceId: 1,
+							nextPartInstanceId: 1,
+							previousPartInstanceId: 1,
+						},
+					})
+					if (playlist) {
+						this.subscribe(PubSub.pieceInstances, {
 							partInstanceId: {
 								$in: [
 									playlist.currentPartInstanceId,
@@ -2353,7 +2381,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				title: t('Restart CasparCG Server'),
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, 'restartCasparCG')
+					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
 						.then(() => {
 							NotificationCenter.push(
 								new Notification(

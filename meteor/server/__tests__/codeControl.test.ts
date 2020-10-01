@@ -18,7 +18,9 @@ describe('codeControl rundown', () => {
 	})
 	testInFiber('rundownSyncFunction', () => {
 		let sync1 = (name: string, priority: RundownSyncFunctionPriority) => {
-			return rundownPlaylistSyncFunction(protectString('ro1'), priority, () => takesALongTimeInner(name))
+			return rundownPlaylistSyncFunction(protectString('ro1'), priority, 'testRundownSyncFn', () =>
+				takesALongTimeInner(name)
+			)
 		}
 
 		let res: any[] = []
@@ -62,11 +64,11 @@ describe('codeControl', () => {
 
 	const takesALongTime = syncFunction((name: string) => {
 		return takesALongTimeInner(name)
-	})
+	}, 'takesALongTime')
 	const takesALongTimeIgnore = syncFunctionIgnore((name: string) => {
 		const a = takesALongTimeInner(name)
 		return a
-	})
+	}, 'takesALongTimeIgnore')
 
 	testInFiber('syncFunction, 1 queue', () => {
 		// Running a syncFunction in a queue
@@ -223,11 +225,11 @@ describe('codeControl', () => {
 		const fcn0 = syncFunction(() => {
 			waitTime(300 - 5)
 			return 'a'
-		})
+		}, 'check anonymous sync functions a')
 		const fcn1 = syncFunction(() => {
 			waitTime(300 - 5)
 			return 'b'
-		})
+		}, 'check anonymous sync functions b')
 		const res: any[] = []
 
 		let ps
@@ -252,7 +254,7 @@ describe('codeControl', () => {
 		const fcn = syncFunction((a: number) => {
 			waitTime(300 - 5)
 			return a
-		})
+		}, 'anonymous with arguments')
 		const res: any[] = []
 		let ps
 		Meteor.setTimeout(() => {
@@ -290,6 +292,7 @@ describe('codeControl', () => {
 					waitTime(1000) // 1s, is too long and should cause a timeout
 					return 'a'
 				},
+				'too long running',
 				undefined,
 				500
 			) // a timeout of 500 ms

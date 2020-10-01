@@ -58,6 +58,7 @@ describe('ClientAPI', () => {
 						ClientAPIMethods.callPeripheralDeviceFunction,
 						mockContext,
 						mockDeviceId,
+						undefined,
 						mockFunctionName,
 						...mockArgs
 					)
@@ -129,6 +130,7 @@ describe('ClientAPI', () => {
 					ClientAPIMethods.callPeripheralDeviceFunction,
 					mockContext,
 					mockDeviceId,
+					undefined,
 					mockFailingFunctionName,
 					...mockArgs
 				)

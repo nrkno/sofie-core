@@ -52,7 +52,7 @@ export interface RONotificationEvent {
 }
 
 const BACKEND_POLL_INTERVAL = 10 * 1000
-const SEGMENT_DELIMITER = ' ⯈ '
+const SEGMENT_DELIMITER = ' • '
 
 class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -697,7 +697,9 @@ class RundownViewNotifier extends WithManagedTracker {
 						true,
 						[
 							{
-								label: t('Reload {{nrcsName}} Data', { nrcsName: firstRundown?.externalNRCSName || 'NRCS' }),
+								label: t('Reload {{nrcsName}} Data', {
+									nrcsName: (firstRundown && firstRundown.externalNRCSName) || 'NRCS',
+								}),
 								type: 'primary',
 								action: (e) => {
 									const reloadFunc = reloadRundownPlaylistClick.get()

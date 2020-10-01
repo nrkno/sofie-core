@@ -212,12 +212,17 @@ export namespace ServerPeripheralDeviceAPI {
 			if (activePlaylists.length === 1) {
 				const activePlaylist = activePlaylists[0]
 				const playlistId = activePlaylist._id
-				rundownPlaylistSyncFunction(playlistId, RundownSyncFunctionPriority.CALLBACK_PLAYOUT, () => {
-					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
-					const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
-					timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
-					waitForPromise(cache.saveAllToDatabase())
-				})
+				rundownPlaylistSyncFunction(
+					playlistId,
+					RundownSyncFunctionPriority.CALLBACK_PLAYOUT,
+					'timelineTriggerTime',
+					() => {
+						// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
+						const cache = waitForPromise(initCacheForRundownPlaylist(activePlaylist, undefined, false))
+						timelineTriggerTimeInner(cache, studioId, results, activePlaylist)
+						waitForPromise(cache.saveAllToDatabase())
+					}
+				)
 			} else {
 				// TODO - technically this could still be a race condition, but the chances of it colliding with another cache write
 				// are slim and need larger changes to avoid. Also, using a `start: 'now'` in a studio baseline would be weird

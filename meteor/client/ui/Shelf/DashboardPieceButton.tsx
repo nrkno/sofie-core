@@ -31,7 +31,7 @@ import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPre
 
 export interface IDashboardButtonProps {
 	adLibListItem: IAdLibListItem
-	layer: ISourceLayer
+	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	playlist: RundownPlaylist
@@ -147,7 +147,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					{renderThumbnail ? (
 						<DashboardPieceButtonSplitPreview piece={splitAdLib} />
 					) : (
-						<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
+						<SplitInputIcon
+							abbreviation={this.props.layer ? this.props.layer.abbreviation : undefined}
+							piece={splitAdLib}
+							hideLabel={true}
+						/>
 					)}
 				</React.Fragment>
 			)
