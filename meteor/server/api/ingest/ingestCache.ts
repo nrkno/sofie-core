@@ -15,15 +15,16 @@ import { logger } from '../../../lib/logging'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { PartId } from '../../../lib/collections/Parts'
-import { DbCacheWriteCollection, saveIntoCache } from '../../cache/lib'
+import { DbCacheWriteCollection, saveIntoCache, DbCacheReadCollection } from '../../cache/lib'
 import { profiler } from '../profiler'
 
 export type RundownIngestDataCacheCollection = DbCacheWriteCollection<IngestDataCacheObj, IngestDataCacheObj>
+export type ReadOnlyRundownIngestDataCacheCollection = DbCacheReadCollection<IngestDataCacheObj, IngestDataCacheObj>
 
 /** TODO-CACHE the `_id`s used here are consistent and predictable, so this should be rewritten to operate more directly on the cache with the ids instead */
 
 export function loadCachedRundownData(
-	cache: RundownIngestDataCacheCollection,
+	cache: ReadOnlyRundownIngestDataCacheCollection,
 	rundownId: RundownId,
 	rundownExternalId: string
 ): LocalIngestRundown {

@@ -17,7 +17,7 @@ import {
 } from './lib'
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
-import { getActiveRundownPlaylistsInStudio } from './studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './studio'
 import { CacheForPlayout, CacheForStudio2 } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
 
@@ -31,7 +31,7 @@ export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boole
 
 		const studio = cache.Studio.doc
 
-		const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, studio._id, playlist._id)
+		const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(studio._id, playlist._id)
 
 		if (anyOtherActiveRundowns.length) {
 			// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
@@ -109,10 +109,9 @@ export function deactivateRundownPlaylistInner(cache: CacheForPlayout): Rundown 
 
 	let rundown: Rundown | undefined
 	if (currentPartInstance) {
+		rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 		// defer so that an error won't prevent deactivate
 		Meteor.setTimeout(() => {
-			rundown = Rundowns.findOne(currentPartInstance.rundownId)
-
 			if (rundown) {
 				IngestActions.notifyCurrentPlayingPart(rundown, null)
 			} else {

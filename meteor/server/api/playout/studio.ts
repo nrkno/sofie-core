@@ -1,42 +1,16 @@
-import {
-	RundownPlaylist,
-	RundownPlaylistId,
-	DBRundownPlaylist,
-	RundownPlaylists,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '../../../lib/collections/Studios'
 import { protectString } from '../../../lib/lib'
-import { CacheForStudioBase, CacheForStudio2 } from '../../cache/DatabaseCaches'
-import { MongoQuery } from '../../../lib/typings/meteor'
 
-export function getActiveRundownPlaylistsInStudio(
-	cache: CacheForStudioBase | null,
+export function getActiveRundownPlaylistsInStudioFromDb(
 	studioId: StudioId,
 	excludeRundownPlaylistId?: RundownPlaylistId
 ): RundownPlaylist[] {
-	const q: MongoQuery<DBRundownPlaylist> = {
+	return RundownPlaylists.find({
 		studioId: studioId,
 		active: true,
 		_id: {
 			$ne: excludeRundownPlaylistId || protectString(''),
 		},
-	}
-	if (!cache) {
-		return RundownPlaylists.find(q).fetch()
-	} else {
-		return cache.RundownPlaylists.findFetch(q)
-	}
-}
-
-export function getActiveRundownPlaylistsInStudio2(
-	cache: CacheForStudio2,
-	excludeRundownPlaylistId?: RundownPlaylistId
-): RundownPlaylist[] {
-	return cache.RundownPlaylists.findFetch({
-		// studioId: cache.Studio.doc._id,
-		active: true,
-		_id: {
-			$ne: excludeRundownPlaylistId || protectString(''),
-		},
-	})
+	}).fetch()
 }

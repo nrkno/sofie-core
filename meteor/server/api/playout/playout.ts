@@ -55,7 +55,7 @@ import {
 } from './actions'
 import { sortPieceInstancesByStart } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { getActiveRundownPlaylistsInStudio, getActiveRundownPlaylistsInStudio2 } from './studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './studio'
 import {
 	rundownPlaylistSyncFunction,
 	RundownSyncFunctionPriority,
@@ -172,7 +172,7 @@ export namespace ServerPlayoutAPI {
 				if (playlist.active)
 					throw new Meteor.Error(404, `rundownPrepareForBroadcast cannot be run on an active rundown!`)
 
-				const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+				const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 				if (anyOtherActiveRundowns.length) {
 					// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
 					throw new Meteor.Error(
@@ -258,7 +258,7 @@ export namespace ServerPlayoutAPI {
 			(cache) => {
 				const playlist = cache.Playlist.doc
 
-				let anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+				let anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 				let error: any
 				_.each(anyOtherActiveRundowns, (otherRundownPlaylist) => {
 					try {
@@ -270,7 +270,7 @@ export namespace ServerPlayoutAPI {
 				})
 				if (error) {
 					// Ok, something went wrong, but check if the active rundowns where deactivated?
-					anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+					anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 					if (anyOtherActiveRundowns.length) {
 						// No they weren't, we can't continue..
 						throw error
@@ -1277,9 +1277,9 @@ export namespace ServerPlayoutAPI {
 		check(studioId, String)
 
 		return studioSyncFunction('updateStudioBaseline', studioId, (cache) => {
-			const activeRundowns = getActiveRundownPlaylistsInStudio2(cache)
+			const activePlaylists = cache.getActiveRundownPlaylists()
 
-			if (activeRundowns.length === 0) {
+			if (activePlaylists.length === 0) {
 				updateStudioTimeline(cache)
 				return shouldUpdateStudioBaselineInner(cache)
 			} else {
@@ -1300,9 +1300,9 @@ export namespace ServerPlayoutAPI {
 	function shouldUpdateStudioBaselineInner(cache: CacheForStudio2): string | false {
 		const studio = cache.Studio.doc
 
-		const activeRundowns = getActiveRundownPlaylistsInStudio2(cache)
+		const activePlaylists = cache.getActiveRundownPlaylists()
 
-		if (activeRundowns.length === 0) {
+		if (activePlaylists.length === 0) {
 			const studioTimeline = cache.Timeline.findOne(studio._id)
 			if (!studioTimeline) return 'noBaseline'
 			const markerObject = studioTimeline.timeline.find((x) => x.id === `baseline_version`)

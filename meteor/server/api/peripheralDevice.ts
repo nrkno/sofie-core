@@ -35,7 +35,6 @@ import { PickerPOST } from './http'
 import { CacheForStudio2 } from '../cache/DatabaseCaches'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { getActiveRundownPlaylistsInStudio2 } from './playout/studio'
 import { DbCacheWriteCollection } from '../cache/lib'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { getValidActivationCache } from '../cache/ActivationCache'
@@ -213,7 +212,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		if (results.length > 0) {
 			return studioSyncFunction('timelineTriggerTime', studioId, (cache) => {
-				const activePlaylists = getActiveRundownPlaylistsInStudio2(cache)
+				const activePlaylists = cache.getActiveRundownPlaylists()
 
 				if (activePlaylists.length === 1) {
 					const activePlaylist = activePlaylists[0]

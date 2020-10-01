@@ -181,24 +181,36 @@ export class CacheForIngest extends Cache {
 	public readonly ExpectedMediaItems: DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>
 	public readonly ExpectedPlayoutItems: DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>
 
+	public readonly RundownBaselineObjs: DbCacheWriteCollection<RundownBaselineObj, RundownBaselineObj>
+	public readonly RundownBaselineAdLibPieces: DbCacheWriteCollection<
+		RundownBaselineAdLibItem,
+		RundownBaselineAdLibItem
+	>
+	public readonly RundownBaselineAdLibActions: DbCacheWriteCollection<
+		RundownBaselineAdLibAction,
+		RundownBaselineAdLibAction
+	>
+
 	private constructor(rundownExternalId: string) {
 		super()
 
-		this.Studio = new DbCacheReadObject<Studio, Studio>(Studios)
-		this.Rundown = new DbCacheWriteOptionalObject<Rundown, DBRundown>(Rundowns)
+		this.Studio = new DbCacheReadObject(Studios)
+		this.Rundown = new DbCacheWriteOptionalObject(Rundowns)
 		this.RundownExternalId = rundownExternalId
 
-		this.Segments = new DbCacheWriteCollection<Segment, DBSegment>(Segments)
-		this.Parts = new DbCacheWriteCollection<Part, DBPart>(Parts)
-		this.Pieces = new DbCacheWriteCollection<Piece, Piece>(Pieces)
+		this.Segments = new DbCacheWriteCollection(Segments)
+		this.Parts = new DbCacheWriteCollection(Parts)
+		this.Pieces = new DbCacheWriteCollection(Pieces)
 
-		this.AdLibPieces = new DbCacheWriteCollection<AdLibPiece, AdLibPiece>(AdLibPieces)
-		this.AdLibActions = new DbCacheWriteCollection<AdLibAction, AdLibAction>(AdLibActions)
+		this.AdLibPieces = new DbCacheWriteCollection(AdLibPieces)
+		this.AdLibActions = new DbCacheWriteCollection(AdLibActions)
 
-		this.ExpectedMediaItems = new DbCacheWriteCollection<ExpectedMediaItem, ExpectedMediaItem>(ExpectedMediaItems)
-		this.ExpectedPlayoutItems = new DbCacheWriteCollection<ExpectedPlayoutItem, ExpectedPlayoutItem>(
-			ExpectedPlayoutItems
-		)
+		this.ExpectedMediaItems = new DbCacheWriteCollection(ExpectedMediaItems)
+		this.ExpectedPlayoutItems = new DbCacheWriteCollection(ExpectedPlayoutItems)
+
+		this.RundownBaselineObjs = new DbCacheWriteCollection(RundownBaselineObjs)
+		this.RundownBaselineAdLibPieces = new DbCacheWriteCollection(RundownBaselineAdLibPieces)
+		this.RundownBaselineAdLibActions = new DbCacheWriteCollection(RundownBaselineAdLibActions)
 	}
 
 	static async create(studioId: StudioId, rundownExternalId: string): Promise<CacheForIngest> {
@@ -213,18 +225,30 @@ export class CacheForIngest extends Cache {
 
 		const rundownId = res.Rundown.doc?._id ?? protectString('')
 		await Promise.all([
-			makePromise(() => res.Segments.prepareInit({ rundownId: rundownId }, true)),
-			makePromise(() => res.Parts.prepareInit({ rundownId: rundownId }, true)),
-			makePromise(() => res.Pieces.prepareInit({ startRundownId: rundownId }, true)),
+			res.Segments.prepareInit({ rundownId: rundownId }, true),
+			res.Parts.prepareInit({ rundownId: rundownId }, true),
+			res.Pieces.prepareInit({ startRundownId: rundownId }, true),
 
-			makePromise(() => res.AdLibPieces.prepareInit({ rundownId: rundownId }, true)),
-			makePromise(() => res.AdLibActions.prepareInit({ rundownId: rundownId }, true)),
+			res.AdLibPieces.prepareInit({ rundownId: rundownId }, true),
+			res.AdLibActions.prepareInit({ rundownId: rundownId }, true),
 
-			makePromise(() => res.ExpectedMediaItems.prepareInit({ rundownId: rundownId }, true)),
-			makePromise(() => res.ExpectedPlayoutItems.prepareInit({ rundownId: rundownId }, true)),
+			res.ExpectedMediaItems.prepareInit({ rundownId: rundownId }, true),
+			res.ExpectedPlayoutItems.prepareInit({ rundownId: rundownId }, true),
+
+			res.RundownBaselineObjs.prepareInit({ rundownId: rundownId }, false),
+			res.RundownBaselineAdLibPieces.prepareInit({ rundownId: rundownId }, false),
+			res.RundownBaselineAdLibActions.prepareInit({ rundownId: rundownId }, false),
 		])
 
 		return res
+	}
+
+	async loadBaselineCollections(): Promise<void> {
+		await Promise.all([
+			makePromise(() => this.RundownBaselineObjs._initialize()),
+			makePromise(() => this.RundownBaselineAdLibPieces._initialize()),
+			makePromise(() => this.RundownBaselineAdLibActions._initialize()),
+		])
 	}
 
 	removeRundown() {
@@ -273,7 +297,7 @@ export abstract class CacheForPlayoutPreInit extends Cache {
 	protected async preInit(tmpPlaylist: RundownPlaylist) {
 		await Promise.all([
 			this.Playlist._initialize(tmpPlaylist._id),
-			makePromise(() => this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true)),
+			this.Rundowns.prepareInit({ playlistId: tmpPlaylist._id }, true),
 		])
 
 		const rundowns = this.Rundowns.findFetch()
@@ -312,11 +336,20 @@ export class CacheForStudio2 extends Cache implements CacheForStudioBase2 {
 		res.Studio._initialize(studioId)
 
 		await Promise.all([
-			makePromise(() => res.RundownPlaylists.prepareInit({ studioId }, true)), // TODO - immediate?
-			makePromise(() => res.Timeline.prepareInit({ studioId }, true)), // TODO - immediate?
+			res.RundownPlaylists.prepareInit({ studioId }, true), // TODO - immediate?
+			res.Timeline.prepareInit({ studioId }, true), // TODO - immediate?
 		])
 
 		return res
+	}
+
+	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): RundownPlaylist[] {
+		return this.RundownPlaylists.findFetch({
+			active: true,
+			_id: {
+				$ne: excludeRundownPlaylistId || protectString(''),
+			},
+		})
 	}
 }
 
@@ -363,23 +396,21 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			playlist.previousPartInstanceId,
 		])
 
-		ps.push(makePromise(() => this.Segments.prepareInit({ rundownId: { $in: rundownIds } }, true))) // TODO - omit if we cant or are unlikely to change the current part
-		ps.push(makePromise(() => this.Parts.prepareInit({ rundownId: { $in: rundownIds } }, true))) // TODO - omit if we cant or are unlikely to change the current part
+		ps.push(this.Segments.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
+		ps.push(this.Parts.prepareInit({ rundownId: { $in: rundownIds } }, true)) // TODO - omit if we cant or are unlikely to change the current part
 
 		ps.push(
-			makePromise(() => this.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, true))
+			this.PartInstances.prepareInit({ rundownId: { $in: rundownIds } }, true)
 			// TODO - should this only load the non-reset?
 		)
 
 		ps.push(
-			makePromise(() =>
-				this.PieceInstances.prepareInit(
-					{
-						rundownId: { $in: rundownIds },
-						partInstanceId: { $in: selectedPartInstanceIds },
-					},
-					true
-				)
+			this.PieceInstances.prepareInit(
+				{
+					rundownId: { $in: rundownIds },
+					partInstanceId: { $in: selectedPartInstanceIds },
+				},
+				true
 			)
 		)
 
@@ -387,7 +418,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		// This will be needed later, but we will do some other processing first
 		// TODO-CACHE what happens if this errors? where should that go?
-		Promise.all([makePromise(() => this.Timeline.prepareInit({ studioId: playlist.studioId }, true))])
+		Promise.all([this.Timeline.prepareInit({ studioId: playlist.studioId }, true)])
 	}
 
 	removePlaylist() {

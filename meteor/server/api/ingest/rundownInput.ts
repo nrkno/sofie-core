@@ -92,6 +92,7 @@ import {
 	IngestPlayoutInfo,
 	getRundownSegmentsAndPartsFromIngestCache,
 	getSegment2,
+	getReadonlyIngestObjectCache,
 } from './lib'
 import { PackageInfo } from '../../coreSystem'
 import { updateExpectedMediaItemsOnRundown } from '../expectedMediaItems'
@@ -210,6 +211,7 @@ export namespace RundownInput {
 			throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
 		}
 
+		const ingestDataCache = waitForPromise(getReadonlyIngestObjectCache(rundown._id))
 		return loadCachedRundownData(ingestDataCache, rundown._id, rundown.externalId)
 	}
 	// Delete, Create & Update Rundown (and it's contents):
@@ -462,6 +464,9 @@ function updateRundownFromIngestData(
 		throw new Meteor.Error(501, 'Blueprint rejected the rundown')
 	}
 
+	// We will be updating the baseline, so start it loading
+	const pBaseline = cache.loadBaselineCollections()
+
 	const { blueprint: showStyleBlueprint, blueprintId } = loadShowStyleBlueprint(showStyle.base)
 	const notesContext = new NotesContext(
 		`${showStyle.base.name}-${showStyle.variant.name}`,
@@ -650,6 +655,8 @@ function updateRundownFromIngestData(
 		baselineAdlibPieces,
 		baselineAdlibActions,
 	})
+
+	waitForPromise(pBaseline)
 
 	span?.end()
 	return res

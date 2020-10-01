@@ -58,13 +58,12 @@ import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
-import { getActiveRundownPlaylistsInStudio2 } from './studio'
 import { rundownPlaylistFromStudioSyncFunction } from './playout'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
 export function updateStudioOrPlaylistTimeline(cache: CacheForStudio2) {
-	const playlists = getActiveRundownPlaylistsInStudio2(cache)
+	const playlists = cache.getActiveRundownPlaylists()
 	if (playlists.length === 1) {
 		return rundownPlaylistFromStudioSyncFunction(
 			'updateStudioOrPlaylistTimeline',

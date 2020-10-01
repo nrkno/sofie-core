@@ -19,7 +19,7 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './playout/studio'
 import { IngestActions } from './ingest/actions'
 import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
@@ -230,7 +230,7 @@ export function prepareForBroadcast(
 		return ClientAPI.responseError(
 			'Rundown Playlist is active, please deactivate before preparing it for broadcast'
 		)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(
 			409,
@@ -269,7 +269,7 @@ export function resetAndActivate(
 			'RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.'
 		)
 	}
-	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundownPlaylists = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 	if (anyOtherActiveRundownPlaylists.length) {
 		return ClientAPI.responseError(
 			409,
@@ -306,7 +306,7 @@ export function activate(
 	check(rehearsal, Boolean)
 
 	let playlist = checkAccessAndGetPlaylist(context, rundownPlaylistId)
-	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudio(null, playlist.studioId, playlist._id)
+	const anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
 
 	if (anyOtherActiveRundowns.length) {
 		return ClientAPI.responseError(

@@ -13,6 +13,7 @@ import {
 	protectString,
 	asyncCollectionBulkWrite,
 	clone,
+	makePromise,
 } from '../../lib/lib'
 import { MongoQuery, TransformedCollection, FindOptions, MongoModifier } from '../../lib/typings/meteor'
 import _ from 'underscore'
@@ -49,10 +50,13 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		return this._initialized || this._initializing !== undefined
 	}
 
-	prepareInit(initializer: MongoQuery<DBInterface> | (() => Promise<void>), initializeImmediately: boolean) {
+	async prepareInit(
+		initializer: MongoQuery<DBInterface> | (() => Promise<void>),
+		initializeImmediately: boolean
+	): Promise<void> {
 		this._initializer = initializer
 		if (initializeImmediately) {
-			this._initialize()
+			return makePromise(() => this._initialize())
 		}
 	}
 	extendWithData(cacheCollection: DbCacheReadCollection<Class, DBInterface>) {
@@ -63,7 +67,7 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		})
 	}
 
-	protected _initialize() {
+	public _initialize(): void {
 		if (this._initializing) {
 			// Only allow one fiber to run this at a time
 			waitForPromise(this._initializing)
@@ -135,8 +139,6 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 		selector?: MongoQuery<DBInterface> | DBInterface['_id'] | SelectorFunction<DBInterface>,
 		options?: FindOptions<DBInterface>
 	): Class | undefined {
-		this._initialize()
-
 		return this.findFetch(selector, options)[0]
 	}
 

@@ -35,7 +35,7 @@ import { DeepReadonly } from 'utility-types'
 import { rundownPlaylistCustomSyncFunction, RundownSyncFunctionPriority } from './rundownInput'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestDataCacheObj, IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import { DbCacheWriteCollection } from '../../cache/lib'
+import { DbCacheWriteCollection, DbCacheReadCollection } from '../../cache/lib'
 import { RundownIngestDataCacheCollection } from './ingestCache'
 import { profiler } from '../profiler'
 
@@ -204,6 +204,14 @@ export function getIngestPlaylistInfoFromDb(rundown: DeepReadonly<Rundown>) {
 		nextPartInstance,
 	}
 	return playoutInfo
+}
+
+export async function getReadonlyIngestObjectCache(
+	rundownId: RundownId
+): Promise<DbCacheReadCollection<IngestDataCacheObj, IngestDataCacheObj>> {
+	const ingestObjCache = new DbCacheReadCollection<IngestDataCacheObj, IngestDataCacheObj>(IngestDataCache)
+	await ingestObjCache.prepareInit({ rundownId }, true)
+	return ingestObjCache
 }
 
 export function rundownIngestSyncFromStudioFunction<T>(

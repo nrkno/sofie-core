@@ -69,6 +69,8 @@ export namespace IngestActions {
 		if (!playlist) throw new Meteor.Error(501, `Orphaned rundown: "${rundown._id}"`)
 		if (playlist.rehearsal) currentPlayingPart = null
 
+		// TODO-CACHE these updates are a bit race condition prone..
+
 		const currentPlayingPartExternalId: string | null = currentPlayingPart ? currentPlayingPart.externalId : null
 		if (currentPlayingPartExternalId) {
 			Rundowns.update(this._id, {
@@ -103,8 +105,8 @@ export namespace IngestActions {
 	 */
 	export function regenerateRundownPlaylist(
 		context: MethodContext | null,
-		rundownPlaylistId: RundownPlaylistId,
-		purgeExisting?: boolean
+		rundownPlaylistId: RundownPlaylistId
+		// purgeExisting?: boolean
 	) {
 		check(rundownPlaylistId, String)
 
@@ -137,9 +139,9 @@ export namespace IngestActions {
 										rundown._id,
 										rundown.externalId
 									)
-									if (purgeExisting) {
-										removeRundownFromCache(cache, rundown)
-									}
+									// if (purgeExisting) {
+									// 	removeRundownFromCache(cache, rundown)
+									// }
 
 									return prepareUpdateRundownInner(cache, ingestDataCache, ingestRundown, undefined)
 								},

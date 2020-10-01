@@ -44,7 +44,7 @@ import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios, StudioId } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { getActiveRundownPlaylistsInStudio } from './playout/studio'
+import { getActiveRundownPlaylistsInStudioFromDb } from './playout/studio'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 
 function setupIndexes(removeOldIndexes: boolean = false): IndexSpecification[] {
@@ -440,7 +440,7 @@ function isAllowedToRunCleanup(): string | void {
 
 	const studios = Studios.find().fetch()
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = getActiveRundownPlaylistsInStudio(null, studio._id)[0]
+		const activePlaylist: RundownPlaylist | undefined = getActiveRundownPlaylistsInStudioFromDb(studio._id)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}

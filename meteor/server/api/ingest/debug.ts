@@ -11,9 +11,9 @@ import { studioSyncFunction } from './rundownInput'
 
 if (!Settings.enableUserAccounts) {
 	Meteor.methods({
-		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId, purgeExisting?: boolean) => {
+		debug_playlistRunBlueprints: (rundownPlaylistId: RundownPlaylistId /*, purgeExisting?: boolean*/) => {
 			check(rundownPlaylistId, String)
-			IngestActions.regenerateRundownPlaylist(null, rundownPlaylistId, purgeExisting)
+			IngestActions.regenerateRundownPlaylist(null, rundownPlaylistId /*, purgeExisting*/)
 		},
 		debug_updateTimeline: (studioId: StudioId) => {
 			check(studioId, String)
