@@ -86,14 +86,14 @@ export const RouteSetsPopUp = withTranslation()(
 										<div key={id} className="route-set-pop-up-panel__group__controls mhm mbs">
 											<span
 												className={classNames({
-													'route-set-pop-up-panel__group__controls__active': routeSet.active,
-													'route-set-pop-up-panel__group__controls__inactive': !routeSet.active,
+													'route-set-pop-up-panel__group__controls__active': !routeSet.active,
+													'route-set-pop-up-panel__group__controls__inactive': routeSet.active,
 												})}>
-												{routeSet.name}
+												{t('Off')}
 											</span>
 											<a
 												className={classNames('switch-button', 'sb-nocolor', {
-													'sb-on': !routeSet.active,
+													'sb-on': routeSet.active,
 												})}
 												role="button"
 												onClick={(e) =>
@@ -112,10 +112,10 @@ export const RouteSetsPopUp = withTranslation()(
 											</a>
 											<span
 												className={classNames({
-													'route-set-pop-up-panel__group__controls__active': !routeSet.active,
-													'route-set-pop-up-panel__group__controls__inactive': routeSet.active,
+													'route-set-pop-up-panel__group__controls__active': routeSet.active,
+													'route-set-pop-up-panel__group__controls__inactive': !routeSet.active,
 												})}>
-												{t('Off')}
+												{routeSet.name}
 											</span>
 										</div>
 									))
