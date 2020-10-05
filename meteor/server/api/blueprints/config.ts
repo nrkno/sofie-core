@@ -156,6 +156,11 @@ interface Cache {
 	config: unknown
 }
 
+export function forceClearAllBlueprintConfigCaches() {
+	studioBlueprintConfigCache.clear()
+	showStyleBlueprintConfigCache.clear()
+}
+
 export function resetStudioBlueprintConfig(studio: Studio): void {
 	for (const map of studioBlueprintConfigCache.values()) {
 		map.delete(studio._id)
