@@ -15,7 +15,7 @@ import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 import { RundownLayoutType, RundownLayouts, RundownLayout } from '../../../lib/collections/RundownLayouts'
 import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { produceRundownPlaylistInfo } from '../rundown'
+import { produceRundownPlaylistInfoFromRundown } from '../rundown'
 import { updateRundownsInPlaylist } from '../ingest/rundownInput'
 
 require('../client') // include in order to create the Meteor methods needed
@@ -33,6 +33,7 @@ export enum RundownAPIMethods { // Using our own method definition, to catch ext
 	'unsyncRundown' = 'rundown.unsyncRundown',
 	'unsyncSegment' = 'rundown.unsyncSegment',
 	'moveRundown' = 'rundown.moveRundown',
+	'restoreRundownOrder' = 'rundown.restoreRundownOrder',
 }
 
 describe('Rundown', () => {
@@ -71,8 +72,8 @@ describe('Rundown', () => {
 		expect(rundown00.playlistId).toEqual(playlistId0)
 
 		// This should set the default sorting of the rundowns in the plylist:
-		let rundownPlaylistInfo = produceRundownPlaylistInfo(env.studio, rundown00, undefined)
-		updateRundownsInPlaylist(rundownPlaylistInfo, rundown00)
+		let rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00, undefined)
+		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown00)
 
 		// Expect the rundowns to be in the right order:
 		let rundownsInPLaylist0 = playlist0.getRundowns()
@@ -85,8 +86,8 @@ describe('Rundown', () => {
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 
 		// This should do no change, since rank is now controlled by Sofie:
-		rundownPlaylistInfo = produceRundownPlaylistInfo(env.studio, rundown00, undefined)
-		updateRundownsInPlaylist(rundownPlaylistInfo, rundown00)
+		rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(env.studio, rundown00, undefined)
+		updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown00)
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown02', 'rundown00'])
 
 		Meteor.call(RundownAPIMethods.moveRundown, rundownId02, playlist0, ['rundown02', 'rundown01', 'rundown00'])
@@ -134,5 +135,9 @@ describe('Rundown', () => {
 		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown01', 'rundown00', 'rundown02'])
 		expect(playlist1.getRundowns().map((r) => r._id)).toEqual(['rundown10'])
 		expect(RundownPlaylists.find().count()).toEqual(2) // A playlist was removed
+
+		// Restore the order:
+		Meteor.call(RundownAPIMethods.restoreRundownOrder, playlist0)
+		expect(playlist0.getRundowns().map((r) => r._id)).toEqual(['rundown00', 'rundown01', 'rundown02'])
 	})
 })

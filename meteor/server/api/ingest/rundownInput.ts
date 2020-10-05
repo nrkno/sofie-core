@@ -36,7 +36,7 @@ import {
 	ServerRundownAPI,
 	removeSegments,
 	updatePartRanks,
-	produceRundownPlaylistInfo,
+	produceRundownPlaylistInfoFromRundown,
 	allowedToMoveRundownOutOfPlaylist,
 	RundownPlaylistAndOrder,
 	getAllRundownsInPlaylist,
@@ -560,7 +560,7 @@ function updateRundownFromIngestData(
 		}
 	}
 
-	const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, dbRundownData, peripheralDevice)
+	const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(studio, dbRundownData, peripheralDevice)
 	dbRundownData.playlistId = rundownPlaylistInfo.rundownPlaylist._id
 
 	// Save rundown into database:
@@ -608,7 +608,7 @@ function updateRundownFromIngestData(
 	const dbRundown = Rundowns.findOne(dbRundownData._id)
 	if (!dbRundown) throw new Meteor.Error(500, 'Rundown not found (it should have been)')
 
-	updateRundownsInPlaylist(rundownPlaylistInfo, dbRundown)
+	updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, dbRundown)
 	removeEmptyPlaylists(studio._id)
 
 	const dbPlaylist = dbRundown.getRundownPlaylist()
@@ -952,10 +952,11 @@ function updateRundownFromIngestData(
 }
 
 /** Set _rank and playlistId of rundowns in a playlist */
-export function updateRundownsInPlaylist(rundownPlaylistInfo: RundownPlaylistAndOrder, currentRundown?: DBRundown) {
-	const playlist: DBRundownPlaylist = rundownPlaylistInfo.rundownPlaylist
-	const rundownRanks: BlueprintResultOrderedRundowns = rundownPlaylistInfo.order
-
+export function updateRundownsInPlaylist(
+	playlist: DBRundownPlaylist,
+	rundownRanks: BlueprintResultOrderedRundowns,
+	currentRundown?: DBRundown
+) {
 	const { rundowns, selector } = getAllRundownsInPlaylist(playlist._id, playlist.externalId)
 
 	let maxRank: number = Number.NEGATIVE_INFINITY

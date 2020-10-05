@@ -182,9 +182,44 @@ export function getAllRundownsInPlaylist(playlistId: RundownPlaylistId, playlist
 		selector: selector,
 	}
 }
+/**
+ * Produce the ranks of rundowns in a playlist.
+ * @param studio
+ * @param playlistId
+ */
+export function produceRundownPlaylistRanks(
+	studio: Studio,
+	playlistId: RundownPlaylistId
+): BlueprintResultOrderedRundowns {
+	// Note: This function does essentially the same as produceRundownPlaylistInfoFromRundown
+	// but just returns the rundown order
 
-/** Produce info about playlist from rundown (from blueprints) */
-export function produceRundownPlaylistInfo(
+	const studioBlueprint = loadStudioBlueprint(studio)
+	if (!studioBlueprint) throw new Meteor.Error(500, `Studio "${studio._id}" does not have a blueprint`)
+
+	const existingPlaylist = RundownPlaylists.findOne(playlistId)
+	if (!existingPlaylist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found`)
+
+	const { rundowns } = getAllRundownsInPlaylist(existingPlaylist._id, existingPlaylist.externalId)
+
+	const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
+		? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
+		: null
+
+	if (playlistInfo) {
+		if (playlistInfo.order) {
+			return playlistInfo.order
+		}
+	}
+	// If no order is provided, fall back to default sorting:
+	const rundownsInOrder = sortDefaultRundownInPlaylistOrder(rundowns)
+	return _.object(rundownsInOrder.map((i, index) => [i._id, index + 1]))
+}
+
+/** Produce info about playlist from rundown (using blueprints)
+ * This function is (/can be) run before the playlist has been created.
+ */
+export function produceRundownPlaylistInfoFromRundown(
 	studio: Studio,
 	currentRundown: DBRundown,
 	peripheralDevice: PeripheralDevice | undefined
@@ -203,7 +238,7 @@ export function produceRundownPlaylistInfo(
 	if (playlistId) {
 		// The rundown is going to be (or already is) inserted into a new (or existing) playlist.
 
-		const existingPlaylist = RundownPlaylists.findOne(playlistId)
+		const existingPlaylist: RundownPlaylist | undefined = RundownPlaylists.findOne(playlistId)
 
 		const playlistExternalId: string | undefined = existingPlaylist?.externalId || currentRundown.playlistExternalId
 
@@ -215,9 +250,6 @@ export function produceRundownPlaylistInfo(
 					500,
 					`produceRundownPlaylistInfo: currentRundown ("${currentRundown._id}") not found in rundowns!`
 				)
-
-			// if (studioBlueprint.blueprint.getRundownPlaylistInfo) {
-			// }
 			const playlistInfo: BlueprintResultRundownPlaylist | null = studioBlueprint.blueprint.getRundownPlaylistInfo
 				? studioBlueprint.blueprint.getRundownPlaylistInfo(unprotectObjectArray(rundowns))
 				: null
@@ -254,7 +286,7 @@ export function produceRundownPlaylistInfo(
 
 				let order: BlueprintResultOrderedRundowns | null = playlistInfo.order
 				if (!order) {
-					// If no order is provided, fall back to sort the rundowns by their name:
+					// If no order is provided, fall back to default sorting:
 
 					const rundownsInOrder = sortDefaultRundownInPlaylistOrder(rundowns)
 					order = _.object(rundownsInOrder.map((i, index) => [i._id, index + 1]))
@@ -869,8 +901,8 @@ export namespace ServerRundownAPI {
 				rundown.playlistIdIsSetInSofie = true
 
 				// When updating the rundowns in the playlist, the newly moved rundown will be given it's proper _rank:
-				const rundownPlaylistInfo = produceRundownPlaylistInfo(studio, rundown, peripheralDevice)
-				updateRundownsInPlaylist(rundownPlaylistInfo, rundown)
+				const rundownPlaylistInfo = produceRundownPlaylistInfoFromRundown(studio, rundown, peripheralDevice)
+				updateRundownsInPlaylist(rundownPlaylistInfo.rundownPlaylist, rundownPlaylistInfo.order, rundown)
 			}
 		} else {
 			// Move into a new playlist:
@@ -892,6 +924,30 @@ export namespace ServerRundownAPI {
 			// Remove the old playlist if it's empty:
 			removeEmptyPlaylists(oldPlaylist.studioId)
 		}
+	}
+	/** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */
+	export function restoreRundownOrder(context: MethodContext, playlistId: RundownPlaylistId) {
+		const access = RundownPlaylistContentWriteAccess.anyContent(context, playlistId)
+		if (!access.playlist) throw new Meteor.Error(404, `Playlist "${playlistId}" not found!`)
+
+		const studio = Studios.findOne(access.playlist.studioId)
+		if (!studio)
+			throw new Meteor.Error(
+				404,
+				`Studio "${access.playlist.studioId}" of playlist "${access.playlist._id}" not found!`
+			)
+
+		RundownPlaylists.update(access.playlist._id, {
+			$set: {
+				rundownRanksAreSetInSofie: false,
+			},
+		})
+		// Update local copy:
+		access.playlist.rundownRanksAreSetInSofie = false
+
+		// Update the _rank of the rundowns
+		const order = produceRundownPlaylistRanks(studio, access.playlist._id)
+		updateRundownsInPlaylist(access.playlist, order)
 	}
 }
 export namespace ClientRundownAPI {
@@ -1056,6 +1112,9 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 		return makePromise(() =>
 			ServerRundownAPI.moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 		)
+	}
+	restoreRundownOrder(playlistId: RundownPlaylistId) {
+		return makePromise(() => ServerRundownAPI.restoreRundownOrder(this, playlistId))
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)
