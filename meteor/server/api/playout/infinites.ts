@@ -123,7 +123,7 @@ export function syncPlayheadInfinitesForNextPartInstance(
 			cache.PieceInstances,
 			{
 				partInstanceId: nextPartInstance._id,
-				'infinite.fromPrevious': true,
+				'infinite.fromPreviousPlayhead': true,
 			},
 			infinites
 		)

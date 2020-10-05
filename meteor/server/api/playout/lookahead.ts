@@ -246,6 +246,7 @@ export async function getLookeaheadObjects(
 			mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
 				? mapping.lookaheadMaxSearchDistance
 				: orderedPartsFollowingPlayhead.length
+
 		const lookaheadObjs = findLookaheadForlayer(
 			playlist,
 			partInstancesInfo,
@@ -419,21 +420,14 @@ function findObjectsForPart(
 
 	let allObjs: TimelineObjRundown[] = []
 	for (const piece of partInfo.pieces) {
-		// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
-		const pieceInstanceId = partInstanceId
-			? rewrapPieceToInstance(piece, partInfo.part.rundownId, partInstanceId)._id
-			: piece._id
-
 		for (const obj of piece.content?.timelineObjects ?? []) {
-			if (obj) {
+			if (obj && obj.layer === layer) {
 				allObjs.push(
-					literal<TimelineObjRundown & OnGenerateTimelineObj>({
+					literal<TimelineObjRundown>({
 						...obj,
 						_id: protectString(''), // set later
 						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
-						pieceInstanceId: unprotectString(pieceInstanceId),
-						infinitePieceId: unprotectString(piece._id),
 					})
 				)
 			}
@@ -515,6 +509,7 @@ function findObjectsForPart(
 				)
 			}
 		})
+
 		if (span) span.end()
 		return res
 	}

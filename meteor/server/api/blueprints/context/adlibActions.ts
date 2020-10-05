@@ -274,7 +274,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 			throw new Error('PieceInstance could not be found')
 		}
 
-		if (pieceInstance.infinite?.fromPrevious) {
+		if (pieceInstance.infinite?.fromPreviousPart) {
 			throw new Error('Cannot update an infinite piece that is continued from a previous part')
 		}
 

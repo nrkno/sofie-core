@@ -112,7 +112,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			for (const mode0 of [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnSegmentEnd]) {
 				const mode = mode0 as PieceLifespan.OutOnRundownEnd | PieceLifespan.OutOnSegmentEnd
 				const pieces = (piecesByInfiniteMode[mode] || []).filter(
-					(p) => p.infinite?.fromPrevious || p.dynamicallyInserted
+					(p) => p.infinite?.fromPreviousPlayhead || p.dynamicallyInserted
 				)
 				// This is the piece we may copy across
 				const candidatePiece =
@@ -159,7 +159,8 @@ export function getPlayheadTrackingInfinitesForPart(
 			}
 			instance.infinite = {
 				...p.infinite,
-				fromPrevious: true,
+				fromPreviousPart: true,
+				fromPreviousPlayhead: true,
 			}
 			instance.adLibSourceId = p.adLibSourceId
 		}
@@ -319,10 +320,12 @@ export function getPieceInstancesForPart(
 		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
 			instance.infinite = {
 				infinitePieceId: instance.piece._id,
+				fromPreviousPart: instance.piece.startPartId !== part._id,
 			}
 		}
-		if (instance.infinite && instance.piece.startPartId !== part._id) {
+		if (instance.infinite?.fromPreviousPart) {
 			// If this is not the start point, it should start at 0
+			// Note: this should not be setitng fromPreviousPlayhead, as it is not from the playhead
 			instance.piece = {
 				...instance.piece,
 				enable: {
@@ -478,12 +481,11 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 	const res: PieceInstanceOnInfiniteLayers = {}
 
 	const isCandidateBetter = (best: PieceInstance, candidate: PieceInstance): boolean => {
-		// Prioritise the one from this part over previous part
 		if (best.infinite?.fromPreviousPart && !candidate.infinite?.fromPreviousPart) {
 			// Prefer the candidate as it is not from previous
 			return true
 		}
-		if (!best.infinite?.fromPrevious && candidate.infinite?.fromPrevious) {
+		if (!best.infinite?.fromPreviousPart && candidate.infinite?.fromPreviousPart) {
 			// Prefer the best as it is not from previous
 			return false
 		}

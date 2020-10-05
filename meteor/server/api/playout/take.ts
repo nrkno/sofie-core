@@ -432,12 +432,14 @@ function startHold(
 		// mark current one as infinite
 		instance.infinite = {
 			infinitePieceId: instance.piece._id,
+			fromPreviousPart: false,
 			fromHold: true,
 		}
 		cache.PieceInstances.update(instance._id, {
 			$set: {
 				infinite: {
 					infinitePieceId: instance.piece._id,
+					fromPreviousPart: false,
 					fromHold: true,
 				},
 			},
@@ -457,6 +459,7 @@ function startHold(
 			},
 			infinite: {
 				infinitePieceId: instance.piece._id,
+				fromPreviousPart: true,
 				fromHold: true,
 			},
 		})
