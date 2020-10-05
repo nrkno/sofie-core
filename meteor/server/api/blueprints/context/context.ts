@@ -62,11 +62,13 @@ import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../
 import { BlueprintId } from '../../../../lib/collections/Blueprints'
 
 export interface ContextInfo {
+	/** Short name for the context (eg the blueprint function being called) */
 	name: string
+	/** Full identifier info for the context. Should be able to identify the rundown/studio/blueprint etc being executed */
 	identifier: string
 }
 export interface UserContextInfo extends ContextInfo {
-	blackHoleUserNotes?: boolean // TODO-CONTEXT remove this
+	tempSendUserNotesIntoBlackHole?: boolean // TODO-CONTEXT remove this
 }
 
 /** Common */
@@ -109,10 +111,6 @@ export class CommonContext implements ICommonContext {
 	logError(message: string): void {
 		logger.error(`"${this._contextName}": "${message}"\n(${this._contextIdentifier})`)
 	}
-}
-
-export interface RawNote extends INoteBase {
-	trackingId: string | undefined
 }
 
 const studioBlueprintConfigCache: { [studioId: string]: Cache } = {}
@@ -178,15 +176,15 @@ export class StudioContext extends CommonContext implements IStudioContext {
 
 export class StudioUserContext extends StudioContext implements IStudioUserContext {
 	public readonly notes: INoteBase[] = []
-	private readonly blackHoleNotes: boolean
+	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(contextInfo: UserContextInfo, studio: Studio) {
 		super(contextInfo, studio)
-		this.blackHoleNotes = contextInfo.blackHoleUserNotes ?? false
+		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.blackHoleNotes) {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
@@ -199,7 +197,7 @@ export class StudioUserContext extends StudioContext implements IStudioUserConte
 		}
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.blackHoleNotes) {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
@@ -296,7 +294,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 
 export class ShowStyleUserContext extends ShowStyleContext implements IUserNotesContext {
 	public readonly notes: INoteBase[] = []
-	private readonly blackHoleNotes: boolean
+	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
 		contextInfo: UserContextInfo,
@@ -310,7 +308,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any }): void {
-		if (this.blackHoleNotes) {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
@@ -323,7 +321,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IUserNotes
 		}
 	}
 	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
-		if (this.blackHoleNotes) {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
@@ -379,31 +377,35 @@ export class RundownEventContext extends RundownContext implements IEventContext
 	}
 }
 
+export interface RawPartNote extends INoteBase {
+	partExternalId: string | undefined
+}
+
 export class SegmentUserContext extends RundownContext implements ISegmentUserContext {
-	public readonly notes: RawNote[] = []
+	public readonly notes: RawPartNote[] = []
 
 	constructor(contextInfo: ContextInfo, rundown: Rundown, cache: CacheForRundownPlaylist) {
 		super(contextInfo, rundown, cache)
 	}
 
-	notifyUserError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserError(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
 			type: NoteType.ERROR,
 			message: {
 				key: message,
 				args: params,
 			},
-			trackingId: trackingId,
+			partExternalId: partExternalId,
 		})
 	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
+	notifyUserWarning(message: string, params?: { [key: string]: any }, partExternalId?: string): void {
 		this.notes.push({
 			type: NoteType.WARNING,
 			message: {
 				key: message,
 				args: params,
 			},
-			trackingId: trackingId,
+			partExternalId: partExternalId,
 		})
 	}
 }
@@ -449,8 +451,8 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
-	public readonly notes: RawNote[] = []
-	private readonly blackHoleNotes: boolean
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
 
 	constructor(
 		contextInfo: UserContextInfo,
@@ -464,15 +466,15 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		this.currentPartInstance = currentPartInstance ? unprotectPartInstance(currentPartInstance) : undefined
 		this.nextPartInstance = nextPartInstance ? unprotectPartInstance(nextPartInstance) : undefined
 
-		this.blackHoleNotes = contextInfo.blackHoleUserNotes ?? false
+		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
 
 	getCurrentTime(): number {
 		return getCurrentTime()
 	}
 
-	notifyUserError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
-		if (this.blackHoleNotes) {
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logError(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
@@ -481,12 +483,11 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 					key: message,
 					args: params,
 				},
-				trackingId: trackingId,
 			})
 		}
 	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
-		if (this.blackHoleNotes) {
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logWarning(`UserNotes: "${message}", ${JSON.stringify(params)}`)
 		} else {
 			this.notes.push({
@@ -495,7 +496,6 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 					key: message,
 					args: params,
 				},
-				trackingId: trackingId,
 			})
 		}
 	}

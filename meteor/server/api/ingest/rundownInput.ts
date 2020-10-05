@@ -456,7 +456,7 @@ function updateRundownFromIngestData(
 		{
 			name: 'selectShowStyleVariant',
 			identifier: `studioId=${studio._id},rundownId=${existingDbRundown?._id},ingestRundownId=${ingestRundown.externalId}`,
-			blackHoleUserNotes: true,
+			tempSendUserNotesIntoBlackHole: true,
 		},
 		studio
 	)
@@ -615,7 +615,7 @@ function updateRundownFromIngestData(
 		{
 			name: 'getRundownPlaylistInfo',
 			identifier: `studioId=${studio._id},rundownId=${existingDbRundown?._id},ingestRundownId=${ingestRundown.externalId}`,
-			blackHoleUserNotes: true,
+			tempSendUserNotesIntoBlackHole: true,
 		},
 		studio
 	)
@@ -1450,11 +1450,11 @@ function generateSegmentContents(
 	const blueprintRes = blueprint.getSegment(context, ingestSegment)
 
 	// Ensure all parts have a valid externalId set on them
-	const knownPartIds = blueprintRes.parts.map((p) => p.part.externalId)
+	const knownPartExternalIds = blueprintRes.parts.map((p) => p.part.externalId)
 
 	const segmentNotes: SegmentNote[] = []
 	for (const note of context.notes) {
-		if (!note.trackingId || knownPartIds.indexOf(note.trackingId) === -1) {
+		if (!note.partExternalId || knownPartExternalIds.indexOf(note.partExternalId) === -1) {
 			segmentNotes.push(
 				literal<SegmentNote>({
 					type: note.type,
@@ -1492,7 +1492,7 @@ function generateSegmentContents(
 		const notes: PartNote[] = []
 
 		for (const note of context.notes) {
-			if (note.trackingId === blueprintPart.part.externalId) {
+			if (note.partExternalId === blueprintPart.part.externalId) {
 				notes.push(
 					literal<PartNote>({
 						type: note.type,

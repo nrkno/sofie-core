@@ -1214,7 +1214,7 @@ export namespace ServerPlayoutAPI {
 						identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
 							currentPartInstance._id
 						},execution=${getRandomId()}`,
-						blackHoleUserNotes: true, // TODO-CONTEXT store these notes
+						tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
 					},
 					cache,
 					studio,

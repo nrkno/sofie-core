@@ -266,7 +266,7 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 					{
 						name: `onTimelineGenerate=${activeRundown.name}`,
 						identifier: `blueprintId=${showStyleBlueprint0.blueprintId},rundownId=${activeRundown._id},currentPartInstanceId=${currentPartInstance?._id},nextPartInstanceId=${nextPartInstance?._id}`,
-						blackHoleUserNotes: true, // TODO-CONTEXT store/show these notes
+						tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store/show these notes
 					},
 					activeRundown,
 					cache,

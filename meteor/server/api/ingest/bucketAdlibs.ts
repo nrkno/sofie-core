@@ -27,7 +27,7 @@ export function updateBucketAdlibFromIngestData(
 		{
 			name: `Bucket Ad-Lib`,
 			identifier: `studioId=${studio._id},showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
-			blackHoleUserNotes: true, // TODO-CONTEXT
+			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
 		studio,
 		undefined,

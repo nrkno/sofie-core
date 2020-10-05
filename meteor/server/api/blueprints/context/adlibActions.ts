@@ -33,12 +33,12 @@ import { PartInstanceId, PartInstance } from '../../../../lib/collections/PartIn
 import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
 import { getResolvedPieces } from '../../playout/pieces'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { ShowStyleContext, ContextInfo, UserContextInfo, RawNote } from './context'
+import { ShowStyleContext, UserContextInfo } from './context'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { ServerPlayoutAdLibAPI } from '../../playout/adlib'
 import { MongoQuery } from '../../../../lib/typings/meteor'
 import { clone } from '../../../../lib/lib'
-import { NoteType } from '../../../../lib/api/notes'
+import { NoteType, INoteBase } from '../../../../lib/api/notes'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -100,8 +100,8 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 	private readonly rundownPlaylist: RundownPlaylist
 	private readonly rundown: Rundown
 
-	public readonly notes: RawNote[] = []
-	private readonly blackHoleNotes: boolean
+	public readonly notes: INoteBase[] = []
+	private readonly tempSendNotesIntoBlackHole: boolean
 
 	private queuedPartInstance: PartInstance | undefined
 
@@ -124,11 +124,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 		this.rundown = rundown
 		this.takeAfterExecute = false
 
-		this.blackHoleNotes = contextInfo.blackHoleUserNotes ?? false
+		this.tempSendNotesIntoBlackHole = contextInfo.tempSendUserNotesIntoBlackHole ?? false
 	}
 
-	notifyUserError(message: string, params?: { [key: string]: any }, trackingId?: string): void {
-		if (this.blackHoleNotes) {
+	notifyUserError(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logError(message)
 		} else {
 			this.notes.push({
@@ -137,12 +137,11 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 					key: message,
 					args: params,
 				},
-				trackingId: trackingId,
 			})
 		}
 	}
-	notifyUserWarning(message: string, params?: { [key: string]: any }, trackingId?: string): void {
-		if (this.blackHoleNotes) {
+	notifyUserWarning(message: string, params?: { [key: string]: any }): void {
+		if (this.tempSendNotesIntoBlackHole) {
 			this.logWarning(message)
 		} else {
 			this.notes.push({
@@ -151,7 +150,6 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 					key: message,
 					args: params,
 				},
-				trackingId: trackingId,
 			})
 		}
 	}
