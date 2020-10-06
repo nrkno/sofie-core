@@ -1073,13 +1073,28 @@ const RundownHeader = withTranslation()(
 		takeRundownSnapshot = (e) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Taken by user'),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+					},
+					doneMessage
 				)
 			}
 		}
@@ -2413,13 +2428,28 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const { t } = this.props
 			if (this.props.playlist) {
 				const playlistId = this.props.playlist._id
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime()),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+					},
+					doneMessage
 				)
 			}
 		}
