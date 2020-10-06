@@ -120,7 +120,11 @@ export class CustomLayerItemRenderer<
 			return (
 				<div
 					className="segment-timeline__piece__source-finished"
-					style={{ left: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px' }}></div>
+					style={{
+						left: this.props.relative
+							? (((vtContent.sourceDuration - seek) / (this.getItemDuration() || 1)) * 100).toString() + '%'
+							: ((vtContent.sourceDuration - seek) * this.props.timeScale).toString() + 'px',
+					}}></div>
 			)
 		}
 		return null
