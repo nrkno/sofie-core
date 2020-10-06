@@ -210,10 +210,10 @@ export const RundownList = translateWithTracker(() => {
 						</header>
 						{this.state.subsReady ? (
 							<div className="mod mvl">
-								<table className="table system-status-table expando expando-tight">
+								<table className="table system-status-table expando expando-tight rundown-list">
 									<thead>
 										<tr className="hl">
-											<th className="c3">
+											<th className="rundown-list-item__name">
 												<Tooltip
 													overlay={t('Click on a rundown to control your studio')}
 													visible={getHelpMode()}
@@ -221,18 +221,15 @@ export const RundownList = translateWithTracker(() => {
 													<span>{t('Rundown')}</span>
 												</Tooltip>
 											</th>
-											<th className="c2">{t('Studio')}</th>
-											<th className="c2">{t('Show style')}</th>
-											<th className="c2">{t('Created')}</th>
-											<th className="c2">{t('On Air Start Time')}</th>
-											<th className="c1">{t('Duration')}</th>
-											<th className="c1">{t('Status')}</th>
-											<th className="c1">{t('Air Status')}</th>
-											<th className="c1">&nbsp;</th>
-											<th className="c1">&nbsp;</th>
+											<th className="rundown-list-item__showStyle">{t('Show style')}</th>
+											<th className="rundown-list-item__airTime">{t('On Air Start Time')}</th>
+											<th className="rundown-list-item__status">{t('Status')}</th>
+											<th className="rundown-list-item__duration">{t('Duration')}</th>
+											<th className="rundown-list-item__created">{t('Created')}</th>
+											<th className="rundown-list-item__actions">&nbsp;</th>
 										</tr>
 									</thead>
-									<tbody>{this.renderRundownPlaylists(rundownPlaylists)}</tbody>
+									<tbody className="rundown-playlists">{this.renderRundownPlaylists(rundownPlaylists)}</tbody>
 								</table>
 							</div>
 						) : (

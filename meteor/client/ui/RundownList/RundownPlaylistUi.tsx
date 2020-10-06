@@ -13,6 +13,7 @@ import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { IconName } from '@fortawesome/fontawesome-svg-core'
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
 import { getRundownPlaylistLink, getRundownWithLayoutLink, getShelfLink } from './util'
 import { SplitDropdown } from '../../lib/SplitDropdown'
 import {
@@ -213,19 +214,16 @@ export const RundownPlaylistUi = DropTarget(
 					<RundownListItem key={unprotectString(rundown._id)} rundown={rundown} viewLinks={playlistViewLinks} />
 				))
 
-				const styles: any = {}
-				if (isOver) {
-					styles['borderColor'] = 'red'
-				}
-
 				return connectDropTarget(
-					<tr style={styles}>
-						<td colSpan={10}>
-							<table className="table">
+					<tr className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
+						<td colSpan={7}>
+							<table className="table system-status-table expando expando-tight">
 								<thead>
 									<tr>
-										<td colSpan={8}>
-											<h2>{playlist.name}</h2>
+										<td colSpan={5}>
+											<h2>
+												<FontAwesomeIcon icon={faFolderOpen} /> {playlist.name}
+											</h2>
 										</td>
 										<td>{playlistViewLinks}</td>
 										<td>Actions her</td>
@@ -246,7 +244,7 @@ function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement |
 	if (playlist.startedPlayback !== undefined && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
 		return (
 			<tr className="hl expando-addon">
-				<td colSpan={10}>
+				<td colSpan={7}>
 					<ActiveProgressBar rundownPlaylist={playlist} />
 				</td>
 			</tr>

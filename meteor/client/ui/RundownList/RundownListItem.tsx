@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faTh, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import Tooltip from 'rc-tooltip'
 import React from 'react'
 import { withTranslation } from 'react-i18next'
@@ -61,11 +61,11 @@ const spec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
 		// console.debug(`endDrag #${props.rundown._id}`)
 	},
 	isDragging: (props, monitor) => {
-		const isDragging = props.rundown._id === monitor.getItem().id
+		const isThisRundown = props.rundown._id === monitor.getItem().id
 		// if (isDragging) {
 		// 	console.debug(`	isDragging #${props.rundown.name}? ${isDragging}`)
 		// }
-		return isDragging
+		return isThisRundown
 	},
 }
 
@@ -134,7 +134,9 @@ export const RundownListItem = withTranslation()(
 					this.props.dragPreview(getEmptyImage()) // override default dom node screenshot behavior
 				}
 
-				shouldComponentUpdate(nextProps) {
+				shouldComponentUpdate(
+					nextProps: Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDragLayerProps
+				) {
 					const unequal: string[] = []
 					if (this.props.connectDragSource !== nextProps.connectDragSource) unequal.push('connectDragSource')
 					if (this.props.currentOffset?.y !== nextProps.currentOffset?.y)
@@ -145,7 +147,7 @@ export const RundownListItem = withTranslation()(
 					if (this.props.tReady !== nextProps.tReady) unequal.push('tReady')
 					if (this.props.viewLinks !== nextProps.viewLinks) unequal.push('viewLinks')
 
-					if (unequal.length > 0) {
+					if (unequal.length > 0 || nextProps.isDragging !== this.props.isDragging) {
 						console.log(this.props.rundown._id, this.props.rundown.name, unequal)
 						return true
 					}
@@ -165,18 +167,18 @@ export const RundownListItem = withTranslation()(
 						styles['transform'] = `translate3d(0, 0, 0) scale(var(--scaleFactor))`
 					}
 
-					console.debug(`RundownListItem render: ${rundown.name}`)
+					const classNames: string[] = ['rundown-list-item']
+					if (isDragging) classNames.push('dragging')
+					if (rundown.unsynced) classNames.push('unsynced')
 
-					return connectDragSource(
-						<tr className={`rundown-list-item ${isDragging ? 'dragging' : ''}`} style={styles}>
-							<th className="rundown-list-item__name">{rundown.name}</th>
-							<td className="rundown-list-item__studio">
-								{userCanConfigure ? (
-									<Link to={getStudioLink(rundown.studioId)}>{this.studio.name}</Link>
-								) : (
-									this.studio.name
-								)}
-							</td>
+					return (
+						<tr className={classNames.join(' ')} style={styles}>
+							{connectDragSource(
+								<th className="rundown-list-item__name">
+									<FontAwesomeIcon icon={faTh} />
+									{rundown.name}
+								</th>
+							)}
 							<td className="rundown-list-item__showStyle">
 								{userCanConfigure ? (
 									<Link to={getShowStyleBaseLink(rundown.showStyleBaseId)}>{this.showStyle.name}</Link>
@@ -184,19 +186,17 @@ export const RundownListItem = withTranslation()(
 									this.showStyle.name
 								)}
 							</td>
-							<td className="rundown-list-item__created">
-								<MomentFromNow>{rundown.created}</MomentFromNow>
-							</td>
 							<td className="rundown-list-item__airTime">
 								{rundown.expectedStart && <Moment format="YYYY/MM/DD HH:mm:ss">{rundown.expectedStart}</Moment>}
 							</td>
+							<td className="rundown-list-item__status">{rundown.status}</td>
 							<td className="rundown-list-item__duration">
 								{rundown.expectedDuration &&
 									RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, false, true, false, true)}
 							</td>
-							<td className="rundown-list-item__status">{rundown.status}</td>
-							<td className="rundown-list-item__air-status">{rundown.airStatus}</td>
-							<td className="rundown-list-item__views">{viewLinks}</td>
+							<td className="rundown-list-item__created">
+								<MomentFromNow>{rundown.created}</MomentFromNow>
+							</td>
 							<td className="rundown-list-item__actions">
 								{rundown.unsynced || userCanConfigure || getAllowService() ? (
 									<Tooltip overlay={t('Delete')} placement="top">
