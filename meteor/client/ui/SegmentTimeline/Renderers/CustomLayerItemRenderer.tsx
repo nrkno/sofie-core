@@ -113,9 +113,8 @@ export class CustomLayerItemRenderer<
 		const vtContent = innerPiece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
 		if (
-			innerPiece.lifespan !== PieceLifespan.WithinPart &&
 			vtContent &&
-			vtContent.sourceDuration &&
+			vtContent.sourceDuration !== undefined &&
 			(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)
 		) {
 			return (
