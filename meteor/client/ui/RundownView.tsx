@@ -1093,6 +1093,7 @@ const RundownHeader = withTranslation()(
 								5000
 							)
 						)
+						return false
 					},
 					doneMessage
 				)
@@ -2448,6 +2449,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								5000
 							)
 						)
+						return false
 					},
 					doneMessage
 				)
