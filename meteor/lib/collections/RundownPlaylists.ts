@@ -19,11 +19,11 @@ import {
 import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Rundowns'
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
-import { Parts, Part, DBPart } from './Parts'
-import { Pieces, Piece } from './Pieces'
+import { Parts, Part, DBPart, PartId } from './Parts'
+import { Pieces, Piece, PieceId } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { PieceInstance, PieceInstances } from './PieceInstances'
+import { PieceInstance, PieceInstances, PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
@@ -34,6 +34,14 @@ import { registerIndex } from '../database'
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 /** A string, identifying an activation of a playlist */
 export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
+
+export interface ABSessionInfo {
+	id: string
+	name: string
+	lookaheadForPartId?: PartId
+	infiniteInstanceId?: PieceInstanceInfiniteId
+	partInstanceIds?: Array<PartInstanceId>
+}
 
 export interface DBRundownPlaylist {
 	_id: RundownPlaylistId
@@ -92,6 +100,8 @@ export interface DBRundownPlaylist {
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
+
+	trackedAbSessions?: ABSessionInfo[]
 }
 
 export class RundownPlaylist implements DBRundownPlaylist {
@@ -122,6 +132,7 @@ export class RundownPlaylist implements DBRundownPlaylist {
 	public outOfOrderTiming?: boolean
 
 	public previousPersistentState?: TimelinePersistentState
+	public trackedAbSessions?: ABSessionInfo[]
 
 	constructor(document: DBRundownPlaylist) {
 		for (let [key, value] of Object.entries(document)) {

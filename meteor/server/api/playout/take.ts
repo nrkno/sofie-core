@@ -1,6 +1,14 @@
 import { RundownPlaylistId, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { ClientAPI } from '../../../lib/api/client'
-import { getCurrentTime, waitForPromise, unprotectObjectArray, protectString, literal, clone } from '../../../lib/lib'
+import {
+	getCurrentTime,
+	waitForPromise,
+	unprotectObjectArray,
+	protectString,
+	literal,
+	clone,
+	getRandomId,
+} from '../../../lib/lib'
 import { rundownPlaylistSyncFunction, RundownSyncFunctionPriority } from '../ingest/rundownInput'
 import { Meteor } from 'meteor/meteor'
 import { initCacheForRundownPlaylist, CacheForRundownPlaylist } from '../../DatabaseCaches'
@@ -23,7 +31,7 @@ import { getResolvedPieces } from './pieces'
 import { Part } from '../../../lib/collections/Parts'
 import * as _ from 'underscore'
 import { Piece, PieceId } from '../../../lib/collections/Pieces'
-import { PieceInstance, PieceInstanceId } from '../../../lib/collections/PieceInstances'
+import { PieceInstance, PieceInstanceId, PieceInstanceInfiniteId } from '../../../lib/collections/PieceInstances'
 import { PartEventContext, RundownContext } from '../blueprints/context/context'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { IngestActions } from '../ingest/actions'
@@ -335,10 +343,12 @@ function startHold(
 	const itemsToCopy = getAllPieceInstancesFromCache(cache, holdFromPartInstance).filter((pi) => pi.piece.extendOnHold)
 	itemsToCopy.forEach((instance) => {
 		if (!instance.infinite) {
+			const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
 			// mark current one as infinite
 			cache.PieceInstances.update(instance._id, {
 				$set: {
 					infinite: {
+						infiniteInstanceId: infiniteInstanceId,
 						infinitePieceId: instance.piece._id,
 						fromPreviousPart: false,
 					},
@@ -359,6 +369,7 @@ function startHold(
 					extendOnHold: false,
 				},
 				infinite: {
+					infiniteInstanceId: infiniteInstanceId,
 					infinitePieceId: instance.piece._id,
 					fromPreviousPart: true,
 					fromHold: true,

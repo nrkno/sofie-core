@@ -36,8 +36,8 @@ export const SegmentContextMenu = withTranslation()(
 			const timecode = this.getTimePosition()
 			const startsAt = this.getPartStartsAt()
 
-			const isCurrentPart =
-				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
+			const isCurrentPart = false
+			// (part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
 
 			return this.props.studioMode && this.props.playlist && this.props.playlist.active ? (
 				<Escape to="document">
@@ -54,11 +54,15 @@ export const SegmentContextMenu = withTranslation()(
 								)}
 								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<React.Fragment>
-										<MenuItem onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)} disabled={isCurrentPart}>
+										<MenuItem
+											onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
+											disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
 											<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 										</MenuItem>
-										<MenuItem onClick={(e) => this.onPlayFromHere(part.instance.part, e)} disabled={isCurrentPart}>
+										<MenuItem
+											onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
+											disabled={isCurrentPart || !!part.instance.part.dynamicallyInsertedAfterPartId}>
 											<span dangerouslySetInnerHTML={{ __html: t('Play from Here') }}></span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
 										</MenuItem>

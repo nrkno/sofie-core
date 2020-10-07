@@ -10,7 +10,17 @@ import { DBPart, PartId, Part } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
-import { assertNever, max, flatten, literal, protectString } from '../lib'
+import {
+	assertNever,
+	max,
+	flatten,
+	literal,
+	protectString,
+	normalizeArray,
+	normalizeArrayFuncFilter,
+	unprotectString,
+	getRandomId,
+} from '../lib'
 import { Mongo } from 'meteor/mongo'
 import { Studio } from '../collections/Studios'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
@@ -314,11 +324,18 @@ export function getPieceInstancesForPart(
 
 	// Compile the resulting list
 
+	const playingPieceInstancesMap = normalizeArrayFuncFilter(
+		playingPieceInstances ?? [],
+		(p) => unprotectString(p.infinite?.infinitePieceId) // TODO - is this 'unique' enough? what about replaying the source if the infinites started there?
+	)
+
 	const wrapPiece = (p: PieceInstancePiece) => {
 		const instance = rewrapPieceToInstance(p, part.rundownId, newInstanceId, isTemporary)
 
 		if (!instance.infinite && instance.piece.lifespan !== PieceLifespan.WithinPart) {
+			const existingPiece = playingPieceInstancesMap[unprotectString(instance.piece._id)]
 			instance.infinite = {
+				infiniteInstanceId: existingPiece?.infinite?.infiniteInstanceId ?? getRandomId(),
 				infinitePieceId: instance.piece._id,
 				fromPreviousPart: instance.piece.startPartId !== part._id,
 			}
@@ -340,11 +357,11 @@ export function getPieceInstancesForPart(
 	const normalPieces = possiblePieces.filter((p) => p.startPartId === part._id)
 	const result = normalPieces.map(wrapPiece).concat(infinitesFromPrevious)
 	for (const pieceSet of Array.from(piecesOnSourceLayers.values())) {
-		const basicPieces = _.compact([
+		const onEndPieces = _.compact([
 			pieceSet[PieceLifespan.OutOnRundownEnd],
 			pieceSet[PieceLifespan.OutOnSegmentEnd],
 		])
-		result.push(...basicPieces.map(wrapPiece))
+		result.push(...onEndPieces.map(wrapPiece))
 
 		// if (pieceSet.onChange) {
 		// 	result.push(rewrapInstance(pieceSet.onChange))
