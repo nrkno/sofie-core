@@ -43,7 +43,6 @@ import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { read } from 'fs'
 
 const NullComponent = () => null
 
@@ -259,6 +258,11 @@ export const App = translateWithTracker(() => {
 									<Route exact path="/" component={RundownList} />
 								)}
 								<this.protectedRoute path="/rundowns" component={RundownList} />
+								<this.protectedRoute
+									path="/rundown/:playlistId/shelf"
+									exact
+									component={(props) => <RundownView {...props} onlyShelf={true} />}
+								/>
 								<this.protectedRoute path="/rundown/:playlistId" component={RundownView} />
 								<this.protectedRoute path="/activeRundown/:studioId" component={ActiveRundownView} />
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />

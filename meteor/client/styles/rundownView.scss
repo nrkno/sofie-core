@@ -1698,6 +1698,7 @@ body.no-overflow {
 
 							&.label-overflow-time {
 								font-weight: 300;
+								padding-right: 10px;
 							}
 
 							> .segment-timeline__piece__label {
@@ -2193,6 +2194,15 @@ body.no-overflow {
 		left: 7px;
 		right: 7px;
 		z-index: 1;
+	}
+
+	@include item-type-before-background();
+
+	&.segment-timeline__mini-inspector--graphics--preview {
+		border: none;
+		&::before {
+			display: none;
+		}
 	}
 
 	&.segment-timeline__mini-inspector--notice {

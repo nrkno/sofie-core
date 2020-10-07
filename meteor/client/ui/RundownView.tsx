@@ -1073,13 +1073,29 @@ const RundownHeader = withTranslation()(
 		takeRundownSnapshot = (e) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Taken by user'),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+						return false
+					},
+					doneMessage
 				)
 			}
 		}
@@ -1152,7 +1168,9 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
-										{t('Reload {{nrcsName}} Data', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+										{t('Reload {{nrcsName}} Data', {
+											nrcsName: (this.props.firstRundown && this.props.firstRundown.externalNRCSName) || 'NRCS',
+										})}
 									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
@@ -1587,6 +1605,31 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							rundownId: {
 								$in: rundownIDs,
 							},
+							partInstanceId: {
+								$in: [
+									playlist.currentPartInstanceId,
+									playlist.nextPartInstanceId,
+									playlist.previousPartInstanceId,
+								].filter((p) => p !== null),
+							},
+							reset: {
+								$ne: true,
+							},
+						})
+					}
+				}
+			})
+			this.autorun(() => {
+				if (this.props.onlyShelf) {
+					let playlist = RundownPlaylists.findOne(playlistId, {
+						fields: {
+							currentPartInstanceId: 1,
+							nextPartInstanceId: 1,
+							previousPartInstanceId: 1,
+						},
+					})
+					if (playlist) {
+						this.subscribe(PubSub.pieceInstances, {
 							partInstanceId: {
 								$in: [
 									playlist.currentPartInstanceId,
@@ -2137,25 +2180,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onStudioRouteSetSwitch = (
-			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
 			routeSet: StudioRouteSet,
 			state: boolean
 		) => {
 			const { t } = this.props
 			if (this.props.studio) {
-				e.persist()
-				doModalDialog({
-					title: t('Switching route'),
-					message: state
-						? t('Are you sure you want to enable this route: "{{routeName}}"?', { routeName: routeSet.name })
-						: t('Are you sure you want to disable this route: "{{routeName}}"?', { routeName: routeSet.name }),
-					onAccept: () => {
-						doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
-							MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
-						)
-					},
-				})
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				)
 			}
 		}
 
@@ -2386,13 +2420,29 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const { t } = this.props
 			if (this.props.playlist) {
 				const playlistId = this.props.playlist._id
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime()),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+						return false
+					},
+					doneMessage
 				)
 			}
 		}
@@ -2458,6 +2508,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
 										studioRouteSets={this.props.studio.routeSets}
+										studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
 										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
@@ -2498,26 +2549,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										}}>
 										{this.state.isSupportPanelOpen && (
 											<SupportPopUp>
-												<button className="btn btn-primary" onClick={this.onToggleHotkeys}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onToggleHotkeys}>
 													{t('Show Hotkeys')}
 												</button>
-												<button className="btn btn-primary" onClick={this.onTakeRundownSnapshot}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
 													{t('Take a Snapshot')}
 												</button>
+												<hr />
 												{this.state.studioMode && (
-													<button className="btn btn-primary" onClick={this.onRestartPlayout}>
-														{t('Restart Playout')}
-													</button>
+													<>
+														<button className="btn btn-secondary" onClick={this.onRestartPlayout}>
+															{t('Restart Playout')}
+														</button>
+														<hr />
+													</>
 												)}
 												{this.state.studioMode &&
 													this.props.casparCGPlayoutDevices &&
 													this.props.casparCGPlayoutDevices.map((i) => (
-														<button
-															className="btn btn-primary"
-															onClick={() => this.onRestartCasparCG(i)}
-															key={unprotectString(i._id)}>
-															{t('Restart {{device}}', { device: i.name })}
-														</button>
+														<React.Fragment key={unprotectString(i._id)}>
+															<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+																{t('Restart {{device}}', { device: i.name })}
+															</button>
+															<hr />
+														</React.Fragment>
 													))}
 											</SupportPopUp>
 										)}

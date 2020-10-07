@@ -149,6 +149,7 @@ function updateServerTime(retries: number = 0) {
 					) / 10} ms)`
 				)
 
+				systemTime.hasBeenSet = true
 				systemTime.diff = result.mean
 				systemTime.stdDev = result.stdDev
 				setSystemStatus('systemTime', {
@@ -157,6 +158,7 @@ function updateServerTime(retries: number = 0) {
 				})
 			} else {
 				if (result.stdDev < systemTime.stdDev) {
+					systemTime.hasBeenSet = true
 					systemTime.diff = result.mean
 					systemTime.stdDev = result.stdDev
 				}
@@ -181,7 +183,7 @@ function updateServerTime(retries: number = 0) {
 			} else {
 				logger.info('Unable to set system time (' + (err.reason || err) + ')')
 				setSystemStatus('systemTime', {
-					statusCode: StatusCode.BAD,
+					statusCode: systemTime.hasBeenSet ? StatusCode.WARNING_MAJOR : StatusCode.BAD,
 					messages: [`Error message: ${err.toString()}`],
 				})
 			}
