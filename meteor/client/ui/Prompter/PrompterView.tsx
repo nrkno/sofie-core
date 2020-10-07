@@ -18,6 +18,7 @@ import { PrompterData, PrompterAPI, PrompterDataPart } from '../../../lib/api/pr
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
+import { documentTitle } from '../../lib/DocumentTitleProvider'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -137,10 +138,14 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
+
+		this.setDocumentTile()
 	}
 
 	componentWillUnmount() {
 		super.componentWillUnmount()
+
+		documentTitle.set(null)
 
 		document.body.classList.remove(
 			'dark',
@@ -155,6 +160,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
+
+	private setDocumentTile() {
+		const { t } = this.props
+
+		documentTitle.set(t('Prompter'))
+	}
+
 	checkScrollToCurrent() {
 		let playlistId: RundownPlaylistId =
 			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
