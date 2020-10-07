@@ -436,11 +436,11 @@ export namespace PeripheralDeviceAPI {
 	export function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		cb: (err, result) => void,
-		timeoutTime: number | undefined,
+		timeoutTime0: number | undefined,
 		functionName: string,
 		...args: any[]
 	) {
-		if (!timeoutTime) timeoutTime = 3000 // also handles null
+		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
 
 		let commandId: PeripheralDeviceCommandId = getRandomId()
 
