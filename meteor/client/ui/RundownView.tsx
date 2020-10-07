@@ -2246,7 +2246,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onPieceDoubleClick={this.onPieceDoubleClick}
 												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 												ownCurrentPartInstance={
-													this.props.currentPartInstance && this.props.currentPartInstance.segmentId === segment._id
+													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
+													// is a part of the segment
+													(this.props.currentPartInstance &&
+														this.props.currentPartInstance.segmentId === segment._id) ||
+													// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
+													(this.props.nextPartInstance &&
+														this.props.nextPartInstance.segmentId === segment._id &&
+														this.props.currentPartInstance &&
+														this.props.currentPartInstance.part.autoNext)
 														? this.props.currentPartInstance
 														: undefined
 												}
