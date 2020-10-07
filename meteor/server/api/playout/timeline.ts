@@ -52,7 +52,7 @@ import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from '
 import { PackageInfo } from '../../coreSystem'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { CacheForPlayout, CacheForStudio2, CacheForStudioBase2 } from '../../cache/DatabaseCaches'
+import { CacheForPlayout, CacheForStudio, CacheForStudioBase } from '../../cache/DatabaseCaches'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -62,7 +62,7 @@ import { rundownPlaylistFromStudioSyncFunction } from './playout'
 import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 
-export function updateStudioOrPlaylistTimeline(cache: CacheForStudio2) {
+export function updateStudioOrPlaylistTimeline(cache: CacheForStudio) {
 	const playlists = cache.getActiveRundownPlaylists()
 	if (playlists.length === 1) {
 		return rundownPlaylistFromStudioSyncFunction(
@@ -79,7 +79,7 @@ export function updateStudioOrPlaylistTimeline(cache: CacheForStudio2) {
 	}
 }
 
-export function updateStudioTimeline(cache: CacheForStudio2) {
+export function updateStudioTimeline(cache: CacheForStudio) {
 	const span = profiler.startSpan('updateStudioTimeline')
 	logger.debug('updateStudioTimeline running...')
 	const studio = cache.Studio.doc
@@ -138,7 +138,7 @@ export function updateTimeline(cache: CacheForPlayout, forceNowToTime?: Time) {
 }
 
 function processAndSaveTimelineObjects(
-	cache: CacheForStudioBase2,
+	cache: CacheForStudioBase,
 	timelineObjs: Array<TimelineObjGeneric>,
 	forceNowToTime: Time | undefined
 ) {
@@ -152,9 +152,8 @@ function processAndSaveTimelineObjects(
 		// used when autoNexting
 		theNowTime = forceNowToTime
 	} else {
-		const playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
-			(device) =>
-				device.studioId === cache.Studio.doc._id && device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+		const playoutDevices = cache.PeripheralDevices.findFetch(
+			(device) => device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
 		)
 		if (
 			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature

@@ -18,7 +18,7 @@ import {
 import { updateTimeline } from './timeline'
 import { IngestActions } from '../ingest/actions'
 import { getActiveRundownPlaylistsInStudioFromDb } from './studio'
-import { CacheForPlayout, CacheForStudio2 } from '../../cache/DatabaseCaches'
+import { CacheForPlayout, CacheForStudio } from '../../cache/DatabaseCaches'
 import { profiler } from '../profiler'
 
 export function activateRundownPlaylist(cache: CacheForPlayout, rehearsal: boolean): void {
@@ -191,7 +191,7 @@ export function prepareStudioForBroadcast(cache: CacheForPlayout, okToDestoryStu
  * @param studio
  * @param okToDestoryStuff true if we're not ON AIR, things might flicker on the output
  */
-export function standDownStudio(cache: CacheForPlayout | CacheForStudio2, okToDestoryStuff: boolean): void {
+export function standDownStudio(cache: CacheForPlayout | CacheForStudio, okToDestoryStuff: boolean): void {
 	const studio = cache.Studio.doc
 	logger.info('standDownStudio ' + studio._id)
 

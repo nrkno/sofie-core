@@ -32,7 +32,7 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerPOST } from './http'
-import { CacheForStudio2 } from '../cache/DatabaseCaches'
+import { CacheForStudio } from '../cache/DatabaseCaches'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
 import { DbCacheWriteCollection } from '../cache/lib'
@@ -243,7 +243,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 
 	function timelineTriggerTimeInner(
-		cache: CacheForStudio2,
+		cache: CacheForStudio,
 		results: PeripheralDeviceAPI.TimelineTriggerTimeResult,
 		pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance> | undefined,
 		activePlaylist: RundownPlaylist | undefined

@@ -12,6 +12,8 @@ import {
 	protectString,
 	isStringOrProtectedString,
 	getRandomId,
+	waitForPromiseAll,
+	makePromise,
 } from '../../../lib/lib'
 import { TimelineObjGeneric, TimelineObjId, StatObjectMetadata } from '../../../lib/collections/Timeline'
 import { Segment, SegmentId } from '../../../lib/collections/Segments'
@@ -69,7 +71,7 @@ import { ReloadRundownPlaylistResponse } from '../../../lib/api/userActions'
 import { MethodContext } from '../../../lib/api/methods'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../../security/lib/securityVerify'
 import { StudioContentWriteAccess } from '../../security/studio'
-import { CacheForPlayout, CacheForPlayoutPreInit, CacheForStudio2, ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { CacheForPlayout, CacheForPlayoutPreInit, CacheForStudio, ReadOnlyCache } from '../../cache/DatabaseCaches'
 import { afterTake, takeNextPartInnerSync } from './take'
 import { syncPlayheadInfinitesForNextPartInstance, getPieceInstancesForPart } from './infinites'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
@@ -78,6 +80,7 @@ import { Settings } from '../../../lib/Settings'
 import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { syncFunction } from '../../codeControl'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { string } from 'prop-types'
 
 /**
  * debounce time in ms before we accept another report of "Part started playing that was not selected by core"
@@ -111,7 +114,7 @@ export function rundownPlaylistPlayoutSyncFunction<T>(
 
 export function rundownPlaylistFromStudioSyncFunction<T>(
 	context: string,
-	studioCache: CacheForStudio2,
+	studioCache: CacheForStudio,
 	rundownPlaylistId: RundownPlaylistId,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => void),
 	fcn: (cache: CacheForPlayout) => T
@@ -258,30 +261,45 @@ export namespace ServerPlayoutAPI {
 			(cache) => {
 				const playlist = cache.Playlist.doc
 
-				let anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-				let error: any
-				_.each(anyOtherActiveRundowns, (otherRundownPlaylist) => {
-					try {
-						// TODO - syncFunction
-						deactivateRundownPlaylistInner(cache, otherRundownPlaylist)
-					} catch (e) {
-						error = e
-					}
-				})
-				if (error) {
-					// Ok, something went wrong, but check if the active rundowns where deactivated?
-					anyOtherActiveRundowns = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
-					if (anyOtherActiveRundowns.length) {
-						// No they weren't, we can't continue..
-						throw error
-					} else {
-						// They where deactivated, log the error and continue
-						logger.error(error)
+				const anyOtherActivePlaylists = getActiveRundownPlaylistsInStudioFromDb(playlist.studioId, playlist._id)
+				if (anyOtherActivePlaylists.length > 0) {
+					const errors: any[] = []
+					// Try deactivating everything in parallel, although there should only ever be one active
+					waitForPromiseAll(
+						anyOtherActivePlaylists.map((otherRundownPlaylist) =>
+							makePromise(() => {
+								try {
+									rundownPlaylistPlayoutSyncFunctionInner(
+										'forceResetAndActivateRundownPlaylist',
+										otherRundownPlaylist,
+										null,
+										(otherCache) => {
+											deactivateRundownPlaylistInner(otherCache)
+										}
+									)
+								} catch (e) {
+									errors.push(e)
+								}
+							})
+						)
+					)
+					if (errors.length > 0) {
+						// Ok, something went wrong, but check if the active rundowns where deactivated?
+						const anyOtherActivePlaylists = getActiveRundownPlaylistsInStudioFromDb(
+							playlist.studioId,
+							playlist._id
+						)
+						if (anyOtherActivePlaylists.length) {
+							// No they weren't, we can't continue..
+							throw errors.join(',')
+						} else {
+							// They where deactivated, log the error and continue
+							logger.error(errors.join(','))
+						}
 					}
 				}
 			},
 			(cache) => {
-				const playlist = cache.Playlist.doc
 				libResetRundownPlaylist(cache)
 				prepareStudioForBroadcast(cache, true)
 
@@ -1297,7 +1315,7 @@ export namespace ServerPlayoutAPI {
 			return shouldUpdateStudioBaselineInner(cache)
 		})
 	}
-	function shouldUpdateStudioBaselineInner(cache: CacheForStudio2): string | false {
+	function shouldUpdateStudioBaselineInner(cache: CacheForStudio): string | false {
 		const studio = cache.Studio.doc
 
 		const activePlaylists = cache.getActiveRundownPlaylists()

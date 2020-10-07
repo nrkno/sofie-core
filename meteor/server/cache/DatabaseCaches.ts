@@ -279,8 +279,9 @@ export abstract class CacheForPlayoutPreInit extends Cache {
 	public readonly activationCache: ActivationCache
 
 	public readonly Studio: DbCacheReadObject<Studio, Studio>
-	public readonly Playlist: DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>
+	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
 
+	public readonly Playlist: DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>
 	public readonly Rundowns: DbCacheWriteCollection<Rundown, DBRundown> // TODO DbCacheReadCollection??
 
 	protected constructor(studioId: StudioId, playlistId: RundownPlaylistId) {
@@ -288,10 +289,11 @@ export abstract class CacheForPlayoutPreInit extends Cache {
 
 		this.activationCache = getActivationCache(studioId, playlistId)
 
-		this.Studio = new DbCacheReadObject<Studio, Studio>(Studios)
-		this.Playlist = new DbCacheWriteObject<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
+		this.Studio = new DbCacheReadObject(Studios)
+		this.PeripheralDevices = new DbCacheReadCollection(PeripheralDevices)
 
-		this.Rundowns = new DbCacheWriteCollection<Rundown, DBRundown>(Rundowns)
+		this.Playlist = new DbCacheWriteObject(RundownPlaylists)
+		this.Rundowns = new DbCacheWriteCollection(Rundowns)
 	}
 
 	protected async preInit(tmpPlaylist: RundownPlaylist) {
@@ -304,19 +306,25 @@ export abstract class CacheForPlayoutPreInit extends Cache {
 		await this.activationCache.initialize(tmpPlaylist, rundowns)
 
 		this.Studio._fromDoc(this.activationCache.getStudio())
+		await this.PeripheralDevices.prepareInit(
+			() => waitForPromise(this.activationCache.getPeripheralDevices()),
+			true
+		)
 	}
 }
 
-export interface CacheForStudioBase2 {
+export interface CacheForStudioBase {
 	readonly Studio: DbCacheReadObject<Studio, Studio>
+	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
 
 	readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
 }
 
-export class CacheForStudio2 extends Cache implements CacheForStudioBase2 {
+export class CacheForStudio extends Cache implements CacheForStudioBase {
 	public readonly isStudio = true
 
 	public readonly Studio: DbCacheReadObject<Studio, Studio>
+	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice, PeripheralDevice>
 
 	public readonly RundownPlaylists: DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>
 	public readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>
@@ -324,18 +332,20 @@ export class CacheForStudio2 extends Cache implements CacheForStudioBase2 {
 	private constructor() {
 		super()
 
-		this.Studio = new DbCacheReadObject<Studio, Studio>(Studios)
+		this.Studio = new DbCacheReadObject(Studios)
+		this.PeripheralDevices = new DbCacheReadCollection(PeripheralDevices)
 
-		this.RundownPlaylists = new DbCacheReadCollection<RundownPlaylist, DBRundownPlaylist>(RundownPlaylists)
-		this.Timeline = new DbCacheWriteCollection<TimelineComplete, TimelineComplete>(Timeline)
+		this.RundownPlaylists = new DbCacheReadCollection(RundownPlaylists)
+		this.Timeline = new DbCacheWriteCollection(Timeline)
 	}
 
-	static async create(studioId: StudioId): Promise<CacheForStudio2> {
-		const res = new CacheForStudio2()
+	static async create(studioId: StudioId): Promise<CacheForStudio> {
+		const res = new CacheForStudio()
 
 		res.Studio._initialize(studioId)
 
 		await Promise.all([
+			res.PeripheralDevices.prepareInit({ studioId }, true), // TODO - immediate?
 			res.RundownPlaylists.prepareInit({ studioId }, true), // TODO - immediate?
 			res.Timeline.prepareInit({ studioId }, true), // TODO - immediate?
 		])
@@ -353,7 +363,7 @@ export class CacheForStudio2 extends Cache implements CacheForStudioBase2 {
 	}
 }
 
-export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForStudioBase2 {
+export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForStudioBase {
 	private toBeRemoved: boolean = false
 
 	public readonly Timeline: DbCacheWriteCollection<TimelineComplete, TimelineComplete>

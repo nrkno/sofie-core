@@ -111,7 +111,7 @@ import { Mongo } from 'meteor/mongo'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
-import { CacheForStudio2, CacheForIngest, ReadOnlyCache } from '../../cache/DatabaseCaches'
+import { CacheForStudio, CacheForIngest, ReadOnlyCache } from '../../cache/DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache, saveIntoCache } from '../../cache/lib'
 import { reportRundownDataHasChanged } from '../asRunLog'
 import { Settings } from '../../../lib/Settings'
@@ -157,10 +157,10 @@ export function rundownPlaylistCustomSyncFunction<T>(
 	return syncFunction(fcn, context, `rundown_playlist_${rundownPlaylistId}`, undefined, priority)()
 }
 
-export function studioSyncFunction<T>(context: string, studioId: StudioId, fcn: (cache: CacheForStudio2) => T): T {
+export function studioSyncFunction<T>(context: string, studioId: StudioId, fcn: (cache: CacheForStudio) => T): T {
 	return syncFunction(
 		() => {
-			const cache = waitForPromise(CacheForStudio2.create(studioId))
+			const cache = waitForPromise(CacheForStudio.create(studioId))
 
 			const res = fcn(cache)
 
@@ -534,8 +534,10 @@ function updateRundownFromIngestData(
 	// Do a check if we're allowed to move out of currently playing playlist:
 	if (cache.Rundown.doc && cache.Rundown.doc.playlistExternalId !== dbRundown.playlistExternalId) {
 		// The rundown is going to change playlist
-		const existingPlaylist = RundownPlaylists.findOne(existingDbRundown.playlistId)
+		const existingPlaylist = RundownPlaylists.findOne(cache.Rundown.doc.playlistId)
 		if (existingPlaylist) {
+			// Note: this guard is a little race condition prone, but it is the best we can do for now.
+			// TODO-CACHE - should we be checking the partInstance, or just the active flag?
 			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
 
 			if (
@@ -712,7 +714,14 @@ export function savePreparedRundownChanges(
 		preparedChanges.rundownPlaylistInfo.rundownPlaylist,
 		preparedChanges.rundownPlaylistInfo.order
 	)
-	removeEmptyPlaylists(studio) // TODO-CACHE
+
+	cache.deferAfterSave(() => {
+		const studioId = cache.Studio.doc._id
+		Meteor.defer(() => {
+			// It needs to lock every playlist, and we are already inside one of the locks it needs
+			removeEmptyPlaylists(studioId)
+		})
+	})
 
 	const dbRundown = cache.Rundown.replace(preparedChanges.dbRundown)
 
