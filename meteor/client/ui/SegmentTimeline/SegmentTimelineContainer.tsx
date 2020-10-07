@@ -356,7 +356,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 
 			let autoNextPart = false
 
-			if (this.props.ownCurrentPartInstance) {
+			if (this.props.ownCurrentPartInstance && this.props.ownCurrentPartInstance.segmentId === this.props.segmentId) {
 				isLiveSegment = true
 				currentLivePart = this.props.parts.find((part) => part.instance._id === this.props.ownCurrentPartInstance?._id)
 			}
