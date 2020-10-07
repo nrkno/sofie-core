@@ -2164,25 +2164,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onStudioRouteSetSwitch = (
-			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
 			routeSet: StudioRouteSet,
 			state: boolean
 		) => {
 			const { t } = this.props
 			if (this.props.studio) {
-				e.persist()
-				doModalDialog({
-					title: t('Switching route'),
-					message: state
-						? t('Are you sure you want to enable this route: "{{routeName}}"?', { routeName: routeSet.name })
-						: t('Are you sure you want to disable this route: "{{routeName}}"?', { routeName: routeSet.name }),
-					onAccept: () => {
-						doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
-							MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
-						)
-					},
-				})
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				)
 			}
 		}
 
@@ -2485,6 +2476,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
 										studioRouteSets={this.props.studio.routeSets}
+										studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
 										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
@@ -2525,26 +2517,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										}}>
 										{this.state.isSupportPanelOpen && (
 											<SupportPopUp>
-												<button className="btn btn-primary" onClick={this.onToggleHotkeys}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onToggleHotkeys}>
 													{t('Show Hotkeys')}
 												</button>
-												<button className="btn btn-primary" onClick={this.onTakeRundownSnapshot}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
 													{t('Take a Snapshot')}
 												</button>
+												<hr />
 												{this.state.studioMode && (
-													<button className="btn btn-primary" onClick={this.onRestartPlayout}>
-														{t('Restart Playout')}
-													</button>
+													<>
+														<button className="btn btn-secondary" onClick={this.onRestartPlayout}>
+															{t('Restart Playout')}
+														</button>
+														<hr />
+													</>
 												)}
 												{this.state.studioMode &&
 													this.props.casparCGPlayoutDevices &&
 													this.props.casparCGPlayoutDevices.map((i) => (
-														<button
-															className="btn btn-primary"
-															onClick={() => this.onRestartCasparCG(i)}
-															key={unprotectString(i._id)}>
-															{t('Restart {{device}}', { device: i.name })}
-														</button>
+														<React.Fragment key={unprotectString(i._id)}>
+															<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+																{t('Restart {{device}}', { device: i.name })}
+															</button>
+															<hr />
+														</React.Fragment>
 													))}
 											</SupportPopUp>
 										)}

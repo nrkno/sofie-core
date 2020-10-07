@@ -100,3 +100,39 @@ a.selectable {
 .btn > svg.svg-inline--fa + span {
 	margin-left: 0.5em;
 }
+
+.switch-button {
+	width: 42px !important;
+	height: 21px !important;
+
+	&.sb-nocolor.sb-on {
+		.sb-content {
+			.sb-label {
+				background-color: #737373;
+			}
+		}
+	}
+
+	.sb-content {
+		width: 42px;
+		height: 21px;
+		> .sb-label {
+			width: 42px;
+			height: 21px;
+		}
+		.sb-switch {
+			width: 19px;
+			height: 19px;
+		}
+	}
+
+	&:active .sb-label {
+		opacity: 0.8;
+	}
+
+	&.sb-on {
+		.sb-switch {
+			transform: matrix(1, 0, 0, 1, 21, 0);
+		}
+	}
+}

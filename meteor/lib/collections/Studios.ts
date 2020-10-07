@@ -78,6 +78,14 @@ export interface DBStudio {
 	routeSets: {
 		[id: string]: StudioRouteSet
 	}
+
+	routeSetExclusivityGroups: {
+		[id: string]: StudioRouteSetExclusivityGroup
+	}
+}
+
+export interface StudioRouteSetExclusivityGroup {
+	name: string
 }
 
 export interface StudioRouteSet {
@@ -172,6 +180,10 @@ export class Studio implements DBStudio {
 
 	public routeSets: {
 		[id: string]: StudioRouteSet
+	}
+
+	public routeSetExclusivityGroups: {
+		[id: string]: StudioRouteSetExclusivityGroup
 	}
 
 	constructor(document: DBStudio) {
