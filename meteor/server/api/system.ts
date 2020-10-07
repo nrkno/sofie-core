@@ -483,6 +483,7 @@ interface BenchmarkResults {
 	cpuStringifying: number
 }
 let mongoTest: TransformedCollection<any, any> | undefined = undefined
+/** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
 		mongoTest = createMongoCollection<any>('benchmark-test')
@@ -615,7 +616,7 @@ async function doSystemBenchmarkInner() {
 			mongoTest.remove({})
 		}
 		waitTime(10)
-		// CPU test: calculations:
+		// CPU test: arithmetic calculations:
 		{
 			let startTime = Date.now()
 			const map: any = {}
@@ -727,19 +728,19 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 		results: avg,
 	}
 }
-const pingDevice: (device: PeripheralDevice) => boolean = MeteorWrapAsync((device: PeripheralDevice, cb) => {
-	// ServerPeripheralDeviceAPI.pingWithCommand(device._id, device.token, 'hello', cb)
-	PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-		device._id,
-		(error) => {
-			if (error) console.log(error)
-			// we don't care if the function exists or not:
-			cb(true)
-		},
-		500,
-		'ping'
-	)
-})
+// const pingDevice: (device: PeripheralDevice) => boolean = MeteorWrapAsync((device: PeripheralDevice, cb) => {
+// 	// ServerPeripheralDeviceAPI.pingWithCommand(device._id, device.token, 'hello', cb)
+// 	PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+// 		device._id,
+// 		(error) => {
+// 			if (error) console.log(error)
+// 			// we don't care if the function exists or not:
+// 			cb(true)
+// 		},
+// 		500,
+// 		'ping'
+// 	)
+// })
 
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
