@@ -24,7 +24,7 @@ export namespace MOSDeviceActions {
 	): void {
 		logger.info('reloadRundown ' + rundown._id)
 
-		PeripheralDeviceAPI.executeFunction(
+		PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 			peripheralDevice._id,
 			(err: Error, mosRunningOrder: MOS.IMOSRunningOrder) => {
 				if (err) {
@@ -58,6 +58,7 @@ export namespace MOSDeviceActions {
 					}
 				}
 			},
+			10 * 1000, // 10 seconds, sometimes the NRCS is pretty slow in returning a response
 			'triggerGetRunningOrder',
 			rundown.externalId
 		)
@@ -92,7 +93,7 @@ export namespace MOSDeviceActions {
 		status: MOS.IMOSObjectStatus
 	): Promise<any> {
 		return new Promise((resolve, reject) => {
-			logger.debug('setStoryStatus', deviceId, rundown.externalId, storyId, status)
+			logger.debug('setStoryStatus', { deviceId, externalId: rundown.externalId, storyId, status })
 			PeripheralDeviceAPI.executeFunction(
 				deviceId,
 				(err, result) => {

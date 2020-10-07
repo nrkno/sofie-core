@@ -1,5 +1,6 @@
 import { Omit } from '../lib'
 import { ClientAPI } from '../api/client'
+import { MeteorCall, MethodContext } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartId } from '../collections/Parts'
 import { RundownId } from '../collections/Rundowns'
@@ -8,7 +9,6 @@ import { PieceInstanceId } from '../collections/PieceInstances'
 import { PieceId } from '../collections/Pieces'
 import { EvaluationBase } from '../collections/Evaluations'
 import { StudioId } from '../collections/Studios'
-import { RecordedFileId } from '../collections/RecordedFiles'
 import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
 import { SnapshotId } from '../collections/Snapshots'
 import { SegmentId } from '../collections/Segments'
@@ -19,7 +19,7 @@ import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionId } from '../collections/AdLibActions'
 import { ActionUserData } from 'tv-automation-sofie-blueprints-integration'
 
-export interface NewUserActionAPI {
+export interface NewUserActionAPI extends MethodContext {
 	take(userEvent: string, rundownPlaylistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
 	setNext(
 		userEvent: string,
@@ -71,13 +71,6 @@ export interface NewUserActionAPI {
 		userEvent: string,
 		rundownPlaylistId: RundownPlaylistId,
 		undo?: boolean
-	): Promise<ClientAPI.ClientResponse<void>>
-	togglePartArgument(
-		userEvent: string,
-		rundownPlaylistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		property: string,
-		value: string
 	): Promise<ClientAPI.ClientResponse<void>>
 	pieceTakeNow(
 		userEvent: string,
@@ -156,10 +149,11 @@ export interface NewUserActionAPI {
 	): Promise<ClientAPI.ClientResponse<ReloadRundownPlaylistResponse>>
 	removeRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<void>>
 	resyncRundown(userEvent: string, rundownId: RundownId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
-	resyncSegment(userEvent: string, segmentId: SegmentId): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
-	recordStop(userEvent: string, studioId: StudioId): Promise<ClientAPI.ClientResponse<void>>
-	recordStart(userEvent: string, studioId: StudioId, name: string): Promise<ClientAPI.ClientResponse<void>>
-	recordDelete(userEvent: string, id: RecordedFileId): Promise<ClientAPI.ClientResponse<void>>
+	resyncSegment(
+		userEvent: string,
+		rundownId: RundownId,
+		segmentId: SegmentId
+	): Promise<ClientAPI.ClientResponse<TriggerReloadDataResponse>>
 	mediaRestartWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaAbortWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
 	mediaPrioritizeWorkflow(userEvent: string, workflowId: MediaWorkFlowId): Promise<ClientAPI.ClientResponse<void>>
@@ -189,6 +183,12 @@ export interface NewUserActionAPI {
 		id: PieceId,
 		bucket: Partial<Omit<BucketAdLib, '_id'>>
 	): Promise<ClientAPI.ClientResponse<void>>
+	switchRouteSet(
+		userEvent: string,
+		studioId: StudioId,
+		routeSetId: string,
+		state: boolean
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum UserActionAPIMethods {
@@ -207,7 +207,6 @@ export enum UserActionAPIMethods {
 	'unsyncRundown' = 'userAction.unsyncRundown',
 
 	'disableNextPiece' = 'userAction.disableNextPiece',
-	'togglePartArgument' = 'userAction.togglePartArgument',
 	'pieceTakeNow' = 'userAction.pieceTakeNow',
 	'setInOutPoints' = 'userAction.pieceSetInOutPoints',
 	'executeAction' = 'userAction.executeAction',
@@ -241,10 +240,6 @@ export enum UserActionAPIMethods {
 	'resyncRundown' = 'userAction.resyncRundown',
 	'resyncSegment' = 'userAction.resyncSegment',
 
-	'recordStop' = 'userAction.recordStop',
-	'recordStart' = 'userAction.recordStart',
-	'recordDelete' = 'userAction.recordDelete',
-
 	'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 	'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',
 	'mediaRestartAllWorkflows' = 'userAction.mediamanager.restartAllWorkflows',
@@ -258,6 +253,8 @@ export enum UserActionAPIMethods {
 
 	'guiFocused' = 'userAction.focused',
 	'guiBlurred' = 'userAction.blurred',
+
+	'switchRouteSet' = 'userAction.switchRouteSet',
 }
 
 export interface ReloadRundownPlaylistResponse {

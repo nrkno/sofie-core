@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, testInFiberOnly } from '../../__mocks__/helpers/jest'
+import { testInFiber, runAllTimers, testInFiberOnly, beforeAllInFiber } from '../../__mocks__/helpers/jest'
 import { MeteorMock, useControllableDefer } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType, IngestDataCacheObjId } from '../../lib/collections/IngestDataCache'
@@ -24,7 +24,7 @@ jest.mock('../logging')
 import '../cronjobs'
 
 describe('cronjobs', () => {
-	beforeAll(() => {
+	beforeAllInFiber(() => {
 		jest.useFakeTimers()
 		// set time to 2020/07/19 00:00 Local Time
 		mockCurrentTime = new Date(2020, 6, 19, 0, 0, 0).getTime()
@@ -96,6 +96,7 @@ describe('cronjobs', () => {
 				_id: rundown0Id,
 				_rank: 0,
 				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
+				organizationId: null,
 				dataSource: '',
 				externalId: '',
 				importVersions: {
@@ -112,6 +113,7 @@ describe('cronjobs', () => {
 				showStyleBaseId: protectString(''),
 				showStyleVariantId: protectString(''),
 				studioId: protectString(''),
+				externalNRCSName: 'mock',
 			})
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(Random.id())
@@ -187,6 +189,8 @@ describe('cronjobs', () => {
 			const userAction0 = protectString<UserActionsLogItemId>(Random.id())
 			UserActionsLog.insert({
 				_id: userAction0,
+				organizationId: null,
+				userId: null,
 				args: '',
 				clientAddress: '',
 				context: '',
@@ -198,6 +202,8 @@ describe('cronjobs', () => {
 			const userAction1 = protectString<UserActionsLogItemId>(Random.id())
 			UserActionsLog.insert({
 				_id: userAction1,
+				organizationId: null,
+				userId: null,
 				args: '',
 				clientAddress: '',
 				context: '',
@@ -218,6 +224,7 @@ describe('cronjobs', () => {
 			const snapshot0 = protectString<SnapshotId>(Random.id())
 			Snapshots.insert({
 				_id: snapshot0,
+				organizationId: null,
 				comment: '',
 				fileName: '',
 				name: '',
@@ -230,6 +237,7 @@ describe('cronjobs', () => {
 			const snapshot1 = protectString<SnapshotId>(Random.id())
 			Snapshots.insert({
 				_id: snapshot1,
+				organizationId: null,
 				comment: '',
 				fileName: '',
 				name: '',
@@ -250,6 +258,7 @@ describe('cronjobs', () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockPlayoutGw,
+				organizationId: null,
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 				configManifest: {
@@ -270,6 +279,7 @@ describe('cronjobs', () => {
 			const mockCasparCg = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockCasparCg,
+				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
@@ -291,6 +301,7 @@ describe('cronjobs', () => {
 			const mockATEM = protectString<PeripheralDeviceId>(Random.id())
 			PeripheralDevices.insert({
 				_id: mockATEM,
+				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceAPI.DeviceType.PLAYOUT,
 				category: PeripheralDeviceAPI.DeviceCategory.PLAYOUT,

@@ -118,7 +118,6 @@ export class VirtualElement extends React.Component<IProps, IState> {
 
 	componentDidUpdate(prevProps, prevState: IState) {
 		if (this.state.inView && prevState.inView !== this.state.inView) {
-			// console.log('Find actual child')
 			this.findChildElement()
 		}
 	}

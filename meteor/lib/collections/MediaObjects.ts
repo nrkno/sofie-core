@@ -3,6 +3,7 @@ import { registerCollection, ProtectedString } from '../lib'
 import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
+import { registerIndex } from '../database'
 
 /** A string, identifying a MediaObj */
 export type MediaObjId = ProtectedString<'MediaObjId'>
@@ -139,17 +140,13 @@ export const MediaObjects: TransformedCollection<MediaObject, MediaObject> = cre
 	'mediaObjects'
 )
 registerCollection('MediaObjects', MediaObjects)
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		MediaObjects._ensureIndex({
-			studioId: 1,
-			collectionId: 1,
-			objId: 1,
-			mediaId: 1,
-		})
-		MediaObjects._ensureIndex({
-			studioId: 1,
-			mediaId: 1,
-		})
-	}
+registerIndex(MediaObjects, {
+	studioId: 1,
+	collectionId: 1,
+	objId: 1,
+	mediaId: 1,
+})
+registerIndex(MediaObjects, {
+	studioId: 1,
+	mediaId: 1,
 })

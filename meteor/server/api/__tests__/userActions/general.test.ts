@@ -33,7 +33,6 @@ namespace UserActionAPI {
 		'unsyncRundown' = 'userAction.unsyncRundown',
 
 		'disableNextPiece' = 'userAction.disableNextPiece',
-		'togglePartArgument' = 'userAction.togglePartArgument',
 		'pieceTakeNow' = 'userAction.pieceTakeNow',
 		'setInOutPoints' = 'userAction.pieceSetInOutPoints',
 
@@ -58,10 +57,6 @@ namespace UserActionAPI {
 		'removeRundown' = 'userAction.removeRundown',
 		'resyncRundown' = 'userAction.resyncRundown',
 		'resyncSegment' = 'userAction.resyncSegment',
-
-		'recordStop' = 'userAction.recordStop',
-		'recordStart' = 'userAction.recordStart',
-		'recordDelete' = 'userAction.recordDelete',
 
 		'mediaRestartWorkflow' = 'userAction.mediamanager.restartWorkflow',
 		'mediaAbortWorkflow' = 'userAction.mediamanager.abortWorkflow',

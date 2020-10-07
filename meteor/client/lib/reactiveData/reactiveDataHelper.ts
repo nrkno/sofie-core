@@ -55,25 +55,27 @@ const isolatedAutorunsMem: {
 	}
 } = {}
 
-export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: string, ...params): T {
+export function memoizedIsolatedAutorun<T extends (...args: any) => any>(
+	fnc: T,
+	functionName: string,
+	...params: Parameters<T>
+): ReturnType<T> {
 	function hashFncAndParams(fName: string, p: any): string {
 		return fName + '_' + JSON.stringify(p)
 	}
 
-	let result: T
+	let result: ReturnType<T>
 	const fId = hashFncAndParams(functionName, params)
 	const parentComputation = Tracker.currentComputation
 	if (isolatedAutorunsMem[fId] === undefined) {
-		// console.log(`${fId}: Tracker.nonreactive`)
 		const dep = new Tracker.Dependency()
 		dep.depend()
 		const computation = Tracker.nonreactive(() => {
 			const computation = Tracker.autorun(() => {
-				result = fnc(...params)
+				result = fnc(...(params as any))
 
 				if (!Tracker.currentComputation.firstRun) {
 					if (!_.isEqual(isolatedAutorunsMem[fId].value, result)) {
-						// console.log(`${fId}: Tracker.autorun, dependancy changed.`)
 						dep.changed()
 					}
 				}
@@ -82,10 +84,8 @@ export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: 
 					dependancy: dep,
 					value: result,
 				}
-				// console.log(`${fId}: Tracker.autorun`, params, result)
 			})
 			computation.onStop(() => {
-				// console.log(`${fId}: Tracker.autorun stopped`)
 				delete isolatedAutorunsMem[fId]
 			})
 			return computation
@@ -99,10 +99,9 @@ export function memoizedIsolatedAutorun<T>(fnc: (...params) => T, functionName: 
 	} else {
 		result = isolatedAutorunsMem[fId].value
 		isolatedAutorunsMem[fId].dependancy.depend()
-		// console.log(`${fId}: Using memoized value`, result)
 	}
-	// console.log(`${fId}: Returning value`, result!)
-	return result!
+	// @ts-ignore
+	return result
 }
 
 export abstract class WithManagedTracker {

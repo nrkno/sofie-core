@@ -10,7 +10,7 @@ import { SegmentUi, PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './Se
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { RundownTiming, WithTiming, withTiming } from '../RundownView/RundownTiming'
 
-import { ContextMenuTrigger } from 'react-contextmenu'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
 import { RundownUtils } from '../../lib/rundown'
 import { getCurrentTime, literal, unprotectString } from '../../../lib/lib'
@@ -21,7 +21,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ConfigItemValue } from 'tv-automation-sofie-blueprints-integration'
 
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
-import { IContextMenuContext } from '../RundownView'
+import { IContextMenuContext, RundownViewEvents } from '../RundownView'
 import { CSSProperties } from '../../styles/_cssVariables'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
@@ -94,19 +94,16 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 					// filter only pieces belonging to this part
 					return piece.instance.partInstanceId === this.props.part.instance._id
 						? // filter only pieces, that have not been hidden from the UI
-						  piece.instance.piece.hidden !== true && piece.instance.piece.virtual !== true
+						  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
 						: false
 				})
 			)
 				.sortBy((it) => it.renderedInPoint)
-				.sortBy((it) => it.instance.piece.infiniteMode)
 				.sortBy((it) => it.cropped)
 				.map((piece) => {
 					return (
 						<SourceLayerItemContainer
-							key={piece.instance._id}
-							{..._.omit(this.props, 'key')} // kz: TODO two keys is to many but which one to choose?
-							// The following code is fine, just withTracker HOC messing with available props
+							key={unprotectString(piece.instance._id)}
 							onClick={this.props.onPieceClick}
 							onDoubleClick={this.props.onPieceDoubleClick}
 							mediaPreviewUrl={this.props.mediaPreviewUrl}
@@ -122,6 +119,14 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							liveLinePadding={this.props.liveLinePadding}
 							scrollLeft={this.props.scrollLeft}
 							scrollWidth={this.props.scrollWidth}
+							playlist={this.props.playlist}
+							followLiveLine={this.props.followLiveLine}
+							isLiveLine={this.props.isLiveLine}
+							isNextLine={this.props.isNextLine}
+							liveLineHistorySize={this.props.liveLineHistorySize}
+							livePosition={this.props.livePosition}
+							outputGroupCollapsed={this.props.outputGroupCollapsed}
+							onFollowLiveLine={this.props.onFollowLiveLine}
 						/>
 					)
 				})
@@ -157,12 +162,11 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 						// filter only pieces belonging to this part
 						return piece.instance.partInstanceId === this.props.part.instance._id
 							? // filter only pieces, that have not been hidden from the UI
-							  piece.instance.piece.hidden !== true && piece.instance.piece.virtual !== true
+							  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
 							: false
 					})
 				)
 					.sortBy((it) => it.renderedInPoint)
-					.sortBy((it) => it.instance.piece.infiniteMode)
 					.sortBy((it) => it.cropped)
 					.map((piece) => {
 						return (
@@ -347,6 +351,7 @@ interface IState {
 	liveDuration: number
 
 	isInsideViewport: boolean
+	highlight: boolean
 }
 
 const LIVE_LINE_TIME_PADDING = 150
@@ -392,13 +397,14 @@ export const SegmentTimelinePart = withTranslation()(
 
 				const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
 				const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-				const startedPlayback = partInstance.part.startedPlayback
+				const startedPlayback = partInstance.timings?.startedPlayback
 
 				this.state = {
 					isLive,
 					isNext,
 					isDurationSettling: false,
 					isInsideViewport: false,
+					highlight: false,
 					liveDuration: isLive
 						? Math.max(
 								(startedPlayback &&
@@ -417,38 +423,66 @@ export const SegmentTimelinePart = withTranslation()(
 				}
 			}
 
-			static getDerivedStateFromProps(nextProps: IProps & RundownTiming.InjectedROTimingProps): Partial<IState> {
+			static getDerivedStateFromProps(
+				nextProps: IProps & RundownTiming.InjectedROTimingProps,
+				nextState: IState
+			): Partial<IState> {
+				const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
 				const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id
 				const isNext = nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id
 
 				const nextPartInner = nextProps.part.instance.part
 
-				const startedPlayback = nextPartInner.startedPlayback
+				const startedPlayback = nextProps.part.instance.timings?.startedPlayback
 
 				const isDurationSettling =
-					!!nextProps.playlist.active && !isLive && !!startedPlayback && !nextPartInner.duration
+					!!nextProps.playlist.active &&
+					isPrevious &&
+					!isLive &&
+					!!startedPlayback &&
+					!nextProps.part.instance.timings?.duration
 
-				const liveDuration =
-					(isLive || isDurationSettling) && !nextProps.autoNextPart && !nextPartInner.autoNext
-						? Math.max(
-								(startedPlayback &&
-									nextProps.timingDurations.partDurations &&
-									(nextProps.relative
-										? SegmentTimelinePart0.getCurrentLiveLinePosition(
-												nextProps.part,
-												nextProps.timingDurations.currentTime || getCurrentTime()
-										  )
-										: SegmentTimelinePart0.getCurrentLiveLinePosition(
-												nextProps.part,
-												nextProps.timingDurations.currentTime || getCurrentTime()
-										  ) + SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))) ||
-									0,
-								nextProps.timingDurations.partDurations
-									? nextPartInner.displayDuration ||
-											nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
-									: 0
-						  )
-						: 0
+				let liveDuration = 0
+				if (!isDurationSettling) {
+					// if the duration isn't settling, calculate the live line postion and add some liveLive time padding
+					if (isLive && !nextProps.autoNextPart && !nextPartInner.autoNext) {
+						liveDuration = Math.max(
+							(startedPlayback &&
+								nextProps.timingDurations.partDurations &&
+								(nextProps.relative
+									? SegmentTimelinePart0.getCurrentLiveLinePosition(
+											nextProps.part,
+											nextProps.timingDurations.currentTime || getCurrentTime()
+									  )
+									: SegmentTimelinePart0.getCurrentLiveLinePosition(
+											nextProps.part,
+											nextProps.timingDurations.currentTime || getCurrentTime()
+									  ) + SegmentTimelinePart0.getLiveLineTimePadding(nextProps.timeScale))) ||
+								0,
+							nextProps.timingDurations.partDurations
+								? nextPartInner.displayDuration ||
+										nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
+								: 0
+						)
+					}
+				} else {
+					// if the duration is settling, just calculate the current liveLine position and show without any padding
+					if (!nextProps.autoNextPart && !nextPartInner.autoNext) {
+						liveDuration = Math.max(
+							(startedPlayback &&
+								nextProps.timingDurations.partDurations &&
+								SegmentTimelinePart0.getCurrentLiveLinePosition(
+									nextProps.part,
+									nextProps.timingDurations.currentTime || getCurrentTime()
+								)) ||
+								0,
+							nextProps.timingDurations.partDurations
+								? nextPartInner.displayDuration ||
+										nextProps.timingDurations.partDurations[unprotectString(nextPartInner._id)]
+								: 0
+						)
+					}
+				}
 
 				const isInsideViewport =
 					nextProps.relative ||
@@ -477,15 +511,43 @@ export const SegmentTimelinePart = withTranslation()(
 			}
 
 			static getCurrentLiveLinePosition(part: PartUi, currentTime: number): number {
-				if (part.instance.part.startedPlayback && part.instance.part.getLastStartedPlayback()) {
-					if (part.instance.part.duration) {
-						return part.instance.part.duration
+				if (part.instance.timings?.startedPlayback) {
+					if (part.instance.timings?.duration) {
+						return part.instance.timings.duration
 					} else {
-						return currentTime - (part.instance.part.getLastStartedPlayback() || 0)
+						return currentTime - part.instance.timings.startedPlayback
 					}
 				} else {
 					return 0
 				}
+			}
+
+			private highlightTimeout: NodeJS.Timer
+
+			private onHighlight = (e: any) => {
+				if (e.detail && e.detail.partId === this.props.part.partId && !e.detail.pieceId) {
+					this.setState({
+						highlight: true,
+					})
+					clearTimeout(this.highlightTimeout)
+					this.highlightTimeout = setTimeout(() => {
+						this.setState({
+							highlight: false,
+						})
+					}, 5000)
+				}
+			}
+
+			componentDidMount() {
+				super.componentDidMount && super.componentDidMount()
+				window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
+			}
+
+			componentWillUnmount() {
+				super.componentWillUnmount && super.componentWillUnmount()
+				window.removeEventListener(RundownViewEvents.highlight, this.onHighlight)
+				this.highlightTimeout && clearTimeout(this.highlightTimeout)
+				this.delayedInstanceUpdate && clearTimeout(this.delayedInstanceUpdate)
 			}
 
 			queueDelayedUpdate() {
@@ -550,11 +612,10 @@ export const SegmentTimelinePart = withTranslation()(
 
 			static getPartDuration(props: WithTiming<IProps>, liveDuration: number): number {
 				// const part = this.props.part
-				const innerPart = props.part.instance.part
 
 				return Math.max(
 					liveDuration,
-					innerPart.duration ||
+					props.part.instance.timings?.duration ||
 						(props.timingDurations.partDisplayDurations &&
 							props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
 						props.part.renderedDuration ||
@@ -579,13 +640,14 @@ export const SegmentTimelinePart = withTranslation()(
 
 			renderTimelineOutputGroups(part: PartUi) {
 				if (this.props.segment.outputLayers !== undefined) {
-					return _.map(
-						_.filter(this.props.segment.outputLayers, (layer) => {
+					return Object.values(this.props.segment.outputLayers)
+						.filter((layer) => {
 							return layer.used ? true : false
-						}).sort((a, b) => {
+						})
+						.sort((a, b) => {
 							return a._rank - b._rank
-						}),
-						(layer, id) => {
+						})
+						.map((layer) => {
 							// Only render output layers used by the segment
 							if (layer.used) {
 								return (
@@ -619,8 +681,7 @@ export const SegmentTimelinePart = withTranslation()(
 									/>
 								)
 							}
-						}
-					)
+						})
 				}
 			}
 
@@ -681,12 +742,13 @@ export const SegmentTimelinePart = withTranslation()(
 								invalid: innerPart.invalid && !innerPart.gap,
 								floated: innerPart.floated,
 								gap: innerPart.gap,
+								'invert-flash': this.state.highlight,
 
 								'duration-settling': this.state.isDurationSettling,
 							})}
 							data-obj-id={this.props.part.instance._id}
 							id={SegmentTimelinePartElementId + this.props.part.instance._id}
-							style={_.extend(this.getLayerStyle(), invalidReasonColorVars)}>
+							style={{ ...this.getLayerStyle(), ...invalidReasonColorVars }}>
 							{innerPart.invalid ? <div className="segment-timeline__part__invalid-cover"></div> : null}
 							{innerPart.floated ? <div className="segment-timeline__part__floated-cover"></div> : null}
 

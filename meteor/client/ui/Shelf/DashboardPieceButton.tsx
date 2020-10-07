@@ -31,7 +31,7 @@ import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPre
 
 export interface IDashboardButtonProps {
 	adLibListItem: IAdLibListItem
-	layer: ISourceLayer
+	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
 	playlist: RundownPlaylist
@@ -80,7 +80,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 			const piece = (this.props.adLibListItem as any) as AdLibPieceUi
 			let objId: string | undefined = undefined
 
-			if (piece.content) {
+			if (piece.content && piece.content.fileName) {
 				switch (this.props.layer.type) {
 					case SourceLayerType.VT:
 						objId = (piece.content as VTContent).fileName.toUpperCase()
@@ -147,7 +147,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					{renderThumbnail ? (
 						<DashboardPieceButtonSplitPreview piece={splitAdLib} />
 					) : (
-						<SplitInputIcon abbreviation={this.props.layer.abbreviation} piece={splitAdLib} hideLabel={true} />
+						<SplitInputIcon
+							abbreviation={this.props.layer ? this.props.layer.abbreviation : undefined}
+							piece={splitAdLib}
+							hideLabel={true}
+						/>
 					)}
 				</React.Fragment>
 			)
@@ -158,7 +162,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
 		const hasMediaInfo =
-			this.props.layer.type === SourceLayerType.VT && this.props.metadata && this.props.metadata.mediainfo
+			this.props.layer &&
+			this.props.layer.type === SourceLayerType.VT &&
+			this.props.metadata &&
+			this.props.metadata.mediainfo
 		return (
 			<div
 				className={ClassNames(

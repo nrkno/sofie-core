@@ -4,41 +4,162 @@ import {
 	LookaheadMode,
 	Timeline as TimelineTypes,
 	OnGenerateTimelineObj,
+	TimelineObjectCoreExt,
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
-import {
-	TimelineObjGeneric,
-	TimelineObjRundown,
-	fixTimelineId,
-	TimelineObjType,
-} from '../../../lib/collections/Timeline'
+import { TimelineObjRundown, TimelineObjType } from '../../../lib/collections/Timeline'
 import { Part, PartId } from '../../../lib/collections/Parts'
-import { Piece } from '../../../lib/collections/Pieces'
-import { orderPieces, PieceResolved } from './pieces'
-import { literal, clone, unprotectString, protectString } from '../../../lib/lib'
-import { RundownPlaylistPlayoutData, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance, wrapPieceToInstance } from '../../../lib/collections/PieceInstances'
-import { selectNextPart, getSelectedPartInstancesFromCache, getAllOrderedPartsFromCache } from './lib'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { literal, clone, unprotectString, asyncCollectionFindFetch } from '../../../lib/lib'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../../../lib/collections/PieceInstances'
+import {
+	selectNextPart,
+	getSelectedPartInstancesFromCache,
+	getAllOrderedPartsFromCache,
+	getRundownIDsFromCache,
+} from './lib'
 import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
+import { sortPiecesByStart } from './pieces'
+import { profiler } from '../profiler'
+import {
+	hasPieceInstanceDefinitelyEnded,
+	SelectedPartInstancesTimelineInfo,
+	SelectedPartInstanceTimelineInfo,
+} from './timeline'
+import { Mongo } from 'meteor/mongo'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
 interface PartInstanceAndPieceInstances {
 	part: PartInstance
-	pieces: PieceInstance[]
+	onTimeline: boolean
+	allPieces: PieceInstance[]
 }
 interface PartAndPieces {
 	part: Part
-	pieces: Piece[]
+	pieces: Piece[] | PieceInstance[]
+	// allPieces: PieceInstancePiece[]
 }
 
-export function getLookeaheadObjects(
+function isPieceInstance(piece: Piece | PieceInstance | PieceInstancePiece): piece is PieceInstance {
+	const tmpPiece = piece as PieceInstance
+	return typeof tmpPiece.piece !== 'undefined'
+}
+function isPieceInstanceArray(pieces: Piece[] | PieceInstance[] | PieceInstancePiece[]): pieces is PieceInstance[] {
+	const tmpPieces = pieces as PieceInstance[]
+	const samplePiece = tmpPieces[0]
+	return typeof samplePiece?.piece !== 'undefined'
+}
+
+function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): number {
+	const defaultSearchDistance = 10
+	const values = mappings.map(([id, m]) => m.lookaheadMaxSearchDistance ?? defaultSearchDistance)
+	return _.max(values)
+}
+
+/**
+ * Excludes the previous, current and next part
+ */
+function getOrderedPartsAfterPlayhead(
+	cache: CacheForRundownPlaylist,
+	playlist: RundownPlaylist,
+	partCount: number
+): Part[] {
+	if (partCount <= 0) {
+		return []
+	}
+	const span = profiler.startSpan('getOrderedPartsAfterPlayhead')
+
+	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+
+	// If the nextPartInstance consumes the
+	const alreadyConsumedNextSegmentId =
+		nextPartInstance && (!currentPartInstance || currentPartInstance.segmentId !== nextPartInstance.segmentId)
+
+	const strippedPlaylist = {
+		nextSegmentId: alreadyConsumedNextSegmentId ? undefined : playlist.nextSegmentId,
+		loop: playlist.loop,
+	}
+	const nextNextPart = selectNextPart(strippedPlaylist, nextPartInstance ?? currentPartInstance ?? null, orderedParts)
+	if (!nextNextPart) {
+		// We don't know where to begin searching, so we can't do anything
+		return []
+	}
+
+	const playablePartsSlice = orderedParts.slice(nextNextPart.index).filter((p) => p.isPlayable())
+
+	const res: Part[] = []
+
+	const nextSegmentIndex = playablePartsSlice.findIndex((p) => p.segmentId === playlist.nextSegmentId)
+	if (
+		playlist.nextSegmentId &&
+		!alreadyConsumedNextSegmentId &&
+		nextSegmentIndex !== -1 &&
+		!nextNextPart.consumesNextSegmentId
+	) {
+		// TODO - this if clause needs some decent testing
+
+		// Push the next part and the remainder of its segment
+		res.push(...playablePartsSlice.filter((p) => p.segmentId === nextNextPart.part.segmentId))
+
+		// Push from nextSegmentId to the end of the playlist
+		res.push(...playablePartsSlice.slice(nextSegmentIndex))
+	} else {
+		// Push as many parts as we want
+		res.push(...playablePartsSlice)
+	}
+
+	if (res.length < partCount && playlist.loop) {
+		// The rundown would loop here, so lets run with that
+		const playableParts = orderedParts.filter((p) => p.isPlayable())
+		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
+		res.push(...playableParts)
+
+		if (span) span.end()
+		// Final trim to ensure it is within bounds
+		return res.slice(0, partCount)
+	} else {
+		if (span) span.end()
+		// We reached the target or ran out of parts
+		return res.slice(0, partCount)
+	}
+}
+
+export async function getLookeaheadObjects(
 	cache: CacheForRundownPlaylist,
 	studio: Studio,
-	playlist: RundownPlaylist
-): Array<TimelineObjGeneric> {
-	const timelineObjs: Array<TimelineObjGeneric> = []
+	playlist: RundownPlaylist,
+	partInstancesInfo0: SelectedPartInstancesTimelineInfo
+): Promise<Array<TimelineObjRundown>> {
+	const span = profiler.startSpan('getLookeaheadObjects')
+	const mappingsToConsider = Object.entries(studio.mappings ?? {}).filter(
+		([id, map]) => map.lookahead !== LookaheadMode.NONE
+	)
+	if (mappingsToConsider.length === 0) {
+		if (span) span.end()
+		return []
+	}
+
+	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
+	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(cache, playlist, maxLookaheadDistance)
+	if (orderedPartsFollowingPlayhead.length === 0) {
+		// Nothing to search through
+		return []
+	}
+
+	const piecesToSearchQuery: Mongo.Query<Piece> = {
+		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
+		startRundownId: { $in: getRundownIDsFromCache(cache, playlist) },
+		invalid: { $ne: true },
+	}
+	const pPiecesToSearch = cache.Pieces.initialized
+		? Promise.resolve(cache.Pieces.findFetch(piecesToSearchQuery))
+		: asyncCollectionFindFetch(Pieces, piecesToSearchQuery)
+
+	const timelineObjs: Array<TimelineObjRundown> = []
 	const mutateAndPushObject = (
 		rawObj: TimelineObjRundown,
 		i: string,
@@ -46,7 +167,7 @@ export function getLookeaheadObjects(
 		mapping: MappingExt,
 		priority: number
 	) => {
-		const obj: TimelineObjGeneric = clone(rawObj)
+		const obj: TimelineObjRundown & OnGenerateTimelineObj = clone(rawObj)
 
 		obj.id = `lookahead_${i}_${obj.id}`
 		obj.priority = priority
@@ -56,6 +177,8 @@ export function getLookeaheadObjects(
 			obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
 		}
 		delete obj.inGroup // force it to be cleared
+		delete obj.pieceInstanceId
+		delete obj.infinitePieceId
 
 		if (mapping.lookahead === LookaheadMode.PRELOAD) {
 			obj.lookaheadForLayer = obj.layer
@@ -65,75 +188,89 @@ export function getLookeaheadObjects(
 		timelineObjs.push(obj)
 	}
 
-	const calculateStartAfterPreviousObj = (prevObj: TimelineObjRundown): TimelineTypes.TimelineEnable => {
+	// elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
+	const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
+		`#${obj.pieceInstanceId ?? ''}${obj.id}.start`
+	const calculateStartAfterPreviousObj = (
+		prevObj: TimelineObjRundown & OnGenerateTimelineObj
+	): TimelineTypes.TimelineEnable => {
 		const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 
 		// Start with previous piece
 		const startOffset = prevHasDelayFlag ? 2000 : 0
 		return {
-			start: `#${prevObj.id}.start + ${startOffset}`,
+			start: `${getStartOfObjectRef(prevObj)} + ${startOffset}`,
 		}
 	}
 
-	function getPartInstancePieces(partInstanceId: PartInstanceId) {
-		return cache.PieceInstances.findFetch((pieceInstance: PieceInstance) => {
-			return !!(
-				pieceInstance.partInstanceId === partInstanceId &&
-				pieceInstance.piece.content &&
-				pieceInstance.piece.content.timelineObjects
-			)
-		})
+	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
+		if (!info.partInstance.timings?.startedPlayback) {
+			return info.pieceInstances
+		} else {
+			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
+		}
 	}
-	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(
-		cache,
-		playlist
-	)
-	// Get the PieceInstances which are on the timeline
-	const partInstancesOnTimeline: PartInstanceAndPieceInstances[] = _.compact([
-		currentPartInstance,
-		currentPartInstance && currentPartInstance.part.autoNext ? nextPartInstance : undefined,
-	]).map((part) => ({
-		part,
-		pieces: getPartInstancePieces(part._id),
-	}))
+	const partInstancesInfo: PartInstanceAndPieceInstances[] = _.compact([
+		partInstancesInfo0.current
+			? {
+					part: partInstancesInfo0.current.partInstance,
+					onTimeline: true,
+					allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.current),
+			  }
+			: undefined,
+		partInstancesInfo0.next
+			? {
+					part: partInstancesInfo0.next.partInstance,
+					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext,
+					allPieces: partInstancesInfo0.next.pieceInstances,
+			  }
+			: undefined,
+	])
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartInstanceAndPieceInstances | undefined
-	if (previousPartInstance) {
-		const previousPieces = getPartInstancePieces(previousPartInstance._id)
+	if (partInstancesInfo0.previous) {
 		previousPartInfo = {
-			part: previousPartInstance,
-			pieces: previousPieces,
+			part: partInstancesInfo0.previous.partInstance,
+			onTimeline: true,
+			allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.previous),
 		}
 	}
 
-	const orderedParts = getAllOrderedPartsFromCache(cache, playlist)
+	// TODO: Do we need to use processAndPrunePieceInstanceTimings on these pieces? In theory yes, but that gets messy and expensive.
+	// In reality, there are not likely to be any/many conflicts if the blueprints are written well so it shouldnt be a problem
+	const piecesToSearch = await pPiecesToSearch
 
-	const orderedPiecesCache = new Map<PartId, PieceResolved[]>()
+	const piecesByPart = new Map<PartId, Piece[]>()
+	for (const piece of piecesToSearch) {
+		const existing = piecesByPart.get(piece.startPartId)
+		if (existing) {
+			existing.push(piece)
+		} else {
+			piecesByPart.set(piece.startPartId, [piece])
+		}
+	}
 
-	_.each(studio.mappings || {}, (mapping: MappingExt, layerId: string) => {
+	for (const [layerId, mapping] of mappingsToConsider) {
 		const lookaheadTargetObjects = mapping.lookahead === LookaheadMode.PRELOAD ? mapping.lookaheadDepth || 1 : 1 // TODO - test other modes
 		const lookaheadMaxSearchDistance =
 			mapping.lookaheadMaxSearchDistance !== undefined && mapping.lookaheadMaxSearchDistance >= 0
 				? mapping.lookaheadMaxSearchDistance
-				: undefined
+				: orderedPartsFollowingPlayhead.length
+
 		const lookaheadObjs = findLookaheadForlayer(
-			cache,
 			playlist,
-			partInstancesOnTimeline,
+			partInstancesInfo,
 			previousPartInfo,
-			orderedParts,
-			orderedPiecesCache,
+			orderedPartsFollowingPlayhead,
+			piecesByPart,
 			layerId,
 			mapping.lookahead,
 			lookaheadTargetObjects,
 			lookaheadMaxSearchDistance
 		)
-		if (!lookaheadObjs) {
-			return
-		}
 
 		// Add the objects that have some timing info
-		_.each(lookaheadObjs.timed, (entry, i) => {
+		lookaheadObjs.timed.forEach((entry, i) => {
 			let enable: TimelineTypes.TimelineEnable = {
 				start: 1, // Absolute 0 without a group doesnt work
 			}
@@ -143,7 +280,7 @@ export function getLookeaheadObjects(
 			}
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-			enable.end = `#${entry.obj.id}.start`
+			enable.end = getStartOfObjectRef(entry.obj)
 
 			mutateAndPushObject(entry.obj, `timed${i}`, enable, mapping, LOOKAHEAD_OBJ_PRIORITY)
 		})
@@ -151,7 +288,7 @@ export function getLookeaheadObjects(
 		// Add each of the future objects, that have no end point
 		const futureObjCount = lookaheadObjs.future.length
 		const futurePriorityScale = LOOKAHEAD_OBJ_PRIORITY / (futureObjCount + 1)
-		_.each(lookaheadObjs.future, (entry, i) => {
+		lookaheadObjs.future.forEach((entry, i) => {
 			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
 			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
@@ -170,12 +307,14 @@ export function getLookeaheadObjects(
 			const priority = singleFutureObj ? LOOKAHEAD_OBJ_PRIORITY : futurePriorityScale * (futureObjCount - i)
 			mutateAndPushObject(entry.obj, `future${i}`, enable, mapping, priority)
 		})
-	})
+	}
+	if (span) span.end()
 	return timelineObjs
 }
 
 export interface LookaheadObjectEntry {
-	obj: TimelineObjRundown
+	obj: TimelineObjRundown & OnGenerateTimelineObj
+	// pieceInstanceId: PieceInstanceId
 	partId: PartId
 }
 
@@ -185,251 +324,229 @@ export interface LookaheadResult {
 }
 
 function findLookaheadForlayer(
-	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
-	partInstancesOnTimeline: PartInstanceAndPieceInstances[],
+	partInstancesInfo: PartInstanceAndPieceInstances[],
 	previousPartInstanceInfo: PartInstanceAndPieceInstances | undefined,
-	orderedParts: Part[],
-	orderedPiecesCache: Map<PartId, PieceResolved[]>,
+	orderedPartsFollowingPlayhead: Part[],
+	piecesByPart: Map<PartId, Piece[]>,
 	layer: string,
 	mode: LookaheadMode,
 	lookaheadTargetObjects: number,
-	lookaheadMaxSearchDistance?: number
-): LookaheadResult | null {
+	lookaheadMaxSearchDistance: number
+): LookaheadResult {
+	const span = profiler.startSpan('findLookaheadForlayer')
 	const res: LookaheadResult = {
 		timed: [],
 		future: [],
 	}
 
-	if (mode === undefined || mode === LookaheadMode.NONE) {
-		return null
-	}
-
-	function filterPartInstancePieces(pieces: PieceInstance[]) {
-		return pieces.filter(
-			(p) => !!_.find((p.piece.content || {}).timelineObjects || [], (o) => o && o.layer === layer)
-		)
+	if (mode === undefined || mode === LookaheadMode.NONE || lookaheadMaxSearchDistance <= 0) {
+		return res
 	}
 
 	// Track the previous info for checking how the timeline will be built
 	let previousPartInfo: PartAndPieces | undefined
 	if (previousPartInstanceInfo) {
-		const previousPieces = filterPartInstancePieces(previousPartInstanceInfo.pieces)
 		previousPartInfo = {
 			part: previousPartInstanceInfo.part.part,
-			pieces: previousPieces.map((p) => p.piece),
+			pieces: previousPartInstanceInfo.allPieces,
 		}
 	}
 
 	// Generate timed objects for parts on the timeline
-	_.each(partInstancesOnTimeline, (partInstance) => {
-		const pieces = filterPartInstancePieces(partInstance.pieces)
-		const partInfo = {
-			part: partInstance.part.part,
-			pieces: pieces.map((p) => p.piece),
+	for (const partInstanceInfo of partInstancesInfo) {
+		const partInfo: PartAndPieces = {
+			part: partInstanceInfo.part.part,
+			pieces: partInstanceInfo.allPieces,
 		}
 
-		findObjectsForPart(
-			cache,
-			playlist,
-			orderedPiecesCache,
-			layer,
-			previousPartInfo,
-			partInfo,
-			partInstance.part._id
-		).forEach((o) => res.timed.push({ obj: o, partId: partInstance.part.part._id }))
+		findObjectsForPart(playlist, layer, previousPartInfo, partInfo, partInstanceInfo.part._id).forEach((o) => {
+			if (partInstanceInfo.onTimeline) {
+				res.timed.push({ obj: o, partId: partInstanceInfo.part.part._id })
+			} else {
+				res.future.push({ obj: o, partId: partInstanceInfo.part.part._id })
+			}
+		})
 		previousPartInfo = partInfo
-	})
-
-	// find all pieces that touch the layer
-	const piecesUsingLayer = cache.Pieces.findFetch((piece: Piece) => {
-		return !!(
-			piece.content &&
-			piece.content.timelineObjects &&
-			_.find(piece.content.timelineObjects, (o) => o && o.layer === layer)
-		)
-	})
-	if (piecesUsingLayer.length === 0) {
-		return res
 	}
 
-	// nextPartInstance should always have a backing part (if it exists), so this will be safe
-	const nextPartInstance = _.last(partInstancesOnTimeline) || previousPartInstanceInfo || null
-	const nextPart = selectNextPart(playlist, nextPartInstance ? nextPartInstance.part : null, orderedParts)
-	const lastPartIndex =
-		nextPart && lookaheadMaxSearchDistance !== undefined ? nextPart.index + lookaheadMaxSearchDistance : undefined
-	const futureParts = nextPart ? orderedParts.slice(nextPart.index, lastPartIndex ? lastPartIndex : undefined) : []
-	if (futureParts.length === 0) {
-		return res
-	}
+	if (lookaheadMaxSearchDistance > 1) {
+		for (const part of orderedPartsFollowingPlayhead.slice(0, lookaheadMaxSearchDistance - 1)) {
+			// Stop if we have enough objects already
+			if (res.future.length >= lookaheadTargetObjects) {
+				break
+			}
 
-	// have pieces grouped by part, so we can look based on rank to choose the correct one
-	const piecesUsingLayerByPart: { [partId: string]: Piece[] | undefined } = {}
-	piecesUsingLayer.forEach((i) => {
-		const partId = unprotectString(i.partId)
-		if (!piecesUsingLayerByPart[partId]) {
-			piecesUsingLayerByPart[partId] = []
-		}
-
-		piecesUsingLayerByPart[partId]!.push(i)
-	})
-
-	for (const part of futureParts) {
-		// Stop if we have enough objects already
-		if (res.future.length >= lookaheadTargetObjects) {
-			break
-		}
-
-		const pieces = piecesUsingLayerByPart[unprotectString(part._id)] || []
-		if (pieces.length > 0 && part.isPlayable()) {
-			const partInfo = { part, pieces }
-			findObjectsForPart(
-				cache,
-				playlist,
-				orderedPiecesCache,
-				layer,
-				previousPartInfo,
-				partInfo,
-				null
-			).forEach((o) => res.future.push({ obj: o, partId: part._id }))
-			previousPartInfo = partInfo
+			const pieces = piecesByPart.get(part._id) ?? []
+			if (pieces.length > 0 && part.isPlayable()) {
+				const partInfo: PartAndPieces = { part, pieces }
+				findObjectsForPart(playlist, layer, previousPartInfo, partInfo, null).forEach((o) =>
+					res.future.push({ obj: o, partId: part._id })
+				)
+				previousPartInfo = partInfo
+			}
 		}
 	}
 
+	if (span) span.end()
 	return res
 }
 
+function getBestPieceIsntanceId(
+	piece: PieceInstance | Piece,
+	partInfo: PartAndPieces,
+	partInstanceId: PartInstanceId | null
+): string {
+	if (isPieceInstance(piece)) {
+		return unprotectString(piece._id)
+	}
+	if (partInstanceId) {
+		// Approximate what it would be
+		return unprotectString(rewrapPieceToInstance(piece, partInfo.part.rundownId, partInstanceId)._id)
+	}
+	// Something is needed, and it must be distant future here, so accuracy is not important
+	return unprotectString(piece._id)
+}
+
+// type MatchedTimelineObj = RequiredSelective<TimelineObjRundown & OnGenerateTimelineObj, 'pieceInstanceId'>
+function tryActivateKeyframesForObject(
+	obj: TimelineObjectCoreExt,
+	hasTransition: boolean,
+	classesFromPreviousPart: string[] | undefined
+): TimelineObjectCoreExt['content'] {
+	// Try and find a keyframe that is used when in a transition
+	let transitionKF: TimelineTypes.TimelineKeyframe | undefined = undefined
+	if (hasTransition) {
+		transitionKF = _.find(
+			obj.keyframes || [],
+			(kf) => !Array.isArray(kf.enable) && kf.enable.while === '.is_transition'
+		)
+
+		// TODO - this keyframe matching is a hack, and is very fragile
+
+		if (!transitionKF && classesFromPreviousPart && classesFromPreviousPart.length > 0) {
+			// Check if the keyframe also uses a class to match. This handles a specific edge case
+			transitionKF = _.find(obj.keyframes || [], (kf) =>
+				_.any(
+					classesFromPreviousPart,
+					(cl) => !Array.isArray(kf.enable) && kf.enable.while === `.is_transition & .${cl}`
+				)
+			)
+		}
+		return { ...obj.content, ...transitionKF?.content }
+	} else {
+		return obj.content
+	}
+}
+
 function findObjectsForPart(
-	cache: CacheForRundownPlaylist,
 	playlist: RundownPlaylist,
-	orderedPiecesCache: Map<PartId, PieceResolved[]>,
 	layer: string,
 	previousPartInfo: PartAndPieces | undefined,
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null
-): (TimelineObjRundown & OnGenerateTimelineObj)[] {
-	const activePlaylist = playlist
-
+): Array<TimelineObjRundown & OnGenerateTimelineObj> {
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
+	const span = profiler.startSpan('findObjectsForPart')
 
-	let allObjs: TimelineObjRundown[] = []
-	partInfo.pieces.forEach((piece) => {
-		if (piece.content && piece.content.timelineObjects) {
-			// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
-			const pieceInstanceId = partInstanceId ? wrapPieceToInstance(piece, partInstanceId)._id : piece._id
-
-			_.each(piece.content.timelineObjects, (obj) => {
-				if (obj) {
-					fixTimelineId(obj)
-					allObjs.push(
-						literal<TimelineObjRundown & OnGenerateTimelineObj>({
-							...obj,
-							_id: protectString(''), // set later
-							studioId: protectString(''), // set later
-							objectType: TimelineObjType.RUNDOWN,
-							pieceInstanceId: unprotectString(pieceInstanceId),
-							infinitePieceId: unprotectString(piece.infiniteId),
-						})
-					)
-				}
-			})
+	let allObjs: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
+	for (const rawPiece of partInfo.pieces) {
+		const tmpPieceInstanceId = getBestPieceIsntanceId(rawPiece, partInfo, partInstanceId)
+		const piece = isPieceInstance(rawPiece) ? rawPiece.piece : rawPiece
+		for (const obj of piece.content?.timelineObjects ?? []) {
+			if (obj && obj.layer === layer) {
+				allObjs.push(
+					literal<TimelineObjRundown & OnGenerateTimelineObj>({
+						...obj,
+						objectType: TimelineObjType.RUNDOWN,
+						pieceInstanceId: tmpPieceInstanceId,
+					})
+				)
+			}
 		}
-	})
-	// let allObjs: TimelineObjRundown[] = _.compact(rawObjs)
+	}
 
 	if (allObjs.length === 0) {
+		if (span) span.end()
 		// Should never happen. suggests something got 'corrupt' during this process
 		return []
-	} else if (allObjs.length === 1) {
+	}
+
+	let allowTransition = !partInstanceId
+	let classesFromPreviousPart: string[] = []
+	if (previousPartInfo && playlist.currentPartInstanceId && partInstanceId) {
+		// If we have a previous and not at the start of the rundown
+		allowTransition = !previousPartInfo.part.disableOutTransition
+		classesFromPreviousPart = previousPartInfo.part.classesForNext || []
+	}
+
+	const rawPieces = isPieceInstanceArray(partInfo.pieces) ? partInfo.pieces.map((p) => p.piece) : partInfo.pieces
+	const transitionPiece = rawPieces.find((i) => !!i.isTransition)
+
+	if (allObjs.length === 1) {
 		// Only one, just return it
-		return allObjs
+		const obj = allObjs[0]
+		const patchedContent = tryActivateKeyframesForObject(
+			obj,
+			allowTransition && !!transitionPiece,
+			classesFromPreviousPart
+		)
+
+		if (span) span.end()
+		return [
+			{
+				...obj,
+				content: patchedContent,
+			},
+		]
 	} else {
 		// They need to be ordered
-		let orderedItems = orderedPiecesCache.get(partInfo.part._id)
-		if (!orderedItems) {
-			orderedItems = orderPieces(
-				cache.Pieces.findFetch({ partId: partInfo.part._id }),
-				partInfo.part._id,
-				partInfo.part.getLastStartedPlayback()
-			)
-			orderedPiecesCache.set(partInfo.part._id, orderedItems)
-		}
+		const orderedPieces = sortPiecesByStart(rawPieces)
 
-		let allowTransition = false
-		let classesFromPreviousPart: string[] = []
-		if (previousPartInfo && activePlaylist.currentPartInstanceId) {
-			// If we have a previous and not at the start of the rundown
-			allowTransition = !previousPartInfo.part.disableOutTransition
-			classesFromPreviousPart = previousPartInfo.part.classesForNext || []
-		}
+		const hasTransitionObj =
+			allowTransition && !!transitionPiece?.content?.timelineObjects?.find((o) => o != null && o.layer === layer)
 
-		const transObj = orderedItems.find((i) => !!i.isTransition)
-		const transObj2 = transObj ? partInfo.pieces.find((l) => l._id === transObj._id) : undefined
-		const hasTransition =
-			allowTransition &&
-			transObj2 &&
-			transObj2.content &&
-			transObj2.content.timelineObjects &&
-			transObj2.content.timelineObjects.find((o) => o != null && o.layer === layer)
-
-		const res: TimelineObjRundown[] = []
-		orderedItems.forEach((i) => {
-			if (!partInfo || (!allowTransition && i.isTransition)) {
-				return
-			}
-
-			const piece = partInfo.pieces.find((l) => l._id === i._id)
-			if (!piece || !piece.content || !piece.content.timelineObjects) {
+		const res: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
+		orderedPieces.forEach((piece) => {
+			if (!partInfo || (!allowTransition && piece.isTransition)) {
 				return
 			}
 
 			// If there is a transition and this piece is abs0, it is assumed to be the primary piece and so does not need lookahead
 			if (
-				hasTransition &&
-				!i.isTransition &&
+				hasTransitionObj &&
+				!piece.isTransition &&
 				piece.enable.start === 0 // <-- need to discuss this!
 			) {
 				return
 			}
 
 			// Note: This is assuming that there is only one use of a layer in each piece.
-			const obj = piece.content.timelineObjects.find((o) => o !== null && o.layer === layer)
+			const obj = piece.content?.timelineObjects?.find((o) => o !== null && o.layer === layer)
 			if (obj) {
-				// Try and find a keyframe that is used when in a transition
-				let transitionKF: TimelineTypes.TimelineKeyframe | undefined = undefined
-				if (allowTransition) {
-					transitionKF = _.find(obj.keyframes || [], (kf) => kf.enable.while === '.is_transition')
-
-					// TODO - this keyframe matching is a hack, and is very fragile
-
-					if (!transitionKF && classesFromPreviousPart && classesFromPreviousPart.length > 0) {
-						// Check if the keyframe also uses a class to match. This handles a specific edge case
-						transitionKF = _.find(obj.keyframes || [], (kf) =>
-							_.any(classesFromPreviousPart, (cl) => kf.enable.while === `.is_transition & .${cl}`)
-						)
-					}
-				}
-				const newContent = Object.assign({}, obj.content, transitionKF ? transitionKF.content : {})
+				const patchedContent = tryActivateKeyframesForObject(obj, hasTransitionObj, classesFromPreviousPart)
 
 				// Calculate the pieceInstanceId or fallback to the pieceId. This is ok, as its only for lookahead
-				const pieceInstanceId = partInstanceId ? wrapPieceToInstance(piece, partInstanceId)._id : piece._id
+				const pieceInstanceId = partInstanceId
+					? rewrapPieceToInstance(piece, partInfo.part.rundownId, partInstanceId)._id
+					: piece._id
 
 				res.push(
 					literal<TimelineObjRundown & OnGenerateTimelineObj>({
 						...obj,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 						pieceInstanceId: unprotectString(pieceInstanceId),
-						infinitePieceId: unprotectString(piece.infiniteId),
-						content: newContent,
+						infinitePieceId: unprotectString(piece._id),
+						content: patchedContent,
 					})
 				)
 			}
 		})
+
+		if (span) span.end()
 		return res
 	}
 }

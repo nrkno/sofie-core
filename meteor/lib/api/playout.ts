@@ -22,12 +22,6 @@ export interface NewPlayoutAPI {
 		pieceInstanceIdOrPieceIdToCopy: PieceInstanceId | PieceId
 	): Promise<void>
 	rundownTake(playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>>
-	rundownTogglePartArgument(
-		playlistId: RundownPlaylistId,
-		partInstanceId: PartInstanceId,
-		property: string,
-		value: string
-	): Promise<ClientAPI.ClientResponse<void>>
 	rundownSetNext(
 		playlistId: RundownPlaylistId,
 		partId: PartId,
@@ -64,6 +58,7 @@ export interface NewPlayoutAPI {
 	sourceLayerStickyPieceStart(playlistId: RundownPlaylistId, sourceLayerId: string): Promise<void>
 	updateStudioBaseline(studioId: StudioId): Promise<string | false>
 	shouldUpdateStudioBaseline(studioId: StudioId): Promise<string | false>
+	switchRouteSet(studioId: StudioId, routeSetId: string, state: boolean): Promise<ClientAPI.ClientResponse<void>>
 }
 
 export enum PlayoutAPIMethods {
@@ -83,11 +78,12 @@ export enum PlayoutAPIMethods {
 	'rundownMoveNext' = 'playout.rundownMoveNext',
 	'rundownActivateHold' = 'playout.rundownActivateHold',
 	'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
-	'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument',
 
 	'pieceTakeNow' = 'playout.pieceTakeNow',
 	'segmentAdLibPieceStart' = 'playout.segmentAdLibPieceStart',
 	'rundownBaselineAdLibPieceStart' = 'playout.rundownBaselineAdLibPieceStart',
 	'sourceLayerOnPartStop' = 'playout.sourceLayerOnPartStop',
 	'sourceLayerStickyPieceStart' = 'playout.sourceLayerStickyPieceStart',
+
+	'switchRouteSet' = 'playout.switchRouteSet',
 }

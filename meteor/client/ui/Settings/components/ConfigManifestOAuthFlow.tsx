@@ -7,6 +7,7 @@ import { IngestDeviceSettings } from '../../../../lib/collections/PeripheralDevi
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { fetchFrom } from '../../../lib/lib'
+import { callPeripheralDeviceFunction } from '../../../lib/clientAPI'
 
 interface IConfigManifestOAuthFlowComponentState {}
 interface IConfigManifestOAuthFlowComponentProps {
@@ -36,8 +37,6 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 				this.setState({
 					uploadFileKey: Date.now(),
 				})
-
-				console.log(e2)
 
 				let uploadFileContents = (e2.target as any).result
 
@@ -104,24 +103,17 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 		}
 		onUpdatedAccessToken(authToken: string) {
 			authToken = (authToken + '').trim()
-			console.log(authToken)
 			if (authToken && authToken.length > 5) {
-				PeripheralDeviceAPI.executeFunction(
-					this.props.device._id,
-					(e) => {
-						if (e) {
-							// nothing
-							console.log(e)
-							NotificationCenter.push(
-								new Notification(undefined, NoticeLevel.WARNING, 'Error when authorizing access token: ' + e, '')
-							)
-						} else {
-							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, 'Access token saved!', ''))
-						}
-					},
-					'receiveAuthToken',
-					authToken
-				)
+				callPeripheralDeviceFunction(event, this.props.device._id, undefined, 'receiveAuthToken', authToken)
+					.then(() => {
+						NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, 'Access token saved!', ''))
+					})
+					.catch((e) => {
+						console.log(e)
+						NotificationCenter.push(
+							new Notification(undefined, NoticeLevel.WARNING, 'Error when authorizing access token: ' + e, '')
+						)
+					})
 			}
 		}
 		render() {

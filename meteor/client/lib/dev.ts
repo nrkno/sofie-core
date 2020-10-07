@@ -16,6 +16,7 @@ Meteor.startup(() => {
 
 window['Collections'] = Collections
 window['executeFunction'] = PeripheralDeviceAPI.executeFunction
+window['executeFunctionWithCustomTimeout'] = PeripheralDeviceAPI.executeFunctionWithCustomTimeout
 window['getCurrentTime'] = getCurrentTime
 window['Session'] = Session
 

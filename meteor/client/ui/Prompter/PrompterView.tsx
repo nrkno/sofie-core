@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import * as Velocity from 'velocity-animate'
+import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
@@ -452,7 +452,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						reset: { $ne: true },
 					})
 					this.subscribe(PubSub.pieces, {
-						rundownId: { $in: rundownIDs },
+						startRundownId: { $in: rundownIDs },
 					})
 				}
 			})
@@ -529,7 +529,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			let lines: React.ReactNode[] = []
 
-			_.each(prompterData.segments, (segment) => {
+			prompterData.segments.forEach((segment) => {
 				if (segment.parts.length === 0) {
 					return
 				}
@@ -551,7 +551,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					</div>
 				)
 
-				_.each(segment.parts, (part) => {
+				segment.parts.forEach((part) => {
 					lines.push(
 						<div
 							key={'part_' + part.id}
@@ -560,7 +560,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						</div>
 					)
 
-					_.each(part.pieces, (line) => {
+					part.pieces.forEach((line) => {
 						lines.push(
 							<div
 								key={'line_' + part.id + '_' + segment.id + '_' + line.id}

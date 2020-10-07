@@ -108,6 +108,40 @@ $segment-layer-background-guest: #008a92;
 	}
 }
 
+@mixin item-type-before-background {
+	&.camera::before {
+		background: var(--segment-layer-background-camera);
+	}
+
+	&.graphics::before {
+		background: var(--segment-layer-background-graphics);
+	}
+
+	&.lower-third::before {
+		background: var(--segment-layer-background-lower-third);
+	}
+
+	&.live-speak::before {
+		background: var(--segment-layer-background-live-speak);
+	}
+
+	&.vt::before {
+		background: var(--segment-layer-background-vt);
+	}
+
+	&.remote::before {
+		background: var(--segment-layer-background-remote);
+	}
+
+	&.script::before {
+		background: var(--segment-layer-background-script);
+	}
+
+	&.mic::before {
+		background: var(--segment-layer-background-mic);
+	}
+}
+
 @mixin item-type-colors-svg {
 	&.camera {
 		fill: var(--segment-layer-background-camera);

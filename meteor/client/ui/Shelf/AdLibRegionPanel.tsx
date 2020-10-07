@@ -7,7 +7,14 @@ import {
 	RundownLayoutAdLibRegionRole,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { dashboardElementPosition, getUnfinishedPieceInstancesReactive } from './DashboardPanel'
+import {
+	dashboardElementPosition,
+	IDashboardPanelTrackedProps,
+	getUnfinishedPieceInstancesGrouped,
+	getNextPieceInstancesGrouped,
+	isAdLibOnAir,
+	isAdLibNext,
+} from './DashboardPanel'
 import ClassNames from 'classnames'
 import { AdLibPieceUi, IAdLibPanelProps, IAdLibPanelTrackedProps, fetchAndFilter, matchFilter } from './AdLibPanel'
 import { doUserAction, UserAction } from '../../lib/userAction'
@@ -16,7 +23,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { unprotectString } from '../../../lib/lib'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 
 interface IState {}
@@ -28,14 +35,7 @@ interface IAdLibRegionPanelProps {
 	adlibRank?: number
 }
 
-interface IAdLibRegionPanelTrackedProps {
-	unfinishedPieces: {
-		[key: string]: PieceInstance[]
-	}
-	nextPieces: {
-		[key: string]: PieceInstance[]
-	}
-}
+interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {}
 
 export class AdLibRegionPanelInner extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps>,
@@ -46,23 +46,11 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 
 	isAdLibOnAir(adLib: AdLibPieceUi) {
-		if (
-			this.props.unfinishedPieces[unprotectString(adLib._id)] &&
-			this.props.unfinishedPieces[unprotectString(adLib._id)].length > 0
-		) {
-			return true
-		}
-		return false
+		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
 	isAdLibNext(adLib: AdLibPieceUi) {
-		if (
-			this.props.nextPieces[unprotectString(adLib._id)] &&
-			this.props.nextPieces[unprotectString(adLib._id)].length > 0
-		) {
-			return true
-		}
-		return false
+		return isAdLibNext(this.props.nextAdLibIds, this.props.unfinishedTags, this.props.nextTags, adLib)
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
@@ -95,7 +83,12 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 		const currentPartInstanceId = this.props.playlist.currentPartInstanceId
 
 		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
-			if (!piece.isGlobal) {
+			if (piece.isAction && piece.adlibAction) {
+				const action = piece.adlibAction
+				doUserAction(t, e, piece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e) =>
+					MeteorCall.userAction.executeAction(e, this.props.playlist._id, action.actionId, action.userData)
+				)
+			} else if (!piece.isGlobal && !piece.isAction) {
 				doUserAction(t, e, UserAction.START_ADLIB, (e) =>
 					MeteorCall.userAction.segmentAdLibPieceStart(
 						e,
@@ -182,44 +175,23 @@ export class AdLibRegionPanelInner extends MeteorReactComponent<
 	}
 }
 
-export function getNextPiecesReactive(nextPartInstanceId: PartInstanceId | null): { [adlib: string]: PieceInstance[] } {
-	let prospectivePieceInstances: PieceInstance[] = []
-	if (nextPartInstanceId) {
-		prospectivePieceInstances = PieceInstances.find({
-			partInstanceId: nextPartInstanceId,
-			$and: [
-				{
-					piece: {
-						$exists: true,
-					},
-				},
-				{
-					'piece.adLibSourceId': {
-						$exists: true,
-					},
-				},
-			],
-		}).fetch()
-	}
-
-	const nextPieces: { [adlib: string]: PieceInstance[] } = {}
-	_.each(
-		_.groupBy(prospectivePieceInstances, (piece) => piece.piece.adLibSourceId),
-		(grp, id) => (nextPieces[id] = _.map(grp, (instance) => instance))
-	)
-	return nextPieces
-}
-
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,
 	IState,
 	IAdLibPanelTrackedProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
+		const studio = props.playlist.getStudio()
+		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
+			props.playlist.currentPartInstanceId
+		)
+		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist.nextPartInstanceId)
 		return Object.assign({}, fetchAndFilter(props), {
-			studio: props.playlist.getStudio(),
-			unfinishedPieces: getUnfinishedPieceInstancesReactive(props.playlist.currentPartInstanceId),
-			nextPieces: getNextPiecesReactive(props.playlist.nextPartInstanceId),
+			studio: studio,
+			unfinishedAdLibIds,
+			unfinishedTags,
+			nextAdLibIds,
+			nextTags,
 		})
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {

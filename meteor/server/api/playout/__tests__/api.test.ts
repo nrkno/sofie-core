@@ -9,9 +9,7 @@ import {
 import { Rundowns, Rundown } from '../../../../lib/collections/Rundowns'
 import '../api'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Piece } from '../../../../lib/collections/Pieces'
 import { PartInstances } from '../../../../lib/collections/PartInstances'
-import { resetRandomId } from '../../../../__mocks__/random'
 import { PieceInstances } from '../../../../lib/collections/PieceInstances'
 
 namespace PlayoutAPI {
@@ -33,7 +31,6 @@ namespace PlayoutAPI {
 		'rundownMoveNext' = 'playout.rundownMoveNext',
 		'rundownActivateHold' = 'playout.rundownActivateHold',
 		'rundownDisableNextPiece' = 'playout.rundownDisableNextPiece',
-		'rundownTogglePartArgument' = 'playout.rundownTogglePartArgument',
 		// 'partPlaybackStartedCallback'		= 'playout.partPlaybackStartedCallback',
 		// 'piecePlaybackStartedCallback'		= 'playout.piecePlaybackStartedCallback',
 		'pieceTakeNow' = 'playout.pieceTakeNow',

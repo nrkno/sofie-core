@@ -82,13 +82,6 @@ const $ = {
 	},
 }
 
-const mockThis = {
-	userId: 1,
-	connection: {
-		clientAddress: '1.1.1.1',
-	},
-}
-
 export namespace MeteorMock {
 	export let isTest: boolean = true
 
@@ -112,9 +105,17 @@ export namespace MeteorMock {
 	export function userId(): string | undefined {
 		return mockUser ? mockUser._id : undefined
 	}
+	function getMethodContext() {
+		return {
+			userId: mockUser ? mockUser._id : undefined,
+			connection: {
+				clientAddress: '1.1.1.1',
+			},
+		}
+	}
 	export class Error {
 		private _stack?: string
-		constructor(public errorCode: number, public reason?: string) {
+		constructor(public error: number, public reason?: string) {
 			const e = new $.Error('')
 			let stack: string = e.stack || ''
 
@@ -132,11 +133,20 @@ export namespace MeteorMock {
 		get message() {
 			return this.toString()
 		}
+		get details() {
+			return undefined
+		}
+		get errorType() {
+			return 'Meteor.Error'
+		}
+		get isClientSafe() {
+			return false
+		}
 		get stack() {
 			return this._stack
 		}
 		toString() {
-			return `[${this.errorCode}] ${this.reason}`
+			return `[${this.error}] ${this.reason}` // TODO: This should be changed to "${this.reason} [${this.error}]"
 		}
 	}
 	export function methods(methods: { [name: string]: Function }) {
@@ -157,7 +167,7 @@ export namespace MeteorMock {
 
 			this.defer(() => {
 				try {
-					const result = fcn.call(mockThis, ...args)
+					const result = fcn.call(getMethodContext(), ...args)
 					Promise.resolve(result)
 						.then((result) => {
 							callback(undefined, result)
@@ -170,7 +180,7 @@ export namespace MeteorMock {
 				}
 			})
 		} else {
-			return waitForPromise(Promise.resolve(fcn.call(mockThis, ...args)))
+			return waitForPromise(Promise.resolve(fcn.call(getMethodContext(), ...args)))
 		}
 	}
 	export function apply(
@@ -185,7 +195,7 @@ export namespace MeteorMock {
 		asyncCallback?: Function
 	): any {
 		// ?
-		mockMethods[methodName].call(mockThis, ...args)
+		mockMethods[methodName].call(getMethodContext(), ...args)
 	}
 	export function absoluteUrl(path?: string): string {
 		return path + '' // todo
@@ -247,6 +257,10 @@ export namespace MeteorMock {
 			return returnValue
 		}
 	}
+	export let users: any = undefined
+
+	// export let users = new Mongo.Collection('Meteor.users')
+	// export const users = {}
 	/*
 	export function subscribe () {
 
@@ -260,6 +274,14 @@ export namespace MeteorMock {
 		_.each(mockStartupFunctions, (fcn) => {
 			fcn()
 		})
+
+		waitTimeNoFakeTimers(10) // So that any observers or defers has had time to run.
+	}
+	export function mockLoginUser(user: Meteor.User) {
+		mockUser = user
+	}
+	export function mockSetUsersCollection(usersCollection) {
+		users = usersCollection
 	}
 
 	// locally defined function here, so there are no import to the rest of the code
@@ -281,3 +303,21 @@ export function setup() {
 		Meteor: MeteorMock,
 	}
 }
+
+/** Wait for time to pass ( unaffected by jest.useFakeTimers() ) */
+export function waitTimeNoFakeTimers(time: number) {
+	waitForPromise(new Promise((resolve) => $.orgSetTimeout(resolve, time)))
+}
+export const waitForPromise: <T>(p: Promise<T>) => T = MeteorMock.wrapAsync(function waitForPromises<T>(
+	p: Promise<T>,
+	cb: (err: any | null, result?: any) => T
+) {
+	if (MeteorMock.isClient) throw new MeteorMock.Error(500, `waitForPromise can't be used client-side`)
+	Promise.resolve(p)
+		.then((result) => {
+			cb(null, result)
+		})
+		.catch((e) => {
+			cb(e)
+		})
+})

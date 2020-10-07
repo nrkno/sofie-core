@@ -105,10 +105,29 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .rundown-view {
-	padding-top: 7.8125rem;
+	padding-top: 4rem;
 	padding-bottom: 50vh;
 	padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
+
+	.invert-flash {
+		@keyframes invert-flash {
+			0% {
+				filter: #{'invert()'};
+			}
+			50% {
+				filter: #{'invert()'};
+			}
+			51% {
+				filter: none;
+			}
+			100% {
+				filter: none;
+			}
+		}
+
+		animation: invert-flash 1s infinite;
+	}
 
 	.rundown-view__part__icon {
 		display: inline-block;
@@ -477,7 +496,10 @@ body.no-overflow {
 	}
 
 	.segment-timeline__title {
-		display: block;
+		display: grid;
+		grid-template-columns: auto;
+		grid-template-rows: [title-title] min-content [title-notifications] 1fr [title-identifiers] min-content [end];
+
 		margin: 0;
 		padding: 0;
 		overflow: hidden;
@@ -501,13 +523,16 @@ body.no-overflow {
 			hyphens: auto;
 			-webkit-hyphens: auto;
 			-ms-hyphens: auto;
+			grid-row: title-title / title-notifications;
 		}
 
 		.segment-timeline__title__notes {
 			margin: 0 0 0.5em;
 			padding: 0.5em;
 			line-height: 1.4em;
-			font-size: 75%;
+			font-size: 0.75em;
+			font-weight: 400;
+			grid-row: title-notifications / title-identifiers;
 
 			> .segment-timeline__title__notes__note {
 				position: relative;
@@ -518,18 +543,57 @@ body.no-overflow {
 					margin-bottom: 5px;
 				}
 
-				> .icon {
+				> svg {
 					position: absolute;
 					left: 0;
-					top: 1px;
-					height: auto;
-					width: 16px;
+					top: -0.1em;
+					height: 1.6em;
+					width: 1.6em;
 				}
 
-				&:hover {
-					text-decoration: underline;
+				> .segment-timeline__title__notes__count {
+					display: inline-block;
+					min-width: 1.1em;
+					line-height: 1.1em;
+					font-weight: 600;
+					text-align: center;
+					border-radius: 1em;
+					font-size: 0.9em;
+					position: relative;
+					top: -0.3em;
+					left: -0.3em;
+					white-space: nowrap;
+					padding: 0 2px;
+				}
+
+				> svg.type-warning + .segment-timeline__title__notes__count {
+					background: yellow;
+					color: #000;
+				}
+
+				> svg.type-critical + .segment-timeline__title__notes__count {
+					background: red;
+					color: #fff;
 				}
 			}
+		}
+
+		.segment-timeline__part-identifiers {
+			grid-row: title-identifiers / end;
+
+			.segment-timeline__part-identifiers__identifier {
+				margin: 2.5px;
+				padding: 0 10px 0 10px;
+				background-color: $part-identifier;
+				color: $part-identifier-text;
+				border-radius: 10px;
+			}
+		}
+	}
+
+	&.has-identifiers {
+		.segment-timeline__title__notes {
+			margin: 0;
 		}
 	}
 
@@ -674,9 +738,6 @@ body.no-overflow {
 		flex-direction: row;
 		justify-content: center;
 
-		opacity: 0;
-		transition: 0.5s opacity ease-in-out;
-
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 30px;
 			min-height: 30px;
@@ -696,12 +757,6 @@ body.no-overflow {
 				background: $ui-button-primary;
 				transition: 0s background-color;
 			}
-		}
-	}
-	&:hover {
-		.segment-timeline__timeline-zoom-buttons {
-			transition: 0.2s opacity ease-in-out;
-			opacity: 1;
 		}
 	}
 	.segment-timeline__next-preview {
@@ -1415,6 +1470,7 @@ body.no-overflow {
 						box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
 						cursor: default;
 						transform-style: preserve-3d;
+						overflow: hidden;
 
 						// TODO: This is just temporary styling, to indicate that the layers are clickable
 						&:hover {
@@ -1642,6 +1698,7 @@ body.no-overflow {
 
 							&.label-overflow-time {
 								font-weight: 300;
+								padding-right: 10px;
 							}
 
 							> .segment-timeline__piece__label {
@@ -1760,6 +1817,10 @@ body.no-overflow {
 					border-left: 2px dotted $segment-layer-background-mic;
 					margin-left: -2px;
 					box-shadow: 0px 0px 1px 1px rgba(0, 30, 0, 0.18);
+
+					&.hidden {
+						display: none;
+					}
 				}
 			}
 
@@ -1769,8 +1830,9 @@ body.no-overflow {
 				z-index: -1;
 				padding: 0 10px 0 10px;
 				box-sizing: border-box;
-				background-color: #7400d5;
+				background-color: $part-identifier;
 				border-radius: 0 10px 10px 0;
+				color: $part-identifier-text;
 			}
 		}
 	}
@@ -2104,11 +2166,18 @@ body.no-overflow {
 	background: #474747;
 	box-shadow: 1px -1.5px 3.5px 1.5px rgba(0, 0, 0, 0.5);
 	padding: 0.7em 1em;
-	white-space: nowrap;
+	white-space: normal;
 	transform: translate(-50%, -100%);
 	animation: 0.2s inspector-fadeIn;
 	animation-iteration-count: 1;
 	border: 1px black solid;
+	max-width: 26em;
+
+	&.segment-timeline__mini-inspector--sub-inspector {
+		transform: none;
+		bottom: 100%;
+		width: 26em;
+	}
 
 	@include item-type-borders();
 
@@ -2124,6 +2193,57 @@ body.no-overflow {
 		top: -3px;
 		left: 7px;
 		right: 7px;
+		z-index: 1;
+	}
+
+	@include item-type-before-background();
+
+	&.segment-timeline__mini-inspector--graphics--preview {
+		border: none;
+		&::before {
+			display: none;
+		}
+	}
+
+	&.segment-timeline__mini-inspector--notice {
+		padding-left: 3.5em;
+	}
+
+	> .segment-timeline__mini-inspector__notice-header {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 2.5em;
+		bottom: 0;
+		border-top-left-radius: inherit;
+		border-bottom-left-radius: inherit;
+
+		> svg {
+			position: relative;
+			top: 0.6em;
+			left: 0.5em;
+			filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+			width: 1.7em;
+			height: 1.7em;
+		}
+	}
+
+	> .segment-timeline__mini-inspector__notice + .segment-timeline__mini-inspector__properties {
+		margin-top: 0.5em;
+		padding-top: 0.5em;
+		border-top: 1px solid #333;
+	}
+
+	&.segment-timeline__mini-inspector--notice.notice-warning {
+		> .segment-timeline__mini-inspector__notice-header {
+			background-color: $color-status-warning;
+		}
+	}
+
+	&.segment-timeline__mini-inspector--notice.notice-critical {
+		> .segment-timeline__mini-inspector__notice-header {
+			background-color: $color-status-fatal;
+		}
 	}
 
 	&.segment-timeline__mini-inspector--pop-down {
@@ -2265,6 +2385,8 @@ body.no-overflow {
 		max-width: 60vw;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		word-break: break-all;
+		white-space: normal;
 	}
 	.mini-inspector__system {
 		font-weight: 300;

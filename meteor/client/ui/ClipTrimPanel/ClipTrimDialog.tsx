@@ -12,11 +12,15 @@ import { AdLibPieceUi } from '../Shelf/AdLibPanel'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { protectString } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
+import { Settings } from '../../../lib/Settings'
+import { Rundown } from '../../../lib/collections/Rundowns'
+import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 
 export interface IProps {
 	playlistId: RundownPlaylistId
+	rundown: Rundown
 	studio: Studio
-	selectedPiece: Piece
+	selectedPiece: PieceInstancePiece
 
 	onClose?: () => void
 }
@@ -55,7 +59,7 @@ export const ClipTrimDialog = withTranslation()(
 					MeteorCall.userAction.setInOutPoints(
 						e,
 						this.props.playlistId,
-						selectedPiece.partId,
+						selectedPiece.startPartId,
 						selectedPiece._id,
 						this.state.inPoint,
 						this.state.duration
@@ -73,7 +77,7 @@ export const ClipTrimDialog = withTranslation()(
 										<strong>{selectedPiece.name}</strong>:&ensp;
 										{t(
 											"Trimming this clip has timed out. It's possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.",
-											{ nrcsName: 'ENPS' }
+											{ nrcsName: (this.props.rundown && this.props.rundown.externalNRCSName) || 'NRCS' }
 										)}
 									</>
 								),
@@ -125,7 +129,7 @@ export const ClipTrimDialog = withTranslation()(
 								<strong>{selectedPiece.name}</strong>:&ensp;
 								{t(
 									"Trimming this clip is taking longer than expected. It's possible that the story is locked for writing in {{nrcsName}}.",
-									{ nrcsName: 'ENPS' }
+									{ nrcsName: (this.props.rundown && this.props.rundown.externalNRCSName) || 'NRCS' }
 								)}
 							</>
 						),
@@ -149,8 +153,9 @@ export const ClipTrimDialog = withTranslation()(
 					<ClipTrimPanel
 						studioId={this.props.studio._id}
 						playlistId={this.props.playlistId}
+						rundownId={this.props.rundown._id}
 						pieceId={this.props.selectedPiece._id}
-						partId={this.props.selectedPiece.partId}
+						partId={this.props.selectedPiece.startPartId}
 						inPoint={this.state.inPoint}
 						duration={this.state.duration}
 						onChange={this.handleChange}

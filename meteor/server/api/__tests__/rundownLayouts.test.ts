@@ -23,7 +23,7 @@ enum RundownLayoutsAPIMethods { // Using our own method definition, to catch ext
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment
-	beforeEach(() => {
+	beforeAll(() => {
 		env = setupDefaultStudioEnvironment()
 	})
 	let rundownLayoutId: string
@@ -63,6 +63,10 @@ describe('Rundown Layouts', () => {
 				filters: [],
 				showStyleBaseId: env.showStyleBaseId,
 				type: RundownLayoutType.RUNDOWN_LAYOUT,
+				exposeAsShelf: false,
+				exposeAsStandalone: false,
+				icon: '',
+				iconColor: '',
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}

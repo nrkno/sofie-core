@@ -8,6 +8,7 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
+import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
 
 export { isNoraItem }
 
@@ -48,7 +49,7 @@ export default withTranslation()(
 			}
 
 			return (
-				<>
+				<ErrorBoundary>
 					<InspectorTitle piece={this.props.piece} showStyleBase={this.props.showStyleBase} />
 					<div className="shelf-inspector__content">
 						<h2>{actualPiece.name}</h2>
@@ -64,7 +65,7 @@ export default withTranslation()(
 							<NoraItemEditor piece={actualPiece} />
 						</Modal>
 					</div>
-				</>
+				</ErrorBoundary>
 			)
 		}
 	}
