@@ -27,7 +27,6 @@ import { logger } from '../../logging'
 import {
 	getPieceFirstObjectId,
 	TimelineObjectCoreExt,
-	OnGenerateTimelineObj,
 	TSR,
 	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'

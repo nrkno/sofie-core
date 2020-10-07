@@ -6,7 +6,7 @@ import {
 	rewrapPieceToInstance,
 	unprotectPieceInstance,
 } from '../collections/PieceInstances'
-import { DBPart, PartId, Part } from '../collections/Parts'
+import { DBPart, PartId } from '../collections/Parts'
 import { Piece } from '../collections/Pieces'
 import { SegmentId } from '../collections/Segments'
 import { PieceLifespan, getPieceGroupId } from 'tv-automation-sofie-blueprints-integration'
@@ -16,13 +16,11 @@ import {
 	flatten,
 	literal,
 	protectString,
-	normalizeArray,
 	normalizeArrayFuncFilter,
 	unprotectString,
 	getRandomId,
 } from '../lib'
 import { Mongo } from 'meteor/mongo'
-import { Studio } from '../collections/Studios'
 import { ShowStyleBase } from '../collections/ShowStyleBases'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): Mongo.Query<Piece> {

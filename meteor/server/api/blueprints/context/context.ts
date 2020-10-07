@@ -444,7 +444,6 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 
 		this._knownSessions =
 			clone(cache.RundownPlaylists.findOne(cache.containsDataFromPlaylist)?.trackedAbSessions) ?? []
-		console.log('')
 	}
 
 	getCurrentTime(): number {

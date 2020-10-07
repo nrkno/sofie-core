@@ -9,8 +9,8 @@ import {
 import { Studio, MappingExt } from '../../../lib/collections/Studios'
 import { TimelineObjRundown, TimelineObjType, OnGenerateTimelineObjExt } from '../../../lib/collections/Timeline'
 import { Part, PartId } from '../../../lib/collections/Parts'
-import { Piece, Pieces, PieceId } from '../../../lib/collections/Pieces'
-import { literal, clone, unprotectString, asyncCollectionFindFetch, protectString, partial } from '../../../lib/lib'
+import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { literal, clone, unprotectString, asyncCollectionFindFetch, protectString } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import {
 	PieceInstance,
@@ -24,9 +24,9 @@ import {
 	getAllOrderedPartsFromCache,
 	getRundownIDsFromCache,
 } from './lib'
-import { PartInstanceId, PartInstance, wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
+import { PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { CacheForRundownPlaylist } from '../../DatabaseCaches'
-import { sortPiecesByStart, sortPieceInstancesByStart } from './pieces'
+import { sortPieceInstancesByStart } from './pieces'
 import { profiler } from '../profiler'
 import {
 	hasPieceInstanceDefinitelyEnded,
@@ -34,8 +34,6 @@ import {
 	SelectedPartInstanceTimelineInfo,
 } from './timeline'
 import { Mongo } from 'meteor/mongo'
-import { ObjectFlags } from 'typescript'
-import { SegmentId } from '../../../lib/collections/Segments'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -53,11 +51,6 @@ interface PartAndPieces {
 function isPieceInstance(piece: Piece | PieceInstance | PieceInstancePiece): piece is PieceInstance {
 	const tmpPiece = piece as PieceInstance
 	return typeof tmpPiece.piece !== 'undefined'
-}
-function isPieceInstanceArray(pieces: Piece[] | PieceInstance[] | PieceInstancePiece[]): pieces is PieceInstance[] {
-	const tmpPieces = pieces as PieceInstance[]
-	const samplePiece = tmpPieces[0]
-	return typeof samplePiece?.piece !== 'undefined'
 }
 
 function findLargestLookaheadDistance(mappings: Array<[string, MappingExt]>): number {
@@ -168,14 +161,13 @@ export async function getLookeaheadObjects(
 
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	const mutateAndPushObject = (
-		entry: LookaheadObjectEntry,
+		rawObj: TimelineObjRundown & OnGenerateTimelineObjExt,
 		i: string,
 		enable: TimelineObjRundown['enable'],
 		mapping: MappingExt,
-		priority: number,
-		future: boolean
+		priority: number
 	) => {
-		const obj: TimelineObjRundown & OnGenerateTimelineObjExt = clone(entry.obj)
+		const obj: TimelineObjRundown & OnGenerateTimelineObjExt = clone(rawObj)
 
 		obj.id = `lookahead_${i}_${obj.id}`
 		obj.priority = priority
@@ -185,9 +177,6 @@ export async function getLookeaheadObjects(
 			obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
 		}
 		delete obj.inGroup // force it to be cleared
-		// TODO - should these be wiped?
-		// delete obj.pieceInstanceId
-		// delete obj.infinitePieceId
 
 		if (mapping.lookahead === LookaheadMode.PRELOAD) {
 			obj.lookaheadForLayer = obj.layer
@@ -282,26 +271,26 @@ export async function getLookeaheadObjects(
 		)
 
 		// Add the objects that have some timing info
-		lookaheadObjs.timed.forEach((entry, i) => {
+		lookaheadObjs.timed.forEach((obj, i) => {
 			let enable: TimelineTypes.TimelineEnable = {
 				start: 1, // Absolute 0 without a group doesnt work
 			}
 			if (i !== 0) {
-				const prevObj = lookaheadObjs.timed[i - 1].obj
+				const prevObj = lookaheadObjs.timed[i - 1]
 				enable = calculateStartAfterPreviousObj(prevObj)
 			}
-			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
+			if (!obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
-			enable.end = getStartOfObjectRef(entry.obj)
+			enable.end = getStartOfObjectRef(obj)
 
-			mutateAndPushObject(entry, `timed${i}`, enable, mapping, LOOKAHEAD_OBJ_PRIORITY, false)
+			mutateAndPushObject(obj, `timed${i}`, enable, mapping, LOOKAHEAD_OBJ_PRIORITY)
 		})
 
 		// Add each of the future objects, that have no end point
 		const futureObjCount = lookaheadObjs.future.length
 		const futurePriorityScale = LOOKAHEAD_OBJ_PRIORITY / (futureObjCount + 1)
-		lookaheadObjs.future.some((entry, i) => {
-			if (!entry.obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
+		lookaheadObjs.future.some((obj, i) => {
+			if (!obj.id) throw new Meteor.Error(500, 'lookahead: timeline obj id not set')
 
 			// WHEN_CLEAR mode can't take multiple futures, as they are always flattened into the single layer. so give it some real timings, and only output one
 			const singleFutureObj = mapping.lookahead === LookaheadMode.WHEN_CLEAR
@@ -311,13 +300,13 @@ export async function getLookeaheadObjects(
 
 			const lastTimedObj = _.last(lookaheadObjs.timed)
 			const enable =
-				singleFutureObj && lastTimedObj ? calculateStartAfterPreviousObj(lastTimedObj.obj) : { while: '1' }
+				singleFutureObj && lastTimedObj ? calculateStartAfterPreviousObj(lastTimedObj) : { while: '1' }
 			// We use while: 1 for the enabler, as any time before it should be active will be filled by either a playing object, or a timed lookahead.
 			// And this allows multiple futures to be timed in a way that allows them to co-exist
 
 			// Prioritise so that the earlier ones are higher, decreasing within the range 'reserved' for lookahead
 			const priority = singleFutureObj ? LOOKAHEAD_OBJ_PRIORITY : futurePriorityScale * (futureObjCount - i)
-			mutateAndPushObject(entry, `future${i}`, enable, mapping, priority, true)
+			mutateAndPushObject(obj, `future${i}`, enable, mapping, priority)
 
 			if (singleFutureObj) return true // break
 		})
@@ -326,17 +315,9 @@ export async function getLookeaheadObjects(
 	return timelineObjs
 }
 
-export interface LookaheadObjectEntry {
-	obj: TimelineObjRundown & OnGenerateTimelineObjExt
-	// pieceInstance: PieceInstance | undefined
-	partId: PartId
-	pieceId: PieceId
-	segmentId: SegmentId
-}
-
 export interface LookaheadResult {
-	timed: Array<LookaheadObjectEntry>
-	future: Array<LookaheadObjectEntry>
+	timed: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
+	future: Array<TimelineObjRundown & OnGenerateTimelineObjExt>
 }
 
 function findLookaheadForlayer(
@@ -415,7 +396,7 @@ function findLookaheadForlayer(
 	return res
 }
 
-function getBestPieceIsntanceId(
+function getBestPieceInstanceId(
 	piece: PieceInstance | Piece,
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null
@@ -470,30 +451,25 @@ function findObjectsForPart(
 	partInfo: PartAndPieces,
 	partInstanceId: PartInstanceId | null,
 	nowInPart: number
-): Array<LookaheadObjectEntry> {
+): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
 	// Sanity check, if no part to search, then abort
 	if (!partInfo || partInfo.pieces.length === 0) {
 		return []
 	}
 	const span = profiler.startSpan('findObjectsForPart')
 
-	let allObjs: Array<LookaheadObjectEntry> = []
+	let allObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 	for (const rawPiece of partInfo.pieces) {
-		const tmpPieceInstanceId = getBestPieceIsntanceId(rawPiece, partInfo, partInstanceId)
+		const tmpPieceInstanceId = getBestPieceInstanceId(rawPiece, partInfo, partInstanceId)
 		for (const obj of rawPiece.piece.content?.timelineObjects ?? []) {
 			if (obj && obj.layer === layer) {
 				allObjs.push(
-					literal<LookaheadObjectEntry>({
-						partId: partInfo.part._id,
-						segmentId: partInfo.part.segmentId,
-						pieceId: rawPiece.piece._id,
-						obj: literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
-							...obj,
-							objectType: TimelineObjType.RUNDOWN,
-							pieceInstanceId: tmpPieceInstanceId,
-							infinitePieceInstanceId: rawPiece.infinite?.infiniteInstanceId,
-							partInstanceId: partInstanceId ?? protectString(unprotectString(partInfo.part._id)),
-						}),
+					literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
+						...obj,
+						objectType: TimelineObjType.RUNDOWN,
+						pieceInstanceId: tmpPieceInstanceId,
+						infinitePieceInstanceId: rawPiece.infinite?.infiniteInstanceId,
+						partInstanceId: partInstanceId ?? protectString(unprotectString(partInfo.part._id)),
 					})
 				)
 			}
@@ -518,9 +494,9 @@ function findObjectsForPart(
 
 	if (allObjs.length === 1) {
 		// Only one, just return it
-		const entry = allObjs[0]
+		const obj = allObjs[0]
 		const patchedContent = tryActivateKeyframesForObject(
-			entry.obj,
+			obj,
 			allowTransition && !!transitionPiece,
 			classesFromPreviousPart
 		)
@@ -528,11 +504,8 @@ function findObjectsForPart(
 		if (span) span.end()
 		return [
 			{
-				...entry,
-				obj: {
-					...entry.obj,
-					content: patchedContent,
-				},
+				...obj,
+				content: patchedContent,
 			},
 		]
 	} else {
@@ -543,7 +516,7 @@ function findObjectsForPart(
 			allowTransition &&
 			!!transitionPiece?.piece?.content?.timelineObjects?.find((o) => o != null && o.layer === layer)
 
-		const res: Array<LookaheadObjectEntry> = []
+		const res: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 		orderedPieces.forEach((piece) => {
 			if (!partInfo || (!allowTransition && piece.piece.isTransition)) {
 				return
@@ -564,18 +537,13 @@ function findObjectsForPart(
 				const patchedContent = tryActivateKeyframesForObject(obj, hasTransitionObj, classesFromPreviousPart)
 
 				res.push(
-					literal<LookaheadObjectEntry>({
-						partId: partInfo.part._id,
-						segmentId: partInfo.part.segmentId,
-						pieceId: piece.piece._id,
-						obj: literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
-							...obj,
-							objectType: TimelineObjType.RUNDOWN,
-							pieceInstanceId: getBestPieceIsntanceId(piece, partInfo, partInstanceId),
-							infinitePieceInstanceId: piece.infinite?.infiniteInstanceId,
-							partInstanceId: partInstanceId ?? protectString(unprotectString(partInfo.part._id)),
-							content: patchedContent,
-						}),
+					literal<TimelineObjRundown & OnGenerateTimelineObjExt>({
+						...obj,
+						objectType: TimelineObjType.RUNDOWN,
+						pieceInstanceId: getBestPieceInstanceId(piece, partInfo, partInstanceId),
+						infinitePieceInstanceId: piece.infinite?.infiniteInstanceId,
+						partInstanceId: partInstanceId ?? protectString(unprotectString(partInfo.part._id)),
+						content: patchedContent,
 					})
 				)
 			}

@@ -35,11 +35,17 @@ export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 /** A string, identifying an activation of a playlist */
 export type ActiveInstanceId = ProtectedString<'ActiveInstanceId'>
 
+/** Details of an ab-session requested by the blueprints in onTimelineGenerate */
 export interface ABSessionInfo {
+	/** The unique id of the session. */
 	id: string
+	/** The name of the session from the blueprints */
 	name: string
+	/** Set if the session is being by lookahead for a future part */
 	lookaheadForPartId?: PartId
+	/** Set if the session is being used by an infinite PieceInstance */
 	infiniteInstanceId?: PieceInstanceInfiniteId
+	/** Set to the PartInstances this session is used by, if not just used for lookahead */
 	partInstanceIds?: Array<PartInstanceId>
 }
 
@@ -100,7 +106,7 @@ export interface DBRundownPlaylist {
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
-
+	/** AB playback sessions calculated in the last call to ShowStyleBlueprint.onTimelineGenerate */
 	trackedAbSessions?: ABSessionInfo[]
 }
 
