@@ -579,7 +579,7 @@ export namespace ServerPeripheralDeviceAPI {
 						const activationCache = getValidActivationCache(peripheralDevice.studioId)
 						if (activationCache) {
 							const device = waitForPromise(activationCache.getPeripheralDevices()).find(
-								(device) => device._id === peripheralDevice._id
+								(d) => d._id === peripheralDevice._id
 							)
 							if (device) {
 								device.latencies = peripheralDevice.latencies
