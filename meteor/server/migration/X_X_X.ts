@@ -1,7 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Studios } from '../../lib/collections/Studios'
-import * as _ from 'underscore'
 
 /*
  * **************************************************************************************
