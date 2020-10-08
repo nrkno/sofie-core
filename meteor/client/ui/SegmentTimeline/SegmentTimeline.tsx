@@ -314,6 +314,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_ON, this.onRundownEventSegmentZoomOn)
 		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
+
+		setTimeout(() => {
+			if (this.props.onShowEntireSegment) {
+				this.props.onShowEntireSegment({})
+			}
+		}, 10)
 	}
 
 	componentWillUnmount() {

@@ -743,11 +743,12 @@ svg.icon {
 	}
 	.segment-timeline__timeline-zoom-buttons {
 		position: relative;
-		grid-column: segment-group-controls / timeline;
-		grid-row: zoom-area / end;
 		display: flex;
 		flex-direction: row;
 		justify-content: center;
+		grid-column: segment-group-controls / timeline;
+		grid-row: header / end;
+		align-items: flex-end;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 30px;
