@@ -1,7 +1,6 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
 import { Time, registerCollection, ProtectedString } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
-import { Meteor } from 'meteor/meteor'
 
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'

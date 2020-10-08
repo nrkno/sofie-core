@@ -1,6 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString, ProtectedStringProperties } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintExternalMessageQueueObj,
 	IBlueprintExternalMessageQueueType,

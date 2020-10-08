@@ -1,11 +1,11 @@
 import { TransformedCollection } from '../typings/meteor'
 import { applyClassToDocument, registerCollection, ProtectedString, omit } from '../lib'
 import * as _ from 'underscore'
-import { IBlueprintConfig, BlueprintMappings, BlueprintMapping, TSR } from 'tv-automation-sofie-blueprints-integration'
+import { IBlueprintConfig, BlueprintMappings, BlueprintMapping } from 'tv-automation-sofie-blueprints-integration'
 import { Meteor } from 'meteor/meteor'
 import { ObserveChangesForHash, createMongoCollection } from './lib'
 import { BlueprintId } from './Blueprints'
-import { ShowStyleBase, ShowStyleBaseId } from './ShowStyleBases'
+import { ShowStyleBaseId } from './ShowStyleBases'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
 

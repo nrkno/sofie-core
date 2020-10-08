@@ -1,4 +1,3 @@
-import { MethodsBase } from './methods'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PieceInstanceId } from '../collections/PieceInstances'

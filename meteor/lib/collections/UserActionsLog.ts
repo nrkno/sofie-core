@@ -1,6 +1,5 @@
 import { TransformedCollection } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString, TimeDuration } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { UserId } from './Users'
 import { OrganizationId } from './Organization'

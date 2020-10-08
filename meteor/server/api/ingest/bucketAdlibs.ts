@@ -4,7 +4,7 @@ import { ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
 import { ShowStyleContext, NotesContext } from '../blueprints/context'
-import { postProcessAdLibPieces, postProcessBucketAdLib } from '../blueprints/postProcess'
+import { postProcessBucketAdLib } from '../blueprints/postProcess'
 import { RundownImportVersions } from '../../../lib/collections/Rundowns'
 import { PackageInfo } from '../../coreSystem'
 import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
@@ -14,8 +14,6 @@ import {
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from '../expectedMediaItems'
-import { waitForPromise } from '../../../lib/lib'
-import { initCacheForRundownPlaylist } from '../../DatabaseCaches'
 
 export function updateBucketAdlibFromIngestData(
 	showStyle: ShowStyleCompound,

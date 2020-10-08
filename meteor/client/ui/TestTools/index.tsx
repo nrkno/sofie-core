@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Route, Switch, Redirect, NavLink } from 'react-router-dom'
+import { Route, Switch, NavLink } from 'react-router-dom'
 
 import { TimelineView, TimelineStudioSelect } from './Timeline'
 import { UserLogPlayerPage, UserLogRundownSelect } from './UserLogPlayer'

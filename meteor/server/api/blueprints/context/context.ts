@@ -14,7 +14,7 @@ import {
 	objectPathSet,
 	waitForPromise,
 } from '../../../../lib/lib'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
+import { PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
@@ -28,11 +28,9 @@ import {
 	PartEventContext as IPartEventContext,
 	TimelineEventContext as ITimelineEventContext,
 	IStudioConfigContext,
-	ConfigItemValue,
 	IStudioContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
-	IngestRundown,
 	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
@@ -47,7 +45,6 @@ import { ConfigRef, preprocessStudioConfig, findMissingConfigs, preprocessShowSt
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
 import {
-	getShowStyleCompound,
 	ShowStyleVariantId,
 	ShowStyleVariants,
 	ShowStyleVariant,
@@ -59,12 +56,10 @@ import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ing
 import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
 import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 
 /** Common */
 

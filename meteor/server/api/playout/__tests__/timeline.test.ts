@@ -1,4 +1,3 @@
-import { Meteor } from 'meteor/meteor'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { fixSnapshot } from '../../../../__mocks__/helpers/snapshot'
@@ -14,14 +13,9 @@ import { Timeline } from '../../../../lib/collections/Timeline'
 import { ServerPlayoutAPI } from '../playout'
 import { updateTimeline } from '../timeline'
 import { RundownPlaylists, RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstances } from '../../../../lib/collections/PartInstances'
 import { protectString, waitForPromise } from '../../../../lib/lib'
 import { MethodContext } from '../../../../lib/api/methods'
-import {
-	initCacheForNoRundownPlaylist,
-	initCacheForRundownPlaylist,
-	initCacheForRundownPlaylistFromStudio,
-} from '../../../DatabaseCaches'
+import { initCacheForNoRundownPlaylist, initCacheForRundownPlaylistFromStudio } from '../../../DatabaseCaches'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 
 const DEFAULT_CONTEXT: MethodContext = {
@@ -42,7 +36,7 @@ describe('Timeline', () => {
 	let env: DefaultEnvironment
 	beforeEach(() => {
 		env = setupDefaultStudioEnvironment()
-		const device = setupMockPeripheralDevice(
+		setupMockPeripheralDevice(
 			PeripheralDeviceAPI.DeviceCategory.PLAYOUT,
 			PeripheralDeviceAPI.DeviceType.PLAYOUT,
 			PeripheralDeviceAPI.SUBTYPE_PROCESS,
