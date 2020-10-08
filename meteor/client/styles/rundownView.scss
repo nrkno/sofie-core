@@ -905,14 +905,12 @@ svg.icon {
 			bottom: 0;
 			left: 0;
 			right: 0;
-			overflow: hidden;
 
 			.segment-timeline__zoom-area__controls__left-mask {
 				position: absolute;
 				top: 0;
 				left: 0;
 				bottom: 0;
-				background: rgba(0, 0, 0, 0.5);
 			}
 
 			.segment-timeline__zoom-area__controls__right-mask {
@@ -920,74 +918,18 @@ svg.icon {
 				top: 0;
 				right: 0;
 				bottom: 0;
-				background: rgba(0, 0, 0, 0.5);
 			}
 
 			.segment-timeline__zoom-area__controls__selected-area {
 				position: absolute;
-				border: 1px solid rgba(255, 255, 255, 0.3);
+				border: 2px solid #fff;
 				top: 0;
 				bottom: 0;
 				width: 250px;
 				cursor: move;
 				cursor: -webkit-grab;
-				background: none;
-
-				.segment-timeline__zoom-area__controls__selected-area__right-handle {
-					position: absolute;
-					top: 0;
-					right: -10px;
-					bottom: 0;
-					width: 20px;
-					cursor: ew-resize;
-					z-index: 20;
-				}
-
-				.segment-timeline__zoom-area__controls__selected-area__left-handle {
-					position: absolute;
-					top: 0;
-					left: -10px;
-					bottom: 0;
-					width: 20px;
-					cursor: ew-resize;
-					z-index: 20;
-				}
-
-				.segment-timeline__zoom-area__controls__selected-area__center-handle {
-					display: none;
-				}
-
-				&.small-mode {
-					.segment-timeline__zoom-area__controls__selected-area__right-handle {
-						position: absolute;
-						top: 0;
-						right: -13px;
-						bottom: 0;
-						width: 10px;
-						z-index: 20;
-					}
-
-					.segment-timeline__zoom-area__controls__selected-area__left-handle {
-						position: absolute;
-						top: 0;
-						left: -13px;
-						bottom: 0;
-						width: 10px;
-						z-index: 20;
-					}
-
-					.segment-timeline__zoom-area__controls__selected-area__center-handle {
-						position: absolute;
-						top: 0;
-						left: -3px;
-						bottom: 0;
-						width: 10px;
-						cursor: move;
-						cursor: -webkit-grab;
-						z-index: 20;
-						display: block;
-					}
-				}
+				background: rgba(255, 255, 255, 0.6);
+				box-shadow: 0 0 6px rgba(255, 255, 255, 1);
 			}
 		}
 		.segment-timeline__part {
