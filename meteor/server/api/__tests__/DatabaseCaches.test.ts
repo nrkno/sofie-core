@@ -11,11 +11,8 @@ import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObje
 const orgSetTimeout = setTimeout
 
 describe('DatabaseCaches', () => {
-	// beforeAllInFiber(() => {
-	// })
-	let env: DefaultEnvironment
 	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+		setupDefaultStudioEnvironment()
 	})
 	describe('CacheForStudioBase', () => {
 		testInFiber('Insert, update & remove', async () => {
