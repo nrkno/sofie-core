@@ -33,12 +33,14 @@ interface PrompterConfig {
 	showMarker: boolean
 	showScroll: boolean
 }
+
 export enum PrompterConfigMode {
 	MOUSE = 'mouse',
 	KEYBOARD = 'keyboard',
 	SHUTTLEKEYBOARD = 'shuttlekeyboard',
 	JOYCON = 'joycon',
 }
+
 interface IProps {
 	match?: {
 		params?: {
@@ -46,15 +48,18 @@ interface IProps {
 		}
 	}
 }
+
 interface ITrackedProps {
 	rundownPlaylist?: RundownPlaylist
 	studio?: Studio
 	studioId?: StudioId
 	// isReady: boolean
 }
+
 interface IState {
 	subsReady: boolean
 }
+
 export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 	usedHotkeys: Array<string> = []
 
@@ -139,7 +144,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 
-		this.setDocumentTile()
+		this.setDocumentTitle()
 	}
 
 	componentWillUnmount() {
@@ -161,7 +166,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.checkScrollToCurrent()
 	}
 
-	private setDocumentTile() {
+	private setDocumentTitle() {
 		const { t } = this.props
 
 		documentTitle.set(t('Prompter'))

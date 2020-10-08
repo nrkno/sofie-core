@@ -5,6 +5,17 @@ import { CoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 
 import { ReactiveVar } from 'meteor/reactive-var'
 
+/**
+ * A reactive variable that allows setting the title of the current view.
+ *
+ * Use to set a view title:
+ *
+ * ```documentTitle.set("Title of the view")```
+ *
+ * or for a view without a title:
+ *
+ * ```documentTitle.set(null)```
+ */
 export const documentTitle = new ReactiveVar<null | string>(null)
 
 interface IProps {}
@@ -14,6 +25,10 @@ interface ITrackedProps {
 	doc: string | null
 }
 
+/**
+ * This component should be placed in the App root. It will maintain the document title
+ * and will restore it to the default when it's unmounted.
+ */
 export const DocumentTitleProvider = translateWithTracker((props: IProps) => {
 	return {
 		cs: CoreSystem.findOne(),
