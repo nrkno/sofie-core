@@ -447,66 +447,78 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	}
 	/** Get all segments in this rundown */
 	getSegments(): Array<IBlueprintSegmentDB> {
-		return unprotectObjectArray(this.cache.Segments.findFetch({ rundownId: this._rundown._id }))
+		// TODO-CACHE
+		return []
+		// return unprotectObjectArray(this.cache.Segments.findFetch({ rundownId: this._rundown._id }))
 	}
 	/**
 	 * Returns a segment
 	 * @param segmentId Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
 	 */
 	getSegment(segmentId?: string): IBlueprintSegmentDB | undefined {
-		segmentId = segmentId || this.asRunEvent.segmentId
-		check(segmentId, String)
-		if (segmentId) {
-			return unprotectObject(
-				this.cache.Segments.findOne({
-					rundownId: this._rundown._id,
-					_id: protectString(segmentId),
-				})
-			)
-		}
+		// TODO-CACHE
+		return undefined
+		// segmentId = segmentId || this.asRunEvent.segmentId
+		// check(segmentId, String)
+		// if (segmentId) {
+		// 	return unprotectObject(
+		// 		this.cache.Segments.findOne({
+		// 			rundownId: this._rundown._id,
+		// 			_id: protectString(segmentId),
+		// 		})
+		// 	)
+		// }
 	}
 	/** Get all parts in this rundown */
 	getParts(): Array<IBlueprintPartDB> {
-		return unprotectObjectArray(this.cache.Parts.findFetch({ rundownId: this._rundown._id }))
+		// TODO-CACHE
+		return []
+		// return unprotectObjectArray(this.cache.Parts.findFetch({ rundownId: this._rundown._id }))
 	}
 	/** Get the part related to this AsRunEvent */
 	getPartInstance(partInstanceId?: string): IBlueprintPartInstance | undefined {
-		partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
-		check(partInstanceId, String)
-		if (partInstanceId) {
-			return unprotectPartInstance(
-				this._rundown.getAllPartInstances({
-					_id: protectString(partInstanceId),
-				})[0]
-			)
-		}
+		// TODO-CACHE
+		return undefined
+		// partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
+		// check(partInstanceId, String)
+		// if (partInstanceId) {
+		// 	return unprotectPartInstance(
+		// 		this._rundown.getAllPartInstances({
+		// 			_id: protectString(partInstanceId),
+		// 		})[0]
+		// 	)
+		// }
 	}
 	/** Get the mos story related to a part */
 	getIngestDataForPart(part: IBlueprintPartDB): IngestPart | undefined {
-		check(part._id, String)
+		// TODO-CACHE
+		return undefined
+		// check(part._id, String)
 
-		try {
-			return loadIngestDataCachePart(
-				this._rundown._id,
-				this.rundown.externalId,
-				protectString<PartId>(part._id),
-				part.externalId
-			).data
-		} catch (e) {
-			return undefined
-		}
+		// try {
+		// 	return loadIngestDataCachePart(
+		// 		this._rundown._id,
+		// 		this.rundown.externalId,
+		// 		protectString<PartId>(part._id),
+		// 		part.externalId
+		// 	).data
+		// } catch (e) {
+		// 	return undefined
+		// }
 	}
 	getIngestDataForPartInstance(partInstance: IBlueprintPartInstance): IngestPart | undefined {
 		return this.getIngestDataForPart(partInstance.part)
 	}
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown(): ExtendedIngestRundown | undefined {
-		try {
-			const ingestRundown = loadCachedRundownData(this._rundown._id, this.rundown.externalId)
-			return extendIngestRundownCore(ingestRundown, this._rundown)
-		} catch (e) {
-			return undefined
-		}
+		// TODO-CACHE
+		return undefined
+		// try {
+		// 	const ingestRundown = loadCachedRundownData(this._rundown._id, this.rundown.externalId)
+		// 	return extendIngestRundownCore(ingestRundown, this._rundown)
+		// } catch (e) {
+		// 	return undefined
+		// }
 	}
 
 	/**

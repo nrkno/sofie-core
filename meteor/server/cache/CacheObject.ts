@@ -23,7 +23,10 @@ export class DbCacheReadObject<
 	protected _document: Class
 	private _initialized = false
 
-	constructor(protected _collection: TransformedCollection<Class, DBInterface>) {
+	constructor(
+		protected readonly _collection: TransformedCollection<Class, DBInterface>,
+		private readonly _optional: DocOptional
+	) {
 		//
 	}
 	get name(): string | undefined {
@@ -34,12 +37,15 @@ export class DbCacheReadObject<
 		if (!this._initialized) {
 			const doc = await asyncCollectionFindOne<Class, DBInterface>(this._collection, id)
 			if (!doc) {
-				throw new Meteor.Error(
-					404,
-					`DbCacheReadObject population for "${this.name}" failed. Document "${id}" was not found`
-				)
+				if (!this._optional) {
+					throw new Meteor.Error(
+						404,
+						`DbCacheReadObject population for "${this.name}" failed. Document "${id}" was not found`
+					)
+				}
+			} else {
+				this._document = doc
 			}
-			this._document = doc
 			this._initialized = true
 		}
 	}
@@ -65,8 +71,8 @@ export class DbCacheWriteObject<
 > extends DbCacheReadObject<Class, DBInterface, DocOptional> {
 	private _updated = false
 
-	constructor(collection: TransformedCollection<Class, DBInterface>) {
-		super(collection)
+	constructor(collection: TransformedCollection<Class, DBInterface>, optional: DocOptional) {
+		super(collection, optional)
 	}
 
 	update(modifier: ((doc: DBInterface) => DBInterface) | MongoModifier<DBInterface>): boolean {
@@ -139,7 +145,7 @@ export class DbCacheWriteOptionalObject<
 	private _inserted = false
 
 	constructor(collection: TransformedCollection<Class, DBInterface>) {
-		super(collection)
+		super(collection, true)
 	}
 
 	replace(doc: DBInterface): DeepReadonly<Class> {

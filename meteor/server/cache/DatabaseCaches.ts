@@ -194,7 +194,7 @@ export class CacheForIngest extends Cache {
 	private constructor(rundownExternalId: string) {
 		super()
 
-		this.Studio = new DbCacheReadObject(Studios)
+		this.Studio = new DbCacheReadObject(Studios, false)
 		this.Rundown = new DbCacheWriteOptionalObject(Rundowns)
 		this.RundownExternalId = rundownExternalId
 
@@ -289,10 +289,10 @@ export abstract class CacheForPlayoutPreInit extends Cache {
 
 		this.activationCache = getActivationCache(studioId, playlistId)
 
-		this.Studio = new DbCacheReadObject(Studios)
+		this.Studio = new DbCacheReadObject(Studios, false)
 		this.PeripheralDevices = new DbCacheReadCollection(PeripheralDevices)
 
-		this.Playlist = new DbCacheWriteObject(RundownPlaylists)
+		this.Playlist = new DbCacheWriteObject(RundownPlaylists, false)
 		this.Rundowns = new DbCacheWriteCollection(Rundowns)
 	}
 
@@ -332,7 +332,7 @@ export class CacheForStudio extends Cache implements CacheForStudioBase {
 	private constructor() {
 		super()
 
-		this.Studio = new DbCacheReadObject(Studios)
+		this.Studio = new DbCacheReadObject(Studios, false)
 		this.PeripheralDevices = new DbCacheReadCollection(PeripheralDevices)
 
 		this.RundownPlaylists = new DbCacheReadCollection(RundownPlaylists)

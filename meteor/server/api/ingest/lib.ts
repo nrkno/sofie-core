@@ -240,6 +240,7 @@ export function rundownIngestSyncFromStudioFunction<T>(
 				// Start saving the ingest data
 				saveIngestChanges = ingestObjCache.updateDatabaseWithData()
 
+				// TODO-CACHE - this fails when creating a rundown...
 				const rundown = getRundown2(cache)
 
 				function doPlaylistInner() {
@@ -329,7 +330,13 @@ export function modifyPlaylistExternalId(playlistExternalId: string | undefined,
 export function getRundownSegmentsAndPartsFromIngestCache(
 	cache: ReadOnlyCache<CacheForIngest>
 ): { segments: Segment[]; parts: Part[] } {
-	const rundown = getRundown2(cache)
+	const rundown = cache.Rundown.doc
+	if (!rundown) {
+		return {
+			segments: [],
+			parts: [],
+		}
+	}
 
 	const segments = RundownPlaylist._sortSegments(
 		cache.Segments.findFetch(
