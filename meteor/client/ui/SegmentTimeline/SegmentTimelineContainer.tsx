@@ -45,6 +45,8 @@ export const SIMULATED_PLAYBACK_SOFT_MARGIN = 0
 export const SIMULATED_PLAYBACK_HARD_MARGIN = 2500
 const SIMULATED_PLAYBACK_CROSSFADE_STEP = 0.02
 
+const TIMELINE_RIGHT_PADDING = 20
+
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
 	outputLayers: {
@@ -107,6 +109,7 @@ interface IState {
 	currentNextPart: PartUi | undefined
 	autoNextPart: boolean
 	timeScale: number
+	showingAllSegment: boolean
 }
 interface ITrackedProps {
 	segmentui: SegmentUi | undefined
@@ -283,6 +286,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				currentLivePart: undefined,
 				currentNextPart: undefined,
 				timeScale: props.timeScale,
+				showingAllSegment: true,
 			}
 
 			this.isLiveSegment = false
@@ -458,7 +462,8 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
 					this.nextPartDisplayStartsAt !==
 						(this.context.durations?.partDisplayStartsAt &&
-							this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]))
+							this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)])) &&
+				!this.state.showingAllSegment
 			) {
 				const nextPartDisplayStartsAt =
 					this.context.durations?.partDisplayStartsAt &&
@@ -592,10 +597,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
-		onTimeScaleChange = (timeScaleVal: number) => {
+		onTimeScaleChange = (timeScaleVal: number, showingAllSegment: boolean = false) => {
 			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
 				this.setState({
 					timeScale: timeScaleVal,
+					showingAllSegment,
 				})
 			}
 		}
@@ -709,9 +715,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				//@ts-ignore
 				this.setState({
 					livePosition: newLivePosition,
-					scrollLeft: this.state.followLiveLine
-						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.state.timeScale, 0)
-						: this.state.scrollLeft,
+					scrollLeft:
+						this.state.followLiveLine && !this.state.showingAllSegment
+							? Math.max(newLivePosition - this.props.liveLineHistorySize / this.state.timeScale, 0)
+							: this.state.scrollLeft,
 				})
 			}
 		}
@@ -769,15 +776,16 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			})
 			if (typeof this.onTimeScaleChange === 'function') {
 				this.onTimeScaleChange(
-					(getElementWidth(this.timelineDiv) || 1) /
+					(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
 						(computeSegmentDuration(
 							this.context.durations,
 							this.props.parts.map((i) => i.instance.part._id),
 							true
-						) || 1)
+						) || 1),
+					true
 				)
 			}
-			if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
+			// if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 		}
 
 		onZoomChange = (newScale: number, e: any) => {
@@ -796,6 +804,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 						parts={this.props.parts}
 						segmentNotes={this.props.segmentNotes}
 						timeScale={this.state.timeScale}
+						showingAllSegment={this.state.showingAllSegment}
 						onItemClick={this.props.onPieceClick}
 						onItemDoubleClick={this.props.onPieceDoubleClick}
 						onCollapseOutputToggle={this.onCollapseOutputToggle}

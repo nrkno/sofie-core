@@ -1054,6 +1054,7 @@ svg.icon {
 			white-space: nowrap;
 			word-wrap: none;
 			opacity: 1;
+			background: $segment-background-color;
 
 			transition: $output-layer-group-collapse-animation-duration opacity ease-in-out
 				$output-layer-group-collapse-animation-duration;

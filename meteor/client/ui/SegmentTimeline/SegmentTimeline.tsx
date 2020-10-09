@@ -47,6 +47,8 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
+import * as VelocityReact from 'velocity-react'
+
 interface IProps {
 	id: string
 	key: string
@@ -57,6 +59,7 @@ interface IProps {
 	parts: Array<PartUi>
 	segmentNotes: Array<SegmentNote>
 	timeScale: number
+	showingAllSegment: boolean
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -316,6 +319,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		RundownViewEventBus.on(RundownViewEvents.SEGMENT_ZOOM_OFF, this.onRundownEventSegmentZoomOff)
 
 		setTimeout(() => {
+			// TODO: This doesn't actually handle having new parts added/removed, which should cause the segment to re-scale!
 			if (this.props.onShowEntireSegment) {
 				this.props.onShowEntireSegment({})
 			}
@@ -592,11 +596,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		if (this.props.isLiveSegment) {
 			let pixelPostion = Math.floor(
 				this.props.livePosition * this.props.timeScale -
-					(!this.props.followLiveLine ? this.props.scrollLeft * this.props.timeScale : 0)
+					(!(this.props.followLiveLine && !this.props.showingAllSegment)
+						? this.props.scrollLeft * this.props.timeScale
+						: 0)
 			)
 			let lineStyle = {
 				left:
-					(this.props.followLiveLine
+					(this.props.followLiveLine && !this.props.showingAllSegment
 						? Math.min(pixelPostion, this.props.liveLineHistorySize).toString()
 						: pixelPostion.toString()) + 'px',
 			}
@@ -607,7 +613,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					key={this.props.segment._id + '-liveline-shade'}
 					style={{
 						width:
-							(this.props.followLiveLine
+							(this.props.followLiveLine && !this.props.showingAllSegment
 								? Math.min(Math.max(0, pixelPostion), this.props.liveLineHistorySize).toString()
 								: Math.max(0, pixelPostion).toString()) + 'px',
 					}}
@@ -907,7 +913,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					{this.renderLiveLine()}
 				</div>
 				<ErrorBoundary>
-					<SegmentTimelineZoomButtons {...this.props} onTimelineDoubleClick={this.onTimelineDoubleClick} />
+					<SegmentTimelineZoomButtons {...this.props} onTimelineDoubleClick={this.onZoomDblClick} />
 				</ErrorBoundary>
 				{/* <ErrorBoundary>
 					<SegmentNextPreview
@@ -919,11 +925,17 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						part={this.props.followingPart} />
 				</ErrorBoundary> */}
 				<ErrorBoundary>
-					<SegmentTimelineZoom
-						onZoomDblClick={this.onZoomDblClick}
-						timelineWidth={this.state.timelineWidth}
-						{...this.props}
-					/>
+					<VelocityReact.VelocityTransitionGroup
+						enter={{ animation: 'slideDown', easing: 'ease-out', duration: 250 }}
+						leave={{ animation: 'slideUp', easing: 'ease-in', duration: 250 }}>
+						{!this.props.showingAllSegment && (
+							<SegmentTimelineZoom
+								onZoomDblClick={this.onZoomDblClick}
+								timelineWidth={this.state.timelineWidth}
+								{...this.props}
+							/>
+						)}
+					</VelocityReact.VelocityTransitionGroup>
 				</ErrorBoundary>
 			</div>
 		)
