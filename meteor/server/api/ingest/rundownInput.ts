@@ -19,12 +19,17 @@ import {
 	Omit,
 	getRandomId,
 	PreparedChanges,
+	unprotectObject,
+	unprotectObjectArray,
 } from '../../../lib/lib'
 import {
 	IngestRundown,
 	IngestSegment,
 	IngestPart,
 	BlueprintResultSegment,
+	BlueprintResultPart,
+	BlueprintResultPartInstance,
+	ShowStyleBlueprintManifest,
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -38,7 +43,13 @@ import {
 	produceRundownPlaylistInfo,
 } from '../rundown'
 import { loadShowStyleBlueprint } from '../blueprints/cache'
-import { ShowStyleContext, RundownContext, SegmentContext, NotesContext } from '../blueprints/context'
+import {
+	ShowStyleContext,
+	RundownContext,
+	SegmentContext,
+	NotesContext,
+	SyncIngestUpdateToPartInstanceContext,
+} from '../blueprints/context'
 import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
 import {
 	RundownBaselineObj,
@@ -104,7 +115,7 @@ import {
 	getRundownsSegmentsAndPartsFromCache,
 	removeRundownFromCache,
 } from '../playout/lib'
-import { PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstances, PartInstanceId, PartInstance } from '../../../lib/collections/PartInstances'
 import { MethodContext } from '../../../lib/api/methods'
 import { CacheForRundownPlaylist, initCacheForRundownPlaylist } from '../../DatabaseCaches'
 import { prepareSaveIntoCache, savePreparedChangesIntoCache } from '../../DatabaseCache'
@@ -117,6 +128,7 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -678,6 +690,19 @@ function updateRundownFromIngestData(
 			existingParts,
 			res
 		)
+
+		syncChangesToPartInstances(
+			cache,
+			blueprint,
+			notesContext,
+			dbPlaylist,
+			dbRundown,
+			parts,
+			segmentPieces,
+			adlibPieces,
+			adlibActions
+		)
+
 		segments.push(segmentContents.newSegment)
 		parts.push(...segmentContents.parts)
 		segmentPieces.push(...segmentContents.segmentPieces)
@@ -1116,7 +1141,7 @@ function updateSegmentFromIngestData(
 
 	const notesContext = new NotesContext(ingestSegment.name, `rundownId=${rundown._id},segmentId=${segmentId}`, true)
 	const context = new SegmentContext(rundown, cache, notesContext)
-	const res = blueprint.getSegment(context, ingestSegment)
+	const blueprintSegment = blueprint.getSegment(context, ingestSegment)
 
 	const { parts, segmentPieces, adlibPieces, adlibActions, newSegment } = generateSegmentContents(
 		context,
@@ -1124,7 +1149,19 @@ function updateSegmentFromIngestData(
 		ingestSegment,
 		existingSegment,
 		existingParts,
-		res
+		blueprintSegment
+	)
+
+	syncChangesToPartInstances(
+		cache,
+		blueprint,
+		notesContext,
+		playlist,
+		rundown,
+		parts,
+		segmentPieces,
+		adlibPieces,
+		adlibActions
 	)
 
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
@@ -1173,7 +1210,11 @@ function updateSegmentFromIngestData(
 
 	// determine if update is allowed here
 	if (!isUpdateAllowed(cache, playlist, rundown, {}, { changed: [newSegment] }, prepareSaveParts)) {
-		ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		if (Settings.allowUnsyncedSegments) {
+			ServerRundownAPI.unsyncSegmentInner(cache, rundown._id, segmentId)
+		} else {
+			ServerRundownAPI.unsyncRundownInner(cache, rundown._id)
+		}
 		return null
 	}
 
@@ -1244,6 +1285,66 @@ function updateSegmentFromIngestData(
 	const hasChanged = anythingChanged(changes) ? segmentId : null
 	span?.end()
 	return hasChanged
+}
+function syncChangesToPartInstances(
+	cache: CacheForRundownPlaylist,
+	blueprint: ShowStyleBlueprintManifest,
+	notesContext: NotesContext,
+	playlist: RundownPlaylist,
+	rundown: Rundown,
+	parts: DBPart[],
+	segmentPieces: Piece[],
+	adlibPieces: AdLibPiece[],
+	adlibActions: AdLibAction[]
+) {
+	if (blueprint.syncIngestUpdateToPartInstance) {
+		if (playlist.active) {
+			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache, playlist)
+			const instances: { existingPartInstance: PartInstance; playStatus: 'current' | 'next' }[] = []
+			if (currentPartInstance)
+				instances.push({ existingPartInstance: currentPartInstance, playStatus: 'current' })
+			if (nextPartInstance) instances.push({ existingPartInstance: nextPartInstance, playStatus: 'next' })
+
+			for (const { existingPartInstance, playStatus } of instances) {
+				const currentPieceInstances = cache.PieceInstances.findFetch({
+					partInstanceId: existingPartInstance?._id,
+				})
+
+				const newPart = parts.find((p) => p._id === existingPartInstance.part._id)
+
+				if (newPart) {
+					const existingResultPartInstance: BlueprintResultPartInstance = {
+						partInstance: unprotectObject(existingPartInstance),
+						pieceInstancess: unprotectObjectArray(currentPieceInstances),
+					}
+					const newResultPart: BlueprintResultPart | undefined = {
+						part: newPart,
+						pieces: unprotectObjectArray(segmentPieces.filter((p) => p.startPartId === newPart._id)),
+						adLibPieces: adlibPieces.filter((p) => p.partId === newPart._id),
+						actions: unprotectObjectArray(adlibActions.filter((p) => p.partId === newPart._id)),
+					}
+					const syncContext = new SyncIngestUpdateToPartInstanceContext(
+						rundown,
+						cache,
+						notesContext,
+						existingPartInstance,
+						playStatus
+					)
+					// The blueprint handles what in the updated part is going to be synced into the partInstance:
+					blueprint.syncIngestUpdateToPartInstance(
+						syncContext,
+						existingResultPartInstance,
+						newResultPart,
+						playStatus
+					)
+				} else {
+					// the part has been removed, don't sync that
+				}
+			}
+		}
+	} else {
+		// blueprint.syncIngestUpdateToPartInstance is not set, default behaviour is to not sync the partInstance at all.
+	}
 }
 function afterIngestChangedData(cache: CacheForRundownPlaylist, rundown: Rundown, changedSegmentIds: SegmentId[]) {
 	const playlist = cache.RundownPlaylists.findOne({ _id: rundown.playlistId })
