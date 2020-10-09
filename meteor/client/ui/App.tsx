@@ -21,7 +21,7 @@ import {
 	getUIZoom,
 } from '../lib/localStorage'
 import Status from './Status'
-import { Settings as SettingsComponent } from './Settings'
+import { Settings as SettingsView } from './Settings'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
@@ -268,8 +268,11 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/prompter/:studioId" component={PrompterView} />
 								<this.protectedRoute path="/countdowns/:studioId/presenter" component={ClockView} />
 								<this.protectedRoute path="/status" component={Status} />
-								<this.protectedRoute path="/settings" component={(props) => <SettingsComponent {...props} />} />
+								<this.protectedRoute path="/settings" component={SettingsView} />
 								<Route path="/testTools" component={TestTools} />
+								<Route>
+									<Redirect to="/"></Redirect>
+								</Route>
 							</Switch>
 						</ErrorBoundary>
 						<ErrorBoundary>
