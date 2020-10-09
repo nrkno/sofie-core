@@ -271,7 +271,7 @@ export const App = translateWithTracker(() => {
 								<this.protectedRoute path="/settings" component={SettingsView} />
 								<Route path="/testTools" component={TestTools} />
 								<Route>
-									<Redirect to="/"></Redirect>
+									<Redirect to="/" />
 								</Route>
 							</Switch>
 						</ErrorBoundary>
