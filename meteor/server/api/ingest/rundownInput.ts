@@ -1340,6 +1340,29 @@ function syncChangesToPartInstances(
 						logger.error(e)
 					}
 
+					// Save notes:
+					if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
+					const notes: PartNote[] = existingPartInstance.part.notes
+					let changed = false
+					for (const note of syncContext.notesContext.getNotes()) {
+						changed = true
+						notes.push(
+							literal<SegmentNote>({
+								type: note.type,
+								message: note.message,
+								origin: {
+									name: '', // TODO
+								},
+							})
+						)
+					}
+					if (changed) {
+						cache.PartInstances.update(existingPartInstance._id, {
+							$set: {
+								'part.notes': notes,
+							},
+						})
+					}
 
 					if (playStatus === 'current') {
 						// This should be run after 'current', before 'next':
