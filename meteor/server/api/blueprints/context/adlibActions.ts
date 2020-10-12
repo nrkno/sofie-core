@@ -230,8 +230,7 @@ export class ActionExecutionContext extends ShowStyleContext implements IActionE
 				pieceInstance.piece._id,
 				this.getShowStyleBase().blueprintId,
 				piece.content.timelineObjects,
-				true,
-				{}
+				true
 			)
 		}
 

@@ -50,13 +50,15 @@ export function postProcessPieces(
 ): Piece[] {
 	const span = profiler.startSpan('blueprints.postProcess.postProcessPieces')
 
-	let i = 0
-	let timelineUniqueIds: { [id: string]: true } = {}
-	const processedPieces = pieces.map((itemOrig: IBlueprintPiece) => {
+	const externalIds = new Map<string, number>()
+
+	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
+		const i = externalIds.get(orgPiece.externalId) ?? 0
+		externalIds.set(orgPiece.externalId, i + 1)
 		let piece: Piece = {
-			...(itemOrig as Omit<IBlueprintPiece, 'continuesRefId'>),
-			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${i++}`)),
-			continuesRefId: protectString(itemOrig.continuesRefId),
+			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
+			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_piece_${orgPiece.externalId}_${i}`)),
+			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
 			startPartId: partId,
@@ -156,13 +158,19 @@ export function postProcessAdLibPieces(
 ): AdLibPiece[] {
 	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
-	let i = 0
 	let timelineUniqueIds: { [id: string]: true } = {}
+	const externalIds = new Map<string, number>()
+	const timelineUniqueIds = new Set<string>()
 
-	const processedPieces = adLibPieces.map((itemOrig) => {
+	const processedPieces = adLibPieces.map((orgAdlib) => {
+		const i = externalIds.get(orgAdlib.externalId) ?? 0
+		externalIds.set(orgAdlib.externalId, i + 1)
+
 		const piece: AdLibPiece = {
-			...itemOrig,
-			_id: protectString(innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${i++}`)),
+			...orgAdlib,
+			_id: protectString(
+				innerContext.getHashId(`${blueprintId}_${partId}_adlib_piece_${orgAdlib.externalId}_${i}`)
+			),
 			rundownId: protectString(innerContext.rundown._id),
 			partId: partId,
 			status: RundownAPI.PieceStatusCode.UNKNOWN,
