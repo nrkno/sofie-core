@@ -698,10 +698,10 @@ function updateRundownFromIngestData(
 			notesContext,
 			dbPlaylist,
 			dbRundown,
-			parts,
-			segmentPieces,
-			adlibPieces,
-			adlibActions
+			segmentContents.parts,
+			segmentContents.segmentPieces,
+			segmentContents.adlibPieces,
+			segmentContents.adlibActions
 		)
 
 		segments.push(segmentContents.newSegment)
