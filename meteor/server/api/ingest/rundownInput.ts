@@ -30,6 +30,7 @@ import {
 	BlueprintResultPart,
 	BlueprintResultPartInstance,
 	ShowStyleBlueprintManifest,
+	BlueprintResultPartDB,
 } from 'tv-automation-sofie-blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { Studio, Studios } from '../../../lib/collections/Studios'
@@ -1304,12 +1305,12 @@ function syncChangesToPartInstances(
 				if (newPart) {
 					const existingResultPartInstance: BlueprintResultPartInstance = {
 						partInstance: unprotectObject(existingPartInstance),
-						pieceInstancess: unprotectObjectArray(pieceInstancesInPart),
+						pieceInstances: unprotectObjectArray(pieceInstancesInPart),
 					}
-					const newResultPart: BlueprintResultPart | undefined = {
-						part: newPart,
+					const newResultPart: BlueprintResultPartDB | undefined = {
+						part: unprotectObject(newPart),
 						pieces: unprotectObjectArray(segmentPieces.filter((p) => p.startPartId === newPart._id)),
-						adLibPieces: adlibPieces.filter((p) => p.partId === newPart._id),
+						adLibPieces: unprotectObjectArray(adlibPieces.filter((p) => p.partId === newPart._id)),
 						actions: unprotectObjectArray(adlibActions.filter((p) => p.partId === newPart._id)),
 					}
 

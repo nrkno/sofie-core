@@ -256,8 +256,6 @@ export function postProcessBucketAdLib(
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLib {
-	let i = 0
-	let partsUniqueIds: { [id: string]: true } = {}
 	let piece: BucketAdLib = {
 		...itemOrig,
 		_id: protectString(
@@ -279,15 +277,6 @@ export function postProcessBucketAdLib(
 				unprotectString(piece._id)
 			)}")`
 		)
-
-	if (partsUniqueIds[unprotectString(piece._id)])
-		throw new Meteor.Error(
-			400,
-			`Error in blueprint "${blueprintId}" ids of pieces must be unique! ("${innerContext.unhashId(
-				unprotectString(piece._id)
-			)}")`
-		)
-	partsUniqueIds[unprotectString(piece._id)] = true
 
 	if (piece.content && piece.content.timelineObjects) {
 		piece.content.timelineObjects = postProcessTimelineObjects(
