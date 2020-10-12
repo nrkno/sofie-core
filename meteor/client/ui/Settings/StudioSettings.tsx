@@ -1099,6 +1099,7 @@ const StudioRoutings = withTranslation()(
 												obj={this.props.studio}
 												type="dropdowntext"
 												options={Object.keys(this.props.studio.mappings)}
+												label={t('None')}
 												collection={Studios}
 												className="input text-input input-l"></EditAttribute>
 										</label>

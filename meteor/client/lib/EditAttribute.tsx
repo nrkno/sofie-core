@@ -10,6 +10,7 @@ import { TransformedCollection } from '../../lib/typings/meteor'
 import ClassNames from 'classnames'
 import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
+import { Random } from 'meteor/random'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -601,6 +602,8 @@ const EditAttributeDropdown = wrapEditAttribute(
 )
 const EditAttributeDropdownText = wrapEditAttribute(
 	class EditAttributeDropdownText extends EditAttributeBase {
+		private _id: string
+
 		constructor(props) {
 			super(props)
 
@@ -608,6 +611,8 @@ const EditAttributeDropdownText = wrapEditAttribute(
 			this.handleChangeText = this.handleChangeText.bind(this)
 			this.handleBlurText = this.handleBlurText.bind(this)
 			this.handleEscape = this.handleEscape.bind(this)
+
+			this._id = Random.id()
 		}
 		handleChangeDropdown(event) {
 			// because event.target.value is always a string, use the original value instead
@@ -620,7 +625,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
 		handleChangeText(event) {
-			this.handleEdit(event.target.value)
+			this.handleChangeDropdown(event)
 		}
 		handleBlurText(event) {
 			this.handleUpdate(event.target.value)
@@ -727,19 +732,11 @@ const EditAttributeDropdownText = wrapEditAttribute(
 						onBlur={this.handleBlurText}
 						onKeyUp={this.handleEscape}
 						disabled={this.props.disabled}
+						spellCheck={false}
+						list={this._id}
 					/>
 
-					<select
-						className={
-							'form-control' +
-							' ' +
-							(this.props.className || '') +
-							' ' +
-							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}
-						value={this.getAttributeText()}
-						onChange={this.handleChangeDropdown}
-						disabled={this.props.disabled}>
+					<datalist id={this._id}>
 						{this.getOptions(true).map((o, j) =>
 							Array.isArray(o.value) ? (
 								<optgroup key={j} label={o.name}>
@@ -755,7 +752,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 								</option>
 							)
 						)}
-					</select>
+					</datalist>
 				</div>
 			)
 		}
