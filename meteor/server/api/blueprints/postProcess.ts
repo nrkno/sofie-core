@@ -51,6 +51,7 @@ export function postProcessPieces(
 	const span = profiler.startSpan('blueprints.postProcess.postProcessPieces')
 
 	const externalIds = new Map<string, number>()
+	const timelineUniqueIds = new Set<string>()
 
 	const processedPieces = pieces.map((orgPiece: IBlueprintPiece) => {
 		const i = externalIds.get(orgPiece.externalId) ?? 0
@@ -113,7 +114,7 @@ export function postProcessTimelineObjects(
 	blueprintId: BlueprintId,
 	timelineObjects: TSR.TSRTimelineObjBase[],
 	prefixAllTimelineObjects: boolean, // TODO: remove, default to true?
-	timelineUniqueIds: { [key: string]: boolean }
+	timelineUniqueIds: Set<string> = new Set<string>()
 ) {
 	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {
 		const obj: TimelineObjRundown = {
@@ -131,14 +132,14 @@ export function postProcessTimelineObjects(
 				)}")`
 			)
 
-		if (timelineUniqueIds[obj.id])
+		if (timelineUniqueIds.has(obj.id))
 			throw new Meteor.Error(
 				400,
 				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${innerContext.unhashId(
 					obj.id
 				)}")`
 			)
-		timelineUniqueIds[obj.id] = true
+		timelineUniqueIds.add(obj.id)
 
 		return obj
 	})
@@ -158,7 +159,6 @@ export function postProcessAdLibPieces(
 ): AdLibPiece[] {
 	const span = profiler.startSpan('blueprints.postProcess.postProcessAdLibPieces')
 
-	let timelineUniqueIds: { [id: string]: true } = {}
 	const externalIds = new Map<string, number>()
 	const timelineUniqueIds = new Set<string>()
 
@@ -236,16 +236,8 @@ export function postProcessAdLibActions(
 }
 
 export function postProcessStudioBaselineObjects(studio: Studio, objs: TSR.TSRTimelineObjBase[]): TimelineObjRundown[] {
-	const timelineUniqueIds: { [id: string]: true } = {}
 	const context = new NotesContext('studio', 'studio', false)
-	return postProcessTimelineObjects(
-		context,
-		protectString('studio'),
-		studio.blueprintId!,
-		objs,
-		false,
-		timelineUniqueIds
-	)
+	return postProcessTimelineObjects(context, protectString('studio'), studio.blueprintId!, objs, false)
 }
 
 export function postProcessRundownBaselineItems(
@@ -253,15 +245,7 @@ export function postProcessRundownBaselineItems(
 	blueprintId: BlueprintId,
 	baselineItems: TSR.TSRTimelineObjBase[]
 ): TimelineObjGeneric[] {
-	const timelineUniqueIds: { [id: string]: true } = {}
-	return postProcessTimelineObjects(
-		innerContext,
-		protectString('baseline'),
-		blueprintId,
-		baselineItems,
-		false,
-		timelineUniqueIds
-	)
+	return postProcessTimelineObjects(innerContext, protectString('baseline'), blueprintId, baselineItems, false)
 }
 
 export function postProcessBucketAdLib(
@@ -274,7 +258,6 @@ export function postProcessBucketAdLib(
 ): BucketAdLib {
 	let i = 0
 	let partsUniqueIds: { [id: string]: true } = {}
-	let timelineUniqueIds: { [id: string]: true } = {}
 	let piece: BucketAdLib = {
 		...itemOrig,
 		_id: protectString(
@@ -312,8 +295,7 @@ export function postProcessBucketAdLib(
 			piece._id,
 			blueprintId,
 			piece.content.timelineObjects,
-			false,
-			timelineUniqueIds
+			false
 		)
 	}
 
