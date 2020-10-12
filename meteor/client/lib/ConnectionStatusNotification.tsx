@@ -4,8 +4,8 @@ import { Random } from 'meteor/random'
 import * as React from 'react'
 import * as _ from 'underscore'
 
-import { Translated } from '../lib/ReactMeteorData/react-meteor-data'
-import { MomentFromNow } from '../lib/Moment'
+import { Translated } from './ReactMeteorData/react-meteor-data'
+import { MomentFromNow } from './Moment'
 
 import {
 	NotificationCenter,
@@ -13,14 +13,13 @@ import {
 	Notification,
 	NotificationList,
 	NotifierHandle,
-} from '../lib/notifications/notifications'
-import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
+} from './notifications/notifications'
+import { WithManagedTracker } from './reactiveData/reactiveDataHelper'
 import { withTranslation } from 'react-i18next'
-import { NotificationCenterPopUps } from '../lib/notifications/NotificationCenterPanel'
+import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'
 import { PubSub } from '../../lib/api/pubsub'
 import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import * as i18next from 'i18next'
-import { documentTitle } from '../lib/documentTitle'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -61,10 +60,6 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 					// if the last notification can't be dropped, ignore
 				}
 			}
-
-			const doc = documentTitle.get()
-
-			document.title = (doc === null ? '' : `${doc} - `) + 'Sofie' + (cs && cs.name ? ` - ${cs.name}` : '')
 
 			let systemNotification: Notification | undefined = createSystemNotification(cs)
 			let newNotification = this.createNewStatusNotification(meteorStatus)

@@ -27,7 +27,7 @@ import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
 import { ActiveRundownView } from './ActiveRundownView'
 import { ClockView } from './ClockView'
-import { ConnectionStatusNotification } from './ConnectionStatusNotification'
+import { ConnectionStatusNotification } from '../lib/ConnectionStatusNotification'
 import { BrowserRouter as Router, Route, Switch, Redirect, RouteComponentProps } from 'react-router-dom'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { PrompterView } from './Prompter/PrompterView'
@@ -43,6 +43,7 @@ import { getUser, User } from '../../lib/collections/Users'
 import { PubSub, meteorSubscribe } from '../../lib/api/pubsub'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
+import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 
 const NullComponent = () => null
 
@@ -283,6 +284,9 @@ export const App = translateWithTracker(() => {
 								<Route path="/prompter/:studioId" component={NullComponent} />
 								<Route path="/" component={ConnectionStatusNotification} />
 							</Switch>
+						</ErrorBoundary>
+						<ErrorBoundary>
+							<DocumentTitleProvider />
 						</ErrorBoundary>
 						<ErrorBoundary>
 							<ModalDialogGlobalContainer />
