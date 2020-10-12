@@ -142,10 +142,10 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
-		this._innerfillWithDataFromArray(docs)
+		this.fillWithDataFromArray(docs)
 		return docs.length
 	}
-	private _innerfillWithDataFromArray(documents: Class[]) {
+	fillWithDataFromArray(documents: Class[]) {
 		_.each(documents, (doc) => {
 			const id = unprotectString(doc._id)
 			if (this.documents[id]) {
