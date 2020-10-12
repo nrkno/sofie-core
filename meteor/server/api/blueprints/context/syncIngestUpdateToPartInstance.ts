@@ -1,6 +1,6 @@
 import { clone } from 'underscore'
 import { RundownContext, NotesContext } from './context'
-import { CacheForRundownPlaylist } from '../../../DatabaseCaches'
+import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
 import {
 	IBlueprintPiece,
 	IBlueprintPieceInstance,
@@ -9,29 +9,41 @@ import {
 	IBlueprintPartInstance,
 	SyncIngestUpdateToPartInstanceContext as ISyncIngestUpdateToPartInstanceContext,
 } from 'tv-automation-sofie-blueprints-integration'
-import { PartInstance } from '../../../../lib/collections/PartInstances'
+import { PartInstance, DBPartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import _ from 'underscore'
 import { IBlueprintPieceSampleKeys, IBlueprintMutatablePartSampleKeys } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
-import { wrapPieceToInstance } from '../../../../lib/collections/PieceInstances'
+import { wrapPieceToInstance, PieceInstance, PieceInstances } from '../../../../lib/collections/PieceInstances'
 import { unprotectObject, protectString, protectStringArray, unprotectStringArray } from '../../../../lib/lib'
 import { Rundown } from '../../../../lib/collections/Rundowns'
+import { DbCacheWriteCollection } from '../../../DatabaseCache'
 
 export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 	implements ISyncIngestUpdateToPartInstanceContext {
-	private readonly _cache: CacheForRundownPlaylist
-
-	// private readonly _pieceInstanceCache: DbWriteCacheCollection<PieceInstance, PieceInstance>
+	private readonly _partInstanceCache: DbCacheWriteCollection<PartInstance, DBPartInstance>
+	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance, PieceInstance>
 
 	constructor(
 		rundown: Rundown,
-		cache: CacheForRundownPlaylist,
+		cache: ReadOnlyCacheForRundownPlaylist,
 		notesContext: NotesContext,
 		private partInstance: PartInstance,
+		pieceInstances: PieceInstance[],
 		private playStatus: 'current' | 'next'
 	) {
 		super(rundown, cache, notesContext)
-		this._cache = cache
+
+		// Create temporary cache databases
+		this._pieceInstanceCache = new DbCacheWriteCollection(PieceInstances)
+		this._pieceInstanceCache.fillWithDataFromArray(pieceInstances)
+
+		this._partInstanceCache = new DbCacheWriteCollection(PartInstances)
+		this._partInstanceCache.fillWithDataFromArray([partInstance])
+	}
+
+	applyChangesToCache(cache: CacheForRundownPlaylist) {
+		this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
+		this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
 	}
 
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
@@ -49,7 +61,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 		)[0]
 		const newPieceInstance = wrapPieceToInstance(piece, this.partInstance._id)
 
-		this._cache.PieceInstances.insert(newPieceInstance)
+		this._pieceInstanceCache.insert(newPieceInstance)
 
 		return clone(unprotectObject(newPieceInstance))
 	}
@@ -63,7 +75,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 			throw new Error('Some valid properties must be defined')
 		}
 
-		const pieceInstance = this._cache.PieceInstances.findOne(protectString(pieceInstanceId))
+		const pieceInstance = this._pieceInstanceCache.findOne(protectString(pieceInstanceId))
 		if (!pieceInstance) {
 			throw new Error('PieceInstance could not be found')
 		}
@@ -80,8 +92,7 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 				pieceInstance.piece._id,
 				this.getShowStyleBase().blueprintId,
 				updatedPiece.content.timelineObjects,
-				false,
-				{}
+				false
 			)
 		}
 
@@ -98,9 +109,9 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 			}
 		}
 
-		this._cache.PieceInstances.update(pieceInstance._id, update)
+		this._pieceInstanceCache.update(pieceInstance._id, update)
 
-		return clone(unprotectObject(this._cache.PieceInstances.findOne(pieceInstance._id)!))
+		return clone(unprotectObject(this._pieceInstanceCache.findOne(pieceInstance._id)!))
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
@@ -122,16 +133,16 @@ export class SyncIngestUpdateToPartInstanceContext extends RundownContext
 			}
 		}
 
-		this._cache.PartInstances.update(this.partInstance._id, update)
-		return clone(unprotectObject(this._cache.PartInstances.findOne(this.partInstance._id)!))
+		this._partInstanceCache.update(this.partInstance._id, update)
+		return clone(unprotectObject(this._partInstanceCache.findOne(this.partInstance._id)!))
 	}
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
-		const pieceInstances = this._cache.PieceInstances.findFetch({
+		const pieceInstances = this._pieceInstanceCache.findFetch({
 			partInstanceId: this.partInstance._id,
 			_id: { $in: protectStringArray(pieceInstanceIds) },
 		})
 
-		this._cache.PieceInstances.remove({
+		this._pieceInstanceCache.remove({
 			_id: { $in: pieceInstances.map((p) => p._id) },
 		})
 

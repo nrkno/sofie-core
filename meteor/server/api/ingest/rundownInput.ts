@@ -695,7 +695,6 @@ function updateRundownFromIngestData(
 		syncChangesToPartInstances(
 			cache,
 			blueprint,
-			notesContext,
 			dbPlaylist,
 			dbRundown,
 			segmentContents.parts,
@@ -1153,17 +1152,7 @@ function updateSegmentFromIngestData(
 		blueprintSegment
 	)
 
-	syncChangesToPartInstances(
-		cache,
-		blueprint,
-		notesContext,
-		playlist,
-		rundown,
-		parts,
-		segmentPieces,
-		adlibPieces,
-		adlibActions
-	)
+	syncChangesToPartInstances(cache, blueprint, playlist, rundown, parts, segmentPieces, adlibPieces, adlibActions)
 
 	const prepareSaveParts = prepareSaveIntoCache<Part, DBPart>(
 		cache.Parts,
@@ -1290,7 +1279,6 @@ function updateSegmentFromIngestData(
 function syncChangesToPartInstances(
 	cache: CacheForRundownPlaylist,
 	blueprint: ShowStyleBlueprintManifest,
-	notesContext: NotesContext,
 	playlist: RundownPlaylist,
 	rundown: Rundown,
 	parts: DBPart[],
@@ -1324,29 +1312,39 @@ function syncChangesToPartInstances(
 						adLibPieces: adlibPieces.filter((p) => p.partId === newPart._id),
 						actions: unprotectObjectArray(adlibActions.filter((p) => p.partId === newPart._id)),
 					}
+
 					const syncContext = new SyncIngestUpdateToPartInstanceContext(
 						rundown,
 						cache,
-						notesContext,
+						new NotesContext(
+							`Update to ${newPart.externalId}`,
+							`rundownId=${newPart.rundownId},segmentId=${newPart.segmentId}`,
+							true
+						),
 						existingPartInstance,
+						pieceInstancesInPart,
 						playStatus
 					)
-					// The blueprint handles what in the updated part is going to be synced into the partInstance:
-					blueprint.syncIngestUpdateToPartInstance(
-						syncContext,
-						existingResultPartInstance,
-						newResultPart,
-						playStatus
-					)
+					try {
+						// The blueprint handles what in the updated part is going to be synced into the partInstance:
+						blueprint.syncIngestUpdateToPartInstance(
+							syncContext,
+							existingResultPartInstance,
+							newResultPart,
+							playStatus
+						)
 
-					// TODO: apply changes, not using cache
-
-					if (playStatus === 'current') {
-						// after current, before next
-						syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+						// If the blueprint function throws, no changes will be synced to the cache:
+						syncContext.applyChangesToCache(cache)
+					} catch (e) {
+						logger.error(e)
 					}
 
-					// TODO: handle syncContext.notes
+
+					if (playStatus === 'current') {
+						// This should be run after 'current', before 'next':
+						syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+					}
 				} else {
 					// the part has been removed, don't sync that
 				}
