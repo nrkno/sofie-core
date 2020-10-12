@@ -32,6 +32,11 @@ import { prefixAllObjectIds } from '../playout/lib'
 import { SegmentId } from '../../../lib/collections/Segments'
 import { profiler } from '../profiler'
 
+/**
+ *
+ * allowNowForPiece: allows the pieces to use a start of 'now', should be true for adlibs and false for ingest
+ * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
+ */
 export function postProcessPieces(
 	innerContext: ShowStyleContext,
 	pieces: IBlueprintPiece[],
@@ -105,7 +110,7 @@ export function postProcessTimelineObjects(
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
 	timelineObjects: TSR.TSRTimelineObjBase[],
-	prefixAllTimelineObjects: boolean,
+	prefixAllTimelineObjects: boolean, // TODO: remove, default to true?
 	timelineUniqueIds: { [key: string]: boolean }
 ) {
 	let newObjs = timelineObjects.map((o: TimelineObjectCoreExt, i) => {

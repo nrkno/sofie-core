@@ -129,6 +129,7 @@ import {
 import { removeEmptyPlaylists } from '../rundownPlaylist'
 import { profiler } from '../profiler'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { syncPlayheadInfinitesForNextPartInstance } from '../playout/infinites'
 
 /** Priority for handling of synchronous events. Lower means higher priority */
 export enum RundownSyncFunctionPriority {
@@ -1306,7 +1307,7 @@ function syncChangesToPartInstances(
 			if (nextPartInstance) instances.push({ existingPartInstance: nextPartInstance, playStatus: 'next' })
 
 			for (const { existingPartInstance, playStatus } of instances) {
-				const currentPieceInstances = cache.PieceInstances.findFetch({
+				const pieceInstancesInPart = cache.PieceInstances.findFetch({
 					partInstanceId: existingPartInstance?._id,
 				})
 
@@ -1315,7 +1316,7 @@ function syncChangesToPartInstances(
 				if (newPart) {
 					const existingResultPartInstance: BlueprintResultPartInstance = {
 						partInstance: unprotectObject(existingPartInstance),
-						pieceInstancess: unprotectObjectArray(currentPieceInstances),
+						pieceInstancess: unprotectObjectArray(pieceInstancesInPart),
 					}
 					const newResultPart: BlueprintResultPart | undefined = {
 						part: newPart,
@@ -1337,6 +1338,15 @@ function syncChangesToPartInstances(
 						newResultPart,
 						playStatus
 					)
+
+					// TODO: apply changes, not using cache
+
+					if (playStatus === 'current') {
+						// after current, before next
+						syncPlayheadInfinitesForNextPartInstance(cache, playlist)
+					}
+
+					// TODO: handle syncContext.notes
 				} else {
 					// the part has been removed, don't sync that
 				}
