@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.12.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.12.0...v1.12.1) (2020-10-12)
+
+
+### Bug Fixes
+
+* restore sourceDuration display on all Pieces ([72d2897](https://github.com/nrkno/tv-automation-server-core/commit/72d289710fedb5a7e16958f9c1260e9502095f9f))
+* show end of content markers in segment minimap ([06c95fa](https://github.com/nrkno/tv-automation-server-core/commit/06c95fa792913e7ac9cfc0d82496fa17a6a44411))
+
 ## [1.12.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.10.1...v1.12.0) (2020-09-28)
 
 
