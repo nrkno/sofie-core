@@ -2,7 +2,13 @@ import * as _ from 'underscore'
 import { makePromise, ProtectedString, getCurrentTime, waitTime } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
-import { SystemAPIMethods, CollectionCleanupResult, SystemAPI } from '../../lib/api/system'
+import {
+	SystemAPIMethods,
+	CollectionCleanupResult,
+	SystemAPI,
+	BenchmarkResult,
+	SystemBenchmarkResults,
+} from '../../lib/api/system'
 import { getAllIndexes } from '../../lib/database'
 import { Meteor } from 'meteor/meteor'
 import { IndexSpecification } from 'mongodb'
@@ -474,14 +480,7 @@ export function cleanupOldData(
 
 	return cleanupOldDataInner(actuallyRemoveOldData)
 }
-interface BenchmarkResults {
-	mongoWriteSmall: number
-	mongoWriteBig: number
-	mongoRead: number
-	mongoIndexedRead: number
-	cpuCalculations: number
-	cpuStringifying: number
-}
+
 let mongoTest: TransformedCollection<any, any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
@@ -498,7 +497,7 @@ async function doSystemBenchmarkInner() {
 		}
 	}
 
-	const result: BenchmarkResults = {
+	const result: BenchmarkResult = {
 		mongoWriteSmall: -1,
 		mongoWriteBig: -1,
 		mongoRead: -1,
@@ -662,16 +661,16 @@ async function doSystemBenchmarkInner() {
 
 	return result
 }
-async function doSystemBenchmark(runCount: number = 1) {
+async function doSystemBenchmark(runCount: number = 1): Promise<SystemBenchmarkResults> {
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
 
-	const results: BenchmarkResults[] = []
+	const results: BenchmarkResult[] = []
 	for (let i of _.range(0, runCount)) {
 		results.push(await doSystemBenchmarkInner())
 		waitTime(50)
 	}
 
-	const keys = [
+	const keys: (keyof BenchmarkResult)[] = [
 		'mongoWriteSmall',
 		'mongoWriteBig',
 		'mongoRead',
@@ -680,7 +679,7 @@ async function doSystemBenchmark(runCount: number = 1) {
 		'cpuStringifying',
 	]
 
-	const sum: BenchmarkResults = results.reduce(
+	const sum: BenchmarkResult = results.reduce(
 		(prev, current) => {
 			const o: any = {}
 			keys.forEach((key) => {
@@ -697,7 +696,7 @@ async function doSystemBenchmark(runCount: number = 1) {
 			cpuStringifying: 0,
 		}
 	)
-	const avg: any = {}
+	const avg: SystemBenchmarkResults['results'] = {} as any
 	keys.forEach((key) => {
 		avg[key] = Math.floor(sum[key] / runCount)
 	})
@@ -728,19 +727,6 @@ CPU JSON stringifying:       ${avg.cpuStringifying} ms (${comparison.cpuStringif
 		results: avg,
 	}
 }
-// const pingDevice: (device: PeripheralDevice) => boolean = MeteorWrapAsync((device: PeripheralDevice, cb) => {
-// 	// ServerPeripheralDeviceAPI.pingWithCommand(device._id, device.token, 'hello', cb)
-// 	PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-// 		device._id,
-// 		(error) => {
-// 			if (error) console.log(error)
-// 			// we don't care if the function exists or not:
-// 			cb(true)
-// 		},
-// 		500,
-// 		'ping'
-// 	)
-// })
 
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
