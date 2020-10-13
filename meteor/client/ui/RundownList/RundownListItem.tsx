@@ -12,13 +12,11 @@ import { getAllowConfigure, getAllowService } from '../../lib/localStorage'
 import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
-import { getShowStyleBaseLink, getStudioLink } from './util'
-import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { MeteorCall } from '../../../lib/api/methods'
+import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import {
 	ConnectDragSource,
+	ConnectDropTarget,
 	DragElementWrapper,
 	DragLayer,
 	DragLayerCollector,
@@ -28,18 +26,23 @@ import {
 	DragSourceConnector,
 	DragSourceMonitor,
 	DragSourceSpec,
+	DropTarget,
+	DropTargetCollector,
+	DropTargetConnector,
+	DropTargetMonitor,
+	DropTargetSpec,
 	XYCoord,
 } from 'react-dnd'
-import RundownListDragDropTypes from './RundownListDragDropTypes'
+import { IRundownDragObject, RundownListDragDropTypes } from './DragAndDropTypes'
 import { getEmptyImage } from 'react-dnd-html5-backend'
+import { unprotectString } from '../../../lib/lib'
+
+const HTML_ID_PREFIX = 'rundown-'
 
 export interface IRundownListItemProps {
 	rundown: Rundown
 	viewLinks: JSX.Element | null
-}
-
-interface IRundownDragObject {
-	id: RundownId
+	swapRundownOrder: (a: RundownId, b: RundownId) => void
 }
 
 interface IRundownDragSourceProps {
@@ -48,28 +51,17 @@ interface IRundownDragSourceProps {
 	isDragging: boolean
 }
 
-const spec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
-	beginDrag: (props, monitor, component) => {
-		// console.debug(`beginDrag #${props.rundown._id}`)
-		return { id: props.rundown._id }
-	},
-	canDrag: (props) => {
-		// console.debug(`canDrag #${props.rundown._id}`)
-		return true
-	},
-	endDrag: (props) => {
-		// console.debug(`endDrag #${props.rundown._id}`)
+const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
+	beginDrag: (props: IRundownListItemProps, monitor, component: React.Component) => {
+		const id = props.rundown._id
+		return { id }
 	},
 	isDragging: (props, monitor) => {
-		const isThisRundown = props.rundown._id === monitor.getItem().id
-		// if (isDragging) {
-		// 	console.debug(`	isDragging #${props.rundown.name}? ${isDragging}`)
-		// }
-		return isThisRundown
+		return props.rundown._id === monitor.getItem().id
 	},
 }
 
-const collect: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function(
+const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function(
 	connect: DragSourceConnector,
 	monitor: DragSourceMonitor,
 	props: IRundownListItemProps
@@ -81,8 +73,40 @@ const collect: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProp
 	}
 }
 
+interface IRundownDropTargetProps {
+	connectDropTarget: ConnectDropTarget
+}
+
+const dropSpec: DropTargetSpec<IRundownListItemProps> = {
+	canDrop: (props: IRundownListItemProps, monitor: DropTargetMonitor) => {
+		// we're only using the droptarget for order swapping
+		return false
+	},
+
+	hover(props: IRundownListItemProps, monitor: DropTargetMonitor) {
+		if (monitor.getItemType() === RundownListDragDropTypes.RUNDOWN) {
+			const item = monitor.getItem() as IRundownDragObject
+			// if that rundown is not this rundown
+			if (item && props.rundown._id !== item.id) {
+				props.swapRundownOrder(props.rundown._id, item.id)
+			}
+		}
+	},
+}
+
+const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItemProps> = (
+	connect: DropTargetConnector,
+	monitor: DropTargetMonitor,
+	props: IRundownListItemProps
+) => {
+	return {
+		connectDropTarget: connect.dropTarget(),
+	}
+}
+
 interface IRundownDragLayerProps {
 	currentOffset: XYCoord | null
+	clientOffset: XYCoord | null
 }
 
 const dragLayerCollect: DragLayerCollector<
@@ -90,38 +114,46 @@ const dragLayerCollect: DragLayerCollector<
 	IRundownDragLayerProps
 > = function(monitor, props) {
 	let currentOffset: XYCoord | null = null
+	let clientOffset: XYCoord | null = null
 
 	if (monitor.getItem()?.id === props.rundown._id) {
 		currentOffset = monitor.getDifferenceFromInitialOffset()
+		clientOffset = monitor.getClientOffset()
 	}
 
 	return {
 		currentOffset,
+		clientOffset,
 	}
 }
 
 export const RundownListItem = withTranslation()(
-	DragLayer(dragLayerCollect, {
-		arePropsEqual: (props, newProps) => {
-			if (props.rundown._id !== newProps.rundown._id) {
-				return false
-			}
+	// DragLayer(dragLayerCollect, {
+	// 	arePropsEqual: (props, newProps) => {
+	// 		if (props.rundown._id !== newProps.rundown._id) {
+	// 			return false
+	// 		}
 
-			return true
-		},
-	})(
-		DragSource(
+	// 		return true
+	// 	},
+	// })(
+	DragSource(
+		RundownListDragDropTypes.RUNDOWN,
+		dragSpec,
+		dragCollector
+	)(
+		DropTarget(
 			RundownListDragDropTypes.RUNDOWN,
-			spec,
-			collect
+			dropSpec,
+			dropCollect
 		)(
 			class RundownListItem extends React.Component<
-				Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDragLayerProps
+				Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDropTargetProps
 			> {
 				studio: Studio
 				showStyle: ShowStyleBase
 
-				constructor(props: Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDragLayerProps) {
+				constructor(props: Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDropTargetProps) {
 					super(props)
 
 					this.studio = this.props.rundown.getStudio()
@@ -131,48 +163,22 @@ export const RundownListItem = withTranslation()(
 						selectedView: UIStateStorage.getItemString(`rundownList.${this.studio._id}`, 'defaultView', 'default'),
 					}
 
-					this.props.dragPreview(getEmptyImage()) // override default dom node screenshot behavior
-				}
-
-				shouldComponentUpdate(
-					nextProps: Translated<IRundownListItemProps> & IRundownDragSourceProps & IRundownDragLayerProps
-				) {
-					const unequal: string[] = []
-					if (this.props.connectDragSource !== nextProps.connectDragSource) unequal.push('connectDragSource')
-					if (this.props.currentOffset?.y !== nextProps.currentOffset?.y)
-						unequal.push(`currentOffset (${this.props.currentOffset?.y},${nextProps.currentOffset?.y})`)
-					if (this.props.dragPreview !== nextProps.dragPreview) unequal.push('dragPreview')
-					if (this.props.rundown?._id !== nextProps.rundown?._id) unequal.push('rundown')
-					if (this.props.t !== nextProps.t) unequal.push('t')
-					if (this.props.tReady !== nextProps.tReady) unequal.push('tReady')
-					if (this.props.viewLinks !== nextProps.viewLinks) unequal.push('viewLinks')
-
-					if (unequal.length > 0 || nextProps.isDragging !== this.props.isDragging) {
-						console.log(this.props.rundown._id, this.props.rundown.name, unequal)
-						return true
-					}
-					// console.log(this.props.rundown._id, this.props, nextProps)
-					return false
+					// this.props.dragPreview(getEmptyImage()) // override default dom node screenshot behavior
 				}
 
 				render() {
-					const { t, rundown, viewLinks, connectDragSource, isDragging, currentOffset } = this.props
+					const { t, rundown, connectDragSource, connectDropTarget, isDragging } = this.props
 					const userCanConfigure = getAllowConfigure()
-
-					const styles = {}
-					if (isDragging && currentOffset) {
-						// console.debug(`#${rundown.name} is dragging, yOffset: ${y}`)
-						styles['transform'] = `translate3d(0, ${currentOffset.y}px, 0) scale(var(--scaleFactor))`
-					} else {
-						styles['transform'] = `translate3d(0, 0, 0) scale(var(--scaleFactor))`
-					}
 
 					const classNames: string[] = ['rundown-list-item']
 					if (isDragging) classNames.push('dragging')
 					if (rundown.unsynced) classNames.push('unsynced')
 
-					return (
-						<tr className={classNames.join(' ')} style={styles}>
+					// rundown ids can start with digits, which is illegal for HTML id attributes
+					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
+
+					return connectDropTarget(
+						<tr id={htmlElementId} className={classNames.join(' ')}>
 							{connectDragSource(
 								<th className="rundown-list-item__name">
 									<FontAwesomeIcon icon={faTh} />
@@ -200,14 +206,14 @@ export const RundownListItem = withTranslation()(
 							<td className="rundown-list-item__actions">
 								{rundown.unsynced || userCanConfigure || getAllowService() ? (
 									<Tooltip overlay={t('Delete')} placement="top">
-										<button className="action-btn" onClick={() => this.confirmDeleteRundown(rundown)}>
+										<button className="action-btn" onClick={() => confirmDeleteRundown(rundown, t)}>
 											<FontAwesomeIcon icon={faTrash} />
 										</button>
 									</Tooltip>
 								) : null}
 								{rundown.unsynced ? (
 									<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
-										<button className="action-btn" onClick={() => this.confirmReSyncRundown(rundown)}>
+										<button className="action-btn" onClick={() => confirmReSyncRundown(rundown, t)}>
 											<FontAwesomeIcon icon={faSync} />
 										</button>
 									</Tooltip>
@@ -215,39 +221,6 @@ export const RundownListItem = withTranslation()(
 							</td>
 						</tr>
 					)
-				}
-
-				private confirmDeleteRundown(rundown: Rundown) {
-					const { t } = this.props
-
-					doModalDialog({
-						title: t('Delete rundown?'),
-						yes: t('Delete'),
-						no: t('Cancel'),
-						onAccept: (e) => {
-							doUserAction(t, e, UserAction.REMOVE_RUNDOWN, (e) => MeteorCall.userAction.removeRundown(e, rundown._id))
-						},
-						message:
-							t('Are you sure you want to delete the "{{name}}" rundown?', { name: rundown.name }) +
-							'\n' +
-							t('Please note: This action is irreversible!'),
-					})
-				}
-
-				private confirmReSyncRundown(rundown: Rundown): void {
-					const { t } = this.props
-
-					doModalDialog({
-						title: t('Re-Sync rundown?'),
-						yes: t('Re-Sync'),
-						no: t('Cancel'),
-						onAccept: (e) => {
-							doUserAction(t, e, UserAction.RESYNC_RUNDOWN, (e) => MeteorCall.userAction.resyncRundown(e, rundown._id))
-						},
-						message: t('Are you sure you want to re-sync the "{{name}}" rundown?', {
-							name: rundown.name,
-						}),
-					})
 				}
 			}
 		)
