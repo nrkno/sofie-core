@@ -97,11 +97,12 @@ export function getRoutedTimeline(
 ): TimelineObjGeneric[] {
 	const outputTimelineObjs: TimelineObjGeneric[] = []
 
-	_.each(inputTimelineObjs, (obj) => {
+	for (let obj of inputTimelineObjs) {
 		const inputLayer = obj.layer + ''
-		const routes = mappingRoutes[inputLayer]
+		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
-			_.each(routes, (route, i) => {
+			for (let i = 0; i < routes.length; i++) {
+				const route = routes[i]
 				const routedObj: TimelineObjGeneric = {
 					...obj,
 					layer: route.outputMappedLayer,
@@ -111,12 +112,12 @@ export function getRoutedTimeline(
 					routedObj.id = `_${i}_${routedObj.id}`
 				}
 				outputTimelineObjs.push(routedObj)
-			})
+			}
 		} else {
 			// If no route is found at all, pass it through (backwards compatibility)
 			outputTimelineObjs.push(obj)
 		}
-	})
+	}
 	return outputTimelineObjs
 }
 export interface TimelineComplete {
