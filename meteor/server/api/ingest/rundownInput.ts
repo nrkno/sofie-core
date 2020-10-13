@@ -1358,6 +1358,8 @@ function syncChangesToPartInstances(
 						)
 					}
 					if (changed) {
+						// TODO - these dont get shown to the user currently
+						// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
 						cache.PartInstances.update(existingPartInstance._id, {
 							$set: {
 								'part.notes': notes,
