@@ -177,8 +177,8 @@ export async function getLookeaheadObjects(
 			obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
 		}
 		delete obj.inGroup // force it to be cleared
-		delete obj.pieceInstanceId
-		delete obj.infinitePieceId
+		// delete obj.pieceInstanceId
+		// delete obj.infinitePieceId
 
 		if (mapping.lookahead === LookaheadMode.PRELOAD) {
 			obj.lookaheadForLayer = obj.layer
