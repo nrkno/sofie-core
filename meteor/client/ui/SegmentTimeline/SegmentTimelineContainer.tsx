@@ -139,7 +139,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			'piece.lifespan': {
 				$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
 			},
-			'piece.virtual': true,
 			reset: {
 				$ne: true,
 			},
