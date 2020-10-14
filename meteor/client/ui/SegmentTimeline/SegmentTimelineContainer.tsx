@@ -29,6 +29,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -127,6 +128,23 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
+		// re-evaluated when a piece like that appears.
+		const infinitesEndingPieces = PieceInstances.find({
+			rundownId: segment.rundownId,
+			dynamicallyInserted: {
+				$exists: true,
+			},
+			'infinite.fromPreviousPart': false,
+			'piece.lifespan': {
+				$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
+			},
+			'piece.virtual': true,
+			reset: {
+				$ne: true,
+			},
+		}).fetch()
+
 		let o = RundownUtils.getResolvedSegment(
 			props.showStyleBase,
 			props.playlist,
@@ -178,7 +196,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
 			!equalArrays(props.orderedAllPartIds, nextProps.orderedAllPartIds)
 		) {
-			console.log('Forcing render')
 			return true
 		}
 		// Check rundown changes that are important to the segment
@@ -746,7 +763,6 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		render() {
-			console.log(`${this.props.segmentui?.name}`)
 			return (
 				(this.props.segmentui && (
 					<SegmentTimeline
