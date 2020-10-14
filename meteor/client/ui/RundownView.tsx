@@ -96,6 +96,7 @@ import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
+import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1308,6 +1309,7 @@ export interface IGoToPartInstanceEvent {
 type MatchedSegment = {
 	rundown: Rundown
 	segments: Segment[]
+	segmentIdsBeforeEachSegment: Set<SegmentId>[]
 }
 
 interface ITrackedProps {
@@ -1348,15 +1350,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
-		rundowns = playlist.getRundowns()
-		allParts = playlist
-			.getAllOrderedParts(undefined, {
-				fields: {
-					segmentId: 1,
-					_rank: 1,
-				},
-			})
-			.map((part) => part._id)
+		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
+		allParts = memoizedIsolatedAutorun(
+			(_playlistId) =>
+				playlist
+					.getAllOrderedParts(undefined, {
+						fields: {
+							segmentId: 1,
+							_rank: 1,
+						},
+					})
+					.map((part) => part._id),
+			'playlist.getAllOrderedParts',
+			playlistId
+		)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
@@ -1372,11 +1379,24 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownPlaylistId: playlistId,
 		rundowns,
 		matchedSegments: playlist
-			? playlist.getRundownsAndSegments({
-					isHidden: {
-						$ne: true,
-					},
-			  })
+			? playlist
+					.getRundownsAndSegments({
+						isHidden: {
+							$ne: true,
+						},
+					})
+					.map((input, rundownIndex, rundownArray) => ({
+						...input,
+						segmentIdsBeforeEachSegment: input.segments.map(
+							(segment, segmentIndex, segmentArray) =>
+								new Set([
+									...(_.flatten(
+										rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
+									) as SegmentId[]),
+									...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
+								])
+						),
+					}))
 			: [],
 		playlist,
 		studio: studio,
@@ -2229,22 +2249,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												orderedAllPartIds={this.props.orderedPartsIds}
-												segmentsIdsBefore={
-													new Set([
-														..._.flatten(
-															rundownArray
-																.slice(0, rundownIndex)
-																.map((match) => match.segments.map((segment) => segment._id))
-														),
-														...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
-													])
-												}
+												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
 												}
 												onPieceClick={this.onSelectPiece}
 												onPieceDoubleClick={this.onPieceDoubleClick}
-												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+												onHeaderNoteClick={this.onHeaderNoteClick}
 												ownCurrentPartInstance={
 													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
 													// is a part of the segment

@@ -24,7 +24,7 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays, equalArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId } from '../../../lib/collections/Rundowns'
@@ -78,7 +78,7 @@ interface IProps {
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
-	onHeaderNoteClick?: (level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -174,8 +174,11 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
-			props.timeScale !== nextProps.timeScale
+			props.timeScale !== nextProps.timeScale ||
+			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
+			!equalArrays(props.orderedAllPartIds, nextProps.orderedAllPartIds)
 		) {
+			console.log('Forcing render')
 			return true
 		}
 		// Check rundown changes that are important to the segment
@@ -743,6 +746,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		}
 
 		render() {
+			console.log(`${this.props.segmentui?.name}`)
 			return (
 				(this.props.segmentui && (
 					<SegmentTimeline

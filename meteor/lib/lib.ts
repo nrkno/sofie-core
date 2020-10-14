@@ -1412,3 +1412,12 @@ export function equivalentArrays<T>(a: T[], b: T[]): boolean {
 	}
 	return true
 }
+
+export function equalArrays<T>(a: T[], b: T[]): boolean {
+	if (a === b) return true
+	if (a.length !== b.length) return false
+	for (let i = 0; i < a.length; i++) {
+		if (b[i] !== a[i]) return false
+	}
+	return true
+}
