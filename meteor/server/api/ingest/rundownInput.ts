@@ -198,6 +198,19 @@ export namespace RundownInput {
 		check(ingestRundown, Object)
 		handleUpdatedRundown(undefined, peripheralDevice, ingestRundown, 'dataRundownUpdate')
 	}
+	export function dataSegmentGet(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		rundownExternalId: string,
+		segmentExternalId: string
+	) {
+		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		logger.info('dataSegmentGet', rundownExternalId, segmentExternalId)
+		check(rundownExternalId, String)
+		check(segmentExternalId, String)
+		return getIngestSegment(peripheralDevice, rundownExternalId, segmentExternalId)
+	}
 	// Delete, Create & Update Segment (and it's contents):
 	export function dataSegmentDelete(
 		context: MethodContext,
@@ -296,6 +309,30 @@ function getIngestRundown(peripheralDevice: PeripheralDevice, rundownExternalId:
 	}
 
 	return loadCachedRundownData(rundown._id, rundown.externalId)
+}
+function getIngestSegment(
+	peripheralDevice: PeripheralDevice,
+	rundownExternalId: string,
+	segmentExternalId: string
+): IngestSegment {
+	const rundown = Rundowns.findOne({
+		peripheralDeviceId: peripheralDevice._id,
+		externalId: rundownExternalId,
+	})
+	if (!rundown) {
+		throw new Meteor.Error(404, `Rundown ${rundownExternalId} does not exist`)
+	}
+
+	const segment = Segments.findOne({
+		externalId: segmentExternalId,
+		rundownId: rundown._id,
+	})
+
+	if (!segment) {
+		throw new Meteor.Error(404, `Segment ${segmentExternalId} does not exist in rundown ${rundownExternalId}`)
+	}
+
+	return loadCachedIngestSegment(rundown._id, rundown.externalId, segment._id, segment.externalId)
 }
 function listIngestRundowns(peripheralDevice: PeripheralDevice): string[] {
 	const rundowns = Rundowns.find({
