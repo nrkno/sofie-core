@@ -1293,7 +1293,11 @@ function syncChangesToPartInstances(
 			const instances: { existingPartInstance: PartInstance; playStatus: 'current' | 'next' }[] = []
 			if (currentPartInstance)
 				instances.push({ existingPartInstance: currentPartInstance, playStatus: 'current' })
-			if (nextPartInstance) instances.push({ existingPartInstance: nextPartInstance, playStatus: 'next' })
+			if (nextPartInstance)
+				instances.push({
+					existingPartInstance: nextPartInstance,
+					playStatus: isTooCloseToAutonext(currentPartInstance, false) ? 'current' : 'next',
+				})
 
 			for (const { existingPartInstance, playStatus } of instances) {
 				const pieceInstancesInPart = cache.PieceInstances.findFetch({
