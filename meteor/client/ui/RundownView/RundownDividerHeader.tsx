@@ -116,17 +116,19 @@ export const RundownDividerHeader = translateWithTracker<IProps, {}, ITrackedPro
 			return (
 				<div className="rundown-divider-timeline">
 					<h2 className="rundown-divider-timeline__title">{this.props.rundown.name}</h2>
-					<div className="rundown-divider-timeline__notifications rundown-divider-timeline__notifications--critical">
-						<CriticalIconSmall />
-						<span className="rundown-divider-timeline__notifications__count">
-							{this.props.notificationsFromRundown.critical}
-						</span>
-					</div>
-					<div className="rundown-divider-timeline__notifications rundown-divider-timeline__notifications--warning">
-						<WarningIconSmall />
-						<span className="rundown-divider-timeline__notifications__count">
-							{this.props.notificationsFromRundown.warning}
-						</span>
+					<div className="rundown-divider-timeline__notifications-group">
+						<div className="rundown-divider-timeline__notifications rundown-divider-timeline__notifications--critical">
+							<CriticalIconSmall />
+							<span className="rundown-divider-timeline__notifications__count">
+								{this.props.notificationsFromRundown.critical}
+							</span>
+						</div>
+						<div className="rundown-divider-timeline__notifications rundown-divider-timeline__notifications--warning">
+							<WarningIconSmall />
+							<span className="rundown-divider-timeline__notifications__count">
+								{this.props.notificationsFromRundown.warning}
+							</span>
+						</div>
 					</div>
 					{this.props.rundown.expectedStart && (
 						<div className="rundown-divider-timeline__expected-start">

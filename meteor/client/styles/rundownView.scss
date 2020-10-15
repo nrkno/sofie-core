@@ -2129,7 +2129,15 @@ body.no-overflow {
 		display: inline-block;
 	}
 
-	> .rundown-divider-timeline__notifications {
+	> .rundown-divider-timeline__notifications-group {
+		display: inline-block;
+		vertical-align: bottom;
+		white-space: nowrap;
+		margin-bottom: 0.6em;
+		margin-left: 0.5em;
+	}
+
+	.rundown-divider-timeline__notifications {
 		display: inline-block;
 		font-size: 0.8em;
 		font-weight: 400;
@@ -2149,8 +2157,7 @@ body.no-overflow {
 	> .rundown-divider-timeline__expected-duration {
 		display: inline-block;
 		vertical-align: top;
-		margin-top: 0.95em;
-		margin-right: 0.5em;
+		margin: 0.95em 0.5em 0.5em;
 
 		> time {
 			font-weight: 600;
