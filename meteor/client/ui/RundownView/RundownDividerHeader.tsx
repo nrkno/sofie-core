@@ -4,6 +4,11 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import { NotificationCenter, NoticeLevel } from '../../lib/notifications/notifications'
 import { ProtectedString, unprotectStringArray, unprotectString } from '../../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/notificationIcons'
+import { MomentFromNow } from '../../lib/Moment'
+import Moment from 'react-moment'
+import { withTiming, WithTiming } from './RundownTiming'
+import { RundownUtils } from '../../lib/rundown'
+import { withTranslation } from 'react-i18next'
 
 interface IProps {
 	rundown: Rundown
@@ -15,6 +20,52 @@ interface ITrackedProps {
 		warning: number
 	}
 }
+
+const QUATER_DAY = 6 * 60 * 60 * 1000
+
+const RundownCountdown = withTranslation()(
+	withTiming<
+		Translated<{
+			expectedStart: number | undefined
+			className?: string | undefined
+		}>,
+		{}
+	>({
+		filter: 'currentTime',
+	})(
+		class RundownCountdown extends React.Component<
+			Translated<
+				WithTiming<{
+					expectedStart: number | undefined
+					className?: string | undefined
+				}>
+			>
+		> {
+			render() {
+				const { t } = this.props
+				if (this.props.expectedStart === undefined) return null
+
+				if (this.props.expectedStart - (this.props.timingDurations.currentTime || 0) < QUATER_DAY) {
+					return (
+						<span className={this.props.className}>
+							{t('(in: {{time}})', {
+								time: RundownUtils.formatDiffToTimecode(
+									this.props.expectedStart - (this.props.timingDurations.currentTime || 0),
+									false,
+									true,
+									true,
+									true,
+									true
+								),
+							})}
+						</span>
+					)
+				}
+				return null
+			}
+		}
+	)
+)
 
 export const RundownDividerHeader = translateWithTracker<IProps, {}, ITrackedProps>(
 	(props: IProps) => {
@@ -79,14 +130,25 @@ export const RundownDividerHeader = translateWithTracker<IProps, {}, ITrackedPro
 					</div>
 					{this.props.rundown.expectedStart && (
 						<div className="rundown-divider-timeline__expected-start">
-							<span>{t('Planned Start')}</span>
-							{this.props.rundown.expectedStart}
+							<span>{t('Planned Start')}</span>&nbsp;
+							<Moment
+								interval={1000}
+								calendar={{
+									sameElse: 'lll',
+								}}>
+								{this.props.rundown.expectedStart}
+							</Moment>
+							&nbsp;
+							<RundownCountdown
+								className="rundown-divider-timeline__expected-start__countdown"
+								expectedStart={this.props.rundown.expectedStart}
+							/>
 						</div>
 					)}
 					{this.props.rundown.expectedDuration && (
 						<div className="rundown-divider-timeline__expected-duration">
-							<span>{t('Planned Duration')}</span>
-							{this.props.rundown.expectedDuration}
+							<span>{t('Planned Duration')}</span>&nbsp;
+							<Moment interval={0} format="HH:mm:ss" date={this.props.rundown.expectedDuration} />
 						</div>
 					)}
 				</div>

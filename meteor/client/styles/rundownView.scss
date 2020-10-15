@@ -2148,6 +2148,22 @@ body.no-overflow {
 	> .rundown-divider-timeline__expected-start,
 	> .rundown-divider-timeline__expected-duration {
 		display: inline-block;
+		vertical-align: top;
+		margin-top: 0.95em;
+		margin-right: 0.5em;
+
+		> time {
+			font-weight: 600;
+		}
+
+		> .rundown-divider-timeline__expected-start__countdown {
+			font-weight: 600;
+			color: $general-late-color;
+		}
+	}
+
+	> .rundown-divider-timeline__expected-duration {
+		float: right;
 	}
 }
 
