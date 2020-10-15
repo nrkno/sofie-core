@@ -170,8 +170,8 @@ export async function getLookeaheadObjects(
 			obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
 		}
 		delete obj.inGroup // force it to be cleared
-		delete obj.pieceInstanceId
-		delete obj.infinitePieceId
+		// delete obj.pieceInstanceId
+		// delete obj.infinitePieceId
 
 		if (mapping.lookahead === LookaheadMode.PRELOAD) {
 			obj.lookaheadForLayer = obj.layer
@@ -183,7 +183,7 @@ export async function getLookeaheadObjects(
 
 	// elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
 	const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
-		`#${obj.pieceInstanceId ?? ''}${obj.id}.start`
+		`#${obj.pieceInstanceId ?? ''}${obj.originalId ?? obj.id}.start`
 	const calculateStartAfterPreviousObj = (
 		prevObj: TimelineObjRundown & OnGenerateTimelineObj
 	): TimelineTypes.TimelineEnable => {

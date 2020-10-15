@@ -618,11 +618,15 @@ export const RundownList = translateWithTracker(() => {
 															nrcsNames:
 																languageOr(
 																	t,
-																	_.flatten(
+																	_.chain(
 																		unsyncedRundownPlaylists.map((p) =>
 																			p.unsyncedRundowns.map((r) => r.externalNRCSName)
 																		)
 																	)
+																		.flatten()
+																		.compact()
+																		.unique()
+																		.value()
 																) || 'NRCS',
 														})}
 													</h2>

@@ -10,10 +10,20 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
-import { getShowStyleCompound, ShowStyleVariantId, ShowStyleCompound } from '../../../lib/collections/ShowStyleVariants'
+import {
+	getShowStyleCompound,
+	ShowStyleVariantId,
+	ShowStyleCompound,
+	ShowStyleVariant,
+	createShowStyleCompound,
+	ShowStyleVariants,
+} from '../../../lib/collections/ShowStyleVariants'
 import { protectString, objectPathGet, objectPathSet } from '../../../lib/lib'
 import { logger } from '../../../lib/logging'
 import { DeepReadonly } from 'utility-types'
+import { loadStudioBlueprint, loadShowStyleBlueprint } from './cache'
+import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { BlueprintId, Blueprints } from '../../../lib/collections/Blueprints'
 
 /**
  * This whole ConfigRef logic will need revisiting for a multi-studio context, to ensure that there are strict boundaries across who can give to access to what.
@@ -146,3 +156,181 @@ export function applyToConfig(
 		objectPathSet(res, val.id, newVal)
 	}
 }
+
+const studioBlueprintConfigCache = new Map<BlueprintId, Map<StudioId, Cache>>()
+const showStyleBlueprintConfigCache = new Map<BlueprintId, Map<ShowStyleBaseId, Map<ShowStyleVariantId, Cache>>>()
+interface Cache {
+	config: unknown
+}
+
+export function forceClearAllBlueprintConfigCaches() {
+	studioBlueprintConfigCache.clear()
+	showStyleBlueprintConfigCache.clear()
+}
+
+export function resetStudioBlueprintConfig(studio: DeepReadonly<Studio>): void {
+	for (const map of studioBlueprintConfigCache.values()) {
+		map.delete(studio._id)
+	}
+	getStudioBlueprintConfig(studio)
+}
+
+export function getStudioBlueprintConfig(studio: DeepReadonly<Studio>): unknown {
+	let blueprintConfigMap = studio.blueprintId ? studioBlueprintConfigCache.get(studio.blueprintId) : undefined
+	if (!blueprintConfigMap && studio.blueprintId) {
+		blueprintConfigMap = new Map()
+		studioBlueprintConfigCache.set(studio.blueprintId, blueprintConfigMap)
+	}
+
+	const cachedConfig = blueprintConfigMap?.get(studio._id)
+	if (cachedConfig) {
+		return cachedConfig.config
+	}
+
+	logger.debug('Building Studio config')
+	const studioBlueprint = loadStudioBlueprint(studio)
+	if (studioBlueprint) {
+		const diffs = findMissingConfigs(studioBlueprint.blueprint.studioConfigManifest, studio.blueprintConfig)
+		if (diffs && diffs.length) {
+			logger.warn(`Studio "${studio._id}" missing required config: ${diffs.join(', ')}`)
+		}
+	} else {
+		logger.warn(`Studio blueprint "${studio.blueprintId}" not found!`)
+	}
+	const compiledConfig = preprocessStudioConfig(studio, studioBlueprint?.blueprint)
+	blueprintConfigMap?.set(studio._id, {
+		config: compiledConfig,
+	})
+	return compiledConfig
+}
+
+export function resetShowStyleBlueprintConfig(showStyleCompound: DeepReadonly<ShowStyleCompound>): void {
+	for (const map of showStyleBlueprintConfigCache.values()) {
+		map.get(showStyleCompound._id)?.delete(showStyleCompound.showStyleVariantId)
+	}
+	getShowStyleBlueprintConfig(showStyleCompound)
+}
+export function getShowStyleBlueprintConfig(showStyleCompound: DeepReadonly<ShowStyleCompound>): unknown {
+	let blueprintConfigMap = showStyleCompound.blueprintId
+		? showStyleBlueprintConfigCache.get(showStyleCompound.blueprintId)
+		: new Map()
+	if (!blueprintConfigMap) {
+		blueprintConfigMap = new Map()
+		showStyleBlueprintConfigCache.set(showStyleCompound.blueprintId, blueprintConfigMap)
+	}
+
+	let showStyleBaseMap = blueprintConfigMap.get(showStyleCompound._id)
+	if (!showStyleBaseMap) {
+		showStyleBaseMap = new Map()
+		blueprintConfigMap.set(showStyleCompound._id, showStyleBaseMap)
+	}
+
+	const cachedConfig = showStyleBaseMap.get(showStyleCompound.showStyleVariantId)
+	if (cachedConfig) {
+		return cachedConfig.config
+	}
+
+	logger.debug('Building ShowStyle config')
+
+	const showStyleBlueprint = loadShowStyleBlueprint(showStyleCompound)
+	if (showStyleBlueprint) {
+		const diffs = findMissingConfigs(
+			showStyleBlueprint.blueprint.showStyleConfigManifest,
+			showStyleCompound.blueprintConfig
+		)
+		if (diffs && diffs.length) {
+			logger.warn(
+				`ShowStyle "${showStyleCompound._id}-${
+					showStyleCompound.showStyleVariantId
+				}" missing required config: ${diffs.join(', ')}`
+			)
+		}
+	} else {
+		logger.warn(`ShowStyle blueprint "${showStyleCompound.blueprintId}" not found!`)
+	}
+
+	const compiledConfig = preprocessShowStyleConfig(showStyleCompound, showStyleBlueprint?.blueprint)
+	showStyleBaseMap.set(showStyleCompound.showStyleVariantId, { config: compiledConfig })
+	return compiledConfig
+}
+
+Meteor.startup(() => {
+	if (Meteor.isServer) {
+		Studios.find(
+			{},
+			{
+				fields: {
+					_rundownVersionHash: 1,
+					blueprintId: 1,
+				},
+			}
+		).observeChanges({
+			changed: (id: StudioId) => {
+				for (const map of studioBlueprintConfigCache.values()) {
+					map.delete(id)
+				}
+			},
+			removed: (id: StudioId) => {
+				for (const map of studioBlueprintConfigCache.values()) {
+					map.delete(id)
+				}
+			},
+		})
+		ShowStyleBases.find(
+			{},
+			{
+				fields: {
+					_rundownVersionHash: 1,
+					blueprintId: 1,
+				},
+			}
+		).observeChanges({
+			changed: (id: ShowStyleBaseId) => {
+				for (const map of showStyleBlueprintConfigCache.values()) {
+					map.delete(id)
+				}
+			},
+			removed: (id: ShowStyleBaseId) => {
+				for (const map of showStyleBlueprintConfigCache.values()) {
+					map.delete(id)
+				}
+			},
+		})
+		ShowStyleVariants.find(
+			{},
+			{
+				fields: {
+					_rundownVersionHash: 1,
+					showStyleBaseId: 1,
+					_id: 1,
+				},
+			}
+		).observe({
+			changed: (doc: ShowStyleVariant) => {
+				for (const map of showStyleBlueprintConfigCache.values()) {
+					map.get(doc.showStyleBaseId)?.delete(doc._id)
+				}
+			},
+			removed: (doc: ShowStyleVariant) => {
+				for (const map of showStyleBlueprintConfigCache.values()) {
+					map.get(doc.showStyleBaseId)?.delete(doc._id)
+				}
+			},
+		})
+		Blueprints.find(
+			{},
+			{
+				fields: {
+					modified: 1,
+				},
+			}
+		).observeChanges({
+			changed: (id: BlueprintId) => {
+				studioBlueprintConfigCache.delete(id)
+			},
+			removed: (id: BlueprintId) => {
+				studioBlueprintConfigCache.delete(id)
+			},
+		})
+	}
+})

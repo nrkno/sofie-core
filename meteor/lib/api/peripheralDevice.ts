@@ -436,10 +436,12 @@ export namespace PeripheralDeviceAPI {
 	export function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		cb: (err, result) => void,
-		timeoutTime: number = 3000,
+		timeoutTime0: number | undefined,
 		functionName: string,
 		...args: any[]
 	) {
+		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
+
 		let commandId: PeripheralDeviceCommandId = getRandomId()
 
 		let subscription: Meteor.SubscriptionHandle | null = null

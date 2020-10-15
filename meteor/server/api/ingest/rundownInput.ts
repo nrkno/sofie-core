@@ -536,14 +536,12 @@ function updateRundownFromIngestData(
 		// The rundown is going to change playlist
 		const existingPlaylist = RundownPlaylists.findOne(cache.Rundown.doc.playlistId)
 		if (existingPlaylist) {
-			// Note: this guard is a little race condition prone, but it is the best we can do for now.
-			// TODO-CACHE - should we be checking the partInstance, or just the active flag?
-			const { currentPartInstance } = existingPlaylist.getSelectedPartInstances()
+			const { currentPartInstance, nextPartInstance } = existingPlaylist.getSelectedPartInstances()
 
 			if (
 				existingPlaylist.active &&
-				currentPartInstance &&
-				currentPartInstance.rundownId === cache.Rundown.doc._id
+				(currentPartInstance?.rundownId === cache.Rundown.doc._id ||
+					nextPartInstance?.rundownId === cache.Rundown.doc._id)
 			) {
 				// The rundown contains a PartInstance that is currently on air.
 				// We're trying for a "soft approach" here, instead of rejecting the change altogether,
