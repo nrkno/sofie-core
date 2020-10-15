@@ -30,6 +30,8 @@ export interface InternalIBlueprintPartInstance
 		'_id' | 'segmentId' | 'dynamicallyInsertedAfterPartId'
 	>
 }
+export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance
+export function unprotectPartInstance(partInstance: PartInstance | undefined): IBlueprintPartInstance | undefined
 export function unprotectPartInstance(partInstance: PartInstance): IBlueprintPartInstance {
 	return partInstance as any
 }

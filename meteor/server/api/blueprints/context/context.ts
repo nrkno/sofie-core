@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import * as objectPath from 'object-path'
 import { Meteor } from 'meteor/meteor'
 import {
 	getHash,
@@ -10,11 +9,8 @@ import {
 	unprotectObjectArray,
 	protectString,
 	getCurrentTime,
-	objectPathGet,
-	objectPathSet,
-	waitForPromise,
 } from '../../../../lib/lib'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
+import { Parts } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
@@ -50,23 +46,15 @@ import {
 	resetShowStyleBlueprintConfig,
 } from '../config'
 import { Rundown, DBRundown } from '../../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases, ShowStyleBaseId } from '../../../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariantId,
-	ShowStyleVariants,
-	ShowStyleVariant,
-	ShowStyleCompound,
-} from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariantId, ShowStyleCompound } from '../../../../lib/collections/ShowStyleVariants'
 import { AsRunLogEvent, AsRunLog } from '../../../../lib/collections/AsRunLog'
 import { NoteType, INoteBase } from '../../../../lib/api/notes'
-import { loadCachedRundownData, loadIngestDataCachePart } from '../../ingest/ingestCache'
 import { RundownPlaylistId } from '../../../../lib/collections/RundownPlaylists'
 import { PieceInstances, unprotectPieceInstance } from '../../../../lib/collections/PieceInstances'
-import { unprotectPartInstance, PartInstance } from '../../../../lib/collections/PartInstances'
+import { unprotectPartInstance, PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
-import { extendIngestRundownCore } from '../../ingest/lib'
-import { loadStudioBlueprint, loadShowStyleBlueprint } from '../cache'
 import { DeepReadonly } from 'utility-types'
+import { Segments } from '../../../../lib/collections/Segments'
 
 /** Common */
 
@@ -394,78 +382,51 @@ export class AsRunEventContext extends RundownContext implements IAsRunEventCont
 	}
 	/** Get all segments in this rundown */
 	getSegments(): Array<IBlueprintSegmentDB> {
-		// TODO-CACHE
-		return []
-		// return unprotectObjectArray(this.cache.Segments.findFetch({ rundownId: this._rundown._id }))
+		return unprotectObjectArray(Segments.find({ rundownId: this._rundown._id }).fetch())
 	}
 	/**
 	 * Returns a segment
 	 * @param segmentId Id of segment to fetch. If is omitted, return the segment related to this AsRunEvent
 	 */
 	getSegment(segmentId?: string): IBlueprintSegmentDB | undefined {
-		// TODO-CACHE
-		return undefined
-		// segmentId = segmentId || this.asRunEvent.segmentId
-		// check(segmentId, String)
-		// if (segmentId) {
-		// 	return unprotectObject(
-		// 		this.cache.Segments.findOne({
-		// 			rundownId: this._rundown._id,
-		// 			_id: protectString(segmentId),
-		// 		})
-		// 	)
-		// }
+		segmentId = segmentId || this.asRunEvent.segmentId
+		check(segmentId, String)
+		if (segmentId) {
+			return unprotectObject(
+				Segments.findOne({
+					rundownId: this._rundown._id,
+					_id: protectString(segmentId),
+				})
+			)
+		}
 	}
 	/** Get all parts in this rundown */
 	getParts(): Array<IBlueprintPartDB> {
-		// TODO-CACHE
-		return []
-		// return unprotectObjectArray(this.cache.Parts.findFetch({ rundownId: this._rundown._id }))
+		return unprotectObjectArray(Parts.find({ rundownId: this._rundown._id }).fetch())
 	}
 	/** Get the part related to this AsRunEvent */
 	getPartInstance(partInstanceId?: string): IBlueprintPartInstance | undefined {
-		// TODO-CACHE
-		return undefined
-		// partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
-		// check(partInstanceId, String)
-		// if (partInstanceId) {
-		// 	return unprotectPartInstance(
-		// 		this._rundown.getAllPartInstances({
-		// 			_id: protectString(partInstanceId),
-		// 		})[0]
-		// 	)
-		// }
+		partInstanceId = partInstanceId || this.asRunEvent.partInstanceId
+		check(partInstanceId, String)
+		if (partInstanceId) {
+			return unprotectPartInstance(
+				PartInstances.findOne({
+					rundownId: this._rundown._id,
+					_id: protectString(partInstanceId),
+				})
+			)
+		}
 	}
 	/** Get the mos story related to a part */
 	getIngestDataForPart(part: IBlueprintPartDB): IngestPart | undefined {
-		// TODO-CACHE
-		return undefined
-		// check(part._id, String)
-
-		// try {
-		// 	return loadIngestDataCachePart(
-		// 		this._rundown._id,
-		// 		this.rundown.externalId,
-		// 		protectString<PartId>(part._id),
-		// 		part.externalId
-		// 	).data
-		// } catch (e) {
-		// 	return undefined
-		// }
+		throw new Meteor.Error(500, 'Removed')
 	}
 	getIngestDataForPartInstance(partInstance: IBlueprintPartInstance): IngestPart | undefined {
 		return this.getIngestDataForPart(partInstance.part)
 	}
 	/** Get the mos story related to the rundown */
 	getIngestDataForRundown(): ExtendedIngestRundown | undefined {
-		// TODO-CACHE
-		return undefined
-		// try {
-		// 	const ingestRundown = loadCachedRundownData(this._rundown._id, this.rundown.externalId)
-		// 	return extendIngestRundownCore(ingestRundown, this._rundown)
-		// } catch (e) {
-		// 	return undefined
-		// }
+		throw new Meteor.Error(500, 'Removed')
 	}
 
 	/**

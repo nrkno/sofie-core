@@ -445,14 +445,17 @@ export namespace ServerPlayoutAPI {
 		check(horizontalDelta, Number)
 		check(verticalDelta, Number)
 
-		if (!horizontalDelta && !verticalDelta)
-			throw new Meteor.Error(402, `rundownMoveNext: invalid delta: (${horizontalDelta}, ${verticalDelta})`)
-
 		return rundownPlaylistPlayoutSyncFunction(
 			context,
 			'moveNextPart',
 			rundownPlaylistId,
 			(cache) => {
+				if (!horizontalDelta && !verticalDelta)
+					throw new Meteor.Error(
+						402,
+						`rundownMoveNext: invalid delta: (${horizontalDelta}, ${verticalDelta})`
+					)
+
 				const playlist = cache.Playlist.doc
 				if (!playlist.active) throw new Meteor.Error(501, `RundownPlaylist "${playlist._id}" is not active!`)
 
