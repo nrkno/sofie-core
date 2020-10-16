@@ -770,7 +770,7 @@ export function moveRundown(
 	rundownsIdsInPlaylistInOrder: RundownId[]
 ): ClientAPI.ClientResponse<void> {
 	check(rundownId, String)
-	check(intoPlaylistId, Match.Optional(String))
+	if (intoPlaylistId) check(intoPlaylistId, String)
 
 	return ClientAPI.responseSuccess(
 		ServerRundownAPI.moveRundown(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)

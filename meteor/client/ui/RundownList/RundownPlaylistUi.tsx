@@ -32,7 +32,6 @@ import {
 	RundownPlaylistUiActionTypes,
 } from './DragAndDropTypes'
 import { MeteorCall } from '../../../lib/api/methods'
-import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -140,7 +139,7 @@ export const RundownPlaylistUi = DropTarget(
 				if (this.rundowns.has(rundownId)) {
 					// finalize order from component state
 					MeteorCall.userAction.moveRundown(
-						UserActionAPIMethods.reorderRundownPlaylist,
+						'Drag and drop rundown playlist reorder',
 						rundownId,
 						playlistId,
 						rundownOrder
@@ -151,7 +150,7 @@ export const RundownPlaylistUi = DropTarget(
 					console.debug(`Rundown ${rundownId} added to end of playlist ${playlistId}`, rundownOrder)
 
 					MeteorCall.userAction.moveRundown(
-						UserActionAPIMethods.addRundownToPlaylist,
+						'Drag and drop add rundown to playlist',
 						rundownId,
 						playlistId,
 						rundownOrder

@@ -11,7 +11,6 @@ import {
 import { MeteorCall } from '../../lib/api/methods'
 import { PubSub } from '../../lib/api/pubsub'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { UserActionAPIMethods } from '../../lib/api/userActions'
 import { GENESIS_SYSTEM_VERSION, getCoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
@@ -211,7 +210,7 @@ export const RundownList = translateWithTracker(() => {
 
 			private handleRundownDrop(rundownId: RundownId) {
 				console.debug(`Rundown dropped outside of any playlist`, rundownId)
-				MeteorCall.userAction.moveRundown(UserActionAPIMethods.moveRundownToNewPlaylist, rundownId, null, [rundownId])
+				MeteorCall.userAction.moveRundown('drag&drop in dropzone', rundownId, null, [rundownId])
 			}
 
 			renderRundownPlaylists(list: RundownPlaylistUi[]) {

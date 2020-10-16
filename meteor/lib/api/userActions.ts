@@ -240,10 +240,7 @@ export enum UserActionAPIMethods {
 	'storeRundownSnapshot' = 'userAction.storeRundownSnapshot',
 
 	'removeRundownPlaylist' = 'userAction.removeRundownPlaylist',
-	'reorderRundownPlaylist' = 'userAction.reorderRundownPlaylist',
 	'resyncRundownPlaylist' = 'userAction.resyncRundownPlaylist',
-	'addRundownToPlaylist' = 'userAction.addRundownToPlaylist',
-	'moveRundownToNewPlaylist' = 'userAction.moveRundownToNewPlaylist',
 
 	'removeRundown' = 'userAction.removeRundown',
 	'resyncRundown' = 'userAction.resyncRundown',
