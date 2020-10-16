@@ -11,7 +11,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { DBSegment, Segments, Segment } from '../../../lib/collections/Segments'
+import { Segments, Segment } from '../../../lib/collections/Segments'
 import { RundownPlaylist, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, DBPartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
 import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
@@ -23,7 +23,6 @@ import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { ExpectedMediaItems } from '../../../lib/collections/ExpectedMediaItems'
 import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
 import { saveIntoCache } from '../../DatabaseCache'
-import { afterRemoveParts } from '../rundown'
 import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { RundownPlaylistContentWriteAccess } from '../../security/rundownPlaylist'
 import { MethodContext } from '../../../lib/api/methods'

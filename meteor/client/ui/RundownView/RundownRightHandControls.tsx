@@ -4,7 +4,7 @@ import * as VelocityReact from 'velocity-react'
 
 import { StudioRouteSet, StudioRouteBehavior, StudioRouteSetExclusivityGroup } from '../../../lib/collections/Studios'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFastBackward, faRandom } from '@fortawesome/free-solid-svg-icons'
+import { faFastBackward } from '@fortawesome/free-solid-svg-icons'
 
 import { Lottie } from '@crello/react-lottie'
 import { NotificationCenterPanelToggle } from '../../lib/notifications/NotificationCenterPanel'

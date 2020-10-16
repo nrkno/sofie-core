@@ -5,7 +5,6 @@ import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { IngestDeviceSettings } from '../../../../lib/collections/PeripheralDeviceSettings/ingestDevice'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { fetchFrom } from '../../../lib/lib'
 import { callPeripheralDeviceFunction } from '../../../lib/clientAPI'
 

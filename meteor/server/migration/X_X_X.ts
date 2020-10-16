@@ -1,11 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { Studios } from '../../lib/collections/Studios'
-import { Timeline } from '../../lib/collections/Timeline'
-import { getCoreSystem } from '../../lib/collections/CoreSystem'
-import * as semver from 'semver'
-import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/X_X_X'
-import * as _ from 'underscore'
 
 /*
  * **************************************************************************************

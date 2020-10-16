@@ -1,6 +1,5 @@
 import { TransformedCollection, UserId } from '../typings/meteor'
 import { Time, registerCollection, ProtectedString } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import { createMongoCollection } from './lib'
 import { StudioId } from './Studios'
 import { RundownPlaylistId } from './RundownPlaylists'

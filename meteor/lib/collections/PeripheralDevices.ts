@@ -1,7 +1,6 @@
 import { PeripheralDeviceAPI } from '../api/peripheralDevice'
 import { Time, registerCollection, ProtectedString } from '../lib'
 import { TransformedCollection } from '../typings/meteor'
-import { Meteor } from 'meteor/meteor'
 
 import { PlayoutDeviceSettings } from './PeripheralDeviceSettings/playoutDevice'
 import { IngestDeviceSettings, IngestDeviceSecretSettings } from './PeripheralDeviceSettings/ingestDevice'
@@ -104,11 +103,12 @@ export function getExpectedLatency(
 	peripheralDevice: PeripheralDevice
 ): { average: number; safe: number; fastest: number } {
 	if (peripheralDevice.latencies && peripheralDevice.latencies.length) {
-		const latencies = peripheralDevice.latencies.sort((a, b) => {
+		peripheralDevice.latencies.sort((a, b) => {
 			if (a > b) return 1
 			if (a < b) return -1
 			return 0
 		})
+		const latencies = peripheralDevice.latencies
 		var total = 0
 		for (let latency of latencies) {
 			total += latency

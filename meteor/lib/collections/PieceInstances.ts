@@ -8,7 +8,6 @@ import {
 	Omit,
 	omit,
 } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceInstance,
 	Time,
@@ -16,7 +15,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
-import { PartInstance, PartInstanceId } from './PartInstances'
+import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
 

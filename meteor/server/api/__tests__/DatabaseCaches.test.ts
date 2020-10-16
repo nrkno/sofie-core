@@ -1,6 +1,6 @@
-import { testInFiber, beforeAllInFiber } from '../../../__mocks__/helpers/jest'
-import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { CacheForStudioBase, initCacheForStudioBase } from '../../DatabaseCaches'
+import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
+import { initCacheForStudioBase } from '../../DatabaseCaches'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { getRandomId, waitTime, protectString } from '../../../lib/lib'
 import { RundownPlaylistId, RundownPlaylists, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -11,11 +11,8 @@ import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObje
 const orgSetTimeout = setTimeout
 
 describe('DatabaseCaches', () => {
-	// beforeAllInFiber(() => {
-	// })
-	let env: DefaultEnvironment
 	beforeEach(() => {
-		env = setupDefaultStudioEnvironment()
+		setupDefaultStudioEnvironment()
 	})
 	describe('CacheForStudioBase', () => {
 		testInFiber('Insert, update & remove', async () => {
