@@ -29,7 +29,8 @@ export function unprotectPieceInstance(pieceInstance: PieceInstance | undefined)
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
-export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id'> {
+export interface PieceInstance
+	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id' | 'adLibSourceId'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
@@ -85,7 +86,9 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	}
 }
 
-export interface ResolvedPieceInstance extends PieceInstance, Omit<IBlueprintResolvedPieceInstance, '_id' | 'piece'> {
+export interface ResolvedPieceInstance
+	extends PieceInstance,
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece'> {
 	piece: PieceInstancePiece
 }
 
