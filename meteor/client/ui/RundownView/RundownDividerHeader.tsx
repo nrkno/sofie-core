@@ -1,10 +1,6 @@
 import * as React from 'react'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { NotificationCenter, NoticeLevel } from '../../lib/notifications/notifications'
-import { ProtectedString, unprotectStringArray, unprotectString } from '../../../lib/lib'
-import { WarningIconSmall, CriticalIconSmall } from '../../lib/notificationIcons'
-import { MomentFromNow } from '../../lib/Moment'
+import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import Moment from 'react-moment'
 import { withTiming, WithTiming } from './RundownTiming'
 import { RundownUtils } from '../../lib/rundown'
@@ -49,19 +45,18 @@ const RundownCountdown = withTranslation()(
 				const { t } = this.props
 				if (this.props.expectedStart === undefined) return null
 
-				if (this.props.expectedStart - (this.props.timingDurations.currentTime || 0) < QUATER_DAY) {
+				const time = this.props.expectedStart - (this.props.timingDurations.currentTime || 0)
+
+				if (time < QUATER_DAY) {
 					return (
 						<span className={this.props.className}>
-							{t('(in: {{time}})', {
-								time: RundownUtils.formatDiffToTimecode(
-									this.props.expectedStart - (this.props.timingDurations.currentTime || 0),
-									false,
-									true,
-									true,
-									true,
-									true
-								),
-							})}
+							{time > 0
+								? t('(in: {{time}})', {
+										time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+								  })
+								: t('({{time}} ago)', {
+										time: RundownUtils.formatDiffToTimecode(time, false, true, true, true, true),
+								  })}
 						</span>
 					)
 				}
@@ -79,75 +74,13 @@ const RundownCountdown = withTranslation()(
  *
  * The component should be minimally reactive.
  */
-export const RundownDividerHeader = translateWithTracker<IProps, {}, ITrackedProps>(
-	(props: IProps) => {
-		const activeIds = unprotectStringArray(
-			props.rundown
-				.getSegments(
-					{},
-					{
-						fields: {
-							_id: 1,
-						},
-					}
-				)
-				.map((segment) => segment._id)
-		)
-		activeIds.push(unprotectString(props.rundown._id))
-
-		let critical = 0
-		let warning = 0
-
-		// filter all of the notifications in the Notification Center using the notification.source
-		NotificationCenter.getNotifications().forEach((notification) => {
-			if (notification.source && activeIds.includes(notification.source as string)) {
-				if (notification.status === NoticeLevel.CRITICAL) {
-					critical++
-				} else if (notification.status === NoticeLevel.WARNING) {
-					warning++
-				}
-			}
-		})
-
-		return {
-			notificationsFromRundown: {
-				critical,
-				warning,
-			},
-		}
-	},
-	(data, props: IProps, nextProps: IProps) => {
-		if (
-			props.rundown._id !== nextProps.rundown._id ||
-			props.rundown.name !== nextProps.rundown.name ||
-			props.rundown.expectedStart !== nextProps.rundown.expectedStart ||
-			props.rundown.expectedDuration !== nextProps.rundown.expectedDuration
-		) {
-			return true
-		}
-		return false
-	}
-)(
-	class RundownDividerHeader extends React.Component<Translated<IProps & ITrackedProps>> {
+export const RundownDividerHeader = withTranslation()(
+	class RundownDividerHeader extends React.Component<Translated<IProps>> {
 		render() {
 			const { t } = this.props
 			return (
 				<div className="rundown-divider-timeline">
 					<h2 className="rundown-divider-timeline__title">{this.props.rundown.name}</h2>
-					<div className="rundown-divider-timeline__notifications-group">
-						<div className="rundown-divider-timeline__notifications rundown-divider-timeline__notifications--critical">
-							<CriticalIconSmall />
-							<span className="rundown-divider-timeline__notifications__count">
-								{this.props.notificationsFromRundown.critical}
-							</span>
-						</div>
-						<div className="rundown-divider-timeline__notifications rundown-divider-timeline__notifications--warning">
-							<WarningIconSmall />
-							<span className="rundown-divider-timeline__notifications__count">
-								{this.props.notificationsFromRundown.warning}
-							</span>
-						</div>
-					</div>
 					{this.props.rundown.expectedStart && (
 						<div className="rundown-divider-timeline__expected-start">
 							<span>{t('Planned Start')}</span>&nbsp;

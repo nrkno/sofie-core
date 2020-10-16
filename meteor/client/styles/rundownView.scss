@@ -2117,6 +2117,11 @@ body.no-overflow {
 	color: $rundown-divider-color;
 	background: $rundown-divider-background-color;
 
+	margin-left: 0;
+	margin-right: 0;
+	padding-left: 1em;
+	padding-right: 1em;
+
 	> .rundown-divider-timeline__title {
 		margin: 0 1em 0 0; // center vertically
 		padding: 0.3em;
@@ -2157,7 +2162,7 @@ body.no-overflow {
 	> .rundown-divider-timeline__expected-duration {
 		display: inline-block;
 		vertical-align: top;
-		margin: 0.95em 0.5em 0.5em;
+		margin: 0.72em 0.5em 0.5em;
 
 		> time {
 			font-weight: 600;
