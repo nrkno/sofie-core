@@ -1416,7 +1416,12 @@ const StudioRoutings = withTranslation()(
 			const { t } = this.props
 			return (
 				<div>
-					<h2 className="mhn">{t('Route Sets')}</h2>
+					<h2 className="mhn mbs">{t('Route Sets')}</h2>
+					<p className="mhn mvs text-s dimmed">
+						{t(
+							'Controls for exposed Route Sets will be displayed to the producer within the Rundown View in the Switchboard.'
+						)}
+					</p>
 					<h3 className="mhn">{t('Exclusivity Groups')}</h3>
 					<table className="expando settings-studio-mappings-table">
 						<tbody>{this.renderExclusivityGroups()}</tbody>
