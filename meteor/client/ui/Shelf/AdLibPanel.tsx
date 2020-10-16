@@ -515,6 +515,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 
 	const sharedHotkeyList = _.groupBy(props.showStyleBase.sourceLayers, (item) => item.activateKeyboardHotkeys)
 
+	const segments = props.playlist.getSegments()
+
 	const { uiSegments, liveSegment, uiPartSegmentMap } = memoizedIsolatedAutorun(
 		(currentPartInstanceId: PartInstanceId | null, nextPartInstanceId: PartInstanceId | null, segments: Segment[]) => {
 			// This is a map of partIds mapped onto segments they are part of
@@ -586,7 +588,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 		'uiSegments',
 		props.playlist.currentPartInstanceId,
 		props.playlist.nextPartInstanceId,
-		props.playlist.getSegments()
+		segments
 	)
 
 	uiSegments.forEach((segment) => (segment.pieces.length = 0))
@@ -617,14 +619,14 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 		})
 
 	const adlibActions = memoizedIsolatedAutorun(
-		(_rundownIds: RundownId[], _partIds: PartId[]) =>
+		(rundownIds: RundownId[], partIds: PartId[]) =>
 			AdLibActions.find(
 				{
 					rundownId: {
-						$in: _rundownIds,
+						$in: rundownIds,
 					},
 					partId: {
-						$in: _partIds,
+						$in: partIds,
 					},
 				},
 				{
@@ -739,11 +741,11 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 					)
 
 					const globalAdLibActions = memoizedIsolatedAutorun(
-						(_rundownIds: RundownId[]) =>
+						(rundownIds: RundownId[]) =>
 							RundownBaselineAdLibActions.find(
 								{
 									rundownId: {
-										$in: _rundownIds,
+										$in: rundownIds,
 									},
 									partId: {
 										$exists: false,
