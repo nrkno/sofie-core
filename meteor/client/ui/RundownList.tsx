@@ -1,12 +1,21 @@
 import Tooltip from 'rc-tooltip'
 import * as React from 'react'
+import {
+	DragElementWrapper,
+	DropTarget,
+	DropTargetCollector,
+	DropTargetConnector,
+	DropTargetMonitor,
+	DropTargetSpec,
+} from 'react-dnd'
 import { MeteorCall } from '../../lib/api/methods'
 import { PubSub } from '../../lib/api/pubsub'
 import { StatusResponse } from '../../lib/api/systemStatus'
+import { UserActionAPIMethods } from '../../lib/api/userActions'
 import { GENESIS_SYSTEM_VERSION, getCoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { RundownId, Rundowns } from '../../lib/collections/Rundowns'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Studios } from '../../lib/collections/Studios'
@@ -16,8 +25,10 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { NoticeLevel, Notification, NotificationCenter } from '../lib/notifications/notifications'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
+import { RundownListDragDropTypes } from './RundownList/DragAndDropTypes'
 import { GettingStarted } from './RundownList/GettingStarted'
 import { RegisterHelp } from './RundownList/RegisterHelp'
+import { RundownDropZone } from './RundownList/RundownDropZone'
 import { RundownListFooter } from './RundownList/RundownListFooter'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 
@@ -36,6 +47,22 @@ interface IRundownsListProps {
 interface IRundownsListState {
 	systemStatus?: StatusResponse
 	subsReady: boolean
+}
+
+interface IRundownsListDropTargetProps {
+	connectDropTarget: DragElementWrapper<RundownPlaylistUi>
+	isOver: boolean
+}
+
+const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRundownsListProps> = function(
+	connect: DropTargetConnector,
+	monitor: DropTargetMonitor,
+	props: IRundownsListProps
+): IRundownsListDropTargetProps {
+	return {
+		connectDropTarget: connect.dropTarget(),
+		isOver: monitor.isOver(),
+	}
 }
 
 export const RundownList = translateWithTracker(() => {
@@ -88,158 +115,179 @@ export const RundownList = translateWithTracker(() => {
 		rundownLayouts,
 	}
 })(
-	class RundownList extends MeteorReactComponent<Translated<IRundownsListProps>, IRundownsListState> {
-		// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-		constructor(props) {
-			super(props)
+	DropTarget(
+		RundownListDragDropTypes.RUNDOWN,
+		{},
+		dropTargetCollector
+	)(
+		class RundownList extends MeteorReactComponent<
+			Translated<IRundownsListProps> & IRundownsListDropTargetProps,
+			IRundownsListState
+		> {
+			// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
+			constructor(props: Translated<IRundownsListProps> & IRundownsListDropTargetProps) {
+				super(props)
 
-			this.state = {
-				subsReady: false,
-			}
-		}
-
-		tooltipStep() {
-			let gotPlaylists = false
-
-			for (const playlist of this.props.rundownPlaylists) {
-				if (playlist.unsyncedRundowns.length > -1) {
-					gotPlaylists = true
-					break
+				this.state = {
+					subsReady: false,
 				}
 			}
 
-			if (this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && gotPlaylists === true) {
-				return getAllowConfigure() ? ToolTipStep.TOOLTIP_RUN_MIGRATIONS : ToolTipStep.TOOLTIP_START_HERE
-			} else {
-				return ToolTipStep.TOOLTIP_EXTRAS
+			tooltipStep() {
+				let gotPlaylists = false
+
+				for (const playlist of this.props.rundownPlaylists) {
+					if (playlist.unsyncedRundowns.length > -1) {
+						gotPlaylists = true
+						break
+					}
+				}
+
+				if (this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && gotPlaylists === true) {
+					return getAllowConfigure() ? ToolTipStep.TOOLTIP_RUN_MIGRATIONS : ToolTipStep.TOOLTIP_START_HERE
+				} else {
+					return ToolTipStep.TOOLTIP_EXTRAS
+				}
 			}
-		}
 
-		componentDidMount() {
-			const { t } = this.props
+			componentDidMount() {
+				const { t } = this.props
 
-			// Subscribe to data:
-			this.subscribe(PubSub.rundownPlaylists, {})
-			this.subscribe(PubSub.studios, {})
-			this.subscribe(PubSub.rundownLayouts, {})
+				// Subscribe to data:
+				this.subscribe(PubSub.rundownPlaylists, {})
+				this.subscribe(PubSub.studios, {})
+				this.subscribe(PubSub.rundownLayouts, {})
 
-			this.autorun(() => {
-				const showStyleBaseIds: Set<string> = new Set()
-				const showStyleVariantIds: Set<string> = new Set()
-				const playlistIds: Set<string> = new Set(
-					RundownPlaylists.find()
-						.fetch()
-						.map((i) => unprotectString(i._id))
-				)
-
-				for (const rundown of Rundowns.find().fetch()) {
-					showStyleBaseIds.add(unprotectString(rundown.showStyleBaseId))
-					showStyleVariantIds.add(unprotectString(rundown.showStyleVariantId))
-				}
-
-				this.subscribe(PubSub.showStyleBases, {
-					_id: { $in: Array.from(showStyleBaseIds) },
-				})
-				this.subscribe(PubSub.showStyleVariants, {
-					_id: { $in: Array.from(showStyleVariantIds) },
-				})
-				this.subscribe(PubSub.rundowns, {
-					playlistId: { $in: Array.from(playlistIds) },
-				})
-			})
-
-			this.autorun(() => {
-				let subsReady = this.subscriptionsReady()
-				if (subsReady !== this.state.subsReady) {
-					this.setState({
-						subsReady: subsReady,
-					})
-				}
-			})
-
-			MeteorCall.systemStatus
-				.getSystemStatus()
-				.then((systemStatus: StatusResponse) => {
-					this.setState({ systemStatus })
-				})
-				.catch(() => {
-					NotificationCenter.push(
-						new Notification(
-							'systemStatus_failed',
-							NoticeLevel.CRITICAL,
-							t('Could not get system status. Please consult system administrator.'),
-							'RundownList'
-						)
+				this.autorun(() => {
+					const showStyleBaseIds: Set<string> = new Set()
+					const showStyleVariantIds: Set<string> = new Set()
+					const playlistIds: Set<string> = new Set(
+						RundownPlaylists.find()
+							.fetch()
+							.map((i) => unprotectString(i._id))
 					)
+
+					for (const rundown of Rundowns.find().fetch()) {
+						showStyleBaseIds.add(unprotectString(rundown.showStyleBaseId))
+						showStyleVariantIds.add(unprotectString(rundown.showStyleVariantId))
+					}
+
+					this.subscribe(PubSub.showStyleBases, {
+						_id: { $in: Array.from(showStyleBaseIds) },
+					})
+					this.subscribe(PubSub.showStyleVariants, {
+						_id: { $in: Array.from(showStyleVariantIds) },
+					})
+					this.subscribe(PubSub.rundowns, {
+						playlistId: { $in: Array.from(playlistIds) },
+					})
 				})
-		}
 
-		renderRundownPlaylists(list: RundownPlaylistUi[]) {
-			const { t, rundownLayouts } = this.props
+				this.autorun(() => {
+					let subsReady = this.subscriptionsReady()
+					if (subsReady !== this.state.subsReady) {
+						this.setState({
+							subsReady: subsReady,
+						})
+					}
+				})
 
-			if (list.length < 1) {
-				return (
-					<tr>
-						<td colSpan={10}>{t('There are no rundowns ingested into Sofie.')}</td>
-					</tr>
-				)
+				MeteorCall.systemStatus
+					.getSystemStatus()
+					.then((systemStatus: StatusResponse) => {
+						this.setState({ systemStatus })
+					})
+					.catch(() => {
+						NotificationCenter.push(
+							new Notification(
+								'systemStatus_failed',
+								NoticeLevel.CRITICAL,
+								t('Could not get system status. Please consult system administrator.'),
+								'RundownList'
+							)
+						)
+					})
 			}
 
-			return list.map((playlist) => (
-				<RundownPlaylistUi key={unprotectString(playlist._id)} playlist={playlist} rundownLayouts={rundownLayouts} />
-			))
-		}
+			private handleRundownDrop(rundownId: RundownId) {
+				console.debug(`Rundown dropped outside of any playlist`, rundownId)
+				MeteorCall.userAction.moveRundown(UserActionAPIMethods.moveRundownToNewPlaylist, rundownId, null, [rundownId])
+			}
 
-		render() {
-			const { t, rundownPlaylists } = this.props
+			renderRundownPlaylists(list: RundownPlaylistUi[]) {
+				const { t, rundownLayouts } = this.props
 
-			const step = this.tooltipStep()
+				if (list.length < 1) {
+					return (
+						<tr>
+							<td colSpan={10}>{t('There are no rundowns ingested into Sofie.')}</td>
+						</tr>
+					)
+				}
 
-			const showGettingStarted =
-				this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && rundownPlaylists.length === 0
+				return list.map((playlist) => (
+					<RundownPlaylistUi key={unprotectString(playlist._id)} playlist={playlist} rundownLayouts={rundownLayouts} />
+				))
+			}
 
-			return (
-				<React.Fragment>
-					{this.props.coreSystem ? <RegisterHelp step={step} /> : null}
+			render() {
+				const { t, rundownPlaylists, isOver, connectDropTarget } = this.props
 
-					{showGettingStarted === true ? <GettingStarted step={step} /> : null}
+				const step = this.tooltipStep()
 
-					<div className="mtl gutter has-statusbar">
-						<header className="mvs">
-							<h1>{t('Rundowns')}</h1>
-						</header>
-						{this.state.subsReady ? (
-							<div className="mod mvl">
-								<table className="table system-status-table expando expando-tight rundown-list">
-									<thead>
-										<tr className="hl">
-											<th className="rundown-list-item__name">
-												<Tooltip
-													overlay={t('Click on a rundown to control your studio')}
-													visible={getHelpMode()}
-													placement="top">
-													<span>{t('Rundown')}</span>
-												</Tooltip>
-											</th>
-											<th className="rundown-list-item__showStyle">{t('Show style')}</th>
-											<th className="rundown-list-item__airTime">{t('On Air Start Time')}</th>
-											<th className="rundown-list-item__status">{t('Status')}</th>
-											<th className="rundown-list-item__duration">{t('Duration')}</th>
-											<th className="rundown-list-item__created">{t('Created')}</th>
-											<th className="rundown-list-item__actions">&nbsp;</th>
-										</tr>
-									</thead>
-									<tbody className="rundown-playlists">{this.renderRundownPlaylists(rundownPlaylists)}</tbody>
-								</table>
+				const showGettingStarted =
+					this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && rundownPlaylists.length === 0
+
+				const handleDropZoneDrop = (id: RundownId) => {
+					this.handleRundownDrop(id)
+				}
+
+				return (
+					<React.Fragment>
+						{this.props.coreSystem ? <RegisterHelp step={step} /> : null}
+
+						{showGettingStarted === true ? <GettingStarted step={step} /> : null}
+
+						{connectDropTarget(
+							<div className="mtl gutter has-statusbar">
+								<header className="mvs">
+									<h1>{t('Rundowns')}</h1>
+								</header>
+								{this.state.subsReady ? (
+									<div className="mod mvl">
+										<table className="table system-status-table expando expando-tight rundown-list">
+											<thead>
+												<tr className="hl">
+													<th className="rundown-list-item__name">
+														<Tooltip
+															overlay={t('Click on a rundown to control your studio')}
+															visible={getHelpMode()}
+															placement="top">
+															<span>{t('Rundown')}</span>
+														</Tooltip>
+													</th>
+													<th className="rundown-list-item__showStyle">{t('Show style')}</th>
+													<th className="rundown-list-item__airTime">{t('On Air Start Time')}</th>
+													<th className="rundown-list-item__status">{t('Status')}</th>
+													<th className="rundown-list-item__duration">{t('Duration')}</th>
+													<th className="rundown-list-item__created">{t('Created')}</th>
+													<th className="rundown-list-item__actions">&nbsp;</th>
+												</tr>
+											</thead>
+											<tbody className="rundown-playlists">{this.renderRundownPlaylists(rundownPlaylists)}</tbody>
+										</table>
+										{<RundownDropZone activated={isOver} rundownDropHandler={handleDropZoneDrop} />}
+									</div>
+								) : (
+									<Spinner />
+								)}
 							</div>
-						) : (
-							<Spinner />
 						)}
-					</div>
 
-					{this.state.systemStatus ? <RundownListFooter systemStatus={this.state.systemStatus} /> : null}
-				</React.Fragment>
-			)
+						{this.state.systemStatus ? <RundownListFooter systemStatus={this.state.systemStatus} /> : null}
+					</React.Fragment>
+				)
+			}
 		}
-	}
+	)
 )

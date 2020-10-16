@@ -2,7 +2,7 @@ import React from 'react'
 import ClassNames from 'classnames'
 import { withTranslation } from 'react-i18next'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
-import { protectString, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ActiveProgressBar } from './ActiveProgressBar'
 import { RundownListItem } from './RundownListItem'
@@ -31,7 +31,6 @@ import {
 	RundownListDragDropTypes,
 	RundownPlaylistUiActionTypes,
 } from './DragAndDropTypes'
-import { drop } from 'underscore'
 import { MeteorCall } from '../../../lib/api/methods'
 import { UserActionAPIMethods } from '../../../lib/api/userActions'
 
@@ -65,14 +64,10 @@ interface IRundownPlaylistDropTargetProps {
 }
 
 const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
-	canDrop: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor) => {
-		// console.debug(`canDrop #${props.playlist._id}`, monitor.getItem())
-		return true
-	},
 	drop: (
 		props: IRundownPlaylistUiProps,
 		monitor: DropTargetMonitor,
-		component: RundownPlaylistUi
+		component: any
 	): IRundownPlaylistUiAction | undefined => {
 		const dropped = monitor.getItem()
 
@@ -84,10 +79,6 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 				rundownId: dropped.id,
 			}
 		}
-	},
-	hover: (props: IRundownPlaylistUiProps, monitor: DropTargetMonitor, component: RundownPlaylistUi) => {
-		// console.debug(`hover #${props.playlist._id}`, monitor.getItem(), component)
-		// console.debug(`is hovering over this component? ${monitor.isOver({ shallow: true })}`)
 	},
 }
 
@@ -143,42 +134,29 @@ export const RundownPlaylistUi = DropTarget(
 			}
 
 			private handleRundownDrop(rundownId: RundownId) {
+				const playlistId = this.props.playlist._id
+				const rundownOrder = this.state.rundownOrder.slice()
+
 				if (this.rundowns.has(rundownId)) {
 					// finalize order from component state
-					const playlistId = this.props.playlist._id
-					const rundownOrder = this.state.rundownOrder.slice()
-
 					MeteorCall.userAction.moveRundown(
 						UserActionAPIMethods.reorderRundownPlaylist,
 						rundownId,
 						playlistId,
 						rundownOrder
 					)
+				} else {
+					// add rundown to playlist
+					rundownOrder.push(rundownId)
+					console.debug(`Rundown ${rundownId} added to end of playlist ${playlistId}`, rundownOrder)
+
+					MeteorCall.userAction.moveRundown(
+						UserActionAPIMethods.addRundownToPlaylist,
+						rundownId,
+						playlistId,
+						rundownOrder
+					)
 				}
-
-				// MeteorCall.userAction.moveRundown(e, rundownIdTHatWasMoved, movedIntoPlaylistId, rundownsIdsInPlaylistInOrder)
-
-				// onDragEnd (magic: any) {
-				// 	console.log({
-				// 		rundownIdTHatWasMoved: RundownId, // always
-				// 		movedIntoPlaylistId: PlaylistId | null, // if null, move to (new) separate playlist containing only this items
-				// 		rundownsIdsInPlaylistInOrder: RundownId[] // new order of playlist, ignore if moved to single item playlist
-				// 	})
-
-				// 	// move into a playlist
-				// 	console.log({
-				// 		rundownIdTHatWasMoved: 'D',
-				// 		movedIntoPlaylistId: 'P',
-				// 		rundownsIdsInPlaylistInOrder: ['A', 'B', 'D', 'C']
-				// 	})
-
-				// 	// move out from a playlist
-				// 	console.log({
-				// 		rundownIdTHatWasMoved: 'C',
-				// 		movedIntoPlaylistId: null, // backend: create new playlist -> C, delete playlist C was originally in (if empty)?
-				// 		rundownsIdsInPlaylistInOrder: ['C'] // but who cares
-				// 	})
-				// }
 			}
 
 			componentDidUpdate() {
@@ -279,6 +257,12 @@ export const RundownPlaylistUi = DropTarget(
 
 			render() {
 				const { playlist, connectDropTarget, isOver } = this.props
+
+				if (playlist.rundowns.length === 0) {
+					console.log(`Playlist ${playlist._id} has no rundowns, aborting render`)
+					return null
+				}
+
 				const playbackProgressBar = createProgressBarRow(playlist)
 				const playlistViewLinks = this.createPlaylistViewLinks()
 				const handleRundownSwap = (a: RundownId, b: RundownId) => {
@@ -349,15 +333,4 @@ function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement |
 	}
 
 	return null
-}
-
-function getVisualOrder(items: HTMLElement[]): HTMLElement[] {
-	return items
-		.map((item) => {
-			const { top } = item.getBoundingClientRect()
-
-			return { item, top }
-		})
-		.sort((a, b) => a.top - b.top)
-		.map(({ item }) => item)
 }

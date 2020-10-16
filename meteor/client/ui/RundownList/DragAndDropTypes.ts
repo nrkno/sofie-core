@@ -22,6 +22,8 @@ function isRundownDragObject(obj: any): obj is IRundownDragObject {
 
 enum RundownPlaylistUiActionTypes {
 	HANDLE_RUNDOWN_DROP = 'HANDLE_RUNDOWN_DROP',
+	/* no-op to use when a drop is handled but no further action is necessary */
+	NOOP = 'NOOP',
 }
 
 interface IRundownPlaylistUiAction {
