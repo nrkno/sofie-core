@@ -23,6 +23,10 @@ interface ITrackedProps {
 
 const QUATER_DAY = 6 * 60 * 60 * 1000
 
+/**
+ * This is a countdown to the rundown's _Expected Start_ time. It shows nothing if the expectedStart is undefined
+ * or the time to _Expected Start_ from now is larger than 6 hours.
+ */
 const RundownCountdown = withTranslation()(
 	withTiming<
 		Translated<{
@@ -67,6 +71,14 @@ const RundownCountdown = withTranslation()(
 	)
 )
 
+/**
+ * This is a component for showing the title of the rundown, it's expectedStart and expectedDuration and
+ * icons for the notifications it's segments have produced. The counters for the notifications are
+ * produced by filtering the notifications in the Notification Center based on the source being the
+ * rundownId or one of the segmentIds.
+ *
+ * The component should be minimally reactive.
+ */
 export const RundownDividerHeader = translateWithTracker<IProps, {}, ITrackedProps>(
 	(props: IProps) => {
 		const activeIds = unprotectStringArray(
@@ -82,19 +94,25 @@ export const RundownDividerHeader = translateWithTracker<IProps, {}, ITrackedPro
 				.map((segment) => segment._id)
 		)
 		activeIds.push(unprotectString(props.rundown._id))
-		const notificationsFromRundown = NotificationCenter.getNotifications().filter(
-			(notification) => notification.source && activeIds.includes(notification.source as string)
-		)
+
+		let critical = 0
+		let warning = 0
+
+		// filter all of the notifications in the Notification Center using the notification.source
+		NotificationCenter.getNotifications().forEach((notification) => {
+			if (notification.source && activeIds.includes(notification.source as string)) {
+				if (notification.status === NoticeLevel.CRITICAL) {
+					critical++
+				} else if (notification.status === NoticeLevel.WARNING) {
+					warning++
+				}
+			}
+		})
+
 		return {
 			notificationsFromRundown: {
-				critical: notificationsFromRundown.reduce(
-					(mem, notification) => (notification.status === NoticeLevel.CRITICAL ? mem + 1 : mem),
-					0
-				),
-				warning: notificationsFromRundown.reduce(
-					(mem, notification) => (notification.status === NoticeLevel.WARNING ? mem + 1 : mem),
-					0
-				),
+				critical,
+				warning,
 			},
 		}
 	},
