@@ -142,10 +142,10 @@ export class DbCacheReadCollection<Class extends DBInterface, DBInterface extend
 	async fillWithDataFromDatabase(selector: MongoQuery<DBInterface>): Promise<number> {
 		const docs = await asyncCollectionFindFetch(this._collection, selector)
 
-		this._innerfillWithDataFromArray(docs)
+		this.fillWithDataFromArray(docs)
 		return docs.length
 	}
-	private _innerfillWithDataFromArray(documents: Class[]) {
+	fillWithDataFromArray(documents: Class[]) {
 		_.each(documents, (doc) => {
 			const id = unprotectString(doc._id)
 			if (this.documents[id]) {
@@ -371,11 +371,30 @@ export class DbCacheWriteCollection<
 			delete this._collection[unprotectString(_id)]
 		})
 
-		const writeResult = await pBulkWriteResult
+		await pBulkWriteResult
 
 		if (span) span.addLabels(changes)
 		if (span) span.end()
 		return changes
+	}
+	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<Class, DBInterface>) {
+		for (const id of Object.keys(this.documents)) {
+			const _id: DBInterface['_id'] = protectString(id)
+			const doc = this.documents[id]
+
+			if (doc.removed) {
+				otherCache.remove(_id)
+				delete this.documents[id]
+			} else {
+				if (doc.inserted) {
+					otherCache.insert(doc.document)
+				} else if (doc.updated) {
+					otherCache.upsert(_id, doc.document, true)
+				}
+				delete doc.inserted
+				delete doc.updated
+			}
+		}
 	}
 }
 type SelectorFunction<DBInterface> = (doc: DBInterface) => boolean

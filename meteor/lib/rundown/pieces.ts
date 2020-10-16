@@ -2,7 +2,6 @@ import { DeepReadonly } from 'utility-types'
 import { PieceInstanceWithTimings } from './infinites'
 import {
 	TimelineObjRundown,
-	TimelineObjGroup,
 	TimelineContentTypeOther,
 	TimelineObjType,
 	TimelineObjGroupRundown,

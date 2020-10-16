@@ -188,7 +188,7 @@ export async function getLookeaheadObjects(
 
 	// elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
 	const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
-		`#${obj.pieceInstanceId ?? ''}${obj.id}.start`
+		`#${obj.pieceInstanceId ?? ''}${obj.originalId ?? obj.id}.start`
 	const calculateStartAfterPreviousObj = (
 		prevObj: TimelineObjRundown & OnGenerateTimelineObj
 	): TimelineTypes.TimelineEnable => {

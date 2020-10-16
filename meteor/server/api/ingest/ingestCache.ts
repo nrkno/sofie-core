@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { saveIntoDb, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
-import { IngestRundown, IngestSegment, IngestPart, IngestAdlib } from 'tv-automation-sofie-blueprints-integration'
+import { IngestRundown, IngestSegment, IngestPart } from 'tv-automation-sofie-blueprints-integration'
 import {
 	IngestDataCacheObj,
 	IngestDataCache,

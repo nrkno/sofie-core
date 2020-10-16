@@ -125,6 +125,7 @@ describe('Basic test of test environment', () => {
 				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'abc',
 				routeSets: {},
+				routeSetExclusivityGroups: {},
 			},
 			{
 				_id: protectString('def'),
@@ -136,6 +137,7 @@ describe('Basic test of test environment', () => {
 				settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 				_rundownVersionHash: 'def',
 				routeSets: {},
+				routeSetExclusivityGroups: {},
 			},
 		])
 
@@ -179,6 +181,7 @@ describe('Basic test of test environment', () => {
 			settings: { mediaPreviewsUrl: '', sofieUrl: '' },
 			_rundownVersionHash: 'xyz',
 			routeSets: {},
+			routeSetExclusivityGroups: {},
 		})
 		expect(Studios.find().fetch()).toHaveLength(2)
 

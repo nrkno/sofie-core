@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { doModalDialog } from '../lib/ModalDialog'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { getAllowDeveloper, getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
+import { getAllowConfigure, getAllowService, getHelpMode } from '../lib/localStorage'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from '../lib/notifications/notifications'
@@ -26,13 +26,11 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ReactNotification } from '../lib/notifications/ReactNotification'
 import { Spinner } from '../lib/Spinner'
 import { MeteorCall } from '../../lib/api/methods'
-import { Settings } from '../../lib/Settings'
 import { languageOr } from '../lib/language'
 import { SplitDropdown } from '../lib/SplitDropdown'
 import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../lib/UIStateStorage'
 import ClassNames from 'classnames'
-import { getUser, User } from '../../lib/collections/Users'
 
 const PackageInfo = require('../../package.json')
 
@@ -618,11 +616,15 @@ export const RundownList = translateWithTracker(() => {
 															nrcsNames:
 																languageOr(
 																	t,
-																	_.flatten(
+																	_.chain(
 																		unsyncedRundownPlaylists.map((p) =>
 																			p.unsyncedRundowns.map((r) => r.externalNRCSName)
 																		)
 																	)
+																		.flatten()
+																		.compact()
+																		.unique()
+																		.value()
 																) || 'NRCS',
 														})}
 													</h2>

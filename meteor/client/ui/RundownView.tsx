@@ -92,10 +92,11 @@ import { Settings } from '../../lib/Settings'
 import { MeteorCall } from '../../lib/api/methods'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { AdLibPieceUi } from './Shelf/AdLibPanel'
-import { documentTitle } from '../lib/documentTitle'
+import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstanceId, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { CASPARCG_RESTART_TIME } from '../../lib/constants'
+import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1073,13 +1074,29 @@ const RundownHeader = withTranslation()(
 		takeRundownSnapshot = (e) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, this.props.playlist._id, 'Taken by user'),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+						return false
+					},
+					doneMessage
 				)
 			}
 		}
@@ -1292,6 +1309,7 @@ export interface IGoToPartInstanceEvent {
 type MatchedSegment = {
 	rundown: Rundown
 	segments: Segment[]
+	segmentIdsBeforeEachSegment: Set<SegmentId>[]
 }
 
 interface ITrackedProps {
@@ -1332,15 +1350,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	if (playlist) {
 		studio = Studios.findOne({ _id: playlist.studioId })
-		rundowns = playlist.getRundowns()
-		allParts = playlist
-			.getAllOrderedParts(undefined, {
-				fields: {
-					segmentId: 1,
-					_rank: 1,
-				},
-			})
-			.map((part) => part._id)
+		rundowns = memoizedIsolatedAutorun((_playlistId) => playlist.getRundowns(), 'playlist.getRundowns', playlistId)
+		allParts = memoizedIsolatedAutorun(
+			(_playlistId) =>
+				playlist
+					.getAllOrderedParts(undefined, {
+						fields: {
+							segmentId: 1,
+							_rank: 1,
+						},
+					})
+					.map((part) => part._id),
+			'playlist.getAllOrderedParts',
+			playlistId
+		)
 		;({ currentPartInstance, nextPartInstance } = playlist.getSelectedPartInstances())
 	}
 
@@ -1356,11 +1379,24 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownPlaylistId: playlistId,
 		rundowns,
 		matchedSegments: playlist
-			? playlist.getRundownsAndSegments({
-					isHidden: {
-						$ne: true,
-					},
-			  })
+			? playlist
+					.getRundownsAndSegments({
+						isHidden: {
+							$ne: true,
+						},
+					})
+					.map((input, rundownIndex, rundownArray) => ({
+						...input,
+						segmentIdsBeforeEachSegment: input.segments.map(
+							(segment, segmentIndex, segmentArray) =>
+								new Set([
+									...(_.flatten(
+										rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
+									) as SegmentId[]),
+									...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
+								])
+						),
+					}))
 			: [],
 		playlist,
 		studio: studio,
@@ -2164,25 +2200,16 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		onStudioRouteSetSwitch = (
-			e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
 			routeSet: StudioRouteSet,
 			state: boolean
 		) => {
 			const { t } = this.props
 			if (this.props.studio) {
-				e.persist()
-				doModalDialog({
-					title: t('Switching route'),
-					message: state
-						? t('Are you sure you want to enable this route: "{{routeName}}"?', { routeName: routeSet.name })
-						: t('Are you sure you want to disable this route: "{{routeName}}"?', { routeName: routeSet.name }),
-					onAccept: () => {
-						doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
-							MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
-						)
-					},
-				})
+				doUserAction(t, e, UserAction.SWITCH_ROUTE_SET, (e) =>
+					MeteorCall.userAction.switchRouteSet(e, this.props.studio!._id, routeSetId, state)
+				)
 			}
 		}
 
@@ -2222,24 +2249,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onContextMenu={this.onContextMenu}
 												onSegmentScroll={this.onSegmentScroll}
 												orderedAllPartIds={this.props.orderedPartsIds}
-												segmentsIdsBefore={
-													new Set([
-														..._.flatten(
-															rundownArray
-																.slice(0, rundownIndex)
-																.map((match) => match.segments.map((segment) => segment._id))
-														),
-														...segmentArray.slice(0, segmentIndex).map((segment) => segment._id),
-													])
-												}
+												segmentsIdsBefore={rundownAndSegments.segmentIdsBeforeEachSegment[segmentIndex]}
 												isLastSegment={
 													rundownIndex === rundownArray.length - 1 && segmentIndex === segmentArray.length - 1
 												}
 												onPieceClick={this.onSelectPiece}
 												onPieceDoubleClick={this.onPieceDoubleClick}
-												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
+												onHeaderNoteClick={this.onHeaderNoteClick}
 												ownCurrentPartInstance={
-													this.props.currentPartInstance && this.props.currentPartInstance.segmentId === segment._id
+													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
+													// is a part of the segment
+													(this.props.currentPartInstance &&
+														this.props.currentPartInstance.segmentId === segment._id) ||
+													// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
+													(this.props.nextPartInstance &&
+														this.props.nextPartInstance.segmentId === segment._id &&
+														this.props.currentPartInstance &&
+														this.props.currentPartInstance.part.autoNext)
 														? this.props.currentPartInstance
 														: undefined
 												}
@@ -2413,13 +2439,29 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const { t } = this.props
 			if (this.props.playlist) {
 				const playlistId = this.props.playlist._id
+				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
 				doUserAction(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e) => MeteorCall.userAction.storeRundownSnapshot(e, playlistId, 'User requested log at' + getCurrentTime()),
-					undefined,
-					t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
+					() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								doneMessage,
+								'userAction',
+								undefined,
+								false,
+								undefined,
+								undefined,
+								5000
+							)
+						)
+						return false
+					},
+					doneMessage
 				)
 			}
 		}
@@ -2485,6 +2527,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										isStudioMode={this.state.studioMode}
 										onTake={this.onTake}
 										studioRouteSets={this.props.studio.routeSets}
+										studioRouteSetExclusivityGroups={this.props.studio.routeSetExclusivityGroups}
 										onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
 									/>
 								</ErrorBoundary>
@@ -2525,26 +2568,32 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										}}>
 										{this.state.isSupportPanelOpen && (
 											<SupportPopUp>
-												<button className="btn btn-primary" onClick={this.onToggleHotkeys}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onToggleHotkeys}>
 													{t('Show Hotkeys')}
 												</button>
-												<button className="btn btn-primary" onClick={this.onTakeRundownSnapshot}>
+												<hr />
+												<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
 													{t('Take a Snapshot')}
 												</button>
+												<hr />
 												{this.state.studioMode && (
-													<button className="btn btn-primary" onClick={this.onRestartPlayout}>
-														{t('Restart Playout')}
-													</button>
+													<>
+														<button className="btn btn-secondary" onClick={this.onRestartPlayout}>
+															{t('Restart Playout')}
+														</button>
+														<hr />
+													</>
 												)}
 												{this.state.studioMode &&
 													this.props.casparCGPlayoutDevices &&
 													this.props.casparCGPlayoutDevices.map((i) => (
-														<button
-															className="btn btn-primary"
-															onClick={() => this.onRestartCasparCG(i)}
-															key={unprotectString(i._id)}>
-															{t('Restart {{device}}', { device: i.name })}
-														</button>
+														<React.Fragment key={unprotectString(i._id)}>
+															<button className="btn btn-secondary" onClick={() => this.onRestartCasparCG(i)}>
+																{t('Restart {{device}}', { device: i.name })}
+															</button>
+															<hr />
+														</React.Fragment>
 													))}
 											</SupportPopUp>
 										)}

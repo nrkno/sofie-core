@@ -925,7 +925,7 @@ function transformPartIntoTimeline(
 				})
 			}
 
-			// TODO - should this be ignoreOriginal? this used to be setting that for the previousPartInstance
+			// TODO - should this be ignoreOriginal? this used to be setting that for the previousPartInstance. If changing, lookahead.ts getStartOfObjectRef() will need updating
 			timelineObjs.push(...prefixAllObjectIds(pieceObjects, unprotectString(pieceInstance._id)))
 		}
 	}

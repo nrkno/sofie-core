@@ -8,7 +8,6 @@ import {
 	Omit,
 	omit,
 } from '../lib'
-import { Meteor } from 'meteor/meteor'
 import {
 	IBlueprintPieceInstance,
 	Time,
@@ -16,7 +15,7 @@ import {
 } from 'tv-automation-sofie-blueprints-integration'
 import { createMongoCollection } from './lib'
 import { Piece, PieceId } from './Pieces'
-import { PartInstance, PartInstanceId } from './PartInstances'
+import { PartInstanceId } from './PartInstances'
 import { RundownId } from './Rundowns'
 import { registerIndex } from '../database'
 import { DeepPartial } from 'utility-types'
@@ -36,7 +35,8 @@ export function protectPieceInstance(pieceInstance: IBlueprintPieceInstance): De
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
-export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id'> {
+export interface PieceInstance
+	extends ProtectedStringProperties<Omit<IBlueprintPieceInstance, 'piece'>, '_id' | 'adLibSourceId'> {
 	/** Whether this PieceInstance is a temprorary wrapping of a Piece */
 	readonly isTemporary?: boolean
 
@@ -95,7 +95,9 @@ export interface PieceInstance extends ProtectedStringProperties<Omit<IBlueprint
 	}
 }
 
-export interface ResolvedPieceInstance extends PieceInstance, Omit<IBlueprintResolvedPieceInstance, '_id' | 'piece'> {
+export interface ResolvedPieceInstance
+	extends PieceInstance,
+		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'piece'> {
 	piece: PieceInstancePiece
 }
 

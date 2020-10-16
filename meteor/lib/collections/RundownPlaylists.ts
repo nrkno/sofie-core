@@ -7,12 +7,9 @@ import {
 	applyClassToDocument,
 	registerCollection,
 	normalizeArray,
-	makePromise,
 	getCurrentTime,
 	asyncCollectionFindFetch,
-	waitForPromise,
 	normalizeArrayFunc,
-	mongoWhere,
 	ProtectedString,
 	unprotectString,
 } from '../lib'
@@ -20,15 +17,14 @@ import { RundownHoldState, Rundowns, Rundown, DBRundown, RundownId } from './Run
 import { Studio, Studios, StudioId } from './Studios'
 import { Segments, Segment, DBSegment, SegmentId } from './Segments'
 import { Parts, Part, DBPart, PartId } from './Parts'
-import { Pieces, Piece, PieceId } from './Pieces'
 import { TimelinePersistentState } from 'tv-automation-sofie-blueprints-integration'
 import { PartInstance, PartInstances, PartInstanceId } from './PartInstances'
-import { PieceInstance, PieceInstances, PieceInstanceId, PieceInstanceInfiniteId } from './PieceInstances'
 import { GenericNote, RundownNote, TrackedNote } from '../api/notes'
 import { PeripheralDeviceId } from './PeripheralDevices'
 import { createMongoCollection } from './lib'
 import { OrganizationId } from './Organization'
 import { registerIndex } from '../database'
+import { PieceInstanceInfiniteId } from './PieceInstances'
 
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>

@@ -189,8 +189,23 @@
 			}
 		}
 
-		&.status-bar__controls__button--route-set-panel {
+		&.status-bar__controls__button--switchboard-panel {
+			position: fixed;
+			right: 0.3125rem;
+			bottom: 4.3125rem;
 			z-index: 310;
+			text-align: right;
+
+			> svg {
+				width: 1.7em;
+				height: 1.7em;
+				position: relative;
+				left: -0.6em;
+			}
+
+			&.status-bar__controls__button--open > svg > path {
+				fill: var(--ui-dark-color);
+			}
 		}
 	}
 }

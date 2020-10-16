@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { ProtectedString } from '../../../lib/lib'
 
 export interface Access<T> {
 	// Direct database access:

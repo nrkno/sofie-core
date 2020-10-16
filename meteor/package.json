@@ -39,7 +39,8 @@
     "validate:prod-dependencies": "npm audit --production",
     "validate:dev-dependencies": "npm audit --only=dev --audit-level=moderate",
     "check-types": "tsc --noEmit -p tsconfig.json",
-    "watch-types": "npm run check-types -- --watch"
+    "watch-types": "npm run check-types -- --watch",
+    "validate:release": "npm run validate:prod-dependencies && npm run license-validate && npm run lint && npm run test"
   },
   "dependencies": {
     "@babel/runtime": "^7.11.2",
@@ -95,7 +96,7 @@
     "soap": "^0.31.0",
     "superfly-timeline": "^8.1.1",
     "timecode": "0.0.4",
-    "tv-automation-sofie-blueprints-integration": "2.3.1",
+    "tv-automation-sofie-blueprints-integration": "2.4.0-nightly-release26-20201016-091219-f66b2e46.0",
     "underscore": "^1.11.0",
     "utility-types": "^3.10.0",
     "velocity-animate": "^1.5.2",

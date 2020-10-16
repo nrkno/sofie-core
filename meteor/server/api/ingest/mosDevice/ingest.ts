@@ -233,6 +233,8 @@ export function handleMosRundownMetadata(
 
 			// TODO - make this more lightweight?
 			handleUpdatedRundownInner(studio, rundownId, ingestRundown, 'mosRoMetadata', peripheralDevice)
+
+			span?.end()
 		}
 	)
 }

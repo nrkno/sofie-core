@@ -4,7 +4,6 @@ import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collecti
 import { PubSub, meteorSubscribe } from './pubsub'
 import { DeviceConfigManifest } from './deviceConfig'
 import { TSR } from 'tv-automation-sofie-blueprints-integration'
-import { RundownId } from '../collections/Rundowns'
 import { PartInstanceId } from '../collections/PartInstances'
 import { PeripheralDeviceId, PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstanceId } from '../collections/PieceInstances'
@@ -436,10 +435,12 @@ export namespace PeripheralDeviceAPI {
 	export function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		cb: (err, result) => void,
-		timeoutTime: number = 3000,
+		timeoutTime0: number | undefined,
 		functionName: string,
 		...args: any[]
 	) {
+		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
+
 		let commandId: PeripheralDeviceCommandId = getRandomId()
 
 		let subscription: Meteor.SubscriptionHandle | null = null

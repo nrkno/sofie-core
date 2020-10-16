@@ -18,6 +18,7 @@ import { PartInstances } from '../../lib/collections/PartInstances'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { updateTimeline } from '../api/playout/timeline'
 import { getActiveRundownPlaylistsInStudio } from '../api/playout/studio'
+import { forceClearAllBlueprintConfigCaches } from '../api/blueprints/config'
 
 if (!Settings.enableUserAccounts) {
 	// These are temporary method to fill the rundown database with some sample data
@@ -104,10 +105,11 @@ if (!Settings.enableUserAccounts) {
 			)
 		},
 
-		debug_forceClearAllActivationCaches() {
-			logger.info('forceClearAllActivationCaches')
+		debug_forceClearAllCaches() {
+			logger.info('forceClearAllCaches')
 
 			forceClearAllActivationCaches()
+			forceClearAllBlueprintConfigCaches()
 		},
 
 		debug_clearAllResetInstances() {
