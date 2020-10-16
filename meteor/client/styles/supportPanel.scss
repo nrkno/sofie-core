@@ -33,7 +33,7 @@
 }
 
 .support-pop-up-panel,
-.route-set-pop-up-panel {
+.switchboard-pop-up-panel {
 	position: fixed;
 	bottom: rem(13px);
 	right: -1px;
@@ -86,7 +86,7 @@
 	width: 22rem;
 }
 
-.route-set-pop-up-panel {
+.switchboard-pop-up-panel {
 	bottom: 4.8rem;
 	top: auto;
 	z-index: -1;
@@ -97,24 +97,24 @@
 	width: 28rem;
 	max-width: 28rem;
 
-	> .route-set-pop-up-panel__inside {
+	> .switchboard-pop-up-panel__inside {
 		width: 28rem;
 	}
 }
 
-.route-set-pop-up-panel .route-set-pop-up-panel__group {
+.switchboard-pop-up-panel .switchboard-pop-up-panel__group {
 	width: 28rem;
 	border-top: 1px solid #d7d7d7;
 	margin-top: 0.75em;
 	padding-top: 10px;
 	user-select: none;
 
-	.route-set-pop-up-panel__group__controls {
-		.route-set-pop-up-panel__group__controls__active {
+	.switchboard-pop-up-panel__group__controls {
+		.switchboard-pop-up-panel__group__controls__active {
 			font-weight: 400;
 		}
 
-		.route-set-pop-up-panel__group__controls__inactive {
+		.switchboard-pop-up-panel__group__controls__inactive {
 			color: #727272;
 		}
 
@@ -131,7 +131,7 @@
 		background: #eee;
 		z-index: 1900;
 	}
-	.route-set-pop-up-panel {
+	.switchboard-pop-up-panel {
 		color: #000;
 		background: #eee;
 		z-index: -1;

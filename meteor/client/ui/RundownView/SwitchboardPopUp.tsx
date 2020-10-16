@@ -17,8 +17,11 @@ interface IProps {
 	}
 }
 
-export const RouteSetsPopUp = withTranslation()(
-	class RouteSetsPopUp extends React.Component<Translated<IProps>> {
+/**
+ * This is a panel for which Route Sets are active in the current studio
+ */
+export const SwitchboardPopUp = withTranslation()(
+	class SwitchboardPopUp extends React.Component<Translated<IProps>> {
 		render() {
 			const { t } = this.props
 			const exclusivityGroups: {
@@ -31,22 +34,22 @@ export const RouteSetsPopUp = withTranslation()(
 			}
 
 			return (
-				<div className="route-set-pop-up-panel">
-					<div className="route-set-pop-up-panel__inside">
-						<h2 className="mhn mvn">{t('Route Sets')}</h2>
+				<div className="switchboard-pop-up-panel">
+					<div className="switchboard-pop-up-panel__inside">
+						<h2 className="mhn mvn">{t('Switchboard')}</h2>
 						{Object.entries(exclusivityGroups).map(([key, routeSets]) => (
-							<div className="route-set-pop-up-panel__group" key={key}>
+							<div className="switchboard-pop-up-panel__group" key={key}>
 								{this.props.studioRouteSetExclusivityGroups[key]?.name && (
 									<p className="mhs mbs mtn">{this.props.studioRouteSetExclusivityGroups[key]?.name}</p>
 								)}
 								{routeSets.length === 2 &&
 								routeSets[0][1].behavior === StudioRouteBehavior.ACTIVATE_ONLY &&
 								routeSets[1][1].behavior === StudioRouteBehavior.ACTIVATE_ONLY ? (
-									<div key={routeSets[0][0]} className="route-set-pop-up-panel__group__controls mhm mbs">
+									<div key={routeSets[0][0]} className="switchboard-pop-up-panel__group__controls mhm mbs">
 										<span
 											className={classNames({
-												'route-set-pop-up-panel__group__controls__active': routeSets[0][1].active,
-												'route-set-pop-up-panel__group__controls__inactive': !routeSets[0][1].active,
+												'switchboard-pop-up-panel__group__controls__active': routeSets[0][1].active,
+												'switchboard-pop-up-panel__group__controls__inactive': !routeSets[0][1].active,
 											})}>
 											{routeSets[0][1].name}
 										</span>
@@ -75,19 +78,19 @@ export const RouteSetsPopUp = withTranslation()(
 										</a>
 										<span
 											className={classNames({
-												'route-set-pop-up-panel__group__controls__active': routeSets[1][1].active,
-												'route-set-pop-up-panel__group__controls__inactive': !routeSets[1][1].active,
+												'switchboard-pop-up-panel__group__controls__active': routeSets[1][1].active,
+												'switchboard-pop-up-panel__group__controls__inactive': !routeSets[1][1].active,
 											})}>
 											{routeSets[1][1].name}
 										</span>
 									</div>
 								) : (
 									routeSets.map(([id, routeSet]) => (
-										<div key={id} className="route-set-pop-up-panel__group__controls mhm mbs">
+										<div key={id} className="switchboard-pop-up-panel__group__controls mhm mbs">
 											<span
 												className={classNames({
-													'route-set-pop-up-panel__group__controls__active': !routeSet.active,
-													'route-set-pop-up-panel__group__controls__inactive': routeSet.active,
+													'switchboard-pop-up-panel__group__controls__active': !routeSet.active,
+													'switchboard-pop-up-panel__group__controls__inactive': routeSet.active,
 												})}>
 												{t('Off')}
 											</span>
@@ -112,8 +115,8 @@ export const RouteSetsPopUp = withTranslation()(
 											</a>
 											<span
 												className={classNames({
-													'route-set-pop-up-panel__group__controls__active': routeSet.active,
-													'route-set-pop-up-panel__group__controls__inactive': !routeSet.active,
+													'switchboard-pop-up-panel__group__controls__active': routeSet.active,
+													'switchboard-pop-up-panel__group__controls__inactive': !routeSet.active,
 												})}>
 												{routeSet.name}
 											</span>
