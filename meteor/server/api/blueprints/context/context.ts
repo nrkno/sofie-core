@@ -12,7 +12,7 @@ import {
 	getCurrentTime,
 	waitForPromise,
 } from '../../../../lib/lib'
-import { DBPart, PartId } from '../../../../lib/collections/Parts'
+import { PartId } from '../../../../lib/collections/Parts'
 import { check, Match } from '../../../../lib/check'
 import { logger } from '../../../../lib/logging'
 import {
@@ -26,11 +26,9 @@ import {
 	PartEventContext as IPartEventContext,
 	TimelineEventContext as ITimelineEventContext,
 	IStudioConfigContext,
-	ConfigItemValue,
 	IStudioContext,
 	BlueprintMappings,
 	IBlueprintSegmentDB,
-	IngestRundown,
 	IngestPart,
 	IBlueprintPartInstance,
 	IBlueprintPieceInstance,
@@ -60,7 +58,6 @@ import { unprotectPartInstance, PartInstance } from '../../../../lib/collections
 import { ExternalMessageQueue } from '../../../../lib/collections/ExternalMessageQueue'
 import { extendIngestRundownCore } from '../../ingest/lib'
 import { CacheForRundownPlaylist, ReadOnlyCacheForRundownPlaylist } from '../../../DatabaseCaches'
-import { getSelectedPartInstancesFromCache } from '../../playout/lib'
 
 /** Common */
 

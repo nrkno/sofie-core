@@ -6,7 +6,7 @@ import { withTranslation } from 'react-i18next'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment, DBSegment, SegmentId } from '../../../lib/collections/Segments'
-import { Part, Parts, PartId } from '../../../lib/collections/Parts'
+import { PartId } from '../../../lib/collections/Parts'
 import { AdLibPiece, AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { AdLibListItem, IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
@@ -22,14 +22,10 @@ import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import {
 	IOutputLayer,
 	ISourceLayer,
-	IBlueprintAdLibPiece,
-	IBlueprintAdLibPieceDB,
-	IBlueprintPieceDB,
 	IBlueprintActionManifestDisplayContent,
 	SomeContent,
 	PieceLifespan,
 } from 'tv-automation-sofie-blueprints-integration'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import {
@@ -39,9 +35,8 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { Random } from 'meteor/random'
-import { literal, extendMandadory, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
+import { literal, normalizeArray, unprotectString, protectString, Omit } from '../../../lib/lib'
 import { RundownAPI } from '../../../lib/api/rundown'
-import { Piece, PieceGeneric } from '../../../lib/collections/Pieces'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
 import {
 	PartInstance,
@@ -50,7 +45,7 @@ import {
 	findPartInstanceOrWrapToTemporary,
 } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
-import { SegmentUi, PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 import { ShelfTabs } from './Shelf'

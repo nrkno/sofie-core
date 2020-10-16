@@ -11,7 +11,6 @@ import {
 	normalizeArray,
 	protectString,
 	unprotectString,
-	omit,
 	flatten,
 	applyToArray,
 } from '../../../lib/lib'

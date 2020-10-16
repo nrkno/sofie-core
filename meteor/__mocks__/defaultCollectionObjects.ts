@@ -1,4 +1,4 @@
-import { getRandomId, getCurrentTime } from '../lib/lib'
+import { getCurrentTime } from '../lib/lib'
 import { StudioId } from '../lib/collections/Studios'
 import { DBRundownPlaylist, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
 import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
