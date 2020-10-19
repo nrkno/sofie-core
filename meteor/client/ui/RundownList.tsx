@@ -24,7 +24,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { NoticeLevel, Notification, NotificationCenter } from '../lib/notifications/notifications'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
-import { RundownListDragDropTypes } from './RundownList/DragAndDropTypes'
+import { isRundownDragObject, RundownListDragDropTypes } from './RundownList/DragAndDropTypes'
 import { GettingStarted } from './RundownList/GettingStarted'
 import { RegisterHelp } from './RundownList/RegisterHelp'
 import { RundownDropZone } from './RundownList/RundownDropZone'
@@ -50,7 +50,26 @@ interface IRundownsListState {
 
 interface IRundownsListDropTargetProps {
 	connectDropTarget: DragElementWrapper<RundownPlaylistUi>
-	isOver: boolean
+	activateDropZone: boolean
+}
+
+const dropTargetSpec: DropTargetSpec<IRundownsListProps> = {
+	canDrop: (props: IRundownsListProps, monitor: DropTargetMonitor) => {
+		/* We only accept rundowns from playlists with more than one rundown,
+			since there's no point in replacing a single rundown playlist with a new
+			single rundown playlist
+			*/
+		const item = monitor.getItem()
+		if (isRundownDragObject(item)) {
+			const { id } = item
+			const playlist = props.rundownPlaylists.find(
+				(playlist) => playlist.rundowns.findIndex((rundown) => rundown._id === id) > -1
+			)
+			return playlist?.rundowns !== undefined && playlist.rundowns.length > 1
+		}
+
+		return false
+	},
 }
 
 const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRundownsListProps> = function(
@@ -58,9 +77,10 @@ const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRu
 	monitor: DropTargetMonitor,
 	props: IRundownsListProps
 ): IRundownsListDropTargetProps {
+	const activateDropZone = monitor.canDrop() && monitor.isOver()
 	return {
 		connectDropTarget: connect.dropTarget(),
-		isOver: monitor.isOver(),
+		activateDropZone,
 	}
 }
 
@@ -116,7 +136,7 @@ export const RundownList = translateWithTracker(() => {
 })(
 	DropTarget(
 		RundownListDragDropTypes.RUNDOWN,
-		{},
+		dropTargetSpec,
 		dropTargetCollector
 	)(
 		class RundownList extends MeteorReactComponent<
@@ -230,7 +250,7 @@ export const RundownList = translateWithTracker(() => {
 			}
 
 			render() {
-				const { t, rundownPlaylists, isOver, connectDropTarget } = this.props
+				const { t, rundownPlaylists, activateDropZone, connectDropTarget } = this.props
 
 				const step = this.tooltipStep()
 
@@ -275,7 +295,7 @@ export const RundownList = translateWithTracker(() => {
 											</thead>
 											<tbody className="rundown-playlists">{this.renderRundownPlaylists(rundownPlaylists)}</tbody>
 										</table>
-										{<RundownDropZone activated={isOver} rundownDropHandler={handleDropZoneDrop} />}
+										{<RundownDropZone activated={activateDropZone} rundownDropHandler={handleDropZoneDrop} />}
 									</div>
 								) : (
 									<Spinner />

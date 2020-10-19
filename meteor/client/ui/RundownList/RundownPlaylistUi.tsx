@@ -132,7 +132,7 @@ export const RundownPlaylistUi = DropTarget(
 				}
 			}
 
-			private handleRundownDrop(rundownId: RundownId) {
+			private handleRundownDrop(rundownId: RundownId): void {
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
 
@@ -158,6 +158,32 @@ export const RundownPlaylistUi = DropTarget(
 				}
 			}
 
+			private rundownsHaveChanged(): boolean {
+				if (this.state.rundownOrder.length !== this.props.playlist.rundowns.length) {
+					return true
+				}
+
+				for (let i = 0; i < this.state.rundownOrder.length; i++) {
+					if (this.state.rundownOrder[i] !== this.props.playlist.rundowns[i]._id) {
+						return true
+					}
+				}
+
+				return false
+			}
+
+			private resetLocalRundownState(): void {
+				const rundownOrder = this.props.playlist.rundowns.map((rundown) => rundown._id)
+
+				const currentRundowns = new Map<RundownId, Rundown>()
+				for (const rundown of this.props.playlist.rundowns) {
+					currentRundowns.set(rundown._id, rundown)
+				}
+
+				this.rundowns = currentRundowns
+				this.setState({ rundownOrder })
+			}
+
 			componentDidUpdate() {
 				if (this.props.action) {
 					const { type, rundownId } = this.props.action
@@ -168,6 +194,10 @@ export const RundownPlaylistUi = DropTarget(
 						default:
 							console.debug(`Unknown action type ${type}`, this.props.action)
 					}
+				}
+
+				if (this.rundownsHaveChanged()) {
+					this.resetLocalRundownState()
 				}
 			}
 
@@ -269,6 +299,10 @@ export const RundownPlaylistUi = DropTarget(
 				}
 
 				if (playlist.rundowns.length === 1) {
+					// for the time being, playlists with only one rundown aren't considered
+					// playlists. Therefore they are rendered without playlist markup/styling
+					// and also won't be connected as drop targets (preventing other rundowns
+					// from being dropped onto them and being added to them)
 					return (
 						<>
 							<RundownListItem
