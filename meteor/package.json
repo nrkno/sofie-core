@@ -1,6 +1,6 @@
 {
   "name": "automation-core",
-  "version": "1.14.0-in-development-R26",
+  "version": "1.14.0-in-testing-R26.0",
   "private": true,
   "engines": {
     "node": "12.16"
@@ -96,7 +96,7 @@
     "soap": "^0.31.0",
     "superfly-timeline": "^8.1.1",
     "timecode": "0.0.4",
-    "tv-automation-sofie-blueprints-integration": "2.4.0-nightly-release26-20201016-091219-f66b2e46.0",
+    "tv-automation-sofie-blueprints-integration": "2.4.0-nightly-release26-20201019-123634-206f00c9.0",
     "underscore": "^1.11.0",
     "utility-types": "^3.10.0",
     "velocity-animate": "^1.5.2",
