@@ -29,7 +29,7 @@ export const MicSourceRenderer = withTranslation()(
 
 		readTime: number
 
-		private _forceSizingRecheck: boolean
+		private _lineAtEnd: boolean = false
 
 		constructor(props: IProps & WithTranslation) {
 			super(props)
@@ -62,17 +62,13 @@ export const MicSourceRenderer = withTranslation()(
 					if (positionByReadTime !== this.linePosition) {
 						this.linePosition = Math.min(positionByReadTime, positionByPartEnd)
 						this.repositionLine()
-						if (
-							this.props.piece.instance._id ===
-							protectString('cT_aO1S2ckKFgTlJNmYxueA51iY__7rbW7vAMCzpAvcbPt_9g7o52dcQJna2HM4v')
-						) {
-							console.log(Math.abs(positionByReadTime - positionByExpectedPartEnd))
-						}
 						if (Math.abs(positionByReadTime - positionByExpectedPartEnd) <= 40) {
 							// difference is less than a frame
 							this.addClassToLine('at-end')
+							this._lineAtEnd = true
 						} else {
 							this.removeClassFromLine('at-end')
+							this._lineAtEnd = false
 						}
 					}
 					this.removeClassFromLine('hidden')
@@ -129,6 +125,15 @@ export const MicSourceRenderer = withTranslation()(
 				_forceSizingRecheck = true
 			}
 
+			if (
+				!_forceSizingRecheck &&
+				this._lineAtEnd === true &&
+				(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale !==
+					(prevProps.part.instance.part.expectedDuration || prevProps.partDuration) * prevProps.timeScale
+			) {
+				_forceSizingRecheck = true
+			}
+
 			// Move the line element
 			if (this.itemElement !== this.props.itemElement) {
 				if (this.itemElement) {
@@ -139,7 +144,7 @@ export const MicSourceRenderer = withTranslation()(
 					this.itemElement.parentNode &&
 						this.itemElement.parentNode.parentNode &&
 						this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
-					this._forceSizingRecheck = true
+					_forceSizingRecheck = true
 				}
 			}
 
