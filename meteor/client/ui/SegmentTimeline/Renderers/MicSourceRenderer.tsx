@@ -10,6 +10,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
+import { protectString } from '../../../../lib/lib'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
@@ -47,7 +48,7 @@ export const MicSourceRenderer = withTranslation()(
 		}
 
 		refreshLine = () => {
-			if (this.itemElement) {
+			if (this.itemElement && !this.props.relative) {
 				this.itemPosition = this.itemElement.offsetLeft
 				const content = this.props.piece.instance.piece.content as ScriptContent | undefined
 				let scriptReadTime = 0
@@ -61,7 +62,14 @@ export const MicSourceRenderer = withTranslation()(
 					if (positionByReadTime !== this.linePosition) {
 						this.linePosition = Math.min(positionByReadTime, positionByPartEnd)
 						this.repositionLine()
-						if (Math.abs(positionByReadTime - positionByExpectedPartEnd) <= 1) {
+						if (
+							this.props.piece.instance._id ===
+							protectString('cT_aO1S2ckKFgTlJNmYxueA51iY__7rbW7vAMCzpAvcbPt_9g7o52dcQJna2HM4v')
+						) {
+							console.log(Math.abs(positionByReadTime - positionByExpectedPartEnd))
+						}
+						if (Math.abs(positionByReadTime - positionByExpectedPartEnd) <= 40) {
+							// difference is less than a frame
 							this.addClassToLine('at-end')
 						} else {
 							this.removeClassFromLine('at-end')
@@ -85,7 +93,7 @@ export const MicSourceRenderer = withTranslation()(
 		componentDidMount() {
 			// Create line element
 			this.lineItem = document.createElement('div')
-			this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line')
+			this.lineItem.classList.add('segment-timeline__piece-appendage', 'script-line', 'hidden')
 			this.updateAnchoredElsWidths()
 			if (this.props.itemElement) {
 				this.itemElement = this.props.itemElement
@@ -115,7 +123,8 @@ export const MicSourceRenderer = withTranslation()(
 				prevProps.piece.renderedInPoint !== this.props.piece.renderedInPoint ||
 				prevProps.piece.renderedDuration !== this.props.piece.renderedDuration ||
 				!_.isEqual(prevProps.piece.instance.userDuration, this.props.piece.instance.userDuration) ||
-				!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable)
+				!_.isEqual(prevProps.piece.instance.piece.enable, this.props.piece.instance.piece.enable) ||
+				prevProps.timeScale !== this.props.timeScale
 			) {
 				_forceSizingRecheck = true
 			}

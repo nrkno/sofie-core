@@ -497,45 +497,6 @@ export const SourceLayerItem = withTranslation()(
 			e.stopPropagation()
 			this.props.onClick && this.props.onClick(this.props.piece, e)
 		}
-		tempDisplayInOutpoints = (e: React.MouseEvent<HTMLDivElement>) => {
-			// Note: This is a TEMPORARY way to set in & out points, will be replaced with a much nicer looking way at a later stage
-			doModalDialog({
-				title: 'Set in point & duration',
-				message: 'Please set the in-point & duration below',
-				yes: 'Save',
-				no: 'Discard',
-				// acceptOnly?: boolean
-				onAccept: (e: SomeEvent, inputResult: ModalInputResult) => {
-					const rundown = Rundowns.findOne(this.props.part.instance.rundownId)
-					if (!rundown) throw Error(`Rundown ${this.props.part.instance.rundownId} not found (in/out)`)
-
-					doUserAction(this.props.t, e, UserAction.SET_IN_OUT_POINTS, (e) =>
-						MeteorCall.userAction.setInOutPoints(
-							e,
-							rundown.playlistId,
-							this.props.part.instance.part._id,
-							this.props.piece.instance.piece._id,
-							inputResult.inPoint,
-							inputResult.outPoint
-						)
-					)
-				},
-				inputs: {
-					inPoint: {
-						label: 'In point',
-						text: 'In point',
-						type: 'float',
-						defaultValue: 0,
-					},
-					outPoint: {
-						label: 'Out point',
-						text: 'Out point',
-						type: 'float',
-						defaultValue: 0,
-					},
-				},
-			})
-		}
 
 		itemDblClick = (e: React.MouseEvent<HTMLDivElement>) => {
 			e.preventDefault()

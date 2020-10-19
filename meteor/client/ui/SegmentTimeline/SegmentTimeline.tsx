@@ -77,7 +77,7 @@ interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onHeaderNoteClick?: (level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -826,7 +826,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{criticalNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--critical"
-									onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.ERROR)}>
+									onClick={(e) =>
+										this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(this.props.segment._id, NoteType.ERROR)
+									}>
 									<CriticalIconSmall />
 									<div className="segment-timeline__title__notes__count">{criticalNotes}</div>
 								</div>
@@ -834,7 +836,10 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							{warningNotes > 0 && (
 								<div
 									className="segment-timeline__title__notes__note segment-timeline__title__notes__note--warning"
-									onClick={(e) => this.props.onHeaderNoteClick && this.props.onHeaderNoteClick(NoteType.WARNING)}>
+									onClick={(e) =>
+										this.props.onHeaderNoteClick &&
+										this.props.onHeaderNoteClick(this.props.segment._id, NoteType.WARNING)
+									}>
 									<WarningIconSmall />
 									<div className="segment-timeline__title__notes__count">{warningNotes}</div>
 								</div>

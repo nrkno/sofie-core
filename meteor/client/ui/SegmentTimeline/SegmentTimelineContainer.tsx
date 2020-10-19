@@ -24,11 +24,12 @@ import { NoteType, SegmentNote } from '../../../lib/api/notes'
 import { getElementWidth } from '../../utils/dimensions'
 import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/viewPort'
 import { PubSub } from '../../../lib/api/pubsub'
-import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
+import { unprotectString, equalSets, equivalentArrays, equalArrays } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Settings } from '../../../lib/Settings'
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
+import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Parts, PartId } from '../../../lib/collections/Parts'
 import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -78,7 +79,7 @@ interface IProps {
 	onTimeScaleChange?: (timeScaleVal: number) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
-	onHeaderNoteClick?: (level: NoteType) => void
+	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteType) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -127,6 +128,22 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			}
 		}
 
+		// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
+		// re-evaluated when a piece like that appears.
+		const infinitesEndingPieces = PieceInstances.find({
+			rundownId: segment.rundownId,
+			dynamicallyInserted: {
+				$exists: true,
+			},
+			'infinite.fromPreviousPart': false,
+			'piece.lifespan': {
+				$in: [PieceLifespan.OutOnRundownEnd, PieceLifespan.OutOnRundownChange],
+			},
+			reset: {
+				$ne: true,
+			},
+		}).fetch()
+
 		let o = RundownUtils.getResolvedSegment(
 			props.showStyleBase,
 			props.playlist,
@@ -174,7 +191,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			props.onTimeScaleChange !== nextProps.onTimeScaleChange ||
 			props.segmentId !== nextProps.segmentId ||
 			props.segmentRef !== nextProps.segmentRef ||
-			props.timeScale !== nextProps.timeScale
+			props.timeScale !== nextProps.timeScale ||
+			!equalSets(props.segmentsIdsBefore, nextProps.segmentsIdsBefore) ||
+			!equalArrays(props.orderedAllPartIds, nextProps.orderedAllPartIds)
 		) {
 			return true
 		}
