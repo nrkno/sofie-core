@@ -1,6 +1,6 @@
 {
   "name": "automation-core",
-  "version": "1.13.0-in-testing-R25",
+  "version": "1.13.0",
   "private": true,
   "engines": {
     "node": "12.16"
