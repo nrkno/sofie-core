@@ -24,5 +24,6 @@
  * 1.11.0: Release 23  (never released)
  * 1.12.0: Release 24  (2020-09-28)
  * 1.13.0: Release 25  (2020-10-19)
+ * 1.14.0: Release 26  (2020-11-??)
  */
-export const CURRENT_SYSTEM_VERSION = '1.13.0'
+export const CURRENT_SYSTEM_VERSION = '1.14.0'
