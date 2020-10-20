@@ -19,6 +19,7 @@ import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
+import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -389,7 +390,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				) : this.props.rundownPlaylist ? (
 					<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions} />
 				) : this.props.studio ? (
-					this.renderMessage(t('There is no rundown active in this studio.'))
+					<StudioScreenSaver studioId={this.props.studio._id} />
 				) : this.props.studioId ? (
 					this.renderMessage(t("This studio doesn't exist."))
 				) : (
