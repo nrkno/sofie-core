@@ -12,6 +12,7 @@ import { Clock } from './Clock'
 import { Countdown } from './Countdown'
 
 interface IProps {
+	// the studio to be displayed in the screen saver
 	studioId: StudioId
 }
 
@@ -21,15 +22,23 @@ interface ITrackedProps {
 }
 
 interface IState {
+	// the info-box that is being animated by the screen-saver
 	infoElement: HTMLDivElement | undefined
+	// the target speed vector, the actual speed vector is supposed to transform to
 	targetSpeedVector: [number, number]
+	// the current size of the info-box element
 	infoElementSize: {
 		width: number | undefined
 		height: number | undefined
 	}
+	// are all subscribtions ready?
 	subsReady: boolean
 }
 
+/**
+ * This component renders a **nice**, animated screen saver with information about upcoming
+ * shows planned in the studio and the time remaining to the expectedStart time of said show.
+ */
 export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
