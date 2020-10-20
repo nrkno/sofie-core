@@ -183,7 +183,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							t('The Rundown has been UNSYNCED from {{nrcsName}}! No data updates will currently come through.', {
 								nrcsName: rundown.externalNRCSName || 'NRCS',
 							}),
-							'Rundown',
+							rundown._id,
 							getCurrentTime(),
 							true,
 							[
@@ -434,7 +434,7 @@ class RundownViewNotifier extends WithManagedTracker {
 							<div>{item.message || t('There is an unknown problem with the part.')}</div>
 						</>
 					),
-					item.origin.segmentId || 'unknown',
+					item.origin.segmentId || item.origin.rundownId || 'unknown',
 					getCurrentTime(),
 					true,
 					[
