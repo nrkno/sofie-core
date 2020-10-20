@@ -7,19 +7,45 @@ System documentation can be found here: [Sofie system documentation](https://sof
 # For developers
 
 ## Gettings started, local development
-First, install Meteor:
 
-* [Meteor Installation Guide](https://www.meteor.com/install)
+Follow these instructions to start up Sofie Core in development mode. (For production deploys, see [System documentation](https://sofie.gitbook.io/sofie-tv-automation/documentation/installation).)
 
-Then, clone the repository and install all dependencies:
-(Make sure your NODE_ENV is NOT set to production!)
+### Prerequisites
+
+* Install [Meteor](https://www.meteor.com/install)
+* Install [Node.js](https://nodejs.org)
+* `npm install --global windows-build-tools`
+
+### Quick-start:
 
 ```
 git clone -b master https://github.com/nrkno/tv-automation-server-core.git
 cd tv-automation-server-core/meteor
-meteor npm install
-meteor npm run dev
+npm start
 ```
+
+### Slightly more detailed start:
+
+1. Clone the repository (for development, it is recommended to base your work on the latest unstable release branch)
+
+    `git clone -b releaseXYZ https://github.com/nrkno/tv-automation-server-core.git`
+
+2. Go into the meteor directory
+
+    `cd tv-automation-server-core/meteor`
+
+3. Trigger Meteor to install the right version
+
+    `meteor --version`
+
+4. Install the right dependencies. (Before this, make sure your NODE_ENV environment variable is NOT set to "production"!)
+
+    `meteor npm install`
+
+5. Start Meteor in development mode
+
+    `meteor npm run dev`
+
 
 If you run into any issues while installing the dependencies, clone any offending packages from Git and link them using `npm link`. For example, for `tv-automation-mos-connection` library:
 

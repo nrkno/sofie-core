@@ -6,7 +6,7 @@
     "node": "12.16"
   },
   "scripts": {
-    "start": "meteor run",
+    "start": "meteor --version && meteor npm install && meteor npm run dev",
     "dev": "concurrently --prefix \"[{name}]\" --names \"METEOR,TSC\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run debug --\" \"npm run watch-types -- --preserveWatchOutput\"",
     "debug": "meteor run --inspect",
     "postinstall": "meteor npm run prepareForTest",
