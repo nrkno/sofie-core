@@ -62,7 +62,7 @@ export namespace PrompterAPI {
 
 		const piecesIncluded: PieceId[] = []
 
-		_.each(groupedParts, (parts, segmentId) => {
+		Object.entries(groupedParts).forEach(([segmentId, parts]) => {
 			const segment = segmentsMap[segmentId]
 			if (segment && segment.isHidden) {
 				// Skip if is hidden
@@ -75,14 +75,14 @@ export namespace PrompterAPI {
 				parts: [],
 			}
 
-			_.each(parts, (part) => {
+			parts.forEach((part) => {
 				const partData: PrompterDataPart = {
 					id: part._id,
 					title: part.title,
 					pieces: [],
 				}
 
-				_.each(part.getAllPieces(), (piece) => {
+				part.getAllPieces().forEach((piece) => {
 					if (piece.content) {
 						const content = piece.content as ScriptContent
 						if (content.fullScript) {
