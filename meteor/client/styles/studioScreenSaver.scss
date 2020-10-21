@@ -32,6 +32,10 @@
 		font-size: 4.5vmin;
 		font-weight: 200;
 
+		@media (max-aspect-ratio: 4/3) {
+			font-size: 3.5vmin;
+		}
+
 		.studio-screen-saver__clock {
 			font-size: 4em;
 			letter-spacing: -0.04em;
