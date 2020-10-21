@@ -1,24 +1,25 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { withTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
-import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { DBSegment } from '../../lib/collections/Segments'
+import { RundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
+import { DBSegment } from '../../../lib/collections/Segments'
 
-import { RundownTimingProvider, withTiming, WithTiming } from './RundownView/RundownTiming'
-import { PartUi } from './SegmentTimeline/SegmentTimelineContainer'
+import { RundownTimingProvider, withTiming, WithTiming } from '../RundownView/RundownTiming'
+import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 
-import { RundownUtils } from '../lib/rundown'
-import { getCurrentTime, objectPathGet, extendMandadory, literal } from '../../lib/lib'
-import { PieceIconContainer, PieceNameContainer } from './PieceIcons/PieceIcon'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
-import { findPartInstanceOrWrapToTemporary } from '../../lib/collections/PartInstances'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { StudioId } from '../../lib/collections/Studios'
+import { RundownUtils } from '../../lib/rundown'
+import { getCurrentTime, objectPathGet, extendMandadory, literal } from '../../../lib/lib'
+import { PieceIconContainer, PieceNameContainer } from '../PieceIcons/PieceIcon'
+import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
+import { PubSub } from '../../../lib/api/pubsub'
+import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'
+import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { StudioId } from '../../../lib/collections/Studios'
+import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -323,11 +324,7 @@ const ClockComponent = withTranslation()(
 interface IPropsHeader extends WithTranslation {
 	key: string
 	playlist: RundownPlaylist
-	match: {
-		params: {
-			studioId: StudioId
-		}
-	}
+	studioId: StudioId
 }
 
 interface IStateHeader {}
@@ -342,12 +339,13 @@ export const ClockView = withTranslation()(
 
 		return {
 			playlist,
+			studioId,
 		}
 	})(
 		class ClockView extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
 			componentDidMount() {
 				document.body.classList.add('dark', 'xdark')
-				let studioId = objectPathGet(this.props, 'match.params.studioId')
+				let studioId = this.props.studioId
 				if (studioId) {
 					this.subscribe(PubSub.rundownPlaylists, {
 						active: true,
@@ -393,13 +391,7 @@ export const ClockView = withTranslation()(
 						</RundownTimingProvider>
 					)
 				} else {
-					return (
-						<div className="rundown-view rundown-view--unpublished">
-							<div className="rundown-view__label">
-								<p>{t('There is no rundown active in this studio.')}</p>
-							</div>
-						</div>
-					)
+					return <StudioScreenSaver studioId={this.props.studioId} />
 				}
 			}
 		}
