@@ -1272,6 +1272,12 @@ const StudioRoutings = withTranslation()(
 		renderRouteSets() {
 			const { t } = this.props
 
+			const DEFAULT_ACTIVE_OPTIONS = {
+				[t('Active')]: true,
+				[t('Not Active')]: false,
+				[t('Not defined')]: undefined,
+			}
+
 			if (Object.keys(this.props.studio.routeSets).length === 0) {
 				return (
 					<tr>
@@ -1335,6 +1341,20 @@ const StudioRoutings = withTranslation()(
 													className=""></EditAttribute>
 												{t('Active')}
 												<span className="mlm text-s dimmed">{t('Is this Route Set currently active')}</span>
+											</label>
+										</div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Default State')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeId}.defaultActive`}
+													obj={this.props.studio}
+													type="dropdown"
+													collection={Studios}
+													options={DEFAULT_ACTIVE_OPTIONS}
+													className="input text-input input-l"></EditAttribute>
+												<span className="mlm text-s dimmed">{t('The default state of this Route Set')}</span>
 											</label>
 										</div>
 										<div className="mod mvs mhs">

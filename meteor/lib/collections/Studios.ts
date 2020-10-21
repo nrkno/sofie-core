@@ -99,6 +99,8 @@ export interface StudioRouteSet {
 	name: string
 	/** Whether this group is active or not */
 	active: boolean
+	/** Default state of this group */
+	defaultActive?: boolean | undefined
 	/** Only one Route can be active at the same time in the exclusivity-group */
 	exclusivityGroup?: string
 	/** If true, should be displayed and toggleable by user */
