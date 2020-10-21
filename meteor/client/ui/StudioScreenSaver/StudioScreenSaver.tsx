@@ -255,13 +255,15 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 		 */
 		private randomizeDirection = () => {
 			let speedVector: [number, number] = [0, 1]
+			let tries = 0
 			do {
 				// take a random number
 				const random = Math.random() * 2 - 1
-				// build a speed vector so that ABS(Y) == ABS(1 - X)
+				// build a speed vector in which X^2 + Y^2 = 1
 				// so that length of the vector (i.e. speed) is constant
-				speedVector = [random, (1 - Math.abs(random)) * (Math.random() >= 0.5 ? -1 : 1)]
-			} while (Math.abs(speedVector[0]) > 0.6 || Math.abs(speedVector[1]) > 0.6) // prefer diagonal movement
+				speedVector = [random, Math.sqrt(Math.abs(1 - Math.pow(random, 2))) * (Math.random() >= 0.5 ? -1 : 1)]
+				tries++
+			} while (tries < 100 && (Math.abs(speedVector[0]) < 0.3 || Math.abs(speedVector[1]) < 0.3)) // prefer diagonal movement, but give up if we can't achieve that quickly
 			this.speedVector = speedVector
 			this.setState({
 				targetSpeedVector: [...speedVector] as [number, number],
