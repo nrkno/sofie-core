@@ -46,8 +46,8 @@ export namespace ServerPeripheralDeviceAPI {
 	): PeripheralDeviceId {
 		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
-		if (peripheralDevice) {
+		const existingDevice = PeripheralDevices.findOne(deviceId)
+		if (existingDevice) {
 			PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 		}
 
@@ -63,7 +63,7 @@ export namespace ServerPeripheralDeviceAPI {
 		// Omitting some of the properties that tend to be rather large
 		logger.debug('Initialize device ' + deviceId, _.omit(options, 'versions', 'configManifest'))
 
-		if (peripheralDevice) {
+		if (existingDevice) {
 			PeripheralDevices.update(deviceId, {
 				$set: {
 					lastSeen: getCurrentTime(),
@@ -75,7 +75,13 @@ export namespace ServerPeripheralDeviceAPI {
 					type: options.type,
 					subType: options.subType,
 
-					name: peripheralDevice.name || options.name,
+					name: (
+						// Only allow name changes if the name is unmodified:
+						(existingDevice.name === existingDevice.deviceName || existingDevice.deviceName === undefined) ?
+						options.name :
+						existingDevice.name
+					),
+					deviceName: options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
 
@@ -102,6 +108,7 @@ export namespace ServerPeripheralDeviceAPI {
 				subType: options.subType,
 
 				name: options.name,
+				deviceName: options.name,
 				parentDeviceId: options.parentDeviceId,
 				versions: options.versions,
 				// settings: {},
