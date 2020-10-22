@@ -20,6 +20,8 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
+import { RundownTimingProvider } from '../RundownView/RundownTiming'
+import { OverUnderTimer } from './OverUnderTimer'
 
 interface PrompterConfig {
 	mirror?: boolean
@@ -33,6 +35,7 @@ interface PrompterConfig {
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
 	showScroll: boolean
+	showOverUnder: boolean
 }
 
 export enum PrompterConfigMode {
@@ -96,6 +99,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',
+			showOverUnder: queryParams['showoverunder'] === undefined ? true : queryParams['showoverunder'] === '1',
 		}
 
 		this._controller = new PrompterControlManager(this)
@@ -113,14 +117,21 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			})
 		}
 
-		let playlistId: RundownPlaylistId =
-			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
-
 		this.autorun(() => {
-			let playlist = RundownPlaylists.findOne(playlistId)
-			if (playlistId) {
+			let playlist = RundownPlaylists.findOne(
+				{
+					studioId: this.props.studioId,
+					active: true,
+				},
+				{
+					fields: {
+						_id: 1,
+					},
+				}
+			)
+			if (playlist?._id) {
 				this.subscribe(PubSub.rundowns, {
-					playlistId: playlistId,
+					playlistId: playlist?._id,
 				})
 			}
 		})
@@ -288,9 +299,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 	checkCurrentTakeMarkers = () => {
-		let playlistId: RundownPlaylistId =
-			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
-		const playlist = RundownPlaylists.findOne(playlistId || '')
+		const playlist = this.props.rundownPlaylist
 
 		if (playlist !== undefined) {
 			const positionTop = window.scrollY
@@ -306,11 +315,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				const current = anchors[index]
 				const next = index + 1 < anchors.length ? anchors[index + 1] : null
 
-				if (playlist.currentPartInstanceId && current.classList.contains(`part-${playlist.currentPartInstanceId}`)) {
+				if (playlist.currentPartInstanceId && current.classList.contains(`live`)) {
 					currentPartElement = current
 					currentPartElementAfter = next
 				}
-				if (playlist.nextPartInstanceId && current.classList.contains(`part-${playlist.nextPartInstanceId}`)) {
+				if (playlist.nextPartInstanceId && current.classList.contains(`next`)) {
 					nextPartElementAfter = next
 				}
 			}
@@ -340,7 +349,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				}
 			}
 
-			const nextIndicator = document.querySelector('.take-indicator')
+			const nextIndicator = document.querySelector('.next-indicator')
 			if (nextIndicator) {
 				if (nextPositionEnd && nextPositionEnd < positionTop) {
 					// Display next "^" indicator
@@ -381,6 +390,13 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	render() {
 		const { t } = this.props
 
+		const overUnderStyle: React.CSSProperties = {
+			marginTop: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
+			marginBottom: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
+			marginRight: this.configOptions.margin ? `max(${this.configOptions.margin}vh, 4.2em)` : undefined,
+			marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
+		}
+
 		return (
 			<React.Fragment>
 				{!this.state.subsReady ? (
@@ -388,7 +404,15 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 						<Spinner />
 					</div>
 				) : this.props.rundownPlaylist ? (
-					<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions} />
+					<>
+						<RundownTimingProvider playlist={this.props.rundownPlaylist}>
+							<Prompter rundownPlaylistId={this.props.rundownPlaylist._id} config={this.configOptions}>
+								{this.configOptions.showOverUnder && (
+									<OverUnderTimer rundownPlaylist={this.props.rundownPlaylist} style={overUnderStyle} />
+								)}
+							</Prompter>
+						</RundownTimingProvider>
+					</>
 				) : this.props.studio ? (
 					<StudioScreenSaver studioId={this.props.studio._id} />
 				) : this.props.studioId ? (
@@ -606,6 +630,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						style={{
 							fontSize: this.props.config.fontSize ? this.props.config.fontSize + 'vh' : undefined,
 						}}>
+						{this.props.children}
+
 						<div className="overlay-fix">
 							<div
 								className={

@@ -221,3 +221,32 @@ body.prompter-scrollbar {
 		}
 	}
 }
+
+.prompter-timing-clock {
+	position: fixed;
+	display: block;
+	top: 0;
+	right: 0;
+	left: auto;
+	font-size: 75%;
+	padding: 0.05em 0.3em;
+	border-radius: 1em;
+	margin-right: 4.2em;
+	box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+
+	&.heavy-light {
+		font-weight: 600;
+
+		&.heavy {
+			// color: $general-late-color;
+			background-color: #ffe900;
+			color: #000;
+		}
+
+		&.light {
+			background-color: $general-fast-color;
+			color: #fff;
+			text-shadow: 1px 1px 0px #000, 1px -1px 0px #000, -1px -1px 0px #000, -1px 1px 0px #000;
+		}
+	}
+}
