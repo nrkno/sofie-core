@@ -55,6 +55,7 @@ import {
 	defaultAdLibPiece,
 	defaultStudio,
 } from '../defaultCollectionObjects'
+import { OrganizationId } from '../../lib/collections/Organization'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -227,7 +228,10 @@ export function packageBlueprint<T extends BlueprintManifestBase>(
 	})
 	return `({default: (${code})()})`
 }
-export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blueprint {
+export function setupMockStudioBlueprint(
+	showStyleBaseId: ShowStyleBaseId,
+	organizationId: OrganizationId | null = null
+): Blueprint {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
@@ -263,9 +267,12 @@ export function setupMockStudioBlueprint(showStyleBaseId: ShowStyleBaseId): Blue
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
-export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariantId): Blueprint {
+export function setupMockShowStyleBlueprint(
+	showStyleVariantId: ShowStyleVariantId,
+	organizationId?: OrganizationId | null
+): Blueprint {
 	const { INTEGRATION_VERSION, TSR_VERSION } = getBlueprintDependencyVersions()
 
 	const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -360,7 +367,7 @@ export function setupMockShowStyleBlueprint(showStyleVariantId: ShowStyleVariant
 	const blueprintId: BlueprintId = protectString('mockBlueprint' + dbI++)
 	const blueprintName = 'mockBlueprint'
 
-	return internalUploadBlueprint(blueprintId, code, blueprintName, true)
+	return internalUploadBlueprint(blueprintId, code, blueprintName, true, organizationId)
 }
 export interface DefaultEnvironment {
 	showStyleBaseId: ShowStyleBaseId
@@ -374,27 +381,33 @@ export interface DefaultEnvironment {
 
 	ingestDevice: PeripheralDevice
 }
-export function setupDefaultStudioEnvironment(): DefaultEnvironment {
+export function setupDefaultStudioEnvironment(organizationId?: OrganizationId | null): DefaultEnvironment {
+	organizationId = organizationId || null
 	const core = setupMockCore({})
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
 
-	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId)
-	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId)
+	const studioBlueprint = setupMockStudioBlueprint(showStyleBaseId, organizationId)
+	const showStyleBlueprint = setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
-	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, { _id: showStyleBaseId })
+	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {
+		_id: showStyleBaseId,
+		organizationId: organizationId,
+	})
 	const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
 	const studio = setupMockStudio({
 		blueprintId: studioBlueprint._id,
 		supportedShowStyleBase: [showStyleBaseId],
+		organizationId: organizationId,
 	})
 	const ingestDevice = setupMockPeripheralDevice(
 		PeripheralDeviceAPI.DeviceCategory.INGEST,
 		PeripheralDeviceAPI.DeviceType.MOS,
 		PeripheralDeviceAPI.SUBTYPE_PROCESS,
-		studio
+		studio,
+		{ organizationId: organizationId }
 	)
 
 	return {
