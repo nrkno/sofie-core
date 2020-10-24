@@ -200,7 +200,7 @@ body.prompter-scrollbar {
 			}
 		}
 		.take-indicator {
-			right: 0em;
+			left: 0em;
 
 			border-top: 1em solid #f00;
 			border-bottom: 1em solid transparent;
@@ -210,7 +210,7 @@ body.prompter-scrollbar {
 			}
 		}
 		.next-indicator {
-			right: 1.33em;
+			left: 1.33em;
 
 			border-top: 1em solid #0f0;
 			border-bottom: 1em solid transparent;
@@ -231,7 +231,6 @@ body.prompter-scrollbar {
 	font-size: 75%;
 	padding: 0.05em 0.3em;
 	border-radius: 1em;
-	margin-right: 4.2em;
 	box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
 
 	&.heavy-light {

@@ -9,6 +9,9 @@ interface IProps {
 	style?: React.CSSProperties | undefined
 }
 
+/**
+ * Shows an over/under timer for the rundownPlaylist. Requires a RundownTimingContext from the RundownTimingProvider
+ */
 export const OverUnderTimer = withTiming<IProps, {}>()(
 	class OverUnderTimer extends React.Component<WithTiming<IProps>> {
 		render() {

@@ -393,8 +393,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		const overUnderStyle: React.CSSProperties = {
 			marginTop: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
 			marginBottom: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
-			marginRight: this.configOptions.margin ? `max(${this.configOptions.margin}vh, 4.2em)` : undefined,
-			marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vh` : undefined,
+			marginRight: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
+			marginLeft: this.configOptions.margin ? `${this.configOptions.margin}vw` : undefined,
 		}
 
 		return (
