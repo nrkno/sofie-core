@@ -95,7 +95,7 @@ export const SourceLayerItem = withTranslation()(
 			})
 		}
 
-		getItemLabelOffsetLeft = (): { [key: string]: string } => {
+		getItemLabelOffsetLeft = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -220,7 +220,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -245,7 +245,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -261,7 +261,7 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		getItemLabelOffsetRight = (): { [key: string]: string } => {
+		getItemLabelOffsetRight = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -461,6 +461,10 @@ export const SourceLayerItem = withTranslation()(
 		componentDidMount() {
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
+			} else if (this.state.itemElement) {
+				this.setState({
+					elementWidth: getElementWidth(this.state.itemElement),
+				})
 			}
 			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 		}
@@ -472,7 +476,7 @@ export const SourceLayerItem = withTranslation()(
 			clearTimeout(this.highlightTimeout)
 		}
 
-		componentDidUpdate(prevProps: ISourceLayerItemProps) {
+		componentDidUpdate(prevProps: ISourceLayerItemProps, prevState: ISourceLayerItemState) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
 				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
@@ -488,6 +492,15 @@ export const SourceLayerItem = withTranslation()(
 				this.mountResizeObserver()
 			} else if (!this.props.isLiveLine && this._resizeObserver) {
 				this.unmountResizeObserver()
+			}
+
+			if (
+				this.state.itemElement &&
+				(this.state.itemElement !== prevState.itemElement || this.props.timeScale !== prevProps.timeScale)
+			) {
+				this.setState({
+					elementWidth: getElementWidth(this.state.itemElement),
+				})
 			}
 		}
 

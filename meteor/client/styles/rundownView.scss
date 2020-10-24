@@ -1676,10 +1676,6 @@ body.no-overflow {
 								> .label-icon.label-infinite-icon {
 									margin: 0 0 0 0;
 								}
-
-								> .last-words {
-									float: right;
-								}
 							}
 
 							&.last-words {
@@ -1698,8 +1694,7 @@ body.no-overflow {
 							}
 
 							&.label-overflow-time {
-								font-weight: 300;
-								padding-right: 10px;
+								font-weight: 500;
 							}
 
 							> .segment-timeline__piece__label {
@@ -1721,6 +1716,8 @@ body.no-overflow {
 								margin-left: 0.5em;
 							}
 						}
+
+						@include item-type-text-outline('.segment-timeline__piece__label.label-overflow-time');
 
 						&.hide-overflow-labels {
 							.segment-timeline__piece__label {
