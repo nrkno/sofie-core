@@ -461,11 +461,8 @@ export const SourceLayerItem = withTranslation()(
 		componentDidMount() {
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
-			} else if (this.state.itemElement) {
-				this.setState({
-					elementWidth: getElementWidth(this.state.itemElement),
-				})
 			}
+
 			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 		}
 
@@ -492,15 +489,6 @@ export const SourceLayerItem = withTranslation()(
 				this.mountResizeObserver()
 			} else if (!this.props.isLiveLine && this._resizeObserver) {
 				this.unmountResizeObserver()
-			}
-
-			if (
-				this.state.itemElement &&
-				(this.state.itemElement !== prevState.itemElement || this.props.timeScale !== prevProps.timeScale)
-			) {
-				this.setState({
-					elementWidth: getElementWidth(this.state.itemElement),
-				})
 			}
 		}
 

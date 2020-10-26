@@ -1654,6 +1654,8 @@ body.no-overflow {
 								right: 0;
 								transform: translate3d(0, 0, 15px);
 								text-align: right;
+								margin: 0;
+								padding: 0 0.3em;
 								max-width: calc(100% - 10px);
 								overflow: hidden;
 								text-overflow: clip;
@@ -1694,7 +1696,15 @@ body.no-overflow {
 							}
 
 							&.label-overflow-time {
-								font-weight: 500;
+								text-shadow: 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px 1px 1px black,
+									1px 1px 3px black, 1px 1px 8px black, 1px 1px 8px black, 1px 1px 8px black;
+								top: -7px;
+								right: -5px;
+								color: white;
+								font-weight: 600;
+								padding: 0;
+								font-size: 0.8em;
+								margin: 0;
 							}
 
 							> .segment-timeline__piece__label {
@@ -1716,8 +1726,6 @@ body.no-overflow {
 								margin-left: 0.5em;
 							}
 						}
-
-						@include item-type-text-outline('.segment-timeline__piece__label.label-overflow-time');
 
 						&.hide-overflow-labels {
 							.segment-timeline__piece__label {
