@@ -73,7 +73,7 @@
     "mos-connection": "^0.8.10",
     "mousetrap": "^1.6.5",
     "ntp-client": "^0.5.3",
-    "object-path": "^0.11.4",
+    "object-path": "^0.11.5",
     "prop-types": "^15.7.2",
     "query-string": "^6.13.1",
     "rc-tooltip": "^4.2.2",

@@ -351,8 +351,6 @@ function startHold(
 				dynamicallyInserted: getCurrentTime(),
 				piece: {
 					...clone(instance.piece),
-					_id: protectString<PieceId>(instance.piece._id + '_hold'),
-					startPartId: holdToPartInstance.part._id,
 					enable: { start: 0 },
 					extendOnHold: false,
 				},
@@ -361,6 +359,9 @@ function startHold(
 					fromPreviousPart: true,
 					fromHold: true,
 				},
+				// Preserve the timings from the playing instance
+				startedPlayback: instance.startedPlayback,
+				stoppedPlayback: instance.stoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
 			if (content && content.fileName && content.sourceDuration && instance.startedPlayback) {

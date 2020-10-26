@@ -27,6 +27,16 @@ All notable changes to this project will be documented in this file. See [standa
 * show autoNext status not shown in some cases ([45481ec](https://github.com/nrkno/tv-automation-server-core/commit/45481ec8f7e59eefa46ba3758d14100847d17987)), closes [#72d85006](https://github.com/nrkno/tv-automation-server-core/issues/72d85006)
 * use a input[list]/datalist instead of a input/select combo ([5eea060](https://github.com/nrkno/tv-automation-server-core/commit/5eea060dc63c674102a4c61729f6ad6cd0ce99a3))
 
+### [1.13.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.1-0...v1.13.1) (2020-10-26)
+
+### [1.13.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.0...v1.13.1-0) (2020-10-26)
+
+
+### Bug Fixes
+
+* ActivationCache.getPeripheralDevices exception when no active playlist ([#364](https://github.com/nrkno/tv-automation-server-core/issues/364)) ([1895315](https://github.com/nrkno/tv-automation-server-core/commit/189531598bef5ef3e140849c5d44dd4ae6c43b3e))
+* preserve pieceInstance timings when extending for hold ([d0925b4](https://github.com/nrkno/tv-automation-server-core/commit/d0925b48f4f16199f7cfdb99f49a5b807b1a845c))
+
 ## [1.13.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.12.1...v1.13.0) (2020-10-19)
 
 
