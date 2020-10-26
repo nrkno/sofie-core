@@ -179,12 +179,14 @@ export const RundownListItem = withTranslation()(
 
 					return connectDropTarget(
 						<tr id={htmlElementId} className={classNames.join(' ')}>
-							{connectDragSource(
-								<th className="rundown-list-item__name">
-									<FontAwesomeIcon icon={faTh} />
-									{rundown.name}
-								</th>
-							)}
+							<th className="rundown-list-item__name">
+								{connectDragSource(
+									<span className="draghandle">
+										<FontAwesomeIcon icon={faTh} />
+									</span>
+								)}
+								{rundown.name}
+							</th>
 							<td className="rundown-list-item__showStyle">
 								{userCanConfigure ? (
 									<Link to={getShowStyleBaseLink(rundown.showStyleBaseId)}>{this.showStyle.name}</Link>
@@ -193,7 +195,12 @@ export const RundownListItem = withTranslation()(
 								)}
 							</td>
 							<td className="rundown-list-item__airTime">
-								{rundown.expectedStart && <Moment format="YYYY/MM/DD HH:mm:ss">{rundown.expectedStart}</Moment>}
+								{rundown.expectedStart && (
+									<>
+										<MomentFromNow>{rundown.expectedStart}</MomentFromNow>{' '}
+										<Moment format="HH:mm:ss">{rundown.expectedStart}</Moment>
+									</>
+								)}
 							</td>
 							<td className="rundown-list-item__status">{rundown.status}</td>
 							<td className="rundown-list-item__duration">

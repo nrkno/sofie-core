@@ -1,4 +1,3 @@
-import React from 'react'
 import { RundownLayoutId } from '../../../lib/collections/RundownLayouts'
 import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { Rundown, RundownId } from '../../../lib/collections/Rundowns'

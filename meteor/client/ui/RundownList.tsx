@@ -274,9 +274,9 @@ export const RundownList = translateWithTracker(() => {
 								</header>
 								{this.state.subsReady ? (
 									<div className="mod mvl">
-										<table className="table system-status-table expando expando-tight rundown-list">
-											<thead>
-												<tr className="hl">
+										<table className="rundown-list">
+											<thead className="rundown-list__header">
+												<tr>
 													<th className="rundown-list-item__name">
 														<Tooltip
 															overlay={t('Click on a rundown to control your studio')}

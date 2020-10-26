@@ -330,8 +330,8 @@ export const RundownPlaylistUi = DropTarget(
 
 				return connectDropTarget(
 					<tr className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
-						<td colSpan={7}>
-							<table className="table system-status-table expando expando-tight">
+						<td className="rundown-playlist--rundowns" colSpan={7}>
+							<table>
 								<thead>
 									<tr>
 										<td colSpan={5}>
@@ -344,7 +344,7 @@ export const RundownPlaylistUi = DropTarget(
 									</tr>
 								</thead>
 								<tbody>{rundownComponents}</tbody>
-								<tfoot>{playbackProgressBar}</tfoot>
+								{playbackProgressBar ? <tfoot>{playbackProgressBar}</tfoot> : null}
 							</table>
 						</td>
 					</tr>
