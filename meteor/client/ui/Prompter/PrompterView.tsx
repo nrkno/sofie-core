@@ -131,7 +131,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			)
 			if (playlist?._id) {
 				this.subscribe(PubSub.rundowns, {
-					playlistId: playlist?._id,
+					playlistId: playlist._id,
 				})
 			}
 		})

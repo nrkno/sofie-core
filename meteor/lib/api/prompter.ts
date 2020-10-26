@@ -75,14 +75,16 @@ export namespace PrompterAPI {
 				parts: [],
 			}
 
-			parts.forEach((part) => {
+			for (const part of parts) {
 				const partData: PrompterDataPart = {
 					id: part._id,
 					title: part.title,
 					pieces: [],
 				}
 
-				part.getAllPieces().forEach((piece) => {
+				const allPieces = part.getAllPieces()
+
+				for (const piece of allPieces) {
 					if (piece.content) {
 						const content = piece.content as ScriptContent
 						if (content.fullScript) {
@@ -96,7 +98,8 @@ export namespace PrompterAPI {
 							})
 						}
 					}
-				})
+				}
+
 				if (partData.pieces.length === 0) {
 					// insert an empty line
 					partData.pieces.push({
@@ -106,7 +109,7 @@ export namespace PrompterAPI {
 				}
 
 				segmentData.parts.push(partData)
-			})
+			}
 
 			data.segments.push(segmentData)
 		})
