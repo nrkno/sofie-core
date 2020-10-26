@@ -56,8 +56,6 @@ interface IRundownPlaylistUiState {
 interface IRundownPlaylistDropTargetProps {
 	connectDropTarget: DragElementWrapper<RundownPlaylistUi>
 	isOver: boolean
-	isOverCurrent: boolean
-	canDrop: boolean
 	itemType: string | symbol | null
 	action: IRundownPlaylistUiAction | undefined
 }
@@ -68,6 +66,10 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 		monitor: DropTargetMonitor,
 		component: any
 	): IRundownPlaylistUiAction | undefined => {
+		if (monitor.didDrop()) {
+			return
+		}
+
 		const dropped = monitor.getItem()
 
 		console.debug(`Drop on playlist ${props.playlist._id}:`, dropped)
@@ -96,8 +98,6 @@ const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlay
 	return {
 		connectDropTarget: connect.dropTarget(),
 		isOver: monitor.isOver(),
-		isOverCurrent: monitor.isOver({ shallow: true }),
-		canDrop: monitor.canDrop(),
 		itemType: monitor.getItemType(),
 		action,
 	}
@@ -136,7 +136,10 @@ export const RundownPlaylistUi = DropTarget(
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
 
+				console.debug(`${this.props.playlist._id} drop handler`, rundownId)
+
 				if (this.rundowns.has(rundownId)) {
+					console.debug(`Found ${rundownId} in ${Array.from(this.rundowns.keys())}, finalizing order in local state`)
 					// finalize order from component state
 					MeteorCall.userAction.moveRundown(
 						'Drag and drop rundown playlist reorder',
@@ -145,6 +148,7 @@ export const RundownPlaylistUi = DropTarget(
 						rundownOrder
 					)
 				} else {
+					console.debug(`${rundownId} not found in ${Array.from(this.rundowns.keys())}, adding to playlist`)
 					// add rundown to playlist
 					rundownOrder.push(rundownId)
 					console.debug(`Rundown ${rundownId} added to end of playlist ${playlistId}`, rundownOrder)
@@ -160,11 +164,17 @@ export const RundownPlaylistUi = DropTarget(
 
 			private rundownsHaveChanged(): boolean {
 				if (this.state.rundownOrder.length !== this.props.playlist.rundowns.length) {
+					console.debug(
+						`Playlist length has changed (state: ${this.state.rundownOrder.length}, props: ${this.props.playlist.rundowns.length})`
+					)
 					return true
 				}
 
 				for (let i = 0; i < this.state.rundownOrder.length; i++) {
 					if (this.state.rundownOrder[i] !== this.props.playlist.rundowns[i]._id) {
+						console.debug(
+							`[${i}]: Found ${this.props.playlist.rundowns[i]._id} where ${this.state.rundownOrder[i]} was expected`
+						)
 						return true
 					}
 				}
@@ -197,6 +207,7 @@ export const RundownPlaylistUi = DropTarget(
 				}
 
 				if (this.rundownsHaveChanged()) {
+					console.debug(`componentDidUpdate ${this.props.playlist._id}: rundowns have changed, resetting local state`)
 					this.resetLocalRundownState()
 				}
 			}
@@ -272,11 +283,14 @@ export const RundownPlaylistUi = DropTarget(
 				const aPos = this.state.rundownOrder.indexOf(a)
 				const bPos = this.state.rundownOrder.indexOf(b)
 
+				console.debug(`Swapping [${aPos}:${a}] with [${bPos}:${b}]`)
+
 				if (aPos > -1 && bPos > -1) {
 					const newOrder = this.state.rundownOrder.slice()
 					newOrder[aPos] = b
 					newOrder[bPos] = a
 					this.setState({ rundownOrder: newOrder })
+					console.debug('Swapped order', [a, b])
 				} else {
 					console.warn(
 						`Illegal values for rundown order position swap: ${a} (current position: ${aPos}), ${b} (current position: ${bPos})`
@@ -329,25 +343,19 @@ export const RundownPlaylistUi = DropTarget(
 				})
 
 				return connectDropTarget(
-					<tr className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
-						<td className="rundown-playlist--rundowns" colSpan={7}>
-							<table>
-								<thead>
-									<tr>
-										<td colSpan={5}>
-											<h2>
-												<FontAwesomeIcon icon={faFolderOpen} /> {playlist.name}
-											</h2>
-										</td>
-										<td>{playlistViewLinks}</td>
-										<td>Actions her</td>
-									</tr>
-								</thead>
-								<tbody>{rundownComponents}</tbody>
-								{playbackProgressBar ? <tfoot>{playbackProgressBar}</tfoot> : null}
-							</table>
-						</td>
-					</tr>
+					<li className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
+						<header>
+							<span>
+								<h2>
+									<FontAwesomeIcon icon={faFolderOpen} /> {playlist.name}
+								</h2>
+							</span>
+							<span>{playlistViewLinks}</span>
+							<span>Actions her</span>
+						</header>
+						<ol className="rundown-playlist--rundowns">{rundownComponents}</ol>
+						<footer>{playbackProgressBar ? { playbackProgressBar } : null}</footer>
+					</li>
 				)
 			}
 		}
@@ -356,13 +364,7 @@ export const RundownPlaylistUi = DropTarget(
 
 function createProgressBarRow(playlist: RundownPlaylistUi): React.ReactElement | null {
 	if (playlist.startedPlayback !== undefined && playlist.expectedDuration !== undefined && playlist.startedPlayback) {
-		return (
-			<tr className="hl expando-addon">
-				<td colSpan={7}>
-					<ActiveProgressBar rundownPlaylist={playlist} />
-				</td>
-			</tr>
-		)
+		return <ActiveProgressBar rundownPlaylist={playlist} />
 	}
 
 	return null
