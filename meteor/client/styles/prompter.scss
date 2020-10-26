@@ -192,7 +192,8 @@ body.prompter-scrollbar {
 			transition: opacity 0.5s;
 
 			&.top {
-				top: 0;
+				bottom: auto;
+				top: 1.1em;
 				margin-top: -1em;
 			}
 			&.hidden {
@@ -200,7 +201,7 @@ body.prompter-scrollbar {
 			}
 		}
 		.take-indicator {
-			left: 0em;
+			right: 0em;
 
 			border-top: 1em solid #f00;
 			border-bottom: 1em solid transparent;
@@ -210,7 +211,7 @@ body.prompter-scrollbar {
 			}
 		}
 		.next-indicator {
-			left: 1.33em;
+			right: 1.33em;
 
 			border-top: 1em solid #0f0;
 			border-bottom: 1em solid transparent;
