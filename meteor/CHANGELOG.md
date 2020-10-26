@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.0...v1.13.1-0) (2020-10-26)
+
+
+### Bug Fixes
+
+* ActivationCache.getPeripheralDevices exception when no active playlist ([#364](https://github.com/nrkno/tv-automation-server-core/issues/364)) ([1895315](https://github.com/nrkno/tv-automation-server-core/commit/189531598bef5ef3e140849c5d44dd4ae6c43b3e))
+* preserve pieceInstance timings when extending for hold ([d0925b4](https://github.com/nrkno/tv-automation-server-core/commit/d0925b48f4f16199f7cfdb99f49a5b807b1a845c))
+
 ## [1.13.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.12.1...v1.13.0) (2020-10-19)
 
 
