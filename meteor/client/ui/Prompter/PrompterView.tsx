@@ -40,6 +40,7 @@ export enum PrompterConfigMode {
 	KEYBOARD = 'keyboard',
 	SHUTTLEKEYBOARD = 'shuttlekeyboard',
 	JOYCON = 'joycon',
+	PEDAL = 'pedal'
 }
 
 interface IProps {
