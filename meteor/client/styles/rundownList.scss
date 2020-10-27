@@ -105,6 +105,23 @@
 					&:last-child::after {
 						height: 50%;
 					}
+
+					// recalc widths to line up with columns outside of playlists
+					.rundown-list-item__name {
+						width: calc((100% - var(--leftGutterWidth)) * 0.25 - var(--leftGutterWidth) / 2);
+					}
+					.rundown-list-item__showStyle {
+						width: calc((100% + var(--leftGutterWidth)) * 0.3);
+					}
+					.rundown-list-item__airTime,
+					.rundown-list-item__status,
+					.rundown-list-item__duration,
+					.rundown-list-item__created {
+						width: calc((100% + var(--leftGutterWidth)) * 0.1);
+					}
+					.rundown-list-item__actions {
+						width: calc((100% + var(--leftGutterWidth)) * 0.05);
+					}
 				}
 			}
 		}
