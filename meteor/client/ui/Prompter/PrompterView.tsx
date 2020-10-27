@@ -638,8 +638,16 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 									'read-marker ' + (!this.props.config.showMarker ? 'hide' : this.props.config.marker || 'hide')
 								}></div>
 
-							<div className="take-indicator hidden"></div>
-							<div className="next-indicator hidden"></div>
+							<div
+								className="indicators"
+								style={{
+									marginTop: this.props.config.margin ? `${this.props.config.margin}vh` : undefined,
+									marginLeft: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+									marginRight: this.props.config.margin ? `${this.props.config.margin}vw` : undefined,
+								}}>
+								<div className="take-indicator hidden"></div>
+								<div className="next-indicator hidden"></div>
+							</div>
 						</div>
 
 						<div
