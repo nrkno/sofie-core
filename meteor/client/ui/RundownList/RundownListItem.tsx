@@ -89,7 +89,6 @@ const dropSpec: DropTargetSpec<IRundownListItemProps> = {
 
 			// if that rundown is not this rundown
 			if (item && props.rundown._id !== item.id) {
-				console.debug('Swapping order...')
 				props.swapRundownOrder(props.rundown._id, item.id)
 			}
 		}
@@ -182,15 +181,18 @@ export const RundownListItem = withTranslation()(
 					return connectDropTarget(
 						<li id={htmlElementId} className={classNames.join(' ')}>
 							<span className="rundown-list-item__name">
-								{connectDragSource(
-									<span className="draghandle">
-										<Tooltip overlay={t('Drag to reorder or move out of playlist')} placement="top">
-											<button className="action-btn" onClick={() => confirmDeleteRundown(rundown, t)}>
+								<span className="draghandle">
+									<Tooltip
+										overlay={t('Drag to reorder or move out of playlist')}
+										placement="top"
+										mouseEnterDelay={3000}>
+										{connectDragSource(
+											<span className="action-btn">
 												<FontAwesomeIcon icon={faTh} />
-											</button>
-										</Tooltip>
-									</span>
-								)}
+											</span>
+										)}
+									</Tooltip>
+								</span>
 								{rundown.name}
 							</span>
 							<span className="rundown-list-item__showStyle">

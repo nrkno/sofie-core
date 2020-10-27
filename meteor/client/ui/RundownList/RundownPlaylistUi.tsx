@@ -78,6 +78,7 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 			return {
 				type: 'HANDLE_RUNDOWN_DROP',
 				rundownId: dropped.id,
+				targetPlaylistId: props.playlist._id,
 			}
 		}
 	},
@@ -162,19 +163,13 @@ export const RundownPlaylistUi = DropTarget(
 				}
 			}
 
-			private rundownsHaveChanged(): boolean {
-				if (this.state.rundownOrder.length !== this.props.playlist.rundowns.length) {
-					console.debug(
-						`Playlist length has changed (state: ${this.state.rundownOrder.length}, props: ${this.props.playlist.rundowns.length})`
-					)
+			private rundownsHaveChanged(prevProps: IRundownPlaylistUiProps): boolean {
+				if (prevProps.playlist.rundowns.length !== this.props.playlist.rundowns.length) {
 					return true
 				}
 
-				for (let i = 0; i < this.state.rundownOrder.length; i++) {
-					if (this.state.rundownOrder[i] !== this.props.playlist.rundowns[i]._id) {
-						console.debug(
-							`[${i}]: Found ${this.props.playlist.rundowns[i]._id} where ${this.state.rundownOrder[i]} was expected`
-						)
+				for (let i = 0; i < prevProps.playlist.rundowns.length; i++) {
+					if (prevProps.playlist.rundowns[i]._id !== this.props.playlist.rundowns[i]._id) {
 						return true
 					}
 				}
@@ -194,9 +189,10 @@ export const RundownPlaylistUi = DropTarget(
 				this.setState({ rundownOrder })
 			}
 
-			componentDidUpdate() {
-				if (this.props.action) {
-					const { type, rundownId } = this.props.action
+			componentDidUpdate(prevProps: IRundownPlaylistUiProps) {
+				const { action } = this.props
+				if (action && action.targetPlaylistId === this.props.playlist._id) {
+					const { type, rundownId } = action
 					switch (type) {
 						case RundownPlaylistUiActionTypes.HANDLE_RUNDOWN_DROP:
 							this.handleRundownDrop(rundownId)
@@ -206,7 +202,7 @@ export const RundownPlaylistUi = DropTarget(
 					}
 				}
 
-				if (this.rundownsHaveChanged()) {
+				if (this.rundownsHaveChanged(prevProps)) {
 					console.debug(`componentDidUpdate ${this.props.playlist._id}: rundowns have changed, resetting local state`)
 					this.resetLocalRundownState()
 				}
@@ -283,18 +279,12 @@ export const RundownPlaylistUi = DropTarget(
 				const aPos = this.state.rundownOrder.indexOf(a)
 				const bPos = this.state.rundownOrder.indexOf(b)
 
-				console.debug(`Swapping [${aPos}:${a}] with [${bPos}:${b}]`)
-
 				if (aPos > -1 && bPos > -1) {
 					const newOrder = this.state.rundownOrder.slice()
 					newOrder[aPos] = b
 					newOrder[bPos] = a
 					this.setState({ rundownOrder: newOrder })
-					console.debug('Swapped order', [a, b])
-				} else {
-					console.warn(
-						`Illegal values for rundown order position swap: ${a} (current position: ${aPos}), ${b} (current position: ${bPos})`
-					)
+					console.debug(`Swapped [${aPos}:${a}] with [${bPos}:${b}]`)
 				}
 			}
 
