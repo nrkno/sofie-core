@@ -95,7 +95,7 @@ export const SourceLayerItem = withTranslation()(
 			})
 		}
 
-		getItemLabelOffsetLeft = (): { [key: string]: string } => {
+		getItemLabelOffsetLeft = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -220,7 +220,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -245,7 +245,7 @@ export const SourceLayerItem = withTranslation()(
 							let styleObj = {
 								maxWidth:
 									this.state.rightAnchoredWidth > 0
-										? (this.state.elementWidth - this.state.rightAnchoredWidth).toString() + 'px'
+										? (this.state.elementWidth - this.state.rightAnchoredWidth - 10).toString() + 'px'
 										: maxLabelWidth !== undefined
 										? (maxLabelWidth * this.props.timeScale).toString() + 'px'
 										: nextIsTouching
@@ -261,7 +261,7 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		getItemLabelOffsetRight = (): { [key: string]: string } => {
+		getItemLabelOffsetRight = (): React.CSSProperties => {
 			if (this.props.relative) {
 				return {}
 			} else {
@@ -462,6 +462,7 @@ export const SourceLayerItem = withTranslation()(
 			if (this.props.isLiveLine) {
 				this.mountResizeObserver()
 			}
+
 			window.addEventListener(RundownViewEvents.highlight, this.onHighlight)
 		}
 
@@ -472,7 +473,7 @@ export const SourceLayerItem = withTranslation()(
 			clearTimeout(this.highlightTimeout)
 		}
 
-		componentDidUpdate(prevProps: ISourceLayerItemProps) {
+		componentDidUpdate(prevProps: ISourceLayerItemProps, prevState: ISourceLayerItemState) {
 			if (prevProps.scrollLeft !== this.props.scrollLeft && this.state.showMiniInspector) {
 				const scrollLeftOffset = this.state.scrollLeftOffset + (this.props.scrollLeft - prevProps.scrollLeft)
 				const cursorTimePosition = this.state.cursorTimePosition + (this.props.scrollLeft - prevProps.scrollLeft)
