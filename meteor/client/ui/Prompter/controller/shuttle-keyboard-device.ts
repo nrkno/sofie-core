@@ -4,12 +4,10 @@ import { PrompterViewInner } from '../PrompterView'
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 
 /**
- * This class handles control of the prompter using Keyboard keys sent from a contour shuttle
- * Up: shift + control + alt + [1-7]
- * Down: shift + control + alt + [1-7]
- * Supports Up / Down arrow keys
- * Supports Left / Right arrow keys
- * Supports Page-up / Page-down keys
+ * This class handles control of the prompter using Keyboard keys sent from an xkeys
+ * Up: control + alt + [1-7]
+ * Down: control + alt + [1-7]
+ * Supports Page-up / Page-down keys for previous/next story
  */
 export class ShuttleKeyboardController extends ControllerAbstract {
 	private _destroyed: boolean = false
