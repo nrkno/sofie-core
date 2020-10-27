@@ -16,6 +16,124 @@ $segment-layer-background-script: #005a25;
 $segment-layer-background-mic: #1e6820;
 $segment-layer-background-guest: #008a92;
 
+@mixin item-type-text-outline($selectors) {
+	&.camera {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-camera),
+				-1px 1px 1px var(--segment-layer-background-camera), -1px -1px 1px var(--segment-layer-background-camera),
+				1px 1px 1px var(--segment-layer-background-camera), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-camera--second),
+					-1px 1px 1px var(--segment-layer-background-camera--second),
+					-1px -1px 1px var(--segment-layer-background-camera--second),
+					1px 1px 1px var(--segment-layer-background-camera--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
+		}
+	}
+
+	&.graphics {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-graphics),
+				-1px 1px 1px var(--segment-layer-background-graphics), -1px -1px 1px var(--segment-layer-background-graphics),
+				1px 1px 1px var(--segment-layer-background-graphics), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-graphics--second),
+					-1px 1px 1px var(--segment-layer-background-graphics--second),
+					-1px -1px 1px var(--segment-layer-background-graphics--second),
+					1px 1px 1px var(--segment-layer-background-graphics--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
+		}
+	}
+
+	&.lower-third {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-lower-third),
+				-1px 1px 1px var(--segment-layer-background-lower-third),
+				-1px -1px 1px var(--segment-layer-background-lower-third),
+				1px 1px 1px var(--segment-layer-background-lower-third), 1px 1px 3px rgba(0, 0, 0, 1),
+				1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-lower-third--second),
+					-1px 1px 1px var(--segment-layer-background-lower-third--second),
+					-1px -1px 1px var(--segment-layer-background-lower-third--second),
+					1px 1px 1px var(--segment-layer-background-lower-third--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
+		}
+	}
+
+	&.live-speak {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-vt), -1px 1px 1px var(--segment-layer-background-vt),
+				-1px -1px 1px var(--segment-layer-background-vt), 1px 1px 1px var(--segment-layer-background-vt),
+				1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+	}
+
+	&.vt {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-vt), -1px 1px 1px var(--segment-layer-background-vt),
+				-1px -1px 1px var(--segment-layer-background-vt), 1px 1px 1px var(--segment-layer-background-vt),
+				1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-vt--second),
+					-1px 1px 1px var(--segment-layer-background-vt--second),
+					-1px -1px 1px var(--segment-layer-background-vt--second),
+					1px 1px 1px var(--segment-layer-background-vt--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
+		}
+	}
+
+	&.remote {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-remote),
+				-1px 1px 1px var(--segment-layer-background-remote), -1px -1px 1px var(--segment-layer-background-remote),
+				1px 1px 1px var(--segment-layer-background-remote), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+
+		&.second {
+			#{$selectors} {
+				text-shadow: 1px -1px 1px var(--segment-layer-background-remote--second),
+					-1px 1px 1px var(--segment-layer-background-remote--second),
+					-1px -1px 1px var(--segment-layer-background-remote--second),
+					1px 1px 1px var(--segment-layer-background-remote--second), 1px 1px 3px rgba(0, 0, 0, 1),
+					1px 1px 8px rgba(0, 0, 0, 1);
+			}
+		}
+	}
+
+	&.script {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-script),
+				-1px 1px 1px var(--segment-layer-background-script), -1px -1px 1px var(--segment-layer-background-script),
+				1px 1px 1px var(--segment-layer-background-script), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+	}
+
+	&.mic {
+		#{$selectors} {
+			text-shadow: 1px -1px 1px var(--segment-layer-background-guest),
+				-1px 1px 1px var(--segment-layer-background-guest), -1px -1px 1px var(--segment-layer-background-guest),
+				1px 1px 1px var(--segment-layer-background-guest), 1px 1px 3px rgba(0, 0, 0, 1), 1px 1px 8px rgba(0, 0, 0, 1);
+		}
+	}
+}
+
 @mixin item-type-colors {
 	&.camera {
 		background: var(--segment-layer-background-camera);

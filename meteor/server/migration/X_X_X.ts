@@ -30,33 +30,4 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
 	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
-	{
-		id: 'Add Route Set Exclusivity Groups',
-		canBeRunAutomatically: true,
-		validate: () => {
-			const badCount = Studios.find({
-				routeSetExclusivityGroups: {
-					$exists: false,
-				},
-			}).count()
-			if (badCount > 0) {
-				return `${badCount} studio need to be updated`
-			}
-			return false
-		},
-		migrate: () => {
-			Studios.update(
-				{
-					routeSetExclusivityGroups: {
-						$exists: false,
-					},
-				},
-				{
-					$set: {
-						routeSetExclusivityGroups: {},
-					},
-				}
-			)
-		},
-	},
 ])

@@ -631,57 +631,57 @@ const RundownHeader = withTranslation()(
 				}
 			})
 		}
-		keyTake = (e: ExtendedKeyboardEvent) => {
+		keyTake = (e: mousetrap.ExtendedKeyboardEvent) => {
 			if (e.key !== 'Enter' || e.location === 3) {
 				// only allow the rightmost enter key
 				if (!isModalShowing()) this.take(e)
 			}
 		}
-		keyHold = (e: ExtendedKeyboardEvent) => {
+		keyHold = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.hold(e)
 		}
-		keyHoldUndo = (e: ExtendedKeyboardEvent) => {
+		keyHoldUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.holdUndo(e)
 		}
-		keyActivate = (e: ExtendedKeyboardEvent) => {
+		keyActivate = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.activate(e)
 		}
-		keyActivateRehearsal = (e: ExtendedKeyboardEvent) => {
+		keyActivateRehearsal = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.activateRehearsal(e)
 		}
 
-		keyDeactivate = (e: ExtendedKeyboardEvent) => {
+		keyDeactivate = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.deactivate(e)
 		}
-		keyResetRundown = (e: ExtendedKeyboardEvent) => {
+		keyResetRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.resetRundown(e)
 		}
-		keyReloadRundown = (e: ExtendedKeyboardEvent) => {
+		keyReloadRundown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.reloadRundownPlaylist(e)
 		}
-		keyMoveNextForward = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextForward = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "forward" = to next Part
 			this.moveNext(e, 1, 0)
 		}
-		keyMoveNextBack = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextBack = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, -1, 0)
 		}
-		keyMoveNextDown = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextDown = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, 0, 1)
 		}
-		keyMoveNextUp = (e: ExtendedKeyboardEvent) => {
+		keyMoveNextUp = (e: mousetrap.ExtendedKeyboardEvent) => {
 			// "down" = to next Segment
 			this.moveNext(e, 0, -1)
 		}
-		keyDisableNextPiece = (e: ExtendedKeyboardEvent) => {
+		keyDisableNextPiece = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.disableNextPiece(e)
 		}
-		keyDisableNextPieceUndo = (e: ExtendedKeyboardEvent) => {
+		keyDisableNextPieceUndo = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.disableNextPieceUndo(e)
 		}
-		keyLogError = (e: ExtendedKeyboardEvent) => {
+		keyLogError = (e: mousetrap.ExtendedKeyboardEvent) => {
 			this.takeRundownSnapshot(e)
 		}
 

@@ -10,7 +10,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import * as _ from 'underscore'
 
 import { getElementWidth } from '../../../utils/dimensions'
-import { protectString } from '../../../../lib/lib'
+import { protectString, unprotectString } from '../../../../lib/lib'
 
 const BREAK_SCRIPT_BREAKPOINT = 620
 const SCRIPT_PART_LENGTH = 250
@@ -28,8 +28,9 @@ export const MicSourceRenderer = withTranslation()(
 		rightLabel: HTMLSpanElement
 
 		readTime: number
+		lastPartDuration: number
 
-		private _forceSizingRecheck: boolean
+		private _lineAtEnd: boolean = false
 
 		constructor(props: IProps & WithTranslation) {
 			super(props)
@@ -51,28 +52,30 @@ export const MicSourceRenderer = withTranslation()(
 			if (this.itemElement && !this.props.relative) {
 				this.itemPosition = this.itemElement.offsetLeft
 				const content = this.props.piece.instance.piece.content as ScriptContent | undefined
-				let scriptReadTime = 0
 				if (content && content.sourceDuration) {
-					scriptReadTime = content.sourceDuration * this.props.timeScale
+					const scriptReadTime = content.sourceDuration * this.props.timeScale
 					this.readTime = content.sourceDuration
 					const positionByReadTime = this.itemPosition + scriptReadTime
 					const positionByPartEnd = this.props.partDuration * this.props.timeScale
-					const positionByExpectedPartEnd =
-						(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale
-					if (positionByReadTime !== this.linePosition) {
-						this.linePosition = Math.min(positionByReadTime, positionByPartEnd)
+
+					if (
+						positionByReadTime !== this.linePosition ||
+						(this._lineAtEnd && positionByPartEnd !== this.lastPartDuration)
+					) {
+						this.linePosition = positionByReadTime
+						this.lastPartDuration = positionByPartEnd
 						this.repositionLine()
+
 						if (
-							this.props.piece.instance._id ===
-							protectString('cT_aO1S2ckKFgTlJNmYxueA51iY__7rbW7vAMCzpAvcbPt_9g7o52dcQJna2HM4v')
+							!this._lineAtEnd &&
+							(positionByReadTime >= positionByPartEnd || Math.abs(positionByReadTime - positionByPartEnd) <= 4)
 						) {
-							console.log(Math.abs(positionByReadTime - positionByExpectedPartEnd))
-						}
-						if (Math.abs(positionByReadTime - positionByExpectedPartEnd) <= 40) {
 							// difference is less than a frame
 							this.addClassToLine('at-end')
-						} else {
+							this._lineAtEnd = true
+						} else if (this._lineAtEnd && positionByReadTime < positionByPartEnd) {
 							this.removeClassFromLine('at-end')
+							this._lineAtEnd = false
 						}
 					}
 					this.removeClassFromLine('hidden')
@@ -129,6 +132,15 @@ export const MicSourceRenderer = withTranslation()(
 				_forceSizingRecheck = true
 			}
 
+			if (
+				!_forceSizingRecheck &&
+				this._lineAtEnd === true &&
+				(this.props.part.instance.part.expectedDuration || this.props.partDuration) * this.props.timeScale !==
+					(prevProps.part.instance.part.expectedDuration || prevProps.partDuration) * prevProps.timeScale
+			) {
+				_forceSizingRecheck = true
+			}
+
 			// Move the line element
 			if (this.itemElement !== this.props.itemElement) {
 				if (this.itemElement) {
@@ -139,7 +151,7 @@ export const MicSourceRenderer = withTranslation()(
 					this.itemElement.parentNode &&
 						this.itemElement.parentNode.parentNode &&
 						this.itemElement.parentNode.parentNode.appendChild(this.lineItem)
-					this._forceSizingRecheck = true
+					_forceSizingRecheck = true
 				}
 			}
 

@@ -3,6 +3,8 @@ import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { StudioRouteSet, StudioRouteSetExclusivityGroup, StudioRouteBehavior } from '../../../lib/collections/Studios'
 import classNames from 'classnames'
+import { RouteSetOverrideIcon } from '../../lib/switchboardIcons'
+import Tooltip from 'rc-tooltip'
 
 interface IProps {
 	onStudioRouteSetSwitch?: (
@@ -45,7 +47,7 @@ export const SwitchboardPopUp = withTranslation()(
 								{routeSets.length === 2 &&
 								routeSets[0][1].behavior === StudioRouteBehavior.ACTIVATE_ONLY &&
 								routeSets[1][1].behavior === StudioRouteBehavior.ACTIVATE_ONLY ? (
-									<div key={routeSets[0][0]} className="switchboard-pop-up-panel__group__controls mhm mbs">
+									<div key={routeSets[0][0]} className="switchboard-pop-up-panel__group__controls dual mhm mbs">
 										<span
 											className={classNames({
 												'switchboard-pop-up-panel__group__controls__active': routeSets[0][1].active,
@@ -83,6 +85,18 @@ export const SwitchboardPopUp = withTranslation()(
 											})}>
 											{routeSets[1][1].name}
 										</span>
+										{((routeSets[0][1].defaultActive !== undefined &&
+											routeSets[0][1].active !== routeSets[0][1].defaultActive) ||
+											(routeSets[1][1].defaultActive !== undefined &&
+												routeSets[1][1].active !== routeSets[1][1].defaultActive)) && (
+											<span className="switchboard-pop-up-panel__group__controls__notice">
+												<Tooltip overlay={t("This is not in it's normal setting")} placement="top">
+													<span>
+														<RouteSetOverrideIcon />
+													</span>
+												</Tooltip>
+											</span>
+										)}
 									</div>
 								) : (
 									routeSets.map(([id, routeSet]) => (
@@ -120,6 +134,15 @@ export const SwitchboardPopUp = withTranslation()(
 												})}>
 												{routeSet.name}
 											</span>
+											{routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive && (
+												<span className="switchboard-pop-up-panel__group__controls__notice">
+													<Tooltip overlay={t("This is not in it's normal setting")} placement="top">
+														<span>
+															<RouteSetOverrideIcon />
+														</span>
+													</Tooltip>
+												</span>
+											)}
 										</div>
 									))
 								)}

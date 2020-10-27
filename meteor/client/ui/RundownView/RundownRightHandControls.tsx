@@ -24,7 +24,7 @@ import * as On_Air_MouseOver from './On_Air_MouseOver.json'
 import { SupportPopUpToggle } from '../SupportPopUp'
 import classNames from 'classnames'
 import { NoticeLevel } from '../../lib/notifications/notifications'
-import { SwitchboardIcon } from '../../lib/switchboardIcons'
+import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/switchboardIcons'
 import { SwitchboardPopUp } from './SwitchboardPopUp'
 
 interface IProps {
@@ -169,7 +169,9 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 		const availableRouteSets = Object.entries(this.props.studioRouteSets).filter(
 			([_id, routeSet]) => routeSet.behavior !== StudioRouteBehavior.HIDDEN
 		)
-		const activeRoutes = availableRouteSets.filter(([id, routeSet]) => routeSet.active).length
+		const nonDefaultRoutes = availableRouteSets.filter(
+			([id, routeSet]) => routeSet.defaultActive !== undefined && routeSet.active !== routeSet.defaultActive
+		).length
 		const exclusivityGroups: {
 			[id: string]: Array<[string, StudioRouteSet]>
 		} = {}
@@ -264,7 +266,9 @@ export class RundownRightHandControls extends React.Component<IProps, IState> {
 									onClick={this.onRouteSetsToggle}
 									tabIndex={0}>
 									<SwitchboardIcon />
-									{activeRoutes > 0 && <span className="notification">&nbsp;</span>}
+									{nonDefaultRoutes > 0 && (
+										<RouteSetOverrideIcon className="status-bar__controls__button--switchboard-panel__notification" />
+									)}
 								</button>
 								<VelocityReact.VelocityTransitionGroup
 									enter={{

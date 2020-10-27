@@ -102,25 +102,47 @@
 	}
 }
 
-.switchboard-pop-up-panel .switchboard-pop-up-panel__group {
+#render-target .switchboard-pop-up-panel .switchboard-pop-up-panel__group {
 	width: 28rem;
 	border-top: 1px solid #d7d7d7;
 	margin-top: 0.75em;
 	padding-top: 10px;
 	user-select: none;
 
+	> p {
+		font-weight: 400;
+	}
+
 	.switchboard-pop-up-panel__group__controls {
-		.switchboard-pop-up-panel__group__controls__active {
-			font-weight: 400;
-		}
+		position: relative;
 
 		.switchboard-pop-up-panel__group__controls__inactive {
-			color: #727272;
+			color: #a4a4a4;
+		}
+
+		&.dual {
+			display: flex;
+
+			> span:first-child {
+				text-align: right;
+			}
+
+			> .switchboard-pop-up-panel__group__controls__inactive,
+			> .switchboard-pop-up-panel__group__controls__active {
+				flex: 1;
+			}
 		}
 
 		> .switch-button {
 			margin-left: 1em;
 			margin-right: 1em;
+		}
+
+		.switchboard-pop-up-panel__group__controls__notice {
+			position: absolute;
+			top: -0.2em;
+			left: auto;
+			right: -1.5em;
 		}
 	}
 }

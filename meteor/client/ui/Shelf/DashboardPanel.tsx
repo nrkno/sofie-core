@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import * as mousetrap from 'mousetrap'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import ClassNames from 'classnames'
 import { mousetrapHelper } from '../../lib/mousetrapHelper'
@@ -226,7 +227,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
-						(e: ExtendedKeyboardEvent) => {
+						(e: mousetrap.ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, false, e)
 						},
@@ -241,7 +242,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
-							(e: ExtendedKeyboardEvent) => {
+							(e: mousetrap.ExtendedKeyboardEvent) => {
 								preventDefault(e)
 								this.onToggleAdLib(item, true, e)
 							},
@@ -260,7 +261,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 					mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 					mousetrapHelper.bind(
 						item.hotkey,
-						(e: ExtendedKeyboardEvent) => {
+						(e: mousetrap.ExtendedKeyboardEvent) => {
 							preventDefault(e)
 							this.onToggleAdLib(item, false, e)
 						},
@@ -275,7 +276,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 						mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							queueHotkey,
-							(e: ExtendedKeyboardEvent) => {
+							(e: mousetrap.ExtendedKeyboardEvent) => {
 								preventDefault(e)
 								this.onToggleAdLib(item, true, e)
 							},
@@ -304,7 +305,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 				mousetrapHelper.bind(hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 				mousetrapHelper.bind(
 					hotkey,
-					(e: ExtendedKeyboardEvent) => {
+					(e: mousetrap.ExtendedKeyboardEvent) => {
 						preventDefault(e)
 						this.onClearAllSourceLayers(sourceLayers, e)
 					},

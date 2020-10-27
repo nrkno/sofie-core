@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
+import * as mousetrap from 'mousetrap'
 import { Meteor } from 'meteor/meteor'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { withTranslation } from 'react-i18next'
@@ -58,7 +59,7 @@ import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
 	onSelectAdLib: (piece: IAdLibListItem) => void
-	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: ExtendedKeyboardEvent) => void
+	onToggleAdLib: (piece: IAdLibListItem, queue: boolean, e: mousetrap.ExtendedKeyboardEvent) => void
 	selectedPiece: AdLibPieceUi | PieceUi | undefined
 	selectedSegment: AdlibSegmentUi | undefined
 	searchFilter: string | undefined
@@ -912,7 +913,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						mousetrapHelper.bind(item.hotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 						mousetrapHelper.bind(
 							item.hotkey,
-							(e: ExtendedKeyboardEvent) => {
+							(e: mousetrap.ExtendedKeyboardEvent) => {
 								preventDefault(e)
 								this.onToggleAdLib(item, false, e)
 							},
@@ -927,7 +928,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 							mousetrapHelper.bind(queueHotkey, preventDefault, 'keydown', this.props.hotkeyGroup)
 							mousetrapHelper.bind(
 								queueHotkey,
-								(e: ExtendedKeyboardEvent) => {
+								(e: mousetrap.ExtendedKeyboardEvent) => {
 									preventDefault(e)
 									this.onToggleAdLib(item, true, e)
 								},
