@@ -75,12 +75,11 @@ export namespace ServerPeripheralDeviceAPI {
 					type: options.type,
 					subType: options.subType,
 
-					name: (
+					name:
 						// Only allow name changes if the name is unmodified:
-						(existingDevice.name === existingDevice.deviceName || existingDevice.deviceName === undefined) ?
-						options.name :
-						existingDevice.name
-					),
+						existingDevice.name === existingDevice.deviceName || existingDevice.deviceName === undefined
+							? options.name
+							: existingDevice.name,
 					deviceName: options.name,
 					parentDeviceId: options.parentDeviceId,
 					versions: options.versions,
