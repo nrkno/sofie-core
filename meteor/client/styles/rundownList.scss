@@ -4,6 +4,7 @@
 	--defaultSpacing: 20px;
 	--defaultItemBackgroundColor: #f6f6f6;
 	--descendantItemBackgroundColor: #e5e5e5;
+	--treeLinesColor: #dddddd;
 
 	background-color: transparent;
 	width: 100%;
@@ -15,7 +16,6 @@
 		vertical-align: middle;
 	}
 
-	/* calc cell widths to get alignment across (nested) tables */
 	.rundown-list-item__name {
 		display: inline-block;
 		width: 25%;
@@ -55,12 +55,21 @@
 
 		// a rundown playlist, see RundownPlaylistUi.tsx
 		.rundown-playlist {
-			background-color: var(--defaultItemBackgroundColor);
 			list-style-type: none;
 			margin: 0;
 			width: 100%;
 
-			.rundown-playlist--rundowns {
+			.rundown-playlist__header {
+				background-color: var(--defaultItemBackgroundColor);
+
+				.rundown-playlist__heading {
+					display: inline-block;
+				}
+			}
+
+			.rundown-playlist__rundowns {
+				--leftGutterWidth: calc(2 * var(--defaultSpacing));
+
 				padding: 0;
 				margin: 0;
 
@@ -69,15 +78,32 @@
 					background-color: var(--descendantItemBackgroundColor);
 					border-top: 1px solid #c6c6c6;
 					margin-bottom: 0;
-					width: calc(100% - var(--defaultSpacing) * 2);
+					position: relative;
+					margin-left: var(--leftGutterWidth);
+
+					&::before,
+					&::after {
+						content: '';
+						position: absolute;
+						left: calc(-1 * var(--leftGutterWidth) / 2);
+					}
 
 					&::before {
-						content: ' ';
-						display: block;
-						overflow: auto;
-						height: max-content;
-						width: calc(var(--defaultSpacing) * 2);
-						background: white;
+						border-top: 1px dotted var(--treeLinesColor);
+						top: calc(var(--leftGutterWidth) / 2);
+						width: calc(var(--leftGutterWidth) / 2);
+						height: 0;
+					}
+
+					&::after {
+						border-left: 1px dotted var(--treeLinesColor);
+						height: 100%;
+						width: 0px;
+						top: 0.1em;
+					}
+
+					&:last-child::after {
+						height: 50%;
 					}
 				}
 			}

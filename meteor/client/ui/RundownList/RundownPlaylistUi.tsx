@@ -334,16 +334,14 @@ export const RundownPlaylistUi = DropTarget(
 
 				return connectDropTarget(
 					<li className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
-						<header>
-							<span>
-								<h2>
-									<FontAwesomeIcon icon={faFolderOpen} /> {playlist.name}
-								</h2>
-							</span>
+						<header className="rundown-playlist__header">
+							<h2 className="rundown-playlist__heading">
+								<FontAwesomeIcon icon={faFolderOpen} /> {playlist.name}
+							</h2>
 							<span>{playlistViewLinks}</span>
 							<span>Actions her</span>
 						</header>
-						<ol className="rundown-playlist--rundowns">{rundownComponents}</ol>
+						<ol className="rundown-playlist__rundowns">{rundownComponents}</ol>
 						<footer>{playbackProgressBar ? { playbackProgressBar } : null}</footer>
 					</li>
 				)
