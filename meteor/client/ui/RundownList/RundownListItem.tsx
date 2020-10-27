@@ -86,6 +86,7 @@ const dropSpec: DropTargetSpec<IRundownListItemProps> = {
 	hover(props: IRundownListItemProps, monitor: DropTargetMonitor) {
 		if (monitor.getItemType() === RundownListDragDropTypes.RUNDOWN) {
 			const item = monitor.getItem() as IRundownDragObject
+
 			// if that rundown is not this rundown
 			if (item && props.rundown._id !== item.id) {
 				props.swapRundownOrder(props.rundown._id, item.id)
@@ -178,39 +179,46 @@ export const RundownListItem = withTranslation()(
 					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
 
 					return connectDropTarget(
-						<tr id={htmlElementId} className={classNames.join(' ')}>
-							<th className="rundown-list-item__name">
-								{connectDragSource(
-									<span className="draghandle">
-										<FontAwesomeIcon icon={faTh} />
-									</span>
-								)}
+						<li id={htmlElementId} className={classNames.join(' ')}>
+							<span className="rundown-list-item__name">
+								<span className="draghandle">
+									<Tooltip
+										overlay={t('Drag to reorder or move out of playlist')}
+										placement="top"
+										mouseEnterDelay={3000}>
+										{connectDragSource(
+											<span className="action-btn">
+												<FontAwesomeIcon icon={faTh} />
+											</span>
+										)}
+									</Tooltip>
+								</span>
 								{rundown.name}
-							</th>
-							<td className="rundown-list-item__showStyle">
+							</span>
+							<span className="rundown-list-item__showStyle">
 								{userCanConfigure ? (
 									<Link to={getShowStyleBaseLink(rundown.showStyleBaseId)}>{this.showStyle.name}</Link>
 								) : (
 									this.showStyle.name
 								)}
-							</td>
-							<td className="rundown-list-item__airTime">
+							</span>
+							<span className="rundown-list-item__airTime">
 								{rundown.expectedStart && (
 									<>
 										<MomentFromNow>{rundown.expectedStart}</MomentFromNow>{' '}
 										<Moment format="HH:mm:ss">{rundown.expectedStart}</Moment>
 									</>
 								)}
-							</td>
-							<td className="rundown-list-item__status">{rundown.status}</td>
-							<td className="rundown-list-item__duration">
+							</span>
+							<span className="rundown-list-item__status">{rundown.status}</span>
+							<span className="rundown-list-item__duration">
 								{rundown.expectedDuration &&
 									RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, false, true, false, true)}
-							</td>
-							<td className="rundown-list-item__created">
+							</span>
+							<span className="rundown-list-item__created">
 								<MomentFromNow>{rundown.created}</MomentFromNow>
-							</td>
-							<td className="rundown-list-item__actions">
+							</span>
+							<span className="rundown-list-item__actions">
 								{rundown.unsynced || userCanConfigure || getAllowService() ? (
 									<Tooltip overlay={t('Delete')} placement="top">
 										<button className="action-btn" onClick={() => confirmDeleteRundown(rundown, t)}>
@@ -225,8 +233,8 @@ export const RundownListItem = withTranslation()(
 										</button>
 									</Tooltip>
 								) : null}
-							</td>
-						</tr>
+							</span>
+						</li>
 					)
 				}
 			}

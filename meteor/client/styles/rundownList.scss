@@ -1,50 +1,75 @@
-// Root playlist/rundown table, see RundownList.tsx
+// Root playlist/rundown list, see RundownList.tsx
 .rundown-list {
-	--tableWidth: calc(100%);
+	--componentWidth: calc(100%);
 	--defaultSpacing: 20px;
 	--defaultItemBackgroundColor: #f6f6f6;
 	--descendantItemBackgroundColor: #e5e5e5;
 
 	background-color: transparent;
-	border-collapse: collapse;
 	width: 100%;
-
-	td,
-	th {
-		vertical-align: middle;
-		padding: 5px var(--defaultSpacing) 7px;
-	}
 
 	.rundown-list__header {
 		background-color: #898989;
 		color: #fff;
+		padding: 5px var(--defaultSpacing) 7px;
+		vertical-align: middle;
 	}
 
-	// the table body, containing the actual playlists and rundowns
-	.rundown-playlists {
-		&.droptarget {
-			border: 4px dashed green;
+	/* calc cell widths to get alignment across (nested) tables */
+	.rundown-list-item__name {
+		display: inline-block;
+		width: 25%;
+
+		.draghandle {
+			margin-right: var(--defaultSpacing);
+			width: var(--defaultSpacing);
 		}
+	}
+	.rundown-list-item__showStyle {
+		display: inline-block;
+		width: 30%;
+	}
+	.rundown-list-item__airTime,
+	.rundown-list-item__status,
+	.rundown-list-item__duration,
+	.rundown-list-item__created {
+		display: inline-block;
+		width: 10%;
+	}
+	.rundown-list-item__actions {
+		display: inline-block;
+		width: 5%;
+
+		> .action-btn {
+			width: 1.5em;
+		}
+	}
+
+	&.droptarget {
+		border: 4px dashed green;
+	}
+
+	// the actual playlists and rundowns
+	.rundown-playlists {
+		margin: 0;
 
 		// a rundown playlist, see RundownPlaylistUi.tsx
 		.rundown-playlist {
 			background-color: var(--defaultItemBackgroundColor);
+			list-style-type: none;
+			margin: 0;
 			width: 100%;
 
 			.rundown-playlist--rundowns {
 				padding: 0;
 				margin: 0;
 
-				& > table {
-					width: 100%;
-				}
-
 				// overrides for rundowns inside of playlists
 				.rundown-list-item {
 					background-color: var(--descendantItemBackgroundColor);
 					border-top: 1px solid #c6c6c6;
-					border-bottom: none;
-					// width: calc(100% - var(--defaultSpacing) * 2);
+					margin-bottom: 0;
+					width: calc(100% - var(--defaultSpacing) * 2);
 
 					&::before {
 						content: ' ';
@@ -65,9 +90,11 @@
 			--scaleFactor: 1;
 
 			background-color: var(--defaultItemBackgroundColor);
-			border-bottom: 6px solid white;
-
 			box-shadow: 0px 8px 10px -10px rgba(0, 0, 0, 0.15);
+			margin: 0 0 6px;
+			padding: 5px var(--defaultSpacing) 7px;
+			list-style-type: none;
+			vertical-align: middle;
 
 			&.unsynced {
 				background-image: repeating-linear-gradient(
@@ -83,46 +110,19 @@
 				--scaleFactor: 1.02;
 				z-index: 99;
 			}
-
-			/* calc cell widths to get alignment across (nested) tables */
-			.rundown-list-item__name {
-				width: calc(var(--tableWidth) * 0.25);
-
-				.draghandle {
-					margin-right: var(--defaultSpacing);
-					width: var(--defaultSpacing);
-				}
-			}
-			.rundown-list-item__showStyle {
-				width: calc(var(--tableWidth) * 0.3);
-			}
-			.rundown-list-item__airTime,
-			.rundown-list-item__status,
-			.rundown-list-item__duration,
-			.rundown-list-item__created {
-				width: calc(var(--tableWidth) * 0.1);
-			}
-			.rundown-list-item__actions {
-				width: calc(var(--tableWidth) * 0.05);
-				min-width: 4em;
-
-				> .action-btn {
-					width: 1.5em;
-				}
-			}
 		}
+	}
 
-		// the area appearing under the playlists and rundown where a rundown can
-		// be dropped to move it to a new playlist. See RundownDropZone.tsx
-		.rundown-dropzone {
-			display: none;
+	// the area appearing under the playlists and rundown where a rundown can
+	// be dropped to move it to a new playlist. See RundownDropZone.tsx
+	.rundown-dropzone {
+		display: none;
 
-			&.open {
-				display: block;
-				border: 4px dashed green;
-				height: 61px;
-				margin-top: 8px;
-			}
+		&.open {
+			display: block;
+			border: 4px dashed green;
+			height: 61px;
+			margin-top: 8px;
 		}
 	}
 }

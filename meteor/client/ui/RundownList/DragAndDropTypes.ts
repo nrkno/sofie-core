@@ -1,5 +1,6 @@
 import { RundownId } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
+import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 
 enum RundownListDragDropTypes {
 	RUNDOWN = 'rundown',
@@ -29,6 +30,7 @@ enum RundownPlaylistUiActionTypes {
 interface IRundownPlaylistUiAction {
 	type: string
 	rundownId: RundownId
+	targetPlaylistId: RundownPlaylistId
 }
 
 function isRundownPlaylistUiAction(obj: any): obj is IRundownPlaylistUiAction {

@@ -68,8 +68,12 @@ const dropTargetSpec: DropTargetSpec<IRundownsListProps> = {
 			return playlist?.rundowns !== undefined && playlist.rundowns.length > 1
 		}
 
+		console.debug('RundownList Not accepting drop of ', item)
 		return false
 	},
+	// hover: (props, monitor) => {
+	// 	console.debug('Rundown list hover', monitor.getItem())
+	// }
 }
 
 const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRundownsListProps> = function(
@@ -78,6 +82,7 @@ const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRu
 	props: IRundownsListProps
 ): IRundownsListDropTargetProps {
 	const activateDropZone = monitor.canDrop() && monitor.isOver()
+
 	return {
 		connectDropTarget: connect.dropTarget(),
 		activateDropZone,
@@ -229,7 +234,6 @@ export const RundownList = translateWithTracker(() => {
 			}
 
 			private handleRundownDrop(rundownId: RundownId) {
-				console.debug(`Rundown dropped outside of any playlist`, rundownId)
 				MeteorCall.userAction.moveRundown('drag&drop in dropzone', rundownId, null, [rundownId])
 			}
 
@@ -237,16 +241,20 @@ export const RundownList = translateWithTracker(() => {
 				const { t, rundownLayouts } = this.props
 
 				if (list.length < 1) {
-					return (
-						<tr>
-							<td colSpan={10}>{t('There are no rundowns ingested into Sofie.')}</td>
-						</tr>
-					)
+					return <p>{t('There are no rundowns ingested into Sofie.')}</p>
 				}
 
-				return list.map((playlist) => (
-					<RundownPlaylistUi key={unprotectString(playlist._id)} playlist={playlist} rundownLayouts={rundownLayouts} />
-				))
+				return (
+					<ul className="rundown-playlists">
+						{list.map((playlist) => (
+							<RundownPlaylistUi
+								key={unprotectString(playlist._id)}
+								playlist={playlist}
+								rundownLayouts={rundownLayouts}
+							/>
+						))}
+					</ul>
+				)
 			}
 
 			render() {
@@ -268,39 +276,37 @@ export const RundownList = translateWithTracker(() => {
 						{showGettingStarted === true ? <GettingStarted step={step} /> : null}
 
 						{connectDropTarget(
-							<div className="mtl gutter has-statusbar">
+							<section className="mtl gutter has-statusbar">
 								<header className="mvs">
 									<h1>{t('Rundowns')}</h1>
 								</header>
 								{this.state.subsReady ? (
-									<div className="mod mvl">
-										<table className="rundown-list">
-											<thead className="rundown-list__header">
-												<tr>
-													<th className="rundown-list-item__name">
-														<Tooltip
-															overlay={t('Click on a rundown to control your studio')}
-															visible={getHelpMode()}
-															placement="top">
-															<span>{t('Rundown')}</span>
-														</Tooltip>
-													</th>
-													<th className="rundown-list-item__showStyle">{t('Show style')}</th>
-													<th className="rundown-list-item__airTime">{t('On Air Start Time')}</th>
-													<th className="rundown-list-item__status">{t('Status')}</th>
-													<th className="rundown-list-item__duration">{t('Duration')}</th>
-													<th className="rundown-list-item__created">{t('Created')}</th>
-													<th className="rundown-list-item__actions">&nbsp;</th>
-												</tr>
-											</thead>
-											<tbody className="rundown-playlists">{this.renderRundownPlaylists(rundownPlaylists)}</tbody>
-										</table>
-										{<RundownDropZone activated={activateDropZone} rundownDropHandler={handleDropZoneDrop} />}
-									</div>
+									<section className="mod mvl rundown-list">
+										<header className="rundown-list__header">
+											<span className="rundown-list-item__name">
+												<Tooltip
+													overlay={t('Click on a rundown to control your studio')}
+													visible={getHelpMode()}
+													placement="top">
+													<span>{t('Rundown')}</span>
+												</Tooltip>
+											</span>
+											<span className="rundown-list-item__showStyle">{t('Show style')}</span>
+											<span className="rundown-list-item__airTime">{t('On Air Start Time')}</span>
+											<span className="rundown-list-item__status">{t('Status')}</span>
+											<span className="rundown-list-item__duration">{t('Duration')}</span>
+											<span className="rundown-list-item__created">{t('Created')}</span>
+											<span className="rundown-list-item__actions">&nbsp;</span>
+										</header>
+										{this.renderRundownPlaylists(rundownPlaylists)}
+										<footer>
+											{<RundownDropZone activated={activateDropZone} rundownDropHandler={handleDropZoneDrop} />}
+										</footer>
+									</section>
 								) : (
 									<Spinner />
 								)}
-							</div>
+							</section>
 						)}
 
 						{this.state.systemStatus ? <RundownListFooter systemStatus={this.state.systemStatus} /> : null}
