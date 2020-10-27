@@ -63,6 +63,7 @@ import { findMissingConfigs } from './blueprints/config'
 import { rundownContentAllowWrite } from '../security/rundown'
 import { modifyPlaylistExternalId } from './ingest/lib'
 import { triggerUpdateTimelineAfterIngestData } from './playout/playout'
+import { IngestDataCache } from '../../lib/collections/IngestDataCache'
 
 export function selectShowStyleVariant(
 	studio: Studio,
@@ -265,6 +266,11 @@ export function removeSegments(cache: CacheForRundownPlaylist, rundownId: Rundow
 		_id: { $in: segmentIds },
 		rundownId: rundownId,
 	})
+	IngestDataCache.remove({
+		segmentId: { $in: segmentIds },
+		rundownId: rundownId,
+	})
+
 	if (count > 0) {
 		afterRemoveSegments(cache, rundownId, segmentIds)
 	}
