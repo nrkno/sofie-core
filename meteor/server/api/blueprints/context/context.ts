@@ -327,6 +327,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 }
 
 interface ABSessionInfoExt extends ABSessionInfo {
+	/** Whether to store this session on the playlist (ie, whether it is still valid) */
 	keep?: boolean
 }
 
@@ -371,11 +372,13 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		return getCurrentTime()
 	}
 
+	/** Internal, for overriding in tests */
+	getNewSessionId(): string {
+		return Random.id()
+	}
+
 	getPieceABSessionId(pieceInstance0: IBlueprintPieceInstance, sessionName: string): string {
 		const pieceInstance = protectPieceInstance(pieceInstance0)
-
-		const pieceInstanceId = pieceInstance._id
-		if (!pieceInstanceId) throw new Error('Missing pieceInstanceId in call to getPieceABSessionId')
 		const partInstanceId = pieceInstance.partInstanceId
 		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
 
@@ -397,7 +400,6 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 				(s) => s.infiniteInstanceId === infiniteId && s.name === sessionName
 			)
 			if (infiniteSession) {
-				// console.log(`AB Session keep infinite: ${JSON.stringify(infiniteSession)}`)
 				return preserveSession(infiniteSession)
 			}
 		}
@@ -405,10 +407,8 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		// We only want to consider sessions already tagged to this partInstance
 		const existingSession = this._knownSessions.find(
 			(s) => s.partInstanceIds?.includes(unpartialString(partInstanceId)) && s.name === sessionName
-			// s.lookaheadForPartId === undefined
 		)
 		if (existingSession) {
-			// console.log(`AB Session keep normal: ${JSON.stringify(existingSession)}`)
 			return preserveSession(existingSession)
 		}
 
@@ -421,14 +421,12 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 			const previousPartInstanceId = this.partInstances[partInstanceIndex - 1]._id
 			const continuedSession = this._knownSessions.find(
 				(s) => s.partInstanceIds?.includes(previousPartInstanceId) && s.name === sessionName
-				// && s.lookaheadForPartId === undefined
 			)
 			if (continuedSession) {
 				continuedSession.partInstanceIds = [
 					...(continuedSession.partInstanceIds || []),
 					unpartialString(partInstanceId),
 				]
-				// console.log(`AB Session keep normal: ${JSON.stringify(existingSession)}`)
 				return preserveSession(continuedSession)
 			}
 		}
@@ -440,21 +438,19 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 		)
 		if (lookaheadSession) {
 			lookaheadSession.partInstanceIds = [unpartialString(partInstanceId)]
-			// console.log(`AB Session convert lookahead: ${JSON.stringify(lookaheadSession)}`)
 			return preserveSession(lookaheadSession)
 		}
 
 		// Otherwise define a new session
-		const sessionId = Random.id()
+		const sessionId = this.getNewSessionId()
 		const newSession: ABSessionInfoExt = {
-			id: Random.id(),
+			id: sessionId,
 			name: sessionName,
 			infiniteInstanceId: unpartialString(infiniteId),
-			partInstanceIds: [unpartialString(partInstanceId)],
+			partInstanceIds: _.compact([!infiniteId ? unpartialString(partInstanceId) : undefined]),
 			keep: true,
 		}
 		this._knownSessions.push(newSession)
-		// console.log(`AB Session new session: ${JSON.stringify(newSession)}`)
 		return sessionId
 	}
 
@@ -498,7 +494,7 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 				}
 				return lookaheadSession.id
 			} else {
-				const sessionId = Random.id()
+				const sessionId = this.getNewSessionId()
 				this._knownSessions.push({
 					id: sessionId,
 					name: sessionName,
@@ -509,8 +505,6 @@ export class TimelineEventContext extends RundownContext implements ITimelineEve
 				return sessionId
 			}
 		}
-
-		// console.log(`failed for object: ${JSON.stringify(tlObj)}`)
 
 		return undefined
 	}
