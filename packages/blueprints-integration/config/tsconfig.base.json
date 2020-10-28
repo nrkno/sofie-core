@@ -1,0 +1,28 @@
+{
+	"extends": "./tsconfig.strict",
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es2018",
+		"noImplicitAny": true,
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"outDir": "../dist",
+		"baseUrl": "../",
+		"paths": {
+			"*": ["../node_modules/*"],
+			"tv-automation-sofie-blueprints-integration": ["../src/index.ts"]
+		},
+		"declaration": true,
+		"importHelpers": true,
+		"listFiles": false,
+		"traceResolution": false,
+		"pretty": true,
+		"lib": ["es2018"],
+		"types": [
+			"node"
+			//   "jest"
+		]
+	},
+	"include": ["../src/**/*.ts"],
+	"compileOnSave": false
+}
