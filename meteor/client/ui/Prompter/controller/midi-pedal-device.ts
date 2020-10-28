@@ -15,14 +15,8 @@ export class MidiPedalController extends ControllerAbstract {
 	private _destroyed: boolean = false
 	private _prompterView: PrompterViewInner
 
-	private static readonly _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
-	private static readonly _speedStepMap = [
-		...MidiPedalController._speedMap
-			.slice(1)
-			.reverse()
-			.map((i) => i * -1),
-		...MidiPedalController._speedMap.slice(),
-	]
+	private _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
+	private _speedStepMap = MidiPedalController.makeSpeedStepMap(this._speedMap)
 	private static readonly SPEEDMAP_NEUTRAL_POSITION = 7
 
 	private _updateSpeedHandle: number | null = null
@@ -34,6 +28,17 @@ export class MidiPedalController extends ControllerAbstract {
 		super(view)
 
 		this._prompterView = view
+		this._speedMap = view.configOptions.speedCurve || this._speedMap
+		this._speedStepMap = MidiPedalController.makeSpeedStepMap(this._speedMap)
+	}
+	private static makeSpeedStepMap(speedMap): number[] {
+		return [
+			...speedMap
+				.slice(1)
+				.reverse()
+				.map((i) => i * -1),
+			...speedMap.slice(),
+		]
 	}
 	public destroy() {
 		this._destroyed = true
@@ -52,36 +57,33 @@ export class MidiPedalController extends ControllerAbstract {
 			}
 			switch (e.code) {
 				case 'F1':
-					speed = MidiPedalController._speedMap[1]
+					speed = this._speedMap[1]
 					break
 				case 'F2':
-					speed = MidiPedalController._speedMap[2]
+					speed = this._speedMap[2]
 					break
 				case 'F3':
-					speed = MidiPedalController._speedMap[3]
+					speed = this._speedMap[3]
 					break
 				case 'F4':
-					speed = MidiPedalController._speedMap[4]
+					speed = this._speedMap[4]
 					break
 				case 'F5':
-					speed = MidiPedalController._speedMap[5]
+					speed = this._speedMap[5]
 					break
 				case 'F6':
-					speed = MidiPedalController._speedMap[6]
+					speed = this._speedMap[6]
 					break
 				case 'F7':
-					speed = MidiPedalController._speedMap[7]
+					speed = this._speedMap[7]
 					break
 			}
 			switch (e.key) {
 				case '-':
 					newSpeedStep--
-					newSpeedStep = Math.max(
-						0,
-						Math.min(newSpeedStep, MidiPedalController._speedStepMap.length - 1)
-					)
+					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this._speedStepMap.length - 1))
 					this._lastSpeedMapPosition = newSpeedStep
-					speed = MidiPedalController._speedStepMap[this._lastSpeedMapPosition]
+					speed = this._speedStepMap[this._lastSpeedMapPosition]
 					if (speed < 0) {
 						inverse = true
 					}
@@ -89,12 +91,9 @@ export class MidiPedalController extends ControllerAbstract {
 					break
 				case '+':
 					newSpeedStep++
-					newSpeedStep = Math.max(
-						0,
-						Math.min(newSpeedStep, MidiPedalController._speedStepMap.length - 1)
-					)
+					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this._speedStepMap.length - 1))
 					this._lastSpeedMapPosition = newSpeedStep
-					speed = MidiPedalController._speedStepMap[this._lastSpeedMapPosition]
+					speed = this._speedStepMap[this._lastSpeedMapPosition]
 					if (speed < 0) {
 						inverse = true
 					}
