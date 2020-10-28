@@ -432,7 +432,10 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			if (this.isLiveSegment === true && isLiveSegment === false) {
 				this.isLiveSegment = false
 				this.stopLive()
-				if (Settings.autoRewindLeavingSegment) this.onRewindSegment()
+				if (Settings.autoRewindLeavingSegment) {
+					this.onRewindSegment()
+					this.onShowEntireSegment('', true)
+				}
 
 				if (this.props.segmentui && this.props.segmentui.unsynced) {
 					const { t } = this.props
@@ -715,10 +718,9 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 				//@ts-ignore
 				this.setState({
 					livePosition: newLivePosition,
-					scrollLeft:
-						this.state.followLiveLine && !this.state.showingAllSegment
-							? Math.max(newLivePosition - this.props.liveLineHistorySize / this.state.timeScale, 0)
-							: this.state.scrollLeft,
+					scrollLeft: this.state.followLiveLine
+						? Math.max(newLivePosition - this.props.liveLineHistorySize / this.state.timeScale, 0)
+						: this.state.scrollLeft,
 				})
 			}
 		}
@@ -769,21 +771,21 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 			this.timelineDiv = el.timeline
 		}
 
-		onShowEntireSegment = () => {
+		onShowEntireSegment = (event: any, limitScale?: boolean) => {
 			this.setState({
 				scrollLeft: 0,
 				followLiveLine: this.state.isLiveSegment ? false : this.state.followLiveLine,
 			})
 			if (typeof this.onTimeScaleChange === 'function') {
-				this.onTimeScaleChange(
+				let newScale =
 					(getElementWidth(this.timelineDiv) - TIMELINE_RIGHT_PADDING || 1) /
-						(computeSegmentDuration(
-							this.context.durations,
-							this.props.parts.map((i) => i.instance.part._id),
-							true
-						) || 1),
-					true
-				)
+					(computeSegmentDuration(
+						this.context.durations,
+						this.props.parts.map((i) => i.instance.part._id),
+						true
+					) || 1)
+				newScale = Math.min(0.03, newScale)
+				this.onTimeScaleChange(newScale, true)
 			}
 			// if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
 		}

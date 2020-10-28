@@ -48,6 +48,8 @@ import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifica
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
 
 import * as VelocityReact from 'velocity-react'
+import { TFunction } from 'i18next'
+import { ZoomInIcon, ZoomOutIcon } from '../../lib/segmentZoomIcon'
 
 interface IProps {
 	id: string
@@ -80,7 +82,7 @@ interface IProps {
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onShowEntireSegment?: (event: any) => void
+	onShowEntireSegment?: (event: any, limitScale?: boolean) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -231,50 +233,50 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 class SegmentTimelineZoomButtons extends React.Component<
 	IProps & {
 		onTimelineDoubleClick(e: React.MouseEvent<HTMLDivElement>)
+		t: TFunction
 	}
 > {
 	constructor(
 		props: IProps & {
 			onTimelineDoubleClick(e: React.MouseEvent<HTMLDivElement>)
+			t: TFunction
 		}
 	) {
 		super(props)
 	}
 
-	zoomIn = (e: React.MouseEvent<HTMLDivElement>) => {
+	zoomIn = (e: React.MouseEvent<HTMLElement>) => {
 		this.props.onZoomChange(this.props.timeScale * 2, e)
 	}
 
-	zoomOut = (e: React.MouseEvent<HTMLDivElement>) => {
+	zoomOut = (e: React.MouseEvent<HTMLElement>) => {
 		this.props.onZoomChange(this.props.timeScale * 0.5, e)
 	}
 
-	zoomNormalize = (e: React.MouseEvent<HTMLDivElement>) => {
+	zoomNormalize = (e: React.MouseEvent<HTMLElement>) => {
 		// this.props.onZoomChange(MAGIC_TIME_SCALE_FACTOR * Settings.defaultTimeScale, e)
 		this.props.onTimelineDoubleClick && this.props.onTimelineDoubleClick(e)
 	}
 
 	render() {
+		const { t } = this.props
 		return (
 			<div className="segment-timeline__timeline-zoom-buttons">
-				<LottieButton
-					className="segment-timeline__timeline-zoom-buttons__button"
-					inAnimation={Zoom_In_MouseOut}
-					outAnimation={Zoom_In_MouseOut}
-					onClick={this.zoomIn}
-				/>
-				<LottieButton
-					className="segment-timeline__timeline-zoom-buttons__button"
-					inAnimation={Zoom_Normal_MouseOut}
-					outAnimation={Zoom_Normal_MouseOut}
-					onClick={this.zoomNormalize}
-				/>
-				<LottieButton
-					className="segment-timeline__timeline-zoom-buttons__button"
-					inAnimation={Zoom_Out_MouseOut}
-					outAnimation={Zoom_Out_MouseOut}
-					onClick={this.zoomOut}
-				/>
+				<button
+					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--in"
+					onClick={this.zoomIn}>
+					<ZoomInIcon />
+				</button>
+				<button
+					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--all"
+					onClick={this.zoomNormalize}>
+					{t('Show All')}
+				</button>
+				<button
+					className="segment-timeline__timeline-zoom-buttons__button segment-timeline__timeline-zoom-buttons__button--out"
+					onClick={this.zoomOut}>
+					<ZoomOutIcon />
+				</button>
 			</div>
 		)
 	}

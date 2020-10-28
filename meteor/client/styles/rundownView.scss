@@ -745,28 +745,42 @@ svg.icon {
 		position: relative;
 		display: flex;
 		flex-direction: row;
-		justify-content: center;
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / end;
 		align-items: flex-end;
+		justify-content: space-between;
+		padding: 0 0.4em 0.1em;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
-			min-width: 30px;
-			min-height: 30px;
-			max-width: 30px;
-			max-height: 30px;
+			min-width: 22px;
+			min-height: 22px;
+			max-height: 22px;
 			background: transparent;
 			transition: 0.3s background-color ease-in-out;
-			border-radius: 100%;
+			border: 1px solid $segment-title-background-color;
+			border-radius: 0.3em;
 			overflow: visible;
+			font-size: 0.7em;
+			padding: 0;
+
+			&.segment-timeline__timeline-zoom-buttons__button--all {
+				padding: 0 0.3em;
+			}
+
+			> svg {
+				height: 2em;
+				width: 2em;
+				margin-top: -0.05em;
+			}
 
 			&:hover {
-				background: $segment-title-background-color;
+				background: $segment-title-background-color-has-played;
 				transition: 0s background-color;
 			}
 
 			&:active {
 				background: $ui-button-primary;
+				border-color: $ui-button-primary;
 				transition: 0s background-color;
 			}
 		}
