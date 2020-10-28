@@ -29,6 +29,7 @@ interface PrompterConfig {
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
+	speedCurve?: number[]
 
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
@@ -40,7 +41,7 @@ export enum PrompterConfigMode {
 	KEYBOARD = 'keyboard',
 	SHUTTLEKEYBOARD = 'shuttlekeyboard',
 	JOYCON = 'joycon',
-	PEDAL = 'pedal'
+	PEDAL = 'pedal',
 }
 
 interface IProps {
@@ -83,7 +84,9 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			e.preventDefault()
 		})
 
-		const queryParams = queryStringParse(location.search)
+		const queryParams = queryStringParse(location.search, {
+			arrayFormat: 'comma',
+		})
 
 		this.configOptions = {
 			mirror: firstIfArray(queryParams['mirror']) === '1',
@@ -93,6 +96,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
+			speedCurve:
+				queryParams['speedcurve'] === undefined
+					? undefined
+					: new Array().concat(queryParams['speedcurve']).map((value) => parseInt(value, 10)),
 
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
