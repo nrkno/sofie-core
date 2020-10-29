@@ -102,6 +102,7 @@
     "velocity-animate": "^1.5.2",
     "velocity-react": "^1.4.3",
     "vm2": "^3.9.2",
+    "webmidi": "^2.5.1",
     "winston": "^3.3.3",
     "xml2json": "^0.12.0"
   },
