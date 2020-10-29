@@ -232,13 +232,13 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 
 class SegmentTimelineZoomButtons extends React.Component<
 	IProps & {
-		onTimelineDoubleClick(e: React.MouseEvent<HTMLDivElement>)
+		onTimelineDoubleClick(e: React.MouseEvent<HTMLElement>)
 		t: TFunction
 	}
 > {
 	constructor(
 		props: IProps & {
-			onTimelineDoubleClick(e: React.MouseEvent<HTMLDivElement>)
+			onTimelineDoubleClick(e: React.MouseEvent<HTMLElement>)
 			t: TFunction
 		}
 	) {
