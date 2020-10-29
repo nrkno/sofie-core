@@ -4,12 +4,7 @@ import { PrompterViewInner } from '../PrompterView'
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 
 /**
- * This class handles control of the prompter using Keyboard keys sent from a contour shuttle
- * Up: shift + control + alt + [1-7]
- * Down: shift + control + alt + [1-7]
- * Supports Up / Down arrow keys
- * Supports Left / Right arrow keys
- * Supports Page-up / Page-down keys
+ * This class handles control of the prompter using
  */
 export class MidiPedalController extends ControllerAbstract {
 	private _destroyed: boolean = false
@@ -30,6 +25,8 @@ export class MidiPedalController extends ControllerAbstract {
 		this._prompterView = view
 		this._speedMap = view.configOptions.speedCurve || this._speedMap
 		this._speedStepMap = MidiPedalController.makeSpeedStepMap(this._speedMap)
+
+		this._setupMidiListeners()
 	}
 	private static makeSpeedStepMap(speedMap): number[] {
 		return [
@@ -44,118 +41,7 @@ export class MidiPedalController extends ControllerAbstract {
 		this._destroyed = true
 	}
 	public onKeyDown(e: KeyboardEvent) {
-		let speed = -1
-		let newSpeedStep = this._lastSpeedMapPosition
-		let inverse = false
-
-		// contour mode needs ctrl + alt + number to work
-		// filter on ctrl and alt, fail early
-		if (e.ctrlKey && e.altKey) {
-			// pause if Digit9 (shuttle centred)
-			if (e.shiftKey && e.code === 'Digit9') {
-				speed = 0
-			}
-			switch (e.code) {
-				case 'F1':
-					speed = this._speedMap[1]
-					break
-				case 'F2':
-					speed = this._speedMap[2]
-					break
-				case 'F3':
-					speed = this._speedMap[3]
-					break
-				case 'F4':
-					speed = this._speedMap[4]
-					break
-				case 'F5':
-					speed = this._speedMap[5]
-					break
-				case 'F6':
-					speed = this._speedMap[6]
-					break
-				case 'F7':
-					speed = this._speedMap[7]
-					break
-			}
-			switch (e.key) {
-				case '-':
-					newSpeedStep--
-					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this._speedStepMap.length - 1))
-					this._lastSpeedMapPosition = newSpeedStep
-					speed = this._speedStepMap[this._lastSpeedMapPosition]
-					if (speed < 0) {
-						inverse = true
-					}
-					speed = Math.abs(speed)
-					break
-				case '+':
-					newSpeedStep++
-					newSpeedStep = Math.max(0, Math.min(newSpeedStep, this._speedStepMap.length - 1))
-					this._lastSpeedMapPosition = newSpeedStep
-					speed = this._speedStepMap[this._lastSpeedMapPosition]
-					if (speed < 0) {
-						inverse = true
-					}
-					speed = Math.abs(speed)
-					break
-			}
-
-			// buttons
-			if (e.shiftKey) {
-				switch (e.code) {
-					case 'PageDown':
-					case 'F8':
-						// jump to next segment
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = MidiPedalController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToFollowing()
-						return
-					case 'PageUp':
-					case 'F9':
-						// jump to previous segment
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = MidiPedalController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToPrevious()
-						return
-					case 'F10':
-						// jump to top
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = MidiPedalController.SPEEDMAP_NEUTRAL_POSITION
-						window.scrollTo(0, 0)
-						return
-					case 'F11':
-						// jump to live
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = MidiPedalController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToLive()
-						return
-					case 'F12':
-						// jump to next
-						this._lastSpeed = 0
-						this._lastSpeedMapPosition = MidiPedalController.SPEEDMAP_NEUTRAL_POSITION
-						this._prompterView.scrollToNext()
-						return
-				}
-			}
-		}
-
-		// return on false key events
-		if (speed === -1) {
-			return
-		} else {
-			// handle valid key inputs
-			e.preventDefault()
-
-			// reverse direction if shiftkey is pressed
-			if (e.shiftKey || inverse) {
-				speed *= -1
-			}
-		}
-
-		// update flag for comparison on next iteration
-		this._lastSpeed = speed
-		this._updateScrollPosition()
+		// Nothing
 	}
 	public onKeyUp(e: KeyboardEvent) {
 		// Nothing
@@ -168,6 +54,21 @@ export class MidiPedalController extends ControllerAbstract {
 	}
 	public onWheel(e: WheelEvent) {
 		// Nothing
+	}
+
+	private _setupMidiListeners() {
+		console.error('afasasf')
+		if (navigator.requestMIDIAccess) {
+			navigator.requestMIDIAccess().then((e) => {
+
+			})
+			.catch((e) => {
+				console.error('Webmidi error')
+				console.error(e)
+			})
+		} else {
+			console.error('WebMIDI not supported by browser')
+		}
 	}
 
 	private _updateScrollPosition() {
