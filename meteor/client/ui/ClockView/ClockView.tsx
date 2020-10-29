@@ -150,23 +150,46 @@ const ClockComponent = withTranslation()(
 						}
 					})
 					this.autorun(() => {
-						let playlist = RundownPlaylists.findOne(this.props.playlistId)
+						let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+							fields: {
+								_id: 1,
+							},
+						})
 						if (playlist) {
 							this.subscribe(PubSub.rundowns, {
-								playlistId: this.props.playlistId,
+								playlistId: playlist._id,
 							})
 
-							const rundownIds = playlist.getRundownIDs()
+							this.autorun(() => {
+								const rundownIds = playlist!.getRundownIDs()
 
-							this.subscribe(PubSub.segments, {
-								rundownId: { $in: this.props.rundownIds },
-							})
-							this.subscribe(PubSub.parts, {
-								rundownId: { $in: this.props.rundownIds },
-							})
-							this.subscribe(PubSub.partInstances, {
-								rundownId: { $in: this.props.rundownIds },
-								reset: { $ne: true },
+								this.subscribe(PubSub.segments, {
+									rundownId: { $in: rundownIds },
+								})
+								this.subscribe(PubSub.parts, {
+									rundownId: { $in: rundownIds },
+								})
+								this.subscribe(PubSub.partInstances, {
+									rundownId: { $in: rundownIds },
+									reset: { $ne: true },
+								})
+
+								this.autorun(() => {
+									let playlist = RundownPlaylists.findOne(this.props.playlistId, {
+										fields: {
+											_id: 1,
+											currentPartInstanceId: 1,
+											nextPartInstanceId: 1,
+											previousPartInstanceId: 1,
+										},
+									})
+									const { nextPartInstance, currentPartInstance } = playlist!.getSelectedPartInstances()
+									this.subscribe(PubSub.pieceInstances, {
+										partInstanceId: {
+											$in: [currentPartInstance?._id, nextPartInstance?._id],
+										},
+									})
+								})
 							})
 						}
 					})
@@ -359,18 +382,6 @@ export const ClockView = withTranslation()(
 					if (this.props.playlist) {
 						this.subscribe(PubSub.rundowns, {
 							playlistId: this.props.playlist._id,
-						})
-					}
-				})
-				this.autorun(() => {
-					let playlist = RundownPlaylists.findOne(playlistId)
-					if (playlist) {
-						const rundownIDs = playlist.getRundownIDs()
-						this.subscribe(PubSub.segments, {
-							rundownId: { $in: rundownIDs },
-						})
-						this.subscribe(PubSub.parts, {
-							rundownId: { $in: rundownIDs },
 						})
 					}
 				})

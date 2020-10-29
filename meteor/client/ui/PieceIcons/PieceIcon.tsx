@@ -46,17 +46,18 @@ function findPieceInstanceToShow(props: IPropsHeader, supportedLayers: Set<Sourc
 		let layer = sourceLayers[pieceInstance.piece.sourceLayerId]
 		if (layer && layer.onPresenterScreen && supportedLayers.has(layer.type)) {
 			if (foundSourceLayer && foundPiece) {
-				if (foundSourceLayer._rank >= layer._rank) {
+				if (
+					pieceInstance.piece.enable &&
+					foundPiece.piece.enable &&
+					((pieceInstance.piece.enable.start || 0) > (foundPiece.piece.enable.start || 0) ||
+						layer._rank >= foundSourceLayer._rank) // TODO: look into this, what should the do, really?
+				) {
+					console.log('Later: ', PieceIconContainer)
 					foundSourceLayer = layer
-					if (
-						pieceInstance.piece.enable &&
-						foundPiece.piece.enable &&
-						(pieceInstance.piece.enable.start || 0) > (foundPiece.piece.enable.start || 0) // TODO: look into this, what should the do, really?
-					) {
-						foundPiece = pieceInstance
-					}
+					foundPiece = pieceInstance
 				}
 			} else {
+				console.log('First: ', pieceInstance)
 				foundSourceLayer = layer
 				foundPiece = pieceInstance
 			}
@@ -123,9 +124,8 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 		}
 
 		render() {
-			if (this.props.sourceLayer) {
-				const piece = this.props.pieceInstance ? this.props.pieceInstance.piece : undefined
-
+			const piece = this.props.pieceInstance ? this.props.pieceInstance.piece : undefined
+			if (this.props.sourceLayer && piece) {
 				switch (this.props.sourceLayer.type) {
 					case SourceLayerType.GRAPHICS:
 						return <GraphicsInputIcon abbreviation={this.props.sourceLayer.abbreviation} />
@@ -135,7 +135,13 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 						const rmContent = piece ? (piece.content as RemoteContent | undefined) : undefined
 						return (
 							<RemoteInputIcon
-								inputIndex={rmContent ? rmContent.studioLabel : ''}
+								inputIndex={
+									rmContent
+										? rmContent.studioLabel
+										: this.props.sourceLayer.abbreviation && piece.name.startsWith(this.props.sourceLayer.abbreviation)
+										? piece.name.substr(this.props.sourceLayer.abbreviation.length).trim()
+										: ''
+								}
 								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						)
@@ -147,7 +153,13 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 						const camContent = piece ? (piece.content as CameraContent | undefined) : undefined
 						return (
 							<CamInputIcon
-								inputIndex={camContent ? camContent.studioLabel : ''}
+								inputIndex={
+									camContent
+										? camContent.studioLabel
+										: this.props.sourceLayer.abbreviation && piece.name.startsWith(this.props.sourceLayer.abbreviation)
+										? piece.name.substr(this.props.sourceLayer.abbreviation.length).trim()
+										: ''
+								}
 								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						)

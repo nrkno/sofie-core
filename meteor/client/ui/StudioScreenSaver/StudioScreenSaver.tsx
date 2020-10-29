@@ -145,6 +145,7 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 		}
 
 		componentWillUnmount() {
+			super.componentWillUnmount()
 			this._nextAnimationFrameRequest && window.cancelAnimationFrame(this._nextAnimationFrameRequest)
 			window.removeEventListener('resize', this.measureElement)
 		}
