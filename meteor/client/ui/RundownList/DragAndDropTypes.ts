@@ -30,7 +30,7 @@ enum RundownPlaylistUiActionTypes {
 interface IRundownPlaylistUiAction {
 	type: string
 	rundownId: RundownId
-	targetPlaylistId: RundownPlaylistId
+	targetPlaylistId?: RundownPlaylistId
 }
 
 function isRundownPlaylistUiAction(obj: any): obj is IRundownPlaylistUiAction {
@@ -38,9 +38,13 @@ function isRundownPlaylistUiAction(obj: any): obj is IRundownPlaylistUiAction {
 		return false
 	}
 
-	const { type, rundownId } = obj
+	const { type, rundownId, targetPlaylistId } = obj
 
 	if (!isProtectedString(rundownId)) {
+		return false
+	}
+
+	if (targetPlaylistId && !isProtectedString(targetPlaylistId)) {
 		return false
 	}
 
