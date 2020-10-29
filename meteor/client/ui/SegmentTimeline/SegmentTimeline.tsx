@@ -522,14 +522,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	onTimelineWheel = (e: WheelEvent) => {
-		if (
-			e.ctrlKey &&
-			!e.altKey &&
-			!e.metaKey &&
-			!e.shiftKey &&
-			// @ts-ignore
-			!window.keyboardModifiers.altRight
-		) {
+		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
 			// ctrl + Scroll
 			this.props.onZoomChange(Math.min(500, this.props.timeScale * (1 + 0.001 * (e.deltaY * -1))), e)
 			e.preventDefault()
@@ -537,7 +530,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		} else if (
 			(!e.ctrlKey && e.altKey && !e.metaKey && !e.shiftKey) ||
 			// @ts-ignore
-			(e.ctrlKey && !e.metaKey && !e.shiftKey && window.keyboardModifiers.altRight)
+			(e.ctrlKey && !e.metaKey && !e.shiftKey && e.altKey)
 		) {
 			// Alt + Scroll
 			this.props.onScroll(Math.max(0, this.props.scrollLeft + e.deltaY / this.props.timeScale), e)

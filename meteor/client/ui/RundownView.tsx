@@ -2010,8 +2010,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				e.ctrlKey &&
 				!e.shiftKey &&
 				!e.metaKey &&
-				// @ts-ignore
-				!window.keyboardModifiers.altRight &&
 				e.deltaY !== 0
 			) {
 				this.onTimeScaleChange(Math.min(500, this.state.timeScale * (1 + 0.001 * (e.deltaY * -1))))
