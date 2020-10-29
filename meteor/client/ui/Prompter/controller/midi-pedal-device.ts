@@ -31,16 +31,16 @@ export class MidiPedalController extends ControllerAbstract {
 
 		// validate range settings
 		// they need to be in sequence, or the logic will break
-		if (this.rangeNeutralMin < this.rangeRevMin) {
-			console.error('rangeNeutralMin must be larger or equal to rangeRevMin. Pedal control will not init')
+		if (this.rangeNeutralMin <= this.rangeRevMin) {
+			console.error('rangeNeutralMin must be larger to rangeRevMin. Pedal control will not initialize.')
 			return
 		}
-		if (this.rangeNeutralMax < this.rangeNeutralMin) {
-			console.error('rangeNeutralMax must be larger or equal to rangeNeutralMin. Pedal control will not init')
+		if (this.rangeNeutralMax <= this.rangeNeutralMin) {
+			console.error('rangeNeutralMax must be larger to rangeNeutralMin. Pedal control will not initialize')
 			return
 		}
-		if (this.rangeFwdMax < this.rangeNeutralMax) {
-			console.error('rangeFwdMax must be larger or equal to rangeNeutralMax. Pedal control will not init')
+		if (this.rangeFwdMax <= this.rangeNeutralMax) {
+			console.error('rangeFwdMax must be larger to rangeNeutralMax. Pedal control will not initialize')
 			return
 		}
 
@@ -102,17 +102,17 @@ export class MidiPedalController extends ControllerAbstract {
 
 		if (inputValue >= rangeRevMin && inputValue <= rangeNeutralMin) {
 			// find the position within the backwards range
-			let rangePosition = (rangeNeutralMin - inputValue) / (rangeNeutralMin - rangeRevMin) // how far, 0.0-1.0, within the range are we?
-			rangePosition = Math.ceil(rangePosition * this._reverseSpeedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
-			this._lastSpeed = this._reverseSpeedMap[rangePosition] * -1 // applies the speed as a negative value to reverse
+			const rangePosition = (rangeNeutralMin - inputValue) / (rangeNeutralMin - rangeRevMin) // how far, 0.0-1.0, within the range are we?
+			const rangeIndex = Math.ceil(rangePosition * this._reverseSpeedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
+			this._lastSpeed = this._reverseSpeedMap[rangeIndex] * -1 // applies the speed as a negative value to reverse
 		} else if (inputValue >= rangeNeutralMin && inputValue <= rangeNeutralMax) {
 			// we're in the neutral zone
 			this._lastSpeed = 0
 		} else if (inputValue >= rangeNeutralMax && inputValue <= rangeFwdMax) {
 			// find the position within the forward range
-			let rangePosition = (inputValue - rangeNeutralMax) / (rangeFwdMax - rangeNeutralMax) // how far, 0.0-1.0, within the range are we?
-			rangePosition = Math.ceil(rangePosition * this._speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
-			this._lastSpeed = this._speedMap[rangePosition] // applies the speed
+			const rangePosition = (inputValue - rangeNeutralMax) / (rangeFwdMax - rangeNeutralMax) // how far, 0.0-1.0, within the range are we?
+			const rangeIndex = Math.ceil(rangePosition * this._speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
+			this._lastSpeed = this._speedMap[rangeIndex] // applies the speed
 		} else {
 			// we should never be able to hit this due to validation above
 			console.error(`Illegal input value ${inputValue}`)
@@ -130,15 +130,15 @@ export class MidiPedalController extends ControllerAbstract {
 		// update scroll position
 		window.scrollBy(0, this._lastSpeed)
 
-		let scrollPosition = window.scrollY
+		const scrollPosition = window.scrollY
 		// check for reached end-of-scroll:
 		if (this._currentPosition !== undefined && scrollPosition !== undefined) {
 			if (this._currentPosition === scrollPosition) {
 				// We tried to move, but haven't
 				this._lastSpeed = 0
 			}
-			this._currentPosition = scrollPosition
 		}
+		this._currentPosition = scrollPosition
 
 		// create recursive loop
 		if (this._lastSpeed !== 0) {
