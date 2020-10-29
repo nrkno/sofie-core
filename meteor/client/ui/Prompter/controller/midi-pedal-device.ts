@@ -101,9 +101,9 @@ export class MidiPedalController extends ControllerAbstract {
 
 		if (inputValue >= this.rangeRevMin && inputValue <= this.rangeNeutralMin) {
 			// find the position within the forward range
-			let stepPos = (this.rangeNeutralMin - inputValue) / (this.rangeNeutralMin - this.rangeRevMin)
-			stepPos = Math.ceil(stepPos * this._reverseSpeedMap.length) - 1
-			this._lastSpeed = this._reverseSpeedMap[stepPos] * -1
+			let stepPos = (this.rangeNeutralMin - inputValue) / (this.rangeNeutralMin - this.rangeRevMin) // how far, 0.0-1.0, within the range are we?
+			stepPos = Math.ceil(stepPos * this._reverseSpeedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
+			this._lastSpeed = this._reverseSpeedMap[stepPos] * -1 // applies the speed as a negative value to revese
 
 		} else if (inputValue >= this.rangeNeutralMin && inputValue <= this.rangeNeutralMax) {
 			// we're in the neutral zone
@@ -111,9 +111,9 @@ export class MidiPedalController extends ControllerAbstract {
 
 		} else if (inputValue >= this.rangeNeutralMax && inputValue <= this.rangeFwdMax) {
 			// find the position within the forward range
-			let stepPos = (inputValue - this.rangeNeutralMax) / (this.rangeFwdMax - this.rangeNeutralMax)
-			stepPos = Math.ceil(stepPos * this._speedMap.length) - 1
-			this._lastSpeed = this._speedMap[stepPos]
+			let stepPos = (inputValue - this.rangeNeutralMax) / (this.rangeFwdMax - this.rangeNeutralMax) // how far, 0.0-1.0, within the range are we?
+			stepPos = Math.ceil(stepPos * this._speedMap.length) - 1 // maps 0-1 to 0-n where n = .lenght of the array
+			this._lastSpeed = this._speedMap[stepPos] // applies the speed
 
 		} else {
 			// we should never be able to hit this due to validation above
