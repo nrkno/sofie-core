@@ -1,6 +1,8 @@
 import { ControllerAbstract, LONGPRESS_TIME } from './lib'
 import { PrompterViewInner } from '../PrompterView'
 
+import webmidi, { Input, InputEventControlchange, WebMidi } from 'webmidi'
+
 const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 
 /**
@@ -9,6 +11,7 @@ const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
 export class MidiPedalController extends ControllerAbstract {
 	private _destroyed: boolean = false
 	private _prompterView: PrompterViewInner
+	private _midiInput: Input | undefined
 
 	private _speedMap = [0, 1, 2, 3, 5, 7, 9, 30]
 	private _speedStepMap = MidiPedalController.makeSpeedStepMap(this._speedMap)
@@ -26,7 +29,7 @@ export class MidiPedalController extends ControllerAbstract {
 		this._speedMap = view.configOptions.speedCurve || this._speedMap
 		this._speedStepMap = MidiPedalController.makeSpeedStepMap(this._speedMap)
 
-		this._setupMidiListeners()
+		webmidi.enable(this._setupMidiListeners.bind(this))
 	}
 	private static makeSpeedStepMap(speedMap): number[] {
 		return [
@@ -56,19 +59,37 @@ export class MidiPedalController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private _setupMidiListeners() {
-		console.error('afasasf')
-		if (navigator.requestMIDIAccess) {
-			navigator.requestMIDIAccess().then((e) => {
-
-			})
-			.catch((e) => {
-				console.error('Webmidi error')
-				console.error(e)
-			})
-		} else {
-			console.error('WebMIDI not supported by browser')
+	private _setupMidiListeners(err: Error) {
+		if (err) {
+			console.error('Error enabling WebMIDI')
+			console.error(err)
+			return
 		}
+
+		console.log('WebMIDI enabled')
+		webmidi.addListener('connected', (e) => {
+			if (e?.port?.type === 'input') {
+				this._removeMidiInput()
+				this._midiInput  = webmidi.inputs[0]
+				this._midiInput.addListener('controlchange', 8, this._onMidiInputCC)	
+				console.log('input added') // @todo: remove debugging
+			}
+		})
+		webmidi.addListener('disconnected', () => {
+			this._removeMidiInput()
+		})
+	}
+
+	private _removeMidiInput() {
+		if (this._midiInput) {
+			this._midiInput.removeListener('controlchange', 8, this._onMidiInputCC)
+			this._midiInput = undefined
+			console.log('input removed') // @todo: remove debugging
+		}
+	}
+
+	private _onMidiInputCC(e: InputEventControlchange) {
+		console.log(e.value) // @todo: remove debugging
 	}
 
 	private _updateScrollPosition() {
