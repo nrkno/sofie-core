@@ -36,6 +36,7 @@ import {
 import { IRundownDragObject, RundownListDragDropTypes } from './DragAndDropTypes'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { unprotectString } from '../../../lib/lib'
+import { iconDragHandle, iconRemove, iconResync } from './icons'
 
 const HTML_ID_PREFIX = 'rundown-'
 
@@ -181,18 +182,16 @@ export const RundownListItem = withTranslation()(
 					return connectDropTarget(
 						<li id={htmlElementId} className={classNames.join(' ')}>
 							<span className="rundown-list-item__name">
-								<span className="draghandle">
-									<Tooltip
-										overlay={t('Drag to reorder or move out of playlist')}
-										placement="top"
-										mouseEnterDelay={3000}>
-										{connectDragSource(
-											<span className="action-btn">
-												<FontAwesomeIcon icon={faTh} />
-											</span>
-										)}
-									</Tooltip>
-								</span>
+								{connectDragSource(
+									<span className="draghandle">
+										<Tooltip
+											overlay={t('Drag to reorder or move out of playlist')}
+											placement="top"
+											mouseEnterDelay={3000}>
+											{iconDragHandle()}
+										</Tooltip>
+									</span>
+								)}
 								{rundown.name}
 							</span>
 							<span className="rundown-list-item__showStyle">
@@ -222,14 +221,14 @@ export const RundownListItem = withTranslation()(
 								{rundown.unsynced || userCanConfigure || getAllowService() ? (
 									<Tooltip overlay={t('Delete')} placement="top">
 										<button className="action-btn" onClick={() => confirmDeleteRundown(rundown, t)}>
-											<FontAwesomeIcon icon={faTrash} />
+											{iconRemove()}
 										</button>
 									</Tooltip>
 								) : null}
 								{rundown.unsynced ? (
 									<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
 										<button className="action-btn" onClick={() => confirmReSyncRundown(rundown, t)}>
-											<FontAwesomeIcon icon={faSync} />
+											{iconResync()}
 										</button>
 									</Tooltip>
 								) : null}

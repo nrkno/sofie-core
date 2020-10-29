@@ -21,8 +21,14 @@
 		width: 25%;
 
 		.draghandle {
+			cursor: grab;
 			margin-right: var(--defaultSpacing);
 			width: var(--defaultSpacing);
+
+			svg {
+				height: 15px;
+				width: 15px;
+			}
 		}
 	}
 	.rundown-list-item__showStyle {
