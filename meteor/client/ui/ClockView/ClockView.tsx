@@ -25,19 +25,10 @@ interface IStateHeader {}
 export const ClockView = withTranslation()(
 	withTracker(function(props: IPropsHeader) {
 		let studioId = objectPathGet(props, 'match.params.studioId')
-		const playlist = RundownPlaylists.findOne(
-			{
-				active: true,
-				studioId: studioId,
-			},
-			{
-				fields: {
-					_id: 1,
-				},
-			}
-		)
-
-		console.log(playlist)
+		const playlist = RundownPlaylists.findOne({
+			active: true,
+			studioId: studioId,
+		})
 
 		return {
 			playlist,

@@ -13,8 +13,9 @@ interface INamePropsHeader extends IPropsHeader {
 	partName: string
 }
 
+const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT])
+
 export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
-	const supportedLayers = new Set([SourceLayerType.GRAPHICS, SourceLayerType.LIVE_SPEAK, SourceLayerType.VT])
 	return findPieceInstanceToShow(props, supportedLayers)
 })(
 	class PieceNameContainer extends MeteorReactComponent<
@@ -30,13 +31,8 @@ export const PieceNameContainer = withTracker((props: INamePropsHeader) => {
 		}
 
 		render() {
-			if (this.props.sourceLayer) {
-				switch (this.props.sourceLayer.type) {
-					case SourceLayerType.GRAPHICS:
-					case SourceLayerType.LIVE_SPEAK:
-					case SourceLayerType.VT:
-						return this.props.pieceInstance.piece.name
-				}
+			if (this.props.sourceLayer && supportedLayers.has(this.props.sourceLayer.type)) {
+				return this.props.pieceInstance.piece.name
 			}
 			return this.props.partName || ''
 		}

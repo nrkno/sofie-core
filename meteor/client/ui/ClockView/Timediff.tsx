@@ -6,10 +6,8 @@ export const Timediff = class Timediff extends React.Component<{ time: number }>
 	render() {
 		const time = -this.props.time
 		const isNegative = Math.floor(time / 1000) > 0
-		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true) // @todo: something happened here with negative time
-		// RundownUtils.formatDiffToTimecode(this.props.displayTimecode || 0, true, false, true, false, true, '', false, true)
-		// const timeStringSegments = timeString.split(':')
-		// const fontWeight = (no) => no === '00' || no === '+00'
+		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true)
+
 		return (
 			<span
 				className={ClassNames({
