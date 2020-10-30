@@ -36,7 +36,9 @@ interface RundownOverviewTrackedProps {
 	showStyleBaseId?: ShowStyleBaseId
 	rundownIds: RundownId[]
 }
-
+/**
+ * This component renders a Countdown screen for a given playlist
+ */
 export const ClockComponent = withTranslation()(
 	withTiming<RundownOverviewProps & WithTranslation, RundownOverviewState>()(
 		withTracker<WithTiming<RundownOverviewProps & WithTranslation>, RundownOverviewState, RundownOverviewTrackedProps>(
@@ -57,6 +59,7 @@ export const ClockComponent = withTranslation()(
 						return extendMandadory<DBSegment, SegmentUi>(segment, {
 							items: parts.map((part, index) => {
 								const instance = findPartInstanceOrWrapToTemporary(allPartInstancesMap, part)
+								// take the displayDurationGroups into account
 								if (
 									part.displayDurationGroup &&
 									(displayDurationGroups[part.displayDurationGroup] ||

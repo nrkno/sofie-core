@@ -58,13 +58,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 						const rmContent = piece ? (piece.content as RemoteContent | undefined) : undefined
 						return (
 							<RemoteInputIcon
-								inputIndex={
-									rmContent
-										? rmContent.studioLabel
-										: this.props.sourceLayer.abbreviation && piece.name.startsWith(this.props.sourceLayer.abbreviation)
-										? piece.name.substr(this.props.sourceLayer.abbreviation.length).trim()
-										: ''
-								}
+								inputIndex={rmContent ? rmContent.studioLabel : undefined}
 								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						)
@@ -76,13 +70,7 @@ export const PieceIconContainer = withTracker((props: IPropsHeader) => {
 						const camContent = piece ? (piece.content as CameraContent | undefined) : undefined
 						return (
 							<CamInputIcon
-								inputIndex={
-									camContent
-										? camContent.studioLabel
-										: this.props.sourceLayer.abbreviation && piece.name.startsWith(this.props.sourceLayer.abbreviation)
-										? piece.name.substr(this.props.sourceLayer.abbreviation.length).trim()
-										: ''
-								}
+								inputIndex={camContent ? camContent.studioLabel : undefined}
 								abbreviation={this.props.sourceLayer.abbreviation}
 							/>
 						)
