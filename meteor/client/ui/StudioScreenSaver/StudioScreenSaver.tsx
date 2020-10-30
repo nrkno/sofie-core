@@ -233,7 +233,7 @@ export const StudioScreenSaver = translateWithTracker((props: IProps) => {
 				}
 
 				// guard against the simulation resulting in a fast-flying, horizontal or vertical text
-				if (Math.abs(speedVector[1]) >= 1 || Math.abs(speedVector[1]) >= 1) {
+				if (Math.abs(speedVector[0]) >= 1 || Math.abs(speedVector[1]) >= 1) {
 					const normalizer = Math.max(Math.abs(speedVector[0]), Math.abs(speedVector[1]))
 					speedVector = [speedVector[0] / normalizer, speedVector[1] / normalizer]
 				}
