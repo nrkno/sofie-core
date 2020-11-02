@@ -12,6 +12,7 @@ import { MediaWorkFlowId, MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
 import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { TimelineHash } from '../collections/Timeline'
 
 // Note: When making changes to this file, remember to also update the copy in core-integration library
 
@@ -86,6 +87,12 @@ export interface NewPeripheralDeviceAPI {
 	requestUserAuthToken(deviceId: PeripheralDeviceId, deviceToken: string, authUrl: string): Promise<void>
 	storeAccessToken(deviceId: PeripheralDeviceId, deviceToken: string, authToken: any): Promise<void>
 	removePeripheralDevice(deviceId: PeripheralDeviceId): Promise<void>
+	reportResolveDone(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		timelineHash: TimelineHash,
+		resolveDuration: number
+	)
 
 	dataRundownList(deviceId: PeripheralDeviceId, deviceToken: string): Promise<string[]>
 	dataRundownGet(deviceId: PeripheralDeviceId, deviceToken: string, rundownExternalId: string): Promise<IngestRundown>
@@ -237,6 +244,7 @@ export interface NewPeripheralDeviceAPI {
 		id: string,
 		doc: MediaObject | null
 	): Promise<void>
+	clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string): Promise<void>
 
 	getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string): Promise<MediaWorkFlowRevision[]>
 	getMediaWorkFlowStepRevisions(
@@ -273,6 +281,7 @@ export enum PeripheralDeviceAPIMethods {
 	'pingWithCommand' = 'peripheralDevice.pingWithCommand',
 	'killProcess' = 'peripheralDevice.killProcess',
 	'removePeripheralDevice' = 'peripheralDevice.removePeripheralDevice',
+	'reportResolveDone' = 'peripheralDevice.reportResolveDone',
 
 	'determineDiffTime' = 'systemTime.determineDiffTime',
 	'getTimeDiff' = 'systemTime.getTimeDiff',
@@ -322,6 +331,7 @@ export enum PeripheralDeviceAPIMethods {
 
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
+	'clearMediaObjectCollection' = 'peripheralDevice.mediaScanner.clearMediaObjectCollection',
 
 	'getMediaWorkFlowRevisions' = 'peripheralDevice.mediaManager.getMediaWorkFlowRevisions',
 	'updateMediaWorkFlow' = 'peripheralDevice.mediaManager.updateMediaWorkFlow',
@@ -426,10 +436,12 @@ export namespace PeripheralDeviceAPI {
 	export function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		cb: (err, result) => void,
-		timeoutTime: number = 3000,
+		timeoutTime0: number | undefined,
 		functionName: string,
 		...args: any[]
 	) {
+		const timeoutTime: number = timeoutTime0 || 3000 // also handles null
+
 		let commandId: PeripheralDeviceCommandId = getRandomId()
 
 		let subscription: Meteor.SubscriptionHandle | null = null

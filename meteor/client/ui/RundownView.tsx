@@ -1152,7 +1152,9 @@ const RundownHeader = withTranslation()(
 										<MenuItem onClick={(e) => this.resetRundown(e)}>{t('Reset Rundown')}</MenuItem>
 									) : null}
 									<MenuItem onClick={(e) => this.reloadRundownPlaylist(e)}>
-										{t('Reload {{nrcsName}} Data', { nrcsName: this.props.firstRundown?.externalNRCSName || 'NRCS' })}
+										{t('Reload {{nrcsName}} Data', {
+											nrcsName: (this.props.firstRundown && this.props.firstRundown.externalNRCSName) || 'NRCS',
+										})}
 									</MenuItem>
 									<MenuItem onClick={(e) => this.takeRundownSnapshot(e)}>{t('Store Snapshot')}</MenuItem>
 								</React.Fragment>
@@ -1587,6 +1589,31 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							rundownId: {
 								$in: rundownIDs,
 							},
+							partInstanceId: {
+								$in: [
+									playlist.currentPartInstanceId,
+									playlist.nextPartInstanceId,
+									playlist.previousPartInstanceId,
+								].filter((p) => p !== null),
+							},
+							reset: {
+								$ne: true,
+							},
+						})
+					}
+				}
+			})
+			this.autorun(() => {
+				if (this.props.onlyShelf) {
+					let playlist = RundownPlaylists.findOne(playlistId, {
+						fields: {
+							currentPartInstanceId: 1,
+							nextPartInstanceId: 1,
+							previousPartInstanceId: 1,
+						},
+					})
+					if (playlist) {
+						this.subscribe(PubSub.pieceInstances, {
 							partInstanceId: {
 								$in: [
 									playlist.currentPartInstanceId,
@@ -2212,7 +2239,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												onPieceDoubleClick={this.onPieceDoubleClick}
 												onHeaderNoteClick={(level) => this.onHeaderNoteClick(segment._id, level)}
 												ownCurrentPartInstance={
-													this.props.currentPartInstance && this.props.currentPartInstance.segmentId === segment._id
+													// feed the currentPartInstance into the SegmentTimelineContainer component, if the currentPartInstance
+													// is a part of the segment
+													(this.props.currentPartInstance &&
+														this.props.currentPartInstance.segmentId === segment._id) ||
+													// or the nextPartInstance is a part of this segment, and the currentPartInstance is autoNext
+													(this.props.nextPartInstance &&
+														this.props.nextPartInstance.segmentId === segment._id &&
+														this.props.currentPartInstance &&
+														this.props.currentPartInstance.part.autoNext)
 														? this.props.currentPartInstance
 														: undefined
 												}

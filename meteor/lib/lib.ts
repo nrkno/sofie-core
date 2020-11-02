@@ -77,8 +77,10 @@ export function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any
 }
 
 export type Time = number
+export type TimeDuration = number
 
 const systemTime = {
+	hasBeenSet: false,
 	diff: 0,
 	stdDev: 9999,
 }

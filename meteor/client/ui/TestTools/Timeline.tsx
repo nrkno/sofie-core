@@ -3,7 +3,7 @@ import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMe
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { TimelineObjGeneric, Timeline } from '../../../lib/collections/Timeline'
-import { getCurrentTime, Time } from '../../../lib/lib'
+import { getCurrentTime, Time, applyToArray, clone } from '../../../lib/lib'
 import { loadScript } from '../../lib/lib'
 import { PubSub } from '../../../lib/api/pubsub'
 import { TimelineState, Resolver, ResolvedStates } from 'superfly-timeline'
@@ -166,17 +166,13 @@ export const TimelineVisualizerInStudio = translateWithTracker<
 			this.startVisualizer = true
 
 			const timeline = this.props.timeline.map((o) => {
-				if (!Array.isArray(o.enable) && o.enable.start === 'now') {
-					return {
-						...o,
-						enable: {
-							...o.enable,
-							start: getCurrentTime(), // tmp
-						},
+				const obj = clone(o)
+				applyToArray(o.enable, (enable) => {
+					if (enable.start === 'now') {
+						enable.start = getCurrentTime()
 					}
-				} else {
-					return o
-				}
+				})
+				return obj
 			})
 
 			this.newTimeline = timeline
@@ -243,23 +239,19 @@ export const ComponentTimelineSimulate = withTracker<
 			(tlComplete &&
 				tlComplete.timeline
 					.map((o) => {
-						if (!Array.isArray(o.enable) && o.enable.start === 'now') {
-							return {
-								...o,
-								enable: {
-									...o.enable,
-									start: tlComplete?.updated + 1000 ?? now,
-								},
+						const obj = clone(o)
+						applyToArray(o.enable, (enable) => {
+							if (enable.start === 'now') {
+								enable.start = getCurrentTime()
 							}
-						} else {
-							return o
-						}
+						})
+						return obj
 					})
 					.sort((a, b) => {
-						if (a._id > b._id) {
+						if (a.id > b.id) {
 							return 1
 						}
-						if (a._id < b._id) {
+						if (a.id < b.id) {
 							return -1
 						}
 						return 0
@@ -268,13 +260,13 @@ export const ComponentTimelineSimulate = withTracker<
 		const transformed = transformTimeline(timeline)
 
 		// TODO - dont repeat unless changed
-		let tl = Resolver.resolveTimeline(transformed, { time: tlComplete?.updated || now })
+		let tl = Resolver.resolveTimeline(transformed, { time: tlComplete?.generated || now })
 		let allStates = Resolver.resolveAllStates(tl)
 
 		return {
 			now: now,
 			allStates: allStates,
-			timelineUpdated: tlComplete?.updated || null,
+			timelineUpdated: tlComplete?.generated || null,
 		}
 	} catch (e) {
 		return {

@@ -203,10 +203,8 @@ export namespace MongoMock {
 			if (docs.length) {
 				this.update(docs[0]._id, modifier, options, cb)
 			} else {
-				this.insert({
-					_id: id,
-				} as any)
-				this.update(id, modifier, options, cb)
+				const doc = mongoModify(query, { _id: id }, modifier)
+				this.insert(doc, cb)
 			}
 		}
 		remove(query: any, cb?: Function) {

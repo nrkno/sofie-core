@@ -1,5 +1,11 @@
-import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { addMigrationSteps } from './databaseMigration'
+import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
+import { Studios } from '../../lib/collections/Studios'
+import { Timeline } from '../../lib/collections/Timeline'
+import { getCoreSystem } from '../../lib/collections/CoreSystem'
+import * as semver from 'semver'
+import { getDeprecatedDatabases, dropDeprecatedDatabases } from './deprecatedDatabases/X_X_X'
+import * as _ from 'underscore'
 
 /*
  * **************************************************************************************
@@ -26,7 +32,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	// },
 	//
 	//
-	// setExpectedVersion('expectedVersion.playoutDevice', PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
-	// setExpectedVersion('expectedVersion.mosDevice', PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
-	// setExpectedVersion('expectedVersion.mediaManager', PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
+	// setExpectedVersion('expectedVersion.playoutDevice',	PeripheralDeviceAPI.DeviceType.PLAYOUT,			'_process', '^1.0.0'),
+	// setExpectedVersion('expectedVersion.mosDevice',		PeripheralDeviceAPI.DeviceType.MOS,				'_process', '^1.0.0'),
+	// setExpectedVersion('expectedVersion.mediaManager',	PeripheralDeviceAPI.DeviceType.MEDIA_MANAGER,	'_process', '^1.0.0'),
 ])

@@ -118,34 +118,41 @@ export namespace IngestActions {
 			)
 		}
 
-		return rundownPlaylistSyncFunction(rundownPlaylistId, RundownSyncFunctionPriority.INGEST, () => {
-			cache.Rundowns.findFetch({ playlistId: rundownPlaylist._id }).forEach((rundown) => {
-				if (rundown.studioId !== studio._id) {
-					logger.warning(
-						`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`
+		return rundownPlaylistSyncFunction(
+			rundownPlaylistId,
+			RundownSyncFunctionPriority.INGEST,
+			'regenerateRundownPlaylist',
+			() => {
+				cache.Rundowns.findFetch({ playlistId: rundownPlaylist._id }).forEach((rundown) => {
+					if (rundown.studioId !== studio._id) {
+						logger.warning(
+							`Rundown "${rundown._id}" does not belong to the same studio as its playlist "${rundownPlaylist._id}"`
+						)
+					}
+					const peripheralDevice = waitForPromise(cache.activationCache.getPeripheralDevices()).find(
+						(d) => d._id === rundown.peripheralDeviceId
 					)
-				}
-				const peripheralDevice = waitForPromise(cache.activationCache.getPeripheralDevices()).find(
-					(d) => d._id === rundown.peripheralDeviceId
-				)
-				if (!peripheralDevice) {
-					logger.info(`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`)
-				}
+					if (!peripheralDevice) {
+						logger.info(
+							`Rundown "${rundown._id}" has no valid PeripheralDevices. Running regenerate without`
+						)
+					}
 
-				const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
-				if (purgeExisting) {
-					removeRundownFromCache(cache, rundown)
-				} else {
-					// Reset the rundown (remove adlibs, etc):
-					resetRundown(cache, rundown)
-				}
+					const ingestRundown = loadCachedRundownData(rundown._id, rundown.externalId)
+					if (purgeExisting) {
+						removeRundownFromCache(cache, rundown)
+					} else {
+						// Reset the rundown (remove adlibs, etc):
+						resetRundown(cache, rundown)
+					}
+
+					waitForPromise(cache.saveAllToDatabase())
+
+					handleUpdatedRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
+				})
 
 				waitForPromise(cache.saveAllToDatabase())
-
-				handleUpdatedRundownInner(studio, rundown._id, ingestRundown, rundown.dataSource, peripheralDevice)
-			})
-
-			waitForPromise(cache.saveAllToDatabase())
-		})
+			}
+		)
 	}
 }

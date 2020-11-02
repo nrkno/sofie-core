@@ -12,17 +12,8 @@ import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../lib/
 import { PeripheralDevice, PeripheralDevices } from '../lib/collections/PeripheralDevices'
 
 export function getActivationCache(studioId: StudioId, playlistId: RundownPlaylistId): ActivationCache {
-	// if (!playlist.active) throw new Meteor.Error(500, `The playlist "${playlist._id}" is not active!`)
-	// if (!playlist.activeInstanceId)
-	// 	throw new Meteor.Error(500, `The playlist "${playlist._id}" has no activeInstanceId set!`)
-
 	let activationCache = activationCaches.get(studioId)
-	if (
-		activationCache &&
-		!activationCache.expired &&
-		activationCache.persistant &&
-		activationCache.playlistId === playlistId
-	) {
+	if (activationCache && getValidActivationCache(studioId, playlistId)) {
 		activationCache.touch()
 	} else {
 		if (activationCache) activationCache.destroy()
@@ -32,6 +23,23 @@ export function getActivationCache(studioId: StudioId, playlistId: RundownPlayli
 	}
 
 	return activationCache
+}
+/** Only return an activationCache if one is found */
+export function getValidActivationCache(
+	studioId: StudioId,
+	playlistId?: RundownPlaylistId
+): ActivationCache | undefined {
+	let activationCache = activationCaches.get(studioId)
+	if (
+		activationCache &&
+		!activationCache.expired &&
+		activationCache.persistant &&
+		(!playlistId || activationCache.playlistId === playlistId)
+	) {
+		return activationCache
+	} else {
+		return undefined
+	}
 }
 export function clearActivationCache(studioId: StudioId): void {
 	const activationCache = activationCaches.get(studioId)
@@ -58,7 +66,7 @@ export class ActivationCache {
 	private _initialized: boolean = false
 	private _persistant: boolean = false
 
-	private _playlist: RundownPlaylist
+	private _playlist: RundownPlaylist | undefined
 	private _studio: Studio
 	private _showStyleBases: { [id: string]: InternalCache<ShowStyleBase> } = {}
 	private _showStyleVariants: { [id: string]: InternalCache<ShowStyleVariant> } = {}
@@ -100,7 +108,7 @@ export class ActivationCache {
 		this._persistant = false
 	}
 	async initialize(playlist: RundownPlaylist, rundownsInPlaylist: Rundown[]) {
-		if (this._initialized && playlist.activeInstanceId !== this._playlist.activeInstanceId) {
+		if (this._initialized && (!this._playlist || playlist.activeInstanceId !== this._playlist.activeInstanceId)) {
 			// activeInstanceId has changed, we should clear out the data because it might not be valid anymore
 			this._uninitialize()
 		}
@@ -168,6 +176,7 @@ export class ActivationCache {
 	}
 	getPlaylist(): RundownPlaylist {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
+		if (!this._playlist) throw new Meteor.Error(`ActivationCache is without playlist`)
 		return this._playlist
 	}
 	getStudio(): Studio {
@@ -198,7 +207,7 @@ export class ActivationCache {
 		if (!this._initialized) throw new Meteor.Error(`ActivationCache is not initialized`)
 		return this._getPeripheralDevices()
 	}
-	private async _getShowStyleBase(rundown: Rundown, supressError?: boolean): Promise<ShowStyleBase> {
+	private async _getShowStyleBase(rundown: Rundown): Promise<ShowStyleBase> {
 		if (!rundown.showStyleBaseId) throw new Meteor.Error(500, `Rundown.showStyleBaseId not set!`)
 		return this._getFromCache(this._showStyleBases, rundown.showStyleBaseId, '', async (id) => {
 			const showStyleBase = await asyncCollectionFindOne(ShowStyleBases, id)
@@ -252,12 +261,17 @@ export class ActivationCache {
 		)
 	}
 	private async _getPeripheralDevices(): Promise<PeripheralDevice[]> {
-		return this._getFromCache(this._peripheralDevices, this._playlist.studioId, '', async (id) => {
-			const devices = await asyncCollectionFindFetch(PeripheralDevices, {
-				studioId: id,
-			})
-			return devices
-		})
+		return this._getFromCache(
+			this._peripheralDevices,
+			this._playlist?.studioId ?? this._studio._id,
+			'',
+			async (id) => {
+				const devices = await asyncCollectionFindFetch(PeripheralDevices, {
+					studioId: id,
+				})
+				return devices
+			}
+		)
 	}
 	private _updateExpires() {
 		const TTL = 30 * 60 * 1000 // 30 minutes

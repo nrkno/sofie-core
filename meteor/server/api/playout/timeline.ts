@@ -16,19 +16,14 @@ import {
 	TimelineObjRundown,
 	TimelineObjType,
 	TimelineContentTypeOther,
-	TimelineObjRecording,
 	TimelineObjGroupPart,
 	TimelineObjPartAbstract,
-	getTimelineId,
-	TimelineObjGroupRundown,
-	TimelineComplete,
+	StatObjectMetadata,
 } from '../../../lib/collections/Timeline'
 import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { Meteor } from 'meteor/meteor'
 import {
 	waitForPromise,
-	getHash,
-	stringifyObjects,
 	getCurrentTime,
 	extendMandadory,
 	literal,
@@ -39,6 +34,7 @@ import {
 	unprotectObject,
 	normalizeArrayFunc,
 	clone,
+	normalizeArray,
 	makePromise,
 	asyncCollectionFindOne,
 	getRandomId,
@@ -50,21 +46,20 @@ import { RundownBaselineObj } from '../../../lib/collections/RundownBaselineObjs
 import * as _ from 'underscore'
 import { getLookeaheadObjects } from './lookahead'
 import { loadStudioBlueprint, loadShowStyleBlueprint } from '../blueprints/cache'
-import { StudioContext, PartEventContext } from '../blueprints/context'
+import { StudioContext, PartEventContext, TimelineEventContext } from '../blueprints/context'
 import { postProcessStudioBaselineObjects } from '../blueprints/postProcess'
-import { generateRecordingTimelineObjs } from '../testTools'
 import { Part, PartId } from '../../../lib/collections/Parts'
 import { prefixAllObjectIds, getSelectedPartInstancesFromCache, getAllPieceInstancesFromCache } from './lib'
 import { createPieceGroupFirstObject, getResolvedPiecesFromFullTimeline } from './pieces'
 import { PackageInfo } from '../../coreSystem'
-import { offsetTimelineEnableExpression } from '../../../lib/Rundown'
-import { PartInstance, PartInstanceId } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { CacheForRundownPlaylist, CacheForStudio, CacheForStudioBase } from '../../DatabaseCaches'
-import { saveIntoCache } from '../../DatabaseCache'
+import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
+import { getExpectedLatency } from '../../../lib/collections/PeripheralDevices'
 import { processAndPrunePieceInstanceTimings, PieceInstanceWithTimings } from '../../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../../lib/rundown/pieces'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from './infinites'
 import { profiler } from '../profiler'
 
@@ -87,29 +82,46 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 
 	if (!studio) throw new Meteor.Error(404, 'studio "' + studioId + '" not found!')
 
-	const timelineObjs: Array<TimelineObjGeneric> = [
-		...getTimelineRundown(cache, studio),
-		...getTimelineRecording(cache, studio),
-	]
+	const timelineObjs: Array<TimelineObjGeneric> = [...getTimelineRundown(cache, studio)]
 
 	processTimelineObjects(studio, timelineObjs)
 
+	/** The timestamp that "now" was set to */
+	let theNowTime: number = 0
+
 	if (forceNowToTime) {
 		// used when autoNexting
-		setNowToTimeInObjects(timelineObjs, forceNowToTime)
+		theNowTime = forceNowToTime
+	} else {
+		const playoutDevices = waitForPromise(cache.activationCache.getPeripheralDevices()).filter(
+			(device) => device.studioId === studioId && device.type === PeripheralDeviceAPI.DeviceType.PLAYOUT
+		)
+		if (
+			playoutDevices.length > 1 || // if we have several playout devices, we can't use the Now feature
+			studio.settings.forceSettingNowTime
+		) {
+			let worstLatency = Math.max(...playoutDevices.map((device) => getExpectedLatency(device).safe))
+
+			/** Add a little more latency, to account for network latency variability */
+			const ADD_SAFE_LATENCY = studio.settings.nowSafeLatency || 30
+			theNowTime = getCurrentTime() + worstLatency + ADD_SAFE_LATENCY
+		}
+	}
+	if (theNowTime) {
+		setNowToTimeInObjects(timelineObjs, theNowTime)
 	}
 
-	const oldTimelineObjsMap: { [objId: string]: TimelineObjGeneric } = {}
-	cache.Timeline.findOne({
-		_id: studio._id,
-	})?.timeline.forEach((obj) => {
-		oldTimelineObjsMap[unprotectString(obj._id)] = obj
-	})
+	const oldTimelineObjsMap = normalizeArray(
+		cache.Timeline.findOne({
+			_id: studio._id,
+		})?.timeline ?? [],
+		'id'
+	)
 
 	timelineObjs.forEach((tlo: TimelineObjGeneric) => {
 		// A timeline object is updated if found in both collections
 
-		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[unprotectString(tlo._id)]
+		let tloldo: TimelineObjGeneric | undefined = oldTimelineObjsMap[tlo.id]
 
 		let oldNow: TSR.Timeline.TimelineEnable['start'] | undefined
 		if (tloldo && tloldo.enable) {
@@ -134,7 +146,8 @@ export function updateTimeline(cache: CacheForRundownPlaylist, studioId: StudioI
 		},
 		{
 			_id: studio._id,
-			updated: getCurrentTime(),
+			timelineHash: getRandomId(), // randomized on every timeline change
+			generated: getCurrentTime(),
 			timeline: timelineObjs,
 		},
 		true
@@ -170,7 +183,7 @@ function getPartInstanceTimelineInfo(
 	partInstance: PartInstance | undefined
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
-		const partLastStarted = partInstance.part.getLastStartedPlayback()
+		const partLastStarted = partInstance.timings?.startedPlayback
 		const nowInPart = partLastStarted === undefined ? 0 : currentTime - partLastStarted
 		const currentPieces = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
 		const pieceInstances = processAndPrunePieceInstanceTimings(showStyle, currentPieces, nowInPart)
@@ -248,9 +261,8 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 			const showStyleBlueprint0 = waitForPromise(pshowStyleBlueprint)
 			const showStyleBlueprintManifest = showStyleBlueprint0.blueprint
 
-			if (showStyleBlueprintManifest.onTimelineGenerate && currentPartInstance) {
-				const currentPart = currentPartInstance
-				const context = new PartEventContext(activeRundown, cache, currentPart)
+			if (showStyleBlueprintManifest.onTimelineGenerate) {
+				const context = new TimelineEventContext(activeRundown, cache, currentPartInstance, nextPartInstance)
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(cache, playlist, timelineObjs)
 				try {
 					const tlGenRes = waitForPromise(
@@ -258,16 +270,14 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 							context,
 							timelineObjs,
 							playlist.previousPersistentState,
-							currentPart.previousPartEndState,
+							currentPartInstance?.previousPartEndState,
 							unprotectObjectArray(resolvedPieces.pieces)
 						)
 					)
 					timelineObjs = _.map(tlGenRes.timeline, (object: OnGenerateTimelineObj) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObj>({
 							...object,
-							_id: protectString(''), // set later
 							objectType: TimelineObjType.RUNDOWN,
-							studioId: studio._id,
 						})
 					})
 					if (tlGenRes.persistentState) {
@@ -302,19 +312,17 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 				studioBaseline.push(
 					literal<TimelineObjRundown>({
 						id: id,
-						_id: protectString(''), // set later
-						studioId: protectString(''), // set later
 						objectType: TimelineObjType.RUNDOWN,
 						enable: { start: 0 },
 						layer: id,
-						metaData: {
+						metaData: literal<StatObjectMetadata>({
 							versions: {
 								core: PackageInfo.versionExtended || PackageInfo.version,
 								blueprintId: studio.blueprintId,
 								blueprintVersion: blueprint.blueprintVersion,
 								studio: studio._rundownVersionHash,
 							},
-						},
+						}),
 						content: {
 							deviceType: TSR.DeviceType.ABSTRACT,
 						},
@@ -332,41 +340,6 @@ function getTimelineRundown(cache: CacheForRundownPlaylist, studio: Studio): Tim
 	}
 }
 /**
- * Returns timeline objects related to Test Recordings in a studio
- */
-function getTimelineRecording(
-	cache: CacheForRundownPlaylist,
-	studio: Studio,
-	forceNowToTime?: Time
-): TimelineObjRecording[] {
-	try {
-		let recordingTimelineObjs: TimelineObjRecording[] = []
-
-		cache.RecordedFiles.findFetch(
-			{
-				// TODO: ask Julian if this is okay, having multiple recordings at the same time?
-				studioId: studio._id,
-				stoppedAt: { $exists: false },
-			},
-			{
-				sort: {
-					startedAt: 1, // TODO - is order correct?
-				},
-			}
-		).forEach((activeRecording) => {
-			recordingTimelineObjs = recordingTimelineObjs.concat(generateRecordingTimelineObjs(studio, activeRecording))
-		})
-
-		return recordingTimelineObjs
-	} catch (e) {
-		return []
-	}
-	// Timeline.remove({
-	// 	siId: studioId,
-	// 	recordingObject: true
-	// })
-}
-/**
  * Fix the timeline objects, adds properties like deviceId and studioId to the timeline objects
  * @param studio
  * @param timelineObjs Array of timeline objects
@@ -380,13 +353,10 @@ function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjG
 			_.each(o.children, (child: TSR.TSRTimelineObjBase) => {
 				let childFixed: TimelineObjGeneric = {
 					...child,
-					_id: protectString(''), // set later
-					studioId: o.studioId,
 					objectType: o.objectType,
 					inGroup: o.id,
 				}
-				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o._id})`, childFixed)
-				childFixed._id = getTimelineId(childFixed)
+				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o.id})`, childFixed)
 				timelineObjs.push(childFixed)
 
 				fixObjectChildren(childFixed)
@@ -401,8 +371,6 @@ function processTimelineObjects(studio: Studio, timelineObjs: Array<TimelineObjG
 		}
 	}
 	_.each(timelineObjs, (o: TimelineObjGeneric) => {
-		o.studioId = studio._id
-		o._id = getTimelineId(o)
 		fixObjectChildren(o)
 	})
 	if (span) span.end()
@@ -446,8 +414,6 @@ function buildTimelineObjsForRundown(
 	timelineObjs.push(
 		literal<TimelineObjRundown>({
 			id: activePlaylist._id + '_status',
-			_id: protectString(''), // set later
-			studioId: protectString(''), // set later
 			objectType: TimelineObjType.RUNDOWN,
 			enable: { while: 1 },
 			layer: 'rundown_status',
@@ -481,7 +447,6 @@ function buildTimelineObjsForRundown(
 
 	// Currently playing:
 	if (partInstancesInfo.current) {
-		const partLastStarted = partInstancesInfo.current.partInstance.part.getLastStartedPlayback()
 		const [currentInfinitePieces, currentNormalItems] = _.partition(
 			partInstancesInfo.current.pieceInstances,
 			(l) => !!(l.infinite && (l.piece.lifespan !== PieceLifespan.WithinPart || l.infinite.fromHold))
@@ -493,7 +458,7 @@ function buildTimelineObjsForRundown(
 		if (partInstancesInfo.previous) {
 			allowTransition = !partInstancesInfo.previous.partInstance.part.disableOutTransition
 
-			const previousPartLastStarted = partInstancesInfo.previous.partInstance.part.getLastStartedPlayback() ?? 0
+			const previousPartLastStarted = partInstancesInfo.previous.partInstance.timings?.startedPlayback
 			if (previousPartLastStarted) {
 				const prevPartOverlapDuration = calcPartKeepaliveDuration(
 					partInstancesInfo.previous.partInstance.part,
@@ -538,8 +503,6 @@ function buildTimelineObjsForRundown(
 						activePlaylist.holdState
 					)
 				)
-				prevObjs = prefixAllObjectIds(prevObjs, 'previous_', true)
-
 				timelineObjs = timelineObjs.concat(prevObjs)
 			}
 		}
@@ -553,9 +516,9 @@ function buildTimelineObjsForRundown(
 						partInstancesInfo.current.partInstance.part
 				  ),
 		})
-		if (partInstancesInfo.current.partInstance.part.startedPlayback && partLastStarted) {
+		if (partInstancesInfo.current.partInstance.timings?.startedPlayback) {
 			// If we are recalculating the currentPart, then ensure it doesnt think it is starting now
-			currentPartEnable.start = partLastStarted
+			currentPartEnable.start = partInstancesInfo.current.partInstance.timings.startedPlayback
 		}
 		currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
@@ -597,10 +560,10 @@ function buildTimelineObjsForRundown(
 
 			let nowInParent = partInstancesInfo.current.nowInPart
 			let isAbsoluteInfinitePartGroup = false
-			if (piece.piece.startedPlayback) {
+			if (piece.startedPlayback) {
 				// Make the start time stick
-				infiniteGroup.enable = { start: piece.piece.startedPlayback }
-				nowInParent = currentTime - piece.piece.startedPlayback
+				infiniteGroup.enable = { start: piece.startedPlayback }
+				nowInParent = currentTime - piece.startedPlayback
 				isAbsoluteInfinitePartGroup = true
 
 				// If an absolute time has been set by a hotkey, then update the duration to be correct
@@ -752,8 +715,6 @@ function createPartGroup(partInstance: PartInstance, enable: TSR.Timeline.Timeli
 	}
 	let partGrp = literal<TimelineObjGroupPart>({
 		id: getPartGroupId(unprotectObject(partInstance)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
 		objectType: TimelineObjType.RUNDOWN,
 		enable: enable,
 		priority: 5,
@@ -777,8 +738,6 @@ function createPartGroupFirstObject(
 ): TimelineObjPartAbstract {
 	return literal<TimelineObjPartAbstract>({
 		id: getPartFirstObjectId(unprotectObject(partInstance)),
-		_id: protectString(''), // set later
-		studioId: protectString(''), // set later
 		objectType: TimelineObjType.RUNDOWN,
 		enable: { start: 0 },
 		layer: 'group_first_object',
@@ -934,6 +893,8 @@ function transformPartIntoTimeline(
 		if (!pieceInstance.piece.virtual && pieceInstance.piece.content?.timelineObjects && !hasDefinitelyEnded) {
 			timelineObjs.push(createPieceGroupFirstObject(playlistId, pieceInstance, pieceGroup, firstObjClasses))
 
+			const pieceObjects: Array<TimelineObjRundown & OnGenerateTimelineObj> = []
+
 			for (const o of pieceInstance.piece.content.timelineObjects) {
 				if (o.holdMode) {
 					if (isHold && !showHoldExcept && o.holdMode === TimelineObjHoldMode.EXCEPT) {
@@ -944,16 +905,17 @@ function transformPartIntoTimeline(
 					}
 				}
 
-				timelineObjs.push({
+				pieceObjects.push({
 					...clone<TimelineObjectCoreExt>(o),
-					_id: protectString(''), // set later
-					studioId: protectString(''), // set later
 					inGroup: pieceGroup.id,
 					objectType: TimelineObjType.RUNDOWN,
 					pieceInstanceId: unprotectString(pieceInstance._id),
 					infinitePieceId: unprotectString(pieceInstance.infinite?.infinitePieceId),
 				})
 			}
+
+			// TODO - should this be ignoreOriginal? this used to be setting that for the previousPartInstance. If changing, lookahead.ts getStartOfObjectRef() will need updating
+			timelineObjs.push(...prefixAllObjectIds(pieceObjects, unprotectString(pieceInstance._id)))
 		}
 	}
 	if (span) span.end()

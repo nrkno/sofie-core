@@ -2,6 +2,86 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.13.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.1-0...v1.13.1) (2020-10-26)
+
+### [1.13.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.13.0...v1.13.1-0) (2020-10-26)
+
+
+### Bug Fixes
+
+* ActivationCache.getPeripheralDevices exception when no active playlist ([#364](https://github.com/nrkno/tv-automation-server-core/issues/364)) ([1895315](https://github.com/nrkno/tv-automation-server-core/commit/189531598bef5ef3e140849c5d44dd4ae6c43b3e))
+* preserve pieceInstance timings when extending for hold ([d0925b4](https://github.com/nrkno/tv-automation-server-core/commit/d0925b48f4f16199f7cfdb99f49a5b807b1a845c))
+
+## [1.13.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.12.1...v1.13.0) (2020-10-19)
+
+
+### Features
+
+* Add method to remove MediaObjects with specific collectionId ([2e6f2f3](https://github.com/nrkno/tv-automation-server-core/commit/2e6f2f3545e5b6cd0d0d7a15d9d2c9fc309b6920))
+* add the asRunLog to playlist-snapshots ([efea1ad](https://github.com/nrkno/tv-automation-server-core/commit/efea1ad0f268324a3adfa334b8b806f162b0d840))
+* call onTimelineGenerate when there is no current part ([5b0e9cb](https://github.com/nrkno/tv-automation-server-core/commit/5b0e9cbe95c5f17ef38684c3667e3684cc328376))
+* GUI display of latencies of playout-gaetway (wip) ([f1cacbd](https://github.com/nrkno/tv-automation-server-core/commit/f1cacbdb2dc7946d59c752c5ec61c69798549293))
+* Gui Optimizations ([#327](https://github.com/nrkno/tv-automation-server-core/issues/327)) ([72d8500](https://github.com/nrkno/tv-automation-server-core/commit/72d8500626df1c77cef585b88caa9455175e1260))
+* move bulk of playout properties from Part to PartInstances ([30a2df4](https://github.com/nrkno/tv-automation-server-core/commit/30a2df43293c975664b490ccf8b79021a34ef2de))
+* move Part.duration to PartInstance.timings.duration ([a56e1f9](https://github.com/nrkno/tv-automation-server-core/commit/a56e1f9aa01a8bd7d89fb80ecb89226f490dfb90))
+* move playout properties from Piece to PieceInstance ([78dca68](https://github.com/nrkno/tv-automation-server-core/commit/78dca68fa76777ca688dd2d5645e5ed5d58d1f28))
+* receive and store latencies reported by playout-gateways ([c93b0cb](https://github.com/nrkno/tv-automation-server-core/commit/c93b0cb8efd1ab8ef02975c60975fcce6e2d9668))
+* set current part as next ([a069950](https://github.com/nrkno/tv-automation-server-core/commit/a069950e75f1881e9da4bdf0a6f1fc31690a0574))
+* set the Now time in timeline using latency, when having multiple peripheralDevices ([94a448d](https://github.com/nrkno/tv-automation-server-core/commit/94a448d9ca18e43d27f7bb647d4bf48a9c982dd4))
+* store playout-gateway reportResolveDone timings to userActionsLog, for easy viewing and fun! ([cad3c59](https://github.com/nrkno/tv-automation-server-core/commit/cad3c59114be6de0aba801b8ab2958402672459e))
+* tally tags ([#309](https://github.com/nrkno/tv-automation-server-core/issues/309)) ([75ee1c9](https://github.com/nrkno/tv-automation-server-core/commit/75ee1c95151011d9646749dca517428a5d0ea5a0))
+
+
+### Bug Fixes
+
+* > is more than >= ([a2ffd20](https://github.com/nrkno/tv-automation-server-core/commit/a2ffd20634d574523f7501f5113a52509aadcb13))
+* a migration for Drop Studio Recording ([27d7417](https://github.com/nrkno/tv-automation-server-core/commit/27d74173f3aee3983a06134a4731b85699144ebb))
+* add an intermediate cache save, so that a reset is still saved to db even if something later throws ([98c8efd](https://github.com/nrkno/tv-automation-server-core/commit/98c8efdd1bbbeca7bd8f9597df5f54be4cf4447c))
+* add coresystem.enableMonitorBlockedThread into GUI settings ([12bfd84](https://github.com/nrkno/tv-automation-server-core/commit/12bfd8439bd5b7cf9c637bda1f0cdd144c07c96c))
+* add missing update of Timeline timelineHash & generated properties ([1639e31](https://github.com/nrkno/tv-automation-server-core/commit/1639e310c7002bd0d6b2ad9aeb1e6fbbd19ba082))
+* add timeoutTime to callPeripheralDeviceFunction ([231f0b2](https://github.com/nrkno/tv-automation-server-core/commit/231f0b29c6a06f001aa7dc067635b048ff819565))
+* also check nextPartInstance when allowing moving rundown out of active playlist ([99e739f](https://github.com/nrkno/tv-automation-server-core/commit/99e739faddeb009d943cb059317da9c49ff82c79))
+* arrow overlapping with extra time label ([2b4fccd](https://github.com/nrkno/tv-automation-server-core/commit/2b4fccd4afb24cc63b84ea47040c298c7f374370))
+* bug fix: databaseCaches ran deferred functions multiple times if saveAllToDatabase() is called multiple times. ([dbb8c31](https://github.com/nrkno/tv-automation-server-core/commit/dbb8c310ba66c005015bca50d08c6eae8c9b2d7a))
+* change meteor install url from 1.11.0 to 1.11 ([789e87f](https://github.com/nrkno/tv-automation-server-core/commit/789e87f009dc0eb666a503f8e7fb32193c74f30c))
+* clear the blueprint config caches when the blueprint is updated ([b74951d](https://github.com/nrkno/tv-automation-server-core/commit/b74951d435838f7125a4bce45342519e4d9a14f4))
+* Copy adLibSourceId to continuation pieces for an infinite ([90a961c](https://github.com/nrkno/tv-automation-server-core/commit/90a961c4977ae7b5c2fc52485443227172980b7f))
+* correct import ([04fce31](https://github.com/nrkno/tv-automation-server-core/commit/04fce319bc932406782ced5b238edb87883bf13e))
+* Dashboard crash ([5434ef7](https://github.com/nrkno/tv-automation-server-core/commit/5434ef783d8b9029d0bddc78afceabca4e85e930))
+* Don't push group name to used hotkeys ([04acb2b](https://github.com/nrkno/tv-automation-server-core/commit/04acb2b8d0f38060eb627d59b600ec2f0ce8d9dd))
+* Don't register sticky piece hotkeys twice in dashboard ([ddd72c9](https://github.com/nrkno/tv-automation-server-core/commit/ddd72c98f32f9c9589ad503056e3d8b5f4a437c8))
+* downgraded i18n expressions to not use any fancy typescript. ([#340](https://github.com/nrkno/tv-automation-server-core/issues/340)) ([bffd437](https://github.com/nrkno/tv-automation-server-core/commit/bffd4370a419ad11dc1b393e0ea022981b545859))
+* handle metadata fields from blueprints-integration types being of type unknown ([c8e8af9](https://github.com/nrkno/tv-automation-server-core/commit/c8e8af9ba857146aa25810b86de0ae71558d1160))
+* Instead of always setting systemStatus to ERROR, only show it as a warning, if there was an instance when it was successful. ([#341](https://github.com/nrkno/tv-automation-server-core/issues/341)) ([054c3ef](https://github.com/nrkno/tv-automation-server-core/commit/054c3efdb0966ed24011be1d2dd7c24db2c2e001))
+* it should be unshift instead of push ([b544a03](https://github.com/nrkno/tv-automation-server-core/commit/b544a03c1ee885cd58d06d7f57d4c82d5d9e7cbf))
+* leave pieceId properties on lookahead objects ([3d8091d](https://github.com/nrkno/tv-automation-server-core/commit/3d8091d4dc33ac5f1c94666b771b76815dda0a58))
+* lookahead timed object ids not correct ([c870393](https://github.com/nrkno/tv-automation-server-core/commit/c8703937d72c776793d811e3b66124bd6f9a6b9e))
+* make delay-time configurable, and allow for forcing to use the feature even when only having one playout-gateway. ([1b5a347](https://github.com/nrkno/tv-automation-server-core/commit/1b5a3479bd891d08b39a3b81c02caf7aef0aabb1))
+* Move shelf piece instance subscriptions to new autorun ([d38f256](https://github.com/nrkno/tv-automation-server-core/commit/d38f25630e65a725fc68f1d52749349c52ffe39d))
+* Only fetch piece instances for current, next, and previous part ([e9c3eca](https://github.com/nrkno/tv-automation-server-core/commit/e9c3ecae4741e882b9e0d932002ff8c32ce9e403))
+* Peripheral device access method ([ebec5e3](https://github.com/nrkno/tv-automation-server-core/commit/ebec5e3ffe88983f1acb7631e98eeed70effd55e))
+* Remove need to fetch rundowns ([cc7b1bc](https://github.com/nrkno/tv-automation-server-core/commit/cc7b1bcdac638227013b053bc53f0e469dea970f))
+* runtime warning trying to call toUpperCase() on undefined ([22b006f](https://github.com/nrkno/tv-automation-server-core/commit/22b006f32805695c51f4973dad9ee77252527d5e))
+* set timeout-time for restarting casparcg to 10 seconds, to avoid timeouts ([90b90d1](https://github.com/nrkno/tv-automation-server-core/commit/90b90d1e49f21763ced6ad1d91877e2194abfb0e))
+* show autoNext status not shown in some cases ([9e8fa58](https://github.com/nrkno/tv-automation-server-core/commit/9e8fa586ed8243aada753828bc710cfe0aa7c927)), closes [#72d85006](https://github.com/nrkno/tv-automation-server-core/issues/72d85006)
+* Standalone shelf route ([b3ab708](https://github.com/nrkno/tv-automation-server-core/commit/b3ab7082b672d6042fdb09659dc040b58ea878e2))
+* Subscribe to all parts, pieces, and instances if in standalone shelf ([25d91b4](https://github.com/nrkno/tv-automation-server-core/commit/25d91b46fa819dedb42366fe892ab15c32ff7cdc))
+* timed pieces showing outside of their part ([380d065](https://github.com/nrkno/tv-automation-server-core/commit/380d065a61924db10d5e85ec0c101bfadd5ce87c))
+* timeline getting duplicate ids when in autonext and the current and next parts are the same ([7a89b8d](https://github.com/nrkno/tv-automation-server-core/commit/7a89b8d35704c64a115e92f9df579d5d80517a74))
+* timeoutTime was null ([a0df7e5](https://github.com/nrkno/tv-automation-server-core/commit/a0df7e5a55d1558a1e1763f4176fc90661fc27e2))
+* typings error ([0606c4f](https://github.com/nrkno/tv-automation-server-core/commit/0606c4fef9b68a1a8e36ea7335ce1a9215b68d6b))
+* update reportResolveDone to work with new timeline publications ([ee846af](https://github.com/nrkno/tv-automation-server-core/commit/ee846afda525671c93975c7daa5c4ce2ff4e46aa))
+* use Meteor 1.11 base image for build ([6dfff9d](https://github.com/nrkno/tv-automation-server-core/commit/6dfff9d9ac60f2ea084390c6663dc624d574fc15))
+* use modern import style for Tooltip in ClipTrimPanel ([ca5eb22](https://github.com/nrkno/tv-automation-server-core/commit/ca5eb22c79f2a32d78e380aa8e4da0257908952a))
+
+### [1.12.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.12.0...v1.12.1) (2020-10-12)
+
+
+### Bug Fixes
+
+* restore sourceDuration display on all Pieces ([72d2897](https://github.com/nrkno/tv-automation-server-core/commit/72d289710fedb5a7e16958f9c1260e9502095f9f))
+* show end of content markers in segment minimap ([06c95fa](https://github.com/nrkno/tv-automation-server-core/commit/06c95fa792913e7ac9cfc0d82496fa17a6a44411))
+
 ## [1.12.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.10.1...v1.12.0) (2020-09-28)
 
 

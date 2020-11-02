@@ -77,7 +77,7 @@ export const ClipTrimDialog = withTranslation()(
 										<strong>{selectedPiece.name}</strong>:&ensp;
 										{t(
 											"Trimming this clip has timed out. It's possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.",
-											{ nrcsName: this.props.rundown?.externalNRCSName || 'NRCS' }
+											{ nrcsName: (this.props.rundown && this.props.rundown.externalNRCSName) || 'NRCS' }
 										)}
 									</>
 								),
@@ -129,7 +129,7 @@ export const ClipTrimDialog = withTranslation()(
 								<strong>{selectedPiece.name}</strong>:&ensp;
 								{t(
 									"Trimming this clip is taking longer than expected. It's possible that the story is locked for writing in {{nrcsName}}.",
-									{ nrcsName: this.props.rundown?.externalNRCSName || 'NRCS' }
+									{ nrcsName: (this.props.rundown && this.props.rundown.externalNRCSName) || 'NRCS' }
 								)}
 							</>
 						),
