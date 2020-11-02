@@ -23,13 +23,10 @@ import { Part, Parts, PartId } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
-import {
-	RundownTimingProvider,
-	withTiming,
-	WithTiming,
-	CurrentPartRemaining,
-	AutoNextStatus,
-} from './RundownView/RundownTiming'
+import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
+import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
+import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
+import { AutoNextStatus } from './RundownView/RundownTiming/AutoNextStatus'
 import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentTimeline/SegmentTimelineContainer'
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfBase, ShelfTabs } from './Shelf/Shelf'
