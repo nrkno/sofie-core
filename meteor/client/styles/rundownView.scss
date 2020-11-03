@@ -35,7 +35,7 @@ $previewline-color: rgb(38, 137, 186);
 /** The top padding of the timeline has to be equal to the header-height, so that the
 	functional part of the timeline starts at the same level as the segment title
 */
-$segment-timeline-padding: $segment-header-height 0 2.5em;
+$segment-timeline-padding: $segment-header-height 0 1.5em;
 
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
@@ -991,7 +991,7 @@ svg.icon {
 				($output-layer-group-collapse-animation-duration * 1/2),
 			$output-layer-group-collapse-animation-duration margin-bottom
 				($output-layer-group-collapse-animation-duration * 1/2);
-		margin-bottom: 2.5em;
+		margin-bottom: 1.5em;
 	}
 
 	.segment-timeline__timeline-grid {

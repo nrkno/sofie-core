@@ -774,7 +774,7 @@ export const SegmentTimelineContainer = translateWithTracker<IProps, IState, ITr
 		onShowEntireSegment = (event: any, limitScale?: boolean) => {
 			this.setState({
 				scrollLeft: 0,
-				followLiveLine: this.state.isLiveSegment ? false : this.state.followLiveLine,
+				followLiveLine: this.state.isLiveSegment ? true : this.state.followLiveLine,
 			})
 			if (typeof this.onTimeScaleChange === 'function') {
 				let newScale =
