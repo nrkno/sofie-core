@@ -791,30 +791,6 @@ export function getRundownsSegmentsAndPartsFromCache(
 	}
 }
 
-// export function getPartBeforeSegmentFromCache(
-// 	cache: CacheForRundownPlaylist,
-// 	rundownId: RundownId,
-// 	dbSegment: DBSegment
-// ): Part | undefined {
-// 	const prevSegment = cache.Segments.findOne(
-// 		{
-// 			rundownId: rundownId,
-// 			_rank: { $lt: dbSegment._rank },
-// 		},
-// 		{ sort: { _rank: -1 } }
-// 	)
-// 	if (prevSegment) {
-// 		return cache.Parts.findOne(
-// 			{
-// 				rundownId: rundownId,
-// 				segmentId: prevSegment._id,
-// 			},
-// 			{ sort: { _rank: -1 } }
-// 		)
-// 	}
-// 	return undefined
-// }
-
 export function checkAccessAndGetPlaylist(context: MethodContext, playlistId: RundownPlaylistId): RundownPlaylist {
 	const access = RundownPlaylistContentWriteAccess.playout(context, playlistId)
 	const playlist = access.playlist

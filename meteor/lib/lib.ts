@@ -538,48 +538,6 @@ export const getCollectionStats: (collection: TransformedCollection<any, any>) =
 		raw.stats(cb)
 	}
 )
-// export function fetchBefore<T>(
-// 	collection: TransformedCollection<T, any>,
-// 	selector: MongoQuery<T> = {},
-// 	rank: number = Number.POSITIVE_INFINITY
-// ): T {
-// 	return collection
-// 		.find(
-// 			_.extend(selector, {
-// 				_rank: { $lt: rank },
-// 			}),
-// 			{
-// 				sort: {
-// 					_rank: -1,
-// 					_id: -1,
-// 				},
-// 				limit: 1,
-// 			}
-// 		)
-// 		.fetch()[0]
-// }
-// export function fetchNext<T extends { _id: ProtectedString<any> }>(
-// 	values: Array<T>,
-// 	currentValue: T | undefined
-// ): T | undefined {
-// 	if (!currentValue) return values[0]
-
-// 	let nextValue: T | undefined
-// 	let found: boolean = false
-// 	return _.find(values, (value) => {
-// 		if (found) {
-// 			nextValue = value
-// 			return true
-// 		}
-
-// 		if (currentValue._id) {
-// 			found = currentValue._id === value._id
-// 		} else {
-// 			found = currentValue === value
-// 		}
-// 		return false
-// 	})
-// }
 // /**
 //  * Returns a rank number, to be used to insert new objects in a ranked list
 //  * @param before	Object before, null/undefined if inserted first
