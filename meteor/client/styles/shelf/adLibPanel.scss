@@ -50,8 +50,9 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 			&.live {
 				background: $general-live-color;
-				font-weight: 500;
-				color: #000;
+				font-weight: 400;
+				color: #fff;
+				text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 
 				&::after {
 					display: block;
@@ -61,8 +62,8 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 			&.next {
 				background: $general-next-color;
 				color: #fff;
-				font-weight: 500;
-				text-shadow: 0 0 5px #000;
+				font-weight: 400;
+				text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 
 				&::after {
 					display: block;
@@ -265,8 +266,9 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 
 					> .adlib-panel__list-view__list__seg-header > td {
 						background: $general-live-color;
-						color: #000;
-						font-weight: 500;
+						color: #fff;
+						font-weight: 400;
+						text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 					}
 				}
 
@@ -276,15 +278,16 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 					> .adlib-panel__list-view__list__seg-header > td {
 						background: $general-next-color;
 						color: #fff;
-						font-weight: 500;
-						text-shadow: 0 0 5px #000;
+						font-weight: 400;
+						text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
 					}
 				}
 
 				> .adlib-panel__list-view__list__segment__item {
 					display: table;
 					position: relative;
-					width: 100%;
+					width: calc(100% - 1.5em);
+					margin-left: 1.5em;
 
 					> td {
 						border: 1px solid #000;
