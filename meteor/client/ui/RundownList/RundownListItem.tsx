@@ -12,7 +12,13 @@ import { getAllowConfigure, getAllowService } from '../../lib/localStorage'
 import { MomentFromNow } from '../../lib/Moment'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
-import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
+import {
+	confirmDeleteRundown,
+	confirmReSyncRundown,
+	getRundownPlaylistLink,
+	getRundownWithLayoutLink,
+	getShowStyleBaseLink,
+} from './util'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import {
 	ConnectDragSource,
@@ -44,6 +50,7 @@ const HTML_ID_PREFIX = 'rundown-'
 export interface IRundownListItemProps {
 	rundown: Rundown
 	viewLinks: JSX.Element | null
+	playlistViewUrl: string
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 }
 
@@ -170,7 +177,7 @@ export const RundownListItem = withTranslation()(
 				}
 
 				render() {
-					const { t, rundown, connectDragSource, connectDropTarget, isDragging } = this.props
+					const { t, rundown, connectDragSource, connectDropTarget, isDragging, playlistViewUrl } = this.props
 					const userCanConfigure = getAllowConfigure()
 
 					const classNames: string[] = ['rundown-list-item']
@@ -190,7 +197,7 @@ export const RundownListItem = withTranslation()(
 										</Tooltip>
 									</span>
 								)}
-								<span>{rundown.name}</span>
+								<Link to={playlistViewUrl}>{rundown.name}</Link>
 							</span>
 							<span className="rundown-list-item__showStyle rundown-list-item__text">
 								{userCanConfigure ? (

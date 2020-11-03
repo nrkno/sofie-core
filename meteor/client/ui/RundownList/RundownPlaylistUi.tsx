@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactElement } from 'react'
 import ClassNames from 'classnames'
 import { withTranslation } from 'react-i18next'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
@@ -229,7 +229,7 @@ export const RundownPlaylistUi = DropTarget(
 				)
 			}
 
-			private createPlaylistViewLinks() {
+			private createPlaylistViewLinks(): ReactElement | null {
 				const { t, playlist } = this.props
 
 				const standaloneLayouts: JSX.Element[] = []
@@ -300,6 +300,7 @@ export const RundownPlaylistUi = DropTarget(
 
 				const playbackProgressBar = createProgressBarRow(playlist)
 				const playlistViewLinks = this.createPlaylistViewLinks()
+				const playlistViewURL = getRundownPlaylistLink(playlist._id)
 				const handleRundownSwap = (a: RundownId, b: RundownId) => {
 					this.swapRundownOrder(a, b)
 				}
@@ -315,6 +316,7 @@ export const RundownPlaylistUi = DropTarget(
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
 								viewLinks={playlistViewLinks}
+								playlistViewUrl={playlistViewURL}
 								swapRundownOrder={handleRundownSwap}
 							/>
 							{playbackProgressBar}
@@ -329,6 +331,7 @@ export const RundownPlaylistUi = DropTarget(
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
 							viewLinks={playlistViewLinks}
+							playlistViewUrl={playlistViewURL}
 							swapRundownOrder={handleRundownSwap}
 						/>
 					) : null
