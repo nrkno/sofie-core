@@ -32,6 +32,8 @@ import {
 	RundownPlaylistUiActionTypes,
 } from './DragAndDropTypes'
 import { MeteorCall } from '../../../lib/api/methods'
+import { RundownUtils } from '../../lib/rundown'
+import { MomentFromNow } from '../../lib/Moment'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -332,14 +334,28 @@ export const RundownPlaylistUi = DropTarget(
 					) : null
 				})
 
+				const expectedDuration =
+					playlist.expectedDuration &&
+					RundownUtils.formatDiffToTimecode(playlist.expectedDuration, false, true, true, false, true)
+
 				return connectDropTarget(
 					<li className={`rundown-playlist ${isOver ? 'droptarget' : ''}`}>
 						<header className="rundown-playlist__header">
-							<h2 className="rundown-playlist__heading">
-								<FontAwesomeIcon icon={faFolderOpen} /> {playlist.name}
-							</h2>
-							<span>{playlistViewLinks}</span>
-							<span>Actions her</span>
+							<span className="rundown-list-item__name">
+								<h2 className="rundown-playlist__heading">
+									<FontAwesomeIcon icon={faFolderOpen} />
+									<span className="rundown-playlist__heading-text">{playlist.name}</span>
+								</h2>
+								<span>order toggle her</span>
+							</span>
+							<span className="rundown-list-item__showStyle">{playlistViewLinks}</span>
+							<span className="rundown-list-item__airTime"></span>
+							<span className="rundown-list-item__status"></span>
+							<span className="rundown-list-item__duration">{expectedDuration}</span>
+							<span className="rundown-list-item__created">
+								<MomentFromNow>{playlist.created}</MomentFromNow>
+							</span>
+							<span className="rundown-list-item__actions"></span>
 						</header>
 						<ol className="rundown-playlist__rundowns">{rundownComponents}</ol>
 						<footer>{playbackProgressBar ? { playbackProgressBar } : null}</footer>
