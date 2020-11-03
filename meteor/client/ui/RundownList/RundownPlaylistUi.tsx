@@ -315,7 +315,6 @@ export const RundownPlaylistUi = DropTarget(
 							<RundownListItem
 								key={unprotectString(playlist.rundowns[0]._id)}
 								rundown={playlist.rundowns[0]}
-								viewLinks={playlistViewLinks}
 								playlistViewUrl={playlistViewURL}
 								swapRundownOrder={handleRundownSwap}
 							/>
@@ -349,7 +348,7 @@ export const RundownPlaylistUi = DropTarget(
 									<FontAwesomeIcon icon={faFolderOpen} />
 									<span className="rundown-playlist__heading-text">{playlist.name}</span>
 								</h2>
-								<span>order toggle her</span>
+								<span>{`rundownRanksAreSetInSofie: ${playlist.rundownRanksAreSetInSofie === true}`}</span>
 							</span>
 							<span className="rundown-list-item__showStyle">{playlistViewLinks}</span>
 							<span className="rundown-list-item__airTime"></span>

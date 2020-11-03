@@ -44,12 +44,12 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 import { unprotectString } from '../../../lib/lib'
 import { iconDragHandle, iconRemove, iconResync } from './icons'
 import { spawn } from 'child_process'
+import RundownListItemView from './RundownListItemView'
 
 const HTML_ID_PREFIX = 'rundown-'
 
 export interface IRundownListItemProps {
 	rundown: Rundown
-	viewLinks: JSX.Element | null
 	playlistViewUrl: string
 	swapRundownOrder: (a: RundownId, b: RundownId) => void
 }
@@ -173,7 +173,7 @@ export const RundownListItem = withTranslation()(
 						selectedView: UIStateStorage.getItemString(`rundownList.${this.studio._id}`, 'defaultView', 'default'),
 					}
 
-					// this.props.dragPreview(getEmptyImage()) // override default dom node screenshot behavior
+					this.props.dragPreview(getEmptyImage()) // override default dom node screenshot behavior
 				}
 
 				render() {
@@ -187,60 +187,24 @@ export const RundownListItem = withTranslation()(
 					// rundown ids can start with digits, which is illegal for HTML id attributes
 					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
 
-					return connectDropTarget(
-						<li id={htmlElementId} className={classNames.join(' ')}>
-							<span className="rundown-list-item__name rundown-list-item__text">
-								{connectDragSource(
-									<span className="draghandle">
-										<Tooltip overlay={t('Drag to reorder or move out of playlist')} placement="top">
-											<button className="rundown-list-item__action">{iconDragHandle()}</button>
-										</Tooltip>
-									</span>
-								)}
-								<Link to={playlistViewUrl}>{rundown.name}</Link>
-							</span>
-							<span className="rundown-list-item__showStyle rundown-list-item__text">
-								{userCanConfigure ? (
-									<Link to={getShowStyleBaseLink(rundown.showStyleBaseId)}>{this.showStyle.name}</Link>
-								) : (
-									this.showStyle.name
-								)}
-							</span>
-							<span className="rundown-list-item__airTime rundown-list-item__text">
-								{rundown.expectedStart && (
-									<>
-										<MomentFromNow>{rundown.expectedStart}</MomentFromNow>{' '}
-										<Moment format="HH:mm:ss">{rundown.expectedStart}</Moment>
-									</>
-								)}
-							</span>
-							<span className="rundown-list-item__status rundown-list-item__text">{rundown.status}</span>
-							<span className="rundown-list-item__duration rundown-list-item__text">
-								{rundown.expectedDuration &&
-									RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}
-							</span>
-							<span className="rundown-list-item__created rundown-list-item__text">
-								<MomentFromNow>{rundown.created}</MomentFromNow>
-							</span>
-							<span className="rundown-list-item__actions">
-								{rundown.unsynced ? (
-									<Tooltip overlay={t('Re-sync all rundowns in playlist')} placement="top">
-										<button className="rundown-list-item__action" onClick={() => confirmReSyncRundown(rundown, t)}>
-											{iconResync()}
-										</button>
-									</Tooltip>
-								) : (
-									<span className="rundown-list-item__action"></span>
-								)}
-								{rundown.unsynced || userCanConfigure || getAllowService() ? (
-									<Tooltip overlay={t('Delete')} placement="top">
-										<button className="rundown-list-item__action" onClick={() => confirmDeleteRundown(rundown, t)}>
-											{iconRemove()}
-										</button>
-									</Tooltip>
-								) : null}
-							</span>
-						</li>
+					return (
+						<RundownListItemView
+							classNames={classNames}
+							connectDragSource={connectDragSource}
+							connectDropTarget={connectDropTarget}
+							htmlElementId={htmlElementId}
+							isDragLayer={false}
+							playlistViewUrl={playlistViewUrl}
+							rundown={rundown}
+							showStyle={this.showStyle}
+							showStyleBaseURL={getShowStyleBaseLink(rundown.showStyleBaseId)}
+							confirmDeleteRundownHandler={
+								rundown.unsynced || userCanConfigure || getAllowService()
+									? () => confirmDeleteRundown(rundown, t)
+									: undefined
+							}
+							confirmReSyncRundownHandler={rundown.unsynced ? () => confirmReSyncRundown(rundown, t) : undefined}
+						/>
 					)
 				}
 			}

@@ -29,6 +29,7 @@ import { GettingStarted } from './RundownList/GettingStarted'
 import { RegisterHelp } from './RundownList/RegisterHelp'
 import { RundownDropZone } from './RundownList/RundownDropZone'
 import { RundownListFooter } from './RundownList/RundownListFooter'
+import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 
 export enum ToolTipStep {
@@ -302,6 +303,7 @@ export const RundownList = translateWithTracker(() => {
 										<footer>
 											{<RundownDropZone activated={activateDropZone} rundownDropHandler={handleDropZoneDrop} />}
 										</footer>
+										<RundownPlaylistDragLayer />
 									</section>
 								) : (
 									<Spinner />

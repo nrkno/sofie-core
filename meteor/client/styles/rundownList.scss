@@ -21,7 +21,7 @@
 
 	.rundown-list-item__name {
 		display: inline-block;
-		width: calc(var(--componentWidth) * 0.25);
+		width: calc(var(--componentWidth) * 0.3);
 
 		.draghandle {
 			cursor: grab;
@@ -44,7 +44,7 @@
 	}
 	.rundown-list-item__showStyle {
 		display: inline-block;
-		width: calc(var(--componentWidth) * 0.26);
+		width: calc(var(--componentWidth) * 0.21);
 	}
 	.rundown-list-item__airTime,
 	.rundown-list-item__status,
@@ -146,10 +146,10 @@
 
 					// recalc widths to line up with columns outside of playlists
 					.rundown-list-item__name {
-						width: calc((var(--componentWidth) - var(--leftGutterWidth)) * 0.25 - var(--leftGutterWidth) / 2);
+						width: calc((var(--componentWidth) - var(--leftGutterWidth)) * 0.3 - var(--leftGutterWidth) / 2);
 					}
 					.rundown-list-item__showStyle {
-						width: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.26);
+						width: calc((var(--componentWidth) + var(--leftGutterWidth)) * 0.21);
 					}
 					.rundown-list-item__airTime,
 					.rundown-list-item__status,
