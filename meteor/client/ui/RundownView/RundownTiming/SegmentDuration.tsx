@@ -28,7 +28,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(
 				const duration = this.props.partIds.reduce((memo, partId) => {
 					const pId = unprotectString(partId)
 					return partExpectedDurations[pId] !== undefined
-						? memo + Math.max(0, partExpectedDurations[pId] - (partPlayed[pId] || 0))
+						? memo + partExpectedDurations[pId] - (partPlayed[pId] || 0)
 						: memo
 				}, 0)
 
