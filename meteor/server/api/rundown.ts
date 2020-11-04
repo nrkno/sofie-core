@@ -876,6 +876,8 @@ export namespace ServerRundownAPI {
 
 				let newRank: number | undefined = getRank(rundownBefore, rundownAfter)
 
+				if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
+
 				RundownPlaylists.update(intoPlaylist._id, {
 					$set: {
 						rundownRanksAreSetInSofie: true,
@@ -886,8 +888,6 @@ export namespace ServerRundownAPI {
 						_rank: newRank,
 					},
 				})
-
-				if (newRank === undefined) throw new Meteor.Error(500, `newRank is undefined`)
 			} else {
 				// Move into another playlist
 
