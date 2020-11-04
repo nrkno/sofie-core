@@ -232,7 +232,7 @@ export function produceRundownPlaylistInfoFromRundown(
 	if (currentRundown.playlistIdIsSetInSofie) {
 		playlistId = currentRundown.playlistId
 	} else if (currentRundown.playlistExternalId) {
-		playlistId = getPlaylistIdFromExternalId(currentRundown.playlistExternalId)
+		playlistId = getPlaylistIdFromExternalId(studio._id, currentRundown.playlistExternalId)
 	}
 
 	if (playlistId) {
@@ -321,7 +321,7 @@ export function produceRundownPlaylistInfoFromRundown(
 		newPlaylistId = playlistId
 	} else {
 		playlistExternalId = unprotectString(currentRundown._id)
-		newPlaylistId = getPlaylistIdFromExternalId(playlistExternalId)
+		newPlaylistId = getPlaylistIdFromExternalId(studio._id, playlistExternalId)
 	}
 
 	const existingPlaylist = RundownPlaylists.findOne(newPlaylistId)
