@@ -96,7 +96,12 @@ export class CustomLayerItemRenderer<
 
 	renderOverflowTimeLabel() {
 		const overflowTime = this.doesOverflowTime()
-		if (overflowTime !== false) {
+		if (
+			overflowTime !== false &&
+			(!this.props.part.instance.part.autoNext ||
+				this.props.piece.instance.adLibSourceId !== undefined ||
+				this.props.piece.instance.dynamicallyInserted)
+		) {
 			return (
 				<div className="segment-timeline__piece__label label-overflow-time">
 					{RundownUtils.formatDiffToTimecode(overflowTime, true, false, true)}
