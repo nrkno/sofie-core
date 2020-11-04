@@ -11,9 +11,11 @@ import { PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimeli
 import { SourceLayerItemContainer } from './SourceLayerItemContainer'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { unprotectString } from '../../../lib/lib'
+import { Studio } from '../../../lib/collections/Studios'
 
 interface IProps {
 	playlist: RundownPlaylist
+	studio: Studio
 	part?: PartUi
 	outputGroups?: {
 		[key: string]: IOutputLayerUi
@@ -57,7 +59,7 @@ export const SegmentNextPreview = withTranslation()(
 												this.props.part && (
 													<SourceLayerItemContainer
 														key={unprotectString(piece.instance._id)}
-														{...this.props}
+														studio={this.props.studio}
 														// The following code is fine, just withTracker HOC messing with available props
 														isLiveLine={false}
 														isNextLine={false}
