@@ -2,7 +2,7 @@
 
 exports[`Test recieved mos ingest payloads mosRoCreate 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -151,7 +151,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
@@ -283,7 +283,7 @@ Array [
 
 exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -432,7 +432,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "studioId": "mockStudio4",
@@ -564,7 +564,7 @@ exports[`Test recieved mos ingest payloads mosRoDelete 4`] = `Array []`;
 
 exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -714,7 +714,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -858,7 +858,7 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 5`] = `Arr
 
 exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -1008,7 +1008,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -1141,7 +1141,7 @@ Array [
 
 exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -1290,7 +1290,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -1423,7 +1423,7 @@ Array [
 
 exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -1573,7 +1573,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -1673,7 +1673,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 5`] 
 
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -1823,7 +1823,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -1968,7 +1968,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 5`] = 
 
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -2118,7 +2118,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -2271,7 +2271,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 5`] = `
 
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to end 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -2421,7 +2421,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -2556,7 +2556,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
 
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -2706,7 +2706,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -2841,7 +2841,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 5`] = 
 
 exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -2991,7 +2991,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -3262,7 +3262,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -3398,7 +3398,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 4`] = `
 
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -3548,7 +3548,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -3675,7 +3675,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
 
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -3825,7 +3825,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -3984,7 +3984,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
 
 exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same segment 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -4134,7 +4134,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
@@ -4270,7 +4270,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
 
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 1`] = `
 Object {
-  "_id": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "currentPartInstanceId": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "name": "All effect1 into clip combinations",
@@ -4420,7 +4420,7 @@ Object {
   "notes": Array [],
   "organizationId": null,
   "peripheralDeviceId": "mockDevice5",
-  "playlistId": "h38jMY5_Jcyi8hF1IHbVJW2MYMA_",
+  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "showStyleBaseId": "randomId9000",
   "showStyleVariantId": "randomId9001",
   "status": "BUSY",
