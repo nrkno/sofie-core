@@ -420,12 +420,15 @@ export const AdLibPanelToolbar = withTranslation()(
 
 export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
+	sourceLayer?: ISourceLayer
 	isGlobal?: boolean
 	isHidden?: boolean
 	isSticky?: boolean
 	isAction?: boolean
 	isClearSourceLayer?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
+	contentMetaData?: any
+	message?: string | null
 }
 
 export interface AdlibSegmentUi extends DBSegment {

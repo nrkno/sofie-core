@@ -32,6 +32,7 @@ interface ISourceLayerPropsBase {
 	key: string
 	outputLayer: IOutputLayerUi
 	playlist: RundownPlaylist
+	studio: Studio
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
@@ -121,6 +122,7 @@ class SourceLayer extends SourceLayerBase<ISourceLayerProps> {
 							scrollLeft={this.props.scrollLeft}
 							scrollWidth={this.props.scrollWidth}
 							playlist={this.props.playlist}
+							studio={this.props.studio}
 							followLiveLine={this.props.followLiveLine}
 							isLiveLine={this.props.isLiveLine}
 							isNextLine={this.props.isNextLine}
@@ -172,9 +174,16 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 					.map((piece) => {
 						return (
 							<SourceLayerItemContainer
-								key={piece.instance._id}
-								{..._.omit(this.props, 'key')}
-								// The following code is fine, just withTracker HOC messing with available props
+								key={unprotectString(piece.instance._id)}
+								studio={this.props.studio}
+								playlist={this.props.playlist}
+								followLiveLine={this.props.followLiveLine}
+								isLiveLine={this.props.isLiveLine}
+								isNextLine={this.props.isNextLine}
+								liveLineHistorySize={this.props.liveLineHistorySize}
+								livePosition={this.props.livePosition}
+								outputGroupCollapsed={this.props.outputGroupCollapsed}
+								onFollowLiveLine={this.props.onFollowLiveLine}
 								onClick={this.props.onPieceClick}
 								onDoubleClick={this.props.onPieceDoubleClick}
 								mediaPreviewUrl={this.props.mediaPreviewUrl}
@@ -216,6 +225,7 @@ class FlattenedSourceLayers extends SourceLayerBase<IFlattenedSourceLayerProps> 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	playlist: RundownPlaylist
+	studio: Studio
 	segment: SegmentUi
 	part: PartUi
 	mediaPreviewUrl: string
@@ -253,7 +263,20 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 						return (
 							<SourceLayer
 								key={sourceLayer._id}
-								{...this.props}
+								followLiveLine={this.props.followLiveLine}
+								isLiveLine={this.props.isLiveLine}
+								isNextLine={this.props.isNextLine}
+								liveLineHistorySize={this.props.liveLineHistorySize}
+								livePosition={this.props.livePosition}
+								mediaPreviewUrl={this.props.mediaPreviewUrl}
+								relative={this.props.relative}
+								scrollLeft={this.props.scrollLeft}
+								scrollWidth={this.props.scrollWidth}
+								studio={this.props.studio}
+								onContextMenu={this.props.onContextMenu}
+								onFollowLiveLine={this.props.onFollowLiveLine}
+								onPieceClick={this.props.onPieceClick}
+								onPieceDoubleClick={this.props.onPieceDoubleClick}
 								layer={sourceLayer}
 								playlist={this.props.playlist}
 								outputLayer={this.props.layer}
@@ -272,7 +295,20 @@ class OutputGroup extends React.PureComponent<IOutputGroupProps> {
 				return (
 					<FlattenedSourceLayers
 						key={this.props.layer._id + '_flattened'}
-						{...this.props}
+						followLiveLine={this.props.followLiveLine}
+						isLiveLine={this.props.isLiveLine}
+						isNextLine={this.props.isNextLine}
+						liveLineHistorySize={this.props.liveLineHistorySize}
+						livePosition={this.props.livePosition}
+						mediaPreviewUrl={this.props.mediaPreviewUrl}
+						relative={this.props.relative}
+						scrollLeft={this.props.scrollLeft}
+						scrollWidth={this.props.scrollWidth}
+						studio={this.props.studio}
+						onContextMenu={this.props.onContextMenu}
+						onFollowLiveLine={this.props.onFollowLiveLine}
+						onPieceClick={this.props.onPieceClick}
+						onPieceDoubleClick={this.props.onPieceDoubleClick}
 						layers={this.props.layer.sourceLayers.filter((i) => !i.isHidden).sort((a, b) => a._rank - b._rank)}
 						playlist={this.props.playlist}
 						outputLayer={this.props.layer}
@@ -672,6 +708,7 @@ export const SegmentTimelinePart = withTranslation()(
 										segment={this.props.segment}
 										part={part}
 										playlist={this.props.playlist}
+										studio={this.props.studio}
 										startsAt={SegmentTimelinePart0.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
 										duration={SegmentTimelinePart0.getPartDuration(this.props, this.state.liveDuration)}
 										isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
