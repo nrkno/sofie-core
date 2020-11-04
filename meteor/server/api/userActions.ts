@@ -776,6 +776,14 @@ export function moveRundown(
 		ServerRundownAPI.moveRundown(context, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder)
 	)
 }
+export function restoreRundownOrder(
+	context: MethodContext,
+	playlistId: RundownPlaylistId
+): ClientAPI.ClientResponse<void> {
+	check(playlistId, String)
+
+	return ClientAPI.responseSuccess(ServerRundownAPI.restoreRundownOrder(context, playlistId))
+}
 
 export function traceAction<T>(description: string, fn: (...args: any[]) => T, ...args: any[]) {
 	const transaction = profiler.startTransaction(description, 'userAction')
@@ -1052,6 +1060,9 @@ class ServerUserActionAPI extends MethodContextAPI implements NewUserActionAPI {
 		rundownsIdsInPlaylistInOrder: RundownId[]
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return makePromise(() => moveRundown(this, rundownId, intoPlaylistId, rundownsIdsInPlaylistInOrder))
+	}
+	restoreRundownOrder(_userEvent: string, playlistId: RundownPlaylistId): Promise<ClientAPI.ClientResponse<void>> {
+		return makePromise(() => restoreRundownOrder(this, playlistId))
 	}
 }
 registerClassToMeteorMethods(
