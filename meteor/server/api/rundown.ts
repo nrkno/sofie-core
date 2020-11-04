@@ -841,6 +841,13 @@ export namespace ServerRundownAPI {
 		const studio = Studios.findOne(rundown.studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio "${rundown.studioId}" of rundown "${rundown._id}" not found!`)
 
+		if (intoPlaylist && intoPlaylist.studioId !== rundown.studioId) {
+			throw new Meteor.Error(
+				404,
+				`Cannot move Rundown "${rundown._id}" into playlist "${intoPlaylist._id}" because they are in different studios ("${intoPlaylist.studioId}", "${rundown.studioId}")!`
+			)
+		}
+
 		// Do a check if we're allowed to move out of currently playing playlist:
 		if (oldPlaylist) {
 			if (!allowedToMoveRundownOutOfPlaylist(oldPlaylist, rundown)) {
