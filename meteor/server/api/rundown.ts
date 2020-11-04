@@ -911,8 +911,7 @@ export namespace ServerRundownAPI {
 			// Move into a new playlist:
 
 			const playlist = defaultPlaylistForRundown(rundown, studio)
-
-			playlist._id = RundownPlaylists.insert(playlist)
+			RundownPlaylists.insert(playlist)
 
 			Rundowns.update(rundown._id, {
 				$set: {
