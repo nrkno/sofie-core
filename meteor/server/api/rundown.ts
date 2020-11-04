@@ -159,8 +159,6 @@ export function allowedToMoveRundownOutOfPlaylist(playlist: RundownPlaylist, run
 	)
 }
 
-export function generatePlaylistIdFromExternalId(playlistExternalId: string) {}
-
 export interface RundownPlaylistAndOrder {
 	rundownPlaylist: DBRundownPlaylist
 	order: BlueprintResultOrderedRundowns
