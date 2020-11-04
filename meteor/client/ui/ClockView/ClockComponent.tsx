@@ -6,7 +6,7 @@ import { RundownPlaylistId, RundownPlaylist, RundownPlaylists } from '../../../l
 import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { RundownId, Rundowns } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming'
+import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { extendMandadory, literal, getCurrentTime } from '../../../lib/lib'
 import { findPartInstanceOrWrapToTemporary } from '../../../lib/collections/PartInstances'

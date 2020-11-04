@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { withTiming, WithTiming } from '../RundownView/RundownTiming'
+import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { RundownUtils } from '../../lib/rundown'
 import ClassNames from 'classnames'

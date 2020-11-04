@@ -5,7 +5,8 @@ import * as _ from 'underscore'
 
 import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 
-import { RundownTimingProvider, WithTiming } from '../RundownView/RundownTiming'
+import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
+import { WithTiming } from '../RundownView/RundownTiming/withTiming'
 
 import { objectPathGet } from '../../../lib/lib'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'

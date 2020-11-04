@@ -20,7 +20,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
-import { RundownTimingProvider } from '../RundownView/RundownTiming'
+import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
 
 interface PrompterConfig {
