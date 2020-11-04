@@ -897,9 +897,7 @@ export namespace ServerRundownAPI {
 					$set: {
 						playlistId: intoPlaylist._id,
 						playlistIdIsSetInSofie: true,
-					},
-					$unset: {
-						_rank: 1, // The rank will be set later, in updateRundownsInPlaylist
+						_rank: 99999, // The rank will be set later, in updateRundownsInPlaylist
 					},
 				})
 				rundown.playlistId = intoPlaylist._id
