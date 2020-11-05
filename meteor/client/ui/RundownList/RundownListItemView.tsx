@@ -39,6 +39,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 	} = props
 
 	const classNames = props.classNames.slice()
+	classNames.push('rundown-list-item')
 	if (props.isDragLayer) {
 		classNames.push('dragging')
 	}
@@ -55,6 +56,7 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 				)}
 				<Link to={playlistViewUrl}>{props.rundown.name}</Link>
 			</span>
+			<span className="rundown-list-item__problems rundown-list-item__text">{rundown.status}</span>
 			<span className="rundown-list-item__showStyle rundown-list-item__text">
 				{showStyleBaseURL ? <Link to={showStyleBaseURL}>{showStyle.name}</Link> : showStyle.name}
 			</span>
@@ -66,7 +68,6 @@ export default withTranslation()(function RundownListItemView(props: Translated<
 					</>
 				)}
 			</span>
-			<span className="rundown-list-item__status rundown-list-item__text">{rundown.status}</span>
 			<span className="rundown-list-item__duration rundown-list-item__text">
 				{rundown.expectedDuration &&
 					RundownUtils.formatDiffToTimecode(rundown.expectedDuration, false, true, true, false, true)}

@@ -305,11 +305,13 @@ export const RundownPlaylistUi = DropTarget(
 					this.swapRundownOrder(a, b)
 				}
 
-				if (playlist.rundowns.length === 1) {
-					// for the time being, playlists with only one rundown aren't considered
+				if (playlist.rundowns.length === 1 && playlist.name === playlist.rundowns[0].name) {
+					// For the time being, playlists with only one rundown aren't considered
 					// playlists. Therefore they are rendered without playlist markup/styling
 					// and also won't be connected as drop targets (preventing other rundowns
 					// from being dropped onto them and being added to them)
+					// An exception is made for named playlists (which come from ENPS/blueprints,
+					// and therefore should be preserved)
 					return (
 						<>
 							<RundownListItem
@@ -317,6 +319,7 @@ export const RundownPlaylistUi = DropTarget(
 								rundown={playlist.rundowns[0]}
 								playlistViewUrl={playlistViewURL}
 								swapRundownOrder={handleRundownSwap}
+								playlistId={playlist._id}
 							/>
 							{playbackProgressBar}
 						</>
@@ -329,9 +332,9 @@ export const RundownPlaylistUi = DropTarget(
 						<RundownListItem
 							key={unprotectString(rundown._id)}
 							rundown={rundown}
-							viewLinks={playlistViewLinks}
 							playlistViewUrl={playlistViewURL}
 							swapRundownOrder={handleRundownSwap}
+							playlistId={playlist._id}
 						/>
 					) : null
 				})
@@ -352,7 +355,7 @@ export const RundownPlaylistUi = DropTarget(
 							</span>
 							<span className="rundown-list-item__showStyle">{playlistViewLinks}</span>
 							<span className="rundown-list-item__airTime"></span>
-							<span className="rundown-list-item__status"></span>
+							<span className="rundown-list-item__problems"></span>
 							<span className="rundown-list-item__duration">{expectedDuration}</span>
 							<span className="rundown-list-item__created">
 								<MomentFromNow>{playlist.created}</MomentFromNow>
