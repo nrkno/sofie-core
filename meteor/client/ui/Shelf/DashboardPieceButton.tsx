@@ -28,9 +28,12 @@ import { PieceId, PieceGeneric } from '../../../lib/collections/Pieces'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInput'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
+import { Studio } from '../../../lib/collections/Studios'
+import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 
 export interface IDashboardButtonProps {
-	adLibListItem: IAdLibListItem
+	piece: IAdLibListItem
+	studio: Studio | undefined
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
@@ -49,56 +52,11 @@ export interface IDashboardButtonProps {
 export const DEFAULT_BUTTON_WIDTH = 6.40625
 export const DEFAULT_BUTTON_HEIGHT = 5.625
 
-export interface IDashboardButtonTrackedProps {
-	status: RundownAPI.PieceStatusCode | undefined
-	metadata: MediaObject | null
-}
-
-export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
-	Translated<IDashboardButtonProps & IDashboardButtonTrackedProps> & T
-> {
+export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<Translated<IDashboardButtonProps> & T> {
 	private objId: string
 
 	constructor(props: IDashboardButtonProps) {
 		super(props)
-	}
-
-	componentDidMount() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
-	}
-
-	componentDidUpdate() {
-		Meteor.defer(() => {
-			this.updateMediaObjectSubscription()
-		})
-	}
-
-	updateMediaObjectSubscription() {
-		if (this.props.adLibListItem && this.props.layer) {
-			const piece = (this.props.adLibListItem as any) as AdLibPieceUi
-			let objId: string | undefined = undefined
-
-			if (piece.content && piece.content.fileName) {
-				switch (this.props.layer.type) {
-					case SourceLayerType.VT:
-						objId = (piece.content as VTContent).fileName.toUpperCase()
-						break
-					case SourceLayerType.LIVE_SPEAK:
-						objId = (piece.content as LiveSpeakContent).fileName.toUpperCase()
-						break
-				}
-			}
-
-			if (objId && objId !== this.objId) {
-				// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-				this.objId = objId
-				this.subscribe(PubSub.mediaObjects, this.props.playlist.studioId, {
-					mediaId: this.objId,
-				})
-			}
-		}
 	}
 
 	getPreviewUrl = (): string | undefined => {
@@ -114,7 +72,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	renderVTLiveSpeak(renderThumbnail?: boolean) {
 		if (this.props.metadata) {
 			const previewUrl = this.getPreviewUrl()
-			const adLib = (this.props.adLibListItem as any) as AdLibPieceUi
+			const adLib = (this.props.piece as any) as AdLibPieceUi
 			const vtContent = adLib.content as VTContent | undefined
 			return (
 				<React.Fragment>
@@ -139,7 +97,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	renderSplits(renderThumbnail: boolean = false) {
-		const splitAdLib = this.props.adLibListItem
+		const splitAdLib = this.props.piece
 		if (splitAdLib && splitAdLib.content) {
 			const splitContent = splitAdLib.content as SplitsContent
 			return (
@@ -164,19 +122,19 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		const hasMediaInfo =
 			this.props.layer &&
 			this.props.layer.type === SourceLayerType.VT &&
-			this.props.metadata &&
-			this.props.metadata.mediainfo
+			this.props.piece.metadata &&
+			this.props.piece.metadata.mediainfo
 		return (
 			<div
 				className={ClassNames(
 					'dashboard-panel__panel__button',
 					{
-						invalid: this.props.adLibListItem.invalid,
-						floated: this.props.adLibListItem.floated,
+						invalid: this.props.piece.invalid,
+						floated: this.props.piece.floated,
 
-						'source-missing': this.props.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.status === RundownAPI.PieceStatusCode.UNKNOWN,
+						'source-missing': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_MISSING,
+						'source-broken': this.props.piece.status === RundownAPI.PieceStatusCode.SOURCE_BROKEN,
+						'unknown-state': this.props.piece.status === RundownAPI.PieceStatusCode.UNKNOWN,
 
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,
@@ -199,10 +157,8 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							  (this.props.heightScale as number) * DEFAULT_BUTTON_HEIGHT + 'em'
 							: undefined,
 				}}
-				onClick={(e) =>
-					this.props.onToggleAdLib(this.props.adLibListItem, e.shiftKey || !!this.props.queueAllAdlibs, e)
-				}
-				data-obj-id={this.props.adLibListItem._id}>
+				onClick={(e) => this.props.onToggleAdLib(this.props.piece, e.shiftKey || !!this.props.queueAllAdlibs, e)}
+				data-obj-id={this.props.piece._id}>
 				{!this.props.layer
 					? null
 					: this.props.layer.type === SourceLayerType.VT || this.props.layer.type === SourceLayerType.LIVE_SPEAK
@@ -212,22 +168,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					? this.renderSplits(isList && this.props.showThumbnailsInList)
 					: null}
 				<span className="dashboard-panel__panel__button__label">
-					{isList && hasMediaInfo ? this.props.metadata!.mediainfo!.name : this.props.adLibListItem.name}
+					{isList && hasMediaInfo ? this.props.piece.metadata!.mediainfo!.name : this.props.piece.name}
 				</span>
 			</div>
 		)
 	}
 }
 
-export const DashboardPieceButton = translateWithTracker<IDashboardButtonProps, {}, IDashboardButtonTrackedProps>(
-	(props: IDashboardButtonProps) => {
-		const piece = (props.adLibListItem as any) as AdLibPieceUi
-
-		const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
-
-		return {
-			status,
-			metadata,
-		}
-	}
-)(DashboardPieceButtonBase)
+export const DashboardPieceButton = withMediaObjectStatus<IDashboardButtonProps, {}>()(DashboardPieceButtonBase)

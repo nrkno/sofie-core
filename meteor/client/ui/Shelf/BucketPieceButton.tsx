@@ -43,8 +43,8 @@ type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButt
 const buttonSource = {
 	beginDrag(props: IDashboardButtonPropsCombined, monitor: DragSourceMonitor, component: any) {
 		return {
-			id: props.adLibListItem._id,
-			originalIndex: props.findAdLib(props.adLibListItem._id).index,
+			id: props.piece._id,
+			originalIndex: props.findAdLib(props.piece._id).index,
 			bucketId: props.bucketId,
 		}
 	},
@@ -75,7 +75,7 @@ const buttonTarget = {
 
 	hover(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor, component: any) {
 		const { id: draggedId } = monitor.getItem()
-		const overId = props.adLibListItem._id
+		const overId = props.piece._id
 
 		if (draggedId !== overId) {
 			const { index: overIndex } = props.findAdLib(overId)
@@ -84,7 +84,7 @@ const buttonTarget = {
 	},
 
 	drop(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor) {
-		const { index } = props.findAdLib(props.adLibListItem._id)
+		const { index } = props.findAdLib(props.piece._id)
 
 		return {
 			index,
@@ -130,7 +130,7 @@ export const BucketPieceButton = translateWithTracker<
 	{},
 	IDashboardButtonTrackedProps
 >((props: IDashboardButtonProps) => {
-	const piece = (props.adLibListItem as any) as AdLibPieceUi
+	const piece = (props.piece as any) as AdLibPieceUi
 
 	const { status, metadata } = checkPieceContentStatus(piece, props.layer, props.playlist.getStudio().settings)
 

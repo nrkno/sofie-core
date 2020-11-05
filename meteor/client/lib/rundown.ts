@@ -30,6 +30,7 @@ import { PartId } from '../../lib/collections/Parts'
 import { processAndPrunePieceInstanceTimings } from '../../lib/rundown/infinites'
 import { createPieceGroupAndCap } from '../../lib/rundown/pieces'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
+import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 
 interface PieceGroupMetadata {
 	id: PieceId
@@ -662,7 +663,7 @@ export namespace RundownUtils {
 		// get the part immediately after the last segment
 	}
 
-	export function isPieceInstance(piece: PieceUi | AdLibPieceUi): piece is PieceUi {
+	export function isPieceInstance(piece: IAdLibListItem | PieceUi | AdLibPieceUi): piece is PieceUi {
 		if (piece['instance'] && piece['name'] === undefined) {
 			return true
 		}
@@ -670,6 +671,15 @@ export namespace RundownUtils {
 	}
 
 	export function isAdLibPiece(piece: PieceUi | AdLibPieceUi): piece is AdLibPieceUi {
+		if (piece['instance'] || piece['name'] === undefined) {
+			return false
+		}
+		return true
+	}
+
+	export function isAdLibPieceOrAdLibListItem(
+		piece: IAdLibListItem | PieceUi | AdLibPieceUi
+	): piece is IAdLibListItem | AdLibPieceUi {
 		if (piece['instance'] || piece['name'] === undefined) {
 			return false
 		}

@@ -614,7 +614,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													key={unprotectString(adlib._id)}
 													holdToDisplay={contextMenuHoldToDisplayTime()}>
 													<BucketPieceButton
-														adLibListItem={(adlib as any) as IAdLibListItem}
+														piece={(adlib as any) as IAdLibListItem}
+														studio={this.props.studio}
 														bucketId={adlib.bucketId}
 														layer={this.state.sourceLayers[adlib.sourceLayerId]}
 														outputLayer={this.state.outputLayers[adlib.outputLayerId]}

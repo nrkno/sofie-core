@@ -16,7 +16,7 @@ import { DashboardLayoutFilter } from '../../../lib/collections/RundownLayouts'
 import { unprotectString, getCurrentTime } from '../../../lib/lib'
 import {
 	IAdLibPanelProps,
-	IAdLibPanelTrackedProps,
+	AdLibFetchAndFilterProps,
 	fetchAndFilter,
 	AdLibPieceUi,
 	matchFilter,
@@ -51,7 +51,7 @@ export interface IDashboardPanelProps {
 }
 
 export interface IDashboardPanelTrackedProps {
-	studio?: Studio
+	studio: Studio | undefined
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 	nextAdLibIds: PieceId[]
@@ -103,12 +103,12 @@ export function dashboardElementPosition(el: DashboardPositionableElement): Reac
 }
 
 export class DashboardPanelInner extends MeteorReactComponent<
-	Translated<IAdLibPanelProps & IDashboardPanelProps & IAdLibPanelTrackedProps & IDashboardPanelTrackedProps>,
+	Translated<IAdLibPanelProps & IDashboardPanelProps & AdLibFetchAndFilterProps & IDashboardPanelTrackedProps>,
 	IState
 > {
 	usedHotkeys: Array<string> = []
 
-	constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+	constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
 		super(props)
 
 		this.state = {
@@ -190,7 +190,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		this.refreshKeyboardHotkeys()
 	}
 
-	componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
+	componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps) {
 		mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 		this.usedHotkeys.length = 0
 
@@ -507,7 +507,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 									return (
 										<DashboardPieceButton
 											key={unprotectString(adLibPiece._id)}
-											adLibListItem={adLibPiece}
+											piece={adLibPiece}
+											studio={this.props.studio}
 											layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
 											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 											onToggleAdLib={filter.displayTakeButtons ? this.onSelectAdLib : this.onToggleAdLib}
@@ -736,7 +737,7 @@ export function isAdLibNext(
 export const DashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
 	IState,
-	IAdLibPanelTrackedProps & IDashboardPanelTrackedProps
+	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps>) => {
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(

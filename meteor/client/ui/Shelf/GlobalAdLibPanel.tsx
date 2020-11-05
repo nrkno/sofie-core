@@ -44,6 +44,7 @@ import { AdLibActions } from '../../../lib/collections/AdLibActions'
 import { ShelfTabs } from './Shelf'
 import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { ReactiveMap } from '../../../lib/reactiveMap'
+import { Studio } from '../../../lib/collections/Studios'
 
 interface IListViewPropsHeader {
 	onSelectAdLib: (piece: IAdLibListItem) => void
@@ -54,6 +55,7 @@ interface IListViewPropsHeader {
 	showStyleBase: ShowStyleBase
 	rundownAdLibs: Array<AdLibPieceUi>
 	playlist: RundownPlaylist
+	studio: Studio
 }
 
 interface IListViewStateHeader {
@@ -106,9 +108,8 @@ const AdLibListView = withTranslation()(
 			const { t } = this.props
 			const itemList: (IAdLibListItem & {
 				isSticky?: boolean
-				layer?: ISourceLayer
-				sourceLayerId?: string
-				outputLayerId?: string
+				sourceLayer?: ISourceLayer
+				outputLayer?: IOutputLayer
 			})[] = []
 
 			return (
@@ -122,12 +123,13 @@ const AdLibListView = withTranslation()(
 							this.props.showStyleBase.sourceLayers
 								.filter((i) => i.isSticky)
 								.map((layer) =>
-									literal<IAdLibListItem & { layer: ISourceLayer; isSticky: boolean }>({
+									literal<IAdLibListItem & { souceLayer?: ISourceLayer; isSticky: boolean }>({
 										_id: protectString(layer._id),
 										hotkey: layer.activateStickyKeyboardHotkey ? layer.activateStickyKeyboardHotkey.split(',')[0] : '',
 										name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
 										status: RundownAPI.PieceStatusCode.UNKNOWN,
-										layer: layer,
+										sourceLayer: layer,
+										outputLayer: undefined,
 										lifespan: PieceLifespan.WithinPart,
 										isSticky: true,
 										sourceLayerId: layer._id,
@@ -140,45 +142,43 @@ const AdLibListView = withTranslation()(
 							if (!item.isHidden) {
 								if (
 									item.isSticky &&
-									item.layer &&
+									item.sourceLayer &&
 									(!this.props.searchFilter ||
 										item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
 											key={unprotectString(item._id)}
-											adLibListItem={item}
+											piece={item}
+											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
 													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 													this.props.selectedPiece._id === item._id) ||
 												false
 											}
-											outputLayer={undefined}
-											layer={item.layer}
 											onToggleAdLib={this.props.onToggleSticky}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
 										/>
 									)
 								} else if (
-									item.sourceLayerId &&
-									item.outputLayerId &&
+									item.sourceLayer &&
+									item.outputLayer &&
 									(!this.props.searchFilter ||
 										item.name.toUpperCase().indexOf(this.props.searchFilter.toUpperCase()) >= 0)
 								) {
 									return (
 										<AdLibListItem
 											key={unprotectString(item._id)}
-											adLibListItem={item}
+											piece={item}
+											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
 													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 													this.props.selectedPiece._id === item._id) ||
 												false
 											}
-											layer={this.state.sourceLayers[item.sourceLayerId]}
-											outputLayer={this.state.outputLayers[item.outputLayerId]}
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
@@ -191,15 +191,14 @@ const AdLibListView = withTranslation()(
 									return (
 										<AdLibListItem
 											key={unprotectString(item._id)}
-											adLibListItem={item}
+											piece={item}
+											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
 													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 													this.props.selectedPiece._id === item._id) ||
 												false
 											}
-											layer={undefined}
-											outputLayer={undefined}
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
@@ -324,6 +323,7 @@ interface ITrackedProps {
 	sourceLayerLookup: { [id: string]: ISourceLayer }
 	rundownAdLibs: Array<AdLibPieceUi>
 	currentRundown: Rundown | undefined
+	studio: Studio
 }
 
 export const GlobalAdLibHotkeyUseMap = new ReactiveMap<number>()
@@ -441,6 +441,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 		sourceLayerLookup,
 		rundownAdLibs,
 		currentRundown,
+		studio: props.playlist.getStudio(),
 	}
 })(
 	class GlobalAdLibPanel extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
@@ -715,6 +716,7 @@ export const GlobalAdLibPanel = translateWithTracker<IProps, IState, ITrackedPro
 						rundownAdLibs={this.props.rundownAdLibs}
 						searchFilter={this.state.filter}
 						playlist={this.props.playlist}
+						studio={this.props.studio}
 					/>
 				</React.Fragment>
 			)

@@ -9,11 +9,12 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
 import { checkPieceContentStatus } from '../../../lib/mediaObjects'
 import { Studio } from '../../../lib/collections/Studios'
+import { IAdLibListItem } from '../Shelf/AdLibListItem'
 
 type AnyPiece = {
-	piece: AdLibPieceUi | PieceUi | undefined
+	piece: IAdLibListItem | AdLibPieceUi | PieceUi | undefined
 	isLiveLine?: boolean
-	studio: Studio
+	studio: Studio | undefined
 }
 
 type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, state: IState) => React.Component<
@@ -30,6 +31,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			private objId: string
 			private overrides: Partial<IProps>
 			private destroyed: boolean
+			private subscription: Meteor.SubscriptionHandle | undefined
 
 			private updateMediaObjectSubscription() {
 				if (this.destroyed) return
@@ -47,10 +49,12 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 							break
 					}
 
-					if (objId && objId !== this.objId) {
+					if (this.subscription) this.subscription.stop()
+
+					if (objId && objId !== this.objId && this.props.studio) {
 						// if (this.mediaObjectSub) this.mediaObjectSub.stop()
 						this.objId = objId
-						this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
+						this.subscription = this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
 							mediaId: this.objId,
 						})
 					}
@@ -59,15 +63,16 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 			private shouldDataTrackerUpdate(prevProps: IProps): boolean {
 				if (this.props.piece !== prevProps.piece) return true
+				if (this.props.studio !== prevProps.studio) return true
 				if (this.props.isLiveLine !== prevProps.isLiveLine) return true
 				return false
 			}
 
-			private static unwrapPieceInstance(piece: AdLibPieceUi | PieceUi) {
-				if (RundownUtils.isAdLibPiece(piece)) {
-					return piece
-				} else {
+			private static unwrapPieceInstance(piece: IAdLibListItem | AdLibPieceUi | PieceUi) {
+				if (RundownUtils.isPieceInstance(piece)) {
 					return piece.instance.piece
+				} else {
+					return piece
 				}
 			}
 
@@ -75,18 +80,18 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 				if (this.destroyed) return
 
 				this.statusComp = this.autorun(() => {
-					const { piece } = this.props
+					const { piece, studio } = this.props
 					this.overrides = {}
 					const overrides = this.overrides
 
 					// Check item status
-					if (piece && piece.sourceLayer) {
+					if (piece && piece.sourceLayer && studio) {
 						const { metadata, status, contentDuration, message } = checkPieceContentStatus(
 							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
 							piece.sourceLayer,
-							this.props.studio.settings
+							studio.settings
 						)
-						if (RundownUtils.isAdLibPiece(piece!)) {
+						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece!)) {
 							if (status !== piece.status || metadata) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi

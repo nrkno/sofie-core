@@ -55,6 +55,7 @@ import {
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { GlobalAdLibHotkeyUseMap } from './GlobalAdLibPanel'
+import { Studio } from '../../../lib/collections/Studios'
 
 interface IListViewPropsHeader {
 	uiSegments: Array<AdlibSegmentUi>
@@ -68,6 +69,7 @@ interface IListViewPropsHeader {
 	filter: RundownLayoutFilter | undefined
 	rundownAdLibs?: Array<AdLibPieceUi>
 	playlist: RundownPlaylist
+	studio: Studio
 }
 
 interface IListViewStateHeader {
@@ -244,15 +246,14 @@ const AdLibListView = withTranslation()(
 							.map((adLibPiece: AdLibPieceUi) => (
 								<AdLibListItem
 									key={unprotectString(adLibPiece._id)}
-									adLibListItem={adLibPiece}
+									piece={adLibPiece}
+									studio={this.props.studio}
 									selected={
 										(this.props.selectedPiece &&
 											RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 											this.props.selectedPiece._id === adLibPiece._id) ||
 										false
 									}
-									layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
-									outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 									onToggleAdLib={this.props.onToggleAdLib}
 									onSelectAdLib={this.props.onSelectAdLib}
 									playlist={this.props.playlist}
@@ -298,15 +299,14 @@ const AdLibListView = withTranslation()(
 									.map((adLibPiece: AdLibPieceUi) => (
 										<AdLibListItem
 											key={unprotectString(adLibPiece._id)}
-											adLibListItem={adLibPiece}
+											piece={adLibPiece}
+											studio={this.props.studio}
 											selected={
 												(this.props.selectedPiece &&
 													RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
 													this.props.selectedPiece._id === adLibPiece._id) ||
 												false
 											}
-											layer={this.state.sourceLayers[adLibPiece.sourceLayerId]}
-											outputLayer={this.state.outputLayers[adLibPiece.outputLayerId]}
 											onToggleAdLib={this.props.onToggleAdLib}
 											onSelectAdLib={this.props.onSelectAdLib}
 											playlist={this.props.playlist}
@@ -421,6 +421,7 @@ export const AdLibPanelToolbar = withTranslation()(
 export interface AdLibPieceUi extends AdLibPiece {
 	hotkey?: string
 	sourceLayer?: ISourceLayer
+	outputLayer?: IOutputLayer
 	isGlobal?: boolean
 	isHidden?: boolean
 	isSticky?: boolean
@@ -462,14 +463,22 @@ interface IState {
 
 type SourceLayerLookup = { [id: string]: ISourceLayer }
 
-export interface IAdLibPanelTrackedProps {
+export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
 	sourceLayerLookup: SourceLayerLookup
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
-function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction): AdLibPieceUi {
+interface IAdLibPanelTrackedProps extends AdLibFetchAndFilterProps {
+	studio: Studio
+}
+
+function actionToAdLibPieceUi(
+	action: AdLibAction | RundownBaselineAdLibAction,
+	sourceLayers: _.Dictionary<ISourceLayer>,
+	outputLayers: _.Dictionary<IOutputLayer>
+): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
 	let content: Omit<SomeContent, 'timelineObject'> | undefined = undefined
@@ -488,6 +497,8 @@ function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction):
 		expectedDuration: 0,
 		externalId: unprotectString(action._id),
 		rundownId: action.rundownId,
+		sourceLayer: sourceLayers[sourceLayerId],
+		outputLayer: outputLayers[outputLayerId],
 		sourceLayerId,
 		outputLayerId,
 		_rank: action.display._rank || 0,
@@ -500,10 +511,11 @@ function actionToAdLibPieceUi(action: AdLibAction | RundownBaselineAdLibAction):
 	})
 }
 
-export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanelTrackedProps {
+export function fetchAndFilter(props: Translated<IAdLibPanelProps>): AdLibFetchAndFilterProps {
 	const { t } = props
 
 	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
+	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
 
 	// a hash to store various indices of the used hotkey lists
 	let sourceHotKeyUse: { [key: string]: number } = GlobalAdLibHotkeyUseMap.getAll()
@@ -618,7 +630,11 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 			const segment = uiPartSegmentMap.get(piece.partId!)
 
 			if (segment) {
-				segment.pieces.push(piece)
+				segment.pieces.push({
+					...piece,
+					sourceLayer: sourceLayerLookup[piece.sourceLayerId],
+					outputLayer: outputLayerLookup[piece.outputLayerId],
+				})
 			}
 		})
 
@@ -640,7 +656,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 			)
 				.fetch()
 				.map((action) => {
-					return [action.partId, actionToAdLibPieceUi(action)]
+					return [action.partId, actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)]
 				}),
 		'adLibActions',
 		rundownIds,
@@ -737,6 +753,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 									lifespan: PieceLifespan.WithinPart,
 									externalId: layer._id,
 									rundownId: protectString(''),
+									sourceLayer: layer,
+									outputLayer: undefined,
 									sourceLayerId: layer._id,
 									outputLayerId: '',
 									_rank: 0,
@@ -761,7 +779,7 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 								}
 							)
 								.fetch()
-								.map((action) => actionToAdLibPieceUi(action)),
+								.map((action) => actionToAdLibPieceUi(action, sourceLayerLookup, outputLayerLookup)),
 						'globalAdLibActions',
 						rundownIds
 					)
@@ -823,6 +841,8 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 								lifespan: PieceLifespan.WithinPart,
 								externalId: layer._id,
 								rundownId: protectString(''),
+								sourceLayer: layer,
+								outputLayer: undefined,
 								sourceLayerId: layer._id,
 								outputLayerId: '',
 								_rank: 0,
@@ -846,8 +866,11 @@ export function fetchAndFilter(props: Translated<IAdLibPanelProps>): IAdLibPanel
 
 export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibPanelTrackedProps>(
 	(props: Translated<IAdLibPanelProps>) => {
-		const d = fetchAndFilter(props)
-		return d
+		const data = fetchAndFilter(props)
+		return {
+			...data,
+			studio: props.playlist.getStudio(),
+		}
 	},
 	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
@@ -856,7 +879,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 	class AdLibPanel extends MeteorReactComponent<Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>, IState> {
 		usedHotkeys: Array<string> = []
 
-		constructor(props: Translated<IAdLibPanelProps & IAdLibPanelTrackedProps>) {
+		constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
 			super(props)
 
 			this.state = {
@@ -878,7 +901,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 			window.addEventListener(RundownViewEvents.revealInShelf, this.onRevealInShelf)
 		}
 
-		componentDidUpdate(prevProps: IAdLibPanelProps & IAdLibPanelTrackedProps) {
+		componentDidUpdate(prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps) {
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keyup', this.props.hotkeyGroup)
 			mousetrapHelper.unbindAll(this.usedHotkeys, 'keydown', this.props.hotkeyGroup)
 			this.usedHotkeys.length = 0
@@ -1121,6 +1144,7 @@ export const AdLibPanel = translateWithTracker<IAdLibPanelProps, IState, IAdLibP
 						searchFilter={this.state.searchFilter}
 						filter={this.props.filter as RundownLayoutFilter}
 						playlist={this.props.playlist}
+						studio={this.props.studio}
 						noSegments={!withSegments}
 					/>
 				</React.Fragment>
