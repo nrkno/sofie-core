@@ -12,12 +12,12 @@ export class MidiPedalController extends ControllerAbstract {
 	private prompterView: PrompterViewInner
 	private midiInput: Input | undefined
 
-	private readonly rangeRevMin = 0 // pedal "all back" position, the max-reverse-position
-	private readonly rangeNeutralMin = 35 // pedal "back" position where reverse-range transistions to the neutral range
-	private readonly rangeNeutralMax = 80 // pedal "front" position where scrolling starts, the 0 speed origin
-	private readonly rangeFwdMax = 127 // pedal "all front" position where scrolling is maxed out
-	private readonly speedMap = [1, 2, 3, 4, 5, 7, 9, 12, 17, 19, 30]
-	private readonly reverseSpeedMap = [10, 30, 50]
+	private rangeRevMin = 0 // pedal "all back" position, the max-reverse-position
+	private rangeNeutralMin = 35 // pedal "back" position where reverse-range transistions to the neutral range
+	private rangeNeutralMax = 80 // pedal "front" position where scrolling starts, the 0 speed origin
+	private rangeFwdMax = 127 // pedal "all front" position where scrolling is maxed out
+	private speedMap = [1, 2, 3, 4, 5, 7, 9, 12, 17, 19, 30]
+	private reverseSpeedMap = [10, 30, 50]
 
 	private updateSpeedHandle: number | null = null
 	private lastSpeed = 0
@@ -26,6 +26,13 @@ export class MidiPedalController extends ControllerAbstract {
 	constructor(view: PrompterViewInner) {
 		super(view)
 		this.prompterView = view
+
+		this.speedMap = view.configOptions.speedMap || this.speedMap
+		this.reverseSpeedMap = view.configOptions.reverseSpeedMap || this.reverseSpeedMap
+		this.rangeRevMin = view.configOptions.rangeRevMin || this.rangeRevMin
+		this.rangeNeutralMin = view.configOptions.rangeNeutralMin || this.rangeNeutralMin
+		this.rangeNeutralMax = view.configOptions.rangeNeutralMax || this.rangeNeutralMax
+		this.rangeFwdMax = view.configOptions.rangeFwdMax || this.rangeFwdMax
 
 		// validate range settings
 		// they need to be in sequence, or the logic will break

@@ -29,7 +29,12 @@ interface PrompterConfig {
 	followTake?: boolean
 	fontSize?: number
 	margin?: number
-	speedCurve?: number[]
+	speedMap?: number[]
+	reverseSpeedMap?: number[]
+	rangeRevMin?: number
+	rangeNeutralMin?: number
+	rangeNeutralMax?: number
+	rangeFwdMax?: number
 
 	marker?: 'center' | 'top' | 'bottom' | 'hide'
 	showMarker: boolean
@@ -96,11 +101,18 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			followTake: queryParams['followtake'] === undefined ? true : queryParams['followtake'] === '1',
 			fontSize: parseInt(firstIfArray(queryParams['fontsize']) as string, 10) || undefined,
 			margin: parseInt(firstIfArray(queryParams['margin']) as string, 10) || undefined,
-			speedCurve:
-				queryParams['speedcurve'] === undefined
+			speedMap:
+				queryParams['speedMap'] === undefined
 					? undefined
-					: new Array().concat(queryParams['speedcurve']).map((value) => parseInt(value, 10)),
-
+					: new Array().concat(queryParams['speedMap']).map((value) => parseInt(value, 10)),
+			reverseSpeedMap:
+				queryParams['reverseSpeedMap'] === undefined
+					? undefined
+					: new Array().concat(queryParams['reverseSpeedMap']).map((value) => parseInt(value, 10)),
+			rangeRevMin: parseInt(firstIfArray(queryParams['rangeRevMin']) as string, 10) || undefined,
+			rangeNeutralMin: parseInt(firstIfArray(queryParams['rangeNeutralMin']) as string, 10) || undefined,
+			rangeNeutralMax: parseInt(firstIfArray(queryParams['rangeNeutralMax']) as string, 10) || undefined,
+			rangeFwdMax: parseInt(firstIfArray(queryParams['rangeFwdMax']) as string, 10) || undefined,
 			marker: (firstIfArray(queryParams['marker']) as any) || undefined,
 			showMarker: queryParams['showmarker'] === undefined ? true : queryParams['showmarker'] === '1',
 			showScroll: queryParams['showscroll'] === undefined ? true : queryParams['showscroll'] === '1',

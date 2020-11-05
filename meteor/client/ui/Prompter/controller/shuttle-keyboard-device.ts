@@ -25,7 +25,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		super(view)
 
 		this.prompterView = view
-		this.speedMap = view.configOptions.speedCurve || this.speedMap
+		this.speedMap = view.configOptions.speedMap || this.speedMap
 		this.speedStepMap = ShuttleKeyboardController.makeSpeedStepMap(this.speedMap)
 	}
 	private static makeSpeedStepMap(speedMap): number[] {
