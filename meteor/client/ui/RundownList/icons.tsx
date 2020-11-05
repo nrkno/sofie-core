@@ -2,7 +2,7 @@ import React from 'react'
 
 export function iconDragHandle(): React.ReactElement {
 	return (
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+		<svg className="draghandle" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
 			<path
 				fill="#6F7071"
 				fillRule="evenodd"
@@ -15,7 +15,7 @@ export function iconDragHandle(): React.ReactElement {
 
 export function iconRemove(): React.ReactElement {
 	return (
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+		<svg className="remove" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
 			<path
 				fill="#6F7071"
 				fillRule="evenodd"
@@ -28,7 +28,7 @@ export function iconRemove(): React.ReactElement {
 
 export function iconResync(): React.ReactElement {
 	return (
-		<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+		<svg className="resync" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
 			<path
 				fill="#6F7071"
 				fillRule="evenodd"
