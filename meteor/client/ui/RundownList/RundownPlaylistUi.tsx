@@ -165,6 +165,13 @@ export const RundownPlaylistUi = DropTarget(
 				}
 			}
 
+			private handleResetRundownOrderClick() {
+				MeteorCall.userAction.restoreRundownOrder(
+					'User clicked the playlist rundown order toggle to reset',
+					this.props.playlist._id
+				)
+			}
+
 			private rundownsHaveChanged(prevProps: IRundownPlaylistUiProps): boolean {
 				if (prevProps.playlist.rundowns.length !== this.props.playlist.rundowns.length) {
 					return true
@@ -352,7 +359,10 @@ export const RundownPlaylistUi = DropTarget(
 										<Link to={playlistViewURL}>{playlist.name}</Link>
 									</span>
 								</h2>
-								<span>{`rundownRanksAreSetInSofie: ${playlist.rundownRanksAreSetInSofie === true}`}</span>
+								<span
+									onClick={() => {
+										this.handleResetRundownOrderClick()
+									}}>{`rundownRanksAreSetInSofie: ${playlist.rundownRanksAreSetInSofie === true}`}</span>
 							</span>
 							<span className="rundown-list-item__showStyle">{playlistViewLinks}</span>
 							<span className="rundown-list-item__airTime"></span>
